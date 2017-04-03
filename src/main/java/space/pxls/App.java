@@ -38,7 +38,7 @@ public class App {
             e.printStackTrace();
         }
 
-        port(Integer.parseInt(System.getProperty("port", "4567")));
+        port(Integer.parseInt(getEnv("PORT", "4567")));
 
         webSocket("/ws", new WSHandler());
 
@@ -47,8 +47,8 @@ public class App {
         get("/boardinfo", (req, res) -> {
             res.type("application/json");
             return new BoardInfo(width, height, palette);
-        }, new JsonTransformer());
 
+        }, new JsonTransformer());
         get("/boarddata", (req, res) -> {
             res.header("Content-Encoding", "gzip");
             return board;
@@ -64,12 +64,22 @@ public class App {
         Files.write(getBoardFile(), board);
     }
 
+    private static Path getStorageDir() {
+        return Paths.get(getEnv("STORAGE", "."));
+    }
+
     private static Path getBoardFile() {
-        return Paths.get(System.getProperty("boardFile", "board.dat"));
+        return getStorageDir().resolve("board.dat");
     }
 
     private static Path getLogFile() {
-        return Paths.get(System.getProperty("logFile", "pixels.log"));
+        return getStorageDir().resolve("pixels.log");
+    }
+
+    private static String getEnv(String key, String def) {
+        String val = System.getenv(key);
+        if (val != null) return val;
+        return def;
     }
 
     @WebSocket
@@ -136,7 +146,7 @@ public class App {
 
             long lastPlace = lastPlaceTime.get(getIp(sess));
             long nextPlace = lastPlace + cooldown * 1000;
-            return Math.max(0, nextPlace - System.currentTimeMillis());
+            return Math.max(0, nextPlace - System.currentTimeMillis()) / 1000;
         }
     }
 

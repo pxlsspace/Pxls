@@ -1,1 +1,1 @@
-web: java -Dport=$PORT -jar target/pxls-1.0-SNAPSHOT.jar
+web: java -jar target/pxls-1.0-SNAPSHOT.jar
