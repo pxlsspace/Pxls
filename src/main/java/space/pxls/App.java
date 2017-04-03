@@ -28,6 +28,10 @@ public class App {
     private static byte[] board = new byte[width * height];
     private static List<String> palette = Arrays.asList("#FFFFFF", "#E4E4E4", "#888888", "#222222", "#FFA7D1", "#E50000", "#E59500", "#A06A42", "#E5D900", "#94E044", "#02BE01", "#00D3DD", "#0083C7", "#0000EA", "#CF6EE4", "#820080");
     private static int cooldown = 300;
+    private static int fileTimer = 10;
+    private static long lastBoardSave = 0;
+    private static StringBuilder logBuffer = new StringBuilder();
+    private static int logBufferLength = 1024*1024; //Buffer 1 megabyte of output
     private static WSHandler handler;
 
     public static void main(String[] args) {
@@ -62,6 +66,8 @@ public class App {
     }
 
     private static void saveBoard() throws IOException {
+        if (lastBoardSave+fileTimer*1000 > System.currentTimeMillis()) return;
+        lastBoardSave = System.currentTimeMillis();
         Files.write(getBoardFile(), board);
     }
 
@@ -130,9 +136,12 @@ public class App {
         }
 
         private void log(Session session, int x, int y, int color) throws IOException {
+            logBuffer.append(String.valueOf(Instant.now().toEpochMilli())).append(" ").append(String.valueOf(x)).append(",").append(String.valueOf(y)).append(",").append(palette.get(color)).append(" by ").append(getIp(session)).append("\n");
+            if (logBuffer.length() < logBufferLength) return;
             FileWriter fw = new FileWriter(getLogFile().toFile(), true);
-            fw.append(String.valueOf(Instant.now().toEpochMilli())).append(" ").append(String.valueOf(x)).append(",").append(String.valueOf(y)).append(",").append(palette.get(color)).append(" by ").append(getIp(session)).append("\n");
+            fw.append(logBuffer.toString());
             fw.close();
+            logBuffer = new StringBuilder();
         }
 
         private String getIp(Session sess) {
