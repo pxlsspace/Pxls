@@ -13,10 +13,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -90,8 +88,11 @@ public class App {
         private ConcurrentHashMap<String, Long> lastPlaceTime = new ConcurrentHashMap<>();
 
         @OnWebSocketConnect
-        public void connected(Session session) {
+        public void connected(Session session) throws IOException {
             sessions.add(session);
+
+            float waitTime = getWaitTime(session);
+            session.getRemote().sendString(gson.toJson(new WaitResponse((int) Math.floor(waitTime))));
         }
 
         @OnWebSocketClose
