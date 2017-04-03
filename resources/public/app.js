@@ -241,7 +241,7 @@ window.App = {
                 this.elements.users.text(data + " online");
             }.bind(this));
         };
-        setInterval(update.bind(this), 2000);
+        setInterval(update.bind(this), 15000);
         update.bind(this)();
     },
     updateTransform: function () {
