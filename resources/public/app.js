@@ -29,7 +29,8 @@ window.App = {
         timer: $(".cooldown-timer"),
         reticule: $(".reticule"),
         alert: $(".message"),
-        coords: $(".coords")
+        coords: $(".coords"),
+        users: $(".online")
     },
     panX: 0,
     panY: 0,
@@ -44,6 +45,7 @@ window.App = {
         $(".message").hide();
         $(".cursor").hide();
         $(".cooldown-timer").hide();
+        $(".online").hide();
 
         $.get("/boardinfo", this.initBoard.bind(this));
 
@@ -53,6 +55,7 @@ window.App = {
         this.initReticule();
         this.initAlert();
         this.initCoords();
+        this.initUsers();
         Notification.requestPermission();
     },
     initBoard: function (data) {
@@ -230,6 +233,16 @@ window.App = {
         $(".loading").fadeOut(500);
 
         this.socket = ws;
+    },
+    initUsers: function() {
+        var update = function() {
+            $.get("/users", function(data) {
+                this.elements.users.fadeIn(200);
+                this.elements.users.text(data + " online");
+            }.bind(this));
+        };
+        setInterval(update.bind(this), 2000);
+        update.bind(this)();
     },
     updateTransform: function () {
         this.elements.boardMover

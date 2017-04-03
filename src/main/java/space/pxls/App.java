@@ -28,6 +28,7 @@ public class App {
     private static byte[] board = new byte[width * height];
     private static List<String> palette = Arrays.asList("#FFFFFF", "#E4E4E4", "#888888", "#222222", "#FFA7D1", "#E50000", "#E59500", "#A06A42", "#E5D900", "#94E044", "#02BE01", "#00D3DD", "#0083C7", "#0000EA", "#CF6EE4", "#820080");
     private static int cooldown = 300;
+    private static WSHandler handler;
 
     public static void main(String[] args) {
         try {
@@ -38,7 +39,8 @@ public class App {
 
         port(Integer.parseInt(getEnv("PORT", "4567")));
 
-        webSocket("/ws", new WSHandler());
+        handler = new WSHandler();
+        webSocket("/ws", handler);
 
         staticFiles.location("/public");
 
@@ -51,6 +53,7 @@ public class App {
             res.header("Content-Encoding", "gzip");
             return board;
         });
+        get("/users", (req, res) -> handler.sessions.size());
     }
 
     private static void loadBoard() throws IOException {

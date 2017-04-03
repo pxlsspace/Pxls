@@ -118,7 +118,6 @@ body {
     justify-content: center;
 }
 
-
 .message {
     padding: 16px;
     border-radius: 16px;
@@ -143,6 +142,17 @@ body {
     position: fixed;
     bottom: 64px;
     left: 64px;
+
+    padding: 8px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    color: #fff;
+}
+
+.online {
+    position: fixed;
+    bottom: 64px;
+    right: 64px;
 
     padding: 8px;
     background-color: rgba(0, 0, 0, 0.5);
