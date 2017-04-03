@@ -22,9 +22,7 @@ import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import static spark.Spark.get;
-import static spark.Spark.staticFiles;
-import static spark.Spark.webSocket;
+import static spark.Spark.*;
 
 public class App {
     private static int width = 1000;
@@ -40,6 +38,8 @@ public class App {
             e.printStackTrace();
         }
 
+        port(Integer.parseInt(System.getProperty("port", "4567")));
+
         webSocket("/ws", new WSHandler());
 
         staticFiles.location("/public");
@@ -53,7 +53,6 @@ public class App {
             res.header("Content-Encoding", "gzip");
             return board;
         });
-
     }
 
     private static void loadBoard() throws IOException {
