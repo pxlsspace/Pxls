@@ -1,0 +1,151 @@
+body {
+    margin: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #ccc;
+    overflow: hidden;
+    position: relative;
+    font-family: sans-serif;
+}
+
+.palette-color {
+    width: 32px;
+    height: 32px;
+    border: 1px solid black;
+    display: inline-block;
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.board-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.board-zoomer {
+    flex: 0 0 100px;
+}
+
+.board-mover {
+    background-color: #fff;
+}
+
+.board {
+    display: block;
+}
+
+#board {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    image-rendering: -moz-crisp-edges;
+}
+
+.reticule {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    z-index: 1;
+    border: 0.2px solid black;
+    pointer-events: none;
+    will-change: transform;
+}
+
+.cursor {
+    width: 36px;
+    height: 36px;
+    border: 1px solid black;
+
+    pointer-events: none;
+    will-change: transform;
+    z-index: 1;
+}
+
+.loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #444;
+    z-index: 99999;
+}
+
+.loading span {
+    text-align: center;
+    font-size: 36px;
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.ui {
+    z-index: 999;
+}
+
+.cooldown-timer {
+    position: fixed;
+    top: 48px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    padding: 16px;
+    background-color: rgba(0, 0, 0, 0.4);
+    border-radius: 16px;
+    color: white;
+    font-size: 24px;
+
+    pointer-events: none;
+    user-select: none;
+    z-index: 999;
+}
+
+.palette {
+    position: fixed;
+    bottom: 64px;
+    width: 100%;
+
+    display: flex;
+    justify-content: center;
+}
+
+
+.message {
+    padding: 16px;
+    border-radius: 16px;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    width: 50%;
+    text-align: center;
+    z-index: 999;
+
+    position: fixed;
+    bottom: 160px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.message .close {
+    cursor: pointer;
+    float: right;
+}
+
+.coords {
+    position: fixed;
+    bottom: 64px;
+    left: 64px;
+
+    padding: 8px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    color: #fff;
+}

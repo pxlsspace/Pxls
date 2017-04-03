@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pxls.space</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+</head>
+<body>
+<div class="loading"><span>Loading...</span></div>
+<div class="reticule" id="reticule"></div>
+<div class="board-container">
+    <div class="board-zoomer">
+        <div class="board-mover">
+            <canvas id="board" width="100" height="100"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="ui" id="ui">
+    <div class="cooldown-timer"></div>
+    <div class="message"><span class="text"></span> <span class="close">x</span></div>
+    <div class="palette"></div>
+    <div class="coords"></div>
+</div>
+
+<div class="cursor" id="cursor"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
