@@ -92,7 +92,7 @@ public class App {
             sessions.add(session);
 
             float waitTime = getWaitTime(session);
-            session.getRemote().sendString(gson.toJson(new WaitResponse((int) Math.floor(waitTime))));
+            send(session, new WaitResponse((int) Math.floor(waitTime)));
         }
 
         @OnWebSocketClose
@@ -102,8 +102,6 @@ public class App {
 
         @OnWebSocketMessage
         public void message(Session session, String message) throws IOException {
-            session.getRemote().sendString(message);
-
             PlaceRequest req = gson.fromJson(message, PlaceRequest.class);
             int x = req.x;
             int y = req.y;
@@ -116,7 +114,7 @@ public class App {
                 lastPlaceTime.put(getIp(session), System.currentTimeMillis());
                 board[coordsToIndex(x, y)] = (byte) color;
                 for (Session loopSess : sessions) {
-                    loopSess.getRemote().sendString(gson.toJson(new BoardUpdate(x, y, color)));
+                    send(loopSess, new BoardUpdate(x, y, color));
                 }
 
                 saveBoard();
@@ -125,7 +123,7 @@ public class App {
                 log(session, x, y, color);
             }
 
-            session.getRemote().sendString(gson.toJson(new WaitResponse((int) Math.floor(waitTime))));
+            send(session, new WaitResponse((int) Math.floor(waitTime)));
         }
 
         private void log(Session session, int x, int y, int color) throws IOException {
@@ -148,6 +146,10 @@ public class App {
             long lastPlace = lastPlaceTime.get(getIp(sess));
             long nextPlace = lastPlace + cooldown * 1000;
             return Math.max(0, nextPlace - System.currentTimeMillis()) / 1000;
+        }
+
+        private void send(Session sess, Object obj) {
+            sess.getRemote().sendStringByFuture(gson.toJson(obj));
         }
     }
 
