@@ -26,7 +26,7 @@ public class App {
     private static int width = 1000;
     private static int height = 1000;
     private static byte[] board = new byte[width * height];
-    private static List<String> palette = Arrays.asList("#FFFFFF", "#E4E4E4", "#888888", "#222222", "#FFA7D1", "#E50000", "#E59500", "#A06A42", "#E5D900", "#94E044", "#02BE01", "#00D3DD", "#0083C7", "#0000EA", "#CF6EE4", "#820080");
+    private static List<String> palette = Arrays.asList("#140C1C", "#442434", "#30346D", "#4E4A4F", "#854C30", "#346524", "#D04648", "#757161", "#597DCE", "#D27D2C", "#8595A1", "#6DAA2C", "#D2AA99", "#6DC2CA", "#DAD45E", "#DEEED6");
     private static int cooldown = 180;
     private static WSHandler handler;
     private static long startTime = System.currentTimeMillis();
