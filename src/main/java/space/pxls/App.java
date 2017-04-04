@@ -178,12 +178,14 @@ public class App {
             sessions.add(session);
 
             float waitTime = getWaitTime(session);
+            send(session, new UsersResponse((int) handler.sessions.size()));
             send(session, new WaitResponse((int) Math.floor(waitTime)));
         }
 
         @OnWebSocketClose
         public void closed(Session session, int statusCode, String reason) {
             sessions.remove(session);
+            broadcast(new UsersResponse((int) handler.sessions.size());
         }
 
         @OnWebSocketMessage
@@ -257,6 +259,15 @@ public class App {
         int x;
         int y;
         int color;
+    }
+
+    public static class UsersResponse {
+        String type = "users";
+        int count;
+
+        public UsersResponse(int count) {
+            this.count = count;
+        }
     }
 
     public static class WaitResponse {
