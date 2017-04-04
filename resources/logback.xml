@@ -34,7 +34,7 @@
         </rollingPolicy>
     </appender>
 
-    <logger name="pixels">
+    <logger name="pixels" additivity="false">
         <appender-ref ref="PIXELS" />
     </logger>
 

@@ -1,18 +1,34 @@
-body {
+html,body {
     margin: 0;
-    width: 100vw;
-    height: 100vh;
+    width: 100%;
+    height: 100%;
     background-color: #ccc;
     overflow: hidden;
     position: relative;
     font-family: sans-serif;
 }
 
+* {
+    box-sizing: border-box;
+}
+
+.palette {
+    position: absolute;
+    bottom: 16px;
+    padding: 0 32px;
+    width: 100%;
+
+    overflow-x: auto;
+    text-align: center;
+    white-space: nowrap;
+}
+
 .palette-color {
-    width: 32px;
-    height: 32px;
-    border: 1px solid black;
     display: inline-block;
+
+    min-width: 32px;
+    min-height: 32px;
+    border: 1px solid black;
     margin-right: 8px;
     cursor: pointer;
 }
@@ -70,7 +86,7 @@ body {
 }
 
 .loading {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     width: 100vw;
@@ -94,7 +110,7 @@ body {
 }
 
 .cooldown-timer {
-    position: fixed;
+    position: absolute;
     top: 48px;
     left: 50%;
     transform: translateX(-50%);
@@ -110,15 +126,6 @@ body {
     z-index: 999;
 }
 
-.palette {
-    position: fixed;
-    bottom: 64px;
-    width: 100%;
-
-    display: flex;
-    justify-content: center;
-}
-
 .message {
     padding: 16px;
     border-radius: 16px;
@@ -128,7 +135,7 @@ body {
     text-align: center;
     z-index: 999;
 
-    position: fixed;
+    position: absolute;
     bottom: 160px;
     left: 50%;
     transform: translateX(-50%);
@@ -140,9 +147,9 @@ body {
 }
 
 .coords {
-    position: fixed;
-    bottom: 64px;
-    left: 64px;
+    position: absolute;
+    bottom: 16px;
+    left: 32px;
 
     padding: 8px;
     background-color: rgba(0, 0, 0, 0.5);
@@ -151,9 +158,9 @@ body {
 }
 
 .online {
-    position: fixed;
-    bottom: 64px;
-    right: 64px;
+    position: absolute;
+    bottom: 16px;
+    right: 32px;
 
     padding: 8px;
     background-color: rgba(0, 0, 0, 0.5);
@@ -162,7 +169,7 @@ body {
 }
 
 .bubble-container {
-    position: fixed;
+    position: absolute;
     top: 32px;
     left: 32px;
 }
@@ -182,14 +189,14 @@ body {
 }
 
 .donate {
-    position: fixed;
+    position: absolute;
     right: 32px;
     top: 32px;
     z-index: 999;
 }
 
 .grid {
-    position: fixed;
+    position: absolute;
     top: 0;
     left: 0;
     z-index: 1;
@@ -200,12 +207,39 @@ body {
 }
 
 .instructions {
-    position: fixed;
+    position: absolute;
     top: 32px;
     right: 32px;
     padding: 8px 16px;
     background-color: rgba(0, 0, 0, 0.5);
     border-radius: 8px;
     color: #fff;
-    text-align: center;
+}
+
+.grecaptcha-badge {
+    bottom: 64px !important;
+}
+
+@media (max-width: 768px) {
+    .bubble-container {
+        display: none;
+    }
+
+    .coords {
+        top: 32px;
+        left: 32px;
+        bottom: auto;
+        right: auto;
+    }
+
+    .online {
+        top: 72px;
+        left: 32px;
+        bottom: auto;
+        right: auto;
+    }
+
+    .instructions {
+        display: none;
+    }
 }

@@ -51,8 +51,8 @@ window.App = {
 
         $.get("/boardinfo", this.initBoard.bind(this));
 
-        this.initBoardMovement();
         this.initBoardPlacement();
+        this.initBoardMovement();
         this.initCursor();
         this.initReticule();
         this.initAlert();
@@ -117,52 +117,24 @@ window.App = {
         }.bind(this));
     },
     initBoardMovement: function () {
-        var dragX = 0;
-        var dragY = 0;
-        var down = false;
-
-        this.elements.boardContainer.on("mousedown", function (evt) {
-            dragX = evt.screenX;
-            dragY = evt.screenY;
-            down = true;
-        }.bind(this)).on("mousemove", function (evt) {
-            if (!down) return;
-            var dx = evt.screenX - dragX,
-                dy = evt.screenY - dragY;
-            this.panX += dx / this.scale;
-            this.panY += dy / this.scale;
-            dragX = evt.screenX;
-            dragY = evt.screenY;
-
-            this.updateTransform()
-        }.bind(this)).on("mouseup", function (evt) {
-            down = false;
-        }.bind(this)).on("mouseout", function (evt) {
-            down = false;
-        }.bind(this)).on("wheel", function (evt) {
-            var oldScale = this.scale;
-
-            if (evt.originalEvent.deltaY > 0) {
-                this.scale /= 2
-            } else {
-                this.scale *= 2;
-            }
-
-            this.scale = Math.min(40, Math.max(2, this.scale));
-
-            var dx = evt.clientX - this.elements.boardContainer.width() / 2;
-            var dy = evt.clientY - this.elements.boardContainer.height() / 2;
-
-            this.panX -= dx / oldScale;
-            this.panX += dx / this.scale;
-
-            this.panY -= dy / oldScale;
-            this.panY += dy / this.scale;
-
+        var handleMove = function(evt) {
+            this.panX += evt.dx / this.scale;
+            this.panY += evt.dy / this.scale;
             this.updateTransform();
-        }.bind(this));
+        }.bind(this);
 
-        $(document.body).on("keydown", function(evt) {
+        interact(this.elements.boardContainer[0]).draggable({
+            inertia: true,
+            onmove: handleMove
+        }).gesturable({
+            onmove: function(evt) {
+                this.scale *= (1 + evt.ds);
+                this.updateTransform();
+                handleMove(evt);
+            }.bind(this)
+        });
+
+        $(document.body).on("keydown", function (evt) {
             if (evt.keyCode === 87 || evt.keyCode === 38) {
                 this.panY += 100 / this.scale;
             } else if (evt.keyCode === 65 || evt.keyCode === 37) {
@@ -174,14 +146,31 @@ window.App = {
             }
             this.updateTransform();
         }.bind(this));
+
+        this.elements.boardContainer.on("wheel", function (evt) {
+            var oldScale = this.scale;
+            if (evt.originalEvent.deltaY > 0) {
+                this.scale /= 2
+            } else {
+                this.scale *= 2;
+            }
+            this.scale = Math.min(40, Math.max(2, this.scale));
+            var dx = evt.clientX - this.elements.boardContainer.width() / 2;
+            var dy = evt.clientY - this.elements.boardContainer.height() / 2;
+            this.panX -= dx / oldScale;
+            this.panX += dx / this.scale;
+            this.panY -= dy / oldScale;
+            this.panY += dy / this.scale;
+            this.updateTransform();
+        }.bind(this))
     },
     initBoardPlacement: function () {
         var downX, downY;
 
-        this.elements.board.on("mousedown", function (evt) {
+        this.elements.board.on("pointerdown", function (evt) {
             downX = evt.clientX;
             downY = evt.clientY;
-        }).on("click", function (evt) {
+        }).on("pointerup", function (evt) {
             if (downX === evt.clientX && downY === evt.clientY && this.color !== -1 && this.cooldown < new Date().getTime()) {
                 var pos = this.screenToBoardSpace(evt.clientX, evt.clientY);
                 this.place(pos.x | 0, pos.y | 0);
@@ -192,12 +181,12 @@ window.App = {
         }.bind(this));
     },
     initCursor: function () {
-        $(document.body).on("mousemove", function (evt) {
+        $(document.body).on("pointermove", function (evt) {
             this.elements.cursor.css("transform", "translate(" + evt.clientX + "px, " + evt.clientY + "px)");
         }.bind(this));
     },
     initReticule: function () {
-        this.elements.board.on("mousemove", function (evt) {
+        this.elements.board.on("pointermove", function (evt) {
             var boardPos = this.screenToBoardSpace(evt.clientX, evt.clientY);
             boardPos.x |= 0;
             boardPos.y |= 0;
@@ -214,7 +203,7 @@ window.App = {
         }.bind(this));
     },
     initCoords: function () {
-        this.elements.board.on("mousemove", function (evt) {
+        this.elements.board.on("pointermove", function (evt) {
             var boardPos = this.screenToBoardSpace(evt.clientX, evt.clientY);
 
             this.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
@@ -268,14 +257,14 @@ window.App = {
         update.bind(this)();
     },
     initGrid: function () {
-        $(document.body).keydown(function(evt) {
+        $(document.body).keydown(function (evt) {
             if (evt.keyCode === 71) {
                 this.elements.grid.fadeToggle(200);
             }
         }.bind(this));
     },
-    initInfo: function() {
-        $(document.body).keydown(function(evt) {
+    initInfo: function () {
+        $(document.body).keydown(function (evt) {
             if (evt.keyCode === 72) {
                 $(".instructions").fadeToggle(200);
                 $(".bubble-container").fadeToggle(200);
@@ -288,6 +277,7 @@ window.App = {
             .css("height", this.height + "px")
             .css("transform", "translate(" + this.panX + "px, " + this.panY + "px)");
         this.elements.boardZoomer.css("transform", "scale(" + this.scale + ")");
+        this.elements.reticule.css("width", this.scale - 1 + "px").css("height", this.scale - 1 + "px");
 
         var xx = this.screenToBoardSpace(0, 0);
         this.elements.grid
@@ -322,11 +312,24 @@ window.App = {
         }
     },
     place: function (x, y) {
-        this.socket.send(JSON.stringify({
-            x: x,
-            y: y,
-            color: this.color
-        }));
+        var col = this.color;
+
+        var send = function(token) {
+            this.socket.send(JSON.stringify({
+                x: x,
+                y: y,
+                color: col,
+                token: token
+            }));
+        }.bind(this);
+
+        if (grecaptcha.getResponse()) {
+            send(grecaptcha.getResponse());
+        } else {
+            window.reCB = send;
+            grecaptcha.execute();
+        }
+
         this.switchColor(-1);
     },
     alert: function (message) {
@@ -362,5 +365,9 @@ window.App = {
         }
     }
 };
+
+function recaptchaCallback(token) {
+    (window.reCB || function(){})(token);
+}
 
 App.init();

@@ -1,9 +1,9 @@
 package space.pxls;
 
 import com.google.gson.Gson;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.Unirest;
+import com.mashape.unirest.http.exceptions.UnirestException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -57,30 +57,22 @@ public class App {
 
         try {
             banTorNodes();
-        } catch (IOException e) {
+        } catch (IOException | UnirestException e) {
             appLogger.error("Error while banning Tor exit nodes", e);
         }
 
-        port(Integer.parseInt(getEnv("PORT", "4567")));
+        if (getReCaptchaSecret() == null) {
+            appLogger.warn("No ReCaptcha key specified (env $CAPTCHA_KEY), proceeding WITHOUT AUTH");
+        }
 
         handler = new WSHandler();
+
+        port(Integer.parseInt(getEnv("PORT", "4567")));
         webSocket("/ws", handler);
         webSocket("/echo", new EchoHandler());
-
         staticFiles.location("/public");
-
-        get("/boardinfo", (req, res) -> {
-            res.type("application/json");
-            return new BoardInfo(width, height, palette);
-
-        }, new JsonTransformer());
-        get("/boarddata", (req, res) -> {
-            if (req.headers("Accept-Encoding") != null && req.headers("Accept-Encoding").contains("gzip")) {
-                res.header("Content-Encoding", "gzip");
-            }
-            res.type("application/octet-stream");
-            return board;
-        });
+        get("/boardinfo", App::boardInfo, new JsonTransformer());
+        get("/boarddata", App::boardData);
         get("/users", (req, res) -> handler.sessions.size());
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -98,13 +90,26 @@ public class App {
         }
     }
 
-    private static void banTorNodes() throws IOException {
-        OkHttpClient client = new OkHttpClient();
+    private static String getReCaptchaSecret() {
+        return getEnv("CAPTCHA_KEY", null);
+    }
 
-        Response resp = client.newCall(
-                new Request.Builder()
-                        .url("https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=1.1.1.1&port=80").build()).execute();
-        String ips = resp.body().string();
+    private static BoardInfo boardInfo(spark.Request req, spark.Response res) {
+        res.type("application/json");
+        return new BoardInfo(width, height, palette);
+    }
+
+    private static byte[] boardData(spark.Request req, spark.Response res) {
+        if (req.headers("Accept-Encoding") != null && req.headers("Accept-Encoding").contains("gzip")) {
+            res.header("Content-Encoding", "gzip");
+        }
+        res.type("application/octet-stream");
+        return board;
+    }
+
+    private static void banTorNodes() throws IOException, UnirestException {
+        String ips = Unirest.get("https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=1.1.1.1&port=80").asString().getBody();
+
         for (String s : ips.split("\n")) {
             if (!s.startsWith("#")) {
                 torIps.add(s);
@@ -187,7 +192,7 @@ public class App {
         }
 
         @OnWebSocketMessage
-        public void message(Session session, String message) throws IOException {
+        public void message(Session session, String message) throws IOException, UnirestException {
             String ip = getIp(session);
             if (torIps.contains(ip)) {
                 send(session, new AlertResponse(TOR_BAN_MSG));
@@ -203,6 +208,7 @@ public class App {
 
             float waitTime = getWaitTime(session);
             if (waitTime <= 0) {
+                if (getReCaptchaSecret() == null && !verifyCaptcha(session, req.token)) return;
                 lastPlaceTime.put(ip, System.currentTimeMillis());
                 board[coordsToIndex(x, y)] = (byte) color;
                 BoardUpdate update = new BoardUpdate(x, y, color);
@@ -247,6 +253,16 @@ public class App {
         private void send(Session sess, Object obj) {
             sess.getRemote().sendStringByFuture(gson.toJson(obj));
         }
+
+        private boolean verifyCaptcha(Session sess, String token) throws UnirestException {
+            HttpResponse<String> resp = Unirest
+                    .post("https://www.google.com/recaptcha/api/siteverify")
+                    .field("secret", getReCaptchaSecret())
+                    .field("response", token)
+                    .field("remoteip", getIp(sess))
+                    .asString();
+            return resp.getStatus() == 200;
+        }
     }
 
     private static int coordsToIndex(int x, int y) {
@@ -257,6 +273,7 @@ public class App {
         int x;
         int y;
         int color;
+        String token;
     }
 
     public static class WaitResponse {
