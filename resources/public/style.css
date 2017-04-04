@@ -176,6 +176,13 @@ body {
     text-align: center;
 }
 
-.bubble a:visited {
+.bubble a:visited,a:link,a:active,a:hover {
     color: #fff;
+}
+
+.donate {
+    position: fixed;
+    right: 32px;
+    top: 32px;
+    z-index: 999;
 }

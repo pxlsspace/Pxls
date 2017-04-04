@@ -6,14 +6,14 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import spark.ResponseTransformer;
 
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
@@ -27,8 +27,13 @@ public class App {
     private static int height = 1000;
     private static byte[] board = new byte[width * height];
     private static List<String> palette = Arrays.asList("#FFFFFF", "#E4E4E4", "#888888", "#222222", "#FFA7D1", "#E50000", "#E59500", "#A06A42", "#E5D900", "#94E044", "#02BE01", "#00D3DD", "#0083C7", "#0000EA", "#CF6EE4", "#820080");
-    private static int cooldown = 300;
+    private static int cooldown = 180;
     private static WSHandler handler;
+    private static long startTime = System.currentTimeMillis();
+
+    private static long lastSave;
+
+    private static Logger pixelLogger = LoggerFactory.getLogger("pixels");
 
     public static void main(String[] args) {
         try {
@@ -62,7 +67,10 @@ public class App {
     }
 
     private static void saveBoard() throws IOException {
+        if (lastSave + 1000 > System.currentTimeMillis()) return;
+        lastSave = System.currentTimeMillis();
         Files.write(getBoardFile(), board);
+        Files.write(getBoardFile().getParent().resolve(getBoardFile().getFileName() + "." + startTime), board);
     }
 
     private static Path getStorageDir() {
@@ -71,10 +79,6 @@ public class App {
 
     private static Path getBoardFile() {
         return getStorageDir().resolve("board.dat");
-    }
-
-    private static Path getLogFile() {
-        return getStorageDir().resolve("pixels.log");
     }
 
     private static String getEnv(String key, String def) {
@@ -110,7 +114,7 @@ public class App {
             int y = req.y;
             int color = req.color;
 
-            if (x < 0 || x >= width || y < 0 || y >= width || color < 0 || color > palette.size()) return;
+            if (x < 0 || x >= width || y < 0 || y >= height || color < 0 || color > palette.size()) return;
 
             float waitTime = getWaitTime(session);
             if (waitTime <= 0) {
@@ -130,9 +134,7 @@ public class App {
         }
 
         private void log(Session session, int x, int y, int color) throws IOException {
-            FileWriter fw = new FileWriter(getLogFile().toFile(), true);
-            fw.append(String.valueOf(Instant.now().toEpochMilli())).append(" ").append(String.valueOf(x)).append(",").append(String.valueOf(y)).append(",").append(palette.get(color)).append(" by ").append(getIp(session)).append("\n");
-            fw.close();
+            pixelLogger.info("{} at ({},{}) by {}", palette.get(color), x, y, getIp(session));
         }
 
         private String getIp(Session sess) {

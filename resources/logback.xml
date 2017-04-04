@@ -1,0 +1,26 @@
+<configuration>
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>
+                %d{HH:mm:ss.SSS} %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <appender name="PIXELS" class="ch.qos.logback.core.FileAppender">
+        <file>${STORAGE:-.}/pixels.log</file>
+        <encoder>
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss.SSS} %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <logger name="pixels">
+        <appender-ref ref="PIXELS" />
+    </logger>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+    </root>
+</configuration>
