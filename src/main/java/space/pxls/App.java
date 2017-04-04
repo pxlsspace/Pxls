@@ -17,6 +17,7 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Queue;
+import java.util.Scanner;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -34,12 +35,13 @@ public class App {
     private static long lastSave;
 
     private static Logger pixelLogger = LoggerFactory.getLogger("pixels");
+    private static Logger appLogger = LoggerFactory.getLogger(App.class);
 
     public static void main(String[] args) {
         try {
             loadBoard();
         } catch (IOException e) {
-            e.printStackTrace();
+            appLogger.error("Error while loading board", e);
         }
 
         port(Integer.parseInt(getEnv("PORT", "4567")));
@@ -64,9 +66,37 @@ public class App {
             try {
                 saveBoard();
             } catch (IOException e) {
-                e.printStackTrace();
+                appLogger.error("Error while saving board", e);
             }
         }));
+
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            String command = scanner.nextLine();
+            handleCommand(command);
+        }
+    }
+
+    private static void handleCommand(String command) {
+        try {
+            String[] tokens = command.split(" ");
+            appLogger.info("> {}", command);
+            if (tokens[0].equalsIgnoreCase("cooldown")) {
+                cooldown = Integer.parseInt(tokens[1]);
+                appLogger.info("Changed cooldown to {} seconds", tokens[1]);
+
+                for (Session sess : handler.sessions) {
+                    float time = handler.getWaitTime(sess);
+                    handler.send(sess, new WaitResponse((int) time));
+                }
+            } else if (tokens[0].equalsIgnoreCase("alert")) {
+                String rest = command.substring(tokens[0].length() + 1);
+                handler.broadcast(new AlertResponse(rest));
+                appLogger.info("Alerted {} to clients", rest);
+            }
+        } catch (Exception e) {
+            appLogger.error("Error while executing command {}", command, e);
+        }
     }
 
     private static void loadBoard() throws IOException {
@@ -128,9 +158,9 @@ public class App {
             if (waitTime <= 0) {
                 lastPlaceTime.put(getIp(session), System.currentTimeMillis());
                 board[coordsToIndex(x, y)] = (byte) color;
-                for (Session loopSess : sessions) {
-                    send(loopSess, new BoardUpdate(x, y, color));
-                }
+                BoardUpdate update = new BoardUpdate(x, y, color);
+
+                broadcast(update);
 
                 saveBoard();
                 waitTime = cooldown;
@@ -139,6 +169,12 @@ public class App {
             }
 
             send(session, new WaitResponse((int) Math.floor(waitTime)));
+        }
+
+        private void broadcast(Object obj) {
+            for (Session loopSess : sessions) {
+                send(loopSess, obj);
+            }
         }
 
         private void log(Session session, int x, int y, int color) throws IOException {
@@ -182,6 +218,15 @@ public class App {
 
         public WaitResponse(int wait) {
             this.wait = wait;
+        }
+    }
+
+    public static class AlertResponse {
+        String type = "alert";
+        String message;
+
+        public AlertResponse(String message) {
+            this.message = message;
         }
     }
 

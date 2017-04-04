@@ -1,5 +1,4 @@
 *.iml
 .idea/
 target/
-board.dat
-pixels.log
+run/

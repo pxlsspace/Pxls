@@ -77,7 +77,9 @@ window.App = {
         this.updateTransform();
 
         this.initSocket();
-        setInterval(this.updateTime.bind(this), 1000);
+        setInterval(function() {
+            this.updateTime(0.1);
+        }.bind(this), 100);
         jQuery.get("/boarddata", this.drawBoard.bind(this));
     },
     drawBoard: function (data) {
@@ -224,7 +226,7 @@ window.App = {
                 this.alert(data.message);
             } else if (data.type === "cooldown") {
                 this.cooldown = Math.ceil(data.wait);
-                this.updateTime();
+                this.updateTime(0);
             }
         }.bind(this);
 
@@ -291,12 +293,11 @@ window.App = {
         alert.find(".text").text(message);
         alert.fadeIn(200);
     },
-    updateTime: function () {
+    updateTime: function (delta) {
         var last = this.cooldown;
 
-        this.cooldown -= 1;
+        this.cooldown -= delta;
         if (this.cooldown < 0) this.cooldown = 0;
-        this.cooldown |= 0;
 
         if (this.cooldown !== 0) {
             this.elements.timer.show();
