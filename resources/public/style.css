@@ -18,6 +18,7 @@ body {
 }
 
 .board-container {
+    z-index: 0;
     position: absolute;
     top: 0;
     left: 0;
@@ -176,7 +177,7 @@ body {
     text-align: center;
 }
 
-.bubble a:visited,a:link,a:active,a:hover {
+.bubble a:visited, a:link, a:active, a:hover {
     color: #fff;
 }
 
@@ -185,4 +186,26 @@ body {
     right: 32px;
     top: 32px;
     z-index: 999;
+}
+
+.grid {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 110vw;
+    height: 110vh;
+    pointer-events: none;
+    background-image: linear-gradient(to right, #aaa 1px, transparent 1px), linear-gradient(to bottom, #aaa 1px, transparent 1px);
+}
+
+.instructions {
+    position: fixed;
+    top: 32px;
+    right: 32px;
+    padding: 8px 16px;
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    color: #fff;
+    text-align: center;
 }

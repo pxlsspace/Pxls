@@ -1,6 +1,9 @@
 package space.pxls;
 
 import com.google.gson.Gson;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -14,16 +17,15 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Queue;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static spark.Spark.*;
 
 public class App {
+    public static final String TOR_BAN_MSG = "Due to widespread abuse, Tor IPs are banned from placing pixels.";
+
     private static int width = 1000;
     private static int height = 1000;
     private static byte[] board = new byte[width * height];
@@ -31,11 +33,20 @@ public class App {
     private static int cooldown = 180;
     private static WSHandler handler;
     private static long startTime = System.currentTimeMillis();
+    private static Set<String> torIps = ConcurrentHashMap.newKeySet();
 
     private static long lastSave;
 
     private static Logger pixelLogger = LoggerFactory.getLogger("pixels");
     private static Logger appLogger = LoggerFactory.getLogger(App.class);
+
+    @WebSocket
+    public static class EchoHandler {
+        @OnWebSocketMessage
+        public void message(Session session, String message) throws IOException {
+            session.getRemote().sendStringByFuture(message);
+        }
+    }
 
     public static void main(String[] args) {
         try {
@@ -44,10 +55,17 @@ public class App {
             appLogger.error("Error while loading board", e);
         }
 
+        try {
+            banTorNodes();
+        } catch (IOException e) {
+            appLogger.error("Error while banning Tor exit nodes", e);
+        }
+
         port(Integer.parseInt(getEnv("PORT", "4567")));
 
         handler = new WSHandler();
         webSocket("/ws", handler);
+        webSocket("/echo", new EchoHandler());
 
         staticFiles.location("/public");
 
@@ -57,7 +75,10 @@ public class App {
 
         }, new JsonTransformer());
         get("/boarddata", (req, res) -> {
-            res.header("Content-Encoding", "gzip");
+            if (req.headers("Accept-Encoding") != null && req.headers("Accept-Encoding").contains("gzip")) {
+                res.header("Content-Encoding", "gzip");
+            }
+            res.type("application/octet-stream");
             return board;
         });
         get("/users", (req, res) -> handler.sessions.size());
@@ -74,6 +95,20 @@ public class App {
         while (true) {
             String command = scanner.nextLine();
             handleCommand(command);
+        }
+    }
+
+    private static void banTorNodes() throws IOException {
+        OkHttpClient client = new OkHttpClient();
+
+        Response resp = client.newCall(
+                new Request.Builder()
+                        .url("https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=1.1.1.1&port=80").build()).execute();
+        String ips = resp.body().string();
+        for (String s : ips.split("\n")) {
+            if (!s.startsWith("#")) {
+                torIps.add(s);
+            }
         }
     }
 
@@ -134,6 +169,12 @@ public class App {
 
         @OnWebSocketConnect
         public void connected(Session session) throws IOException {
+            String ip = getIp(session);
+
+            if (torIps.contains(ip)) {
+                send(session, new AlertResponse(TOR_BAN_MSG));
+            }
+
             sessions.add(session);
 
             float waitTime = getWaitTime(session);
@@ -147,16 +188,22 @@ public class App {
 
         @OnWebSocketMessage
         public void message(Session session, String message) throws IOException {
+            String ip = getIp(session);
+            if (torIps.contains(ip)) {
+                send(session, new AlertResponse(TOR_BAN_MSG));
+                return;
+            }
+
             PlaceRequest req = gson.fromJson(message, PlaceRequest.class);
             int x = req.x;
             int y = req.y;
             int color = req.color;
 
-            if (x < 0 || x >= width || y < 0 || y >= height || color < 0 || color > palette.size()) return;
+            if (x < 0 || x >= width || y < 0 || y >= height || color < 0 || color >= palette.size()) return;
 
             float waitTime = getWaitTime(session);
             if (waitTime <= 0) {
-                lastPlaceTime.put(getIp(session), System.currentTimeMillis());
+                lastPlaceTime.put(ip, System.currentTimeMillis());
                 board[coordsToIndex(x, y)] = (byte) color;
                 BoardUpdate update = new BoardUpdate(x, y, color);
 
@@ -182,7 +229,7 @@ public class App {
         }
 
         private String getIp(Session sess) {
-            String ip = sess.getRemoteAddress().getHostName();
+            String ip = sess.getRemoteAddress().getAddress().getHostAddress();
             if (sess.getUpgradeRequest().getHeader("X-Forwarded-For") != null) {
                 ip = sess.getUpgradeRequest().getHeader("X-Forwarded-For");
             }

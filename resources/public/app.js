@@ -30,12 +30,13 @@ window.App = {
         reticule: $(".reticule"),
         alert: $(".message"),
         coords: $(".coords"),
-        users: $(".online")
+        users: $(".online"),
+        grid: $(".grid")
     },
     panX: 0,
     panY: 0,
     scale: 4,
-    cooldown: 0,
+    hasFiredNotification: true,
     init: function () {
         this.color = -1;
 
@@ -46,6 +47,7 @@ window.App = {
         $(".cursor").hide();
         $(".cooldown-timer").hide();
         $(".online").hide();
+        $(".grid").hide();
 
         $.get("/boardinfo", this.initBoard.bind(this));
 
@@ -56,6 +58,8 @@ window.App = {
         this.initAlert();
         this.initCoords();
         this.initUsers();
+        this.initGrid();
+        this.initInfo();
         Notification.requestPermission();
     },
     initBoard: function (data) {
@@ -77,9 +81,7 @@ window.App = {
         this.updateTransform();
 
         this.initSocket();
-        setInterval(function() {
-            this.updateTime(0.1);
-        }.bind(this), 100);
+        setInterval(this.updateTime.bind(this), 1000);
         jQuery.get("/boarddata", this.drawBoard.bind(this));
     },
     drawBoard: function (data) {
@@ -105,7 +107,7 @@ window.App = {
                 .addClass("palette-color")
                 .css("background-color", color)
                 .click(function () {
-                    if (this.cooldown === 0) {
+                    if (this.cooldown < new Date().getTime()) {
                         this.switchColor(idx);
                     } else {
                         this.switchColor(-1);
@@ -159,6 +161,19 @@ window.App = {
 
             this.updateTransform();
         }.bind(this));
+
+        $(document.body).on("keydown", function(evt) {
+            if (evt.keyCode === 87 || evt.keyCode === 38) {
+                this.panY += 100 / this.scale;
+            } else if (evt.keyCode === 65 || evt.keyCode === 37) {
+                this.panX += 100 / this.scale;
+            } else if (evt.keyCode === 83 || evt.keyCode === 40) {
+                this.panY -= 100 / this.scale;
+            } else if (evt.keyCode === 68 || evt.keyCode === 39) {
+                this.panX -= 100 / this.scale;
+            }
+            this.updateTransform();
+        }.bind(this));
     },
     initBoardPlacement: function () {
         var downX, downY;
@@ -167,9 +182,9 @@ window.App = {
             downX = evt.clientX;
             downY = evt.clientY;
         }).on("click", function (evt) {
-            if (downX === evt.clientX && downY === evt.clientY && this.color !== -1 && this.cooldown === 0) {
+            if (downX === evt.clientX && downY === evt.clientY && this.color !== -1 && this.cooldown < new Date().getTime()) {
                 var pos = this.screenToBoardSpace(evt.clientX, evt.clientY);
-                this.place(pos.x, pos.y);
+                this.place(pos.x | 0, pos.y | 0);
             }
         }.bind(this)).contextmenu(function (evt) {
             evt.preventDefault();
@@ -189,7 +204,7 @@ window.App = {
 
             var screenPos = this.boardToScreenSpace(boardPos.x, boardPos.y);
             this.elements.reticule.css("transform", "translate(" + screenPos.x + "px, " + screenPos.y + "px)");
-            this.elements.reticule.css("width", this.scale + "px").css("height", this.scale + "px");
+            this.elements.reticule.css("width", this.scale - 1 + "px").css("height", this.scale - 1 + "px");
 
             if (this.color === -1) {
                 this.elements.reticule.hide();
@@ -202,7 +217,7 @@ window.App = {
         this.elements.board.on("mousemove", function (evt) {
             var boardPos = this.screenToBoardSpace(evt.clientX, evt.clientY);
 
-            this.elements.coords.text("(" + boardPos.x + ", " + boardPos.y + ")");
+            this.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
         }.bind(this));
     },
     initAlert: function () {
@@ -225,10 +240,16 @@ window.App = {
             } else if (data.type === "alert") {
                 this.alert(data.message);
             } else if (data.type === "cooldown") {
-                this.cooldown = Math.ceil(data.wait);
+                this.cooldown = new Date().getTime() + (data.wait * 1000);
                 this.updateTime(0);
+                this.hasFiredNotification = data.wait === 0;
             }
         }.bind(this);
+        ws.onclose = function () {
+            setTimeout(function () {
+                window.location.reload();
+            }, 10000 * Math.random());
+        };
 
         $(".board-container").show();
         $(".ui").show();
@@ -236,9 +257,9 @@ window.App = {
 
         this.socket = ws;
     },
-    initUsers: function() {
-        var update = function() {
-            $.get("/users", function(data) {
+    initUsers: function () {
+        var update = function () {
+            $.get("/users", function (data) {
                 this.elements.users.fadeIn(200);
                 this.elements.users.text(data + " online");
             }.bind(this));
@@ -246,17 +267,37 @@ window.App = {
         setInterval(update.bind(this), 15000);
         update.bind(this)();
     },
+    initGrid: function () {
+        $(document.body).keydown(function(evt) {
+            if (evt.keyCode === 71) {
+                this.elements.grid.fadeToggle(200);
+            }
+        }.bind(this));
+    },
+    initInfo: function() {
+        $(document.body).keydown(function(evt) {
+            if (evt.keyCode === 72) {
+                $(".instructions").fadeToggle(200);
+                $(".bubble-container").fadeToggle(200);
+            }
+        });
+    },
     updateTransform: function () {
         this.elements.boardMover
             .css("width", this.width + "px")
             .css("height", this.height + "px")
             .css("transform", "translate(" + this.panX + "px, " + this.panY + "px)");
         this.elements.boardZoomer.css("transform", "scale(" + this.scale + ")");
+
+        var xx = this.screenToBoardSpace(0, 0);
+        this.elements.grid
+            .css("background-size", this.scale + "px " + this.scale + "px")
+            .css("transform", "translate(" + Math.floor((-xx.x % 1) * this.scale) + "px," + Math.floor((-xx.y % 1) * this.scale) + "px)");
     },
     screenToBoardSpace: function (screenX, screenY) {
         var boardBox = this.elements.board[0].getBoundingClientRect();
-        var boardX = (((screenX - boardBox.left) / this.scale) | 0),
-            boardY = (((screenY - boardBox.top) / this.scale) | 0);
+        var boardX = (((screenX - boardBox.left) / this.scale)),
+            boardY = (((screenY - boardBox.top) / this.scale));
         return {x: boardX, y: boardY};
     },
     boardToScreenSpace: function (boardX, boardY) {
@@ -293,30 +334,31 @@ window.App = {
         alert.find(".text").text(message);
         alert.fadeIn(200);
     },
-    updateTime: function (delta) {
-        var last = this.cooldown;
+    updateTime: function () {
+        var delta = (this.cooldown - new Date().getTime()) / 1000;
 
-        this.cooldown -= delta;
-        if (this.cooldown < 0) this.cooldown = 0;
-
-        if (this.cooldown !== 0) {
+        if (delta > 0) {
             this.elements.timer.show();
-            var secs = Math.floor(this.cooldown % 60);
+            var secs = Math.floor(delta % 60);
             var secsStr = secs < 10 ? "0" + secs : secs;
-            var minutes = Math.floor(this.cooldown / 60);
+            var minutes = Math.floor(delta / 60);
             var minuteStr = minutes < 10 ? "0" + minutes : minutes;
             this.elements.timer.text(minuteStr + ":" + secsStr);
 
-            $(".palette-color").css("cursor", "not-allowed")
+            $(".palette-color").css("cursor", "not-allowed");
+
+            document.title = "Pxls.space [" + minuteStr + ":" + secsStr + "]";
         } else {
+            if (!this.hasFiredNotification) {
+                new Notification("Pxls.space", {
+                    body: "Your next pixel is available!"
+                });
+                this.hasFiredNotification = true;
+            }
+
+            document.title = "Pxls.space";
             this.elements.timer.hide();
             $(".palette-color").css("cursor", "")
-        }
-
-        if (this.cooldown === 0 && last !== 0) {
-            new Notification("Pxls.space", {
-                body: "Your next pixel is available!"
-            });
         }
     }
 };
