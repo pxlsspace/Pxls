@@ -306,6 +306,7 @@ window.App = {
             var minutes = Math.floor(this.cooldown / 60);
             var minuteStr = minutes < 10 ? "0" + minutes : minutes;
             this.elements.timer.text(minuteStr + ":" + secsStr);
+            document.title = minuteStr + ":" + secsStr + " - Pxls.space";
 
             $(".palette-color").css("cursor", "not-allowed")
         } else {
