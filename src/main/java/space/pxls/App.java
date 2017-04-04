@@ -93,7 +93,8 @@ public class App {
                 saveBoard();
                 System.out.println("SUCCESS!");
             } catch (IOException e) {
-                appLogger.error("Error while saving board", e);
+                System.out.println("Error in last chance board save!");
+                e.printStackTrace();
             }
         }));
 
