@@ -59,6 +59,14 @@ public class App {
             return board;
         });
         get("/users", (req, res) -> handler.sessions.size());
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                saveBoard();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }));
     }
 
     private static void loadBoard() throws IOException {
