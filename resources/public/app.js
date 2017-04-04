@@ -344,6 +344,7 @@ window.App = {
             var minutes = Math.floor(delta / 60);
             var minuteStr = minutes < 10 ? "0" + minutes : minutes;
             this.elements.timer.text(minuteStr + ":" + secsStr);
+            document.title = minuteStr + ":" + secsStr + " - Pxls.space";
 
             $(".palette-color").css("cursor", "not-allowed");
 
@@ -358,7 +359,8 @@ window.App = {
 
             document.title = "Pxls.space";
             this.elements.timer.hide();
-            $(".palette-color").css("cursor", "")
+            $(".palette-color").css("cursor", ""); 
+            document.title = "Pxls.space"
         }
     }
 };
