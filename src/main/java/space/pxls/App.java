@@ -178,7 +178,7 @@ public class App {
             sessions.add(session);
 
             float waitTime = getWaitTime(session);
-            send(session, new UsersResponse((int) handler.sessions.size()));
+            broadcast(new UsersResponse((int) handler.sessions.size());
             send(session, new WaitResponse((int) Math.floor(waitTime)));
         }
 
