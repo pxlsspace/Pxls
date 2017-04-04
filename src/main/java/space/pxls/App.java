@@ -40,6 +40,8 @@ public class App {
     private static Logger pixelLogger = LoggerFactory.getLogger("pixels");
     private static Logger appLogger = LoggerFactory.getLogger(App.class);
 
+    private static Boolean running;
+    
     @WebSocket
     public static class EchoHandler {
         @OnWebSocketMessage
@@ -48,6 +50,8 @@ public class App {
         }
     }
 
+
+    
     public static void main(String[] args) {
         try {
             loadBoard();
@@ -85,17 +89,22 @@ public class App {
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
+            	System.out.println("Last Chance board save!");
                 saveBoard();
+                System.out.println("SUCCESS!");
             } catch (IOException e) {
                 appLogger.error("Error while saving board", e);
             }
         }));
 
+        running = true;
         Scanner scanner = new Scanner(System.in);
-        while (true) {
+        while (running) {
             String command = scanner.nextLine();
             handleCommand(command);
         }
+        scanner.close();
+        stop();
     }
 
     private static void banTorNodes() throws IOException {
@@ -128,6 +137,9 @@ public class App {
                 String rest = command.substring(tokens[0].length() + 1);
                 handler.broadcast(new AlertResponse(rest));
                 appLogger.info("Alerted {} to clients", rest);
+            } else if (tokens[0].equalsIgnoreCase("shutdown")) {
+            	appLogger.info("Graceful shutdown triggered from command line");
+            	running = false;
             }
         } catch (Exception e) {
             appLogger.error("Error while executing command {}", command, e);
