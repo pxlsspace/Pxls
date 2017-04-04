@@ -305,12 +305,14 @@ window.App = {
             var secsStr = secs < 10 ? "0" + secs : secs;
             var minutes = Math.floor(this.cooldown / 60);
             var minuteStr = minutes < 10 ? "0" + minutes : minutes;
-            this.elements.timer.text(minuteStr + ":" + secsStr);
+            this.elements.timer.text(minuteStr + ":" + secsStr);       
+            document.title = minuteStr + ":" + secsStr + " - Pxls.space";
 
             $(".palette-color").css("cursor", "not-allowed")
         } else {
             this.elements.timer.hide();
-            $(".palette-color").css("cursor", "")
+            $(".palette-color").css("cursor", ""); 
+            document.title = "Pxls.space"
         }
 
         if (this.cooldown === 0 && last !== 0) {
