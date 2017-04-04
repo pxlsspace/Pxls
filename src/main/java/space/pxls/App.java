@@ -140,6 +140,7 @@ public class App {
                 appLogger.info("Alerted {} to clients", rest);
             } else if (tokens[0].equalsIgnoreCase("shutdown")) {
             	appLogger.info("Graceful shutdown triggered from command line");
+            	handler.broadcast(new AlertResponse("Server shutting down."));
             	running = false;
             }
         } catch (Exception e) {
