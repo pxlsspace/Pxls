@@ -230,7 +230,10 @@ window.App = {
         ws.onmessage = function (msg) {
             var data = JSON.parse(msg.data);
 
-            if (data.type === "pixel") {
+            if (data.type === "users") {
+                this.elements.users.fadeIn(200);
+                this.elements.users.text(data.count + " online");
+            } else if (data.type === "pixel") {
                 var ctx = this.elements.board[0].getContext("2d");
                 ctx.fillStyle = this.palette[data.color];
                 ctx.fillRect(data.x, data.y, 1, 1);
@@ -254,7 +257,7 @@ window.App = {
 
         this.socket = ws;
     },
-    initUsers: function () {
+    /*initUsers: function () {
         var update = function () {
             $.get("/users", function (data) {
                 this.elements.users.fadeIn(200);
@@ -263,7 +266,7 @@ window.App = {
         };
         setInterval(update.bind(this), 15000);
         update.bind(this)();
-    },
+    },*/
     initGrid: function () {
         $(document.body).keydown(function (evt) {
             if (evt.keyCode === 71) {
