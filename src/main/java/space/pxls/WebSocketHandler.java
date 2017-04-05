@@ -96,12 +96,7 @@ public class WebSocketHandler {
 
         float waitTime = App.getGame().getWaitTime(data.lastPlace);
 
-        if (!data.mustFillOutCaptcha && !data.justCaptchaed) {
-            data.mustFillOutCaptcha = Math.random() < (1/App.getCaptchaThreshold());
-        }
-        data.justCaptchaed = false;
-        if (trusted) data.mustFillOutCaptcha = false;
-        if (App.getReCaptchaSecret() == null) data.mustFillOutCaptcha = false;
+        updateCaptchaState(data, trusted);
 
         if (waitTime <= 0 || trusted) {
             if (data.mustFillOutCaptcha) {
@@ -122,6 +117,25 @@ public class WebSocketHandler {
         }
 
         sendWaitTime(session);
+    }
+
+    private void updateCaptchaState(GameSessionData data, boolean trusted) {
+        // Show captcha every 1/x times
+        if (!data.mustFillOutCaptcha && !data.justCaptchaed) {
+            data.mustFillOutCaptcha = Math.random() < (1/ App.getCaptchaThreshold());
+        }
+
+        // ...except if this is the first placement in 15 minutes... then we force captcha
+        if (data.lastPlace + 15*60*1000 < System.currentTimeMillis()) data.mustFillOutCaptcha = true;
+
+        // ...except
+        // if we *just* filled one in (and haven't placed yet)
+        // if user is trusted
+        // if captchas are disabled
+        // ...then we don't
+        if (data.justCaptchaed) data.mustFillOutCaptcha = false;
+        if (trusted) data.mustFillOutCaptcha = false;
+        if (App.getReCaptchaSecret() == null) data.mustFillOutCaptcha = false;
     }
 
     @OnWebSocketClose

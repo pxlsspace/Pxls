@@ -104,12 +104,20 @@ public class App {
     }
 
     public static void saveBoard() {
-        if (lastSave > 0 && lastSave + 180 * 1000 < System.currentTimeMillis()) return;
-        lastSave = System.currentTimeMillis();
+        saveBoard(false);
+    }
+
+    public static void saveBoard(boolean force) {
+        long currTime = System.currentTimeMillis();
+
+        if (!force && lastSave > 0 && lastSave + 180 * 1000 < currTime) return;
+        lastSave = currTime;
 
         try {
             game.saveBoard(getBoardFile());
-            game.saveBoard(getBoardFile().getParent().resolve("backups").resolve("board." + System.currentTimeMillis() + ".dat"));
+            game.saveBoard(getBoardFile().getParent().resolve("backups").resolve("board." + currTime + ".dat"));
+
+            appLogger.info("Saved board to {} and backups/board.{}.dat", getBoardFile().getFileName(), currTime);
         } catch (IOException e) {
             appLogger.error("Error while saving board", e);
         }
@@ -199,6 +207,8 @@ public class App {
             } else if (tokens[0].equalsIgnoreCase("captcha_threshold")) {
                 captchaThreshold = Integer.parseInt(tokens[1]);
                 appLogger.info("Changing captcha threshold to {}", captchaThreshold);
+            } else if (tokens[0].equalsIgnoreCase("save")) {
+                saveBoard(true);
             }
         } catch (Exception e) {
             appLogger.error("Error while executing command {}", command, e);
