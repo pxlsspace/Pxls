@@ -43,7 +43,7 @@ public class WebSocketHandler {
             App.getLogger().info("Banned IP {} tried to connect", ip);
             send(session, new Data.ServerAlert("Due to abuse, this IP address has been banned from placing pixels"));
             return true;
-        } else if (App.getTorIps().contains(ip)) {
+        } else if (App.shouldBanTor() && App.getTorIps().contains(ip)) {
             App.getLogger().info("Tor IP {} tried to connect", ip);
             send(session, new Data.ServerAlert("Due to widespread abuse, Tor IP addresses have been banned from placing pixels"));
             return true;

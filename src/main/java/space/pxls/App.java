@@ -39,7 +39,10 @@ public class App {
                 Integer.parseInt(getEnv("COOLDOWN", "180")));
 
         loadBoard();
-        banTorNodes();
+
+        if (shouldBanTor()) {
+            banTorNodes();
+        }
 
         if (getReCaptchaSecret() == null) {
             appLogger.warn("No ReCaptcha key specified (env $CAPTCHA_KEY), ReCaptcha will be disabled");
@@ -62,6 +65,10 @@ public class App {
             String command = scanner.nextLine();
             handleCommand(command);
         }
+    }
+
+    public static boolean shouldBanTor() {
+        return getEnv("BAN_TOR", "true").equals("true");
     }
 
     private static void rewriteBoardFromLogs(int count) {
