@@ -16,6 +16,10 @@
         </encoder>
     </appender>
 
+    <appender name="NAUGHTY" class="ch.qos.logback.core.FileAppender">
+        <file>${STORAGE:-.}/naughty.log</file>
+    </appender>
+
     <appender name="APP" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${STORAGE:-.}/app.log</file>
         <encoder>
@@ -36,6 +40,10 @@
 
     <logger name="pixels" additivity="false">
         <appender-ref ref="PIXELS" />
+    </logger>
+
+    <logger name="naughty" >
+        <appender-ref ref="NAUGHTY" />
     </logger>
 
     <root level="INFO">

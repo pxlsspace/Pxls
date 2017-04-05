@@ -2,6 +2,7 @@ package space.pxls;
 
 import com.google.gson.Gson;
 import com.mashape.unirest.http.HttpResponse;
+import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.eclipse.jetty.websocket.api.Session;
@@ -9,6 +10,7 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.ResponseTransformer;
@@ -38,6 +40,7 @@ public class App {
     private static long lastSave;
 
     private static Logger pixelLogger = LoggerFactory.getLogger("pixels");
+    private static Logger naughtyLogger = LoggerFactory.getLogger("naughty");
     private static Logger appLogger = LoggerFactory.getLogger(App.class);
 
     @WebSocket
@@ -133,6 +136,23 @@ public class App {
                 String rest = command.substring(tokens[0].length() + 1);
                 handler.broadcast(new AlertResponse(rest));
                 appLogger.info("Alerted {} to clients", rest);
+            } else if (tokens[0].equalsIgnoreCase("blank")) {
+                int x1 = Integer.parseInt(tokens[1]);
+                int y1 = Integer.parseInt(tokens[2]);
+                int x2 = Integer.parseInt(tokens[3]);
+                int y2 = Integer.parseInt(tokens[4]);
+
+                Files.write(getBoardFile().getParent().resolve(getBoardFile().getFileName() + ".preblank." + System.currentTimeMillis()), board);
+
+                for (int xx = Math.min(x1, x2); xx <= Math.max(x2, x1); xx++) {
+                    for (int yy = Math.min(y1, y2); yy <= Math.max(y2, y1); yy++) {
+                        board[coordsToIndex(xx, yy)] = (byte) 0;
+                        logPixel("<blank operation>", xx, yy, 0);
+
+                        /*BoardUpdate update = new BoardUpdate(xx, yy, 0);
+                        handler.broadcast(update);*/
+                    }
+                }
             }
         } catch (Exception e) {
             appLogger.error("Error while executing command {}", command, e);
@@ -163,6 +183,9 @@ public class App {
         String val = System.getenv(key);
         if (val != null) return val;
         return def;
+    }
+    private static void logPixel(String ip, int x, int y, int color) throws IOException {
+        pixelLogger.info("{} at ({},{}) by {}", palette.get(color), x, y, ip);
     }
 
     @WebSocket
@@ -208,17 +231,20 @@ public class App {
 
             float waitTime = getWaitTime(session);
             if (waitTime <= 0) {
-                if (getReCaptchaSecret() == null && !verifyCaptcha(session, req.token)) return;
+                if (getReCaptchaSecret() != null && !verifyCaptcha(session, req.token)) {
+                    naughtyLogger.info("Client at {} failed captcha verification", getIp(session));
+                    return;
+                }
                 lastPlaceTime.put(ip, System.currentTimeMillis());
+
                 board[coordsToIndex(x, y)] = (byte) color;
                 BoardUpdate update = new BoardUpdate(x, y, color);
-
                 broadcast(update);
 
                 saveBoard();
                 waitTime = cooldown;
 
-                log(session, x, y, color);
+                logPixel(getIp(session), x, y, color);
             }
 
             send(session, new WaitResponse((int) Math.floor(waitTime)));
@@ -226,12 +252,10 @@ public class App {
 
         private void broadcast(Object obj) {
             for (Session loopSess : sessions) {
-                send(loopSess, obj);
+                if (loopSess.isOpen()) {
+                    send(loopSess, obj);
+                }
             }
-        }
-
-        private void log(Session session, int x, int y, int color) throws IOException {
-            pixelLogger.info("{} at ({},{}) by {}", palette.get(color), x, y, getIp(session));
         }
 
         private String getIp(Session sess) {
@@ -255,13 +279,15 @@ public class App {
         }
 
         private boolean verifyCaptcha(Session sess, String token) throws UnirestException {
-            HttpResponse<String> resp = Unirest
+            HttpResponse<JsonNode> resp = Unirest
                     .post("https://www.google.com/recaptcha/api/siteverify")
                     .field("secret", getReCaptchaSecret())
                     .field("response", token)
                     .field("remoteip", getIp(sess))
-                    .asString();
-            return resp.getStatus() == 200;
+                    .asJson();
+
+            JSONObject body = resp.getBody().getObject();
+            return body.getBoolean("success") && body.getString("hostname").equalsIgnoreCase(sess.getUpgradeRequest().getHost());
         }
     }
 

@@ -190,8 +190,8 @@ html,body {
 
 .donate {
     position: absolute;
-    right: 32px;
-    top: 32px;
+    right: 16px;
+    top: 16px;
     z-index: 999;
 }
 
@@ -216,6 +216,10 @@ html,body {
     color: #fff;
 }
 
+.g-recaptcha {
+    display: none;
+}
+
 .grecaptcha-badge {
     bottom: 64px !important;
 }
@@ -226,15 +230,15 @@ html,body {
     }
 
     .coords {
-        top: 32px;
-        left: 32px;
+        top: 16px;
+        left: 16px;
         bottom: auto;
         right: auto;
     }
 
     .online {
-        top: 72px;
-        left: 32px;
+        top: 64px;
+        left: 16px;
         bottom: auto;
         right: auto;
     }

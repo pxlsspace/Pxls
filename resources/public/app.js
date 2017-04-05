@@ -167,26 +167,32 @@ window.App = {
     initBoardPlacement: function () {
         var downX, downY;
 
-        this.elements.board.on("pointerdown", function (evt) {
+        var downFn = function (evt) {
             downX = evt.clientX;
             downY = evt.clientY;
-        }).on("pointerup", function (evt) {
-            if (downX === evt.clientX && downY === evt.clientY && this.color !== -1 && this.cooldown < new Date().getTime()) {
+        };
+        var upFn = function (evt) {
+            var dx = Math.abs(downX - evt.clientX);
+            var dy = Math.abs(downY - evt.clientY);
+
+            if (dx < 5 && dy < 5 && this.color !== -1 && this.cooldown < new Date().getTime()) {
                 var pos = this.screenToBoardSpace(evt.clientX, evt.clientY);
                 this.place(pos.x | 0, pos.y | 0);
             }
-        }.bind(this)).contextmenu(function (evt) {
+        }.bind(this);
+        this.elements.board.on("pointerdown", downFn).on("mousedown", downFn).on("pointerup", upFn).on("mouseup", upFn).contextmenu(function (evt) {
             evt.preventDefault();
             this.switchColor(-1);
         }.bind(this));
     },
     initCursor: function () {
-        $(document.body).on("pointermove", function (evt) {
+        var fn = function (evt) {
             this.elements.cursor.css("transform", "translate(" + evt.clientX + "px, " + evt.clientY + "px)");
-        }.bind(this));
+        }.bind(this);
+        this.elements.boardContainer.on("pointermove", fn).on("mousemove", fn);
     },
     initReticule: function () {
-        this.elements.board.on("pointermove", function (evt) {
+        var fn = function (evt) {
             var boardPos = this.screenToBoardSpace(evt.clientX, evt.clientY);
             boardPos.x |= 0;
             boardPos.y |= 0;
@@ -200,14 +206,16 @@ window.App = {
             } else {
                 this.elements.reticule.show();
             }
-        }.bind(this));
+        }.bind(this);
+        this.elements.board.on("pointermove", fn).on("mousemove", fn);
     },
     initCoords: function () {
-        this.elements.board.on("pointermove", function (evt) {
+        var fn = function (evt) {
             var boardPos = this.screenToBoardSpace(evt.clientX, evt.clientY);
 
             this.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
-        }.bind(this));
+        }.bind(this);
+        this.elements.board.on("pointermove", fn).on("mousemove", fn);
     },
     initAlert: function () {
         this.elements.alert.find(".close").click(function () {
@@ -323,6 +331,7 @@ window.App = {
             }));
         }.bind(this);
 
+        grecaptcha.reset();
         if (grecaptcha.getResponse()) {
             send(grecaptcha.getResponse());
         } else {
