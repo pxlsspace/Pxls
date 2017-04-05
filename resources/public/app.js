@@ -333,7 +333,7 @@ window.App = {
     attemptPlace: function (x, y) {
         var col = this.color;
 
-        this.pendingPixel = {x: x, y: y, color: col}
+        this.pendingPixel = {x: x, y: y, color: col};
         this.socket.send(JSON.stringify({
             type: "place",
             x: x,

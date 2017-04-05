@@ -54,6 +54,8 @@ public class WebSocketHandler {
     @OnWebSocketMessage
     public void message(Session session, String message) throws IOException, UnirestException {
         JsonObject rawObject = gson.fromJson(message, JsonObject.class);
+        if (!rawObject.has("type")) return;
+
         String type = rawObject.get("type").getAsString();
 
         if (type.equals("place")) {
@@ -69,11 +71,12 @@ public class WebSocketHandler {
 
     private void doCaptcha(Session session, Data.ClientCaptcha cc) throws UnirestException {
         GameSessionData data = getSessionData(session);
-        if (data.captchalessPlacesRemaining > 0) return;
+        if (!data.mustFillOutCaptcha) return;
 
         boolean success = verifyCaptcha(session, cc.token);
         if (success) {
-            data.captchalessPlacesRemaining = App.getCaptchaThreshold();
+            data.mustFillOutCaptcha = false;
+            data.justCaptchaed = true;
         }
         send(session, new Data.ServerCaptchaStatus(success));
     }
@@ -93,8 +96,15 @@ public class WebSocketHandler {
 
         float waitTime = App.getGame().getWaitTime(data.lastPlace);
 
+        if (!data.mustFillOutCaptcha && !data.justCaptchaed) {
+            data.mustFillOutCaptcha = Math.random() < (1/App.getCaptchaThreshold());
+        }
+        data.justCaptchaed = false;
+        if (trusted) data.mustFillOutCaptcha = false;
+        if (App.getReCaptchaSecret() == null) data.mustFillOutCaptcha = false;
+
         if (waitTime <= 0 || trusted) {
-            if (!trusted && data.captchalessPlacesRemaining <= 0) {
+            if (data.mustFillOutCaptcha) {
                 send(session, new Data.ServerCaptchaNeeded());
                 return;
             } else {
@@ -108,7 +118,6 @@ public class WebSocketHandler {
                 broadcast(sp);
 
                 data.lastPlace = System.currentTimeMillis();
-                if (!trusted) data.captchalessPlacesRemaining--;
             }
         }
 

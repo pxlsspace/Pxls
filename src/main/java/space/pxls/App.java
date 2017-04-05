@@ -21,7 +21,6 @@ public class App {
     private static Game game;
 
     private static WebSocketHandler handler;
-    private static long startTime = System.currentTimeMillis();
     private static Set<String> torIps = ConcurrentHashMap.newKeySet();
     private static Set<String> bannedIps = ConcurrentHashMap.newKeySet();
     private static Set<String> trustedIps = ConcurrentHashMap.newKeySet();
@@ -43,7 +42,7 @@ public class App {
         banTorNodes();
 
         if (getReCaptchaSecret() == null) {
-            appLogger.warn("No ReCaptcha key specified (env $CAPTCHA_KEY), proceeding WITHOUT AUTH");
+            appLogger.warn("No ReCaptcha key specified (env $CAPTCHA_KEY), ReCaptcha will be disabled");
         }
         captchaThreshold = Integer.parseInt(getEnv("CAPTCHA_THRESHOLD", "5"));
 
@@ -65,6 +64,37 @@ public class App {
         }
     }
 
+    private static void rewriteBoardFromLogs(int count) {
+        // For when something (inevitably) breaks and you have to recreate the board from the pixel logs
+        try {
+            List<String> lines = Files.readAllLines(Paths.get("pxtrunc.log"));
+            int start = Math.max(0, lines.size() - count);
+            for (int i = 0; i < lines.size(); i++) {
+                String s = lines.get(i);
+                String[] toks = s.split(" ");
+                String col = toks[2];
+                String[] coord = toks[4].split(",");
+
+                int x = Integer.parseInt(coord[0].substring(1));
+                int y = Integer.parseInt(coord[1].substring(0, coord[1].length() - 1));
+
+                int cc = -1;
+                List<String> palette = game.getPalette();
+                for (int pal = 0; pal < palette.size(); pal++) {
+                    String s1 = palette.get(pal);
+                    if (s1.equals(col)) {
+                        cc = pal;
+                    }
+                }
+                game.setPixel(x, y, (byte) cc);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        saveBoard();
+    }
+
     private static void loadBoard() {
         try {
             game.loadBoard(getBoardFile());
@@ -74,11 +104,12 @@ public class App {
     }
 
     public static void saveBoard() {
-        if (lastSave + 5000 < System.currentTimeMillis()) return;
+        if (lastSave > 0 && lastSave + 180 * 1000 < System.currentTimeMillis()) return;
         lastSave = System.currentTimeMillis();
 
         try {
             game.saveBoard(getBoardFile());
+            game.saveBoard(getBoardFile().getParent().resolve("backups").resolve("board." + System.currentTimeMillis() + ".dat"));
         } catch (IOException e) {
             appLogger.error("Error while saving board", e);
         }
@@ -138,7 +169,7 @@ public class App {
                 int x2 = Integer.parseInt(tokens[3]);
                 int y2 = Integer.parseInt(tokens[4]);
 
-                Files.write(getBoardFile().getParent().resolve(getBoardFile().getFileName() + ".preblank." + System.currentTimeMillis()), game.getBoard());
+                game.saveBoard(getBoardFile().getParent().resolve(getBoardFile().getFileName() + ".preblank." + System.currentTimeMillis()));
 
                 for (int xx = Math.min(x1, x2); xx <= Math.max(x2, x1); xx++) {
                     for (int yy = Math.min(y1, y2); yy <= Math.max(y2, y1); yy++) {

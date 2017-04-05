@@ -60,14 +60,8 @@ public class Game {
     }
 
     public void saveBoard(Path boardFile) throws IOException {
-        //if (lastSave + 1000 > System.currentTimeMillis()) return;
-        //lastSave = System.currentTimeMillis();
-
-        Path tmpFile = boardFile.getParent().resolve(boardFile.getFileName() + ".tmp");
-        Files.write(tmpFile, board);
-        Files.move(tmpFile, boardFile, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
-
-        //Files.write(getBoardFile().getParent().resolve(getBoardFile().getFileName() + "." + startTime), board);
+        Files.createDirectories(boardFile.getParent());
+        Files.write(boardFile, board);
     }
 
     public void setPixel(int x, int y, byte color) {

@@ -56,6 +56,41 @@
                     </archive>
                 </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>com.samaxes.maven</groupId>
+                <artifactId>minify-maven-plugin</artifactId>
+                <version>1.7.6</version>
+                <executions>
+                    <execution>
+                        <id>default-minify</id>
+                        <configuration>
+                            <charset>UTF-8</charset>
+                            <webappSourceDir>resources/</webappSourceDir>
+                            <webappTargetDir>${project.build.directory}/classes</webappTargetDir>
+                            <cssSourceDir>public</cssSourceDir>
+                            <jsSourceDir>public</jsSourceDir>
+
+                            <cssSourceFiles>
+                                <cssSourceFile>style.css</cssSourceFile>
+                            </cssSourceFiles>
+
+                            <jsSourceFiles>
+                                <jsSourceFile>app.js</jsSourceFile>
+                            </jsSourceFiles>
+
+                            <jsEngine>CLOSURE</jsEngine>
+                            <nosuffix>true</nosuffix>
+                            <skipMerge>true</skipMerge>
+                            <verbose>true</verbose>
+                        </configuration>
+                        <goals>
+                            <goal>minify</goal>
+                        </goals>
+                        <phase>prepare-package</phase>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
