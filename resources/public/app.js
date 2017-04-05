@@ -150,11 +150,11 @@ window.App = {
         this.elements.boardContainer.on("wheel", function (evt) {
             var oldScale = this.scale;
             if (evt.originalEvent.deltaY > 0) {
-                this.scale /= 2
+                this.scale /= 1.5;
             } else {
-                this.scale *= 2;
+                this.scale *= 1.5;
             }
-            this.scale = Math.min(40, Math.max(2, this.scale));
+            this.scale = Math.floor(Math.min(40, Math.max(2, this.scale)));
             var dx = evt.clientX - this.elements.boardContainer.width() / 2;
             var dy = evt.clientY - this.elements.boardContainer.height() / 2;
             this.panX -= dx / oldScale;
@@ -177,7 +177,7 @@ window.App = {
 
             if (dx < 5 && dy < 5 && this.color !== -1 && this.cooldown < new Date().getTime()) {
                 var pos = this.screenToBoardSpace(evt.clientX, evt.clientY);
-                this.place(pos.x | 0, pos.y | 0);
+                this.attemptPlace(pos.x | 0, pos.y | 0);
             }
         }.bind(this);
         this.elements.board.on("pointerdown", downFn).on("mousedown", downFn).on("pointerup", upFn).on("mouseup", upFn).contextmenu(function (evt) {
@@ -240,6 +240,17 @@ window.App = {
                 this.cooldown = new Date().getTime() + (data.wait * 1000);
                 this.updateTime(0);
                 this.hasFiredNotification = data.wait === 0;
+            } else if (data.type === "captcha_required") {
+                grecaptcha.reset();
+                grecaptcha.execute();
+            } else if (data.type === "captcha_status") {
+                if (data.success) {
+                    var pending = this.pendingPixel;
+                    this.switchColor(pending.color);
+                    this.attemptPlace(pending.x, pending.y)
+                } else {
+                    alert("Failed captcha verification")
+                }
             }
         }.bind(this);
         ws.onclose = function () {
@@ -267,15 +278,15 @@ window.App = {
     initGrid: function () {
         $(document.body).keydown(function (evt) {
             if (evt.keyCode === 71) {
-                this.elements.grid.fadeToggle(200);
+                this.elements.grid.fadeToggle({duration: 100});
             }
         }.bind(this));
     },
     initInfo: function () {
         $(document.body).keydown(function (evt) {
             if (evt.keyCode === 72) {
-                $(".instructions").fadeToggle(200);
-                $(".bubble-container").fadeToggle(200);
+                $(".instructions").fadeToggle({duration: 100});
+                $(".bubble-container").fadeToggle({duration: 100});
             }
         });
     },
@@ -285,7 +296,7 @@ window.App = {
             .css("height", this.height + "px")
             .css("transform", "translate(" + this.panX + "px, " + this.panY + "px)");
         this.elements.boardZoomer.css("transform", "scale(" + this.scale + ")");
-        this.elements.reticule.css("width", this.scale - 1 + "px").css("height", this.scale - 1 + "px");
+        this.elements.reticule.css("width", this.scale + "px").css("height", this.scale + "px");
 
         var xx = this.screenToBoardSpace(0, 0);
         this.elements.grid
@@ -319,25 +330,16 @@ window.App = {
             this.elements.cursor.css("background-color", this.palette[newColor]);
         }
     },
-    place: function (x, y) {
+    attemptPlace: function (x, y) {
         var col = this.color;
 
-        var send = function(token) {
-            this.socket.send(JSON.stringify({
-                x: x,
-                y: y,
-                color: col,
-                token: token
-            }));
-        }.bind(this);
-
-        grecaptcha.reset();
-        if (grecaptcha.getResponse()) {
-            send(grecaptcha.getResponse());
-        } else {
-            window.reCB = send;
-            grecaptcha.execute();
-        }
+        this.pendingPixel = {x: x, y: y, color: col}
+        this.socket.send(JSON.stringify({
+            type: "place",
+            x: x,
+            y: y,
+            color: col
+        }));
 
         this.switchColor(-1);
     },
@@ -376,7 +378,10 @@ window.App = {
 };
 
 function recaptchaCallback(token) {
-    (window.reCB || function(){})(token);
+    App.socket.send(JSON.stringify({
+        type: "captcha",
+        token: token
+    }));
 }
 
 App.init();

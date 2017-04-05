@@ -70,7 +70,7 @@ html,body {
     left: 0;
 
     z-index: 1;
-    border: 0.2px solid black;
+    border: 1px solid black;
     pointer-events: none;
     will-change: transform;
 }
@@ -110,6 +110,7 @@ html,body {
 }
 
 .cooldown-timer {
+    position: absolute;
     position: absolute;
     top: 48px;
     left: 50%;

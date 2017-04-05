@@ -1,16 +1,9 @@
 package space.pxls;
 
 import com.google.gson.Gson;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
-import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
-import org.eclipse.jetty.websocket.api.annotations.WebSocket;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.ResponseTransformer;
@@ -21,70 +14,49 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import static spark.Spark.*;
 
 public class App {
-    public static final String TOR_BAN_MSG = "Due to widespread abuse, Tor IPs are banned from placing pixels.";
+    private static Game game;
 
-    private static int width = 1000;
-    private static int height = 1000;
-    private static byte[] board = new byte[width * height];
-    private static List<String> palette = Arrays.asList("#FFFFFF", "#E4E4E4", "#888888", "#222222", "#FFA7D1", "#E50000", "#E59500", "#A06A42", "#E5D900", "#94E044", "#02BE01", "#00D3DD", "#0083C7", "#0000EA", "#CF6EE4", "#820080");
-    private static int cooldown = 180;
-    private static WSHandler handler;
+    private static WebSocketHandler handler;
     private static long startTime = System.currentTimeMillis();
     private static Set<String> torIps = ConcurrentHashMap.newKeySet();
+    private static Set<String> bannedIps = ConcurrentHashMap.newKeySet();
+    private static Set<String> trustedIps = ConcurrentHashMap.newKeySet();
 
     private static long lastSave;
+    private static int captchaThreshold;
 
     private static Logger pixelLogger = LoggerFactory.getLogger("pixels");
-    private static Logger naughtyLogger = LoggerFactory.getLogger("naughty");
     private static Logger appLogger = LoggerFactory.getLogger(App.class);
 
-    @WebSocket
-    public static class EchoHandler {
-        @OnWebSocketMessage
-        public void message(Session session, String message) throws IOException {
-            session.getRemote().sendStringByFuture(message);
-        }
-    }
-
     public static void main(String[] args) {
-        try {
-            loadBoard();
-        } catch (IOException e) {
-            appLogger.error("Error while loading board", e);
-        }
+        game = new Game(
+                Integer.parseInt(getEnv("CANVAS_WIDTH", "1000")),
+                Integer.parseInt(getEnv("CANVAS_HEIGHT", "1000")),
+                Arrays.asList("#FFFFFF", "#E4E4E4", "#888888", "#222222", "#FFA7D1", "#E50000", "#E59500", "#A06A42", "#E5D900", "#94E044", "#02BE01", "#00D3DD", "#0083C7", "#0000EA", "#CF6EE4", "#820080"),
+                Integer.parseInt(getEnv("COOLDOWN", "180")));
 
-        try {
-            banTorNodes();
-        } catch (IOException | UnirestException e) {
-            appLogger.error("Error while banning Tor exit nodes", e);
-        }
+        loadBoard();
+        banTorNodes();
 
         if (getReCaptchaSecret() == null) {
             appLogger.warn("No ReCaptcha key specified (env $CAPTCHA_KEY), proceeding WITHOUT AUTH");
         }
+        captchaThreshold = Integer.parseInt(getEnv("CAPTCHA_THRESHOLD", "5"));
 
-        handler = new WSHandler();
+        handler = new WebSocketHandler();
 
         port(Integer.parseInt(getEnv("PORT", "4567")));
         webSocket("/ws", handler);
-        webSocket("/echo", new EchoHandler());
         staticFiles.location("/public");
         get("/boardinfo", App::boardInfo, new JsonTransformer());
         get("/boarddata", App::boardData);
-        get("/users", (req, res) -> handler.sessions.size());
+        get("/users", (req, res) -> handler.getSessions().size());
 
-        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            try {
-                saveBoard();
-            } catch (IOException e) {
-                appLogger.error("Error while saving board", e);
-            }
-        }));
+        Runtime.getRuntime().addShutdownHook(new Thread(App::saveBoard));
 
         Scanner scanner = new Scanner(System.in);
         while (true) {
@@ -93,13 +65,32 @@ public class App {
         }
     }
 
-    private static String getReCaptchaSecret() {
+    private static void loadBoard() {
+        try {
+            game.loadBoard(getBoardFile());
+        } catch (IOException e) {
+            appLogger.error("Error while loading board", e);
+        }
+    }
+
+    public static void saveBoard() {
+        if (lastSave + 5000 < System.currentTimeMillis()) return;
+        lastSave = System.currentTimeMillis();
+
+        try {
+            game.saveBoard(getBoardFile());
+        } catch (IOException e) {
+            appLogger.error("Error while saving board", e);
+        }
+    }
+
+    public static String getReCaptchaSecret() {
         return getEnv("CAPTCHA_KEY", null);
     }
 
-    private static BoardInfo boardInfo(spark.Request req, spark.Response res) {
+    private static Data.BoardInfo boardInfo(spark.Request req, spark.Response res) {
         res.type("application/json");
-        return new BoardInfo(width, height, palette);
+        return new Data.BoardInfo(game.getWidth(), game.getHeight(), game.getPalette());
     }
 
     private static byte[] boardData(spark.Request req, spark.Response res) {
@@ -107,16 +98,20 @@ public class App {
             res.header("Content-Encoding", "gzip");
         }
         res.type("application/octet-stream");
-        return board;
+        return game.getBoard();
     }
 
-    private static void banTorNodes() throws IOException, UnirestException {
-        String ips = Unirest.get("https://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=1.1.1.1&port=80").asString().getBody();
+    private static void banTorNodes() {
+        try {
+            String ips = Unirest.get("http://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=1.1.1.1&port=80").asString().getBody();
 
-        for (String s : ips.split("\n")) {
-            if (!s.startsWith("#")) {
-                torIps.add(s);
+            for (String s : ips.split("\n")) {
+                if (!s.startsWith("#")) {
+                    torIps.add(s);
+                }
             }
+        } catch (UnirestException e) {
+            appLogger.error("Error while banning Tor exit nodes", e);
         }
     }
 
@@ -125,50 +120,58 @@ public class App {
             String[] tokens = command.split(" ");
             appLogger.info("> {}", command);
             if (tokens[0].equalsIgnoreCase("cooldown")) {
-                cooldown = Integer.parseInt(tokens[1]);
+                game.setCooldown(Integer.parseInt(tokens[1]));
                 appLogger.info("Changed cooldown to {} seconds", tokens[1]);
 
-                for (Session sess : handler.sessions) {
-                    float time = handler.getWaitTime(sess);
-                    handler.send(sess, new WaitResponse((int) time));
+                for (Session sess : handler.getSessions()) {
+                    GameSessionData DATA = handler.getSessionData(sess);
+                    handler.send(sess, new Data.ServerCooldown(game.getWaitTime(DATA.lastPlace)));
                 }
             } else if (tokens[0].equalsIgnoreCase("alert")) {
                 String rest = command.substring(tokens[0].length() + 1);
-                handler.broadcast(new AlertResponse(rest));
-                appLogger.info("Alerted {} to clients", rest);
+                handler.broadcast(new Data.ServerAlert(rest));
+
+                appLogger.info("Alerted \"{}\" to clients", rest);
             } else if (tokens[0].equalsIgnoreCase("blank")) {
                 int x1 = Integer.parseInt(tokens[1]);
                 int y1 = Integer.parseInt(tokens[2]);
                 int x2 = Integer.parseInt(tokens[3]);
                 int y2 = Integer.parseInt(tokens[4]);
 
-                Files.write(getBoardFile().getParent().resolve(getBoardFile().getFileName() + ".preblank." + System.currentTimeMillis()), board);
+                Files.write(getBoardFile().getParent().resolve(getBoardFile().getFileName() + ".preblank." + System.currentTimeMillis()), game.getBoard());
 
                 for (int xx = Math.min(x1, x2); xx <= Math.max(x2, x1); xx++) {
                     for (int yy = Math.min(y1, y2); yy <= Math.max(y2, y1); yy++) {
-                        board[coordsToIndex(xx, yy)] = (byte) 0;
+                        game.setPixel(xx, yy, (byte) 0);
                         logPixel("<blank operation>", xx, yy, 0);
 
                         /*BoardUpdate update = new BoardUpdate(xx, yy, 0);
                         handler.broadcast(update);*/
                     }
                 }
+            } else if (tokens[0].equalsIgnoreCase("trusted")) {
+                for (String trustedIp : trustedIps) {
+                    appLogger.info("Trusted IP: {}", trustedIp);
+                }
+            } else if (tokens[0].equalsIgnoreCase("trust")) {
+                trustedIps.add(tokens[1]);
+                appLogger.info("Trusting IP: {}", tokens[1]);
+            } else if (tokens[0].equalsIgnoreCase("untrust")) {
+                trustedIps.remove(tokens[1]);
+                appLogger.info("Untrusting IP: {}", tokens[1]);
+            } else if (tokens[0].equalsIgnoreCase("ban")) {
+                bannedIps.add(tokens[1]);
+                appLogger.info("Banning IP: {}", tokens[1]);
+            } else if (tokens[0].equalsIgnoreCase("unban")) {
+                bannedIps.remove(tokens[1]);
+                appLogger.info("Unbanning IP: {}", tokens[1]);
+            } else if (tokens[0].equalsIgnoreCase("captcha_threshold")) {
+                captchaThreshold = Integer.parseInt(tokens[1]);
+                appLogger.info("Changing captcha threshold to {}", captchaThreshold);
             }
         } catch (Exception e) {
             appLogger.error("Error while executing command {}", command, e);
         }
-    }
-
-    private static void loadBoard() throws IOException {
-        byte[] data = Files.readAllBytes(getBoardFile());
-        System.arraycopy(data, 0, board, 0, Math.min(data.length, board.length));
-    }
-
-    private static void saveBoard() throws IOException {
-        if (lastSave + 1000 > System.currentTimeMillis()) return;
-        lastSave = System.currentTimeMillis();
-        Files.write(getBoardFile(), board);
-        Files.write(getBoardFile().getParent().resolve(getBoardFile().getFileName() + "." + startTime), board);
     }
 
     private static Path getStorageDir() {
@@ -184,165 +187,33 @@ public class App {
         if (val != null) return val;
         return def;
     }
-    private static void logPixel(String ip, int x, int y, int color) throws IOException {
-        pixelLogger.info("{} at ({},{}) by {}", palette.get(color), x, y, ip);
+
+    public static void logPixel(String ip, int x, int y, int color) throws IOException {
+        pixelLogger.info("{} at ({},{}) by {}", game.getPalette().get(color), x, y, ip);
     }
 
-    @WebSocket
-    public static class WSHandler {
-        private Gson gson = new Gson();
-        private final Queue<Session> sessions = new ConcurrentLinkedQueue<>();
-
-        private ConcurrentHashMap<String, Long> lastPlaceTime = new ConcurrentHashMap<>();
-
-        @OnWebSocketConnect
-        public void connected(Session session) throws IOException {
-            String ip = getIp(session);
-
-            if (torIps.contains(ip)) {
-                send(session, new AlertResponse(TOR_BAN_MSG));
-            }
-
-            sessions.add(session);
-
-            float waitTime = getWaitTime(session);
-            send(session, new WaitResponse((int) Math.floor(waitTime)));
-        }
-
-        @OnWebSocketClose
-        public void closed(Session session, int statusCode, String reason) {
-            sessions.remove(session);
-        }
-
-        @OnWebSocketMessage
-        public void message(Session session, String message) throws IOException, UnirestException {
-            String ip = getIp(session);
-            if (torIps.contains(ip)) {
-                send(session, new AlertResponse(TOR_BAN_MSG));
-                return;
-            }
-
-            PlaceRequest req = gson.fromJson(message, PlaceRequest.class);
-            int x = req.x;
-            int y = req.y;
-            int color = req.color;
-
-            if (x < 0 || x >= width || y < 0 || y >= height || color < 0 || color >= palette.size()) return;
-
-            float waitTime = getWaitTime(session);
-            if (waitTime <= 0) {
-                if (getReCaptchaSecret() != null && !verifyCaptcha(session, req.token)) {
-                    naughtyLogger.info("Client at {} failed captcha verification", getIp(session));
-                    return;
-                }
-                lastPlaceTime.put(ip, System.currentTimeMillis());
-
-                board[coordsToIndex(x, y)] = (byte) color;
-                BoardUpdate update = new BoardUpdate(x, y, color);
-                broadcast(update);
-
-                saveBoard();
-                waitTime = cooldown;
-
-                logPixel(getIp(session), x, y, color);
-            }
-
-            send(session, new WaitResponse((int) Math.floor(waitTime)));
-        }
-
-        private void broadcast(Object obj) {
-            for (Session loopSess : sessions) {
-                if (loopSess.isOpen()) {
-                    send(loopSess, obj);
-                }
-            }
-        }
-
-        private String getIp(Session sess) {
-            String ip = sess.getRemoteAddress().getAddress().getHostAddress();
-            if (sess.getUpgradeRequest().getHeader("X-Forwarded-For") != null) {
-                ip = sess.getUpgradeRequest().getHeader("X-Forwarded-For");
-            }
-            return ip;
-        }
-
-        private float getWaitTime(Session sess) {
-            if (!lastPlaceTime.containsKey(getIp(sess))) return 0;
-
-            long lastPlace = lastPlaceTime.get(getIp(sess));
-            long nextPlace = lastPlace + cooldown * 1000;
-            return Math.max(0, nextPlace - System.currentTimeMillis()) / 1000;
-        }
-
-        private void send(Session sess, Object obj) {
-            sess.getRemote().sendStringByFuture(gson.toJson(obj));
-        }
-
-        private boolean verifyCaptcha(Session sess, String token) throws UnirestException {
-            HttpResponse<JsonNode> resp = Unirest
-                    .post("https://www.google.com/recaptcha/api/siteverify")
-                    .field("secret", getReCaptchaSecret())
-                    .field("response", token)
-                    .field("remoteip", getIp(sess))
-                    .asJson();
-
-            JSONObject body = resp.getBody().getObject();
-            return body.getBoolean("success") && body.getString("hostname").equalsIgnoreCase(sess.getUpgradeRequest().getHost());
-        }
+    public static Set<String> getTorIps() {
+        return torIps;
     }
 
-    private static int coordsToIndex(int x, int y) {
-        return y * width + x;
+    public static Set<String> getBannedIps() {
+        return bannedIps;
     }
 
-    public static class PlaceRequest {
-        int x;
-        int y;
-        int color;
-        String token;
+    public static Set<String> getTrustedIps() {
+        return trustedIps;
     }
 
-    public static class WaitResponse {
-        String type = "cooldown";
-        int wait;
-
-        public WaitResponse(int wait) {
-            this.wait = wait;
-        }
+    public static Game getGame() {
+        return game;
     }
 
-    public static class AlertResponse {
-        String type = "alert";
-        String message;
-
-        public AlertResponse(String message) {
-            this.message = message;
-        }
+    public static int getCaptchaThreshold() {
+        return captchaThreshold;
     }
 
-    public static class BoardUpdate {
-        String type = "pixel";
-        int x;
-        int y;
-        int color;
-
-        public BoardUpdate(int x, int y, int color) {
-            this.x = x;
-            this.y = y;
-            this.color = color;
-        }
-    }
-
-    public static class BoardInfo {
-        int width;
-        int height;
-        List<String> palette;
-
-        public BoardInfo(int width, int height, List<String> palette) {
-            this.width = width;
-            this.height = height;
-            this.palette = palette;
-        }
+    public static Logger getLogger() {
+        return appLogger;
     }
 
     public static class JsonTransformer implements ResponseTransformer {

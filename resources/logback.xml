@@ -16,10 +16,6 @@
         </encoder>
     </appender>
 
-    <appender name="NAUGHTY" class="ch.qos.logback.core.FileAppender">
-        <file>${STORAGE:-.}/naughty.log</file>
-    </appender>
-
     <appender name="APP" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${STORAGE:-.}/app.log</file>
         <encoder>
@@ -29,21 +25,16 @@
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
             <!-- daily rollover -->
-            <fileNamePattern>logFile.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${STORAGE:-.}/app.%d{yyyy-MM-dd}.log</fileNamePattern>
 
             <!-- keep 30 days' worth of history capped at 3GB total size -->
             <maxHistory>30</maxHistory>
             <totalSizeCap>3GB</totalSizeCap>
-
         </rollingPolicy>
     </appender>
 
     <logger name="pixels" additivity="false">
         <appender-ref ref="PIXELS" />
-    </logger>
-
-    <logger name="naughty" >
-        <appender-ref ref="NAUGHTY" />
     </logger>
 
     <root level="INFO">
