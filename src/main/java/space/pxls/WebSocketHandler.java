@@ -123,7 +123,7 @@ public class WebSocketHandler {
 
         float waitTime = App.getGame().getWaitTime(data.lastPlace);
 
-        updateCaptchaState(data, trusted);
+        if (!data.justCaptchaed) updateCaptchaState(data, trusted);
 
         if (waitTime <= 0 || data.overrideCooldown) {
             if (data.mustFillOutCaptcha) {
@@ -142,6 +142,8 @@ public class WebSocketHandler {
                 if (data.overrideCooldown) {
                     App.getLogger().debug("IP {} overrode cooldown and placed pixel", ip);
                 }
+
+                data.justCaptchaed = false;
             }
         }
 
@@ -161,10 +163,9 @@ public class WebSocketHandler {
 
         // ...except
         // if we *just* filled one in (and haven't placed yet)
-        // if user is trusted
-        // if captchas are disabled
+        // or if user is trusted
+        // or if captchas are disabled
         // ...then we don't
-        if (data.justCaptchaed) data.mustFillOutCaptcha = false;
         if (trusted) data.mustFillOutCaptcha = false;
         if (App.getGame().getConfig().getString("captcha.secret") == null) data.mustFillOutCaptcha = false;
 

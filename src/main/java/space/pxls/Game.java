@@ -59,7 +59,7 @@ public class Game {
         userConf = ConfigFactory.parseFile(Paths.get("users.conf").toFile());
 
         for (String ip : userConf.root().keySet()) {
-            getProfile(ip.replaceAll("-", ":")).role = userConf.getEnum(Role.class, ip);
+            getProfile(ip.replaceAll("-", ":").replaceAll("_", ".")).role = userConf.getEnum(Role.class, ip);
         }
     }
 
@@ -165,7 +165,7 @@ public class Game {
     public void setRole(Profile p, Role role) {
         p.role = role;
 
-        userConf = userConf.withValue(p.ip.replaceAll(":", "-"), ConfigValueFactory.fromAnyRef(role.name()));
+        userConf = userConf.withValue(p.ip.replaceAll(":", "-").replaceAll("\\.", "_"), ConfigValueFactory.fromAnyRef(role.name()));
         saveUsers();
     }
 }
