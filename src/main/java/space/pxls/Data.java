@@ -13,6 +13,11 @@ public class Data {
         String token;
     }
 
+
+    public static class ClientSetCooldownOverride {
+        boolean override;
+    }
+
     public static class ServerPlace {
         String type = "pixel";
         int x;

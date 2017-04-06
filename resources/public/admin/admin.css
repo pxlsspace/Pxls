@@ -1,0 +1,10 @@
+.admin {
+    position: fixed;
+    top: 210px;
+    left: 32px;
+}
+
+.admin-header {
+    display: block;
+    font-weight: 800;
+}

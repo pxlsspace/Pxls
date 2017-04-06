@@ -12,6 +12,8 @@ import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketMessage;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 import org.json.JSONObject;
+import org.slf4j.MarkerFactory;
+import spark.Request;
 
 import java.io.IOException;
 import java.util.Map;
@@ -22,8 +24,9 @@ import java.util.concurrent.ConcurrentHashMap;
 public class WebSocketHandler {
     private Gson gson = new Gson();
 
-    private Map<String, GameSessionData> sessionData = new ConcurrentHashMap<>();
     private Set<Session> sessions = ConcurrentHashMap.newKeySet();
+
+    private long lastUserCountSent;
 
     @OnWebSocketConnect
     public void connected(Session session) throws IOException {
@@ -31,15 +34,26 @@ public class WebSocketHandler {
 
         checkBanned(session);
 
-        sessionData.putIfAbsent(ip, new GameSessionData());
+        Profile sess = getSessionData(session);
+        sess.mustFillOutCaptcha = true;
         sessions.add(session);
 
         sendWaitTime(session);
+
+        send(session, new Data.ServerUsers(sessions.size()));
+        updateUserCount();
+    }
+
+    private void updateUserCount() {
+        if (lastUserCountSent + 5000 > System.currentTimeMillis()) return;
+        lastUserCountSent = System.currentTimeMillis();
+
+        broadcast(new Data.ServerUsers(sessions.size()));
     }
 
     private boolean checkBanned(Session session) {
         String ip = getIP(session);
-        if (App.getBannedIps().contains(ip)) {
+        if (getSessionData(session).role == Role.BANNED) {
             App.getLogger().info("Banned IP {} tried to connect", ip);
             send(session, new Data.ServerAlert("Due to abuse, this IP address has been banned from placing pixels"));
             return true;
@@ -58,7 +72,7 @@ public class WebSocketHandler {
 
         String type = rawObject.get("type").getAsString();
 
-        if (type.equals("place")) {
+        if (type.equals("placepixel")) {
             if (checkBanned(session)) return;
 
             Data.ClientPlace cp = gson.fromJson(rawObject, Data.ClientPlace.class);
@@ -66,11 +80,24 @@ public class WebSocketHandler {
         } else if (type.equals("captcha")) {
             Data.ClientCaptcha cc = gson.fromJson(rawObject, Data.ClientCaptcha.class);
             doCaptcha(session, cc);
+        } else if (type.equals("place")) {
+            Data.ClientPlace cp = gson.fromJson(rawObject, Data.ClientPlace.class);
+            App.getLogger().info("SUSPICIOUS: {} is possible bot, tried to place {} at {},{}", getIP(session), cp.color, cp.x, cp.y);
+        } else if (type.equals("admin_cdoverride")) {
+            Profile p = getSessionData(session);
+            if (p.role.ordinal() < Role.TRUSTED.ordinal()) {
+                App.getLogger().info("IP {} tried to override cooldown, no perms", getIP(session));
+                return;
+            }
+
+            Data.ClientSetCooldownOverride csco = gson.fromJson(rawObject, Data.ClientSetCooldownOverride.class);
+            p.overrideCooldown = csco.override;
+            sendWaitTime(session);
         }
     }
 
     private void doCaptcha(Session session, Data.ClientCaptcha cc) throws UnirestException {
-        GameSessionData data = getSessionData(session);
+        Profile data = getSessionData(session);
         if (!data.mustFillOutCaptcha) return;
 
         boolean success = verifyCaptcha(session, cc.token);
@@ -83,7 +110,7 @@ public class WebSocketHandler {
 
     private void doPlace(Session session, Data.ClientPlace cp) throws IOException {
         String ip = getIP(session);
-        GameSessionData data = getSessionData(session);
+        Profile data = getSessionData(session);
 
         int x = cp.x;
         int y = cp.y;
@@ -92,41 +119,45 @@ public class WebSocketHandler {
         if (x < 0 || x >= App.getGame().getWidth() || y < 0 || y >= App.getGame().getHeight() || color < 0 || color >= App.getGame().getPalette().size())
             return;
 
-        boolean trusted = App.getTrustedIps().contains(ip);
+        boolean trusted = data.role.ordinal() >= Role.TRUSTED.ordinal();
 
         float waitTime = App.getGame().getWaitTime(data.lastPlace);
 
         updateCaptchaState(data, trusted);
 
-        if (waitTime <= 0 || trusted) {
+        if (waitTime <= 0 || data.overrideCooldown) {
             if (data.mustFillOutCaptcha) {
+                App.getLogger().debug("IP {} must fill out captcha, rejecting place request", ip);
                 send(session, new Data.ServerCaptchaNeeded());
                 return;
             } else {
                 if (App.getGame().getPixel(x, y) == color) return;
-                App.getGame().setPixel(x, y, (byte) color);
-
-                App.saveBoard();
-                App.logPixel(ip, x, y, color);
+                App.getGame().setPixel(x, y, (byte) color, ip);
 
                 Data.ServerPlace sp = new Data.ServerPlace(x, y, color);
                 broadcast(sp);
 
                 data.lastPlace = System.currentTimeMillis();
+
+                if (data.overrideCooldown) {
+                    App.getLogger().debug("IP {} overrode cooldown and placed pixel", ip);
+                }
             }
         }
 
         sendWaitTime(session);
     }
 
-    private void updateCaptchaState(GameSessionData data, boolean trusted) {
+    private void updateCaptchaState(Profile data, boolean trusted) {
+        boolean last = data.mustFillOutCaptcha;
+
         // Show captcha every 1/x times
         if (!data.mustFillOutCaptcha && !data.justCaptchaed) {
-            data.mustFillOutCaptcha = Math.random() < (1/ App.getCaptchaThreshold());
+            data.mustFillOutCaptcha = Math.random() < (1 / App.getGame().getConfig().getInt("captcha.threshold"));
         }
 
-        // ...except if this is the first placement in 15 minutes... then we force captcha
-        if (data.lastPlace + 15*60*1000 < System.currentTimeMillis()) data.mustFillOutCaptcha = true;
+        if (data.lastPlace + 15 * 60 * 1000 < System.currentTimeMillis()) data.mustFillOutCaptcha = true;
+        if (data.flagged) data.mustFillOutCaptcha = true;
 
         // ...except
         // if we *just* filled one in (and haven't placed yet)
@@ -135,7 +166,11 @@ public class WebSocketHandler {
         // ...then we don't
         if (data.justCaptchaed) data.mustFillOutCaptcha = false;
         if (trusted) data.mustFillOutCaptcha = false;
-        if (App.getReCaptchaSecret() == null) data.mustFillOutCaptcha = false;
+        if (App.getGame().getConfig().getString("captcha.secret") == null) data.mustFillOutCaptcha = false;
+
+        if (data.mustFillOutCaptcha && !last) {
+            App.getLogger().debug("Flagging {} for captcha", data.ip);
+        }
     }
 
     @OnWebSocketClose
@@ -144,15 +179,23 @@ public class WebSocketHandler {
     }
 
     private void sendWaitTime(Session session) {
-        GameSessionData sd = getSessionData(session);
+        Profile sd = getSessionData(session);
         String ip = getIP(session);
 
         float waitTime = App.getGame().getWaitTime(sd.lastPlace);
-        if (App.getTrustedIps().contains(ip)) waitTime = 0;
+        if (sd.overrideCooldown) waitTime = 0;
         send(session, new Data.ServerCooldown(waitTime));
     }
 
-    private String getIP(Session session) {
+    public String getIP(Request request) {
+        String ip = request.ip();
+        if (request.headers("X-Forwarded-For") != null) {
+            ip = request.headers("X-Forwarded-For");
+        }
+        return ip;
+    }
+
+    public String getIP(Session session) {
         String ip = session.getRemoteAddress().getAddress().getHostAddress();
         if (session.getUpgradeRequest().getHeader("X-Forwarded-For") != null) {
             ip = session.getUpgradeRequest().getHeader("X-Forwarded-For");
@@ -161,7 +204,8 @@ public class WebSocketHandler {
     }
 
     private boolean verifyCaptcha(Session sess, String token) throws UnirestException {
-        String secret = App.getReCaptchaSecret();
+        App.getLogger().debug("Verifying captcha from {} with token {}", getIP(sess), token);
+        String secret = App.getGame().getConfig().getString("captcha.secret");
         if (secret == null || secret.isEmpty()) {
             App.getLogger().warn("No ReCaptcha secret key stored, BLINDLY AUTHENTICATING(!)");
             return true;
@@ -175,22 +219,29 @@ public class WebSocketHandler {
                 .asJson();
 
         JSONObject body = resp.getBody().getObject();
-        return body.getBoolean("success") && body.getString("hostname").equalsIgnoreCase(sess.getUpgradeRequest().getHost());
+        boolean success = body.getBoolean("success") && body.getString("hostname").equalsIgnoreCase(sess.getUpgradeRequest().getHost());
+        App.getLogger().debug("Captcha from {} with token {}: {}", getIP(sess), token, success ? "successful" : "denied");
+        return success;
     }
 
-    public void send(Session sess, Object obj) {
+    public void sendRaw(Session sess, String data) {
         if (sess.isOpen()) {
             try {
-                sess.getRemote().sendStringByFuture(gson.toJson(obj));
+                sess.getRemote().sendStringByFuture(data);
             } catch (RuntimeException e) {
                 App.getLogger().error("Error while sending message to client", e);
             }
         }
     }
 
+    public void send(Session sess, Object obj) {
+        sendRaw(sess, gson.toJson(obj));
+    }
+
     public void broadcast(Object obj) {
+        String raw = gson.toJson(obj);
         for (Session session : sessions) {
-            send(session, obj);
+            sendRaw(session, raw);
         }
     }
 
@@ -198,7 +249,11 @@ public class WebSocketHandler {
         return sessions;
     }
 
-    public GameSessionData getSessionData(Session session) {
-        return sessionData.get(getIP(session));
+    public Profile getSessionData(Session session) {
+        return getSessionData(getIP(session));
+    }
+
+    public Profile getSessionData(String ip) {
+        return App.getGame().getProfile(ip);
     }
 }

@@ -151,22 +151,12 @@ html,body {
     position: absolute;
     bottom: 16px;
     left: 32px;
-
-    padding: 8px;
-    background-color: rgba(0, 0, 0, 0.5);
-    border-radius: 8px;
-    color: #fff;
 }
 
 .online {
     position: absolute;
     bottom: 16px;
     right: 32px;
-
-    padding: 8px;
-    background-color: rgba(0, 0, 0, 0.5);
-    border-radius: 8px;
-    color: #fff;
 }
 
 .bubble-container {
@@ -178,11 +168,6 @@ html,body {
 .bubble {
     margin: 8px;
     width: 128px;
-    padding: 8px 16px;
-    background-color: rgba(0, 0, 0, 0.5);
-    border-radius: 8px;
-    color: #fff;
-    text-align: center;
 }
 
 .bubble a:visited, a:link, a:active, a:hover {
@@ -211,10 +196,6 @@ html,body {
     position: absolute;
     top: 32px;
     right: 32px;
-    padding: 8px 16px;
-    background-color: rgba(0, 0, 0, 0.5);
-    border-radius: 8px;
-    color: #fff;
 }
 
 .g-recaptcha {
@@ -223,6 +204,14 @@ html,body {
 
 .grecaptcha-badge {
     bottom: 64px !important;
+}
+
+.panel {
+    padding: 8px 16px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 8px;
+    color: #fff;
+    text-align: center;
 }
 
 @media (max-width: 768px) {

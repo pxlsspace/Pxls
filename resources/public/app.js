@@ -49,7 +49,7 @@ window.App = {
         $(".online").hide();
         $(".grid").hide();
 
-        $.get("/boardinfo", this.initBoard.bind(this));
+        $.get("/info", this.initBoard.bind(this));
 
         this.initBoardPlacement();
         this.initBoardMovement();
@@ -57,7 +57,6 @@ window.App = {
         this.initReticule();
         this.initAlert();
         this.initCoords();
-        this.initUsers();
         this.initGrid();
         this.initInfo();
         Notification.requestPermission();
@@ -117,7 +116,7 @@ window.App = {
         }.bind(this));
     },
     initBoardMovement: function () {
-        var handleMove = function(evt) {
+        var handleMove = function (evt) {
             this.panX += evt.dx / this.scale;
             this.panY += evt.dy / this.scale;
             this.updateTransform();
@@ -127,7 +126,7 @@ window.App = {
             inertia: true,
             onmove: handleMove
         }).gesturable({
-            onmove: function(evt) {
+            onmove: function (evt) {
                 this.scale *= (1 + evt.ds);
                 this.updateTransform();
                 handleMove(evt);
@@ -251,6 +250,9 @@ window.App = {
                 } else {
                     alert("Failed captcha verification")
                 }
+            } else if (data.type === "users") {
+                this.elements.users.fadeIn(200);
+                this.elements.users.text(data.count + " online");
             }
         }.bind(this);
         ws.onclose = function () {
@@ -264,16 +266,6 @@ window.App = {
         $(".loading").fadeOut(500);
 
         this.socket = ws;
-    },
-    initUsers: function () {
-        var update = function () {
-            $.get("/users", function (data) {
-                this.elements.users.fadeIn(200);
-                this.elements.users.text(data + " online");
-            }.bind(this));
-        };
-        setInterval(update.bind(this), 15000);
-        update.bind(this)();
     },
     initGrid: function () {
         $(document.body).keydown(function (evt) {
@@ -335,7 +327,7 @@ window.App = {
 
         this.pendingPixel = {x: x, y: y, color: col};
         this.socket.send(JSON.stringify({
-            type: "place",
+            type: "placepixel",
             x: x,
             y: y,
             color: col
@@ -374,8 +366,21 @@ window.App = {
             this.elements.timer.hide();
             $(".palette-color").css("cursor", "")
         }
+    },
+    saveImage: function () {
+        this.elements.board[0].toBlob(function (blob) {
+            var url = window.URL.createObjectURL(blob);
+
+            var a = document.createElement("a");
+            a.href = url;
+            a.download = "canvas.png";
+            a.click();
+
+            window.URL.revokeObjectURL(blob);
+        });
     }
 };
+
 
 function recaptchaCallback(token) {
     App.socket.send(JSON.stringify({

@@ -24,11 +24,11 @@
 
 <div class="ui" id="ui">
     <div class="bubble-container">
-        <div class="bubble"><a href="http://reddit.com/r/pxlsspace">Subreddit</a></div>
-        <div class="bubble"><a href="https://discord.gg/YzmZBRY">Discord</a></div>
-        <div class="bubble"><a href="https://kms-hosting.com/">Sponsored by kms-hosting</a></div>
+        <div class="bubble panel"><a href="http://reddit.com/r/pxlsspace">Subreddit</a></div>
+        <div class="bubble panel"><a href="https://discord.gg/YzmZBRY">Discord</a></div>
+        <div class="bubble panel"><a href="https://kms-hosting.com/">Sponsored by kms-hosting</a></div>
     </div>
-    <div class="instructions">
+    <div class="instructions panel">
         <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
             <input type="hidden" name="cmd" value="_s-xclick">
             <input type="hidden" name="hosted_button_id" value="KWYD7GZPZGXPU">
@@ -45,8 +45,8 @@
     <div class="cooldown-timer"></div>
     <div class="message"><span class="text"></span> <span class="close">x</span></div>
     <div class="palette"></div>
-    <div class="coords"></div>
-    <div class="online"></div>
+    <div class="coords panel"></div>
+    <div class="online panel"></div>
 </div>
 
 <div class="cursor" id="cursor"></div>
@@ -58,5 +58,6 @@
 </div>
 
 <script src="app.js"></script>
+<script src="admin/admin.js"></script>
 </body>
 </html>
