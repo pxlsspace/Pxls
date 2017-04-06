@@ -198,10 +198,17 @@ window.App = {
     var downX, downY;
 
     var downFn = function (evt) {
+      if(evt.type == "touchstart")
+        evt = evt.touches[0];
+
       downX = evt.clientX;
       downY = evt.clientY;
     };
     var upFn = function (evt) {
+      if(evt.type == "touchend")
+        // We have to use 'evt.changedTouches' here because 'evt.touches' on touchend is empty.
+        evt = evt.changedTouches[0];
+
       var dx = Math.abs(downX - evt.clientX);
       var dy = Math.abs(downY - evt.clientY);
 
@@ -210,19 +217,25 @@ window.App = {
         this.attemptPlace(pos.x | 0, pos.y | 0);
       }
     }.bind(this);
-    this.elements.board.on("pointerdown", downFn).on("mousedown", downFn).on("pointerup", upFn).on("mouseup", upFn).contextmenu(function (evt) {
+    this.elements.board.on("touchstart", downFn).on("mousedown", downFn).on("touchend", upFn).on("mouseup", upFn).contextmenu(function (evt) {
       evt.preventDefault();
       this.switchColor(-1);
     }.bind(this));
   },
   initCursor: function () {
     var fn = function (evt) {
+      if(evt.type == "touchmove")
+        evt = evt.touches[0];
+
       this.elements.cursor.css("transform", "translate(" + evt.clientX + "px, " + evt.clientY + "px)");
     }.bind(this);
-    this.elements.boardContainer.on("pointermove", fn).on("mousemove", fn);
+    this.elements.boardContainer.on("touchmove", fn).on("mousemove", fn);
   },
   initReticule: function () {
     var fn = function (evt) {
+      if(evt.type == "touchmove")
+        evt = evt.touches[0];
+
       var boardPos = this.screenToBoardSpace(evt.clientX, evt.clientY);
       boardPos.x |= 0;
       boardPos.y |= 0;
@@ -238,15 +251,18 @@ window.App = {
         this.elements.reticule.show();
       }
     }.bind(this);
-    this.elements.board.on("pointermove", fn).on("mousemove", fn);
+    this.elements.board.on("touchmove", fn).on("mousemove", fn);
   },
   initCoords: function () {
     var fn = function (evt) {
+      if(evt.type == "touchmove")
+        evt = evt.touches[0];
+
       var boardPos = this.screenToBoardSpace(evt.clientX, evt.clientY);
 
       this.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
     }.bind(this);
-    this.elements.board.on("pointermove", fn).on("mousemove", fn);
+    this.elements.board.on("touchmove", fn).on("mousemove", fn);
   },
   initAlert: function () {
     this.elements.alert.find(".close").click(function () {
