@@ -60,6 +60,8 @@ public class App {
 
         Runtime.getRuntime().addShutdownHook(new Thread(App::saveBoard));
 
+        //rewriteBoardFromLogs(500000);
+
         Scanner scanner = new Scanner(System.in);
         while (true) {
             String command = scanner.nextLine();
@@ -74,9 +76,9 @@ public class App {
     private static void rewriteBoardFromLogs(int count) {
         // For when something (inevitably) breaks and you have to recreate the board from the pixel logs
         try {
-            List<String> lines = Files.readAllLines(Paths.get("pxtrunc.log"));
+            List<String> lines = Files.readAllLines(getStorageDir().resolve("pixels.log"));
             int start = Math.max(0, lines.size() - count);
-            for (int i = 0; i < lines.size(); i++) {
+            for (int i = start; i < lines.size(); i++) {
                 String s = lines.get(i);
                 String[] toks = s.split(" ");
                 String col = toks[2];
@@ -99,7 +101,7 @@ public class App {
             e.printStackTrace();
         }
 
-        saveBoard();
+        saveBoard(true);
     }
 
     private static void loadBoard() {
@@ -117,7 +119,7 @@ public class App {
     public static void saveBoard(boolean force) {
         long currTime = System.currentTimeMillis();
 
-        if (!force && lastSave > 0 && lastSave + 180 * 1000 < currTime) return;
+        if (!force && lastSave > 0 && lastSave + (180 * 1000) > currTime) return;
         lastSave = currTime;
 
         try {
