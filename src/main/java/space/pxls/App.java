@@ -44,7 +44,7 @@ public class App {
 
         handler = new WebSocketHandler();
 
-        port(Integer.parseInt(getEnv("PORT", "4567")));
+        port(game.getConfig().getInt("server.port"));
         webSocket("/ws", handler);
 
         StaticFilesConfiguration staticHandler = new StaticFilesConfiguration();
@@ -74,7 +74,7 @@ public class App {
     }
 
     public static boolean shouldBanTor() {
-        return getEnv("BAN_TOR", "true").equals("true");
+        return game.getConfig().getBoolean("server.banTor");
     }
 
     private static void rewriteBoardFromLogs(int count) {
@@ -183,12 +183,6 @@ public class App {
         } catch (Exception e) {
             appLogger.error("Error while executing command {}", command, e);
         }
-    }
-
-    private static String getEnv(String key, String def) {
-        String val = System.getenv(key);
-        if (val != null) return val;
-        return def;
     }
 
     public static Set<String> getTorIps() {
