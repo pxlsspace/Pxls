@@ -253,12 +253,16 @@ window.App = {
             } else if (data.type === "users") {
                 this.elements.users.fadeIn(200);
                 this.elements.users.text(data.count + " online");
+            } else if (data.type === "session_limit") {
+                ws.onclose = function(){};
+                this.alert("Too many sessions open, try closing some tabs.");
             }
         }.bind(this);
         ws.onclose = function () {
             setTimeout(function () {
                 window.location.reload();
-            }, 10000 * Math.random());
+            }, 10000 * Math.random() + 3000);
+            this.alert("Lost connection to server, reconnecting...")
         };
 
         $(".board-container").show();

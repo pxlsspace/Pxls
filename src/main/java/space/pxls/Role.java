@@ -1,8 +1,9 @@
 package space.pxls;
 
 public enum Role {
-    DEFAULT,
     BANNED,
+    DEFAULT,
+    MULTISESSION,
     JANITOR,
     TRUSTED,
     ADMIN

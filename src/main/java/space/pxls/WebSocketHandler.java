@@ -6,6 +6,7 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import org.eclipse.jetty.util.MultiMap;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketClose;
 import org.eclipse.jetty.websocket.api.annotations.OnWebSocketConnect;
@@ -16,9 +17,12 @@ import org.slf4j.MarkerFactory;
 import spark.Request;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 @WebSocket
 public class WebSocketHandler {
@@ -37,6 +41,21 @@ public class WebSocketHandler {
         Profile sess = getSessionData(session);
         sess.mustFillOutCaptcha = true;
         sessions.add(session);
+
+        int sessionLimit = App.getGame().getConfig().getInt("server.sessionLimit");
+        if (sessionLimit > 0 && sess.role.ordinal() <= Role.DEFAULT.ordinal()) {
+            int ss = 0;
+            for (Session session1 : sessions) {
+                if (getIP(session1).equalsIgnoreCase(ip)) {
+                    ss++;
+                }
+            }
+            if (ss > sessionLimit) {
+                send(session, new Data.ServerSessionLimit());
+                session.close();
+                return;
+            }
+        }
 
         sendWaitTime(session);
 

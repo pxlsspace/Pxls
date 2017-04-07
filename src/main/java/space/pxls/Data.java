@@ -62,6 +62,10 @@ public class Data {
         }
     }
 
+    public static class ServerSessionLimit {
+        String type = "session_limit";
+    }
+
     public static class ServerCooldown {
         String type = "cooldown";
         float wait;
