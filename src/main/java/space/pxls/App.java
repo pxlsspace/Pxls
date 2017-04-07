@@ -62,7 +62,9 @@ public class App {
         get("/info", App::boardInfo, new JsonTransformer());
         get("/boarddata", App::boardData);
 
-        Runtime.getRuntime().addShutdownHook(new Thread(game::saveBoard));
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            game.saveBoard(true);
+        }));
 
         //rewriteBoardFromLogs(500000);
 
