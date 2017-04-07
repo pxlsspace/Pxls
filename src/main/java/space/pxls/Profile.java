@@ -7,7 +7,7 @@ public class Profile {
         this.ip = ip;
     }
 
-    public long lastPlace;
+    public long lastPlace = System.currentTimeMillis();
     public boolean mustFillOutCaptcha;
     public boolean justCaptchaed;
     public boolean flagged;
