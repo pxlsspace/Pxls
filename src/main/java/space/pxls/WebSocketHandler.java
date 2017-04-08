@@ -172,14 +172,15 @@ public class WebSocketHandler {
                 if (App.getGame().getPixel(x, y) == color) return;
                 App.getGame().setPixel(x, y, (byte) color, ip);
 
-                int queue = App.getGame().getConfig().getInt("server.queuePixels");
+                int queueAmount = App.getGame().getConfig().getInt("server.queuePixels");
 
-                if (queue > 0) {
+                if (queueAmount > 0) {
                     pixelQueue.add(new QueuedPixel(x, y, color));
-                    if (pixelQueue.size() >= queue) {
-                        Data.ServerPlace sp = new Data.ServerPlace(pixelQueue);
-                        broadcast(sp);
+
+                    if (pixelQueue.size() >= queueAmount) {
+                        Data.ServerPlace sp = new Data.ServerPlace(new ArrayList<>(pixelQueue));
                         pixelQueue.clear();
+                        broadcast(sp);
                     }
                 } else {
                     Data.ServerPlace sp = new Data.ServerPlace(Collections.singleton(new QueuedPixel(x, y, color)));
