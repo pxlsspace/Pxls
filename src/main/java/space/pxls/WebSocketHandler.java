@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.regex.Pattern;
 
 @WebSocket
 public class WebSocketHandler {
@@ -36,10 +37,15 @@ public class WebSocketHandler {
     public void connected(Session session) throws IOException {
         String ip = getIP(session);
 
-        checkBanned(session);
+
 
         Profile sess = getSessionData(session);
         sess.mustFillOutCaptcha = true;
+
+        if (!checkBanned(session)) {
+            sendWaitTime(session);
+        }
+
         sessions.add(session);
 
         int sessionLimit = App.getGame().getConfig().getInt("server.sessionLimit");
@@ -56,8 +62,6 @@ public class WebSocketHandler {
                 return;
             }
         }
-
-        sendWaitTime(session);
 
         send(session, new Data.ServerUsers(sessions.size()));
         updateUserCount();
@@ -80,6 +84,23 @@ public class WebSocketHandler {
             App.getLogger().info("Tor IP {} tried to connect", ip);
             send(session, new Data.ServerAlert("Due to widespread abuse, Tor IP addresses have been banned from placing pixels"));
             return true;
+        } else {
+            String hostname = session.getRemoteAddress().getHostName();
+
+            boolean blacklisted = false;
+            for (String s : App.getGame().getConfig().getStringList("server.blacklistedHosts")) {
+                Pattern p = Pattern.compile(s);
+                if (p.matcher(hostname).find()) {
+                    blacklisted = true;
+                    break;
+                }
+            }
+
+            if (blacklisted) {
+                App.getLogger().info("Hostname {} ({}) matches blacklist, blocking", hostname, ip);
+                send(session, new Data.ServerAlert("Due to widespread abuse, this IP address has been banned from placing pixels"));
+                return true;
+            }
         }
         return false;
     }
