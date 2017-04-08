@@ -167,10 +167,18 @@ window.App = {
         var downX, downY;
 
         var downFn = function (evt) {
-            downX = evt.clientX;
-            downY = evt.clientY;
-        };
-        var upFn = function (evt) {
+            if (evt.originalEvent.ctrlKey) {
+		var pos = this.screenToBoardSpace(evt.clientX, evt.clientY);
+		var url = window.location.protocol + "//" + window.location.hostname + ((window.location.port > 0) ? ":" + window.location.port : "") +
+		    "/?x=" + Math.floor(pos.x) + "&y=" + Math.floor(pos.y);
+		this.alert("URL for this location: " + url);
+	    }
+	    downX = evt.clientX;
+	    downY = evt.clientY;
+	}.bind(this);
+	var upFn = function (evt) {
+	    if (evt.originalEvent.ctrlKey) return;
+
             var dx = Math.abs(downX - evt.clientX);
             var dy = Math.abs(downY - evt.clientY);
 
