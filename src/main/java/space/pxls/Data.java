@@ -1,5 +1,6 @@
 package space.pxls;
 
+import java.util.Collection;
 import java.util.List;
 
 public class Data {
@@ -20,14 +21,10 @@ public class Data {
 
     public static class ServerPlace {
         String type = "pixel";
-        int x;
-        int y;
-        int color;
+        Collection<WebSocketHandler.QueuedPixel> pixels;
 
-        public ServerPlace(int x, int y, int color) {
-            this.x = x;
-            this.y = y;
-            this.color = color;
+        public ServerPlace(Collection<WebSocketHandler.QueuedPixel> pixels) {
+            this.pixels = pixels;
         }
     }
 

@@ -230,9 +230,11 @@ window.App = {
             var data = JSON.parse(msg.data);
 
             if (data.type === "pixel") {
-                var ctx = this.elements.board[0].getContext("2d");
-                ctx.fillStyle = this.palette[data.color];
-                ctx.fillRect(data.x, data.y, 1, 1);
+                data.pixels.forEach(function(px) {
+                    var ctx = this.elements.board[0].getContext("2d");
+                    ctx.fillStyle = this.palette[px.color];
+                    ctx.fillRect(px.x, px.y, 1, 1);
+                }.bind(this));
             } else if (data.type === "alert") {
                 this.alert(data.message);
             } else if (data.type === "cooldown") {

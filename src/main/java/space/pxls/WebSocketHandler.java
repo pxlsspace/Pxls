@@ -17,9 +17,7 @@ import org.slf4j.MarkerFactory;
 import spark.Request;
 
 import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -32,11 +30,11 @@ public class WebSocketHandler {
     private Set<Session> sessions = ConcurrentHashMap.newKeySet();
 
     private long lastUserCountSent;
+    private Queue<QueuedPixel> pixelQueue = new ConcurrentLinkedQueue<>();
 
     @OnWebSocketConnect
     public void connected(Session session) throws IOException {
         String ip = getIP(session);
-
 
 
         Profile sess = getSessionData(session);
@@ -174,8 +172,19 @@ public class WebSocketHandler {
                 if (App.getGame().getPixel(x, y) == color) return;
                 App.getGame().setPixel(x, y, (byte) color, ip);
 
-                Data.ServerPlace sp = new Data.ServerPlace(x, y, color);
-                broadcast(sp);
+                int queue = App.getGame().getConfig().getInt("server.queuePixels");
+
+                if (queue > 0) {
+                    pixelQueue.add(new QueuedPixel(x, y, color));
+                    if (pixelQueue.size() >= queue) {
+                        Data.ServerPlace sp = new Data.ServerPlace(pixelQueue);
+                        broadcast(sp);
+                        pixelQueue.clear();
+                    }
+                } else {
+                    Data.ServerPlace sp = new Data.ServerPlace(Collections.singleton(new QueuedPixel(x, y, color)));
+                    broadcast(sp);
+                }
 
                 data.lastPlace = System.currentTimeMillis();
 
@@ -296,5 +305,17 @@ public class WebSocketHandler {
 
     public Profile getSessionData(String ip) {
         return App.getGame().getProfile(ip);
+    }
+
+    public static class QueuedPixel {
+        private int x;
+        private int y;
+        private int color;
+
+        public QueuedPixel(int x, int y, int color) {
+            this.x = x;
+            this.y = y;
+            this.color = color;
+        }
     }
 }
