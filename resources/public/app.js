@@ -142,18 +142,21 @@ window.App = {
                 this.panY -= 100 / this.scale;
             } else if (evt.keyCode === 68 || evt.keyCode === 39) {
                 this.panX -= 100 / this.scale;
-            }
+	    } else if (evt.keyCode === 187 || evt.keyCode === 69) {
+		this.adjustScale(1.5);
+            } else if (evt.keyCode === 189 || evt.keyCode === 81) {
+		this.adjustScale(-1.5);
+	    }
             this.updateTransform();
         }.bind(this));
 
         this.elements.boardContainer.on("wheel", function (evt) {
             var oldScale = this.scale;
             if (evt.originalEvent.deltaY > 0) {
-                this.scale /= 1.5;
+		this.adjustScale(-1.5);
             } else {
-                this.scale *= 1.5;
+                this.adjustScale(1.5);
             }
-            this.scale = Math.floor(Math.min(40, Math.max(2, this.scale)));
             var dx = evt.clientX - this.elements.boardContainer.width() / 2;
             var dy = evt.clientY - this.elements.boardContainer.height() / 2;
             this.panX -= dx / oldScale;
@@ -285,6 +288,15 @@ window.App = {
                 $(".bubble-container").fadeToggle({duration: 100});
             }
         });
+    },
+    adjustScale: function (adj) {
+	if (adj < 0) {
+	    this.scale /= Math.abs(adj);
+	}
+	else {
+	    this.scale *= adj;
+	}
+	this.scale = Math.floor(Math.min(40, Math.max(2, this.scale)));
     },
     updateTransform: function () {
         this.elements.boardMover
