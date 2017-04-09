@@ -36,7 +36,6 @@ public class WebSocketHandler {
     public void connected(Session session) throws IOException {
         String ip = getIP(session);
 
-
         Profile sess = getSessionData(session);
         sess.mustFillOutCaptcha = true;
 
@@ -240,17 +239,25 @@ public class WebSocketHandler {
 
     public String getIP(Request request) {
         String ip = request.ip();
-//        if (request.headers("X-Forwarded-For") != null) {
-//            ip = request.headers("X-Forwarded-For");
-//        }
+
+        if (ip.equals("127.0.0.1") || ip.equals("0:0:0:0:0:0:0:1")) {
+            if (request.headers("X-Forwarded-For") != null) {
+                ip = request.headers("X-Forwarded-For");
+            }
+        }
+
         return ip;
     }
 
     public String getIP(Session session) {
         String ip = session.getRemoteAddress().getAddress().getHostAddress();
-//        if (session.getUpgradeRequest().getHeader("X-Forwarded-For") != null) {
-//            ip = session.getUpgradeRequest().getHeader("X-Forwarded-For");
-//        }
+
+        if (ip.equals("127.0.0.1") || ip.equals("0:0:0:0:0:0:0:1")) {
+            if (session.getUpgradeRequest().getHeader("X-Forwarded-For") != null) {
+                ip = session.getUpgradeRequest().getHeader("X-Forwarded-For");
+            }
+        }
+
         return ip;
     }
 
@@ -270,7 +277,7 @@ public class WebSocketHandler {
                 .asJson();
 
         JSONObject body = resp.getBody().getObject();
-        boolean success = body.getBoolean("success") && body.getString("hostname").equalsIgnoreCase(sess.getUpgradeRequest().getHost());
+        boolean success = body.getBoolean("success") && body.getString("hostname").equalsIgnoreCase(App.getGame().getConfig().getString("captcha.host"));
         App.getLogger().debug("Captcha from {} with token {}: {}", getIP(sess), token, success ? "successful" : "denied");
         return success;
     }
