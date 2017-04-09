@@ -241,8 +241,9 @@ public class WebSocketHandler {
         String ip = request.ip();
 
         if (ip.equals("127.0.0.1") || ip.equals("0:0:0:0:0:0:0:1")) {
-            if (request.headers("X-Forwarded-For") != null) {
-                ip = request.headers("X-Forwarded-For");
+            String field = App.getGame().getConfig().getString("server.proxyHeaderIPField");
+            if (request.headers(field) != null) {
+                ip = request.headers(field);
             }
         }
 
@@ -253,8 +254,9 @@ public class WebSocketHandler {
         String ip = session.getRemoteAddress().getAddress().getHostAddress();
 
         if (ip.equals("127.0.0.1") || ip.equals("0:0:0:0:0:0:0:1")) {
-            if (session.getUpgradeRequest().getHeader("X-Forwarded-For") != null) {
-                ip = session.getUpgradeRequest().getHeader("X-Forwarded-For");
+            String field = App.getGame().getConfig().getString("server.proxyHeaderIPField");
+            if (session.getUpgradeRequest().getHeader(field) != null) {
+                ip = session.getUpgradeRequest().getHeader(field);
             }
         }
 
