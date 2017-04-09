@@ -5,6 +5,10 @@
                 %d{HH:mm:ss.SSS} %msg%n
             </pattern>
         </encoder>
+
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>INFO</level>
+        </filter>
     </appender>
 
     <appender name="PIXELS" class="ch.qos.logback.core.FileAppender">
@@ -16,11 +20,29 @@
         </encoder>
     </appender>
 
-    <logger name="pixels">
+    <appender name="APP" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${STORAGE:-.}/app.log</file>
+        <encoder>
+            <pattern>
+                %d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- daily rollover -->
+            <fileNamePattern>${STORAGE:-.}/app.%d{yyyy-MM-dd}.log</fileNamePattern>
+
+            <!-- keep 30 days' worth of history capped at 3GB total size -->
+            <maxHistory>30</maxHistory>
+            <totalSizeCap>3GB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <logger name="pixels" additivity="false">
         <appender-ref ref="PIXELS" />
     </logger>
 
     <root level="INFO">
-        <appender-ref ref="STDOUT" />
+        <appender-ref ref="STDOUT"/>
+        <appender-ref ref="APP"/>
     </root>
 </configuration>
