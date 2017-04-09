@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign up</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script>
+        (function (i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function () {
+                    (i[r].q = i[r].q || []).push(arguments)
+                }, i[r].l = 1 * new Date();
+            a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-96985737-1', 'auto');
+        ga('send', 'pageview');
+
+    </script>
+</head>
+<body class="signup">
+<div class="signup-container">
+    <h1>Welcome!
+        <small>Please select your username.</small>
+    </h1>
+
+    <form action="/signup/do" method="POST">
+        <input type="text" class="username" name="name" maxlength="32">
+        <input type="hidden" id="token" name="token">
+
+        <input type="submit" value="Sign up">
+        <span class="error" id="error"></span>
+    </form>
+
+    <script>
+        if (window.location.search.indexOf("error=") >= 0) {
+            document.getElementById("error").innerText = decodeURIComponent(window.location.search.split("error=")[1].split("&")[0]);
+        }
+
+        if (window.location.search.indexOf("token=") >= 0) {
+            document.getElementById("token")["value"] = decodeURIComponent(window.location.search.split("token=")[1].split("&")[0]);
+        }
+    </script>
+</div>
+</body>
+</html>

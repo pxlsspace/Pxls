@@ -7,7 +7,6 @@
     <link rel="icon" href="/favicon.ico" type="image/x-icon" >
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/interact.js/1.2.8/interact.min.js"></script>
-    <script src='https://www.google.com/recaptcha/api.js'></script>
     <meta content='width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0' name='viewport'/>
 
     <script>
@@ -37,6 +36,7 @@
     <div class="bubble-container">
         <div class="bubble panel"><a href="http://reddit.com/r/pxlsspace">Subreddit</a></div>
         <div class="bubble panel"><a href="https://discord.gg/YzmZBRY">Discord</a></div>
+        <div class="bubble panel"><a href="https://twitter.com/pxls_space">Twitter</a></div>
         <div class="bubble panel"><a href="https://kms-hosting.com/">Sponsored by kms-hosting</a></div>
     </div>
     <div class="instructions panel">
@@ -58,17 +58,19 @@
     <div class="palette"></div>
     <div class="coords panel"></div>
     <div class="online panel"></div>
+    <div class="login-overlay">
+        You are not logged in. <a href="/signin/reddit">reddit</a> | <a href="/signin/google">google</a>
+    </div>
 </div>
 
 <div class="cursor" id="cursor"></div>
 
 <div class="g-recaptcha"
-     data-sitekey="6LcXjRsUAAAAAKeMTmvc090tFfxO15eQN23VE-go"
      data-callback="recaptchaCallback"
      data-size="invisible">
 </div>
 
 <script src="app.js"></script>
-<script src="admin/admin.js"></script>
+<!--script src="admin/admin.js"></script-->
 </body>
 </html>

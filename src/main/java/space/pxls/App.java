@@ -1,210 +1,147 @@
 package space.pxls;
 
 import com.google.gson.Gson;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import org.eclipse.jetty.websocket.api.Session;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import spark.ResponseTransformer;
-import spark.staticfiles.StaticFilesConfiguration;
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import space.pxls.data.Database;
+import space.pxls.user.User;
+import space.pxls.server.UndertowServer;
+import space.pxls.user.UserManager;
+import space.pxls.util.Timer;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static spark.Spark.*;
+import java.util.concurrent.TimeUnit;
 
 public class App {
-    private static Game game;
+    private static Gson gson;
+    private static Config config;
+    private static Database database;
+    private static UserManager userManager;
+    private static Logger pixelLogger;
 
-    private static WebSocketHandler handler;
-    private static Set<String> torIps = ConcurrentHashMap.newKeySet();
+    private static int width;
+    private static int height;
+    private static byte[] board;
 
-    private static Logger appLogger;
+    private static Timer mapSaveTimer;
+    private static Timer mapBackupTimer;
 
     public static void main(String[] args) {
-        game = new Game();
+        gson = new Gson();
 
-        // Done before logger init so it shows up in logger conf
-        System.setProperty("STORAGE", game.getConfig().getString("server.storage"));
-        appLogger = LoggerFactory.getLogger(App.class);
-        game.initLogger();
+        loadConfig();
+        loadMap();
 
-        if (shouldBanTor()) {
-            banTorNodes();
-        }
+        pixelLogger = LogManager.getLogger("Pixels");
 
-        if (game.getConfig().getString("captcha.key").isEmpty() || game.getConfig().getString("captcha.secret").isEmpty()) {
-            appLogger.warn("No ReCaptcha key specified (captcha.key/captcha.secret), ReCaptcha will be disabled");
-        }
+        width = config.getInt("board.width");
+        height = config.getInt("board.height");
+        board = new byte[width * height];
 
-        handler = new WebSocketHandler();
+        database = new Database();
+        userManager = new UserManager();
 
-        port(game.getConfig().getInt("server.port"));
-        webSocket("/ws", handler);
-
-        StaticFilesConfiguration staticHandler = new StaticFilesConfiguration();
-        staticHandler.configure("/public");
-        before((req, resp) -> {
-            Profile profile = game.getProfile(handler.getIP(req));
-            if (req.uri().startsWith("/admin/") && profile.role.ordinal() <= Role.DEFAULT.ordinal()) {
-                resp.redirect("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
-                resp.status(401);
-                return;
-            }
-            staticHandler.consume(req.raw(), resp.raw());
-        });
-
-        get("/info", App::boardInfo, new JsonTransformer());
-        get("/boarddata", App::boardData);
+        new UndertowServer(config.getInt("server.port")).start();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            game.saveBoard(true);
+            saveMapBackup();
+            saveMapForce();
         }));
-
-        //rewriteBoardFromLogs(500000);
-
-        Scanner scanner = new Scanner(System.in);
-        while (true) {
-            String command = scanner.nextLine();
-            handleCommand(command);
-        }
+        saveMap();
     }
 
-    public static boolean shouldBanTor() {
-        return game.getConfig().getBoolean("server.banTor");
+    private static void loadConfig() {
+        config = ConfigFactory.parseFile(new File("pxls.conf")).withFallback(ConfigFactory.load());
+        config.checkValid(ConfigFactory.load());
+
+        mapSaveTimer = new Timer(config.getDuration("board.saveInterval", TimeUnit.SECONDS));
+        mapBackupTimer = new Timer(config.getDuration("board.backupInterval", TimeUnit.SECONDS));
     }
 
-    private static void rewriteBoardFromLogs(int count) {
-        // For when something (inevitably) breaks and you have to recreate the board from the pixel logs
+
+    public static Gson getGson() {
+        return gson;
+    }
+
+    public static Config getConfig() {
+        return config;
+    }
+
+    public static int getWidth() {
+        return width;
+    }
+
+    public static int getHeight() {
+        return height;
+    }
+
+    public static byte[] getBoardData() {
+        return board;
+    }
+
+    public static Path getStorageDir() {
+        return Paths.get(config.getString("server.storage"));
+    }
+
+    public static List<String> getPalette() {
+        return config.getStringList("board.palette");
+    }
+
+    public static boolean isCaptchaEnabled() {
+        return config.hasPath("captcha.key") && config.hasPath("captcha.secret");
+    }
+
+    public static void putPixel(int x, int y, int color, User user) {
+        if (x < 0 || x >= width || y < 0 || y >= height || color < 0 || color >= getPalette().size()) return;
+        board[x + y * width] = (byte) color;
+        pixelLogger.log(Level.INFO, user.getName() + " " + x + " " + y + " " + color);
+        database.placePixel(x, y, color, user);
+    }
+
+    private static void loadMap() {
         try {
-            List<String> lines = Files.readAllLines(game.getBoardFile().getParent().resolve("pixels.log"));
-            int start = Math.max(0, lines.size() - count);
-            for (int i = start; i < lines.size(); i++) {
-                String s = lines.get(i);
-                String[] toks = s.split(" ");
-                String col = toks[2];
-                String[] coord = toks[4].split(",");
-
-                int x = Integer.parseInt(coord[0].substring(1));
-                int y = Integer.parseInt(coord[1].substring(0, coord[1].length() - 1));
-
-                int cc = -1;
-                List<String> palette = game.getPalette();
-                for (int pal = 0; pal < palette.size(); pal++) {
-                    String s1 = palette.get(pal);
-                    if (s1.equals(col)) {
-                        cc = pal;
-                    }
-                }
-                game.setPixelRaw(x, y, (byte) cc);
-            }
+            board = Files.readAllBytes(getStorageDir().resolve("board.dat"));
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-        game.saveBoard(true);
     }
 
-    private static Data.BoardInfo boardInfo(spark.Request req, spark.Response res) {
-        res.type("application/json");
-        return new Data.BoardInfo(game.getWidth(), game.getHeight(), game.getPalette());
+    public static void saveMap() {
+        mapSaveTimer.run(App::saveMapForce);
+        mapBackupTimer.run(App::saveMapBackup);
     }
 
-    private static byte[] boardData(spark.Request req, spark.Response res) {
-        if (req.headers("Accept-Encoding") != null && req.headers("Accept-Encoding").contains("gzip")) {
-            res.header("Content-Encoding", "gzip");
-        }
-        res.type("application/octet-stream");
-        return game.getBoard();
+    private static void saveMapForce() {
+        saveMapToDir(getStorageDir().resolve("board.dat"));
     }
 
-    private static void banTorNodes() {
+    private static void saveMapBackup() {
+        saveMapToDir(getStorageDir().resolve("backups/board." + System.currentTimeMillis() + ".dat"));
+    }
+
+    private static void saveMapToDir(Path path) {
         try {
-            String ips = Unirest.get("http://check.torproject.org/cgi-bin/TorBulkExitList.py?ip=1.1.1.1&port=80").asString().getBody();
-
-            for (String s : ips.split("\n")) {
-                if (!s.startsWith("#")) {
-                    torIps.add(s);
-                }
-            }
-        } catch (UnirestException e) {
-            appLogger.error("Error while banning Tor exit nodes", e);
+            Files.write(path, board);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
-    private static void handleCommand(String command) {
-        try {
-            String[] tokens = command.split(" ");
-            appLogger.info("> {}", command);
-            if (tokens[0].equalsIgnoreCase("cooldown")) {
-                game.setCooldown(Integer.parseInt(tokens[1]));
-                appLogger.info("Changed cooldown to {} seconds", tokens[1]);
-
-                for (Session sess : handler.getSessions()) {
-                    Profile data = handler.getSessionData(sess);
-                    handler.send(sess, new Data.ServerCooldown(game.getWaitTime(data.lastPlace)));
-                }
-            } else if (tokens[0].equalsIgnoreCase("alert")) {
-                String rest = command.substring(tokens[0].length() + 1);
-                handler.broadcast(new Data.ServerAlert(rest));
-
-                appLogger.info("Alerted \"{}\" to clients", rest);
-            } else if (tokens[0].equalsIgnoreCase("blank")) {
-                int x1 = Integer.parseInt(tokens[1]);
-                int y1 = Integer.parseInt(tokens[2]);
-                int x2 = Integer.parseInt(tokens[3]);
-                int y2 = Integer.parseInt(tokens[4]);
-
-                game.saveBoard(game.getBoardFile().getParent().resolve(game.getBoardFile().getFileName() + ".preblank." + System.currentTimeMillis()));
-
-                for (int xx = Math.min(x1, x2); xx <= Math.max(x2, x1); xx++) {
-                    for (int yy = Math.min(y1, y2); yy <= Math.max(y2, y1); yy++) {
-                        game.setPixel(xx, yy, (byte) 0, "<blank operation>");
-
-                        /*BoardUpdate update = new BoardUpdate(xx, yy, 0);
-                        handler.broadcast(update);*/
-                    }
-                }
-            } else if (tokens[0].equalsIgnoreCase("save")) {
-                game.saveBoard(true);
-            } else if (tokens[0].equalsIgnoreCase("reload")) {
-                game.loadConfig();
-                game.loadUsers();
-            } else if (tokens[0].equalsIgnoreCase("role")) {
-                String ip = tokens[1];
-                String role = tokens[2];
-
-                game.setRole(game.getProfile(ip), Role.valueOf(role));
-                appLogger.info("Changed {} 's role to {}", ip, role);
-            }
-        } catch (Exception e) {
-            appLogger.error("Error while executing command {}", command, e);
-        }
+    public static UserManager getUserManager() {
+        return userManager;
     }
 
-    public static Set<String> getTorIps() {
-        return torIps;
-    }
-
-    public static Game getGame() {
-        return game;
-    }
-
-    public static Logger getLogger() {
-        return appLogger;
-    }
-
-    public static class JsonTransformer implements ResponseTransformer {
-        private Gson gson = new Gson();
-
-        @Override
-        public String render(Object model) {
-            return gson.toJson(model);
-        }
+    public static Database getDatabase() {
+        return database;
     }
 }

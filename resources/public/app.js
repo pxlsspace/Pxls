@@ -31,7 +31,8 @@ window.App = {
         alert: $(".message"),
         coords: $(".coords"),
         users: $(".online"),
-        grid: $(".grid")
+        grid: $(".grid"),
+        loginOverlay: $(".login-overlay")
     },
     panX: 0,
     panY: 0,
@@ -65,6 +66,14 @@ window.App = {
         this.width = data.width;
         this.height = data.height;
         this.palette = data.palette;
+
+        if (data.captchaKey) {
+            $(".g-recaptcha").attr("data-sitekey", data.captchaKey);
+
+            var script = document.createElement('script');
+            script.src = 'https://www.google.com/recaptcha/api.js';
+            document.head.appendChild(script);
+        }
 
         this.initPalette();
 
@@ -119,6 +128,8 @@ window.App = {
         var handleMove = function (evt) {
             this.panX += evt.dx / this.scale;
             this.panY += evt.dy / this.scale;
+
+            this.panX = Math.min(this.width / 2, Math.max(-this.width / 2, this.panX));
             this.updateTransform();
         }.bind(this);
 
@@ -143,17 +154,19 @@ window.App = {
             } else if (evt.keyCode === 68 || evt.keyCode === 39) {
                 this.panX -= 100 / this.scale;
             }
+
             this.updateTransform();
         }.bind(this));
 
         this.elements.boardContainer.on("wheel", function (evt) {
             var oldScale = this.scale;
             if (evt.originalEvent.deltaY > 0) {
-                this.scale /= 1.5;
+                this.scale /= 1.25;
             } else {
-                this.scale *= 1.5;
+                this.scale *= 1.25;
             }
-            this.scale = Math.floor(Math.min(40, Math.max(2, this.scale)));
+            this.scale = Math.min(40, Math.max(1, this.scale));
+            this.scale = ([Math.ceil, Math.floor][+(evt.originalEvent.deltaY > 0)])(this.scale);
             var dx = evt.clientX - this.elements.boardContainer.width() / 2;
             var dy = evt.clientY - this.elements.boardContainer.height() / 2;
             this.panX -= dx / oldScale;
@@ -174,7 +187,7 @@ window.App = {
             var dx = Math.abs(downX - evt.clientX);
             var dy = Math.abs(downY - evt.clientY);
 
-            if (dx < 5 && dy < 5 && this.color !== -1 && this.cooldown < new Date().getTime()) {
+            if (dx < 5 && dy < 5 && this.color !== -1 && this.cooldown < new Date().getTime() && evt.button === 0) {
                 var pos = this.screenToBoardSpace(evt.clientX, evt.clientY);
                 this.attemptPlace(pos.x | 0, pos.y | 0);
             }
@@ -248,7 +261,7 @@ window.App = {
                 if (data.success) {
                     var pending = this.pendingPixel;
                     this.switchColor(pending.color);
-                    this.attemptPlace(pending.x, pending.y)
+                    this.attemptPlace(pending.x, pending.y);
                 } else {
                     alert("Failed captcha verification")
                 }
@@ -256,8 +269,11 @@ window.App = {
                 this.elements.users.fadeIn(200);
                 this.elements.users.text(data.count + " online");
             } else if (data.type === "session_limit") {
-                ws.onclose = function(){};
+                ws.onclose = function () {
+                };
                 this.alert("Too many sessions open, try closing some tabs.");
+            } else if (data.type === "login") {
+                this.elements.loginOverlay.hide();
             }
         }.bind(this);
         ws.onclose = function () {
@@ -300,6 +316,8 @@ window.App = {
         this.elements.grid
             .css("background-size", this.scale + "px " + this.scale + "px")
             .css("transform", "translate(" + Math.floor((-xx.x % 1) * this.scale) + "px," + Math.floor((-xx.y % 1) * this.scale) + "px)");
+
+        this.elements.grid.css("opacity", (this.scale - 2) / 6)
     },
     screenToBoardSpace: function (screenX, screenY) {
         var boardBox = this.elements.board[0].getBoundingClientRect();
@@ -314,8 +332,8 @@ window.App = {
         return {x: x, y: y};
     },
     centerOn: function (x, y) {
-        this.panX = (500 - x) - 0.5;
-        this.panY = (500 - y) - 0.5;
+        this.panX = (this.width - x) - 0.5;
+        this.panY = (this.height - y) - 0.5;
         this.updateTransform();
     },
     switchColor: function (newColor) {
@@ -371,6 +389,10 @@ window.App = {
             document.title = "Pxls.space";
             this.elements.timer.hide();
             $(".palette-color").css("cursor", "")
+        }
+
+        if (this.status) {
+            this.elements.timer.text(this.status);
         }
     },
     saveImage: function () {

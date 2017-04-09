@@ -23,6 +23,24 @@ html,body {
     white-space: nowrap;
 }
 
+.login-overlay {
+    position: absolute;
+    bottom: 8px;
+    padding: 0 32px;
+    width: 960px;
+    height: 48px;
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 999;
+    left: 50%;
+    transform: translateX(-50%);
+
+    text-align: center;
+    line-height: 48px;
+    vertical-align: middle;
+    color: white;
+}
+
 .palette-color {
     display: inline-block;
 
@@ -166,12 +184,13 @@ html,body {
 }
 
 .bubble {
-    margin: 8px;
-    width: 128px;
+    margin: 8px 8px 8px 0;
+    width: 192px;
 }
 
-.bubble a:visited, a:link, a:active, a:hover {
+a:visited, a:link, a:active, a:hover {
     color: #fff;
+    text-decoration: underline;
 }
 
 .donate {
@@ -236,4 +255,29 @@ html,body {
     .instructions {
         display: none;
     }
+}
+
+.signup {
+    background-color: white;
+}
+
+.signup-container {
+    padding: 32px;
+
+    max-width: 800px;
+
+    background-color: #eee;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin: 64px auto auto;
+}
+
+.username {
+    padding: 8px;
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+.error {
+    color: red;
 }
