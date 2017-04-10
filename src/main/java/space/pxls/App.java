@@ -7,8 +7,8 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import space.pxls.data.Database;
-import space.pxls.user.User;
 import space.pxls.server.UndertowServer;
+import space.pxls.user.User;
 import space.pxls.user.UserManager;
 import space.pxls.util.Timer;
 
@@ -18,8 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class App {
@@ -99,6 +97,11 @@ public class App {
 
     public static boolean isCaptchaEnabled() {
         return config.hasPath("captcha.key") && config.hasPath("captcha.secret");
+    }
+
+
+    public static int getPixel(int x, int y) {
+        return board[x + y * width];
     }
 
     public static void putPixel(int x, int y, int color, User user) {

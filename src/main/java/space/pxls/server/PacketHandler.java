@@ -50,12 +50,14 @@ public class PacketHandler {
             if (user.updateCaptchaFlagPrePlace()) {
                 server.send(channel, new Packet.ServerCaptchaRequired());
             } else {
-                App.putPixel(cp.x, cp.y, cp.color, user);
-                App.saveMap();
-                broadcastPixelUpdate(cp.x, cp.y, cp.color);
+                if (App.getPixel(cp.x, cp.y) != cp.color) {
+                    App.putPixel(cp.x, cp.y, cp.color, user);
+                    App.saveMap();
+                    broadcastPixelUpdate(cp.x, cp.y, cp.color);
 
-                if (!user.isOverridingCooldown())
-                    user.resetCooldown();
+                    if (!user.isOverridingCooldown())
+                        user.resetCooldown();
+                }
             }
         }
 

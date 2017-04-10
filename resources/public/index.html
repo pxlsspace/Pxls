@@ -19,6 +19,28 @@
         ga('send', 'pageview');
 
     </script>
+
+    <script src="//blockr.io/js_external/coinwidget/coin.js"></script>
+    <script>
+        CoinWidgetCom.go({
+            wallet_address: '1H8tA9gjWT23edDAUTY1dY6C8Hd3j7n2zk',
+            currency: 'bitcoin',
+            counter: 'count',
+            lbl_button: 'Donate',
+            lbl_count: 'donations',
+            lbl_amount: 'BTC',
+            lbl_address: 'Use address below to donate. Thanks!',
+            qrcode: true,
+            alignment: 'bl',
+            decimals: 8,
+            size: "small",
+            color: "dark",
+            countdownFrom: "0",
+            element: "#coinwidget-bitcoin-1H8tA9gjWT23edDAUTY1dY6C8Hd3j7n2zk",
+            onShow: function(){},
+            onHide: function(){}
+        });
+    </script>
 </head>
 <body>
 <div class="loading"><span>Loading...</span></div>
@@ -40,6 +62,7 @@
         <div class="bubble panel"><a href="https://kms-hosting.com/">Sponsored by kms-hosting</a></div>
     </div>
     <div class="instructions panel">
+        <div id="coinwidget-bitcoin-1H8tA9gjWT23edDAUTY1dY6C8Hd3j7n2zk"></div>
         <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
             <input type="hidden" name="cmd" value="_s-xclick">
             <input type="hidden" name="hosted_button_id" value="KWYD7GZPZGXPU">

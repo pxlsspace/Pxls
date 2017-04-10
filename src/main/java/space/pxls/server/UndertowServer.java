@@ -6,16 +6,20 @@ import io.undertow.Undertow;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
-import io.undertow.util.Cookies;
-import io.undertow.websockets.core.*;
-import io.undertow.websockets.spi.AsyncWebSocketHttpServerExchange;
+import io.undertow.websockets.core.AbstractReceiveListener;
+import io.undertow.websockets.core.BufferedTextMessage;
+import io.undertow.websockets.core.WebSocketChannel;
+import io.undertow.websockets.core.WebSockets;
 import io.undertow.websockets.spi.WebSocketHttpExchange;
 import space.pxls.App;
 import space.pxls.user.User;
+import space.pxls.util.IPReader;
+import space.pxls.util.RateLimitingHandler;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 public class UndertowServer {
     private int port;
@@ -34,15 +38,15 @@ public class UndertowServer {
     public void start() {
         Undertow server = Undertow.builder()
                 .addHttpListener(port, "0.0.0.0")
-                .setHandler(Handlers.path()
+                .setHandler(new IPReader(Handlers.path()
                         .addPrefixPath("/ws", Handlers.websocket(this::webSocketHandler))
                         .addPrefixPath("/info", webHandler::info)
                         .addPrefixPath("/boarddata", webHandler::data)
                         .addPrefixPath("/signin/", (x) -> webHandler.signIn(x))
-                        .addPrefixPath("/auth/", (x) -> webHandler.auth(x))
-                        .addPrefixPath("/signup/do", (x) -> webHandler.signUp(x))
+                        .addPrefixPath("/auth/", new RateLimitingHandler((x) -> webHandler.auth(x), (int) App.getConfig().getDuration("server.limits.auth.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.auth.count")))
+                        .addPrefixPath("/signup/do", new RateLimitingHandler((x) -> webHandler.signUp(x), (int) App.getConfig().getDuration("server.limits.signup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.signup.count")))
                         .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/"))
-                        .setCacheTime(10))
+                                .setCacheTime(10)))
                 ).build();
         server.start();
     }

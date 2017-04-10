@@ -7,7 +7,6 @@ public class Timer {
 
     public Timer(float wait) {
         this.wait = wait;
-        this.r = r;
     }
 
     public void run(Runnable r) {
