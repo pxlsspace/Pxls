@@ -9,17 +9,18 @@ public class User {
     private String name;
     private String login;
 
-    private Role role = Role.DEFAULT;
+    private Role role = Role.USER;
     private boolean overrideCooldown;
     private boolean flaggedForCaptcha = true;
     private boolean justShowedCaptcha;
     private long lastPlaceTime;
 
-    public User(int id, String name, String login, long lastPlaceTime) {
+    public User(int id, String name, String login, long lastPlaceTime, Role role) {
         this.id = id;
         this.name = name;
         this.login = login;
         this.lastPlaceTime = lastPlaceTime;
+        this.role = role;
     }
 
     public int getId() {
@@ -41,11 +42,15 @@ public class User {
     }
 
     public boolean updateCaptchaFlagPrePlace() {
+        if (role.greaterThan(Role.USER)) {
+            flaggedForCaptcha = false;
+            return false;
+        }
+
         if (flaggedForCaptcha) return true;
 
-        // Disable captchas if they're disabled, duh
-        // Also don't show captcha if we *just* had one and haven't had the chance to place yet
-        if (!App.isCaptchaEnabled() || justShowedCaptcha) {
+        // Don't show captcha if we *just* had one and haven't had the chance to place yet
+        if (justShowedCaptcha) {
             flaggedForCaptcha = false;
             justShowedCaptcha = false;
             return false;
@@ -55,8 +60,6 @@ public class User {
         if (Math.random() < (1f / captchaThreshold)) {
             flaggedForCaptcha = true;
         }
-
-        if (role.greaterThan(Role.DEFAULT)) flaggedForCaptcha = false;
 
         return flaggedForCaptcha;
     }

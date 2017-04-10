@@ -100,7 +100,12 @@ public class WebHandler {
                 return;
             }
             String token = service.getToken(code.element());
-            String identifier = service.getIdentifier(token);
+            String identifier = null;
+            try {
+                identifier = service.getIdentifier(token);
+            } catch (AuthService.InvalidAccountException e) {
+                e.printStackTrace();
+            }
 
             if (token != null && identifier != null) {
                 String login = id + ":" + identifier;

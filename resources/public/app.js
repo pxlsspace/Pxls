@@ -129,7 +129,6 @@ window.App = {
             this.panX += evt.dx / this.scale;
             this.panY += evt.dy / this.scale;
 
-            this.panX = Math.min(this.width / 2, Math.max(-this.width / 2, this.panX));
             this.updateTransform();
         }.bind(this);
 
@@ -165,7 +164,7 @@ window.App = {
             } else {
                 this.scale *= 1.25;
             }
-            this.scale = Math.min(40, Math.max(1, this.scale));
+            this.scale = Math.min(50, Math.max(1, this.scale));
             this.scale = ([Math.ceil, Math.floor][+(evt.originalEvent.deltaY > 0)])(this.scale);
             var dx = evt.clientX - this.elements.boardContainer.width() / 2;
             var dy = evt.clientY - this.elements.boardContainer.height() / 2;
@@ -243,7 +242,7 @@ window.App = {
             var data = JSON.parse(msg.data);
 
             if (data.type === "pixel") {
-                data.pixels.forEach(function(px) {
+                data.pixels.forEach(function (px) {
                     var ctx = this.elements.board[0].getContext("2d");
                     ctx.fillStyle = this.palette[px.color];
                     ctx.fillRect(px.x, px.y, 1, 1);
@@ -305,6 +304,9 @@ window.App = {
         });
     },
     updateTransform: function () {
+        this.panX = Math.min(this.width / 2, Math.max(-this.width / 2, this.panX));
+        this.panY = Math.min(this.height / 2, Math.max(-this.height / 2, this.panY));
+
         this.elements.boardMover
             .css("width", this.width + "px")
             .css("height", this.height + "px")

@@ -7,6 +7,8 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
 import space.pxls.App;
 
+import java.util.concurrent.TimeUnit;
+
 public class RedditAuthService extends AuthService {
     public RedditAuthService(String id) {
         super(id);
@@ -34,7 +36,7 @@ public class RedditAuthService extends AuthService {
         }
     }
 
-    public String getIdentifier(String token) throws UnirestException {
+    public String getIdentifier(String token) throws UnirestException, InvalidAccountException {
         HttpResponse<JsonNode> me = Unirest.get("https://oauth.reddit.com/api/v1/me")
                 .header("Authorization", "bearer " + token)
                 .header("User-Agent", "pxls.space")
@@ -43,6 +45,13 @@ public class RedditAuthService extends AuthService {
         if (json.has("error")) {
             return null;
         } else {
+//            long accountAgeSeconds = (System.currentTimeMillis() / 1000 - json.getLong("created"));
+//            long minAgeSeconds = App.getConfig().getDuration("oauth.reddit.minAge", TimeUnit.SECONDS);
+//            if (accountAgeSeconds < minAgeSeconds){
+//                throw new InvalidAccountException("Account too young, must be " + minAgeSeconds / 86400 + " days old");
+//            } else if (json.getBoolean("has_verified_email")) {
+//                throw new InvalidAccountException("Account must have a verified e-mail");
+//            }
             return json.getString("name");
         }
     }

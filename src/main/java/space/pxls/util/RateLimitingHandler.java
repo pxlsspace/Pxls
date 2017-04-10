@@ -24,7 +24,6 @@ public class RateLimitingHandler implements HttpHandler {
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         String ip = exchange.getAttachment(IPReader.IP);
-        System.out.println(ip);
 
         RequestBucket bucket = buckets.<String, RequestBucket>compute(ip, (key, old) -> {
             if (old == null) return new RequestBucket(System.currentTimeMillis(), 0);

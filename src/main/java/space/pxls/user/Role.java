@@ -2,7 +2,8 @@ package space.pxls.user;
 
 public enum Role {
     BANNED,
-    DEFAULT,
+    GUEST,
+    USER,
     MODERATOR,
     ADMIN;
 

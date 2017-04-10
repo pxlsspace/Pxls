@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import space.pxls.data.Database;
 import space.pxls.server.UndertowServer;
+import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.user.UserManager;
 import space.pxls.util.Timer;
@@ -18,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Scanner;
 import java.util.concurrent.TimeUnit;
 
 public class App {
@@ -38,7 +40,6 @@ public class App {
         gson = new Gson();
 
         loadConfig();
-        loadMap();
 
         pixelLogger = LogManager.getLogger("Pixels");
 
@@ -46,16 +47,49 @@ public class App {
         height = config.getInt("board.height");
         board = new byte[width * height];
 
+        loadMap();
+
         database = new Database();
         userManager = new UserManager();
 
         new UndertowServer(config.getInt("server.port")).start();
+
+        new Thread(() -> {
+            Scanner s = new Scanner(System.in);
+            while (true) {
+                handleCommand(s.nextLine());
+            }
+        }).start();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             saveMapBackup();
             saveMapForce();
         }));
         saveMap();
+    }
+
+    private static void handleCommand(String line) {
+        try {
+            String[] token = line.split(" ");
+            if (token[0].equalsIgnoreCase("reload")) {
+                loadConfig();
+            } else if (token[0].equalsIgnoreCase("save")) {
+                saveMapForce();
+                saveMapBackup();
+            } else if (token[0].equalsIgnoreCase("role")) {
+                User user = userManager.getByName(token[1]);
+                if (user != null) {
+                    Role role = Role.valueOf(token[2]);
+                    user.setRole(role);
+                    database.setUserRole(user, role);
+                    System.out.println("Set " + user.getName() + "'s role to " + role.name());
+                } else {
+                    System.out.println("Cannot find user " + token[1]);
+                }
+            }
+        } catch (RuntimeException e) {
+            e.printStackTrace();
+        }
     }
 
     private static void loadConfig() {
@@ -96,24 +130,24 @@ public class App {
     }
 
     public static boolean isCaptchaEnabled() {
-        return config.hasPath("captcha.key") && config.hasPath("captcha.secret");
+        return !config.getString("captcha.key").isEmpty() && !config.getString("captcha.secret").isEmpty();
     }
-
 
     public static int getPixel(int x, int y) {
         return board[x + y * width];
     }
 
-    public static void putPixel(int x, int y, int color, User user) {
+    public static void putPixel(int x, int y, int color, User user, boolean mod_action) {
         if (x < 0 || x >= width || y < 0 || y >= height || color < 0 || color >= getPalette().size()) return;
         board[x + y * width] = (byte) color;
-        pixelLogger.log(Level.INFO, user.getName() + " " + x + " " + y + " " + color);
-        database.placePixel(x, y, color, user);
+        pixelLogger.log(Level.INFO, user.getName() + " " + x + " " + y + " " + color + (mod_action ? " (mod)" : ""));
+        database.placePixel(x, y, color, user, mod_action);
     }
 
     private static void loadMap() {
         try {
-            board = Files.readAllBytes(getStorageDir().resolve("board.dat"));
+            byte[] bytes = Files.readAllBytes(getStorageDir().resolve("board.dat"));
+            System.arraycopy(bytes, 0, board, 0, width * height);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -7,6 +7,7 @@ import com.mashape.unirest.http.async.Callback;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
+import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.util.Timer;
 
@@ -40,18 +41,28 @@ public class PacketHandler {
         if (user != null) {
             if (obj instanceof Packet.ClientPlace) handlePlace(channel, user, ((Packet.ClientPlace) obj));
             if (obj instanceof Packet.ClientCaptcha) handleCaptcha(channel, user, ((Packet.ClientCaptcha) obj));
+
+            if (user.getRole().greaterEqual(Role.MODERATOR)) {
+                if (obj instanceof Packet.ClientAdminCooldownOverride) handleCooldownOverride(channel, user, ((Packet.ClientAdminCooldownOverride) obj));
+            }
         }
+    }
+
+    private void handleCooldownOverride(WebSocketChannel channel, User user, Packet.ClientAdminCooldownOverride obj) {
+        user.setOverrideCooldown(obj.override);
+        sendCooldownData(channel, user);
     }
 
     private void handlePlace(WebSocketChannel channel, User user, Packet.ClientPlace cp) {
         if (cp.x < 0 || cp.x >= App.getWidth() || cp.y < 0 || cp.y >= App.getHeight()) return;
         if (cp.color < 0 || cp.color >= App.getConfig().getStringList("board.palette").size()) return;
         if (user.canPlace()) {
-            if (user.updateCaptchaFlagPrePlace()) {
+            if (user.updateCaptchaFlagPrePlace() && App.isCaptchaEnabled()) {
                 server.send(channel, new Packet.ServerCaptchaRequired());
             } else {
                 if (App.getPixel(cp.x, cp.y) != cp.color) {
-                    App.putPixel(cp.x, cp.y, cp.color, user);
+                    boolean mod_action = user.isOverridingCooldown();
+                    App.putPixel(cp.x, cp.y, cp.color, user, mod_action);
                     App.saveMap();
                     broadcastPixelUpdate(cp.x, cp.y, cp.color);
 

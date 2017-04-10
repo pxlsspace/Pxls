@@ -18,5 +18,11 @@ public abstract class AuthService {
 
     public abstract String getToken(String code) throws UnirestException;
 
-    public abstract String getIdentifier(String token) throws UnirestException;
+    public abstract String getIdentifier(String token) throws UnirestException, InvalidAccountException;
+
+    public static class InvalidAccountException extends Exception {
+        public InvalidAccountException(String s) {
+            super(s);
+        }
+    }
 }
