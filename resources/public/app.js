@@ -40,6 +40,7 @@ window.App = {
   hasFiredNotification: true,
   init: function () {
     this.color = -1;
+    this.status = "Loading, please wait...";
 
     $(".board-container").hide();
     $(".reticule").hide();
@@ -108,6 +109,8 @@ window.App = {
     }
 
     ctx.putImageData(id, 0, 0);
+
+    this.status = "";
   },
   initPalette: function () {
     this.palette.forEach(function (color, idx) {
@@ -418,7 +421,7 @@ window.App = {
       $(".palette-color").css("cursor", "")
     }
     if (this.status) {
-      this.elements.timer.text(this.status);
+      this.elements.timer.show().text(this.status);
     }
   },
   saveImage: function () {
