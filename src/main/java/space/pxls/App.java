@@ -79,7 +79,7 @@ public class App {
             } else if (token[0].equalsIgnoreCase("role")) {
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
-                    Role role = Role.valueOf(token[2]);
+                    Role role = Role.valueOf(token[2].toUpperCase());
                     user.setRole(role);
                     database.setUserRole(user, role);
                     System.out.println("Set " + user.getName() + "'s role to " + role.name());
