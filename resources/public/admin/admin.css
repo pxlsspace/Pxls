@@ -1,10 +1,30 @@
+/*//////////////////////////*\
+| Admin Box
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
+
 .admin {
-    position: fixed;
-    top: 256px;
-    left: 32px;
+  position: absolute;
+  top: 40vh;
+  background: #333;
+  color: #fff;
+  width: 210px;
+  padding: 10px;
+  border-radius: 0 5px 5px 0;
+
+  left: -180px;
+  transition: left 0.2s ease-out;
+}
+.admin:hover {
+  left: 0;
 }
 
-.admin-header {
-    display: block;
-    font-weight: 800;
+.admin > h1 {
+  display: block;
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 10px;
+  transform: rotate(-90deg);
+  position: absolute;
+  top: 5px;
+  left: 172px;
 }

@@ -34,7 +34,9 @@ public class RateLimitingHandler implements HttpHandler {
         bucket.count++;
         if (bucket.count > count)
         {
-            new ResponseCodeHandler(StatusCodes.TOO_MANY_REQUESTS).handleRequest(exchange);
+            int timeSeconds = (int) ((bucket.startTime + time * 1000) - System.currentTimeMillis()) / 1000;
+            exchange.setStatusCode(StatusCodes.TOO_MANY_REQUESTS);
+            exchange.getResponseSender().send("You are doing that too much, try again in " + timeSeconds / 60 + " minutes");
         } else {
             next.handleRequest(exchange);
         }
