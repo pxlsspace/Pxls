@@ -178,20 +178,28 @@ window.App = {
     initBoardPlacement: function () {
         var downX, downY;
 
-        var downFn = function (evt) {
+        this.elements.board.on("pointerdown mousedown", function (evt) {
             downX = evt.clientX;
             downY = evt.clientY;
-        };
-        var upFn = function (evt) {
-            var dx = Math.abs(downX - evt.clientX);
-            var dy = Math.abs(downY - evt.clientY);
-
-            if (dx < 5 && dy < 5 && this.color !== -1 && this.cooldown < new Date().getTime() && evt.button === 0) {
-                var pos = this.screenToBoardSpace(evt.clientX, evt.clientY);
+        }).on("touchstart", function (evt) {
+            downX = evt.originalEvent.changedTouches[0].clientX;
+            downY = evt.originalEvent.changedTouches[0].clientY;
+        }).on("pointerup mouseup touchend", function (evt) {
+            var touch = false;
+            var clientX = evt.clientX;
+            var clientY = evt.clientY;
+            if (evt.type == 'touchend') {
+                touch = true;
+                clientX = evt.originalEvent.changedTouches[0].clientX;
+                clientY = evt.originalEvent.changedTouches[0].clientY;
+            }
+            var dx = Math.abs(downX - clientX);
+            var dy = Math.abs(downY - clientY);
+            if (dx < 5 && dy < 5 && this.color !== -1 && this.cooldown < (new Date()).getTime() && (evt.button === 0 || touch)) {
+                var pos = this.screenToBoardSpace(clientX, clientY);
                 this.attemptPlace(pos.x | 0, pos.y | 0);
             }
-        }.bind(this);
-        this.elements.board.on("pointerdown", downFn).on("mousedown", downFn).on("pointerup", upFn).on("mouseup", upFn).contextmenu(function (evt) {
+        }.bind(this)).contextmenu(function (evt) {
             evt.preventDefault();
             this.switchColor(-1);
         }.bind(this));
@@ -250,7 +258,7 @@ window.App = {
             } else if (data.type === "alert") {
                 this.alert(data.message);
             } else if (data.type === "cooldown") {
-                this.cooldown = new Date().getTime() + (data.wait * 1000);
+                this.cooldown = (new Date()).getTime() + (data.wait * 1000);
                 this.updateTime(0);
                 this.hasFiredNotification = data.wait === 0;
             } else if (data.type === "captcha_required") {
