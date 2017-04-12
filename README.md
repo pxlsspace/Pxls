@@ -23,7 +23,7 @@ as well as before executing a blank operation and right before exiting (via Ctrl
 
 OAuth keys must be set in the config file (see above). Right now, only two services are supported, reddit and Google.
 
-You can obtain OAuth keys for Google [here](console.developers.google.com), and for reddit [here][https://www.reddit.com/prefs/apps].
+You can obtain OAuth keys for Google [here](console.developers.google.com), for reddit [here][https://www.reddit.com/prefs/apps], and for Discord [here](https://discordapp.com/developers/applications/me).
 
 The config node `oauth.callbackBase` must be set to your app's URL (including protocol and port), followed by `/auth` (for example, `http://pxls.space/auth`).
 On the OAuth setup page for the various services, you need to set the redirect URL to `oauth.callbackBase`, followed by the service name. For reddit, for exampe, that would be `http://pxls.space/auth/reddit`, and likewise for Google.
@@ -39,6 +39,10 @@ An example OAuth section could look like this:
         google {
             key: asdfghjkl
             secret: zxcvbnmqwertyuiop
+        }
+        discord {
+            key: 123456789
+            secret: abcdefghijklmn
         }
     }
     
