@@ -219,8 +219,8 @@ a, a:hover, a:visited, a:active {
   margin-left: 10px;
 }
 
-.palette-color:hover,
-.palette-color:active {
+.palette-color.active,
+.palette-color.no-touch:hover {
   position: relative;
   bottom: 7px;
 }

@@ -113,6 +113,7 @@ window.App = {
     this.palette.forEach(function (color, idx) {
       $("<div>")
       .addClass("palette-color")
+      .addClass("ontouchstart" in window ? "touch" : "no-touch")
       .css("background-color", color)
       .click(function () {
         if (this.cooldown < new Date().getTime()) {
@@ -371,6 +372,7 @@ window.App = {
   },
   switchColor: function (newColor) {
     this.color = newColor;
+    $(".palette-color").removeClass("active");
 
     if (newColor === -1) {
       this.elements.cursor.hide();
@@ -379,6 +381,7 @@ window.App = {
       if(this.scale <= 15) this.elements.cursor.show();
       this.elements.cursor.css("background-color", this.palette[newColor]);
       this.elements.reticule.css("background-color", this.palette[newColor]);
+      $($(".palette-color")[newColor]).addClass("active");
     }
   },
   attemptPlace: function (x, y) {
