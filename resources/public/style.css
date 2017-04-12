@@ -2,143 +2,142 @@
 | General Styles
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
-html,body {
-  margin: 0;
-  width: 100%;
-  height: 100%;
-  background-color: #ccc;
-  overflow: hidden;
-  position: relative;
-  font-family: sans-serif;
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #ccc;
+    overflow: hidden;
+    position: relative;
+    font-family: sans-serif;
 }
 
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 a, a:hover, a:visited, a:active {
-  color: inherit;
+    color: inherit;
 }
-
 
 /*//////////////////////////*\
 | Overlays
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
 .loading {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background-color: #444;
-  z-index: 999;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #444;
+    z-index: 999;
 }
 
 .loading span {
-  text-align: center;
-  font-size: 36px;
-  color: white;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+    text-align: center;
+    font-size: 36px;
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
 .message {
-  padding: 30px 30px 60px;
-  border-radius: 7px;
-  background-color: #fff;
-  color: #333;
-  box-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-  max-width: 40%;
-  min-width: 20%;
-  z-index: 99;
+    padding: 30px 30px 60px;
+    border-radius: 7px;
+    background-color: #fff;
+    color: #333;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+    max-width: 40%;
+    min-width: 20%;
+    z-index: 99;
 
-  position: absolute;
-  top: 45vh;
-  left: 50%;
-  transform: translateX(-50%) translateY(-50%);
-  word-wrap: break-word;
-  overflow-wrap: break-word;
+    position: absolute;
+    top: 45vh;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .message .close {
-  cursor: pointer;
-  position: absolute;
-  bottom: 20px;
-  right: 30px;
-  font-size: 12px;
-  border: 1px solid #ccc;
-  padding: 5px 10px;
-  border-radius: 3px;
+    cursor: pointer;
+    position: absolute;
+    bottom: 20px;
+    right: 30px;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    border-radius: 3px;
 }
 
 .message .close:hover {
-  color: #fff;
-  background: #ce4747;
+    color: #fff;
+    background: #ce4747;
 }
-
 
 /*//////////////////////////*\
 | Info Drawer
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
 .info {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  background: #333;
-  padding: 20px;
+    position: absolute;
+    left: 0;
+    width: 100%;
+    background: #333;
+    padding: 20px;
 
-  transform: translateY(-100%);
-  transition: transform 0.3s ease-in-out;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease-in-out;
 }
+
 .info.open {
-  transform: translateY(0);
+    transform: translateY(0);
 }
 
 .info > .open {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  background: #333;
-  padding: 10px;
-  width: 50px;
-  text-align: center;
-  cursor: pointer;
-  font-weight: 700;
-  border-radius: 0 0 5px 0;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #333;
+    padding: 10px;
+    width: 50px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 700;
+    border-radius: 0 0 5px 0;
 }
 
 .info div {
-  display: inline-block;
-  color: #fff;
-  vertical-align: top;
+    display: inline-block;
+    color: #fff;
+    vertical-align: top;
 }
 
 .info > div {
-  margin-right: 30px;
+    margin-right: 30px;
 }
 
 .info > div h1 {
-  margin: 0 0 10px 0;
-  font-size: 25px;
+    margin: 0 0 10px 0;
+    font-size: 25px;
 }
 
 .info > div p,
 .info > div a {
-  margin-top: 0;
-  margin-bottom: 0;
-  display: block;
+    margin-top: 0;
+    margin-bottom: 0;
+    display: block;
 }
 
 .info > div > div {
-  margin-right: 20px;
+    margin-right: 20px;
 }
 
 .info div > * {
-  margin-left: 1px;
+    margin-left: 1px;
 }
 
 .info form {
@@ -153,184 +152,180 @@ a, a:hover, a:visited, a:active {
 }
 
 .info div[id*="bitcoin"] a {
-  display: inline-block;
+    display: inline-block;
 }
-
 
 /*//////////////////////////*\
 | UI
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
 .ui {
-  z-index: 99;
+    z-index: 99;
 }
 
 .ui > div:first-child {
-  position: absolute;
-  bottom: 0px;
-  width: 100%;
-  background-color: rgba(255,255,255,0.8);
-  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    position: absolute;
+    bottom: 0px;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .login-overlay, .cooldown-timer {
-  position: absolute;
-  bottom: 0;
-  padding: 0 32px;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.9);
-  color: #000;
-  font-weight: 700;
-  line-height: 50px;
-  z-index: 9;
+    position: absolute;
+    bottom: 0;
+    padding: 0 32px;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #000;
+    font-weight: 700;
+    line-height: 50px;
+    z-index: 9;
 
-  text-align: center;
-  vertical-align: middle;
+    text-align: center;
+    vertical-align: middle;
 }
 
 .cooldown-timer {
-  font-size: 24px;
-  pointer-events: none;
-  user-select: none;
+    font-size: 24px;
+    pointer-events: none;
+    user-select: none;
 }
 
 .palette {
-  padding: 10px 0 7px;
-  width: calc(100% - 200px);
-  margin: 0 auto;
+    padding: 10px 0 7px;
+    width: calc(100% - 200px);
+    margin: 0 auto;
 
-  overflow-x: auto;
-  text-align: center;
-  white-space: nowrap;
+    overflow-x: auto;
+    text-align: center;
+    white-space: nowrap;
 }
 
 .palette-color {
-  display: inline-block;
+    display: inline-block;
 
-  min-width: 32px;
-  min-height: 32px;
-  border: 2px solid black;
-  border-radius: 3px;
-  margin-right: 10px;
-  cursor: pointer;
-  bottom: 0;
+    min-width: 32px;
+    min-height: 32px;
+    border: 2px solid black;
+    border-radius: 3px;
+    margin-right: 10px;
+    cursor: pointer;
+    bottom: 0;
 }
 
 .palette-color:first-child {
-  margin-left: 10px;
+    margin-left: 10px;
 }
 
 .palette-color:hover,
 .palette-color:active {
-  position: relative;
-  bottom: 7px;
+    position: relative;
+    bottom: 7px;
 }
 
 .reticule {
-  position: absolute;
-  top: 0;
-  left: 0;
-  border: 2px solid black;
-  background-color: rgba(0,0,0,0);
-  box-sizing: content-box;
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: 2px solid black;
+    background-color: rgba(0, 0, 0, 0);
+    box-sizing: content-box;
 }
 
 .cursor {
-  width: 36px;
-  height: 36px;
-  border: 2px solid black;
-  border-radius: 3px;
+    width: 36px;
+    height: 36px;
+    border: 2px solid black;
+    border-radius: 3px;
 
-  position: relative;
-  top: 20px;
-  left: 10px;
+    position: relative;
+    top: 20px;
+    left: 10px;
 }
 
 .reticule, .cursor {
-  pointer-events: none;
-  will-change: transform;
-  z-index: 1;
+    pointer-events: none;
+    will-change: transform;
+    z-index: 1;
 }
 
 .coords, .online {
-  position: absolute;
-  bottom: 10px;
-  padding: 8px 16px;
-  background-color: rgba(0, 0, 0, 0.7);
-  border-radius: 5px;
-  color: #fff;
-  z-index: 9;
+    position: absolute;
+    bottom: 10px;
+    padding: 8px 16px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+    color: #fff;
+    z-index: 9;
 }
 
 .coords {
-  left: 10px;
+    left: 10px;
 }
 
 .online {
-  right: 10px;
+    right: 10px;
 }
-
 
 /*//////////////////////////*\
 | reCaptcha
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
 .g-recaptcha {
-  display: none;
+    display: none;
 }
 
 .grecaptcha-badge {
-  bottom: 64px !important;
+    bottom: 64px !important;
 }
-
 
 /*//////////////////////////*\
 | Board Stuff
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
 .board-container {
-  z-index: 0;
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
+    z-index: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
 
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .board-zoomer {
-  flex: 0 0 100px;
+    flex: 0 0 100px;
 }
 
 .board-mover {
-  background-color: #fff;
+    background-color: #fff;
 }
 
 .board {
-  display: block;
+    display: block;
 }
 
 #board {
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
-  image-rendering: -moz-crisp-edges;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    image-rendering: -moz-crisp-edges;
 }
 
 .grid {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1;
-  width: 110vw;
-  height: 110vh;
-  pointer-events: none;
-  background-image: linear-gradient(to right, #aaa 1px, transparent 1px), linear-gradient(to bottom, #aaa 1px, transparent 1px);
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 110vw;
+    height: 110vh;
+    pointer-events: none;
+    background-image: linear-gradient(to right, #aaa 1px, transparent 1px), linear-gradient(to bottom, #aaa 1px, transparent 1px);
 }
-
 
 /*//////////////////////////*\
 | Sign Up
@@ -341,84 +336,83 @@ a, a:hover, a:visited, a:active {
 }
 
 .signup .signup-container {
-  padding: 30px 30px 80px;
-  border-radius: 7px;
-  background-color: #eee;
-  color: #333;
-  box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
-  width: 50%;
+    padding: 30px 30px 80px;
+    border-radius: 7px;
+    background-color: #eee;
+    color: #333;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    width: 50%;
 
-  position: absolute;
-  top: 30vh;
-  left: 50%;
-  transform: translateX(-50%) translateY(-50%);
+    position: absolute;
+    top: 30vh;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
 }
 
 .signup .signup-container h1 {
-  margin-top: 0;
+    margin-top: 0;
 }
 
 .signup .signup-container h1 small {
-  display: block;
+    display: block;
 }
 
 .signup .signup-container input[type="submit"] {
-  cursor: pointer;
-  position: absolute;
-  bottom: 30px;
-  right: 30px;
-  border: 1px solid #ccc;
-  padding: 10px 20px;
-  border-radius: 5px;
+    cursor: pointer;
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    border: 1px solid #ccc;
+    padding: 10px 20px;
+    border-radius: 5px;
 }
 
 .signup .signup-container input[type="submit"]:hover {
-  color: #fff;
-  background: #4ebf62;
+    color: #fff;
+    background: #4ebf62;
 }
 
 .signup .username {
-  border: 1px solid #bbb;
-  border-radius: 5px;
-  padding: 10px;
-  width: 100%;
-  margin-bottom: 16px;
+    border: 1px solid #bbb;
+    border-radius: 5px;
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 16px;
 }
 
 .signup .error {
-  color: #ff0000;
-  font-weight: 700;
+    color: #ff0000;
+    font-weight: 700;
 }
 
 /*.signup .error::before {
   content: "Error: ";
 }*/
 
-
 /*//////////////////////////*\
 | Mobile Styles
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
 @media (max-width: 768px) {
-  .info {
-    display: none;
-  }
+    .info {
+        display: none;
+    }
 
-  .palette {
-    width: 100%;
-  }
+    .palette {
+        width: 100%;
+    }
 
-  .coords {
-    top: 16px;
-    left: 16px;
-    bottom: auto;
-    right: auto;
-  }
+    .coords {
+        top: 16px;
+        left: 16px;
+        bottom: auto;
+        right: auto;
+    }
 
-  .online {
-    top: 64px;
-    left: 16px;
-    bottom: auto;
-    right: auto;
-  }
+    .online {
+        top: 64px;
+        left: 16px;
+        bottom: auto;
+        right: auto;
+    }
 }

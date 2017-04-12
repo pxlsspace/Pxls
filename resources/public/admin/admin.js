@@ -1,12 +1,12 @@
 var App = window.App;
 App.attemptPlace_ = App.attemptPlace;
-App.attemptPlace = function(x, y) {
-  var oldColor = App.color;
-  App.attemptPlace_(x, y);
+App.attemptPlace = function (x, y) {
+    var oldColor = App.color;
+    App.attemptPlace_(x, y);
 
-  if (handReset.prop("checked")) {
-    App.switchColor(oldColor);
-  }
+    if (handReset.prop("checked")) {
+        App.switchColor(oldColor);
+    }
 };
 
 $("<link/>", {rel: "stylesheet", href: "/admin/admin.css"}).appendTo(document.head);
@@ -21,8 +21,8 @@ $("<label/>", {for: 'admin-hr', text: 'Disable hand reset'}).appendTo(adminPanel
 
 $("<br/>").appendTo(adminPanel);
 
-var cooldownOverride = $("<input/>", {type: 'checkbox', id: 'admin-co'}).appendTo(adminPanel).click(function() {
-  var state = cooldownOverride.prop("checked");
-  App.socket.send(JSON.stringify({type: "admin_cdoverride", override: state}));
+var cooldownOverride = $("<input/>", {type: 'checkbox', id: 'admin-co'}).appendTo(adminPanel).click(function () {
+    var state = cooldownOverride.prop("checked");
+    App.socket.send(JSON.stringify({type: "admin_cdoverride", override: state}));
 });
 $("<label/>", {for: 'admin-co', text: "Override cooldown"}).appendTo(adminPanel);
