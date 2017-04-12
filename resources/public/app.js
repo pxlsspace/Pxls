@@ -418,9 +418,13 @@ window.App = {
       document.title = "pxls.space [" + minuteStr + ":" + secsStr + "]";
     } else {
       if (!this.hasFiredNotification) {
-        new Notification("pxls.space", {
-          body: "Your next pixel is available!"
-        });
+        try {
+          new Notification("pxls.space", {
+            body: "Your next pixel is available!"
+          });
+        } catch (e) {
+          console.log("No notifications available!");
+        }
         this.hasFiredNotification = true;
       }
 
