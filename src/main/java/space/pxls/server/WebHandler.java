@@ -8,9 +8,9 @@ import io.undertow.util.HttpString;
 import io.undertow.util.StatusCodes;
 import space.pxls.App;
 import space.pxls.auth.AuthService;
+import space.pxls.auth.DiscordAuthService;
 import space.pxls.auth.GoogleAuthService;
 import space.pxls.auth.RedditAuthService;
-import space.pxls.auth.TwitterAuthService;
 import space.pxls.user.User;
 
 import java.nio.ByteBuffer;
@@ -24,6 +24,7 @@ public class WebHandler {
     {
         services.put("reddit", new RedditAuthService("reddit"));
         services.put("google", new GoogleAuthService("google"));
+        services.put("discord", new DiscordAuthService("discord"));
     }
 
     public void signUp(HttpServerExchange exchange) {
