@@ -37,6 +37,7 @@ window.App = {
   panX: 0,
   panY: 0,
   scale: 4,
+  use_zoom: (navigator.userAgent.match(/(iPod|iPhone|iPad)/i) && navigator.userAgent.match(/AppleWebKit/i)), // mobile safari else gets blurry
   hasFiredNotification: true,
   init: function () {
     this.color = -1;
@@ -345,7 +346,11 @@ window.App = {
       .css("width", this.width + "px")
       .css("height", this.height + "px")
       .css("transform", "translate(" + this.panX + "px, " + this.panY + "px)");
-    this.elements.boardZoomer.css("transform", "scale(" + this.scale + ")");
+    if (this.use_zoom) {
+      this.elements.boardZoomer.css("zoom", (this.scale*100).toString() + "%");
+    } else {
+      this.elements.boardZoomer.css("transform", "scale(" + this.scale + ")");
+    }
     this.elements.reticule.css("width", (this.scale+1) + "px").css("height", (this.scale+1) + "px");
 
     var a = this.screenToBoardSpace(0, 0);
@@ -354,8 +359,12 @@ window.App = {
   },
   screenToBoardSpace: function (screenX, screenY) {
     var boardBox = this.elements.board[0].getBoundingClientRect();
-    var boardX = (((screenX - boardBox.left) / this.scale)),
-    boardY = (((screenY - boardBox.top) / this.scale));
+    var boardX = ((screenX - boardBox.left) / this.scale);
+    var boardY = ((screenY - boardBox.top) / this.scale);
+    if (this.use_zoom) {
+      boardX = (screenX / this.scale) - boardBox.left;
+      boardY = (screenY / this.scale) - boardBox.top;
+    }
     return {x: boardX, y: boardY};
   },
   boardToScreenSpace: function (boardX, boardY) {
