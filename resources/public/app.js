@@ -37,6 +37,7 @@ window.App = {
     panX: 0,
     panY: 0,
     scale: 4,
+    use_zoom: (navigator.userAgent.match(/(iPod|iPhone|iPad)/i) && navigator.userAgent.match(/AppleWebKit/i)), // mobile safari else gets blurry
     hasFiredNotification: true,
     init: function () {
         this.color = -1;
@@ -113,6 +114,7 @@ window.App = {
         this.palette.forEach(function (color, idx) {
             $("<div>")
                 .addClass("palette-color")
+                .addClass("ontouchstart" in window ? "touch" : "no-touch")
                 .css("background-color", color)
                 .click(function () {
                     if (this.cooldown < new Date().getTime()) {
@@ -197,20 +199,28 @@ window.App = {
     initBoardPlacement: function () {
         var downX, downY;
 
-        var downFn = function (evt) {
+        this.elements.board.on("pointerdown mousedown", function (evt) {
             downX = evt.clientX;
             downY = evt.clientY;
-        };
-        var upFn = function (evt) {
-            var dx = Math.abs(downX - evt.clientX);
-            var dy = Math.abs(downY - evt.clientY);
-
-            if (dx < 5 && dy < 5 && this.color !== -1 && this.cooldown < new Date().getTime() && evt.button === 0) {
-                var pos = this.screenToBoardSpace(evt.clientX, evt.clientY);
+        }).on("touchstart", function (evt) {
+            downX = evt.originalEvent.changedTouches[0].clientX;
+            downY = evt.originalEvent.changedTouches[0].clientY;
+        }).on("pointerup mouseup touchend", function (evt) {
+            var touch = false;
+            var clientX = evt.clientX;
+            var clientY = evt.clientY;
+            if (evt.type == 'touchend') {
+                touch = true;
+                clientX = evt.originalEvent.changedTouches[0].clientX;
+                clientY = evt.originalEvent.changedTouches[0].clientY;
+            }
+            var dx = Math.abs(downX - clientX);
+            var dy = Math.abs(downY - clientY);
+            if (dx < 5 && dy < 5 && this.color !== -1 && this.cooldown < (new Date()).getTime() && (evt.button === 0 || touch)) {
+                var pos = this.screenToBoardSpace(clientX, clientY);
                 this.attemptPlace(pos.x | 0, pos.y | 0);
             }
-        }.bind(this);
-        this.elements.board.on("pointerdown", downFn).on("mousedown", downFn).on("pointerup", upFn).on("mouseup", upFn).contextmenu(function (evt) {
+        }.bind(this)).contextmenu(function (evt) {
             evt.preventDefault();
             this.switchColor(-1);
         }.bind(this));
@@ -333,11 +343,15 @@ window.App = {
         this.panY = Math.min(this.height / 2, Math.max(-this.height / 2, this.panY));
 
         this.elements.boardMover
-            .css("width", this.width + "px")
-            .css("height", this.height + "px")
-            .css("transform", "translate(" + this.panX + "px, " + this.panY + "px)");
-        this.elements.boardZoomer.css("transform", "scale(" + this.scale + ")");
-        this.elements.reticule.css("width", (this.scale + 1) + "px").css("height", (this.scale + 1) + "px");
+          .css("width", this.width + "px")
+          .css("height", this.height + "px")
+          .css("transform", "translate(" + this.panX + "px, " + this.panY + "px)");
+        if (this.use_zoom) {
+            this.elements.boardZoomer.css("zoom", (this.scale*100).toString() + "%");
+        } else {
+            this.elements.boardZoomer.css("transform", "scale(" + this.scale + ")");
+        }
+        this.elements.reticule.css("width", (this.scale+1) + "px").css("height", (this.scale+1) + "px");
 
         var a = this.screenToBoardSpace(0, 0);
         this.elements.grid.css("background-size", this.scale + "px " + this.scale + "px").css("transform", "translate(" + Math.floor(-a.x % 1 * this.scale) + "px," + Math.floor(-a.y % 1 * this.scale) + "px)");
@@ -345,8 +359,12 @@ window.App = {
     },
     screenToBoardSpace: function (screenX, screenY) {
         var boardBox = this.elements.board[0].getBoundingClientRect();
-        var boardX = (((screenX - boardBox.left) / this.scale)),
-            boardY = (((screenY - boardBox.top) / this.scale));
+        var boardX = ((screenX - boardBox.left) / this.scale);
+        var boardY = ((screenY - boardBox.top) / this.scale);
+        if (this.use_zoom) {
+            boardX = (screenX / this.scale) - boardBox.left;
+            boardY = (screenY / this.scale) - boardBox.top;
+        }
         return {x: boardX, y: boardY};
     },
     boardToScreenSpace: function (boardX, boardY) {
@@ -363,6 +381,7 @@ window.App = {
     },
     switchColor: function (newColor) {
         this.color = newColor;
+        $(".palette-color").removeClass("active");
 
         if (newColor === -1) {
             this.elements.cursor.hide();
@@ -371,6 +390,7 @@ window.App = {
             if (this.scale <= 15) this.elements.cursor.show();
             this.elements.cursor.css("background-color", this.palette[newColor]);
             this.elements.reticule.css("background-color", this.palette[newColor]);
+            $($(".palette-color")[newColor]).addClass("active");
         }
     },
     attemptPlace: function (x, y) {
@@ -407,9 +427,13 @@ window.App = {
             document.title = "pxls.space [" + minuteStr + ":" + secsStr + "]";
         } else {
             if (!this.hasFiredNotification) {
-                new Notification("pxls.space", {
-                    body: "Your next pixel is available!"
-                });
+                try {
+                    new Notification("pxls.space", {
+                        body: "Your next pixel is available!"
+                    });
+                } catch (e) {
+                    console.log("No notificatons available!");
+                }
                 this.hasFiredNotification = true;
             }
 

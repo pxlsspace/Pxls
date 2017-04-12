@@ -176,7 +176,6 @@ a, a:hover, a:visited, a:active {
     bottom: 0;
     padding: 0 32px;
     width: 100%;
-    height: 100%;
     background-color: rgba(255, 255, 255, 0.9);
     color: #000;
     font-weight: 700;
@@ -195,7 +194,6 @@ a, a:hover, a:visited, a:active {
 
 .palette {
     padding: 10px 0 7px;
-    width: calc(100% - 200px);
     margin: 0 auto;
 
     overflow-x: auto;
@@ -219,8 +217,8 @@ a, a:hover, a:visited, a:active {
     margin-left: 10px;
 }
 
-.palette-color:hover,
-.palette-color:active {
+.palette-color.active,
+.palette-color.no-touch:hover {
     position: relative;
     bottom: 7px;
 }
@@ -311,9 +309,14 @@ a, a:hover, a:visited, a:active {
 }
 
 #board {
+    image-rendering:optimizeSpeed;             /* Legal fallback */
+    -ms-interpolation-mode: nearest-neighbor;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -webkit-crisp-edges;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -o-crisp-edges;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    image-rendering: -moz-crisp-edges;
 }
 
 .grid {
