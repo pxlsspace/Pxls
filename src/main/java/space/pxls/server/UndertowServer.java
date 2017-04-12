@@ -49,6 +49,7 @@ public class UndertowServer {
                 .addPrefixPath("/ws", Handlers.websocket(this::webSocketHandler))
                 .addPrefixPath("/info", webHandler::info)
                 .addPrefixPath("/boarddata", webHandler::data)
+                .addPrefixPath("/logout", webHandler::logout)
                 .addPrefixPath("/signin/", (x) -> webHandler.signIn(x))
                 .addPrefixPath("/auth/", new RateLimitingHandler((x) -> webHandler.auth(x), (int) App.getConfig().getDuration("server.limits.auth.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.auth.count")))
                 .addPrefixPath("/signup/do", new RateLimitingHandler((x) -> webHandler.signUp(x), (int) App.getConfig().getDuration("server.limits.signup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.signup.count")))

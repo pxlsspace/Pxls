@@ -76,7 +76,7 @@ public class Packet {
     }
 
     public static class UserInfo {
-        String type = "login";
+        String type = "userinfo";
         String name;
 
         public UserInfo(String name) {

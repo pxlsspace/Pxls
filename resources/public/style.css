@@ -165,7 +165,7 @@ a, a:hover, a:visited, a:active {
 
 .ui > div:first-child {
     position: absolute;
-    bottom: 0px;
+    bottom: 0;
     width: 100%;
     background-color: rgba(255, 255, 255, 0.8);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
@@ -249,9 +249,8 @@ a, a:hover, a:visited, a:active {
     z-index: 1;
 }
 
-.coords, .online {
-    position: absolute;
-    bottom: 10px;
+.bubble {
+    display: inline-block;
     padding: 8px 16px;
     background-color: rgba(0, 0, 0, 0.7);
     border-radius: 5px;
@@ -259,12 +258,21 @@ a, a:hover, a:visited, a:active {
     z-index: 9;
 }
 
-.coords {
+.left {
+    position: absolute;
     left: 10px;
+    bottom: 10px;
 }
 
-.online {
+.right {
+    position: absolute;
     right: 10px;
+    bottom: 10px;
+}
+
+.userinfo .logout {
+    font-size: 0.75em;
+    text-decoration: underline;
 }
 
 /*//////////////////////////*\
