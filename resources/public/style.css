@@ -25,7 +25,7 @@ a, a:hover, a:visited, a:active {
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
 .loading {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
@@ -38,7 +38,7 @@ a, a:hover, a:visited, a:active {
     text-align: center;
     font-size: 36px;
     color: white;
-    position: absolute;
+    position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
@@ -54,7 +54,7 @@ a, a:hover, a:visited, a:active {
     min-width: 20%;
     z-index: 99;
 
-    position: absolute;
+    position: fixed;
     top: 45vh;
     left: 50%;
     transform: translateX(-50%) translateY(-50%);
@@ -64,7 +64,7 @@ a, a:hover, a:visited, a:active {
 
 .message .close {
     cursor: pointer;
-    position: absolute;
+    position: fixed;
     bottom: 20px;
     right: 30px;
     font-size: 12px;
@@ -83,7 +83,7 @@ a, a:hover, a:visited, a:active {
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
 .info {
-    position: absolute;
+    position: fixed;
     left: 0;
     width: 100%;
     background: #333;
@@ -98,7 +98,7 @@ a, a:hover, a:visited, a:active {
 }
 
 .info > .open {
-    position: absolute;
+    position: fixed;
     top: 100%;
     left: 0;
     background: #333;
@@ -164,15 +164,15 @@ a, a:hover, a:visited, a:active {
 }
 
 .ui > div:first-child {
-    position: absolute;
-    bottom: 0px;
+    position: fixed;
+    bottom: 0;
     width: 100%;
     background-color: rgba(255, 255, 255, 0.8);
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .login-overlay, .cooldown-timer {
-    position: absolute;
+    position: fixed;
     bottom: 0;
     padding: 0 32px;
     width: 100%;
@@ -224,7 +224,7 @@ a, a:hover, a:visited, a:active {
 }
 
 .reticule {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     border: 2px solid black;
@@ -249,9 +249,8 @@ a, a:hover, a:visited, a:active {
     z-index: 1;
 }
 
-.coords, .online {
-    position: absolute;
-    bottom: 10px;
+.bubble {
+    display: inline-block;
     padding: 8px 16px;
     background-color: rgba(0, 0, 0, 0.7);
     border-radius: 5px;
@@ -259,12 +258,21 @@ a, a:hover, a:visited, a:active {
     z-index: 9;
 }
 
-.coords {
+.left {
+    position: fixed;
     left: 10px;
+    bottom: 10px;
 }
 
-.online {
+.right {
+    position: fixed;
     right: 10px;
+    bottom: 10px;
+}
+
+.userinfo .logout {
+    font-size: 0.75em;
+    text-decoration: underline;
 }
 
 /*//////////////////////////*\
@@ -285,7 +293,7 @@ a, a:hover, a:visited, a:active {
 
 .board-container {
     z-index: 0;
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
@@ -320,7 +328,7 @@ a, a:hover, a:visited, a:active {
 }
 
 .grid {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     z-index: 1;
@@ -346,7 +354,7 @@ a, a:hover, a:visited, a:active {
     box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
     width: 50%;
 
-    position: absolute;
+    position: fixed;
     top: 30vh;
     left: 50%;
     transform: translateX(-50%) translateY(-50%);
@@ -362,7 +370,7 @@ a, a:hover, a:visited, a:active {
 
 .signup .signup-container input[type="submit"] {
     cursor: pointer;
-    position: absolute;
+    position: fixed;
     bottom: 30px;
     right: 30px;
     border: 1px solid #ccc;

@@ -2,6 +2,7 @@ package space.pxls.server;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
@@ -12,6 +13,8 @@ import space.pxls.auth.DiscordAuthService;
 import space.pxls.auth.GoogleAuthService;
 import space.pxls.auth.RedditAuthService;
 import space.pxls.user.User;
+import space.pxls.user.UserManager;
+import space.pxls.util.AuthReader;
 
 import java.nio.ByteBuffer;
 import java.util.Deque;
@@ -152,5 +155,17 @@ public class WebHandler {
 
     public void data(HttpServerExchange exchange) {
         exchange.getResponseSender().send(ByteBuffer.wrap(App.getBoardData()));
+    }
+
+    public void logout(HttpServerExchange exchange) {
+        Cookie tokenCookie = exchange.getRequestCookies().get("pxls-token");
+
+        if (tokenCookie != null) {
+            App.getUserManager().logOut(tokenCookie.getValue());
+        }
+
+        exchange.setStatusCode(StatusCodes.SEE_OTHER);
+        exchange.getResponseHeaders().put(Headers.LOCATION, "/");
+        exchange.getResponseSender().send("");
     }
 }

@@ -32,7 +32,8 @@ window.App = {
         coords: $(".coords"),
         users: $(".online"),
         grid: $(".grid"),
-        loginOverlay: $(".login-overlay")
+        loginOverlay: $(".login-overlay"),
+        userInfo: $(".userinfo")
     },
     panX: 0,
     panY: 0,
@@ -50,6 +51,7 @@ window.App = {
         $(".cooldown-timer").hide();
         $(".online").hide();
         $(".grid").hide();
+        $(".userinfo").hide();
 
         $.get("/info", this.initBoard.bind(this));
 
@@ -301,8 +303,11 @@ window.App = {
                 ws.onclose = function () {
                 };
                 this.alert("Too many sessions open, try closing some tabs.");
-            } else if (data.type === "login") {
+            } else if (data.type === "userinfo") {
                 this.elements.loginOverlay.hide();
+
+                this.elements.userInfo.fadeIn(200);
+                this.elements.userInfo.find("span.name").text(data.name);
             }
         }.bind(this);
         ws.onclose = function () {

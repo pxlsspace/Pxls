@@ -73,13 +73,7 @@ public class UserManager {
         return getByDB(App.getDatabase().getUserByName(name));
     }
 
-    public static class LoginResult {
-        private String token;
-        private String user;
-
-        public LoginResult(String token, String user) {
-            this.token = token;
-            this.user = user;
-        }
+    public void logOut(String value) {
+        usersByToken.remove(value);
     }
 }
