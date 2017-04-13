@@ -15,12 +15,16 @@ public class User {
     private boolean justShowedCaptcha;
     private long lastPlaceTime;
 
-    public User(int id, String name, String login, long lastPlaceTime, Role role) {
+    // 0 = not banned
+    private long banExpiryTime;
+
+    public User(int id, String name, String login, long lastPlaceTime, Role role, long banExpiryTime) {
         this.id = id;
         this.name = name;
         this.login = login;
         this.lastPlaceTime = lastPlaceTime;
         this.role = role;
+        this.banExpiryTime = banExpiryTime;
     }
 
     public int getId() {
@@ -100,5 +104,17 @@ public class User {
 
     public String getName() {
         return name;
+    }
+
+    public boolean isBanned() {
+        return banExpiryTime > System.currentTimeMillis();
+    }
+
+    public long getBanExpiryTime() {
+        return banExpiryTime;
+    }
+
+    public void setBanExpiryTime(long banExpiryTime) {
+        this.banExpiryTime = banExpiryTime;
     }
 }

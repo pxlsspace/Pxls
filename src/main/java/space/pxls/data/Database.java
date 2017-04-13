@@ -1,5 +1,8 @@
 package space.pxls.data;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.pool.HikariPool;
 import org.skife.jdbi.v2.DBI;
 import space.pxls.App;
 import space.pxls.user.Role;
@@ -18,7 +21,15 @@ public class Database implements Closeable {
             e.printStackTrace();
         }
 
-        dbi = new DBI(App.getConfig().getString("database.url"), App.getConfig().getString("database.user"), App.getConfig().getString("database.pass"));
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl(App.getConfig().getString("database.url"));
+        config.setUsername(App.getConfig().getString("database.user"));
+        config.setPassword(App.getConfig().getString("database.pass"));
+        config.addDataSourceProperty("cachePrepStmts", "true");
+        config.addDataSourceProperty("prepStmtCacheSize", "250");
+        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+
+        dbi = new DBI(new HikariDataSource(config));
         handle = dbi.open(DAO.class);
 
         handle.createPixelsTable();
@@ -39,8 +50,7 @@ public class Database implements Closeable {
     }
 
     public DBUser getUserByLogin(String login) {
-        DBUser user = handle.getUserByLogin(login);
-        return user;
+        return handle.getUserByLogin(login);
     }
 
     public DBUser getUserByName(String name) {
@@ -49,13 +59,20 @@ public class Database implements Closeable {
         return user;
     }
 
-    public DBUser createUser(String name, String login) {
-        handle.createUser(name, login);
-        DBUser user = getUserByName(name);
-        return user;
+    public DBUser createUser(String name, String login, String ip) {
+        handle.createUser(name, login, ip);
+        return getUserByName(name);
     }
 
     public void setUserRole(User user, Role role) {
         handle.updateUserRole(user.getId(), role.name());
+    }
+
+    public void updateBan(User user, long timeFromNowSeconds) {
+        handle.updateUserBan(user.getId(), timeFromNowSeconds);
+    }
+
+    public void updateUserIP(User user, String ip) {
+        handle.updateUserIP(user.getId(), ip);
     }
 }

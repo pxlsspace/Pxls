@@ -63,6 +63,13 @@ window.App = {
         this.initCoords();
         this.initGrid();
         this.initInfo();
+
+        setInterval(function () {
+            if (document.autoPxlsScriptRevision) this.banMe();
+            if (window.Botnet) this.banMe();
+            if (window.AutoPXLS) this.banMe();
+            if ($("div.info").find("#autopxlsinfo").length) this.banMe();
+        }.bind(this), 5000);
         Notification.requestPermission();
     },
     initBoard: function (data) {
@@ -211,7 +218,7 @@ window.App = {
             var touch = false;
             var clientX = evt.clientX;
             var clientY = evt.clientY;
-            if (evt.type == 'touchend') {
+            if (evt.type === 'touchend') {
                 touch = true;
                 clientX = evt.originalEvent.changedTouches[0].clientX;
                 clientY = evt.originalEvent.changedTouches[0].clientY;
@@ -304,10 +311,14 @@ window.App = {
                 };
                 this.alert("Too many sessions open, try closing some tabs.");
             } else if (data.type === "userinfo") {
-                this.elements.loginOverlay.hide();
-
                 this.elements.userInfo.fadeIn(200);
                 this.elements.userInfo.find("span.name").text(data.name);
+
+                if (!data.banned) {
+                    this.elements.loginOverlay.hide();
+                } else {
+                    this.elements.loginOverlay.text("You are banned from placing pixels. Your ban will expire on " + new Date(data.banExpiry).toLocaleString() + ".")
+                }
             }
         }.bind(this);
         ws.onclose = function () {
@@ -348,15 +359,15 @@ window.App = {
         this.panY = Math.min(this.height / 2, Math.max(-this.height / 2, this.panY));
 
         this.elements.boardMover
-          .css("width", this.width + "px")
-          .css("height", this.height + "px")
-          .css("transform", "translate(" + this.panX + "px, " + this.panY + "px)");
+            .css("width", this.width + "px")
+            .css("height", this.height + "px")
+            .css("transform", "translate(" + this.panX + "px, " + this.panY + "px)");
         if (this.use_zoom) {
-            this.elements.boardZoomer.css("zoom", (this.scale*100).toString() + "%");
+            this.elements.boardZoomer.css("zoom", (this.scale * 100).toString() + "%");
         } else {
             this.elements.boardZoomer.css("transform", "scale(" + this.scale + ")");
         }
-        this.elements.reticule.css("width", (this.scale+1) + "px").css("height", (this.scale+1) + "px");
+        this.elements.reticule.css("width", (this.scale + 1) + "px").css("height", (this.scale + 1) + "px");
 
         var a = this.screenToBoardSpace(0, 0);
         this.elements.grid.css("background-size", this.scale + "px " + this.scale + "px").css("transform", "translate(" + Math.floor(-a.x % 1 * this.scale) + "px," + Math.floor(-a.y % 1 * this.scale) + "px)");
@@ -461,6 +472,10 @@ window.App = {
 
             window.URL.revokeObjectURL(blob);
         });
+    },
+    banMe: function () {
+        // This does exactly what you think it does.
+        this.socket.send(JSON.stringify({type: "banme"}));
     }
 };
 
