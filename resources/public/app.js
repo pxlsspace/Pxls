@@ -209,12 +209,19 @@ window.App = {
         var downX, downY;
 
         this.elements.board.on("pointerdown mousedown", function (evt) {
+            if (evt.originalEvent.ctrlKey) {
+                var pos = this.screenToBoardSpace(evt.clientX, evt.clientY);
+                var url = window.location.protocol + "//" + window.location.hostname + ((window.location.port > 0) ? ":" + window.location.port : "") +
+                    "/?x=" + Math.floor(pos.x) + "&y=" + Math.floor(pos.y);
+                this.alert("URL for this location: <a href=\"" + url + "\" target=\"blank\">" + url + "</a>");
+            }
             downX = evt.clientX;
             downY = evt.clientY;
-        }).on("touchstart", function (evt) {
+        }.bind(this)).on("touchstart", function (evt) {
             downX = evt.originalEvent.changedTouches[0].clientX;
             downY = evt.originalEvent.changedTouches[0].clientY;
         }).on("pointerup mouseup touchend", function (evt) {
+            if (evt.originalEvent.ctrlKey) return;
             var touch = false;
             var clientX = evt.clientX;
             var clientY = evt.clientY;
@@ -424,7 +431,7 @@ window.App = {
     },
     alert: function (message) {
         var alert = this.elements.alert;
-        alert.find(".text").text(message);
+        alert.find(".text").html(message);
         alert.fadeIn(200);
     },
     updateTime: function () {
