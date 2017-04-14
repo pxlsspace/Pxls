@@ -18,13 +18,30 @@ public class Packet {
     }
 
     public static class ClientAdminCooldownOverride {
-
         public boolean override;
         public ClientAdminCooldownOverride(boolean override) {
             this.override = override;
         }
-
     }
+
+    public static class ClientAdminBan {
+        public String username;
+
+        public ClientAdminBan(String username) {
+            this.username = username;
+        }
+    }
+
+    public static class ClientAdminMessage {
+        public String username;
+        public String message;
+
+        public ClientAdminMessage(String username, String message) {
+            this.username = username;
+            this.message = message;
+        }
+    }
+
     public static class ServerCaptchaRequired {
         public String type = "captcha_required";
 

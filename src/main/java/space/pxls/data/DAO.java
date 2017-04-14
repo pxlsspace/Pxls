@@ -7,7 +7,7 @@ import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
 
 import java.io.Closeable;
 
-@RegisterMapper({DBUser.Mapper.class, PixelPlacement.Mapper.class})
+@RegisterMapper({DBUser.Mapper.class, DBPixelPlacement.Mapper.class})
 public interface DAO extends Closeable {
     @SqlUpdate("CREATE TABLE IF NOT EXISTS pixels (" +
             "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT," +
@@ -22,8 +22,8 @@ public interface DAO extends Closeable {
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, mod_action) VALUES (:x, :y, :color, :who, :mod)")
     void putPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("mod") boolean mod);
 
-    @SqlQuery("SELECT * FROM pixels WHERE x = :x AND y = :y ORDER BY time DESC LIMIT 1")
-    PixelPlacement getPixel(@Bind("x") int x, @Bind("y") int y);
+    @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users ON pixels.who = users.id WHERE x = :x AND y = :y ORDER BY time DESC LIMIT 1")
+    DBPixelPlacement getPixel(@Bind("x") int x, @Bind("y") int y);
 
     @SqlUpdate("CREATE TABLE IF NOT EXISTS users (" +
             "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT," +

@@ -9,7 +9,6 @@ import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
 import space.pxls.user.Role;
 import space.pxls.user.User;
-import space.pxls.util.IPReader;
 import space.pxls.util.Timer;
 
 import java.util.Collections;
@@ -43,8 +42,30 @@ public class PacketHandler {
             if (obj instanceof Packet.ClientBanMe) handleBanMe(channel, user, ((Packet.ClientBanMe) obj));
 
             if (user.getRole().greaterEqual(Role.MODERATOR)) {
-                if (obj instanceof Packet.ClientAdminCooldownOverride) handleCooldownOverride(channel, user, ((Packet.ClientAdminCooldownOverride) obj));
+                if (obj instanceof Packet.ClientAdminCooldownOverride)
+                    handleCooldownOverride(channel, user, ((Packet.ClientAdminCooldownOverride) obj));
+
+                if (obj instanceof Packet.ClientAdminBan) handleBan(channel, user, ((Packet.ClientAdminBan) obj));
+
+                if (obj instanceof Packet.ClientAdminMessage) handleAdminMessage(channel, user, ((Packet.ClientAdminMessage) obj));
             }
+        }
+    }
+
+    private void handleAdminMessage(WebSocketChannel channel, User user, Packet.ClientAdminMessage obj) {
+        User u = App.getUserManager().getByName(obj.username);
+        if (u != null) {
+            Packet.ServerAlert msg = new Packet.ServerAlert(obj.message);
+            for (WebSocketChannel ch : u.getConnections()) {
+                server.send(ch, msg);
+            }
+        }
+    }
+
+    private void handleBan(WebSocketChannel channel, User user, Packet.ClientAdminBan obj) {
+        User u = App.getUserManager().getByName(obj.username);
+        if (u != null) {
+            App.getUserManager().banUser(u, 86400);
         }
     }
 

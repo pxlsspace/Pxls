@@ -289,7 +289,7 @@ window.App = {
         this.elements.board.on("pointermove", fn).on("mousemove", fn);
     },
     initAlert: function () {
-        this.elements.alert.find(".close").click(function () {
+        this.elements.alert.find(".button").click(function () {
             this.elements.alert.fadeOut(200);
         }.bind(this));
     },

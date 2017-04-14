@@ -12,7 +12,10 @@ import space.pxls.auth.AuthService;
 import space.pxls.auth.DiscordAuthService;
 import space.pxls.auth.GoogleAuthService;
 import space.pxls.auth.RedditAuthService;
+import space.pxls.data.DBPixelPlacement;
+import space.pxls.user.Role;
 import space.pxls.user.User;
+import space.pxls.util.AuthReader;
 import space.pxls.util.IPReader;
 
 import java.nio.ByteBuffer;
@@ -168,5 +171,35 @@ public class WebHandler {
         exchange.setStatusCode(StatusCodes.SEE_OTHER);
         exchange.getResponseHeaders().put(Headers.LOCATION, "/");
         exchange.getResponseSender().send("");
+    }
+
+    public void lookup(HttpServerExchange exchange) {
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null || user.getRole().lessThan(Role.MODERATOR)) {
+            exchange.setStatusCode(StatusCodes.FORBIDDEN);
+            exchange.endExchange();
+            return;
+        }
+
+        Deque<String> xq = exchange.getQueryParameters().get("x");
+        Deque<String> yq = exchange.getQueryParameters().get("y");
+
+        if (xq.isEmpty() || yq.isEmpty()) {
+            exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+            exchange.endExchange();
+            return;
+        }
+
+        int x = Integer.parseInt(xq.element());
+        int y = Integer.parseInt(yq.element());
+        if (x < 0 || x >= App.getWidth() || y < 0 || y >= App.getHeight()) {
+            exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+            exchange.endExchange();
+            return;
+        }
+
+        DBPixelPlacement pp = App.getDatabase().getPixelAt(x, y);
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+        exchange.getResponseSender().send(App.getGson().toJson(pp));
     }
 }
