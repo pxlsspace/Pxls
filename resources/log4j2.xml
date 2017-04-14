@@ -1,0 +1,22 @@
+<Configuration xmlns="http://logging.apache.org/log4j/2.0/config">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+        </Console>
+
+        <File name="Pixels" fileName="logs/pixels.log">
+            <PatternLayout>
+                <Pattern>%d %m%n</Pattern>
+            </PatternLayout>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+
+        <Logger name="Pixels" level="INFO">
+            <AppenderRef ref="Pixels"/>
+        </Logger>
+    </Loggers>
+</Configuration>

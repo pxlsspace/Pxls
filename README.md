@@ -1,6 +1,9 @@
 # About
 Pxls is a collaborative image editor where you can only place one pixel every 3 minutes.
 
+# Requirements
+Pxls requires Maven (for building), Java 8 (for running) and MariaDB (for databasing).
+
 # Running
 Pxls is a simple Java application, that can be run as follows:
 
@@ -11,31 +14,63 @@ Pxls is a simple Java application, that can be run as follows:
   
 The server will start on port 4567 by default, and will expose a rudimentary console with a few commands.
 
-Pxls can be configured with a few environment variables:
-
-`CANVAS_WIDTH` - the width of the canvas (default 1000)  
-`CANVAS_HEIGHT` - the height of the canvas (default 1000)  
-`COOLDOWN` - the cooldown to apply between pixel placements, in seconds (default 180)  
-`PORT` - the port to run the web server on (default 4567)  
-`STORAGE` - the directory to store map data, logs, and backups (default .)  
-`CAPTCHA_KEY` - the Invisible ReCaptcha secret key (default none, captcha disabled)  
-`CAPTCHA_THRESHOLD` - how often the captcha should appear (higher threshold = less captchas)
-`BAN_TOR` - whether to ban tor exit nodes, true/false (default true)
+Pxls can be configured with a config file, `pxls.conf`, located in its working directory. The default values of all the options, as well as comments, can be seen in `resources/reference.conf` in the repo. The config file uses [HOCON](https://github.com/typesafehub/config/blob/master/HOCON.md).
 
 Pxls will automatically save a backup of the map every five minutes to `$STORAGE/backups/board.<timestamp>.dat`,
 as well as before executing a blank operation and right before exiting (via Ctrl-C).
+
+# Configuring OAuth
+
+OAuth keys must be set in the config file (see above). Right now, only two services are supported, reddit and Google.
+
+You can obtain OAuth keys for Google [here](console.developers.google.com), for reddit [here][https://www.reddit.com/prefs/apps], and for Discord [here](https://discordapp.com/developers/applications/me).
+
+The config node `oauth.callbackBase` must be set to your app's URL (including protocol and port), followed by `/auth` (for example, `http://pxls.space/auth`).
+On the OAuth setup page for the various services, you need to set the redirect URL to `oauth.callbackBase`, followed by the service name. For reddit, for exampe, that would be `http://pxls.space/auth/reddit`, and likewise for Google.
+
+An example OAuth section could look like this:
+
+    oauth {
+        callbackBase: "http://example.com/auth"
+        reddit {
+            key: qwertyuiop
+            secret: qwertyuiopasdfghjkl
+        }
+        google {
+            key: asdfghjkl
+            secret: zxcvbnmqwertyuiop
+        }
+        discord {
+            key: 123456789
+            secret: abcdefghijklmn
+        }
+    }
+    
+# Configuring CAPTCHA
+
+By default, CAPTCHAs are disabled, and need to be configured in the config file to work.
+You will need a CAPTCHA key and secret, those can be created [here](https://www.google.com/recaptcha/admin). You must create an `Invisible reCAPTCHA` key.
+
+The `captcha.host` key needs to be one of the approved domains on the ReCAPTCHA admin panel. For local testing, this will likely be `localhost` (no port).
+
+An example CAPTCHA section could look like this:
+
+    captcha {
+        key: qwertyuiop
+        secret: asdfghjkl
+        host: example.com
+    }
+
 
 # Commands
 
 Commands are entered directly into the running instance (stdin).
 
-`cooldown <secs>` - changes the cooldown server-wide  
-`alert <message>` - broadcasts an alert message to all clients  
-`blank <x1> <y1> <x2> <y2>` - wipes out a section of the map to white, logging as `<blank operation>` and backing up beforehand  
-`trusted` - lists all trusted IPs (a trusted IP has no captcha or cooldown, does not persist through restarts)  
-`trust <ip>` - adds an IP to the trusted list  
-`untrust <ip>` - removes an IP from the trusted list  
-`ban <ip>` - bans an IP (does not persist through restarts) 
-`unban <ip>` - unbans an IP  
-`captcha_threshold <threshold>` - changes the captcha threshold, see above  
+`role <user> <role>` - changes the role of a user, roles can be USER/MODERATOR/ADMIN
+`reload` - reloads the main config file, applying *most* changes immediately  
 `save` - saves the map  
+
+# Contributors
+
+* @xSke (main code)
+* @jasperandrew (client UI/UX)

@@ -1,4 +1,8 @@
-html,body {
+/*//////////////////////////*\
+| General Styles
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
+
+html, body {
     margin: 0;
     width: 100%;
     height: 100%;
@@ -12,11 +16,191 @@ html,body {
     box-sizing: border-box;
 }
 
-.palette {
+a, a:hover, a:visited, a:active {
+    color: inherit;
+}
+
+/*//////////////////////////*\
+| Overlays
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
+
+.loading {
     position: absolute;
-    bottom: 16px;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: #444;
+    z-index: 999;
+}
+
+.loading span {
+    text-align: center;
+    font-size: 36px;
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.message {
+    padding: 30px 30px 60px;
+    border-radius: 7px;
+    background-color: #fff;
+    color: #333;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+    max-width: 40%;
+    min-width: 20%;
+    z-index: 99;
+
+    position: absolute;
+    top: 45vh;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.message .button {
+    position: absolute;
+    bottom: 20px;
+    right: 30px;
+}
+
+.button {
+    cursor: pointer;
+    margin-top: 6px;
+    margin-right: 6px;
+    display: inline-block;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    border-radius: 3px;
+}
+
+.button:hover {
+    color: #fff;
+    background: #ce4747;
+}
+
+/*//////////////////////////*\
+| Info Drawer
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
+
+.info {
+    position: absolute;
+    left: 0;
+    width: 100%;
+    background: #333;
+    padding: 20px;
+
+    transform: translateY(-100%);
+    transition: transform 0.3s ease-in-out;
+}
+
+.info.open {
+    transform: translateY(0);
+}
+
+.info > .open {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #333;
+    padding: 10px;
+    width: 50px;
+    text-align: center;
+    cursor: pointer;
+    font-weight: 700;
+    border-radius: 0 0 5px 0;
+}
+
+.info div {
+    display: inline-block;
+    color: #fff;
+    vertical-align: top;
+}
+
+.info > div {
+    margin-right: 30px;
+}
+
+.info > div h1 {
+    margin: 0 0 10px 0;
+    font-size: 25px;
+}
+
+.info > div p,
+.info > div a {
+    margin-top: 0;
+    margin-bottom: 0;
+    display: block;
+}
+
+.info > div > div {
+    margin-right: 20px;
+}
+
+.info div > * {
+    margin-left: 1px;
+}
+
+.info form {
+    margin-top: 10px;
+    display: inline-block;
+}
+
+.info div[id*="bitcoin"] {
+    margin-top: 7px;
+    margin-left: 10px;
+    display: inline-block;
+}
+
+.info div[id*="bitcoin"] a {
+    display: inline-block;
+}
+
+/*//////////////////////////*\
+| UI
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
+
+.ui {
+    z-index: 99;
+}
+
+.ui > div:first-child {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+.login-overlay, .cooldown-timer {
+    position: absolute;
+    bottom: 0;
     padding: 0 32px;
     width: 100%;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #000;
+    font-weight: 700;
+    line-height: 50px;
+    z-index: 9;
+
+    text-align: center;
+    vertical-align: middle;
+}
+
+.cooldown-timer {
+    font-size: 24px;
+    pointer-events: none;
+    user-select: none;
+}
+
+.palette {
+    padding: 10px 0 7px;
+    margin: 0 auto;
 
     overflow-x: auto;
     text-align: center;
@@ -28,10 +212,92 @@ html,body {
 
     min-width: 32px;
     min-height: 32px;
-    border: 1px solid black;
-    margin-right: 8px;
+    border: 2px solid black;
+    border-radius: 3px;
+    margin-right: 10px;
     cursor: pointer;
+    bottom: 0;
 }
+
+.palette-color:first-child {
+    margin-left: 10px;
+}
+
+.palette-color.active,
+.palette-color.no-touch:hover {
+    position: relative;
+    bottom: 7px;
+}
+
+.reticule {
+    position: absolute;
+    top: 0;
+    left: 0;
+    border: 2px solid black;
+    background-color: rgba(0, 0, 0, 0);
+    box-sizing: content-box;
+}
+
+.cursor {
+    width: 36px;
+    height: 36px;
+    border: 2px solid black;
+    border-radius: 3px;
+
+    position: relative;
+    top: 20px;
+    left: 10px;
+}
+
+.reticule, .cursor {
+    pointer-events: none;
+    will-change: transform;
+    z-index: 1;
+}
+
+.bubble {
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+    color: #fff;
+    z-index: 9;
+}
+
+.left {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    z-index: 10;
+}
+
+.right {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+    z-index: 10;
+}
+
+.userinfo .logout {
+    font-size: 0.75em;
+    text-decoration: underline;
+}
+
+/*//////////////////////////*\
+| reCaptcha
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
+
+.g-recaptcha {
+    display: none;
+}
+
+.grecaptcha-badge {
+    bottom: 64px !important;
+}
+
+/*//////////////////////////*\
+| Board Stuff
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
 .board-container {
     z-index: 0;
@@ -59,126 +325,14 @@ html,body {
 }
 
 #board {
+    image-rendering: optimizeSpeed; /* Legal fallback */
+    -ms-interpolation-mode: nearest-neighbor;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: -webkit-crisp-edges;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: -o-crisp-edges;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
-    image-rendering: -moz-crisp-edges;
-}
-
-.reticule {
-    position: absolute;
-    top: 0;
-    left: 0;
-
-    z-index: 1;
-    border: 1px solid black;
-    pointer-events: none;
-    will-change: transform;
-}
-
-.cursor {
-    width: 36px;
-    height: 36px;
-    border: 1px solid black;
-
-    pointer-events: none;
-    will-change: transform;
-    z-index: 1;
-}
-
-.loading {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background-color: #444;
-    z-index: 99999;
-}
-
-.loading span {
-    text-align: center;
-    font-size: 36px;
-    color: white;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-}
-
-.ui {
-    z-index: 999;
-}
-
-.cooldown-timer {
-    position: absolute;
-    position: absolute;
-    top: 48px;
-    left: 50%;
-    transform: translateX(-50%);
-
-    padding: 16px;
-    background-color: rgba(0, 0, 0, 0.4);
-    border-radius: 16px;
-    color: white;
-    font-size: 24px;
-
-    pointer-events: none;
-    user-select: none;
-    z-index: 999;
-}
-
-.message {
-    padding: 16px;
-    border-radius: 16px;
-    background-color: rgba(0, 0, 0, 0.8);
-    color: white;
-    width: 50%;
-    text-align: center;
-    z-index: 999;
-
-    position: absolute;
-    bottom: 160px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.message .close {
-    cursor: pointer;
-    float: right;
-}
-
-.coords {
-    position: absolute;
-    bottom: 16px;
-    left: 32px;
-}
-
-.online {
-    position: absolute;
-    bottom: 16px;
-    right: 32px;
-}
-
-.bubble-container {
-    position: absolute;
-    top: 32px;
-    left: 32px;
-}
-
-.bubble {
-    margin: 8px;
-    width: 128px;
-}
-
-.bubble a:visited, a:link, a:active, a:hover {
-    color: #fff;
-}
-
-.donate {
-    position: absolute;
-    right: 16px;
-    top: 16px;
-    z-index: 999;
 }
 
 .grid {
@@ -192,48 +346,98 @@ html,body {
     background-image: linear-gradient(to right, #aaa 1px, transparent 1px), linear-gradient(to bottom, #aaa 1px, transparent 1px);
 }
 
-.instructions {
+/*//////////////////////////*\
+| Sign Up
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
+
+.signup {
+    background-color: white;
+}
+
+.signup .signup-container {
+    padding: 30px 30px 80px;
+    border-radius: 7px;
+    background-color: #eee;
+    color: #333;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    width: 50%;
+
     position: absolute;
-    top: 32px;
-    right: 32px;
+    top: 30vh;
+    left: 50%;
+    transform: translateX(-50%) translateY(-50%);
 }
 
-.g-recaptcha {
-    display: none;
+.signup .signup-container h1 {
+    margin-top: 0;
 }
 
-.grecaptcha-badge {
-    bottom: 64px !important;
+.signup .signup-container h1 small {
+    display: block;
 }
 
-.panel {
-    padding: 8px 16px;
-    background-color: rgba(0, 0, 0, 0.7);
-    border-radius: 8px;
+.signup .signup-container input[type="submit"] {
+    cursor: pointer;
+    position: absolute;
+    bottom: 30px;
+    right: 30px;
+    border: 1px solid #ccc;
+    padding: 10px 20px;
+    border-radius: 5px;
+}
+
+.signup .signup-container input[type="submit"]:hover {
     color: #fff;
-    text-align: center;
+    background: #4ebf62;
+}
+
+.signup .username {
+    border: 1px solid #bbb;
+    border-radius: 5px;
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 16px;
+}
+
+.signup .error {
+    color: #ff0000;
+    font-weight: 700;
+}
+
+/*.signup .error::before {
+  content: "Error: ";
+}*/
+
+/*//////////////////////////*\
+| Mobile Styles
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
+
+@media (max-width: 1300px) {
+    .ui .left, .ui .right {
+        bottom: 70px;
+    }
 }
 
 @media (max-width: 768px) {
-    .bubble-container {
+    .info {
         display: none;
     }
 
-    .coords {
+    .palette {
+        width: 100%;
+    }
+
+    .ui .left {
         top: 16px;
         left: 16px;
         bottom: auto;
         right: auto;
     }
 
-    .online {
+    .ui .right {
         top: 64px;
         left: 16px;
         bottom: auto;
         right: auto;
-    }
-
-    .instructions {
-        display: none;
     }
 }
