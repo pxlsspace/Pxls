@@ -12,9 +12,11 @@ import space.pxls.auth.AuthService;
 import space.pxls.auth.DiscordAuthService;
 import space.pxls.auth.GoogleAuthService;
 import space.pxls.auth.RedditAuthService;
+import space.pxls.data.DBPixelPlacement;
+import space.pxls.user.Role;
 import space.pxls.user.User;
-import space.pxls.user.UserManager;
 import space.pxls.util.AuthReader;
+import space.pxls.util.IPReader;
 
 import java.nio.ByteBuffer;
 import java.util.Deque;
@@ -31,6 +33,7 @@ public class WebHandler {
     }
 
     public void signUp(HttpServerExchange exchange) {
+        String ip = exchange.getAttachment(IPReader.IP);
         exchange.getRequestReceiver().receiveFullString((x, msg) -> {
             String[] vals = msg.split("&");
 
@@ -69,7 +72,7 @@ public class WebHandler {
                 return;
             }
 
-            User user = App.getUserManager().signUp(name, token);
+            User user = App.getUserManager().signUp(name, token, ip);
 
             if (user == null) {
                 exchange.setStatusCode(StatusCodes.SEE_OTHER);
@@ -77,7 +80,7 @@ public class WebHandler {
                 exchange.getResponseSender().send("");
                 return;
             }
-            String loginToken = App.getUserManager().logIn(user);
+            String loginToken = App.getUserManager().logIn(user, ip);
             exchange.setStatusCode(StatusCodes.SEE_OTHER);
             exchange.getResponseHeaders().put(Headers.LOCATION, "/");
             exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setPath("/"));
@@ -92,6 +95,7 @@ public class WebHandler {
         }
 
         String id = exchange.getRelativePath().substring(1);
+        String ip = exchange.getAttachment(IPReader.IP);
 
         AuthService service = services.get(id);
         if (service != null) {
@@ -122,7 +126,7 @@ public class WebHandler {
                     exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + signUpToken);
                     exchange.getResponseSender().send("");
                 } else {
-                    String loginToken = App.getUserManager().logIn(user);
+                    String loginToken = App.getUserManager().logIn(user, ip);
                     exchange.setStatusCode(StatusCodes.SEE_OTHER);
                     exchange.getResponseHeaders().put(Headers.LOCATION, "/");
                     exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setPath("/"));
@@ -167,5 +171,35 @@ public class WebHandler {
         exchange.setStatusCode(StatusCodes.SEE_OTHER);
         exchange.getResponseHeaders().put(Headers.LOCATION, "/");
         exchange.getResponseSender().send("");
+    }
+
+    public void lookup(HttpServerExchange exchange) {
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null || user.getRole().lessThan(Role.MODERATOR)) {
+            exchange.setStatusCode(StatusCodes.FORBIDDEN);
+            exchange.endExchange();
+            return;
+        }
+
+        Deque<String> xq = exchange.getQueryParameters().get("x");
+        Deque<String> yq = exchange.getQueryParameters().get("y");
+
+        if (xq.isEmpty() || yq.isEmpty()) {
+            exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+            exchange.endExchange();
+            return;
+        }
+
+        int x = Integer.parseInt(xq.element());
+        int y = Integer.parseInt(yq.element());
+        if (x < 0 || x >= App.getWidth() || y < 0 || y >= App.getHeight()) {
+            exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+            exchange.endExchange();
+            return;
+        }
+
+        DBPixelPlacement pp = App.getDatabase().getPixelAt(x, y);
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+        exchange.getResponseSender().send(App.getGson().toJson(pp));
     }
 }

@@ -38,12 +38,13 @@ public class UserManager {
 
     private User getByDB(DBUser user) {
         if (user == null) return null;
-        return userCache.computeIfAbsent(user.id, (k) -> new User(user.id, user.username, user.login, user.lastPlaceTime, user.role));
+        return userCache.computeIfAbsent(user.id, (k) -> new User(user.id, user.username, user.login, user.lastPlaceTime, user.role, user.banExpiry));
     }
 
-    public String logIn(User user) {
+    public String logIn(User user, String ip) {
         String token = generateRandom();
         usersByToken.put(token, user);
+        App.getDatabase().updateUserIP(user, ip);
         return token;
     }
 
@@ -57,12 +58,12 @@ public class UserManager {
         return userSignupTokens.containsKey(token);
     }
 
-    public synchronized User signUp(String name, String token) {
+    public User signUp(String name, String token, String ip) {
         String login = userSignupTokens.get(token);
         if (login == null) return null;
 
         if (App.getDatabase().getUserByName(name) == null) {
-            DBUser user = App.getDatabase().createUser(name, login);
+            DBUser user = App.getDatabase().createUser(name, login, ip);
             userSignupTokens.remove(token);
             return getByDB(user);
         }
@@ -75,5 +76,10 @@ public class UserManager {
 
     public void logOut(String value) {
         usersByToken.remove(value);
+    }
+
+    public void banUser(User user, long timeFromNowSeconds) {
+        App.getDatabase().updateBan(user, timeFromNowSeconds);
+        user.setBanExpiryTime(timeFromNowSeconds * 1000 + System.currentTimeMillis());
     }
 }

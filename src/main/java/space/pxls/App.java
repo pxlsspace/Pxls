@@ -7,6 +7,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import space.pxls.data.Database;
+import space.pxls.server.Packet;
 import space.pxls.server.UndertowServer;
 import space.pxls.user.Role;
 import space.pxls.user.User;
@@ -35,6 +36,7 @@ public class App {
 
     private static Timer mapSaveTimer;
     private static Timer mapBackupTimer;
+    private static UndertowServer server;
 
     public static void main(String[] args) {
         gson = new Gson();
@@ -52,8 +54,6 @@ public class App {
         database = new Database();
         userManager = new UserManager();
 
-        new UndertowServer(config.getInt("server.port")).start();
-
         new Thread(() -> {
             Scanner s = new Scanner(System.in);
             while (true) {
@@ -65,6 +65,10 @@ public class App {
             saveMapBackup();
             saveMapForce();
         }));
+
+        server = new UndertowServer(config.getInt("server.port"));
+        server.start();
+
         saveMap();
     }
 
@@ -83,6 +87,25 @@ public class App {
                     user.setRole(role);
                     database.setUserRole(user, role);
                     System.out.println("Set " + user.getName() + "'s role to " + role.name());
+                } else {
+                    System.out.println("Cannot find user " + token[1]);
+                }
+            } else if (token[0].equalsIgnoreCase("alert")) {
+                String rest = line.substring(token[0].length() + 1).trim();
+                server.broadcast(new Packet.ServerAlert(rest));
+            } else if (token[0].equalsIgnoreCase("ban")) {
+                User user = userManager.getByName(token[1]);
+                if (user != null) {
+                    userManager.banUser(user, 24 * 60 * 60);
+                    System.out.println("Banned " + user.getName() + " for 24 hours.");
+                } else {
+                    System.out.println("Cannot find user " + token[1]);
+                }
+            } else if (token[0].equalsIgnoreCase("unban")) {
+                User user = userManager.getByName(token[1]);
+                if (user != null) {
+                    userManager.banUser(user, 0);
+                    System.out.println("Unbanned " + user.getName() + ".");
                 } else {
                     System.out.println("Cannot find user " + token[1]);
                 }
@@ -137,10 +160,10 @@ public class App {
         return board[x + y * width];
     }
 
-    public static void putPixel(int x, int y, int color, User user, boolean mod_action) {
+    public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip) {
         if (x < 0 || x >= width || y < 0 || y >= height || color < 0 || color >= getPalette().size()) return;
         board[x + y * width] = (byte) color;
-        pixelLogger.log(Level.INFO, user.getName() + " " + x + " " + y + " " + color + (mod_action ? " (mod)" : ""));
+        pixelLogger.log(Level.INFO, user.getName() + " " + x + " " + y + " " + color + " " + ip + (mod_action ? " (mod)" : ""));
         database.placePixel(x, y, color, user, mod_action);
     }
 

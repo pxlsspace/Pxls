@@ -1,7 +1,10 @@
 package space.pxls.user;
 
+import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class User {
@@ -15,12 +18,18 @@ public class User {
     private boolean justShowedCaptcha;
     private long lastPlaceTime;
 
-    public User(int id, String name, String login, long lastPlaceTime, Role role) {
+    // 0 = not banned
+    private long banExpiryTime;
+
+    private Set<WebSocketChannel> connections = new HashSet<>();
+
+    public User(int id, String name, String login, long lastPlaceTime, Role role, long banExpiryTime) {
         this.id = id;
         this.name = name;
         this.login = login;
         this.lastPlaceTime = lastPlaceTime;
         this.role = role;
+        this.banExpiryTime = banExpiryTime;
     }
 
     public int getId() {
@@ -100,5 +109,21 @@ public class User {
 
     public String getName() {
         return name;
+    }
+
+    public boolean isBanned() {
+        return banExpiryTime > System.currentTimeMillis();
+    }
+
+    public long getBanExpiryTime() {
+        return banExpiryTime;
+    }
+
+    public void setBanExpiryTime(long banExpiryTime) {
+        this.banExpiryTime = banExpiryTime;
+    }
+
+    public Set<WebSocketChannel> getConnections() {
+        return connections;
     }
 }

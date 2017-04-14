@@ -11,8 +11,6 @@ import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.util.Timer;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Collections;
 
 public class PacketHandler {
@@ -25,7 +23,7 @@ public class PacketHandler {
 
     public void connect(WebSocketChannel channel, User user) {
         if (user != null) {
-            server.send(channel, new Packet.UserInfo(user.getName()));
+            server.send(channel, new Packet.ServerUserInfo(user.getName(), user.isBanned(), user.getRole().name(), user.isBanned() ? user.getBanExpiryTime() : null));
             sendCooldownData(channel, user);
             user.flagForCaptcha();
         }
@@ -37,15 +35,45 @@ public class PacketHandler {
         updateUserData();
     }
 
-    public void accept(WebSocketChannel channel, User user, Object obj) {
+    public void accept(WebSocketChannel channel, User user, Object obj, String ip) {
         if (user != null) {
-            if (obj instanceof Packet.ClientPlace) handlePlace(channel, user, ((Packet.ClientPlace) obj));
+            if (obj instanceof Packet.ClientPlace) handlePlace(channel, user, ((Packet.ClientPlace) obj), ip);
             if (obj instanceof Packet.ClientCaptcha) handleCaptcha(channel, user, ((Packet.ClientCaptcha) obj));
+            if (obj instanceof Packet.ClientBanMe) handleBanMe(channel, user, ((Packet.ClientBanMe) obj));
 
             if (user.getRole().greaterEqual(Role.MODERATOR)) {
-                if (obj instanceof Packet.ClientAdminCooldownOverride) handleCooldownOverride(channel, user, ((Packet.ClientAdminCooldownOverride) obj));
+                if (obj instanceof Packet.ClientAdminCooldownOverride)
+                    handleCooldownOverride(channel, user, ((Packet.ClientAdminCooldownOverride) obj));
+
+                if (obj instanceof Packet.ClientAdminMessage)
+                    handleAdminMessage(channel, user, ((Packet.ClientAdminMessage) obj));
+
+                if (user.getRole().greaterEqual(Role.ADMIN)) {
+                    if (obj instanceof Packet.ClientAdminBan) handleBan(channel, user, ((Packet.ClientAdminBan) obj));
+                }
             }
         }
+    }
+
+    private void handleAdminMessage(WebSocketChannel channel, User user, Packet.ClientAdminMessage obj) {
+        User u = App.getUserManager().getByName(obj.username);
+        if (u != null) {
+            Packet.ServerAlert msg = new Packet.ServerAlert(obj.message);
+            for (WebSocketChannel ch : u.getConnections()) {
+                server.send(ch, msg);
+            }
+        }
+    }
+
+    private void handleBan(WebSocketChannel channel, User user, Packet.ClientAdminBan obj) {
+        User u = App.getUserManager().getByName(obj.username);
+        if (u != null && u.getRole().lessThan(Role.MODERATOR)) {
+            App.getUserManager().banUser(u, 86400);
+        }
+    }
+
+    private void handleBanMe(WebSocketChannel channel, User user, Packet.ClientBanMe obj) {
+        App.getUserManager().banUser(user, 86400);
     }
 
     private void handleCooldownOverride(WebSocketChannel channel, User user, Packet.ClientAdminCooldownOverride obj) {
@@ -53,16 +81,18 @@ public class PacketHandler {
         sendCooldownData(channel, user);
     }
 
-    private void handlePlace(WebSocketChannel channel, User user, Packet.ClientPlace cp) {
+    private void handlePlace(WebSocketChannel channel, User user, Packet.ClientPlace cp, String ip) {
         if (cp.x < 0 || cp.x >= App.getWidth() || cp.y < 0 || cp.y >= App.getHeight()) return;
         if (cp.color < 0 || cp.color >= App.getConfig().getStringList("board.palette").size()) return;
+        if (user.isBanned()) return;
+
         if (user.canPlace()) {
             if (user.updateCaptchaFlagPrePlace() && App.isCaptchaEnabled()) {
                 server.send(channel, new Packet.ServerCaptchaRequired());
             } else {
                 if (App.getPixel(cp.x, cp.y) != cp.color) {
                     boolean mod_action = user.isOverridingCooldown();
-                    App.putPixel(cp.x, cp.y, cp.color, user, mod_action);
+                    App.putPixel(cp.x, cp.y, cp.color, user, mod_action, ip);
                     App.saveMap();
                     broadcastPixelUpdate(cp.x, cp.y, cp.color);
 
@@ -77,6 +107,7 @@ public class PacketHandler {
 
     private void handleCaptcha(WebSocketChannel channel, User user, Packet.ClientCaptcha cc) {
         if (!user.isFlaggedForCaptcha()) return;
+        if (user.isBanned()) return;
 
         Unirest
                 .post("https://www.google.com/recaptcha/api/siteverify")

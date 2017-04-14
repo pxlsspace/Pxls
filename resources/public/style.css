@@ -62,18 +62,24 @@ a, a:hover, a:visited, a:active {
     overflow-wrap: break-word;
 }
 
-.message .close {
-    cursor: pointer;
+.message .button {
     position: fixed;
     bottom: 20px;
     right: 30px;
+}
+
+.button {
+    cursor: pointer;
+    margin-top: 6px;
+    margin-right: 6px;
+    display: inline-block;
     font-size: 12px;
     border: 1px solid #ccc;
     padding: 5px 10px;
     border-radius: 3px;
 }
 
-.message .close:hover {
+.button:hover {
     color: #fff;
     background: #ce4747;
 }
@@ -262,12 +268,14 @@ a, a:hover, a:visited, a:active {
     position: fixed;
     left: 10px;
     bottom: 10px;
+    z-index: 10;
 }
 
 .right {
     position: fixed;
     right: 10px;
     bottom: 10px;
+    z-index: 10;
 }
 
 .userinfo .logout {
@@ -317,7 +325,7 @@ a, a:hover, a:visited, a:active {
 }
 
 #board {
-    image-rendering:optimizeSpeed;             /* Legal fallback */
+    image-rendering: optimizeSpeed; /* Legal fallback */
     -ms-interpolation-mode: nearest-neighbor;
     image-rendering: -webkit-optimize-contrast;
     image-rendering: -webkit-crisp-edges;
@@ -404,6 +412,12 @@ a, a:hover, a:visited, a:active {
 | Mobile Styles
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
+@media (max-width: 1300px) {
+    .ui .left, .ui .right {
+        bottom: 70px;
+    }
+}
+
 @media (max-width: 768px) {
     .info {
         display: none;
@@ -413,14 +427,14 @@ a, a:hover, a:visited, a:active {
         width: 100%;
     }
 
-    .coords {
+    .ui .left {
         top: 16px;
         left: 16px;
         bottom: auto;
         right: auto;
     }
 
-    .online {
+    .ui .right {
         top: 64px;
         left: 16px;
         bottom: auto;

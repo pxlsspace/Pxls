@@ -14,25 +14,29 @@ public class DBUser {
     public String login;
     public long lastPlaceTime;
     public Role role;
+    public long banExpiry;
 
-    public DBUser(int id, String username, String login, long lastPlaceTime, Role role) {
+    public DBUser(int id, String username, String login, long lastPlaceTime, Role role, long banExpiry) {
         this.id = id;
         this.username = username;
         this.login = login;
         this.lastPlaceTime = lastPlaceTime;
         this.role = role;
+        this.banExpiry = banExpiry;
     }
 
     public static class Mapper implements ResultSetMapper<DBUser> {
         @Override
         public DBUser map(int index, ResultSet r, StatementContext ctx) throws SQLException {
             Timestamp stamp = r.getTimestamp("last_pixel_time");
+            Timestamp ban = r.getTimestamp("ban_expiry");
             return new DBUser(
                     r.getInt("id"),
                     r.getString("username"),
                     r.getString("login"),
                     stamp == null ? 0 : stamp.getTime(),
-                    Role.valueOf(r.getString("role"))
+                    Role.valueOf(r.getString("role")),
+                    ban == null ? 0 : ban.getTime()
             );
         }
     }

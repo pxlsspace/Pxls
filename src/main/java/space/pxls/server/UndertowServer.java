@@ -3,14 +3,7 @@ package space.pxls.server;
 import com.google.gson.JsonObject;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
-import io.undertow.predicate.Predicate;
-import io.undertow.predicate.Predicates;
-import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.PathHandler;
-import io.undertow.server.handlers.encoding.ContentEncodingRepository;
-import io.undertow.server.handlers.encoding.EncodingHandler;
-import io.undertow.server.handlers.encoding.GzipEncodingProvider;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.websockets.core.AbstractReceiveListener;
 import io.undertow.websockets.core.BufferedTextMessage;
@@ -26,7 +19,6 @@ import space.pxls.util.RateLimitingHandler;
 import space.pxls.util.RoleGate;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -50,17 +42,20 @@ public class UndertowServer {
                 .addPrefixPath("/info", webHandler::info)
                 .addPrefixPath("/boarddata", webHandler::data)
                 .addPrefixPath("/logout", webHandler::logout)
-                .addPrefixPath("/signin/", (x) -> webHandler.signIn(x))
-                .addPrefixPath("/auth/", new RateLimitingHandler((x) -> webHandler.auth(x), (int) App.getConfig().getDuration("server.limits.auth.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.auth.count")))
-                .addPrefixPath("/signup/do", new RateLimitingHandler((x) -> webHandler.signUp(x), (int) App.getConfig().getDuration("server.limits.signup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.signup.count")))
+                .addPrefixPath("/lookup", webHandler::lookup)
+                .addPrefixPath("/signin", webHandler::signIn)
+                .addPrefixPath("/auth", new RateLimitingHandler(webHandler::auth, (int) App.getConfig().getDuration("server.limits.auth.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.auth.count")))
+                .addPrefixPath("/signup/do", new RateLimitingHandler(webHandler::signUp, (int) App.getConfig().getDuration("server.limits.signup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.signup.count")))
                 .addPrefixPath("/admin", new RoleGate(Role.MODERATOR, Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/"))
                         .setCacheTime(10)))
                 .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/"))
                         .setCacheTime(10));
-        EncodingHandler encoder = new EncodingHandler(mainHandler, new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50, Predicates.parse("max-content-size(1024)")));
+        //EncodingHandler encoder = new EncodingHandler(mainHandler, new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50, Predicates.parse("max-content-size(1024)")));
         Undertow server = Undertow.builder()
                 .addHttpListener(port, "0.0.0.0")
-                .setHandler(new IPReader(new AuthReader(encoder))).build();
+                .setIoThreads(32)
+                .setWorkerThreads(128)
+                .setHandler(new IPReader(new AuthReader(mainHandler))).build();
         server.start();
     }
 
@@ -68,7 +63,13 @@ public class UndertowServer {
         connections = exchange.getPeerConnections();
 
         User user = exchange.getAttachment(AuthReader.USER);
+        String ip = exchange.getAttachment(IPReader.IP);
+
         socketHandler.connect(channel, user);
+
+        if (user != null) {
+            user.getConnections().add(channel);
+        }
 
         channel.getReceiveSetter().set(new AbstractReceiveListener() {
             @Override
@@ -83,14 +84,25 @@ public class UndertowServer {
                 Object obj = null;
                 if (type.equals("placepixel")) obj = App.getGson().fromJson(jsonObj, Packet.ClientPlace.class);
                 if (type.equals("captcha")) obj = App.getGson().fromJson(jsonObj, Packet.ClientCaptcha.class);
-                if (type.equals("admin_cdoverride")) obj = App.getGson().fromJson(jsonObj, Packet.ClientAdminCooldownOverride.class);
+                if (type.equals("admin_cdoverride"))
+                    obj = App.getGson().fromJson(jsonObj, Packet.ClientAdminCooldownOverride.class);
+                if (type.equals("admin_ban")) obj = App.getGson().fromJson(jsonObj, Packet.ClientAdminBan.class);
+                if (type.equals("admin_message"))
+                    obj = App.getGson().fromJson(jsonObj, Packet.ClientAdminMessage.class);
+                if (type.equals("banme")) obj = App.getGson().fromJson(jsonObj, Packet.ClientBanMe.class);
 
                 if (obj != null) {
-                    socketHandler.accept(channel, user, obj);
+                    socketHandler.accept(channel, user, obj, ip);
                 }
             }
         });
-        channel.getCloseSetter().set(c -> socketHandler.disconnect(channel, user));
+        channel.getCloseSetter().set(c -> {
+            if (user != null) {
+                user.getConnections().remove(channel);
+            }
+
+            socketHandler.disconnect(channel, user);
+        });
         channel.resumeReceives();
     }
 
