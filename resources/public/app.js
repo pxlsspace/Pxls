@@ -64,11 +64,32 @@ window.App = {
         this.initGrid();
         this.initInfo();
 
+        // Clever! but nah. :)
+        window.clearInterval = function() {};
+        window.clearTimeout = function() {};
+
+        var App = this;
         setInterval(function () {
-            if (document.autoPxlsScriptRevision) this.banMe();
-            if (window.Botnet) this.banMe();
-            if (window.AutoPXLS) this.banMe();
-            if ($("div.info").find("#autopxlsinfo").length) this.banMe();
+            var banMe = function() {
+                // This (still) does exactly what you think it does.
+                // Oh - and why don't you star me too, p0358 ;)
+
+                App.socket.send(JSON.stringify({type: "banme"}));
+                App.socket.close();
+                window.location.reload();
+            };
+
+            // AutoPXLS by p0358
+            if (document.autoPxlsScriptRevision) banMe();
+            if (document.autoPxlsScriptRevision_) banMe();
+            if (document.autoPxlsRandomNumber) banMe();
+            if (document.defaultCaptchaFaviconSource) banMe();
+            if (window.AutoPXLS) banMe();
+            if (window.AutoPXLS2) banMe();
+            if ($("div.info").find("#autopxlsinfo").length) banMe();
+
+            // "Botnet" by (unknown, obfuscated)
+            if (window.Botnet) banMe();
         }.bind(this), 5000);
         Notification.requestPermission();
     },
@@ -326,7 +347,7 @@ window.App = {
                 window.location.reload();
             }, 10000 * Math.random() + 3000);
             this.alert("Lost connection to server, reconnecting...")
-        };
+        }.bind(this);
 
         $(".board-container").show();
         $(".ui").show();
@@ -472,10 +493,6 @@ window.App = {
 
             window.URL.revokeObjectURL(blob);
         });
-    },
-    banMe: function () {
-        // This does exactly what you think it does.
-        this.socket.send(JSON.stringify({type: "banme"}));
     }
 };
 
