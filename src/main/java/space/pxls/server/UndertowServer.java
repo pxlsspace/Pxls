@@ -57,10 +57,12 @@ public class UndertowServer {
                         .setCacheTime(10)))
                 .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/"))
                         .setCacheTime(10));
-        EncodingHandler encoder = new EncodingHandler(mainHandler, new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50, Predicates.parse("max-content-size(1024)")));
+        //EncodingHandler encoder = new EncodingHandler(mainHandler, new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50, Predicates.parse("max-content-size(1024)")));
         Undertow server = Undertow.builder()
                 .addHttpListener(port, "0.0.0.0")
-                .setHandler(new IPReader(new AuthReader(encoder))).build();
+                .setIoThreads(32)
+                .setWorkerThreads(128)
+                .setHandler(new IPReader(new AuthReader(mainHandler))).build();
         server.start();
     }
 
@@ -68,6 +70,8 @@ public class UndertowServer {
         connections = exchange.getPeerConnections();
 
         User user = exchange.getAttachment(AuthReader.USER);
+        String ip = exchange.getAttachment(IPReader.IP);
+
         socketHandler.connect(channel, user);
 
         channel.getReceiveSetter().set(new AbstractReceiveListener() {
@@ -84,9 +88,10 @@ public class UndertowServer {
                 if (type.equals("placepixel")) obj = App.getGson().fromJson(jsonObj, Packet.ClientPlace.class);
                 if (type.equals("captcha")) obj = App.getGson().fromJson(jsonObj, Packet.ClientCaptcha.class);
                 if (type.equals("admin_cdoverride")) obj = App.getGson().fromJson(jsonObj, Packet.ClientAdminCooldownOverride.class);
+                if (type.equals("banme")) obj = App.getGson().fromJson(jsonObj, Packet.ClientBanMe.class);
 
                 if (obj != null) {
-                    socketHandler.accept(channel, user, obj);
+                    socketHandler.accept(channel, user, obj, ip);
                 }
             }
         });

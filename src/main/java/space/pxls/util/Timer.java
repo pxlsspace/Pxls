@@ -3,7 +3,6 @@ package space.pxls.util;
 public class Timer {
     private long lastRun;
     private float wait;
-    private Runnable r;
 
     public Timer(float wait) {
         this.wait = wait;

@@ -262,12 +262,14 @@ a, a:hover, a:visited, a:active {
     position: absolute;
     left: 10px;
     bottom: 10px;
+    z-index: 10;
 }
 
 .right {
     position: absolute;
     right: 10px;
     bottom: 10px;
+    z-index: 10;
 }
 
 .userinfo .logout {
@@ -404,6 +406,12 @@ a, a:hover, a:visited, a:active {
 | Mobile Styles
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
+@media (max-width: 1300px) {
+    .ui .left, .ui .right {
+        bottom: 70px;
+    }
+}
+
 @media (max-width: 768px) {
     .info {
         display: none;
@@ -413,14 +421,14 @@ a, a:hover, a:visited, a:active {
         width: 100%;
     }
 
-    .coords {
+    .ui .left {
         top: 16px;
         left: 16px;
         bottom: auto;
         right: auto;
     }
 
-    .online {
+    .ui .right {
         top: 64px;
         left: 16px;
         bottom: auto;
