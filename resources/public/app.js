@@ -8,7 +8,8 @@ function getQueryVariable(variable) {
         }
     }
 }
-
+var notifyaudio = new Audio('notify.wav');
+var placeaudio = new Audio('place.wav');
 function hexToRgb(hex) {
     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result ? {
@@ -17,7 +18,7 @@ function hexToRgb(hex) {
         b: parseInt(result[3], 16)
     } : null;
 }
-
+var notify = new Audio('notify.wav');
 var nua = navigator.userAgent,
     ios_safari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i)),
     ms_edge = nua.indexOf('Edge') > -1;
@@ -302,6 +303,9 @@ window.App = {
             if (dx < 5 && dy < 5 && this.color !== -1 && this.cooldown < (new Date()).getTime() && (evt.button === 0 || touch)) {
                 var pos = this.screenToBoardSpace(clientX, clientY);
                 this.attemptPlace(pos.x | 0, pos.y | 0);
+					if (document.getElementById('audiotoggle').checked == false) {
+						placeaudio.play();
+					}				
             }
         }.bind(this)).contextmenu(function (evt) {
             evt.preventDefault();
@@ -548,7 +552,11 @@ window.App = {
             document.title = "pxls.space [" + minuteStr + ":" + secsStr + "]";
         } else {
             if (!this.hasFiredNotification) {
+				
                 try {
+					if (document.getElementById('audiotoggle').checked == false) {
+						notifyaudio.play();
+					}
                     new Notification("pxls.space", {
                         body: "Your next pixel is available!"
                     });
