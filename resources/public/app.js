@@ -18,7 +18,6 @@ function hexToRgb(hex) {
         b: parseInt(result[3], 16)
     } : null;
 }
-var notify = new Audio('notify.wav');
 var nua = navigator.userAgent,
     ios_safari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i)),
     ms_edge = nua.indexOf('Edge') > -1;
