@@ -38,6 +38,7 @@ window.App = {
     panX: 0,
     panY: 0,
     scale: 4,
+    role: "USER",
     use_zoom: (navigator.userAgent.match(/(iPod|iPhone|iPad)/i) && navigator.userAgent.match(/AppleWebKit/i)), // mobile safari else gets blurry
     hasFiredNotification: true,
     init: function () {
@@ -334,6 +335,7 @@ window.App = {
             } else if (data.type === "userinfo") {
                 this.elements.userInfo.fadeIn(200);
                 this.elements.userInfo.find("span.name").text(data.name);
+                this.role = data.role;
 
                 if (!data.banned) {
                     this.elements.loginOverlay.hide();

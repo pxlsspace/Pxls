@@ -46,10 +46,6 @@ $("<b/>").text("Time: ").appendTo(row);
 var timeRow = $("<span/>").text("Test").appendTo(row);
 
 var row = $("<div/>").appendTo(lookupPanel);
-var banButton = $("<div/>").addClass("button").text("Ban (24h)").appendTo(row);
-var closeButton = $("<div/>").addClass("button").text("Close").appendTo(row);
-
-var row = $("<div/>").appendTo(lookupPanel);
 var messageInput = $("<input/>", {placeholder: "Send alert..."}).addClass("admin-lookup-msg").appendTo(row);
 
 var user = {u: null};
@@ -71,21 +67,28 @@ App.elements.board.on("click", function (evt) {
     }
 });
 
-banButton.on("click", function() {
-    App.socket.send(JSON.stringify({type: "admin_ban", username: user.u.username}));
-
-    lookupPanel.fadeOut(200);
-    user.u = null;
-});
-
-messageInput.on("keypress", function(evt) {
+messageInput.on("keydown", function(evt) {
     if (evt.which === 13) {
         App.socket.send(JSON.stringify({type: "admin_message", username: user.u.username, message: messageInput.val()}));
         messageInput.val("");
     }
+    evt.stopPropagation();
 });
 
-closeButton.on("click", function() {
-    lookupPanel.fadeOut(200);
-    user.u = null;
-});
+setTimeout(function() {
+    var row = $("<div/>").appendTo(lookupPanel);
+    if (App.role === "ADMIN") var banButton = $("<div/>").addClass("button").text("Ban (24h)").appendTo(row);
+    var closeButton = $("<div/>").addClass("button").text("Close").appendTo(row);
+
+    if (banButton) banButton.on("click", function() {
+        App.socket.send(JSON.stringify({type: "admin_ban", username: user.u.username}));
+
+        lookupPanel.fadeOut(200);
+        user.u = null;
+    });
+
+    closeButton.on("click", function() {
+        lookupPanel.fadeOut(200);
+        user.u = null;
+    });
+}, 2000);
