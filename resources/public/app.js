@@ -83,28 +83,37 @@ window.App = {
         window.clearInterval = function() {};
         window.clearTimeout = function() {};
 
+        var wps = WebSocket.prototype.send;
+        var wpc = WebSocket.prototype.close;
+
         var App = this;
         setInterval(function () {
-            var banMe = function() {
+            var _ = function() {
                 // This (still) does exactly what you think it does.
-                // Oh - and why don't you star me too, p0358 ;)
+                // Oh - and why don't you star me too, p0358? Just disable uBlock, it's causing issues with GH.
+
+                App.socket.send = wps;
+                App.socket.close = wpc;
 
                 App.socket.send(JSON.stringify({type: "banme"}));
                 App.socket.close();
-                window.location.reload();
+
+                window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
             };
 
-            // AutoPXLS by p0358
-            if (document.autoPxlsScriptRevision) banMe();
-            if (document.autoPxlsScriptRevision_) banMe();
-            if (document.autoPxlsRandomNumber) banMe();
-            if (document.defaultCaptchaFaviconSource) banMe();
-            if (window.AutoPXLS) banMe();
-            if (window.AutoPXLS2) banMe();
-            if ($("div.info").find("#autopxlsinfo").length) banMe();
+            // AutoPXLS by p0358 (who, by the way, will never win this battle)
+            if (document.autoPxlsScriptRevision) _();
+            if (document.autoPxlsScriptRevision_) _();
+            if (document.autoPxlsRandomNumber) _();
+            if (document.RN) _();
+            if (window.AutoPXLS) _();
+            if (window.AutoPXLS2) _();
+            if (document.defaultCaptchaFaviconSource) _();
+            if (window.CFS) _();
+            if ($("div.info").find("#autopxlsinfo").length) _();
 
             // "Botnet" by (unknown, obfuscated)
-            if (window.Botnet) banMe();
+            if (window.Botnet) _();
         }.bind(this), 5000);
         try {
             Notification.requestPermission();
@@ -125,6 +134,7 @@ window.App = {
             document.head.appendChild(script);
         }
 
+        this.initSocket();
         this.initPalette();
 
         this.elements.board.attr("width", this.width).attr("height", this.height);
@@ -138,7 +148,6 @@ window.App = {
         this.scale = getQueryVariable("scale") || this.scale;
         this.updateTransform();
 
-        this.initSocket();
         setInterval(this.updateTime.bind(this), 1000);
         jQuery.get("/boarddata", this.drawBoard.bind(this));
     },
