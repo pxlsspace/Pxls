@@ -311,10 +311,15 @@ window.App = {
 
             this.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
         }.bind(this);
+        var fn_touch = function (evt) {
+            var boardPos = this.screenToBoardSpace(evt.originalEvent.changedTouches[0].clientX, evt.originalEvent.changedTouches[0].clientY);
+
+            this.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
+        }.bind(this);
         if (this.use_js_resize) {
-            $(".board-container canvas").on("pointermove mousemove", fn);
+            $(".board-container canvas").on("pointermove mousemove", fn).on("touchstart touchmove", fn_touch);
         } else {
-            this.elements.board.on("pointermove mousemove", fn);
+            this.elements.board.on("pointermove mousemove", fn).on("touchstart touchmove", fn_touch);
         }
     },
     initAlert: function () {
@@ -457,8 +462,16 @@ window.App = {
             };
         }
         var boardBox = this.elements.board[0].getBoundingClientRect();
-        var x = boardX * this.scale + boardBox.left,
-            y = boardY * this.scale + boardBox.top;
+        if (this.use_zoom) {
+            return {
+                x: (boardX + boardBox.left) * this.scale,
+                y: (boardY + boardBox.top) * this.scale
+            };
+        }
+        return {
+            x: boardX * this.scale + boardBox.left,
+            y: boardY * this.scale + boardBox.top
+        };
         return {x: x, y: y};
     },
     centerOn: function (x, y) {

@@ -422,14 +422,14 @@ a, a:hover, a:visited, a:active {
     }
 
     .ui .left {
-        top: 16px;
+        top: 64px;
         left: 16px;
         bottom: auto;
         right: auto;
     }
 
     .ui .right {
-        top: 64px;
+        top: 16px;
         left: 16px;
         bottom: auto;
         right: auto;
