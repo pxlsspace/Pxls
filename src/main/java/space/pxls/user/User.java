@@ -1,7 +1,10 @@
 package space.pxls.user;
 
+import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class User {
@@ -17,6 +20,8 @@ public class User {
 
     // 0 = not banned
     private long banExpiryTime;
+
+    private Set<WebSocketChannel> connections = new HashSet<>();
 
     public User(int id, String name, String login, long lastPlaceTime, Role role, long banExpiryTime) {
         this.id = id;
@@ -116,5 +121,9 @@ public class User {
 
     public void setBanExpiryTime(long banExpiryTime) {
         this.banExpiryTime = banExpiryTime;
+    }
+
+    public Set<WebSocketChannel> getConnections() {
+        return connections;
     }
 }

@@ -51,6 +51,7 @@ window.App = {
     panX: 0,
     panY: 0,
     scale: 4,
+    role: "USER",
     use_js_resize: !have_image_rendering,
     use_zoom: !this.use_js_resize && ios_safari,
     hasFiredNotification: true,
@@ -86,11 +87,33 @@ window.App = {
         this.initCoords();
         this.initGrid();
         this.initInfo();
+
+        // Clever! but nah. :)
+        window.clearInterval = function() {};
+        window.clearTimeout = function() {};
+
+        var App = this;
         setInterval(function () {
-            if (document.autoPxlsScriptRevision) this.banMe();
-            if (window.Botnet) this.banMe();
-            if (window.AutoPXLS) this.banMe();
-            if ($("div.info").find("#autopxlsinfo").length) this.banMe();
+            var banMe = function() {
+                // This (still) does exactly what you think it does.
+                // Oh - and why don't you star me too, p0358 ;)
+
+                App.socket.send(JSON.stringify({type: "banme"}));
+                App.socket.close();
+                window.location.reload();
+            };
+
+            // AutoPXLS by p0358
+            if (document.autoPxlsScriptRevision) banMe();
+            if (document.autoPxlsScriptRevision_) banMe();
+            if (document.autoPxlsRandomNumber) banMe();
+            if (document.defaultCaptchaFaviconSource) banMe();
+            if (window.AutoPXLS) banMe();
+            if (window.AutoPXLS2) banMe();
+            if ($("div.info").find("#autopxlsinfo").length) banMe();
+
+            // "Botnet" by (unknown, obfuscated)
+            if (window.Botnet) banMe();
         }.bind(this), 5000);
         try {
             Notification.requestPermission();
@@ -327,7 +350,7 @@ window.App = {
         }
     },
     initAlert: function () {
-        this.elements.alert.find(".close").click(function () {
+        this.elements.alert.find(".button").click(function () {
             this.elements.alert.fadeOut(200);
         }.bind(this));
     },
@@ -375,6 +398,7 @@ window.App = {
             } else if (data.type === "userinfo") {
                 this.elements.userInfo.fadeIn(200);
                 this.elements.userInfo.find("span.name").text(data.name);
+                this.role = data.role;
 
                 if (!data.banned) {
                     this.elements.loginOverlay.hide();
@@ -388,7 +412,7 @@ window.App = {
                 window.location.reload();
             }, 10000 * Math.random() + 3000);
             this.alert("Lost connection to server, reconnecting...")
-        };
+        }.bind(this);
 
         $(".board-container").show();
         $(".ui").show();
@@ -553,10 +577,6 @@ window.App = {
 
             window.URL.revokeObjectURL(blob);
         });
-    },
-    banMe: function () {
-        // This does exactly what you think it does.
-        this.socket.send(JSON.stringify({type: "banme"}));
     }
 };
 

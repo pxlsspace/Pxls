@@ -2,7 +2,6 @@ package space.pxls.data;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import com.zaxxer.hikari.pool.HikariPool;
 import org.skife.jdbi.v2.DBI;
 import space.pxls.App;
 import space.pxls.user.Role;
@@ -41,8 +40,8 @@ public class Database implements Closeable {
         handle.updateUserTime(who.getId());
     }
 
-    public void getPixelAt(int x, int y) {
-        PixelPlacement result = handle.getPixel(x, y);
+    public DBPixelPlacement getPixelAt(int x, int y) {
+        return handle.getPixel(x, y);
     }
 
     public void close() {

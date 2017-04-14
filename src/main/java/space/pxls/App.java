@@ -97,6 +97,15 @@ public class App {
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
                     userManager.banUser(user, 24 * 60 * 60);
+                    System.out.println("Banned " + user.getName() + " for 24 hours.");
+                } else {
+                    System.out.println("Cannot find user " + token[1]);
+                }
+            } else if (token[0].equalsIgnoreCase("unban")) {
+                User user = userManager.getByName(token[1]);
+                if (user != null) {
+                    userManager.banUser(user, 0);
+                    System.out.println("Unbanned " + user.getName() + ".");
                 } else {
                     System.out.println("Cannot find user " + token[1]);
                 }

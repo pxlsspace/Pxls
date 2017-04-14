@@ -62,18 +62,24 @@ a, a:hover, a:visited, a:active {
     overflow-wrap: break-word;
 }
 
-.message .close {
-    cursor: pointer;
+.message .button {
     position: absolute;
     bottom: 20px;
     right: 30px;
+}
+
+.button {
+    cursor: pointer;
+    margin-top: 6px;
+    margin-right: 6px;
+    display: inline-block;
     font-size: 12px;
     border: 1px solid #ccc;
     padding: 5px 10px;
     border-radius: 3px;
 }
 
-.message .close:hover {
+.button:hover {
     color: #fff;
     background: #ce4747;
 }
@@ -319,7 +325,7 @@ a, a:hover, a:visited, a:active {
 }
 
 #board {
-    image-rendering:optimizeSpeed;             /* Legal fallback */
+    image-rendering: optimizeSpeed; /* Legal fallback */
     -ms-interpolation-mode: nearest-neighbor;
     image-rendering: -webkit-optimize-contrast;
     image-rendering: -webkit-crisp-edges;
