@@ -18,9 +18,20 @@ function hexToRgb(hex) {
         b: parseInt(result[3], 16)
     } : null;
 }
-var nua = navigator.userAgent,
-    ios_safari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i)),
-    ms_edge = nua.indexOf('Edge') > -1;
+
+function checkImageRendering(prefix) {
+    var d = document.createElement('div');
+    d.style.imageRendering = prefix+'crisp-edges';
+    if (d.style.imageRendering !== prefix+'crisp-edges') {
+        return false;
+    }
+    d.style.imageRendering = prefix+'pixelated';
+    return d.style.imageRendering === prefix+'pixelated';
+}
+var have_image_rendering = checkImageRendering('') || checkImageRendering('-o-') || checkImageRendering('-moz-') || checkImageRendering('-webkit-'),
+    nua = navigator.userAgent,
+    ios_safari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i));
+
 
 window.App = {
     elements: {
@@ -43,8 +54,8 @@ window.App = {
     panY: 0,
     scale: 4,
     role: "USER",
-    use_zoom: ios_safari, // mobile safari else gets blurry
-    use_js_resize: ms_edge, // ms edge
+    use_js_resize: !have_image_rendering,
+    use_zoom: !this.use_js_resize && ios_safari,
     hasFiredNotification: true,
     init: function () {
         this.color = -1;
