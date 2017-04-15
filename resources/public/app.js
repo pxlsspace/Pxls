@@ -575,17 +575,15 @@ window.App = {
             this.elements.timer.text(this.status);
         }
     },
-    saveImage: function () {
-        this.elements.board[0].toBlob(function (blob) {
-            var url = window.URL.createObjectURL(blob);
-
-            var a = document.createElement("a");
-            a.href = url;
-            a.download = "canvas.png";
-            a.click();
-
-            window.URL.revokeObjectURL(blob);
-        });
+    saveImage: function() {
+        var a = document.createElement("a");
+        a.href = this.elements.board[0].toDataURL("image/png");
+        a.download = "canvas.png";
+        a.click();
+        if(typeof a.remove === "function")
+        {
+            a.remove();
+        }
     }
 };
 
