@@ -31,18 +31,18 @@ On the OAuth setup page for the various services, you need to set the redirect U
 An example OAuth section could look like this:
 
     oauth {
-        callbackBase: "http://example.com/auth"
+        callbackBase: "http://example.com/auth",
         reddit {
-            key: qwertyuiop
-            secret: qwertyuiopasdfghjkl
-        }
+            key: "qwertyuiop",
+            secret: "qwertyuiopasdfghjkl"
+        },
         google {
-            key: asdfghjkl
-            secret: zxcvbnmqwertyuiop
-        }
+            key: "asdfghjkl",
+            secret: "zxcvbnmqwertyuiop"
+        },
         discord {
-            key: 123456789
-            secret: abcdefghijklmn
+            key: "123456789",
+            secret: "abcdefghijklmn"
         }
     }
     
@@ -56,9 +56,9 @@ The `captcha.host` key needs to be one of the approved domains on the ReCAPTCHA 
 An example CAPTCHA section could look like this:
 
     captcha {
-        key: qwertyuiop
-        secret: asdfghjkl
-        host: example.com
+        key: "qwertyuiop",
+        secret: "asdfghjkl",
+        host: "example.com"
     }
 
 
