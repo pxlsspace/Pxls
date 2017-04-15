@@ -244,31 +244,21 @@ window.App = {
                 this.panY -= 100 / this.scale;
             } else if (evt.keyCode === 68 || evt.keyCode === 39) {
                 this.panX -= 100 / this.scale;
-            }
-
+            } else if (evt.keyCode === 187 || evt.keyCode === 69) {
+                this.adjustScale(1);
+            } else if (evt.keyCode === 189 || evt.keyCode === 81) {
+		            this.adjustScale(-1);
+	          }
             this.updateTransform();
         }.bind(this));
 
         this.elements.boardContainer.on("wheel", function (evt) {
             var oldScale = this.scale;
             if (evt.originalEvent.deltaY > 0) {
-                if (oldScale <= 1) {
-                    this.scale = 0.5;
-                } else if (oldScale <= 2) {
-                    this.scale = 1;
-                } else {
-                    this.scale = Math.round(Math.max(2, this.scale / 1.25));
-                }
+                this.adjustScale(-1);
             } else {
-                if (oldScale == 0.5) {
-                    this.scale = 1;
-                } else if (oldScale == 1) {
-                    this.scale = 2;
-                } else {
-                    this.scale = Math.round(Math.min(50, this.scale * 1.25));
-                }
+                this.adjustScale(1);
             }
-
             if (oldScale !== this.scale) {
 
                 if (this.scale > 15 || this.color == -1) {
@@ -458,6 +448,26 @@ window.App = {
                 App.saveImage();
             }
         });
+    },
+    adjustScale: function (adj) {
+        var oldScale = this.scale;
+        if (adj == -1) {
+            if (oldScale <= 1) {
+                this.scale = 0.5;
+            } else if (oldScale <= 2) {
+                this.scale = 1;
+            } else {
+                this.scale = Math.round(Math.max(2, this.scale / 1.25));
+            }
+        } else {
+            if (oldScale == 0.5) {
+                this.scale = 1;
+            } else if (oldScale == 1) {
+                this.scale = 2;
+            } else {
+                this.scale = Math.round(Math.min(50, this.scale * 1.25));
+            }
+        }
     },
     updateTransform: function () {
         this.panX = Math.min(this.width / 2, Math.max(-this.width / 2, this.panX));
