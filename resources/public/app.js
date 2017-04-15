@@ -71,11 +71,12 @@ window.App = {
         $(".userinfo").hide();
         
         if (this.use_js_resize) {
-            this.elements.board.parent().append($('<canvas>').css({
+            this.elements.board_render = $('<canvas>').css({
                 width: '100vw',
                 height: '100vh',
                 margin: 0
-            }));
+            });
+            this.elements.board.parent().append(this.elements.board_render);
             this.elements.board.detach();
         }
         
@@ -188,17 +189,16 @@ window.App = {
 
         ctx.putImageData(id, 0, 0);
         if (this.use_js_resize) {
-            var ctx2 = $(".board-container canvas")[0].getContext("2d");
-            ctx2.canvas.width = window.innerWidth;
-            ctx2.canvas.height = window.innerHeight;
-            ctx2.mozImageSmoothingEnabled = false;
-            ctx2.webkitImageSmoothingEnabled = false;
-            ctx2.msImageSmoothingEnabled = false;
-            ctx2.imageSmoothingEnabled = false;
-            this.updateTransform();
             $(window).resize(function(){
+                var ctx2 = this.elements.board_render[0].getContext("2d");
+                ctx2.canvas.width = window.innerWidth;
+                ctx2.canvas.height = window.innerHeight;
+                ctx2.mozImageSmoothingEnabled = false;
+                ctx2.webkitImageSmoothingEnabled = false;
+                ctx2.msImageSmoothingEnabled = false;
+                ctx2.imageSmoothingEnabled = false;
                 this.updateTransform();
-            }.bind(this));
+            }.bind(this)).resize();
         }
     },
     initPalette: function () {
@@ -279,11 +279,8 @@ window.App = {
     },
     initBoardPlacement: function () {
         var downX, downY;
-        var elem = this.elements.board;
-        if (this.use_js_resize) {
-            elem = $(".board-container canvas");
-        }
-        elem.on("pointerdown mousedown", function (evt) {
+        
+        (this.use_js_resize ? this.elements.board_render : this.elements.board).on("pointerdown mousedown", function (evt) {
             downX = evt.clientX;
             downY = evt.clientY;
         }).on("touchstart", function (evt) {
@@ -335,11 +332,7 @@ window.App = {
                 this.elements.reticule.show();
             }
         }.bind(this);
-        if (this.use_js_resize) {
-            $(".board-container canvas").on("pointermove mousemove", fn);
-        } else {
-            this.elements.board.on("pointermove mousemove", fn);
-        }
+        (this.use_js_resize ? this.elements.board_render : this.elements.board).on("pointermove mousemove", fn);
     },
     initCoords: function () {
         var fn = function (evt) {
@@ -352,11 +345,7 @@ window.App = {
 
             this.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
         }.bind(this);
-        if (this.use_js_resize) {
-            $(".board-container canvas").on("pointermove mousemove", fn).on("touchstart touchmove", fn_touch);
-        } else {
-            this.elements.board.on("pointermove mousemove", fn).on("touchstart touchmove", fn_touch);
-        }
+        (this.use_js_resize ? this.elements.board_render : this.elements.board).on("pointermove mousemove", fn).on("touchstart touchmove", fn_touch);
     },
     initAlert: function () {
         this.elements.alert.find(".button").click(function () {
@@ -473,7 +462,7 @@ window.App = {
         this.panX = Math.min(this.width / 2, Math.max(-this.width / 2, this.panX));
         this.panY = Math.min(this.height / 2, Math.max(-this.height / 2, this.panY));
         if (this.use_js_resize) {
-            var ctx2 = $(".board-container canvas")[0].getContext("2d");
+            var ctx2 = this.elements.board_render[0].getContext("2d");
             var pxl_x = -this.panX + ((this.width - (window.innerWidth / this.scale)) / 2);
             var pxl_y = -this.panY + ((this.height - (window.innerHeight / this.scale)) / 2);
             
@@ -498,18 +487,23 @@ window.App = {
         this.elements.grid.css("opacity", (this.scale - 2) / 6);
     },
     screenToBoardSpace: function (screenX, screenY) {
-        var boardBox = this.elements.board[0].getBoundingClientRect();
-        var boardX = ((screenX - boardBox.left) / this.scale);
-        var boardY = ((screenY - boardBox.top) / this.scale);
-        if (this.use_js_resize) {
-            boardX = -this.panX + ((this.width - (window.innerWidth / this.scale)) / 2) + (screenX / this.scale);
-            boardY = -this.panY + ((this.height - (window.innerHeight / this.scale)) / 2) + (screenY / this.scale);
-        }
         if (this.use_zoom) {
-            boardX = (screenX / this.scale) - boardBox.left;
-            boardY = (screenY / this.scale) - boardBox.top;
+            return {
+                x: (screenX / this.scale) - boardBox.left,
+                y: (screenY / this.scale) - boardBox.top
+            };
         }
-        return {x: boardX, y: boardY};
+        var boardBox = this.elements.board[0].getBoundingClientRect();
+        if (this.use_js_resize) {
+            return {
+                x: -this.panX + ((this.width - (window.innerWidth / this.scale)) / 2) + (screenX / this.scale),
+                y: -this.panY + ((this.height - (window.innerHeight / this.scale)) / 2) + (screenY / this.scale)
+            };
+        }
+        return {
+            x: ((screenX - boardBox.left) / this.scale),
+            y: ((screenY - boardBox.top) / this.scale)
+        };
     },
     boardToScreenSpace: function (boardX, boardY) {
         if (this.use_js_resize) {
