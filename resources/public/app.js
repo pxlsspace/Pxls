@@ -571,6 +571,10 @@ window.App = {
         a.href = this.elements.board[0].toDataURL("image/png");
         a.download = "canvas.png";
         a.click();
+        if(typeof a.remove === "function")
+        {
+            a.remove();
+        }
     }
 };
 
