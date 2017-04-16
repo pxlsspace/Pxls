@@ -69,6 +69,14 @@ window.App = {
         loginOverlay: $(".login-overlay"),
         userInfo: $(".userinfo")
     },
+    template: {
+        use: false,
+        url: '',
+        x: 0,
+        y: 0,
+        width: -1,
+        opacity: 0.5
+    },
     panX: 0,
     panY: 0,
     scale: 4,
@@ -98,6 +106,8 @@ window.App = {
             });
             this.elements.board.parent().append(this.elements.board_render);
             this.elements.board.detach();
+        } else {
+            this.elements.board_render = this.elements.board;
         }
 
         $.get("/info", this.initBoard.bind(this));
@@ -226,6 +236,17 @@ window.App = {
                 this.updateTransform();
             }.bind(this)).resize();
         }
+        var url = getQueryVariable("template");
+        if (url) { // we have a template!
+            this.updateTemplate({
+                use: true,
+                x: parseInt(getQueryVariable("ox")),
+                y: parseInt(getQueryVariable("oy")),
+                opacity: parseFloat(getQueryVariable("oo")),
+                width: parseInt(getQueryVariable("tw")),
+                url: url
+            });
+        }
     },
     initPalette: function () {
         this.palette.forEach(function (color, idx) {
@@ -305,8 +326,7 @@ window.App = {
     },
     initBoardPlacement: function () {
         var downX, downY;
-
-        (this.use_js_resize ? this.elements.board_render : this.elements.board).on("pointerdown mousedown", function (evt) {
+        this.elements.board_render.on("pointerdown mousedown", function (evt) {
             downX = evt.clientX;
             downY = evt.clientY;
         }).on("touchstart", function (evt) {
@@ -335,6 +355,71 @@ window.App = {
             this.switchColor(-1);
         }.bind(this));
     },
+    updateTemplate: function(t) {
+        console.log(t);
+        console.log(t.hasOwnProperty('use'));
+        console.log(t.use != this.template.use);
+        if (t.hasOwnProperty('use') && t.use != this.template.use) {
+            if (t.use) {
+                this.template.x = t.x || 0;
+                this.template.y = t.y || 0;
+                this.template.opacity = t.opacity || 0.5;
+                this.template.width = t.width || -1;
+                this.template.url = t.url || '';
+                this.initTemplate();
+            } else {
+                this.template.use = false;
+                this.elements.template.remove();
+                this.elements.template = null;
+                if (this.use_js_resize) {
+                    this.updateTransform();
+                }
+            }
+            return;
+        }
+        if (t.hasOwnProperty('url')) {
+            this.template.url = t.url;
+            this.elements.template.attr('src', t.url);
+            if (!t.hasOwnProperty('width')) {
+                t.width = -1; // reset just in case
+            }
+        }
+        $.map([['x','left'],['y','top'],['opacity','opacity'],['width','width']], function(e) {
+            if (t.hasOwnProperty(e[0])) {
+                this.template[e[0]] = t[e[0]];
+                this.elements.template.css(e[1], t[e[0]]);
+            }
+        }.bind(this));
+        if (t.width == -1) {
+            this.elements.template.css('width', 'auto');
+        }
+        
+        
+        if (this.use_js_resize) {
+            this.updateTransform();
+        }
+    },
+    initTemplate: function() {
+        if (this.template.use) { // already inited
+            return;
+        }
+        this.template.use = true;
+        
+        this.elements.template = $("<img>").addClass("board-template pixelate").attr({
+            src: this.template.url,
+            alt: "template"
+        }).css({
+            top: this.template.y,
+            left: this.template.x,
+            opacity: this.template.opacity,
+            width: this.template.width == -1 ? 'auto' : this.template.width
+        });
+        if (this.use_js_resize) {
+            this.updateTransform();
+            return;
+        }
+        this.elements.board_render.parent().prepend(this.elements.template);
+    },
     initCursor: function () {
         var fn = function (evt) {
             this.elements.cursor.css("transform", "translate(" + evt.clientX + "px, " + evt.clientY + "px)");
@@ -358,7 +443,7 @@ window.App = {
                 this.elements.reticule.show();
             }
         }.bind(this);
-        (this.use_js_resize ? this.elements.board_render : this.elements.board).on("pointermove mousemove", fn);
+        this.elements.board_render.on("pointermove mousemove", fn);
     },
     initCoords: function () {
         var fn = function (evt) {
@@ -373,7 +458,7 @@ window.App = {
             this.elements.coords.fadeIn(200);
             this.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
         }.bind(this);
-        (this.use_js_resize ? this.elements.board_render : this.elements.board).on("pointermove mousemove", fn).on("touchstart touchmove", fn_touch);
+        this.elements.board_render.on("pointermove mousemove", fn).on("touchstart touchmove", fn_touch);
     },
     initAlert: function () {
         this.elements.alert.find(".button").click(function () {
@@ -501,9 +586,21 @@ window.App = {
             var pxl_x = -this.panX + ((this.width - (window.innerWidth / this.scale)) / 2);
             var pxl_y = -this.panY + ((this.height - (window.innerHeight / this.scale)) / 2);
 
+            ctx2.globalAlpha = 1;
             ctx2.fillStyle = '#CCCCCC';
             ctx2.fillRect(0, 0, ctx2.canvas.width, ctx2.canvas.height);
             ctx2.drawImage(this.elements.board[0], pxl_x, pxl_y, window.innerWidth / this.scale, window.innerHeight / this.scale, 0, 0, window.innerWidth, window.innerHeight);
+            if (!this.template.use) {
+                return; // we are done!
+            }
+            var width = this.elements.template[0].width,
+                height = this.elements.template[0].height;
+            if (this.template.width != -1) {
+                height *= (this.template.width / width);
+                width = this.template.width;
+            }
+            ctx2.globalAlpha = this.template.opacity;
+            ctx2.drawImage(this.elements.template[0], (this.template.x-pxl_x)*this.scale, (this.template.y-pxl_y)*this.scale, width * this.scale, height*this.scale);
             return;
         }
         this.elements.boardMover

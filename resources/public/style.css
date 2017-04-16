@@ -324,7 +324,7 @@ a, a:hover, a:visited, a:active {
     display: block;
 }
 
-#board {
+.pixelate {
     image-rendering: optimizeSpeed; /* Legal fallback */
     -ms-interpolation-mode: nearest-neighbor;
     image-rendering: -webkit-optimize-contrast;
@@ -333,6 +333,14 @@ a, a:hover, a:visited, a:active {
     image-rendering: -o-crisp-edges;
     image-rendering: pixelated;
     image-rendering: crisp-edges;
+}
+
+.board-template {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+    z-index: 5;
 }
 
 .grid {
