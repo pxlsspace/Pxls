@@ -45,13 +45,14 @@ public class RedditAuthService extends AuthService {
         if (json.has("error")) {
             return null;
         } else {
-//            long accountAgeSeconds = (System.currentTimeMillis() / 1000 - json.getLong("created"));
-//            long minAgeSeconds = App.getConfig().getDuration("oauth.reddit.minAge", TimeUnit.SECONDS);
-//            if (accountAgeSeconds < minAgeSeconds){
-//                throw new InvalidAccountException("Account too young, must be " + minAgeSeconds / 86400 + " days old");
-//            } else if (json.getBoolean("has_verified_email")) {
-//                throw new InvalidAccountException("Account must have a verified e-mail");
-//            }
+            long accountAgeSeconds = (System.currentTimeMillis() / 1000 - json.getLong("created"));
+            long minAgeSeconds = App.getConfig().getDuration("oauth.reddit.minAge", TimeUnit.SECONDS);
+            if (accountAgeSeconds < minAgeSeconds){
+                long days = minAgeSeconds / 86400;
+                throw new InvalidAccountException("Account too young");
+            } else if (!json.getBoolean("has_verified_email")) {
+                throw new InvalidAccountException("Account must have a verified e-mail");
+            }
             return json.getString("name");
         }
     }

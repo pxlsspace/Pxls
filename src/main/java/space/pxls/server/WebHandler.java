@@ -4,6 +4,8 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
+import io.undertow.server.handlers.form.FormData;
+import io.undertow.server.handlers.form.FormDataParser;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 import io.undertow.util.StatusCodes;
@@ -32,60 +34,77 @@ public class WebHandler {
         services.put("discord", new DiscordAuthService("discord"));
     }
 
+    public void ban(HttpServerExchange exchange) {
+        User user = parseUserFromForm(exchange);
+        if (user != null) {
+            App.getUserManager().banUser(user, 86400);
+            exchange.setStatusCode(200);
+        } else {
+            exchange.setStatusCode(400);
+        }
+    }
+
+    public void unban(HttpServerExchange exchange) {
+        User user = parseUserFromForm(exchange);
+        if (user != null) {
+            App.getUserManager().banUser(user, 0);
+            exchange.setStatusCode(200);
+        } else {
+            exchange.setStatusCode(400);
+        }
+    }
+
     public void signUp(HttpServerExchange exchange) {
         String ip = exchange.getAttachment(IPReader.IP);
-        exchange.getRequestReceiver().receiveFullString((x, msg) -> {
-            String[] vals = msg.split("&");
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
 
-            String name = "";
-            String token = "";
-
-            for (String val : vals) {
-                String[] split = val.split("=");
-
-                if (split[0].equals("token") && split.length > 1) {
-                    token = split[1];
-                } else if (split[0].equals("name") && split.length > 1) {
-                    name = split[1].substring(0, Math.min(split[1].length(), 32));
-                }
-            }
-
-            if (token.isEmpty()) {
-                exchange.setStatusCode(StatusCodes.SEE_OTHER);
-                exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-                exchange.getResponseSender().send("");
-                return;
-            } else if (name.isEmpty()) {
-                exchange.setStatusCode(StatusCodes.SEE_OTHER);
-                exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + token + "&error=Username%20cannot%20be%20empty.");
-                exchange.getResponseSender().send("");
-                return;
-            } else if (!name.matches("[a-zA-Z0-9_\\-]+")) {
-                exchange.setStatusCode(StatusCodes.SEE_OTHER);
-                exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + token + "&error=Name%20contains%20invalid%20characters.");
-                exchange.getResponseSender().send("");
-                return;
-            } else if (!App.getUserManager().isValidSignupToken(token)) {
-                exchange.setStatusCode(StatusCodes.SEE_OTHER);
-                exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + token + "&error=Invalid%20signup%20token.");
-                exchange.getResponseSender().send("");
-                return;
-            }
-
-            User user = App.getUserManager().signUp(name, token, ip);
-
-            if (user == null) {
-                exchange.setStatusCode(StatusCodes.SEE_OTHER);
-                exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + token + "&error=Username%20is%20taken,%20try%20another%3F");
-                exchange.getResponseSender().send("");
-                return;
-            }
-            String loginToken = App.getUserManager().logIn(user, ip);
+        FormData.FormValue nameVal = data.getFirst("name");
+        FormData.FormValue tokenVal = data.getFirst("token");
+        if (nameVal == null || tokenVal == null) {
             exchange.setStatusCode(StatusCodes.SEE_OTHER);
             exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-            exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setPath("/"));
             exchange.getResponseSender().send("");
-        });
+            return;
+        }
+
+        String name = nameVal.getValue();
+        String token = tokenVal.getValue();
+        if (token.isEmpty()) {
+            exchange.setStatusCode(StatusCodes.SEE_OTHER);
+            exchange.getResponseHeaders().put(Headers.LOCATION, "/");
+            exchange.getResponseSender().send("");
+            return;
+        } else if (name.isEmpty()) {
+            exchange.setStatusCode(StatusCodes.SEE_OTHER);
+            exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + token + "&error=Username%20cannot%20be%20empty.");
+            exchange.getResponseSender().send("");
+            return;
+        } else if (!name.matches("[a-zA-Z0-9_\\-]+")) {
+            exchange.setStatusCode(StatusCodes.SEE_OTHER);
+            exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + token + "&error=Name%20contains%20invalid%20characters.");
+            exchange.getResponseSender().send("");
+            return;
+        } else if (!App.getUserManager().isValidSignupToken(token)) {
+            exchange.setStatusCode(StatusCodes.SEE_OTHER);
+            exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + token + "&error=Invalid%20signup%20token.");
+            exchange.getResponseSender().send("");
+            return;
+        }
+
+        User user = App.getUserManager().signUp(name, token, ip);
+
+        if (user == null) {
+            exchange.setStatusCode(StatusCodes.SEE_OTHER);
+            exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + token + "&error=Username%20is%20taken,%20try%20another%3F");
+            exchange.getResponseSender().send("");
+            return;
+        }
+
+        String loginToken = App.getUserManager().logIn(user, ip);
+        exchange.setStatusCode(StatusCodes.SEE_OTHER);
+        exchange.getResponseHeaders().put(Headers.LOCATION, "/");
+        exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setPath("/"));
+        exchange.getResponseSender().send("");
     }
 
     public void auth(HttpServerExchange exchange) throws UnirestException {
@@ -108,11 +127,14 @@ public class WebHandler {
                 return;
             }
             String token = service.getToken(code.element());
-            String identifier = null;
+            String identifier;
             try {
                 identifier = service.getIdentifier(token);
             } catch (AuthService.InvalidAccountException e) {
-                e.printStackTrace();
+                exchange.setStatusCode(StatusCodes.SEE_OTHER);
+                exchange.getResponseHeaders().put(Headers.LOCATION, "/error.html?error=" + e.getMessage());
+                exchange.getResponseSender().send("");
+                return;
             }
 
             if (token != null && identifier != null) {
@@ -201,5 +223,16 @@ public class WebHandler {
         DBPixelPlacement pp = App.getDatabase().getPixelAt(x, y);
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
         exchange.getResponseSender().send(App.getGson().toJson(pp));
+    }
+
+    private User parseUserFromForm(HttpServerExchange exchange) {
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+        if (data != null) {
+            FormData.FormValue username = data.getFirst("username");
+            if (username != null) {
+                return App.getUserManager().getByName(username.getValue());
+            }
+        }
+        return null;
     }
 }

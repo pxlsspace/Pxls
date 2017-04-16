@@ -74,3 +74,4 @@ Commands are entered directly into the running instance (stdin).
 
 * @xSke (main code)
 * @jasperandrew (client UI/UX)
+* @Sorunome (client tweaks/improvements)

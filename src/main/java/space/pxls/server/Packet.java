@@ -25,14 +25,6 @@ public class Packet {
         }
     }
 
-    public static class ClientAdminBan {
-        public String username;
-
-        public ClientAdminBan(String username) {
-            this.username = username;
-        }
-    }
-
     public static class ClientAdminMessage {
         public String username;
         public String message;

@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.handlers.PathHandler;
+import io.undertow.server.handlers.form.EagerFormParsingHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.websockets.core.AbstractReceiveListener;
 import io.undertow.websockets.core.BufferedTextMessage;
@@ -46,6 +47,8 @@ public class UndertowServer {
                 .addPrefixPath("/signin", webHandler::signIn)
                 .addPrefixPath("/auth", new RateLimitingHandler(webHandler::auth, (int) App.getConfig().getDuration("server.limits.auth.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.auth.count")))
                 .addPrefixPath("/signup/do", new RateLimitingHandler(webHandler::signUp, (int) App.getConfig().getDuration("server.limits.signup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.signup.count")))
+                .addPrefixPath("/admin/ban", new RoleGate(Role.ADMIN, webHandler::ban))
+                .addPrefixPath("/admin/unban", new RoleGate(Role.ADMIN, webHandler::unban))
                 .addPrefixPath("/admin", new RoleGate(Role.MODERATOR, Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/"))
                         .setCacheTime(10)))
                 .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/"))
@@ -55,7 +58,7 @@ public class UndertowServer {
                 .addHttpListener(port, "0.0.0.0")
                 .setIoThreads(32)
                 .setWorkerThreads(128)
-                .setHandler(new IPReader(new AuthReader(mainHandler))).build();
+                .setHandler(new IPReader(new AuthReader(new EagerFormParsingHandler().setNext(mainHandler)))).build();
         server.start();
     }
 
@@ -86,7 +89,6 @@ public class UndertowServer {
                 if (type.equals("captcha")) obj = App.getGson().fromJson(jsonObj, Packet.ClientCaptcha.class);
                 if (type.equals("admin_cdoverride"))
                     obj = App.getGson().fromJson(jsonObj, Packet.ClientAdminCooldownOverride.class);
-                if (type.equals("admin_ban")) obj = App.getGson().fromJson(jsonObj, Packet.ClientAdminBan.class);
                 if (type.equals("admin_message"))
                     obj = App.getGson().fromJson(jsonObj, Packet.ClientAdminMessage.class);
                 if (type.equals("banme")) obj = App.getGson().fromJson(jsonObj, Packet.ClientBanMe.class);
