@@ -76,7 +76,7 @@
                             </cssSourceFiles>
 
                             <jsSourceFiles>
-                                <jsSourceFile>app.js</jsSourceFile>
+                                <jsSourceFile>pxls.js</jsSourceFile>
                             </jsSourceFiles>
 
                             <jsEngine>CLOSURE</jsEngine>

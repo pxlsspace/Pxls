@@ -6,8 +6,8 @@ function addAdminPanel() {
     var adminRoot = $("<div></div>").appendTo(document.body).html(modPanelHTML);
 
     var handReset = $("#admin-hr");
-    App.attemptPlace_ = App.attemptPlace;
-    App.attemptPlace = function (x, y) {
+    App.attemptPlace_ = App.doPlace;
+    App.doPlace = function (x, y) {
         var oldColor = App.color;
         App.attemptPlace_(x, y);
 

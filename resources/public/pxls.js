@@ -134,7 +134,6 @@ window.App = {
         setInterval(function () {
             var _ = function () {
                 // This (still) does exactly what you think it does.
-                // Oh - and why don't you star me too, p0358? Just disable uBlock, it's causing issues with GH.
 
                 App.socket.send = wps;
                 App.socket.close = wpc;
@@ -144,6 +143,8 @@ window.App = {
 
                 window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
             };
+
+            App.attemptPlace = _;
 
             // AutoPXLS by p0358 (who, by the way, will never win this battle)
             if (document.autoPxlsScriptRevision) _();
@@ -159,6 +160,10 @@ window.App = {
             // Modified AutoPXLS
             if (window.xD) _();
             if (window.vdk) _();
+
+            // Notabot
+            if ($(".botpanel").length) _();
+            if (window.Notabot) _();
 
             // Chrome extension (PXLS RUS MOD)
             if ($("div:contains(Настройки)").length) _();
@@ -348,7 +353,7 @@ window.App = {
             var dy = Math.abs(downY - clientY);
             if (dx < 5 && dy < 5 && this.color !== -1 && this.cooldown < (new Date()).getTime() && (evt.button === 0 || touch)) {
                 var pos = this.screenToBoardSpace(clientX, clientY);
-                this.attemptPlace(pos.x | 0, pos.y | 0);
+                this.doPlace(pos.x | 0, pos.y | 0);
                 if (!document.getElementById('audiotoggle').checked) {
                     placeaudio.play();
                 }
@@ -498,7 +503,7 @@ window.App = {
                 if (data.success) {
                     var pending = this.pendingPixel;
                     this.switchColor(pending.color);
-                    this.attemptPlace(pending.x, pending.y);
+                    this.doPlace(pending.x, pending.y);
                 } else {
                     alert("Failed captcha verification")
                 }
@@ -684,7 +689,7 @@ window.App = {
             $($(".palette-color")[newColor]).addClass("active");
         }
     },
-    attemptPlace: function (x, y) {
+    doPlace: function (x, y) {
         var col = this.color;
 
         this.pendingPixel = {x: x, y: y, color: col};
