@@ -41,6 +41,7 @@ function checkImageRendering(prefix, crisp, pixelated, optimize_contrast) {
     }
     return false;
 }
+
 var have_image_rendering = checkImageRendering('', true, true, false) || checkImageRendering('-o-', true, false, false) || checkImageRendering('-moz-', true, false, false) || checkImageRendering('-webkit-', true, false, true),
     nua = navigator.userAgent,
     ios_safari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i)),
@@ -92,10 +93,11 @@ window.App = {
         $(".message").hide();
         $(".cursor").hide();
         $(".cooldown-timer").hide();
+        $(".coords").hide();
         $(".online").hide();
         $(".grid").hide();
         $(".userinfo").hide();
-        
+
         if (this.use_js_resize) {
             this.elements.board_render = $('<canvas>').css({
                 width: '100vw',
@@ -107,28 +109,30 @@ window.App = {
         } else {
             this.elements.board_render = this.elements.board;
         }
-        
+
         $.get("/info", this.initBoard.bind(this));
 
         this.initBoardPlacement();
         this.initBoardMovement();
+        this.initGrid();
         this.initCursor();
         this.initReticule();
         this.initAlert();
         this.initCoords();
-        this.initGrid();
         this.initInfo();
 
         // Clever! but nah. :)
-        window.clearInterval = function() {};
-        window.clearTimeout = function() {};
+        window.clearInterval = function () {
+        };
+        window.clearTimeout = function () {
+        };
 
         var wps = WebSocket.prototype.send;
         var wpc = WebSocket.prototype.close;
 
         var App = this;
         setInterval(function () {
-            var _ = function() {
+            var _ = function () {
                 // This (still) does exactly what you think it does.
                 // Oh - and why don't you star me too, p0358? Just disable uBlock, it's causing issues with GH.
 
@@ -152,12 +156,16 @@ window.App = {
             if (window.CFS) _();
             if ($("div.info").find("#autopxlsinfo").length) _();
 
+            // Modified AutoPXLS
+            if (window.xD) _();
+            if (window.vdk) _();
+
             // "Botnet" by (unknown, obfuscated)
             if (window.Botnet) _();
         }.bind(this), 5000);
         try {
             Notification.requestPermission();
-        } catch(e) {
+        } catch (e) {
             console.log('Notifications not available');
         }
     },
@@ -217,7 +225,7 @@ window.App = {
 
         ctx.putImageData(id, 0, 0);
         if (this.use_js_resize) {
-            $(window).resize(function(){
+            $(window).resize(function () {
                 var ctx2 = this.elements.board_render[0].getContext("2d");
                 ctx2.canvas.width = window.innerWidth;
                 ctx2.canvas.height = window.innerHeight;
@@ -276,8 +284,8 @@ window.App = {
             } else if (evt.keyCode === 187 || evt.keyCode === 69) {
                 this.adjustScale(1);
             } else if (evt.keyCode === 189 || evt.keyCode === 81) {
-		            this.adjustScale(-1);
-	          }
+                this.adjustScale(-1);
+            }
             this.updateTransform();
         }.bind(this));
 
@@ -308,7 +316,6 @@ window.App = {
     },
     initBoardPlacement: function () {
         var downX, downY;
-        
         this.elements.board_render.on("pointerdown mousedown", function (evt) {
             downX = evt.clientX;
             downY = evt.clientY;
@@ -329,9 +336,9 @@ window.App = {
             if (dx < 5 && dy < 5 && this.color !== -1 && this.cooldown < (new Date()).getTime() && (evt.button === 0 || touch)) {
                 var pos = this.screenToBoardSpace(clientX, clientY);
                 this.attemptPlace(pos.x | 0, pos.y | 0);
-					if (document.getElementById('audiotoggle').checked == false) {
-						placeaudio.play();
-					}				
+                if (!document.getElementById('audiotoggle').checked) {
+                    placeaudio.play();
+                }
             }
         }.bind(this)).contextmenu(function (evt) {
             evt.preventDefault();
@@ -400,11 +407,13 @@ window.App = {
         var fn = function (evt) {
             var boardPos = this.screenToBoardSpace(evt.clientX, evt.clientY);
 
+            this.elements.coords.fadeIn(200);
             this.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
         }.bind(this);
         var fn_touch = function (evt) {
             var boardPos = this.screenToBoardSpace(evt.originalEvent.changedTouches[0].clientX, evt.originalEvent.changedTouches[0].clientY);
 
+            this.elements.coords.fadeIn(200);
             this.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
         }.bind(this);
         this.elements.board_render.on("pointermove mousemove", fn).on("touchstart touchmove", fn_touch);
@@ -481,7 +490,7 @@ window.App = {
         this.socket = ws;
     },
     initGrid: function () {
-        $(document.body).keydown(function (evt) {
+        $(document.body).on("keydown", function (evt) {
             if (evt.keyCode === 71) {
                 this.elements.grid.fadeToggle({duration: 100});
             }
@@ -491,6 +500,7 @@ window.App = {
         $("div.open").click(function () {
             $(".info").toggleClass("open");
         });
+        $(".info").addClass("open");
         $(document.body).keydown(function (evt) {
             if (evt.keyCode === 73) {
                 $(".info").toggleClass("open");
@@ -502,7 +512,7 @@ window.App = {
     },
     adjustScale: function (adj) {
         var oldScale = this.scale;
-        if (adj == -1) {
+        if (adj === -1) {
             if (oldScale <= 1) {
                 this.scale = 0.5;
             } else if (oldScale <= 2) {
@@ -511,23 +521,29 @@ window.App = {
                 this.scale = Math.round(Math.max(2, this.scale / 1.25));
             }
         } else {
-            if (oldScale == 0.5) {
+            if (oldScale === 0.5) {
                 this.scale = 1;
-            } else if (oldScale == 1) {
+            } else if (oldScale === 1) {
                 this.scale = 2;
             } else {
                 this.scale = Math.round(Math.min(50, this.scale * 1.25));
             }
         }
+        this.updateTransform();
     },
     updateTransform: function () {
         this.panX = Math.min(this.width / 2, Math.max(-this.width / 2, this.panX));
         this.panY = Math.min(this.height / 2, Math.max(-this.height / 2, this.panY));
+
+        var a = this.screenToBoardSpace(0, 0);
+        this.elements.grid.css("background-size", this.scale + "px " + this.scale + "px").css("transform", "translate(" + Math.floor(-a.x % 1 * this.scale) + "px," + Math.floor(-a.y % 1 * this.scale) + "px)");
+        this.elements.grid.css("opacity", (this.scale - 2) / 6);
+
         if (this.use_js_resize) {
             var ctx2 = this.elements.board_render[0].getContext("2d");
             var pxl_x = -this.panX + ((this.width - (window.innerWidth / this.scale)) / 2);
             var pxl_y = -this.panY + ((this.height - (window.innerHeight / this.scale)) / 2);
-            
+
             ctx2.globalAlpha = 1;
             ctx2.fillStyle = '#CCCCCC';
             ctx2.fillRect(0, 0, ctx2.canvas.width, ctx2.canvas.height);
@@ -555,10 +571,6 @@ window.App = {
             this.elements.boardZoomer.css("transform", "scale(" + this.scale + ")");
         }
         this.elements.reticule.css("width", (this.scale + 1) + "px").css("height", (this.scale + 1) + "px");
-
-        var a = this.screenToBoardSpace(0, 0);
-        this.elements.grid.css("background-size", this.scale + "px " + this.scale + "px").css("transform", "translate(" + Math.floor(-a.x % 1 * this.scale) + "px," + Math.floor(-a.y % 1 * this.scale) + "px)");
-        this.elements.grid.css("opacity", (this.scale - 2) / 6);
     },
     screenToBoardSpace: function (screenX, screenY) {
         if (this.use_js_resize) {
@@ -653,11 +665,11 @@ window.App = {
             document.title = "pxls.space [" + minuteStr + ":" + secsStr + "]";
         } else {
             if (!this.hasFiredNotification) {
-				
+
                 try {
-					if (document.getElementById('audiotoggle').checked == false) {
-						notifyaudio.play();
-					}
+                    if (document.getElementById('audiotoggle').checked == false) {
+                        notifyaudio.play();
+                    }
                     new Notification("pxls.space", {
                         body: "Your next pixel is available!"
                     });
@@ -675,13 +687,12 @@ window.App = {
             this.elements.timer.text(this.status);
         }
     },
-    saveImage: function() {
+    saveImage: function () {
         var a = document.createElement("a");
         a.href = this.elements.board[0].toDataURL("image/png");
         a.download = "canvas.png";
         a.click();
-        if(typeof a.remove === "function")
-        {
+        if (typeof a.remove === "function") {
             a.remove();
         }
     }
