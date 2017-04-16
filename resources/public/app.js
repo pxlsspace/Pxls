@@ -19,19 +19,38 @@ function hexToRgb(hex) {
     } : null;
 }
 
-function checkImageRendering(prefix) {
+function checkImageRendering(prefix, crisp, pixelated, optimize_contrast) {
     var d = document.createElement('div');
-    d.style.imageRendering = prefix + 'crisp-edges';
-    if (d.style.imageRendering !== prefix + 'crisp-edges') {
-        return false;
+    if (crisp) {
+        d.style.imageRendering = prefix+'crisp-edges';
+        if (d.style.imageRendering === prefix+'crisp-edges') {
+            return true;
+        }
     }
-    d.style.imageRendering = prefix + 'pixelated';
-    return d.style.imageRendering === prefix + 'pixelated';
+    if (pixelated) {
+        d.style.imageRendering = prefix+'pixelated';
+        if (d.style.imageRendering === prefix+'pixelated') {
+            return true;
+        }
+    }
+    if (optimize_contrast) {
+        d.style.imageRendering = prefix+'optimize-contrast';
+        if (d.style.imageRendering === prefix+'optimize-contrast') {
+            return true;
+        }
+    }
+    return false;
 }
-var have_image_rendering = checkImageRendering('') || checkImageRendering('-o-') || checkImageRendering('-moz-') || checkImageRendering('-webkit-'),
-    nua = navigator.userAgent,
-    ios_safari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i));
 
+var have_image_rendering = checkImageRendering('', true, true, false) || checkImageRendering('-o-', true, false, false) || checkImageRendering('-moz-', true, false, false) || checkImageRendering('-webkit-', true, false, true),
+    nua = navigator.userAgent,
+    ios_safari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i)),
+    ms_edge = nua.indexOf('Edge') > -1;
+
+// MS Edge is non-standard AF
+if (ms_edge) {
+    have_image_rendering = false;
+}
 
 window.App = {
     elements: {
@@ -499,17 +518,17 @@ window.App = {
         this.elements.reticule.css("width", (this.scale + 1) + "px").css("height", (this.scale + 1) + "px");
     },
     screenToBoardSpace: function (screenX, screenY) {
-        if (this.use_zoom) {
-            return {
-                x: (screenX / this.scale) - boardBox.left,
-                y: (screenY / this.scale) - boardBox.top
-            };
-        }
-        var boardBox = this.elements.board[0].getBoundingClientRect();
         if (this.use_js_resize) {
             return {
                 x: -this.panX + ((this.width - (window.innerWidth / this.scale)) / 2) + (screenX / this.scale),
                 y: -this.panY + ((this.height - (window.innerHeight / this.scale)) / 2) + (screenY / this.scale)
+            };
+        }
+        var boardBox = this.elements.board[0].getBoundingClientRect();
+        if (this.use_zoom) {
+            return {
+                x: (screenX / this.scale) - boardBox.left,
+                y: (screenY / this.scale) - boardBox.top
             };
         }
         return {
