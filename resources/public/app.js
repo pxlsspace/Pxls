@@ -68,6 +68,14 @@ window.App = {
         loginOverlay: $(".login-overlay"),
         userInfo: $(".userinfo")
     },
+    template: {
+        use: false,
+        url: '',
+        x: 0,
+        y: 0,
+        width: -1,
+        opacity: 0.5
+    },
     panX: 0,
     panY: 0,
     scale: 4,
@@ -96,6 +104,8 @@ window.App = {
             });
             this.elements.board.parent().append(this.elements.board_render);
             this.elements.board.detach();
+        } else {
+            this.elements.board_render = this.elements.board;
         }
         
         $.get("/info", this.initBoard.bind(this));
@@ -218,6 +228,7 @@ window.App = {
                 this.updateTransform();
             }.bind(this)).resize();
         }
+        this.initTemplate();
     },
     initPalette: function () {
         this.palette.forEach(function (color, idx) {
@@ -298,7 +309,7 @@ window.App = {
     initBoardPlacement: function () {
         var downX, downY;
         
-        (this.use_js_resize ? this.elements.board_render : this.elements.board).on("pointerdown mousedown", function (evt) {
+        this.elements.board_render.on("pointerdown mousedown", function (evt) {
             downX = evt.clientX;
             downY = evt.clientY;
         }).on("touchstart", function (evt) {
@@ -327,6 +338,39 @@ window.App = {
             this.switchColor(-1);
         }.bind(this));
     },
+    initTemplate: function() {
+        if (this.template.use) { // already inited
+            return;
+        }
+        var url = getQueryVariable("template");
+        if (!url) { // no URL to render
+            return;
+        }
+        this.template.use = true;
+        var x = parseInt(getQueryVariable("ox")) || 0,
+            y = parseInt(getQueryVariable("oy")) || 0,
+            o = parseFloat(getQueryVariable("oo")) || 0.5,
+            tw = parseInt(getQueryVariable("tw")) || -1;
+        this.template.x = x;
+        this.template.y = y;
+        this.template.opacity = o;
+        if (tw) {
+            this.template.width = tw;
+        }
+        this.elements.template = $("<img>").addClass("board-template pixelate").attr({
+            src: url,
+            alt: "template"
+        }).css({
+            top: y,
+            left: x,
+            opacity: o
+        }).css(tw != -1?'width':'false', tw);
+        if (this.use_js_resize) {
+            this.updateTransform();
+            return;
+        }
+        this.elements.board_render.parent().prepend(this.elements.template);
+    },
     initCursor: function () {
         var fn = function (evt) {
             this.elements.cursor.css("transform", "translate(" + evt.clientX + "px, " + evt.clientY + "px)");
@@ -350,7 +394,7 @@ window.App = {
                 this.elements.reticule.show();
             }
         }.bind(this);
-        (this.use_js_resize ? this.elements.board_render : this.elements.board).on("pointermove mousemove", fn);
+        this.elements.board_render.on("pointermove mousemove", fn);
     },
     initCoords: function () {
         var fn = function (evt) {
@@ -363,7 +407,7 @@ window.App = {
 
             this.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
         }.bind(this);
-        (this.use_js_resize ? this.elements.board_render : this.elements.board).on("pointermove mousemove", fn).on("touchstart touchmove", fn_touch);
+        this.elements.board_render.on("pointermove mousemove", fn).on("touchstart touchmove", fn_touch);
     },
     initAlert: function () {
         this.elements.alert.find(".button").click(function () {
@@ -484,9 +528,21 @@ window.App = {
             var pxl_x = -this.panX + ((this.width - (window.innerWidth / this.scale)) / 2);
             var pxl_y = -this.panY + ((this.height - (window.innerHeight / this.scale)) / 2);
             
+            ctx2.globalAlpha = 1;
             ctx2.fillStyle = '#CCCCCC';
             ctx2.fillRect(0, 0, ctx2.canvas.width, ctx2.canvas.height);
             ctx2.drawImage(this.elements.board[0], pxl_x, pxl_y, window.innerWidth / this.scale, window.innerHeight / this.scale, 0, 0, window.innerWidth, window.innerHeight);
+            if (!this.template.use) {
+                return; // we are done!
+            }
+            var width = this.elements.template[0].width,
+                height = this.elements.template[0].height;
+            if (this.template.width != -1) {
+                height *= (this.template.width / width);
+                width = this.template.width;
+            }
+            ctx2.globalAlpha = this.template.opacity;
+            ctx2.drawImage(this.elements.template[0], (this.template.x-pxl_x)*this.scale, (this.template.y-pxl_y)*this.scale, width * this.scale, height*this.scale);
             return;
         }
         this.elements.boardMover
