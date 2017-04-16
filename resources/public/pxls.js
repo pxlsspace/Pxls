@@ -251,7 +251,7 @@ window.App = {
                 x: parseFloat(getQueryVariable("ox")),
                 y: parseFloat(getQueryVariable("oy")),
                 opacity: parseFloat(getQueryVariable("oo")),
-                width: parseInt(getQueryVariable("tw")),
+                width: parseFloat(getQueryVariable("tw")),
                 url: url
             });
         }
