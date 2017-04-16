@@ -233,6 +233,7 @@ a, a:hover, a:visited, a:active {
     position: absolute;
     top: 0;
     left: 0;
+    margin: 0;
     border: 2px solid black;
     background-color: rgba(0, 0, 0, 0);
     box-sizing: content-box;

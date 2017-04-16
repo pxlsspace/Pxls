@@ -292,8 +292,9 @@ window.App = {
                 this.panY -= dy / oldScale;
                 this.panY += dy / this.scale;
                 this.updateTransform();
+                this.updateReticule();
             }
-        }.bind(this))
+        }.bind(this));
     },
     initBoardPlacement: function () {
         var downX, downY;
@@ -333,24 +334,33 @@ window.App = {
         }.bind(this);
         this.elements.boardContainer.on("pointermove", fn).on("mousemove", fn);
     },
+    lastReticule: {
+        x: 0,
+        y: 0
+    },
+    updateReticule: function(clientX, clientY) {
+        if (clientX !== undefined) {
+            var boardPos = this.screenToBoardSpace(clientX, clientY);
+            this.lastReticule = {
+                x: boardPos.x |= 0,
+                y: boardPos.y |= 0
+            };
+        }
+        var screenPos = this.boardToScreenSpace(this.lastReticule.x, this.lastReticule.y);
+        this.elements.reticule.css("left", screenPos.x - 1 + "px");
+        this.elements.reticule.css("top", screenPos.y - 1 + "px");
+        this.elements.reticule.css("width", this.scale - 1 + "px").css("height", this.scale - 1 + "px");
+
+        if (this.color === -1) {
+            this.elements.reticule.hide();
+        } else {
+            this.elements.reticule.show();
+        }
+    },
     initReticule: function () {
-        var fn = function (evt) {
-            var boardPos = this.screenToBoardSpace(evt.clientX, evt.clientY);
-            boardPos.x |= 0;
-            boardPos.y |= 0;
-
-            var screenPos = this.boardToScreenSpace(boardPos.x, boardPos.y);
-            this.elements.reticule.css("left", screenPos.x - 1 + "px");
-            this.elements.reticule.css("top", screenPos.y - 1 + "px");
-            this.elements.reticule.css("width", this.scale - 1 + "px").css("height", this.scale - 1 + "px");
-
-            if (this.color === -1) {
-                this.elements.reticule.hide();
-            } else {
-                this.elements.reticule.show();
-            }
-        }.bind(this);
-        (this.use_js_resize ? this.elements.board_render : this.elements.board).on("pointermove mousemove", fn);
+        (this.use_js_resize ? this.elements.board_render : this.elements.board).on("pointermove mousemove", function (evt) {
+            this.updateReticule(evt.clientX, evt.clientY);
+        }.bind(this));
     },
     initCoords: function () {
         var fn = function (evt) {
@@ -541,7 +551,6 @@ window.App = {
             x: boardX * this.scale + boardBox.left,
             y: boardY * this.scale + boardBox.top
         };
-        return {x: x, y: y};
     },
     centerOn: function (x, y) {
         this.panX = (this.width / 2 - x) - 0.5;
