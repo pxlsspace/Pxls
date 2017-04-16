@@ -236,7 +236,17 @@ window.App = {
                 this.updateTransform();
             }.bind(this)).resize();
         }
-        this.initTemplate();
+        var url = getQueryVariable("template");
+        if (url) { // we have a template!
+            this.updateTemplate({
+                use: true,
+                x: parseInt(getQueryVariable("ox")),
+                y: parseInt(getQueryVariable("oy")),
+                opacity: parseFloat(getQueryVariable("oo")),
+                width: parseInt(getQueryVariable("tw")),
+                url: url
+            });
+        }
     },
     initPalette: function () {
         this.palette.forEach(function (color, idx) {
@@ -345,33 +355,65 @@ window.App = {
             this.switchColor(-1);
         }.bind(this));
     },
+    updateTemplate: function(t) {
+        console.log(t);
+        console.log(t.hasOwnProperty('use'));
+        console.log(t.use != this.template.use);
+        if (t.hasOwnProperty('use') && t.use != this.template.use) {
+            if (t.use) {
+                this.template.x = t.x || 0;
+                this.template.y = t.y || 0;
+                this.template.opacity = t.opacity || 0.5;
+                this.template.width = t.width || -1;
+                this.template.url = t.url || '';
+                this.initTemplate();
+            } else {
+                this.template.use = false;
+                this.elements.template.remove();
+                this.elements.template = null;
+                if (this.use_js_resize) {
+                    this.updateTransform();
+                }
+            }
+            return;
+        }
+        if (t.hasOwnProperty('url')) {
+            this.template.url = t.url;
+            this.elements.template.attr('src', t.url);
+            if (!t.hasOwnProperty('width')) {
+                t.width = -1; // reset just in case
+            }
+        }
+        $.map([['x','left'],['y','top'],['opacity','opacity'],['width','width']], function(e) {
+            if (t.hasOwnProperty(e[0])) {
+                this.template[e[0]] = t[e[0]];
+                this.elements.template.css(e[1], t[e[0]]);
+            }
+        }.bind(this));
+        if (t.width == -1) {
+            this.elements.template.css('width', 'auto');
+        }
+        
+        
+        if (this.use_js_resize) {
+            this.updateTransform();
+        }
+    },
     initTemplate: function() {
         if (this.template.use) { // already inited
             return;
         }
-        var url = getQueryVariable("template");
-        if (!url) { // no URL to render
-            return;
-        }
         this.template.use = true;
-        var x = parseInt(getQueryVariable("ox")) || 0,
-            y = parseInt(getQueryVariable("oy")) || 0,
-            o = parseFloat(getQueryVariable("oo")) || 0.5,
-            tw = parseInt(getQueryVariable("tw")) || -1;
-        this.template.x = x;
-        this.template.y = y;
-        this.template.opacity = o;
-        if (tw) {
-            this.template.width = tw;
-        }
+        
         this.elements.template = $("<img>").addClass("board-template pixelate").attr({
-            src: url,
+            src: this.template.url,
             alt: "template"
         }).css({
-            top: y,
-            left: x,
-            opacity: o
-        }).css(tw != -1?'width':'false', tw);
+            top: this.template.y,
+            left: this.template.x,
+            opacity: this.template.opacity,
+            width: this.template.width == -1 ? 'auto' : this.template.width
+        });
         if (this.use_js_resize) {
             this.updateTransform();
             return;
