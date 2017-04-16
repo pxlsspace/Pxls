@@ -551,6 +551,14 @@ window.App = {
                 App.saveImage();
             }
         });
+        try {
+            $("#audiotoggle")[0].checked = localStorage.getItem("audio_muted") === "on";
+            $("#audiotoggle").change(function() {
+                localStorage.setItem("audio_muted", $(this).is(":checked") ? "on" : "off");
+            });
+        } catch(e) {
+            console.log("Local Storage not available");
+        }
     },
     adjustScale: function (adj) {
         var oldScale = this.scale;
