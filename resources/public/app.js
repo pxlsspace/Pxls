@@ -22,20 +22,20 @@ function hexToRgb(hex) {
 function checkImageRendering(prefix, crisp, pixelated, optimize_contrast) {
     var d = document.createElement('div');
     if (crisp) {
-        d.style.imageRendering = prefix+'crisp-edges';
-        if (d.style.imageRendering === prefix+'crisp-edges') {
+        d.style.imageRendering = prefix + 'crisp-edges';
+        if (d.style.imageRendering === prefix + 'crisp-edges') {
             return true;
         }
     }
     if (pixelated) {
-        d.style.imageRendering = prefix+'pixelated';
-        if (d.style.imageRendering === prefix+'pixelated') {
+        d.style.imageRendering = prefix + 'pixelated';
+        if (d.style.imageRendering === prefix + 'pixelated') {
             return true;
         }
     }
     if (optimize_contrast) {
-        d.style.imageRendering = prefix+'optimize-contrast';
-        if (d.style.imageRendering === prefix+'optimize-contrast') {
+        d.style.imageRendering = prefix + 'optimize-contrast';
+        if (d.style.imageRendering === prefix + 'optimize-contrast') {
             return true;
         }
     }
@@ -160,6 +160,9 @@ window.App = {
             if (window.xD) _();
             if (window.vdk) _();
 
+            // Chrome extension (PXLS RUS MOD)
+            if ($("div:contains(Настройки)").length) _();
+
             // "Botnet" by (unknown, obfuscated)
             if (window.Botnet) _();
         }.bind(this), 5000);
@@ -240,8 +243,8 @@ window.App = {
         if (url) { // we have a template!
             this.updateTemplate({
                 use: true,
-                x: parseInt(getQueryVariable("ox")),
-                y: parseInt(getQueryVariable("oy")),
+                x: parseFloat(getQueryVariable("ox")),
+                y: parseFloat(getQueryVariable("oy")),
                 opacity: parseFloat(getQueryVariable("oo")),
                 width: parseInt(getQueryVariable("tw")),
                 url: url
@@ -355,7 +358,7 @@ window.App = {
             this.switchColor(-1);
         }.bind(this));
     },
-    updateTemplate: function(t) {
+    updateTemplate: function (t) {
         console.log(t);
         console.log(t.hasOwnProperty('use'));
         console.log(t.use != this.template.use);
@@ -384,7 +387,7 @@ window.App = {
                 t.width = -1; // reset just in case
             }
         }
-        $.map([['x','left'],['y','top'],['opacity','opacity'],['width','width']], function(e) {
+        $.map([['x', 'left'], ['y', 'top'], ['opacity', 'opacity'], ['width', 'width']], function (e) {
             if (t.hasOwnProperty(e[0])) {
                 this.template[e[0]] = t[e[0]];
                 this.elements.template.css(e[1], t[e[0]]);
@@ -393,18 +396,18 @@ window.App = {
         if (t.width == -1) {
             this.elements.template.css('width', 'auto');
         }
-        
-        
+
+
         if (this.use_js_resize) {
             this.updateTransform();
         }
     },
-    initTemplate: function() {
+    initTemplate: function () {
         if (this.template.use) { // already inited
             return;
         }
         this.template.use = true;
-        
+
         this.elements.template = $("<img>").addClass("board-template pixelate").attr({
             src: this.template.url,
             alt: "template"
@@ -553,10 +556,10 @@ window.App = {
         });
         try {
             $("#audiotoggle")[0].checked = localStorage.getItem("audio_muted") === "on";
-            $("#audiotoggle").change(function() {
+            $("#audiotoggle").change(function () {
                 localStorage.setItem("audio_muted", $(this).is(":checked") ? "on" : "off");
             });
-        } catch(e) {
+        } catch (e) {
             console.log("Local Storage not available");
         }
     },
@@ -608,7 +611,7 @@ window.App = {
                 width = this.template.width;
             }
             ctx2.globalAlpha = this.template.opacity;
-            ctx2.drawImage(this.elements.template[0], (this.template.x-pxl_x)*this.scale, (this.template.y-pxl_y)*this.scale, width * this.scale, height*this.scale);
+            ctx2.drawImage(this.elements.template[0], (this.template.x - pxl_x) * this.scale, (this.template.y - pxl_y) * this.scale, width * this.scale, height * this.scale);
             return;
         }
         this.elements.boardMover
