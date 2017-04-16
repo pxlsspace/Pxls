@@ -47,10 +47,6 @@ public class PacketHandler {
 
                 if (obj instanceof Packet.ClientAdminMessage)
                     handleAdminMessage(channel, user, ((Packet.ClientAdminMessage) obj));
-
-                if (user.getRole().greaterEqual(Role.ADMIN)) {
-                    if (obj instanceof Packet.ClientAdminBan) handleBan(channel, user, ((Packet.ClientAdminBan) obj));
-                }
             }
         }
     }
@@ -62,13 +58,6 @@ public class PacketHandler {
             for (WebSocketChannel ch : u.getConnections()) {
                 server.send(ch, msg);
             }
-        }
-    }
-
-    private void handleBan(WebSocketChannel channel, User user, Packet.ClientAdminBan obj) {
-        User u = App.getUserManager().getByName(obj.username);
-        if (u != null && u.getRole().lessThan(Role.MODERATOR)) {
-            App.getUserManager().banUser(u, 86400);
         }
     }
 
