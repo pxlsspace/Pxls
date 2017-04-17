@@ -204,7 +204,7 @@ window.App = {
         this.scale = getQueryVariable("scale") || this.scale;
         this.updateTransform();
 
-        setInterval(this.updateTime.bind(this), 1000);
+        setTimeout(this.updateTime.bind(this), 1000);
         jQuery.get("/boarddata", this.drawBoard.bind(this));
     },
     drawBoard: function (data) {
@@ -494,8 +494,8 @@ window.App = {
                 this.alert(data.message);
             } else if (data.type === "cooldown") {
                 this.cooldown = new Date().getTime() + (data.wait * 1000);
-                this.updateTime(0);
                 this.hasFiredNotification = data.wait === 0;
+                this.updateTime(true);
             } else if (data.type === "captcha_required") {
                 grecaptcha.reset();
                 grecaptcha.execute();
@@ -707,7 +707,7 @@ window.App = {
         alert.find(".text").text(message);
         alert.fadeIn(200);
     },
-    updateTime: function () {
+    updateTime: function (die) {
         var delta = (this.cooldown - new Date().getTime()) / 1000;
 
         if (delta > 0) {
@@ -744,6 +744,10 @@ window.App = {
         if (this.status) {
             this.elements.timer.text(this.status);
         }
+        if (die) {
+            return;
+        }
+        setTimeout(this.updateTime.bind(this), 1000);
     },
     saveImage: function () {
         var a = document.createElement("a");
