@@ -84,6 +84,7 @@ window.App = {
     use_js_resize: !have_image_rendering,
     use_zoom: !this.use_js_resize && ios_safari,
     hasFiredNotification: true,
+    window_focus: true,
     init: function () {
         this.color = -1;
 
@@ -97,6 +98,13 @@ window.App = {
         $(".online").hide();
         $(".grid").hide();
         $(".userinfo").hide();
+
+        $(window).focus(function() {
+            this.window_focus = true;
+        }.bind(this)).blur(function() {
+            this.window_focus = false;
+        }.bind(this));
+
 
         if (this.use_js_resize) {
             this.elements.board_render = $('<canvas>').css({
@@ -728,9 +736,11 @@ window.App = {
                     if (document.getElementById('audiotoggle').checked == false) {
                         notifyaudio.play();
                     }
-                    new Notification("pxls.space", {
-                        body: "Your next pixel is available!"
-                    });
+                    if (!this.window_focus) {
+                        new Notification("pxls.space", {
+                            body: "Your next pixel is available!"
+                        });
+                    }
                 } catch (e) {
                     console.log("No notificatons available!");
                 }
