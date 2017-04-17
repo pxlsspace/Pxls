@@ -775,14 +775,14 @@ if (ms_edge) {
 
     App.init();
 
-    Object.defineProperty(window, "App", {
-        get: function () {
-            App.socket.send(JSON.stringify({type: "banme"}));
-            App.socket.close();
-
-            window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
-        }
-    });
+    // Object.defineProperty(window, "App", {
+    //     get: function () {
+    //         App.socket.send(JSON.stringify({type: "banme"}));
+    //         App.socket.close();
+    //
+    //         window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
+    //     }
+    // });
 
     if (window.initAdmin) initAdmin(App);
 })();
