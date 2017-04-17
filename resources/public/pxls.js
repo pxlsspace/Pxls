@@ -766,12 +766,12 @@ if (ms_edge) {
         }
     };
 
-    function recaptchaCallback(token) {
+    window.recaptchaCallback = function(token) {
         App.socket.send(JSON.stringify({
             type: "captcha",
             token: token
         }));
-    }
+    };
 
     App.init();
 
@@ -783,5 +783,6 @@ if (ms_edge) {
             window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
         }
     });
-    if (initAdmin) initAdmin(App);
+
+    if (window.initAdmin) initAdmin(App);
 })();
