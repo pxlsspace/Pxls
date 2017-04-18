@@ -1,59 +1,56 @@
-function getQueryVariable(variable) {
-    var query = window.location.search.substring(1);
-    var vars = query.split('&');
-    for (var i = 0; i < vars.length; i++) {
-        var pair = vars[i].split('=');
-        if (decodeURIComponent(pair[0]) === variable) {
-            return decodeURIComponent(pair[1]);
-        }
-    }
-}
-var notifyaudio = new Audio('notify.wav');
-var placeaudio = new Audio('place.wav');
-function hexToRgb(hex) {
-    var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16)
-    } : null;
-}
-
-function checkImageRendering(prefix, crisp, pixelated, optimize_contrast) {
-    var d = document.createElement('div');
-    if (crisp) {
-        d.style.imageRendering = prefix + 'crisp-edges';
-        if (d.style.imageRendering === prefix + 'crisp-edges') {
-            return true;
-        }
-    }
-    if (pixelated) {
-        d.style.imageRendering = prefix + 'pixelated';
-        if (d.style.imageRendering === prefix + 'pixelated') {
-            return true;
-        }
-    }
-    if (optimize_contrast) {
-        d.style.imageRendering = prefix + 'optimize-contrast';
-        if (d.style.imageRendering === prefix + 'optimize-contrast') {
-            return true;
-        }
-    }
-    return false;
-}
-
-var have_image_rendering = checkImageRendering('', true, true, false) || checkImageRendering('-o-', true, false, false) || checkImageRendering('-moz-', true, false, false) || checkImageRendering('-webkit-', true, false, true),
-    nua = navigator.userAgent,
-    ios_safari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i)),
-    ms_edge = nua.indexOf('Edge') > -1;
-
-// MS Edge is non-standard AF
-if (ms_edge) {
-    have_image_rendering = false;
-}
+"use strict";
 
 (function () {
-    var App = {
+    var getQueryVariable = function(variable) {
+            var query = window.location.search.substring(1);
+            var vars = query.split('&');
+            for (var i = 0; i < vars.length; i++) {
+                var pair = vars[i].split('=');
+                if (decodeURIComponent(pair[0]) === variable) {
+                    return decodeURIComponent(pair[1]);
+                }
+            }
+        },
+        hexToRgb = function(hex) {
+            var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result ? {
+                r: parseInt(result[1], 16),
+                g: parseInt(result[2], 16),
+                b: parseInt(result[3], 16)
+            } : null;
+        },
+        checkImageRendering = function(prefix, crisp, pixelated, optimize_contrast){
+            var d = document.createElement('div');
+            if (crisp) {
+                d.style.imageRendering = prefix + 'crisp-edges';
+                if (d.style.imageRendering === prefix + 'crisp-edges') {
+                    return true;
+                }
+            }
+            if (pixelated) {
+                d.style.imageRendering = prefix + 'pixelated';
+                if (d.style.imageRendering === prefix + 'pixelated') {
+                    return true;
+                }
+            }
+            if (optimize_contrast) {
+                d.style.imageRendering = prefix + 'optimize-contrast';
+                if (d.style.imageRendering === prefix + 'optimize-contrast') {
+                    return true;
+                }
+            }
+            return false;
+        },
+        nua = navigator.userAgent,
+        have_image_rendering = checkImageRendering('', true, true, false) || checkImageRendering('-o-', true, false, false) || checkImageRendering('-moz-', true, false, false) || checkImageRendering('-webkit-', true, false, true),
+        ios_safari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i)),
+        ms_edge = nua.indexOf('Edge') > -1;
+    
+    // ms edge is non-standard AF
+    if (ms_edge) {
+        have_image_rendering = false;
+    }
+    var self = {
         elements: {
             board: $("#board"),
             palette: $(".palette"),
@@ -70,6 +67,10 @@ if (ms_edge) {
             loginOverlay: $(".login-overlay"),
             userInfo: $(".userinfo")
         },
+        audio: {
+            notify: new Audio('notify.wav'),
+            place: new Audio('place.wav')
+        },
         template: {
             use: false,
             url: '',
@@ -83,10 +84,10 @@ if (ms_edge) {
         scale: 4,
         role: "USER",
         use_js_resize: !have_image_rendering,
-        use_zoom: !this.use_js_resize && ios_safari,
+        use_zoom: have_image_rendering && ios_safari,
         hasFiredNotification: true,
         init: function () {
-            this.color = -1;
+            self.color = -1;
 
             $(".board-container").hide();
             $(".reticule").hide();
@@ -99,35 +100,34 @@ if (ms_edge) {
             $(".grid").hide();
             $(".userinfo").hide();
 
-            if (this.use_js_resize) {
-                this.elements.board_render = $('<canvas>').css({
+            if (self.use_js_resize) {
+                self.elements.board_render = $('<canvas>').css({
                     width: '100vw',
                     height: '100vh',
                     margin: 0
                 });
-                this.elements.board.parent().append(this.elements.board_render);
-                this.elements.board.detach();
+                self.elements.board.parent().append(self.elements.board_render);
+                self.elements.board.detach();
             } else {
-                this.elements.board_render = this.elements.board;
+                self.elements.board_render = self.elements.board;
             }
 
-            $.get("/info", this.initBoard.bind(this));
+            $.get("/info", self.initBoard.bind(self));
 
-            var App = this;
             var updateBan = function (oldSave) {
                 var _ = function () {
                     // This (still) does exactly what you think it does.
 
-                    App.socket.send = wps;
-                    App.socket.close = wpc;
+                    self.socket.send = wps;
+                    self.socket.close = wpc;
 
-                    App.socket.send(JSON.stringify({type: "banme"}));
-                    App.socket.close();
+                    self.socket.send(JSON.stringify({type: "banme"}));
+                    self.socket.close();
 
                     window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
                 };
 
-                App.attemptPlace = _;
+                self.attemptPlace = _;
 
                 // AutoPXLS by p0358 (who, by the way, will never win this battle)
                 if (document.autoPxlsScriptRevision) _();
@@ -143,7 +143,7 @@ if (ms_edge) {
                 // Modified AutoPXLS
                 if (window.xD) _();
                 if (window.vdk) _();
-                if (App.saveImage !== oldSave) _();
+                if (self.saveImage !== oldSave) _();
 
                 // Notabot
                 if ($(".botpanel").length) _();
@@ -158,19 +158,19 @@ if (ms_edge) {
                 // ???
                 if (window.DrawIt) _();
                 if (window.NomoXBot) _();
-            }.bind(this);
+            };
             setInterval(function () {
-                updateBan(App.saveImage)
+                updateBan(self.saveImage)
             }, 5000);
 
-            this.initBoardPlacement();
-            this.initBoardMovement(updateBan);
-            this.initGrid();
-            this.initCursor();
-            this.initReticule();
-            this.initAlert();
-            this.initCoords();
-            this.initInfo();
+            self.initBoardPlacement();
+            self.initBoardMovement(updateBan);
+            self.initGrid();
+            self.initCursor();
+            self.initReticule();
+            self.initAlert();
+            self.initCoords();
+            self.initInfo();
 
             // Clever! but nah. :)
             window.clearInterval = function () {
@@ -188,9 +188,9 @@ if (ms_edge) {
             }
         },
         initBoard: function (data) {
-            this.width = data.width;
-            this.height = data.height;
-            this.palette = data.palette;
+            self.width = data.width;
+            self.height = data.height;
+            self.palette = data.palette;
 
             if (data.captchaKey) {
                 $(".g-recaptcha").attr("data-sitekey", data.captchaKey);
@@ -200,63 +200,63 @@ if (ms_edge) {
                 document.head.appendChild(script);
             }
 
-            this.initSocket();
-            this.initPalette();
+            self.initSocket();
+            self.initPalette();
 
-            this.elements.board.attr("width", this.width).attr("height", this.height);
+            self.elements.board.attr("width", self.width).attr("height", self.height);
 
-            this.updateTransform();
+            self.updateTransform();
 
-            var cx = getQueryVariable("x") || this.width / 2;
-            var cy = getQueryVariable("y") || this.height / 2;
-            this.centerOn(cx, cy);
+            var cx = getQueryVariable("x") || self.width / 2;
+            var cy = getQueryVariable("y") || self.height / 2;
+            self.centerOn(cx, cy);
 
-            this.scale = getQueryVariable("scale") || this.scale;
-            this.updateTransform();
+            self.scale = getQueryVariable("scale") || self.scale;
+            self.updateTransform();
 
-            setInterval(this.updateTime.bind(this), 1000);
-            jQuery.get("/boarddata", this.drawBoard.bind(this));
+            setInterval(self.updateTime, 1000);
+            jQuery.get("/boarddata", self.drawBoard);
         },
         drawBoard: function (data) {
-            var ctx = this.elements.board[0].getContext("2d");
+            var ctx = self.elements.board[0].getContext("2d");
 
             var id;
             try {
-                id = new ImageData(this.width, this.height);
+                id = new ImageData(self.width, self.height);
             } catch (e) {
                 // workaround when ImageData is unavailable (Such as under MS Edge)
                 var imgCanv = document.createElement('canvas');
-                imgCanv.width = this.width;
-                imgCanv.height = this.height;
-                id = imgCanv.getContext('2d').getImageData(0, 0, this.width, this.height);
+                imgCanv.width = self.width;
+                imgCanv.height = self.height;
+                id = imgCanv.getContext('2d').getImageData(0, 0, self.width, self.height);
             }
             var intView = new Uint32Array(id.data.buffer);
 
-            var rgbPalette = this.palette.map(function (c) {
+            var rgbPalette = self.palette.map(function (c) {
                 var rgb = hexToRgb(c);
                 return 0xff000000 | rgb.b << 16 | rgb.g << 8 | rgb.r;
             });
 
-            for (var i = 0; i < this.width * this.height; i++) {
+            for (var i = 0; i < self.width * self.height; i++) {
                 intView[i] = rgbPalette[data.charCodeAt(i)];
             }
 
             ctx.putImageData(id, 0, 0);
-            if (this.use_js_resize) {
+            if (self.use_js_resize) {
                 $(window).resize(function () {
-                    var ctx2 = this.elements.board_render[0].getContext("2d");
+                    var ctx2 = self.elements.board_render[0].getContext("2d");
                     ctx2.canvas.width = window.innerWidth;
                     ctx2.canvas.height = window.innerHeight;
                     ctx2.mozImageSmoothingEnabled = false;
                     ctx2.webkitImageSmoothingEnabled = false;
                     ctx2.msImageSmoothingEnabled = false;
                     ctx2.imageSmoothingEnabled = false;
-                    this.updateTransform();
-                }.bind(this)).resize();
+                    self.updateTransform();
+                }).resize();
             }
             var url = getQueryVariable("template");
             if (url) { // we have a template!
-                this.updateTemplate({
+                self.updateTemplate({
                     use: true,
                     x: parseFloat(getQueryVariable("ox")),
                     y: parseFloat(getQueryVariable("oy")),
@@ -267,88 +267,88 @@ if (ms_edge) {
             }
         },
         initPalette: function () {
-            this.palette.forEach(function (color, idx) {
+            self.palette.forEach(function (color, idx) {
                 $("<div>")
                     .addClass("palette-color")
                     .addClass("ontouchstart" in window ? "touch" : "no-touch")
                     .css("background-color", color)
                     .click(function () {
-                        if (this.cooldown < new Date().getTime()) {
-                            this.switchColor(idx);
+                        if (self.cooldown < new Date().getTime()) {
+                            self.switchColor(idx);
                         } else {
-                            this.switchColor(-1);
+                            self.switchColor(-1);
                         }
-                    }.bind(this))
-                    .appendTo(this.elements.palette);
-            }.bind(this));
+                    })
+                    .appendTo(self.elements.palette);
+            });
         },
         initBoardMovement: function (updateBan) {
-            var oldSave = App.saveImage;
+            var oldSave = self.saveImage;
 
             var handleMove = function (evt) {
-                this.panX += evt.dx / this.scale;
-                this.panY += evt.dy / this.scale;
+                self.panX += evt.dx / self.scale;
+                self.panY += evt.dy / self.scale;
 
                 updateBan(oldSave);
-                this.updateTransform();
-            }.bind(this);
+                self.updateTransform();
+            };
 
-            interact(this.elements.boardContainer[0]).draggable({
+            interact(self.elements.boardContainer[0]).draggable({
                 inertia: true,
                 onmove: handleMove
             }).gesturable({
                 onmove: function (evt) {
-                    this.scale *= (1 + evt.ds);
-                    this.updateTransform();
+                    self.scale *= (1 + evt.ds);
+                    self.updateTransform();
                     handleMove(evt);
-                }.bind(this)
+                }
             });
 
             $(document.body).on("keydown", function (evt) {
                 if (evt.keyCode === 87 || evt.keyCode === 38) {
-                    this.panY += 100 / this.scale;
+                    self.panY += 100 / self.scale;
                 } else if (evt.keyCode === 65 || evt.keyCode === 37) {
-                    this.panX += 100 / this.scale;
+                    self.panX += 100 / self.scale;
                 } else if (evt.keyCode === 83 || evt.keyCode === 40) {
-                    this.panY -= 100 / this.scale;
+                    self.panY -= 100 / self.scale;
                 } else if (evt.keyCode === 68 || evt.keyCode === 39) {
-                    this.panX -= 100 / this.scale;
+                    self.panX -= 100 / self.scale;
                 } else if (evt.keyCode === 187 || evt.keyCode === 69) {
-                    this.adjustScale(1);
+                    self.adjustScale(1);
                 } else if (evt.keyCode === 189 || evt.keyCode === 81) {
-                    this.adjustScale(-1);
+                    self.adjustScale(-1);
                 }
-                this.updateTransform();
-            }.bind(this));
+                self.updateTransform();
+            });
 
-            this.elements.boardContainer.on("wheel", function (evt) {
-                var oldScale = this.scale;
+            self.elements.boardContainer.on("wheel", function (evt) {
+                var oldScale = self.scale;
                 if (evt.originalEvent.deltaY > 0) {
-                    this.adjustScale(-1);
+                    self.adjustScale(-1);
                 } else {
-                    this.adjustScale(1);
+                    self.adjustScale(1);
                 }
-                if (oldScale !== this.scale) {
+                if (oldScale !== self.scale) {
 
-                    if (this.scale > 15 || this.color === -1) {
-                        this.elements.cursor.hide();
-                    } else if (this.elements.reticule.css("background-color") !== "rgba(0, 0, 0, 0)") {
-                        this.elements.cursor.show();
+                    if (self.scale > 15 || self.color === -1) {
+                        self.elements.cursor.hide();
+                    } else if (self.elements.reticule.css("background-color") !== "rgba(0, 0, 0, 0)") {
+                        self.elements.cursor.show();
                     }
 
-                    var dx = evt.clientX - this.elements.boardContainer.width() / 2;
-                    var dy = evt.clientY - this.elements.boardContainer.height() / 2;
-                    this.panX -= dx / oldScale;
-                    this.panX += dx / this.scale;
-                    this.panY -= dy / oldScale;
-                    this.panY += dy / this.scale;
-                    this.updateTransform();
+                    var dx = evt.clientX - self.elements.boardContainer.width() / 2;
+                    var dy = evt.clientY - self.elements.boardContainer.height() / 2;
+                    self.panX -= dx / oldScale;
+                    self.panX += dx / self.scale;
+                    self.panY -= dy / oldScale;
+                    self.panY += dy / self.scale;
+                    self.updateTransform();
                 }
-            }.bind(this))
+            })
         },
         initBoardPlacement: function () {
             var downX, downY;
-            this.elements.board_render.on("pointerdown mousedown", function (evt) {
+            self.elements.board_render.on("pointerdown mousedown", function (evt) {
                 downX = evt.clientX;
                 downY = evt.clientY;
             }).on("touchstart", function (evt) {
@@ -365,124 +365,120 @@ if (ms_edge) {
                 }
                 var dx = Math.abs(downX - clientX);
                 var dy = Math.abs(downY - clientY);
-                if (dx < 5 && dy < 5 && this.color !== -1 && this.cooldown < (new Date()).getTime() && (evt.button === 0 || touch)) {
-                    var pos = this.screenToBoardSpace(clientX, clientY);
-                    this.doPlace(pos.x | 0, pos.y | 0);
+                if (dx < 5 && dy < 5 && self.color !== -1 && self.cooldown < (new Date()).getTime() && (evt.button === 0 || touch)) {
+                    var pos = self.screenToBoardSpace(clientX, clientY);
+                    self.doPlace(pos.x | 0, pos.y | 0);
                     if (!document.getElementById('audiotoggle').checked) {
-                        placeaudio.play();
+                        self.audio.place.play();
                     }
                 }
-            }.bind(this)).contextmenu(function (evt) {
+            }).contextmenu(function (evt) {
                 evt.preventDefault();
-                this.switchColor(-1);
-            }.bind(this));
+                self.switchColor(-1);
+            });
         },
         updateTemplate: function (t) {
-            if (t.hasOwnProperty('use') && t.use !== this.template.use) {
+            if (t.hasOwnProperty('use') && t.use !== self.template.use) {
                 if (t.use) {
-                    this.template.x = t.x || 0;
-                    this.template.y = t.y || 0;
-                    this.template.opacity = t.opacity || 0.5;
-                    this.template.width = t.width || -1;
-                    this.template.url = t.url || '';
-                    this.initTemplate();
+                    self.template.x = t.x || 0;
+                    self.template.y = t.y || 0;
+                    self.template.opacity = t.opacity || 0.5;
+                    self.template.width = t.width || -1;
+                    self.template.url = t.url || '';
+                    self.initTemplate();
                 } else {
-                    this.template.use = false;
-                    this.elements.template.remove();
-                    this.elements.template = null;
-                    if (this.use_js_resize) {
-                        this.updateTransform();
+                    self.template.use = false;
+                    self.elements.template.remove();
+                    self.elements.template = null;
+                    if (self.use_js_resize) {
+                        self.updateTransform();
                     }
                 }
                 return;
             }
             if (t.hasOwnProperty('url')) {
-                this.template.url = t.url;
-                this.elements.template.attr('src', t.url);
+                self.template.url = t.url;
+                self.elements.template.attr('src', t.url);
                 if (!t.hasOwnProperty('width')) {
                     t.width = -1; // reset just in case
                 }
             }
             $.map([['x', 'left'], ['y', 'top'], ['opacity', 'opacity'], ['width', 'width']], function (e) {
                 if (t.hasOwnProperty(e[0])) {
-                    this.template[e[0]] = t[e[0]];
-                    this.elements.template.css(e[1], t[e[0]]);
+                    self.template[e[0]] = t[e[0]];
+                    self.elements.template.css(e[1], t[e[0]]);
                 }
-            }.bind(this));
+            });
             if (t.width === -1) {
-                this.elements.template.css('width', 'auto');
+                self.elements.template.css('width', 'auto');
             }
 
 
-            if (this.use_js_resize) {
-                this.updateTransform();
+            if (self.use_js_resize) {
+                self.updateTransform();
             }
         },
         initTemplate: function () {
-            if (this.template.use) { // already inited
+            if (self.template.use) { // already inited
                 return;
             }
-            this.template.use = true;
+            self.template.use = true;
 
-            this.elements.template = $("<img>").addClass("board-template pixelate").attr({
-                src: this.template.url,
+            self.elements.template = $("<img>").addClass("board-template pixelate").attr({
+                src: self.template.url,
                 alt: "template"
             }).css({
-                top: this.template.y,
-                left: this.template.x,
-                opacity: this.template.opacity,
-                width: this.template.width === -1 ? 'auto' : this.template.width
+                top: self.template.y,
+                left: self.template.x,
+                opacity: self.template.opacity,
+                width: self.template.width === -1 ? 'auto' : self.template.width
             });
-            if (this.use_js_resize) {
-                this.updateTransform();
+            if (self.use_js_resize) {
+                self.updateTransform();
                 return;
             }
-            this.elements.board_render.parent().prepend(this.elements.template);
+            self.elements.board_render.parent().prepend(self.elements.template);
         },
         initCursor: function () {
-            var fn = function (evt) {
-                this.elements.cursor.css("transform", "translate(" + evt.clientX + "px, " + evt.clientY + "px)");
-            }.bind(this);
-            this.elements.boardContainer.on("pointermove", fn).on("mousemove", fn);
+            self.elements.boardContainer.on("pointermove mousemove", function (evt) {
+                self.elements.cursor.css("transform", "translate(" + evt.clientX + "px, " + evt.clientY + "px)");
+            });
         },
         initReticule: function () {
-            var fn = function (evt) {
-                var boardPos = this.screenToBoardSpace(evt.clientX, evt.clientY);
+            self.elements.board_render.on("pointermove mousemove", function (evt) {
+                var boardPos = self.screenToBoardSpace(evt.clientX, evt.clientY);
                 boardPos.x |= 0;
                 boardPos.y |= 0;
 
-                var screenPos = this.boardToScreenSpace(boardPos.x, boardPos.y);
-                this.elements.reticule.css("left", screenPos.x - 1 + "px");
-                this.elements.reticule.css("top", screenPos.y - 1 + "px");
-                this.elements.reticule.css("width", this.scale - 1 + "px").css("height", this.scale - 1 + "px");
+                var screenPos = self.boardToScreenSpace(boardPos.x, boardPos.y);
+                self.elements.reticule.css("left", screenPos.x - 1 + "px");
+                self.elements.reticule.css("top", screenPos.y - 1 + "px");
+                self.elements.reticule.css("width", self.scale - 1 + "px").css("height", self.scale - 1 + "px");
 
-                if (this.color === -1) {
-                    this.elements.reticule.hide();
+                if (self.color === -1) {
+                    self.elements.reticule.hide();
                 } else {
-                    this.elements.reticule.show();
+                    self.elements.reticule.show();
                 }
-            }.bind(this);
-            this.elements.board_render.on("pointermove mousemove", fn);
+            });
         },
         initCoords: function () {
-            var fn = function (evt) {
-                var boardPos = this.screenToBoardSpace(evt.clientX, evt.clientY);
+            self.elements.board_render.on("pointermove mousemove", function (evt) {
+                var boardPos = self.screenToBoardSpace(evt.clientX, evt.clientY);
 
-                this.elements.coords.fadeIn(200);
-                this.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
-            }.bind(this);
-            var fn_touch = function (evt) {
-                var boardPos = this.screenToBoardSpace(evt.originalEvent.changedTouches[0].clientX, evt.originalEvent.changedTouches[0].clientY);
+                self.elements.coords.fadeIn(200);
+                self.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
+            }).on("touchstart touchmove", function (evt) {
+                var boardPos = self.screenToBoardSpace(evt.originalEvent.changedTouches[0].clientX, evt.originalEvent.changedTouches[0].clientY);
 
-                this.elements.coords.fadeIn(200);
-                this.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
-            }.bind(this);
-            this.elements.board_render.on("pointermove mousemove", fn).on("touchstart touchmove", fn_touch);
+                self.elements.coords.fadeIn(200);
+                self.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
+            });
         },
         initAlert: function () {
-            this.elements.alert.find(".button").click(function () {
-                this.elements.alert.fadeOut(200);
-            }.bind(this));
+            self.elements.alert.find(".button").click(function () {
+                self.elements.alert.fadeOut(200);
+            });
         },
         initSocket: function () {
             var l = window.location;
@@ -494,68 +490,68 @@ if (ms_edge) {
 
                 if (data.type === "pixel") {
                     data.pixels.forEach(function (px) {
-                        var ctx = this.elements.board[0].getContext("2d");
-                        ctx.fillStyle = this.palette[px.color];
+                        var ctx = self.elements.board[0].getContext("2d");
+                        ctx.fillStyle = self.palette[px.color];
                         ctx.fillRect(px.x, px.y, 1, 1);
-                    }.bind(this));
-                    if (this.use_js_resize) {
-                        this.updateTransform();
+                    });
+                    if (self.use_js_resize) {
+                        self.updateTransform();
                     }
                 } else if (data.type === "alert") {
-                    this.alert(data.message);
+                    self.alert(data.message);
                 } else if (data.type === "cooldown") {
-                    this.cooldown = new Date().getTime() + (data.wait * 1000);
-                    this.updateTime(0);
-                    this.hasFiredNotification = data.wait === 0;
+                    self.cooldown = new Date().getTime() + (data.wait * 1000);
+                    self.updateTime(0);
+                    self.hasFiredNotification = data.wait === 0;
                 } else if (data.type === "captcha_required") {
                     grecaptcha.reset();
                     grecaptcha.execute();
                 } else if (data.type === "captcha_status") {
                     if (data.success) {
-                        var pending = this.pendingPixel;
-                        this.switchColor(pending.color);
-                        this.doPlace(pending.x, pending.y);
+                        var pending = self.pendingPixel;
+                        self.switchColor(pending.color);
+                        self.doPlace(pending.x, pending.y);
                     } else {
                         alert("Failed captcha verification")
                     }
                 } else if (data.type === "users") {
-                    this.elements.users.fadeIn(200);
-                    this.elements.users.text(data.count + " online");
+                    self.elements.users.fadeIn(200);
+                    self.elements.users.text(data.count + " online");
                 } else if (data.type === "session_limit") {
                     ws.onclose = function () {
                     };
-                    this.alert("Too many sessions open, try closing some tabs.");
+                    self.alert("Too many sessions open, try closing some tabs.");
                 } else if (data.type === "userinfo") {
-                    this.elements.userInfo.fadeIn(200);
-                    this.elements.userInfo.find("span.name").text(data.name);
-                    this.role = data.role;
+                    self.elements.userInfo.fadeIn(200);
+                    self.elements.userInfo.find("span.name").text(data.name);
+                    self.role = data.role;
 
                     if (!data.banned) {
-                        this.elements.loginOverlay.hide();
+                        self.elements.loginOverlay.hide();
                     } else {
-                        this.elements.loginOverlay.text("You are banned from placing pixels. Your ban will expire on " + new Date(data.banExpiry).toLocaleString() + ".")
+                        self.elements.loginOverlay.text("You are banned from placing pixels. Your ban will expire on " + new Date(data.banExpiry).toLocaleString() + ".")
                     }
                 }
-            }.bind(this);
+            };
             ws.onclose = function () {
                 setTimeout(function () {
                     window.location.reload();
                 }, 10000 * Math.random() + 3000);
-                this.alert("Lost connection to server, reconnecting...")
-            }.bind(this);
+                self.alert("Lost connection to server, reconnecting...")
+            };
 
             $(".board-container").show();
             $(".ui").show();
             $(".loading").fadeOut(500);
 
-            this.socket = ws;
+            self.socket = ws;
         },
         initGrid: function () {
             $(document.body).on("keydown", function (evt) {
                 if (evt.keyCode === 71) {
-                    this.elements.grid.fadeToggle({duration: 100});
+                    self.elements.grid.fadeToggle({duration: 100});
                 }
-            }.bind(this));
+            });
         },
         initInfo: function () {
             $("div.open").click(function () {
@@ -567,7 +563,7 @@ if (ms_edge) {
                     $(".info").toggleClass("open");
                 }
                 if (evt.keyCode === 80) {
-                    App.saveImage();
+                    self.saveImage();
                 }
             });
             try {
@@ -580,163 +576,163 @@ if (ms_edge) {
             }
         },
         adjustScale: function (adj) {
-            var oldScale = this.scale;
+            var oldScale = self.scale;
             if (adj === -1) {
                 if (oldScale <= 1) {
-                    this.scale = 0.5;
+                    self.scale = 0.5;
                 } else if (oldScale <= 2) {
-                    this.scale = 1;
+                    self.scale = 1;
                 } else {
-                    this.scale = Math.round(Math.max(2, this.scale / 1.25));
+                    self.scale = Math.round(Math.max(2, self.scale / 1.25));
                 }
             } else {
                 if (oldScale === 0.5) {
-                    this.scale = 1;
+                    self.scale = 1;
                 } else if (oldScale === 1) {
-                    this.scale = 2;
+                    self.scale = 2;
                 } else {
-                    this.scale = Math.round(Math.min(50, this.scale * 1.25));
+                    self.scale = Math.round(Math.min(50, self.scale * 1.25));
                 }
             }
-            this.updateTransform();
+            self.updateTransform();
         },
         updateTransform: function () {
-            this.panX = Math.min(this.width / 2, Math.max(-this.width / 2, this.panX));
-            this.panY = Math.min(this.height / 2, Math.max(-this.height / 2, this.panY));
+            self.panX = Math.min(self.width / 2, Math.max(-self.width / 2, self.panX));
+            self.panY = Math.min(self.height / 2, Math.max(-self.height / 2, self.panY));
 
-            var a = this.screenToBoardSpace(0, 0);
-            this.elements.grid.css("background-size", this.scale + "px " + this.scale + "px").css("transform", "translate(" + Math.floor(-a.x % 1 * this.scale) + "px," + Math.floor(-a.y % 1 * this.scale) + "px)");
-            this.elements.grid.css("opacity", (this.scale - 2) / 6);
+            var a = self.screenToBoardSpace(0, 0);
+            self.elements.grid.css("background-size", self.scale + "px " + self.scale + "px").css("transform", "translate(" + Math.floor(-a.x % 1 * self.scale) + "px," + Math.floor(-a.y % 1 * self.scale) + "px)");
+            self.elements.grid.css("opacity", (self.scale - 2) / 6);
 
-            if (this.use_js_resize) {
-                var ctx2 = this.elements.board_render[0].getContext("2d");
-                var pxl_x = -this.panX + ((this.width - (window.innerWidth / this.scale)) / 2);
-                var pxl_y = -this.panY + ((this.height - (window.innerHeight / this.scale)) / 2);
+            if (self.use_js_resize) {
+                var ctx2 = self.elements.board_render[0].getContext("2d");
+                var pxl_x = -self.panX + ((self.width - (window.innerWidth / self.scale)) / 2);
+                var pxl_y = -self.panY + ((self.height - (window.innerHeight / self.scale)) / 2);
 
                 ctx2.globalAlpha = 1;
                 ctx2.fillStyle = '#CCCCCC';
                 ctx2.fillRect(0, 0, ctx2.canvas.width, ctx2.canvas.height);
-                ctx2.drawImage(this.elements.board[0], pxl_x, pxl_y, window.innerWidth / this.scale, window.innerHeight / this.scale, 0, 0, window.innerWidth, window.innerHeight);
-                if (!this.template.use) {
+                ctx2.drawImage(self.elements.board[0], pxl_x, pxl_y, window.innerWidth / self.scale, window.innerHeight / self.scale, 0, 0, window.innerWidth, window.innerHeight);
+                if (!self.template.use) {
                     return; // we are done!
                 }
-                var width = this.elements.template[0].width,
-                    height = this.elements.template[0].height;
-                if (this.template.width !== -1) {
-                    height *= (this.template.width / width);
-                    width = this.template.width;
+                var width = self.elements.template[0].width,
+                    height = self.elements.template[0].height;
+                if (self.template.width !== -1) {
+                    height *= (self.template.width / width);
+                    width = self.template.width;
                 }
-                ctx2.globalAlpha = this.template.opacity;
-                ctx2.drawImage(this.elements.template[0], (this.template.x - pxl_x) * this.scale, (this.template.y - pxl_y) * this.scale, width * this.scale, height * this.scale);
+                ctx2.globalAlpha = self.template.opacity;
+                ctx2.drawImage(self.elements.template[0], (self.template.x - pxl_x) * self.scale, (self.template.y - pxl_y) * self.scale, width * self.scale, height * self.scale);
                 return;
             }
-            this.elements.boardMover
-                .css("width", this.width + "px")
-                .css("height", this.height + "px")
-                .css("transform", "translate(" + this.panX + "px, " + this.panY + "px)");
-            if (this.use_zoom) {
-                this.elements.boardZoomer.css("zoom", (this.scale * 100).toString() + "%");
+            self.elements.boardMover
+                .css("width", self.width + "px")
+                .css("height", self.height + "px")
+                .css("transform", "translate(" + self.panX + "px, " + self.panY + "px)");
+            if (self.use_zoom) {
+                self.elements.boardZoomer.css("zoom", (self.scale * 100).toString() + "%");
             } else {
-                this.elements.boardZoomer.css("transform", "scale(" + this.scale + ")");
+                self.elements.boardZoomer.css("transform", "scale(" + self.scale + ")");
             }
-            this.elements.reticule.css("width", (this.scale + 1) + "px").css("height", (this.scale + 1) + "px");
+            self.elements.reticule.css("width", (self.scale + 1) + "px").css("height", (self.scale + 1) + "px");
         },
         screenToBoardSpace: function (screenX, screenY) {
-            if (this.use_js_resize) {
+            if (self.use_js_resize) {
                 return {
-                    x: -this.panX + ((this.width - (window.innerWidth / this.scale)) / 2) + (screenX / this.scale),
-                    y: -this.panY + ((this.height - (window.innerHeight / this.scale)) / 2) + (screenY / this.scale)
+                    x: -self.panX + ((self.width - (window.innerWidth / self.scale)) / 2) + (screenX / self.scale),
+                    y: -self.panY + ((self.height - (window.innerHeight / self.scale)) / 2) + (screenY / self.scale)
                 };
             }
-            var boardBox = this.elements.board[0].getBoundingClientRect();
-            if (this.use_zoom) {
+            var boardBox = self.elements.board[0].getBoundingClientRect();
+            if (self.use_zoom) {
                 return {
-                    x: (screenX / this.scale) - boardBox.left,
-                    y: (screenY / this.scale) - boardBox.top
+                    x: (screenX / self.scale) - boardBox.left,
+                    y: (screenY / self.scale) - boardBox.top
                 };
             }
             return {
-                x: ((screenX - boardBox.left) / this.scale),
-                y: ((screenY - boardBox.top) / this.scale)
+                x: ((screenX - boardBox.left) / self.scale),
+                y: ((screenY - boardBox.top) / self.scale)
             };
         },
         boardToScreenSpace: function (boardX, boardY) {
-            if (this.use_js_resize) {
+            if (self.use_js_resize) {
                 return {
-                    x: (boardX + this.panX - ((this.width - (window.innerWidth / this.scale)) / 2)) * this.scale,
-                    y: (boardY + this.panY - ((this.height - (window.innerHeight / this.scale)) / 2)) * this.scale
+                    x: (boardX + self.panX - ((self.width - (window.innerWidth / self.scale)) / 2)) * self.scale,
+                    y: (boardY + self.panY - ((self.height - (window.innerHeight / self.scale)) / 2)) * self.scale
                 };
             }
-            var boardBox = this.elements.board[0].getBoundingClientRect();
-            if (this.use_zoom) {
+            var boardBox = self.elements.board[0].getBoundingClientRect();
+            if (self.use_zoom) {
                 return {
-                    x: (boardX + boardBox.left) * this.scale,
-                    y: (boardY + boardBox.top) * this.scale
+                    x: (boardX + boardBox.left) * self.scale,
+                    y: (boardY + boardBox.top) * self.scale
                 };
             }
             return {
-                x: boardX * this.scale + boardBox.left,
-                y: boardY * this.scale + boardBox.top
+                x: boardX * self.scale + boardBox.left,
+                y: boardY * self.scale + boardBox.top
             };
         },
         centerOn: function (x, y) {
-            this.panX = (this.width / 2 - x) - 0.5;
-            this.panY = (this.height / 2 - y) - 0.5;
+            self.panX = (self.width / 2 - x) - 0.5;
+            self.panY = (self.height / 2 - y) - 0.5;
 
-            this.updateTransform();
+            self.updateTransform();
         },
         switchColor: function (newColor) {
-            this.color = newColor;
+            self.color = newColor;
             $(".palette-color").removeClass("active");
 
             if (newColor === -1) {
-                this.elements.cursor.hide();
-                this.elements.reticule.css("background-color", "none");
+                self.elements.cursor.hide();
+                self.elements.reticule.css("background-color", "none");
             } else {
-                if (this.scale <= 15) this.elements.cursor.show();
-                this.elements.cursor.css("background-color", this.palette[newColor]);
-                this.elements.reticule.css("background-color", this.palette[newColor]);
+                if (self.scale <= 15) self.elements.cursor.show();
+                self.elements.cursor.css("background-color", self.palette[newColor]);
+                self.elements.reticule.css("background-color", self.palette[newColor]);
                 $($(".palette-color")[newColor]).addClass("active");
             }
         },
         doPlace: function (x, y) {
-            var col = this.color;
+            var col = self.color;
 
-            this.pendingPixel = {x: x, y: y, color: col};
-            this.socket.send(JSON.stringify({
+            self.pendingPixel = {x: x, y: y, color: col};
+            self.socket.send(JSON.stringify({
                 type: "place",
                 x: x,
                 y: y,
                 color: col
             }));
 
-            this.switchColor(-1);
+            self.switchColor(-1);
         },
         alert: function (message) {
-            var alert = this.elements.alert;
+            var alert = self.elements.alert;
             alert.find(".text").text(message);
             alert.fadeIn(200);
         },
         updateTime: function () {
-            var delta = (this.cooldown - new Date().getTime()) / 1000;
+            var delta = (self.cooldown - new Date().getTime()) / 1000;
 
             if (delta > 0) {
-                this.elements.timer.show();
+                self.elements.timer.show();
                 var secs = Math.floor(delta % 60);
                 var secsStr = secs < 10 ? "0" + secs : secs;
                 var minutes = Math.floor(delta / 60);
                 var minuteStr = minutes < 10 ? "0" + minutes : minutes;
-                this.elements.timer.text(minuteStr + ":" + secsStr);
+                self.elements.timer.text(minuteStr + ":" + secsStr);
 
                 $(".palette-color").css("cursor", "not-allowed");
 
                 document.title = "[" + minuteStr + ":" + secsStr + "] pxls.space";
             } else {
-                if (!this.hasFiredNotification) {
+                if (!self.hasFiredNotification) {
 
                     try {
                         if (!document.getElementById('audiotoggle').checked) {
-                            notifyaudio.play();
+                            self.audio.notify.play();
                         }
                         new Notification("pxls.space", {
                             body: "Your next pixel is available!"
@@ -744,20 +740,20 @@ if (ms_edge) {
                     } catch (e) {
                         console.log("No notificatons available!");
                     }
-                    this.hasFiredNotification = true;
+                    self.hasFiredNotification = true;
                 }
 
                 document.title = "pxls.space";
-                this.elements.timer.hide();
+                self.elements.timer.hide();
                 $(".palette-color").css("cursor", "")
             }
-            if (this.status) {
-                this.elements.timer.text(this.status);
+            if (self.status) {
+                self.elements.timer.text(self.status);
             }
         },
         saveImage: function () {
             var a = document.createElement("a");
-            a.href = this.elements.board[0].toDataURL("image/png");
+            a.href = self.elements.board[0].toDataURL("image/png");
             a.download = "canvas.png";
             a.click();
             if (typeof a.remove === "function") {
@@ -767,22 +763,22 @@ if (ms_edge) {
     };
 
     window.recaptchaCallback = function(token) {
-        App.socket.send(JSON.stringify({
+        self.socket.send(JSON.stringify({
             type: "captcha",
             token: token
         }));
     };
 
-    App.init();
+    self.init();
 
     Object.defineProperty(window, "App", {
         get: function () {
-            App.socket.send(JSON.stringify({type: "banme"}));
-            App.socket.close();
+            self.socket.send(JSON.stringify({type: "banme"}));
+            self.socket.close();
 
             window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
         }
     });
 
-    if (window.initAdmin) initAdmin(App);
+    if (window.initAdmin) initAdmin(self);
 })();
