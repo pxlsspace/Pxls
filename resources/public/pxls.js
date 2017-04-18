@@ -739,6 +739,7 @@ window.App = (function () {
                 notification.onclick = function() {
                     window.focus();
                     this.cancel();
+                    notification.close()
                 };
             } catch(e) {
                 console.log("No notifications available!");
