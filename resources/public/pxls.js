@@ -715,6 +715,13 @@ window.App = (function () {
             alert.find(".text").text(message);
             alert.fadeIn(200);
         },
+        generateNotification: function () {
+          var notification = new Notification("pxls.space", { body: "Your next pixel is available!", icon: "favicon.ico" });
+          notification.onclick = function() {
+            window.focus();
+            this.cancel();
+          };
+        },
         updateTime: function () {
             var delta = (self.cooldown - new Date().getTime()) / 1000;
 
@@ -736,9 +743,7 @@ window.App = (function () {
                         if (!document.getElementById('audiotoggle').checked) {
                             self.audio.notify.play();
                         }
-                        new Notification("pxls.space", {
-                            body: "Your next pixel is available!"
-                        });
+                        this.generateNotification();
                     } catch (e) {
                         console.log("No notificatons available!");
                     }
