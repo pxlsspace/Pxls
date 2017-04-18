@@ -337,8 +337,8 @@ window.App = (function () {
                 } else {
                     self.adjustScale(1);
                 }
-                if (oldScale !== self.scale) {
 
+                if (oldScale !== self.scale) {
                     if (self.scale > 15 || self.color === -1) {
                         self.elements.cursor.hide();
                     } else if (self.elements.reticule.css("background-color") !== "rgba(0, 0, 0, 0)") {
@@ -620,10 +620,6 @@ window.App = (function () {
             self.panX = Math.min(self.width / 2, Math.max(-self.width / 2, self.panX));
             self.panY = Math.min(self.height / 2, Math.max(-self.height / 2, self.panY));
 
-            var a = self.screenToBoardSpace(0, 0);
-            self.elements.grid.css("background-size", self.scale + "px " + self.scale + "px").css("transform", "translate(" + Math.floor(-a.x % 1 * self.scale) + "px," + Math.floor(-a.y % 1 * self.scale) + "px)");
-            self.elements.grid.css("opacity", (self.scale - 2) / 6);
-
             if (self.use_js_resize) {
                 var ctx2 = self.elements.board_render[0].getContext("2d");
                 var pxl_x = -self.panX + ((self.width - (window.innerWidth / self.scale)) / 2);
@@ -656,6 +652,10 @@ window.App = (function () {
                 self.elements.boardZoomer.css("transform", "scale(" + self.scale + ")");
             }
             self.elements.reticule.css("width", (self.scale + 1) + "px").css("height", (self.scale + 1) + "px");
+
+            var a = self.screenToBoardSpace(0, 0);
+            self.elements.grid.css("background-size", self.scale + "px " + self.scale + "px").css("transform", "translate(" + Math.floor(-a.x % 1 * self.scale) + "px," + Math.floor(-a.y % 1 * self.scale) + "px)");
+            self.elements.grid.css("opacity", (self.scale - 2) / 6);
         },
         screenToBoardSpace: function (screenX, screenY) {
             if (self.use_js_resize) {
@@ -798,11 +798,9 @@ window.App = (function () {
 
     self.init();
 
-    //if (window.initAdmin) initAdmin(self);
     $.getScript('admin/admin.js').done(function() {
         initAdmin(self);
     }).fail(function() {
-        console.log('no admin');
     });
     
     // functions here need wrappers to not accidentally miss-use "this" and to give finer control about the available function parameters
