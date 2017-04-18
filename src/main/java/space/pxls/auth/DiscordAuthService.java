@@ -7,6 +7,8 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
 import space.pxls.App;
 
+import java.util.concurrent.TimeUnit;
+
 public class DiscordAuthService extends AuthService {
     public DiscordAuthService(String id) {
         super(id);
@@ -43,13 +45,15 @@ public class DiscordAuthService extends AuthService {
         if (json.has("error")) {
             return null;
         } else {
-//            long accountAgeSeconds = (System.currentTimeMillis() / 1000 - json.getLong("created"));
-//            long minAgeSeconds = App.getConfig().getDuration("oauth.reddit.minAge", TimeUnit.SECONDS);
-//            if (accountAgeSeconds < minAgeSeconds){
-//                throw new InvalidAccountException("Account too young, must be " + minAgeSeconds / 86400 + " days old");
-//            } else if (json.getBoolean("has_verified_email")) {
-//                throw new InvalidAccountException("Account must have a verified e-mail");
-//            }
+            long id = json.getLong("id");
+            long signupTimeMillis = (id >> 22) + 1420070400000L;
+            long ageMillis = System.currentTimeMillis() - signupTimeMillis;
+
+            long minAgeMillis = App.getConfig().getDuration("oauth.discord.minAge", TimeUnit.MILLISECONDS);
+            if (ageMillis < minAgeMillis){
+                long days = minAgeMillis / 86400 / 1000;
+                throw new InvalidAccountException("Account too young");
+            }
             return json.getString("id");
         }
     }

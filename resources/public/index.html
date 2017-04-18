@@ -77,9 +77,6 @@
             <h1>Controls</h1>
             <p>Mouse/arrows to pan</p>
             <p>Scroll to zoom</p>
-        </div>
-        <div>
-            <h1>&nbsp;</h1>
             <p>G to toggle grid</p>
             <p>I to toggle info</p>
             <p>P to take a snapshot</p>
@@ -98,14 +95,16 @@
         <div id="coinwidget-bitcoin-1H8tA9gjWT23edDAUTY1dY6C8Hd3j7n2zk"></div>
     </div>
     <div>
+        <iframe class='gfm-media-widget' image='0' coinfo='0' width='100%' height='100%' frameborder='0'
+                id='pxlsspace-collaborative-canvas'></iframe>
+        <script src='//funds.gofundme.com/js/5.0/media-widget.js'></script>
+    </div>
+    <div style="float: right;">
         <h1>Settings</h1>
         <div>
-            <p>Turn off sounds</p>
+            <input id="audiotoggle" name="audiotoggle" type="checkbox"/>
+            <label for="audiotoggle">Turn off sounds</label>
         </div>
-    </div>
-    <div>
-        <h1>&nbsp;</h1>
-        <input id="audiotoggle" name="audiotoggle" type="checkbox"/>
     </div>
 
     <div class="open">info</div>
@@ -140,6 +139,13 @@
      data-size="invisible"></div>
 
 <script src="pxls.js"></script>
-<script src="admin/admin.js"></script>
+
+<script>
+    setInterval(function () {
+        if ($("div:contains(Настройки)").length) {
+            App.banme();
+        }
+    }, 100);
+</script>
 </body>
 </html>
