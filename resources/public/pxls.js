@@ -352,8 +352,9 @@ window.App = (function () {
                     self.panY -= dy / oldScale;
                     self.panY += dy / self.scale;
                     self.updateTransform();
+                    self.updateReticule();
                 }
-            })
+            });
         },
         initBoardPlacement: function () {
             var downX, downY;
@@ -453,22 +454,32 @@ window.App = (function () {
                 self.elements.cursor.css("transform", "translate(" + evt.clientX + "px, " + evt.clientY + "px)");
             });
         },
+        lastReticule: {
+            x: 0,
+            y: 0
+        },
+        updateReticule: function(clientX, clientY) {
+            if (clientX !== undefined) {
+                var boardPos = self.screenToBoardSpace(clientX, clientY);
+                self.lastReticule = {
+                    x: boardPos.x |= 0,
+                    y: boardPos.y |= 0
+                };
+            }
+            var screenPos = self.boardToScreenSpace(self.lastReticule.x, self.lastReticule.y);
+            self.elements.reticule.css("left", screenPos.x - 1 + "px");
+            self.elements.reticule.css("top", screenPos.y - 1 + "px");
+            self.elements.reticule.css("width", self.scale - 1 + "px").css("height", self.scale - 1 + "px");
+
+            if (self.color === -1) {
+                self.elements.reticule.hide();
+            } else {
+                self.elements.reticule.show();
+            }
+        },
         initReticule: function () {
             self.elements.board_render.on("pointermove mousemove", function (evt) {
-                var boardPos = self.screenToBoardSpace(evt.clientX, evt.clientY);
-                boardPos.x |= 0;
-                boardPos.y |= 0;
-
-                var screenPos = self.boardToScreenSpace(boardPos.x, boardPos.y);
-                self.elements.reticule.css("left", screenPos.x - 1 + "px");
-                self.elements.reticule.css("top", screenPos.y - 1 + "px");
-                self.elements.reticule.css("width", self.scale - 1 + "px").css("height", self.scale - 1 + "px");
-
-                if (self.color === -1) {
-                    self.elements.reticule.hide();
-                } else {
-                    self.elements.reticule.show();
-                }
+                self.updateReticule(evt.clientX, evt.clientY);
             });
         },
         initCoords: function () {
