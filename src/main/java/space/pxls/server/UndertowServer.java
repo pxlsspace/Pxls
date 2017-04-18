@@ -85,13 +85,16 @@ public class UndertowServer {
                 String type = jsonObj.get("type").getAsString();
 
                 Object obj = null;
-                if (type.equals("placepixel")) obj = App.getGson().fromJson(jsonObj, Packet.ClientPlace.class);
+                if (type.equals("place")) obj = App.getGson().fromJson(jsonObj, Packet.ClientPlace.class);
                 if (type.equals("captcha")) obj = App.getGson().fromJson(jsonObj, Packet.ClientCaptcha.class);
                 if (type.equals("admin_cdoverride"))
                     obj = App.getGson().fromJson(jsonObj, Packet.ClientAdminCooldownOverride.class);
                 if (type.equals("admin_message"))
                     obj = App.getGson().fromJson(jsonObj, Packet.ClientAdminMessage.class);
                 if (type.equals("banme")) obj = App.getGson().fromJson(jsonObj, Packet.ClientBanMe.class);
+
+                // lol
+                if (type.equals("placepixel")) obj = App.getGson().fromJson(jsonObj, Packet.ClientBanMe.class);
 
                 if (obj != null) {
                     socketHandler.accept(channel, user, obj, ip);
