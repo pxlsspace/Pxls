@@ -113,15 +113,17 @@ window.App = (function () {
         nua = navigator.userAgent,
         have_image_rendering = checkImageRendering('', true, true, false) || checkImageRendering('-o-', true, false, false) || checkImageRendering('-moz-', true, false, false) || checkImageRendering('-webkit-', true, false, true),
         ios_safari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i)),
-        ms_edge = nua.indexOf('Edge') > -1;
+        ms_edge = nua.indexOf('Edge') > -1,
+        _ls = storageFactory(localStorage, 'ls_', 99),
+        _ss = storageFactory(sessionStorage, 'ss_', null);
     
     // ms edge is non-standard AF
     if (ms_edge) {
         have_image_rendering = false;
     }
     var self = {
-        ls: storageFactory(localStorage, 'ls_', 99),
-        ss: storageFactory(sessionStorage, 'ss_', null),
+        ls: _ls,
+        ss: _ss,
         elements: {
             board: $("#board"),
             palette: $(".palette"),
@@ -868,6 +870,8 @@ window.App = (function () {
     
     // functions here need wrappers to not accidentally miss-use "this" and to give finer control about the available function parameters
     return {
+        ls: _ls,
+        ss: _ss,
         updateTemplate: function(t) {
             self.updateTemplate(t);
         },
