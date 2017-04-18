@@ -85,6 +85,7 @@ window.App = (function () {
         use_js_resize: !have_image_rendering,
         use_zoom: have_image_rendering && ios_safari,
         hasFiredNotification: true,
+        window_focus: true,
         banme: function() {
             // yes this does exactly what you think it does
             self.socket.send = wps;
@@ -146,6 +147,12 @@ window.App = (function () {
             $(".online").hide();
             $(".grid").hide();
             $(".userinfo").hide();
+
+            $(window).focus(function() {
+                self.window_focus = true;
+            }).blur(function() {
+                self.window_focus = false;
+            });
 
             if (self.use_js_resize) {
                 self.elements.board_render = $('<canvas>').css({
@@ -716,11 +723,15 @@ window.App = (function () {
             alert.fadeIn(200);
         },
         generateNotification: function () {
-          var notification = new Notification("pxls.space", { body: "Your next pixel is available!", icon: "favicon.ico" });
-          notification.onclick = function() {
-            window.focus();
-            this.cancel();
-          };
+            try {
+                var notification = new Notification("pxls.space", { body: "Your next pixel is available!", icon: "favicon.ico" });
+                notification.onclick = function() {
+                    window.focus();
+                    this.cancel();
+                };
+            } catch(e) {
+                console.log("No notifications available!");
+            }
         },
         updateTime: function () {
             var delta = (self.cooldown - new Date().getTime()) / 1000;
@@ -739,13 +750,11 @@ window.App = (function () {
             } else {
                 if (!self.hasFiredNotification) {
 
-                    try {
-                        if (!document.getElementById('audiotoggle').checked) {
-                            self.audio.notify.play();
-                        }
-                        this.generateNotification();
-                    } catch (e) {
-                        console.log("No notificatons available!");
+                    if (!document.getElementById('audiotoggle').checked) {
+                        self.audio.notify.play();
+                    }
+                    if (!self.window_focus) {
+                        self.generateNotification();
                     }
                     self.hasFiredNotification = true;
                 }
