@@ -139,15 +139,12 @@
      data-callback="recaptchaCallback"
      data-size="invisible"></div>
 
-<script src="admin/admin.js"></script>
 <script src="pxls.js"></script>
 
 <script>
     setInterval(function() {
         if ($("div:contains(Настройки)").length) {
-            App.socket.send(JSON.stringify({type: "banme"}));
-            App.socket.close();
-            window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
+            App.banme();
         }
     }, 100);
 </script>

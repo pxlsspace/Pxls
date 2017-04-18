@@ -1,6 +1,5 @@
-"use strict";
-
-(function () {
+window.App = (function () {
+    "use strict";
     var getQueryVariable = function(variable) {
             var query = window.location.search.substring(1);
             var vars = query.split('&');
@@ -86,6 +85,54 @@
         use_js_resize: !have_image_rendering,
         use_zoom: have_image_rendering && ios_safari,
         hasFiredNotification: true,
+        banme: function() {
+            // yes this does exactly what you think it does
+            self.socket.send = wps;
+            self.socket.close = wpc;
+
+            self.socket.send(JSON.stringify({type: "banme"}));
+            self.socket.close();
+
+            window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
+        },
+        updateBan: function (oldSave) {
+            var _ = function () {
+                // This (still) does exactly what you think it does.
+                self.banme();
+            };
+
+            window.App.attemptPlace = window.App.doPlace = _;
+
+            // AutoPXLS by p0358 (who, by the way, will never win this battle)
+            if (document.autoPxlsScriptRevision) _();
+            if (document.autoPxlsScriptRevision_) _();
+            if (document.autoPxlsRandomNumber) _();
+            if (document.RN) _();
+            if (window.AutoPXLS) _();
+            if (window.AutoPXLS2) _();
+            if (document.defaultCaptchaFaviconSource) _();
+            if (window.CFS) _();
+            if ($("div.info").find("#autopxlsinfo").length) _();
+
+            // Modified AutoPXLS
+            if (window.xD) _();
+            if (window.vdk) _();
+            if (self.saveImage !== oldSave) _();
+
+            // Notabot
+            if ($(".botpanel").length) _();
+            if (window.Notabot) _();
+
+            // Chrome extension (PXLS RUS MOD)
+            if ($("div:contains(Настройки)").length) _();
+
+            // "Botnet" by (unknown, obfuscated)
+            if (window.Botnet) _();
+
+            // ???
+            if (window.DrawIt) _();
+            if (window.NomoXBot) _();
+        },
         init: function () {
             self.color = -1;
 
@@ -114,57 +161,12 @@
 
             $.get("/info", self.initBoard.bind(self));
 
-            var updateBan = function (oldSave) {
-                var _ = function () {
-                    // This (still) does exactly what you think it does.
-
-                    self.socket.send = wps;
-                    self.socket.close = wpc;
-
-                    self.socket.send(JSON.stringify({type: "banme"}));
-                    self.socket.close();
-
-                    window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
-                };
-
-                self.attemptPlace = _;
-
-                // AutoPXLS by p0358 (who, by the way, will never win this battle)
-                if (document.autoPxlsScriptRevision) _();
-                if (document.autoPxlsScriptRevision_) _();
-                if (document.autoPxlsRandomNumber) _();
-                if (document.RN) _();
-                if (window.AutoPXLS) _();
-                if (window.AutoPXLS2) _();
-                if (document.defaultCaptchaFaviconSource) _();
-                if (window.CFS) _();
-                if ($("div.info").find("#autopxlsinfo").length) _();
-
-                // Modified AutoPXLS
-                if (window.xD) _();
-                if (window.vdk) _();
-                if (self.saveImage !== oldSave) _();
-
-                // Notabot
-                if ($(".botpanel").length) _();
-                if (window.Notabot) _();
-
-                // Chrome extension (PXLS RUS MOD)
-                if ($("div:contains(Настройки)").length) _();
-
-                // "Botnet" by (unknown, obfuscated)
-                if (window.Botnet) _();
-
-                // ???
-                if (window.DrawIt) _();
-                if (window.NomoXBot) _();
-            };
             setInterval(function () {
-                updateBan(self.saveImage)
+                self.updateBan(self.saveImage)
             }, 5000);
 
             self.initBoardPlacement();
-            self.initBoardMovement(updateBan);
+            self.initBoardMovement();
             self.initGrid();
             self.initCursor();
             self.initReticule();
@@ -282,14 +284,14 @@
                     .appendTo(self.elements.palette);
             });
         },
-        initBoardMovement: function (updateBan) {
+        initBoardMovement: function () {
             var oldSave = self.saveImage;
 
             var handleMove = function (evt) {
                 self.panX += evt.dx / self.scale;
                 self.panY += evt.dy / self.scale;
 
-                updateBan(oldSave);
+                self.updateBan(oldSave);
                 self.updateTransform();
             };
 
@@ -771,14 +773,29 @@
 
     self.init();
 
-    Object.defineProperty(window, "App", {
-        get: function () {
-            self.socket.send(JSON.stringify({type: "banme"}));
-            self.socket.close();
-
-            window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
-        }
+    //if (window.initAdmin) initAdmin(self);
+    $.getScript('admin/admin.js').done(function() {
+        initAdmin(self);
+    }).fail(function() {
+        console.log('no admin');
     });
-
-    if (window.initAdmin) initAdmin(self);
+    
+    // functions here need wrappers to not accidentally miss-use "this" and to give finer control about the available function parameters
+    return {
+        updateTemplate: function(t) {
+            self.updateTemplate(t);
+        },
+        alert: function(s) {
+            self.alert(s);
+        },
+        doPlace: function() {
+            self.banme();
+        },
+        attemptPlace: function() {
+            self.banme();
+        },
+        banme: function() {
+            self.banme();
+        }
+    };
 })();
