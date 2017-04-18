@@ -717,6 +717,13 @@ if (ms_edge) {
             alert.find(".text").text(message);
             alert.fadeIn(200);
         },
+        generateNotification: function () {
+          var notification = new Notification("pxls.space", { body: "Your next pixel is available!", icon: "favicon.ico" });
+          notification.onclick = function() {
+            window.focus();
+            this.cancel();
+          };
+        },
         updateTime: function () {
             var delta = (this.cooldown - new Date().getTime()) / 1000;
 
@@ -738,9 +745,7 @@ if (ms_edge) {
                         if (!document.getElementById('audiotoggle').checked) {
                             notifyaudio.play();
                         }
-                        new Notification("pxls.space", {
-                            body: "Your next pixel is available!"
-                        });
+                        this.generateNotification();
                     } catch (e) {
                         console.log("No notificatons available!");
                     }
@@ -786,3 +791,4 @@ if (ms_edge) {
 
     if (window.initAdmin) initAdmin(App);
 })();
+
