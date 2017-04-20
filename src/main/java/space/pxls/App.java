@@ -17,6 +17,7 @@ import space.pxls.util.Timer;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -171,6 +172,8 @@ public class App {
         try {
             byte[] bytes = Files.readAllBytes(getStorageDir().resolve("board.dat"));
             System.arraycopy(bytes, 0, board, 0, width * height);
+        } catch (NoSuchFileException e) {
+            System.out.println("Warning: Cannot find board.dat in working directory, using blank board");
         } catch (IOException e) {
             e.printStackTrace();
         }

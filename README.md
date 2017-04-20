@@ -12,7 +12,8 @@ Pxls is a simple Java application, that can be run as follows:
     mvn clean package
     java -jar target/pxls-1.0-SNAPSHOT.jar
   
-The server will start on port 4567 by default, and will expose a rudimentary console with a few commands.
+The server will start on port 4567 by default, and will expose a rudimentary console with a few commands. 
+You will need to configure the database for the server to start, see the `Configuring database` section below.
 
 Pxls can be configured with a config file, `pxls.conf`, located in its working directory. The default values for all the options, as well as comments, can be seen in `resources/reference.conf` in the repo. The config file uses [HOCON](https://github.com/typesafehub/config/blob/master/HOCON.md).
 The config will not be automatically created, you must create it yourself. Any unspecified option will use the default value from `resources/reference.conf`.
