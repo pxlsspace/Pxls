@@ -737,8 +737,9 @@ window.App = (function () {
             try {
                 var notification = new Notification("pxls.space", { body: "Your next pixel is available!", icon: "favicon.ico" });
                 notification.onclick = function() {
+                    parent.focus();
                     window.focus();
-                    this.cancel();
+                    this.close()
                 };
             } catch(e) {
                 console.log("No notifications available!");
