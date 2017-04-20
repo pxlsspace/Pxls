@@ -1,14 +1,21 @@
 window.App = (function () {
     "use strict";
     var getQueryVariable = function(variable) {
-            var query = window.location.search.substring(1);
-            var vars = query.split('&');
-            for (var i = 0; i < vars.length; i++) {
-                var pair = vars[i].split('=');
-                if (decodeURIComponent(pair[0]) === variable) {
-                    return decodeURIComponent(pair[1]);
+            var search = function (str) {
+                var vars = str.substring(1).split('&');
+                for (var i = 0; i < vars.length; i++) {
+                    var pair = vars[i].split('=');
+                    if (decodeURIComponent(pair[0]) === variable) {
+                        return decodeURIComponent(pair[1]);
+                    }
                 }
+                return undefined;
             }
+            var v = search(window.location.hash);
+            if (v !== undefined) {
+                return v;
+            }
+            return search(window.location.search);
         },
         hexToRgb = function(hex) {
             var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -17,6 +24,69 @@ window.App = (function () {
                 g: parseInt(result[2], 16),
                 b: parseInt(result[3], 16)
             } : null;
+        },
+        getCookie = function(c_name) {
+            var i, x, y, ARRcookies = document.cookie.split(";");
+                for (i = 0; i < ARRcookies.length; i++) {
+                    x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
+                    y = ARRcookies[i].substr(ARRcookies[i].indexOf("=") + 1);
+                    x = x.replace(/^\s+|\s+$/g,"");
+                    if (x == c_name){
+                        return unescape(y);
+                    }
+            }
+        },
+        setCookie = function(c_name, value, exdays) {
+            var exdate = new Date(),
+                c_value = escape(value);
+            exdate.setDate(exdate.getDate() + exdays);
+            c_value += ((exdays===null) ? '' : '; expires=' + exdate.toUTCString());
+            document.cookie = c_name + '=' + c_value;
+        },
+        storageFactory = function(storageType, prefix, exdays) {
+            return {
+                haveSupport: null,
+                support: function () {
+                    if (this.haveSupport === null) {
+                        try {
+                            storageType.setItem('test', 1);
+                            this.haveSupport = (storageType.getItem('test') == 1);
+                            storageType.removeItem('test');
+                        } catch(e) {
+                            this.haveSupport = false;
+                        }
+                    }
+                    return this.haveSupport;
+                },
+                get: function(name) {
+                    var s;
+                    if (this.support()) {
+                        s = storageType.getItem(name)
+                    } else {
+                        s = getCookie(prefix+name);
+                    }
+                    try {
+                        return JSON.parse(s);
+                    } catch(e) {
+                        return undefined;
+                    }
+                },
+                set: function(name, value) {
+                    value = JSON.stringify(value);
+                    if (this.support()) {
+                        storageType.setItem(name, value);
+                    } else {
+                        setCookie(prefix+name, value, exdays)
+                    }
+                },
+                remove: function(name) {
+                    if (this.support()) {
+                        storageType.removeItem(name);
+                    } else {
+                        setCookie(prefix+name, '', -1);
+                    }
+                }
+            };
         },
         checkImageRendering = function(prefix, crisp, pixelated, optimize_contrast){
             var d = document.createElement('div');
@@ -43,13 +113,17 @@ window.App = (function () {
         nua = navigator.userAgent,
         have_image_rendering = checkImageRendering('', true, true, false) || checkImageRendering('-o-', true, false, false) || checkImageRendering('-moz-', true, false, false) || checkImageRendering('-webkit-', true, false, true),
         ios_safari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i)),
-        ms_edge = nua.indexOf('Edge') > -1;
+        ms_edge = nua.indexOf('Edge') > -1,
+        _ls = storageFactory(localStorage, 'ls_', 99),
+        _ss = storageFactory(sessionStorage, 'ss_', null);
     
     // ms edge is non-standard AF
     if (ms_edge) {
         have_image_rendering = false;
     }
     var self = {
+        ls: _ls,
+        ss: _ss,
         elements: {
             board: $("#board"),
             palette: $(".palette"),
@@ -165,6 +239,15 @@ window.App = (function () {
             } else {
                 self.elements.board_render = self.elements.board;
             }
+
+            if (self.ss.get('url_params')) {
+                window.location.hash = self.ss.get('url_params');
+                self.ss.remove('url_params');
+            }
+
+            $(".login-overlay a").click(function (evt) {
+                self.ss.set('url_params', window.location.search.substring(1) + '&' + window.location.hash.substring(1));
+            });
 
             $.get("/info", self.initBoard.bind(self));
 
@@ -576,24 +659,24 @@ window.App = (function () {
         initInfo: function () {
             $("div.open").click(function () {
                 $(".info").toggleClass("open");
+                self.ls.set('info_closed', !$(".info").hasClass("open"));
             });
-            $(".info").addClass("open");
+            if (!self.ls.get('info_closed')) {
+                $(".info").addClass("open");
+            }
             $(document.body).keydown(function (evt) {
                 if (evt.keyCode === 73) {
                     $(".info").toggleClass("open");
+                    self.ls.set('info_closed', !$(".info").hasClass("open"));
                 }
                 if (evt.keyCode === 80) {
                     self.saveImage();
                 }
             });
-            try {
-                $("#audiotoggle")[0].checked = localStorage.getItem("audio_muted") === "on";
-                $("#audiotoggle").change(function () {
-                    localStorage.setItem("audio_muted", $(this).is(":checked") ? "on" : "off");
-                });
-            } catch (e) {
-                console.log("Local Storage not available");
-            }
+            $("#audiotoggle")[0].checked = this.ls.get("audio_muted");
+            $("#audiotoggle").change(function () {
+                self.ls.set("audio_muted", $(this).is(":checked"));
+            });
         },
         adjustScale: function (adj) {
             var oldScale = self.scale;
@@ -737,8 +820,9 @@ window.App = (function () {
             try {
                 var notification = new Notification("pxls.space", { body: "Your next pixel is available!", icon: "favicon.ico" });
                 notification.onclick = function() {
+                    parent.focus();
                     window.focus();
-                    this.cancel();
+                    this.close()
                 };
             } catch(e) {
                 console.log("No notifications available!");
@@ -805,6 +889,8 @@ window.App = (function () {
     
     // functions here need wrappers to not accidentally miss-use "this" and to give finer control about the available function parameters
     return {
+        ls: _ls,
+        ss: _ss,
         updateTemplate: function(t) {
             self.updateTemplate(t);
         },
