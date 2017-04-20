@@ -33,8 +33,8 @@ public interface DAO extends Closeable {
             "last_pixel_time TIMESTAMP," +
             "role VARCHAR(16) NOT NULL DEFAULT 'USER'," +
             "ban_expiry TIMESTAMP," +
-            "signup_ip BINARY(16)," +
-            "last_ip BINARY(16))")
+            "signup_ip VARBINARY(16)," +
+            "last_ip VARBINARY(16))")
     void createUsersTable();
 
     @SqlUpdate("UPDATE users SET last_pixel_time = now(6) WHERE id = :id")
