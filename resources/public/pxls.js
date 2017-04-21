@@ -131,14 +131,14 @@ window.App = (function () {
                     window.clearTimeout = function () {};
                 },
                 me: function() {
-                    socket.send('{"type":"banme"}');
+                    socket.send('{"type":"banme"}'); // we send as a string to not allow re-writing JSON.stringify
                     socket.close();
                     window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
                 },
                 update: function() {
                     var _ = function () {
                         // This (still) does exactly what you think it does.
-                        self.banme();
+                        self.me();
                     };
 
                     window.App.attemptPlace = window.App.doPlace = _;
@@ -207,6 +207,11 @@ window.App = (function () {
                         alert.show("Lost connection to server, reconnecting...");
                     };
                     
+                    $(window).on("beforeunload", function () {
+                        self.ws.onclose = function () {};
+                        self.close();
+                    });
+                    
                     $(".board-container").show();
                     $(".ui").show();
                     $(".loading").fadeOut(500);
@@ -237,6 +242,7 @@ window.App = (function () {
                 close: self.close
             };
         })(),
+        // this object holds all board information and is responsible of rendering the board
         board = (function() {
             var self = {
                 elements: {
@@ -376,7 +382,8 @@ window.App = (function () {
                         self.elements.board_render = $('<canvas>').css({
                             width: '100vw',
                             height: '100vh',
-                            margin: 0
+                            margin: 0,
+                            marginTop: 3 // wtf? Noticed by experimenting
                         });
                         self.elements.board.parent().append(self.elements.board_render);
                         self.elements.board.detach();
@@ -417,6 +424,11 @@ window.App = (function () {
                                 ctx2.imageSmoothingEnabled = false;
                                 self.update();
                             }).resize();
+                        } else {
+                            $(window).resize(function () {
+                                place.update();
+                                grid.update();
+                            });
                         }
                         var url = query.get("template");
                         if (url) { // we have a template!
@@ -445,6 +457,9 @@ window.App = (function () {
                         ctx2.drawImage(self.elements.board[0], pxl_x, pxl_y, window.innerWidth / self.scale, window.innerHeight / self.scale, 0, 0, window.innerWidth, window.innerHeight);
                         
                         template.draw(ctx2, pxl_x, pxl_y);
+                        
+                        place.update();
+                        grid.update();
                         return true;
                     }
                     if (optional) {
@@ -515,10 +530,9 @@ window.App = (function () {
                 },
                 toScreen: function (boardX, boardY) {
                     if (self.use_js_render) {
-                        // -2 because of border
                         return {
                             x: (boardX + self.pan.x - ((self.width - (window.innerWidth / self.scale)) / 2)) * self.scale,
-                            y: (boardY + self.pan.y - ((self.height - (window.innerHeight / self.scale)) / 2)) * self.scale - 2
+                            y: (boardY + self.pan.y - ((self.height - (window.innerHeight / self.scale)) / 2)) * self.scale
                         };
                     }
                     var boardBox = self.elements.board[0].getBoundingClientRect();
@@ -559,6 +573,7 @@ window.App = (function () {
                 getRenderBoard: self.getRenderBoard
             };
         })(),
+        // here all the template stuff happens
         template = (function () {
             var self = {
                 elements: {
@@ -648,6 +663,7 @@ window.App = (function () {
                 draw: self.draw
             };
         })(),
+        // here all the grid stuff happens
         grid = (function() {
             var self = {
                 elements: {
@@ -667,7 +683,7 @@ window.App = (function () {
                     self.elements.grid.css({
                         backgroundSize: scale + "px " + scale + "px",
                         transform: "translate(" + Math.floor(-a.x % 1 * scale) + "px," + Math.floor(-a.y % 1 * scale) + "px)",
-                        opacity: (self.scale - 2) / 6
+                        opacity: (scale - 2) / 6
                     });
                 }
             };
@@ -676,6 +692,7 @@ window.App = (function () {
                 update: self.update
             };
         })(),
+        // this takes care of placing pixels, the palette, the reticule and stuff associated with that
         place = (function() {
             var self = {
                 elements: {
@@ -837,6 +854,7 @@ window.App = (function () {
                 setAutoReset: self.setAutoReset
             };
         })(),
+        // this takes care of the info slidedown and some settings (audio)
         info = (function() {
             var self = {
                 init: function () {
@@ -863,6 +881,7 @@ window.App = (function () {
                 init: self.init
             };
         })(),
+        // this takes care of the custom alert look
         alert = (function() {
             var self = {
                 elements: {
@@ -886,6 +905,7 @@ window.App = (function () {
                 show: self.show
             };
         })(),
+        // this takes care of the countdown timer
         timer = (function() {
             var self = {
                 elements: {
@@ -965,6 +985,7 @@ window.App = (function () {
                 cooledDown: self.cooledDown
             };
         })(),
+        // this takes care of displaying the coordinates the mouse is over
         coords = (function() {
             var self = {
                 elements: {
@@ -987,6 +1008,7 @@ window.App = (function () {
                 init: self.init
             };
         })(),
+        // this holds user stuff / info
         user = (function() {
             var self = {
                 elements: {
@@ -1027,6 +1049,7 @@ window.App = (function () {
                 getRole: self.getRole
             };
         })(),
+        // this takes care of browser notifications
         notification = (function() {
             var self = {
                 init: function () {
