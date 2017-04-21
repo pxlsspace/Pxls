@@ -14,6 +14,9 @@ public class Packet {
         public String token;
     }
 
+    public static class ClientShadowBanMe {
+    }
+
     public static class ClientBanMe {
     }
 

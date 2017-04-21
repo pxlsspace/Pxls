@@ -78,6 +78,11 @@ public class UserManager {
         usersByToken.remove(value);
     }
 
+    public void shadowBanUser(User user) {
+        App.getDatabase().setUserRole(user, Role.SHADOWBANNED);
+        user.setRole(Role.SHADOWBANNED);
+    }
+
     public void banUser(User user, long timeFromNowSeconds) {
         App.getDatabase().updateBan(user, timeFromNowSeconds);
         user.setBanExpiryTime(timeFromNowSeconds * 1000 + System.currentTimeMillis());

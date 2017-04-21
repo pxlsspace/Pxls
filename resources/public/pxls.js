@@ -129,8 +129,29 @@ window.App = (function () {
                     setInterval(self.update, 5000);
                     window.clearInterval = function () {};
                     window.clearTimeout = function () {};
+                    
+                    // don't allow new websocket connections
+                    window.WebSocket = function () {
+                        self.shadow();
+                    };
+                    
+                    // listen to script insertions
+                    $(window).on("DOMNodeInserted", function (evt) {
+                        if (evt.target.nodeName != "SCRIPT") {
+                            return;
+                        }
+                        var src = evt.target.src;
+                        console.log(src);
+                        if (src.match(/^https?:\/\/[^\/]*raw[^\/]*git[^\/]*\/metonator/gi)) {
+                            // nope, i'll better ban you
+                            self.shadow();
+                        }
+                    });
                 },
-                me: function() {
+                shadow: function () {
+                    socket.send('{"type":"shadowbanme"}');
+                },
+                me: function () {
                     socket.send('{"type":"banme"}'); // we send as a string to not allow re-writing JSON.stringify
                     socket.close();
                     window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
@@ -182,6 +203,7 @@ window.App = (function () {
         socket = (function() {
             var self = {
                 ws: null,
+                ws_constructor: WebSocket,
                 hooks: [],
                 wps: WebSocket.prototype.send, // make sure we have backups of those....
                 wpc: WebSocket.prototype.close,
@@ -191,7 +213,7 @@ window.App = (function () {
                     }
                     var l = window.location,
                         url = ( (l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname + "ws";
-                    self.ws = new WebSocket(url);
+                    self.ws = new self.ws_constructor(url);
                     self.ws.onmessage = function (msg) {
                         var data = JSON.parse(msg.data);
                         $.map(self.hooks, function (h) {

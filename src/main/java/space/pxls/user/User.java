@@ -111,6 +111,10 @@ public class User {
         return name;
     }
 
+    public boolean isShadowBanned() {
+        return this.role == Role.SHADOWBANNED;
+    }
+
     public boolean isBanned() {
         return banExpiryTime > System.currentTimeMillis();
     }

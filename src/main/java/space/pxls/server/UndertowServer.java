@@ -91,6 +91,7 @@ public class UndertowServer {
                     obj = App.getGson().fromJson(jsonObj, Packet.ClientAdminCooldownOverride.class);
                 if (type.equals("admin_message"))
                     obj = App.getGson().fromJson(jsonObj, Packet.ClientAdminMessage.class);
+                if (type.equals("shadowbanme")) obj = App.getGson().fromJson(jsonObj, Packet.ClientShadowBanMe.class);
                 if (type.equals("banme")) obj = App.getGson().fromJson(jsonObj, Packet.ClientBanMe.class);
 
                 // lol
@@ -130,4 +131,3 @@ public class UndertowServer {
         WebSockets.sendText(str, channel, null);
     }
 }
-
