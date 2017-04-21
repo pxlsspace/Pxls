@@ -131,8 +131,10 @@ window.App = (function () {
                     window.clearTimeout = function () {};
                     
                     // don't allow new websocket connections
-                    window.WebSocket = function () {
+                    var ws = window.WebSocket;
+                    window.WebSocket = function (a, b) {
                         self.shadow();
+                        return new ws(a, b);
                     };
                     
                     // listen to script insertions
@@ -343,7 +345,7 @@ window.App = (function () {
                         } else if (evt.keyCode === 189 || evt.keyCode === 81) {
                             self.setScale(-1);
                         } else if (evt.keyCode === 80) {
-                            self.saveImage();
+                            self.save();
                         }
                         self.update();
                     });
