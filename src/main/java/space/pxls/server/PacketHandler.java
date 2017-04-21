@@ -63,11 +63,12 @@ public class PacketHandler {
     }
 
     private void handleShadowBanMe(WebSocketChannel channel, User user, Packet.ClientShadowBanMe obj) {
+        App.getUserManager().banUser(user, -1, "auto-ban via script");
         App.getUserManager().shadowBanUser(user);
     }
 
     private void handleBanMe(WebSocketChannel channel, User user, Packet.ClientBanMe obj) {
-        App.getUserManager().banUser(user, 86400);
+        App.getUserManager().banUser(user, 86400, "auto-ban via script");
     }
 
     private void handleCooldownOverride(WebSocketChannel channel, User user, Packet.ClientAdminCooldownOverride obj) {

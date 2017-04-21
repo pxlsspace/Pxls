@@ -43,14 +43,24 @@ function initAdmin(admin) {
                         minutes = Math.floor((delta / 60)) % 60,
                         minuteStr = minutes < 10 ? "0" + minutes : minutes,
                         hours = Math.floor(delta / 3600),
-                        hoursStr = hours < 10 ? "0" + hours : hours;
+                        hoursStr = hours < 10 ? "0" + hours : hours,
+                        banned = data.banned,
+                        bannedStr = "",
+                        expiracyStr = hoursStr+":"+minuteStr+":"+secsStr;
+                    if (data.role == "SHADOWBANNED") {
+                        bannedStr = "shadow";
+                        banned = true;
+                        expiracyStr = "never";
+                    } else {
+                        bannedStr = banned ? "yes" : "no";
+                    }
                     console.log(delta);
                     admin.alert.show("Username: "+data.name+"<br>"+
                         "Role: "+data.role+"<br>"+
-                        "Banned: "+(data.banned?"yes"+"<br>"+
-                            "Ban Reason: "+data.ban_reason+"<br>"+
-                            "Ban Expiracy: "+hoursStr+":"+minuteStr+":"+secsStr
-                        :"no")
+                        "Banned: "+bannedStr+(banned?"<br>"+
+                            "Ban Reason: "+$("<div>").text(data.ban_reason).html()+"<br>"+
+                            "Ban Expiracy: "+expiracyStr
+                        :"")
                     );
                     console.log(data);
                 }).fail(function () {
