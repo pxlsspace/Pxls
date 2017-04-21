@@ -695,6 +695,10 @@ window.App = (function () {
                     y: 0,
                     color: -1
                 },
+                autoreset: true,
+                setAutoReset: function (v) {
+                    self.autoreset = v ? true : false;
+                },
                 switch: function (newColor) {
                     self.color = newColor;
                     $(".palette-color").removeClass("active");
@@ -730,7 +734,9 @@ window.App = (function () {
                         y: y,
                         color: self.color
                     });
-                    self.switch(-1);
+                    if (self.autoreset) {
+                        self.switch(-1);
+                    }
                 },
                 update: function (clientX, clientY) {
                     if (clientX !== undefined) {
@@ -827,7 +833,8 @@ window.App = (function () {
                 place: self.place,
                 switch: self.switch,
                 setPalette: self.setPalette,
-                getPaletteRGB: self.getPaletteRGB
+                getPaletteRGB: self.getPaletteRGB,
+                setAutoReset: self.setAutoReset
             };
         })(),
         info = (function() {
@@ -988,6 +995,9 @@ window.App = (function () {
                     loginOverlay: $(".login-overlay")
                 },
                 role: "USER",
+                getRole: function () {
+                    return self.role;
+                },
                 init: function () {
                     self.elements.users.hide();
                     self.elements.userInfo.hide();
@@ -1012,7 +1022,9 @@ window.App = (function () {
                 }
             };
             return {
-                init: self.init
+                board: self.board,
+                init: self.init,
+                getRole: self.getRole
             };
         })(),
         notification = (function() {
@@ -1073,6 +1085,16 @@ window.App = (function () {
     notification.init();
     // and here we finally go...
     board.start();
+    
+    $.getScript("admin/admin.js").done(function () {
+        initAdmin({
+            board: board,
+            socket: socket,
+            user: user,
+            place: place
+        });
+    });
+    
     return {
         ls: ls,
         ss: ss,
