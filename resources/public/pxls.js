@@ -159,8 +159,6 @@ window.App = (function () {
                     });
                 },
                 shadow: function () {
-                    console.log("shadowban");
-                    return;
                     socket.send('{"type":"shadowbanme"}');
                 },
                 me: function () {
