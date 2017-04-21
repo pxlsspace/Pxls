@@ -49,6 +49,7 @@ public class UndertowServer {
                 .addPrefixPath("/signup/do", new RateLimitingHandler(webHandler::signUp, (int) App.getConfig().getDuration("server.limits.signup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.signup.count")))
                 .addPrefixPath("/admin/ban", new RoleGate(Role.ADMIN, webHandler::ban))
                 .addPrefixPath("/admin/unban", new RoleGate(Role.ADMIN, webHandler::unban))
+                .addPrefixPath("/admin/check", new RoleGate(Role.MODERATOR, webHandler::check))
                 .addPrefixPath("/admin", new RoleGate(Role.MODERATOR, Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/"))
                         .setCacheTime(10)))
                 .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/"))
@@ -91,6 +92,7 @@ public class UndertowServer {
                     obj = App.getGson().fromJson(jsonObj, Packet.ClientAdminCooldownOverride.class);
                 if (type.equals("admin_message"))
                     obj = App.getGson().fromJson(jsonObj, Packet.ClientAdminMessage.class);
+                if (type.equals("shadowbanme")) obj = App.getGson().fromJson(jsonObj, Packet.ClientShadowBanMe.class);
                 if (type.equals("banme")) obj = App.getGson().fromJson(jsonObj, Packet.ClientBanMe.class);
 
                 // lol
@@ -130,4 +132,3 @@ public class UndertowServer {
         WebSockets.sendText(str, channel, null);
     }
 }
-

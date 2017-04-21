@@ -86,6 +86,10 @@ public class User {
         this.role = role;
     }
 
+    public String getBanReason() {
+        return App.getDatabase().getUserBanReason(this.id);
+    }
+
     public void resetCooldown() {
         lastPlaceTime = System.currentTimeMillis();
     }
@@ -109,6 +113,10 @@ public class User {
 
     public String getName() {
         return name;
+    }
+
+    public boolean isShadowBanned() {
+        return this.role == Role.SHADOWBANNED;
     }
 
     public boolean isBanned() {

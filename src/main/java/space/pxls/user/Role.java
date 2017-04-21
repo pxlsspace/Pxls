@@ -1,6 +1,7 @@
 package space.pxls.user;
 
 public enum Role {
+    SHADOWBANNED,
     BANNED,
     GUEST,
     USER,

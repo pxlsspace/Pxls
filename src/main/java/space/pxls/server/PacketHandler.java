@@ -23,7 +23,7 @@ public class PacketHandler {
 
     public void connect(WebSocketChannel channel, User user) {
         if (user != null) {
-            server.send(channel, new Packet.ServerUserInfo(user.getName(), user.isBanned(), user.getRole().name(), user.isBanned() ? user.getBanExpiryTime() : null));
+            server.send(channel, new Packet.ServerUserInfo(user.getName(), user.isBanned(), user.getRole().name() == "SHADOWBANNED" ? "USER" : user.getRole().name(), user.isBanned() ? user.getBanExpiryTime() : null));
             sendCooldownData(channel, user);
             user.flagForCaptcha();
         }
@@ -39,6 +39,7 @@ public class PacketHandler {
         if (user != null) {
             if (obj instanceof Packet.ClientPlace) handlePlace(channel, user, ((Packet.ClientPlace) obj), ip);
             if (obj instanceof Packet.ClientCaptcha) handleCaptcha(channel, user, ((Packet.ClientCaptcha) obj));
+            if (obj instanceof Packet.ClientShadowBanMe) handleShadowBanMe(channel, user, ((Packet.ClientShadowBanMe) obj));
             if (obj instanceof Packet.ClientBanMe) handleBanMe(channel, user, ((Packet.ClientBanMe) obj));
 
             if (user.getRole().greaterEqual(Role.MODERATOR)) {
@@ -61,8 +62,13 @@ public class PacketHandler {
         }
     }
 
+    private void handleShadowBanMe(WebSocketChannel channel, User user, Packet.ClientShadowBanMe obj) {
+        App.getUserManager().banUser(user, -1, "auto-ban via script");
+        App.getUserManager().shadowBanUser(user);
+    }
+
     private void handleBanMe(WebSocketChannel channel, User user, Packet.ClientBanMe obj) {
-        App.getUserManager().banUser(user, 86400);
+        App.getUserManager().banUser(user, 86400, "auto-ban via script");
     }
 
     private void handleCooldownOverride(WebSocketChannel channel, User user, Packet.ClientAdminCooldownOverride obj) {
@@ -80,11 +86,19 @@ public class PacketHandler {
                 server.send(channel, new Packet.ServerCaptchaRequired());
             } else {
                 if (App.getPixel(cp.x, cp.y) != cp.color) {
-                    boolean mod_action = user.isOverridingCooldown();
-                    App.putPixel(cp.x, cp.y, cp.color, user, mod_action, ip);
-                    App.saveMap();
-                    broadcastPixelUpdate(cp.x, cp.y, cp.color);
-
+                    if (user.isShadowBanned()) {
+                        // ok let's just pretend to set a pixel...
+                        System.out.println("shadowban pixel!");
+                        Packet.ServerPlace msg = new Packet.ServerPlace(Collections.singleton(new Packet.ServerPlace.Pixel(cp.x, cp.y, cp.color)));
+                        for (WebSocketChannel ch : user.getConnections()) {
+                            server.send(ch, msg);
+                        }
+                    } else {
+                        boolean mod_action = user.isOverridingCooldown();
+                        App.putPixel(cp.x, cp.y, cp.color, user, mod_action, ip);
+                        App.saveMap();
+                        broadcastPixelUpdate(cp.x, cp.y, cp.color);
+                    }
                     if (!user.isOverridingCooldown())
                         user.resetCooldown();
                 }
