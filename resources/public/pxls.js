@@ -278,6 +278,10 @@ window.App = (function () {
             } catch (e) {
                 console.log('Notifications not available');
             }
+            window.addEventListener("beforeunload", function() {
+                self.socket.close = wpc;
+                self.socket.close();
+            });
         },
         initBoard: function (data) {
             self.width = data.width;
