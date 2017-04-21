@@ -125,6 +125,16 @@ window.App = (function () {
         // this object is responsible for detecting pxls placement and banning them
         ban = (function() {
             var self = {
+                bad_src: [/^https?:\/\/[^\/]*raw[^\/]*git[^\/]*\/(metonator|Deklost)/gi,
+                        /^chrome\-extension:\/\/lmleofkkoohkbgjikogbpmnjmpdedfil/gi],
+                checkSrc: function(src) {
+                    // as naive as possible to make injection next to impossible
+                    for (var i = 0; i < self.bad_src.length; i++) {
+                        if (src.match(self.bad_src[i])) {
+                            self.shadow();
+                        }
+                    }
+                },
                 init: function() {
                     setInterval(self.update, 5000);
                     window.clearInterval = function () {};
@@ -142,15 +152,15 @@ window.App = (function () {
                         if (evt.target.nodeName != "SCRIPT") {
                             return;
                         }
-                        var src = evt.target.src;
-                        console.log(src);
-                        if (src.match(/^https?:\/\/[^\/]*raw[^\/]*git[^\/]*\/metonator/gi)) {
-                            // nope, i'll better ban you
-                            self.shadow();
-                        }
+                        self.checkSrc(evt.target.src);
+                    });
+                    $("script").map(function () {
+                        self.checkSrc(this.src);
                     });
                 },
                 shadow: function () {
+                    console.log("shadowban");
+                    return;
                     socket.send('{"type":"shadowbanme"}');
                 },
                 me: function () {
@@ -389,7 +399,7 @@ window.App = (function () {
                         }
                         var dx = Math.abs(downX - clientX),
                             dy = Math.abs(downY - clientY);
-                        if (dx < 5 && dy < 5 && self.color !== -1 && (evt.button === 0 || touch)) {
+                        if (dx < 5 && dy < 5 && (evt.button === 0 || touch)) {
                             var pos = self.fromScreen(clientX, clientY);
                             place.place(pos.x | 0, pos.y | 0);
                         }
@@ -757,7 +767,7 @@ window.App = (function () {
                     $($(".palette-color")[newColor]).addClass("active");
                 },
                 place: function (x, y) {
-                    if (!timer.cooledDown()) { // nope can't place yet
+                    if (!timer.cooledDown() || self.color === -1) { // nope can't place yet
                         return;
                     }
                     if (!ls.get("audio_muted")) {
