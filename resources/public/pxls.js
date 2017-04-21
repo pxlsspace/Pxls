@@ -910,7 +910,7 @@ window.App = (function () {
                     alert: $(".message")
                 },
                 show: function (s) {
-                    self.elements.alert.find(".text").text(s);
+                    self.elements.alert.find(".text").empty().append(s);
                     self.elements.alert.fadeIn(200);
                 },
                 init: function () {
@@ -1136,7 +1136,8 @@ window.App = (function () {
             board: board,
             socket: socket,
             user: user,
-            place: place
+            place: place,
+            alert: alert
         });
     });
     

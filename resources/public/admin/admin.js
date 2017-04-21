@@ -1,5 +1,5 @@
 $("<link/>", {rel: "stylesheet", href: "/admin/admin.css"}).appendTo(document.head);
-var modPanelHTML = "<div class=\'admin panel\'>\n    <h1>MOD</h1>\n    <div>\n        <input type=\'checkbox\' id=\'admin-hr\'>\n        <label for=\'admin-hr\'>Disable hand reset</label>\n    </div>\n\n    <div>\n        <input type=\'checkbox\' id=\'admin-co\'>\n        <label for=\'admin-co\'>Override cooldown</label>\n    </div>\n\n    <input id=\'admin-ban\' type=\'text\' placeholder=\'Ban user (24h)\'>\n    <input id=\'admin-unban\' type=\'text\' placeholder=\'Unban user (24h)\'>\n</div>";
+var modPanelHTML = "<div class=\'admin panel\'>\n    <h1>MOD</h1>\n    <div>\n        <input type=\'checkbox\' id=\'admin-hr\'>\n        <label for=\'admin-hr\'>Disable hand reset</label>\n    </div>\n\n    <div>\n        <input type=\'checkbox\' id=\'admin-co\'>\n        <label for=\'admin-co\'>Override cooldown</label>\n    </div>\n\n    <input id=\'admin-ban\' type=\'text\' placeholder=\'Ban user (24h)\'>\n    <input id=\'admin-unban\' type=\'text\' placeholder=\'Unban user (24h)\'>\n    <input id=\'admin-checkrole\' type=\'text\' placeholder=\'Check user\'>\n</div>";
 var lookupPanelHTML = "<div class=\'admin-lookup\'>\n    <div><b>Coords: </b><span id=\'lookup-coords\'></span></div>\n    <div><b>Username: </b><span id=\'lookup-user\'></span></div>\n    <div><b>Login: </b><span id=\'lookup-login\'></span></div>\n    <div><b>Time: </b><span id=\'lookup-time\'></span></div>\n    <div><input id=\'lookup-msg\' placeholder=\'Send alert...\'></div>\n    <div><div class=\'button\' id=\'lookup-ban\'>Ban (24h)</div><div class=\'button\' id=\'lookup-close\'>Close</div></div>\n</div>";
 
 function initAdmin(admin) {
@@ -18,7 +18,7 @@ function initAdmin(admin) {
 
         var banInput = $("#admin-ban").on("keydown", function (evt) {
             if (evt.which === 13) {
-                $.post("/admin/ban", {username: banInput.val()}, function () {
+                $.post("/admin/ban", {username: banInput.val(), reason: prompt("Ban reason")}, function () {
                 });
                 banInput.val("");
             }
@@ -33,6 +33,33 @@ function initAdmin(admin) {
             }
             evt.stopPropagation();
         });
+
+        var checkInput = $("#admin-checkrole").on("keydown", function (evt) {
+            if (evt.which === 13) {
+                $.post("/admin/check", {username: checkInput.val()}, function (data) {
+                    var delta = (data.ban_expiry - (new Date()).getTime()) / 1000,
+                        secs = Math.floor(delta % 60),
+                        secsStr = secs < 10 ? "0" + secs : secs,
+                        minutes = Math.floor((delta / 60)) % 60,
+                        minuteStr = minutes < 10 ? "0" + minutes : minutes,
+                        hours = Math.floor(delta / 3600),
+                        hoursStr = hours < 10 ? "0" + hours : hours;
+                    console.log(delta);
+                    admin.alert.show("Username: "+data.name+"<br>"+
+                        "Role: "+data.role+"<br>"+
+                        "Banned: "+(data.banned?"yes"+"<br>"+
+                            "Ban Reason: "+data.ban_reason+"<br>"+
+                            "Ban Expiracy: "+hoursStr+":"+minuteStr+":"+secsStr
+                        :"no")
+                    );
+                    console.log(data);
+                }).fail(function () {
+                    admin.alert.show("User not found");
+                });
+                checkInput.val("");
+            }
+            evt.stopPropagation();
+        })
 
         if (admin.user.getRole() !== "ADMIN") {
             banInput.hide();
@@ -61,7 +88,7 @@ function initAdmin(admin) {
         });
 
         var ban = $("#lookup-ban").on("click", function () {
-            $.post("/admin/ban", {username: u.u.username}, function () {
+            $.post("/admin/ban", {username: u.u.username, reason: prompt("Ban reason")}, function () {
             });
 
             lookupPanel.fadeOut(200);

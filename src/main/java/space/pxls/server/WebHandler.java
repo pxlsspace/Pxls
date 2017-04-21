@@ -37,7 +37,13 @@ public class WebHandler {
     public void ban(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
         if (user != null) {
-            App.getUserManager().banUser(user, 86400);
+            FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+            FormData.FormValue reason = data.getFirst("reason");
+            String reason_str = "";
+            if (reason != null) {
+                reason_str = reason.getValue();
+            }
+            App.getUserManager().banUser(user, 86400, reason_str);
             exchange.setStatusCode(200);
         } else {
             exchange.setStatusCode(400);
@@ -49,6 +55,16 @@ public class WebHandler {
         if (user != null) {
             App.getUserManager().banUser(user, 0);
             exchange.setStatusCode(200);
+        } else {
+            exchange.setStatusCode(400);
+        }
+    }
+
+    public void check(HttpServerExchange exchange) {
+        User user = parseUserFromForm(exchange);
+        if (user != null) {
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+            exchange.getResponseSender().send(App.getGson().toJson(new Packet.UserInfo(user.getName(), user.getRole().name(), user.isBanned(), user.getBanReason(), user.getBanExpiryTime())));
         } else {
             exchange.setStatusCode(400);
         }

@@ -2,6 +2,7 @@ package space.pxls.user;
 
 import space.pxls.App;
 import space.pxls.data.DBUser;
+import space.pxls.data.DBUserBanReason;
 
 import java.util.Map;
 import java.util.Random;
@@ -83,8 +84,12 @@ public class UserManager {
         user.setRole(Role.SHADOWBANNED);
     }
 
-    public void banUser(User user, long timeFromNowSeconds) {
-        App.getDatabase().updateBan(user, timeFromNowSeconds);
+    public void banUser(User user, long timeFromNowSeconds, String reason) {
+        App.getDatabase().updateBan(user, timeFromNowSeconds, reason);
         user.setBanExpiryTime(timeFromNowSeconds * 1000 + System.currentTimeMillis());
+    }
+
+    public void banUser(User user, long timeFromNowSeconds) {
+        banUser(user, timeFromNowSeconds, "");
     }
 }

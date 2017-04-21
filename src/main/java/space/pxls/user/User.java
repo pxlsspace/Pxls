@@ -86,6 +86,10 @@ public class User {
         this.role = role;
     }
 
+    public String getBanReason() {
+        return App.getDatabase().getUserBanReason(this.id);
+    }
+
     public void resetCooldown() {
         lastPlaceTime = System.currentTimeMillis();
     }

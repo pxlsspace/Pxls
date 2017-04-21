@@ -142,4 +142,20 @@ public class Packet {
         }
 
     }
+
+    public static class UserInfo {
+        public String name;
+        public String role;
+        public boolean banned;
+        public String ban_reason;
+        public long ban_expiry;
+        
+        public UserInfo(String name, String role, boolean banned, String ban_reason, long ban_expiry) {
+            this.name = name;
+            this.role = role;
+            this.banned = banned;
+            this.ban_reason = ban_reason;
+            this.ban_expiry = ban_expiry;
+        }
+    }
 }

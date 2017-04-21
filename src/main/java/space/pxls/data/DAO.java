@@ -7,7 +7,7 @@ import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
 
 import java.io.Closeable;
 
-@RegisterMapper({DBUser.Mapper.class, DBPixelPlacement.Mapper.class})
+@RegisterMapper({DBUser.Mapper.class, DBPixelPlacement.Mapper.class, DBUserBanReason.Mapper.class})
 public interface DAO extends Closeable {
     @SqlUpdate("CREATE TABLE IF NOT EXISTS pixels (" +
             "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT," +
@@ -34,7 +34,8 @@ public interface DAO extends Closeable {
             "role VARCHAR(16) NOT NULL DEFAULT 'USER'," +
             "ban_expiry TIMESTAMP," +
             "signup_ip BINARY(16)," +
-            "last_ip BINARY(16))")
+            "last_ip BINARY(16)," + 
+            "ban_reason VARCHAR(512) NOT NULL DEFAULT '')")
     void createUsersTable();
 
     @SqlUpdate("UPDATE users SET last_pixel_time = now(6) WHERE id = :id")
@@ -43,8 +44,8 @@ public interface DAO extends Closeable {
     @SqlUpdate("UPDATE users SET role = :role WHERE id = :id")
     void updateUserRole(@Bind("id") int userId, @Bind("role") String newRole);
 
-    @SqlUpdate("UPDATE users SET ban_expiry = now() + INTERVAL :expiry SECOND WHERE id = :id")
-    void updateUserBan(@Bind("id") int id, @Bind("expiry") long expiryFromNow);
+    @SqlUpdate("UPDATE users SET ban_expiry = now() + INTERVAL :expiry SECOND, ban_reason = :ban_reason WHERE id = :id")
+    void updateUserBan(@Bind("id") int id, @Bind("expiry") long expiryFromNow, @Bind("ban_reason") String reason);
 
     @SqlUpdate("UPDATE users SET last_ip = INET6_ATON(:ip) WHERE id = :id")
     void updateUserIP(@Bind("id") int id, @Bind("ip") String ip);
@@ -57,6 +58,9 @@ public interface DAO extends Closeable {
 
     @SqlQuery("SELECT * FROM users WHERE username = :name")
     DBUser getUserByName(@Bind("name") String name);
+
+    @SqlQuery("SELECT ban_reason FROM users WHERE id = :id")
+    DBUserBanReason getUserBanReason(@Bind("id") int userId);
 
     void close();
 }
