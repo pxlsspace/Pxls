@@ -122,7 +122,6 @@ public class App {
                 for (int x = Math.min(fromX, toX); x <= Math.max(fromX, toX); x++) {
                     for (int y = Math.min(fromY, toY); y <= Math.max(fromY, toY); y++) {
                         putPixel(x, y, toColor, null, true, "<nuke action>");
-                        pixels.add(new Packet.ServerPlace.Pixel(x, y, toColor));
                     }
                 }
             }
