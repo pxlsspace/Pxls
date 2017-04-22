@@ -20,8 +20,10 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class App {
@@ -110,6 +112,19 @@ public class App {
                 } else {
                     System.out.println("Cannot find user " + token[1]);
                 }
+            } else if (token[0].equalsIgnoreCase("nuke")) {
+                int fromX = Integer.parseInt(token[1]);
+                int fromY = Integer.parseInt(token[2]);
+                int toX = Integer.parseInt(token[3]);
+                int toY = Integer.parseInt(token[4]);
+                int toColor = token.length >= 6 ? Integer.parseInt(token[5]) : 0;
+
+                for (int x = Math.min(fromX, toX); x <= Math.max(fromX, toX); x++) {
+                    for (int y = Math.min(fromY, toY); y <= Math.max(fromY, toY); y++) {
+                        putPixel(x, y, toColor, null, true, "<nuke action>");
+                        pixels.add(new Packet.ServerPlace.Pixel(x, y, toColor));
+                    }
+                }
             }
         } catch (RuntimeException e) {
             e.printStackTrace();
@@ -163,8 +178,10 @@ public class App {
 
     public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip) {
         if (x < 0 || x >= width || y < 0 || y >= height || color < 0 || color >= getPalette().size()) return;
+        String userName = user != null ? user.getName() : "<server>";
+
         board[x + y * width] = (byte) color;
-        pixelLogger.log(Level.INFO, user.getName() + " " + x + " " + y + " " + color + " " + ip + (mod_action ? " (mod)" : ""));
+        pixelLogger.log(Level.INFO, userName + " " + x + " " + y + " " + color + " " + ip + (mod_action ? " (mod)" : ""));
         database.placePixel(x, y, color, user, mod_action);
     }
 

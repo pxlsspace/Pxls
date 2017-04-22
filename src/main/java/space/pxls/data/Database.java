@@ -36,8 +36,11 @@ public class Database implements Closeable {
     }
 
     public void placePixel(int x, int y, int color, User who, boolean mod_action) {
-        handle.putPixel(x, y, (byte) color, who.getId(), mod_action);
-        handle.updateUserTime(who.getId());
+        handle.putPixel(x, y, (byte) color, who != null ? who.getId() : null, mod_action);
+
+        if (who != null) {
+            handle.updateUserTime(who.getId());
+        }
     }
 
     public DBPixelPlacement getPixelAt(int x, int y) {
