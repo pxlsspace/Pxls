@@ -14,13 +14,13 @@ public interface DAO extends Closeable {
             "x INT UNSIGNED NOT NULL," +
             "y INT UNSIGNED NOT NULL," +
             "color TINYINT UNSIGNED NOT NULL," +
-            "who INT UNSIGNED NOT NULL," +
+            "who INT UNSIGNED," +
             "time TIMESTAMP NOT NULL DEFAULT now(6)," +
             "mod_action BOOLEAN NOT NULL DEFAULT false)")
     void createPixelsTable();
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, mod_action) VALUES (:x, :y, :color, :who, :mod)")
-    void putPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("mod") boolean mod);
+    void putPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") Integer who, @Bind("mod") boolean mod);
 
     @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users ON pixels.who = users.id WHERE x = :x AND y = :y ORDER BY time DESC LIMIT 1")
     DBPixelPlacement getPixel(@Bind("x") int x, @Bind("y") int y);
