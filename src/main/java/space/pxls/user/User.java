@@ -2,6 +2,8 @@ package space.pxls.user;
 
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
+import space.pxls.server.Packet;
+import space.pxls.server.UndertowServer;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -38,7 +40,7 @@ public class User {
 
     public boolean canPlace() {
         if (role.greaterEqual(Role.MODERATOR) && overrideCooldown) return true;
-
+        if (!role.greaterEqual(Role.USER) && role != Role.SHADOWBANNED) return false; // shadowbanned seems to be able to be able to place
         int serverCooldown = (int) App.getConfig().getDuration("cooldown", TimeUnit.SECONDS);
         return lastPlaceTime + serverCooldown * 1000 < System.currentTimeMillis();
     }
@@ -84,6 +86,9 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
+//        for (WebSocketChannel ch : connections) {
+//            server.userdata(ch, this);
+//        }
     }
 
     public String getBanReason() {
@@ -129,6 +134,9 @@ public class User {
 
     public void setBanExpiryTime(long banExpiryTime) {
         this.banExpiryTime = banExpiryTime;
+//        for (WebSocketChannel ch : connections) {
+//            server.userdata(ch, this);
+//        }
     }
 
     public Set<WebSocketChannel> getConnections() {

@@ -1063,14 +1063,20 @@ window.App = (function () {
                         alert.show("Too many sessions open, try closing some tabs.");
                     });
                     socket.on("userinfo", function (data) {
+                        var banmsg = '';
                         self.elements.userInfo.find("span.name").text(data.name);
                         self.elements.userInfo.fadeIn(200);
                         self.role = data.role;
                         
-                        if (!data.banned) {
-                            self.elements.loginOverlay.hide();
+                        if (self.role == "BANNED") {
+                            banmsg = "You are permanently banned from placing pixels. If you think this is wrong, please check by by with us.";
+                        } else if (data.banned) {
+                            banmsg = "You are banned from placing pixels. Your ban will expire on " + new Date(data.banExpiry).toLocaleString() + ".";
+                        }
+                        if (banmsg) {
+                            self.elements.loginOverlay.text(banmsg).fadeIn(200);
                         } else {
-                            self.elements.loginOverlay.text("You are banned from placing pixels. Your ban will expire on " + new Date(data.banExpiry).toLocaleString() + ".");
+                            self.elements.loginOverlay.hide();
                         }
                     });
                 }

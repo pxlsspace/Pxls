@@ -21,9 +21,15 @@ public class PacketHandler {
         this.server = server;
     }
 
-    public void connect(WebSocketChannel channel, User user) {
+    public void userdata(WebSocketChannel channel, User user) {
         if (user != null) {
             server.send(channel, new Packet.ServerUserInfo(user.getName(), user.isBanned(), user.getRole().name() == "SHADOWBANNED" ? "USER" : user.getRole().name(), user.isBanned() ? user.getBanExpiryTime() : null));
+        }
+    }
+
+    public void connect(WebSocketChannel channel, User user) {
+        if (user != null) {
+            userdata(channel, user);
             sendCooldownData(channel, user);
             user.flagForCaptcha();
         }
