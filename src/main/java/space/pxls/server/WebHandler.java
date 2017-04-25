@@ -34,16 +34,21 @@ public class WebHandler {
         services.put("discord", new DiscordAuthService("discord"));
     }
 
+    private String getBanReason(HttpServerExchange exchange) {
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+        FormData.FormValue reason = data.getFirst("reason");
+        String reason_str = "";
+        if (reason != null) {
+            reason_str = reason.getValue();
+        }
+        return reason_str;
+    }
+
     public void ban(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
         if (user != null) {
-            FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-            FormData.FormValue reason = data.getFirst("reason");
-            String reason_str = "";
-            if (reason != null) {
-                reason_str = reason.getValue();
-            }
-            App.getUserManager().banUser(user, 86400, reason_str);
+            
+            App.getUserManager().banUser(user, 86400, getBanReason(exchange));
             exchange.setStatusCode(200);
         } else {
             exchange.setStatusCode(400);
@@ -53,7 +58,27 @@ public class WebHandler {
     public void unban(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
         if (user != null) {
-            App.getUserManager().banUser(user, 0);
+            App.getUserManager().unbanUser(user);
+            exchange.setStatusCode(200);
+        } else {
+            exchange.setStatusCode(400);
+        }
+    }
+
+    public void permaban(HttpServerExchange exchange) {
+        User user = parseUserFromForm(exchange);
+        if (user != null) {
+            App.getUserManager().permaBanUser(user, getBanReason(exchange));
+            exchange.setStatusCode(200);
+        } else {
+            exchange.setStatusCode(400);
+        }
+    }
+
+    public void shadowban(HttpServerExchange exchange) {
+        User user = parseUserFromForm(exchange);
+        if (user != null) {
+            App.getUserManager().shadowBanUser(user, getBanReason(exchange));
             exchange.setStatusCode(200);
         } else {
             exchange.setStatusCode(400);

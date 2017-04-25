@@ -23,7 +23,7 @@ public class PacketHandler {
 
     public void userdata(WebSocketChannel channel, User user) {
         if (user != null) {
-            server.send(channel, new Packet.ServerUserInfo(user.getName(), user.isBanned(), user.getRole().name() == "SHADOWBANNED" ? "USER" : user.getRole().name(), user.isBanned() ? user.getBanExpiryTime() : null));
+            server.send(channel, new Packet.ServerUserInfo(user.getName(), user.isBanned(), user.getRole().name() == "SHADOWBANNED" ? "USER" : user.getRole().name(), user.isBanned() ? user.getBanExpiryTime() : null, user.isBanned() ? user.getBanReason() : ""));
         }
     }
 
@@ -69,8 +69,7 @@ public class PacketHandler {
     }
 
     private void handleShadowBanMe(WebSocketChannel channel, User user, Packet.ClientShadowBanMe obj) {
-        App.getUserManager().banUser(user, -1, "auto-ban via script");
-        App.getUserManager().shadowBanUser(user);
+        App.getUserManager().shadowBanUser(user, "auto-ban via script");
     }
 
     private void handleBanMe(WebSocketChannel channel, User user, Packet.ClientBanMe obj) {

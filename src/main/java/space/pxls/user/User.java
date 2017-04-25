@@ -40,7 +40,7 @@ public class User {
 
     public boolean canPlace() {
         if (role.greaterEqual(Role.MODERATOR) && overrideCooldown) return true;
-        if (!role.greaterEqual(Role.USER) && role != Role.SHADOWBANNED) return false; // shadowbanned seems to be able to be able to place
+        if (!role.greaterEqual(Role.USER) && role != Role.SHADOWBANNED) return false; // shadowbanned seems to be able to place
         int serverCooldown = (int) App.getConfig().getDuration("cooldown", TimeUnit.SECONDS);
         return lastPlaceTime + serverCooldown * 1000 < System.currentTimeMillis();
     }
@@ -86,9 +86,11 @@ public class User {
 
     public void setRole(Role role) {
         this.role = role;
-//        for (WebSocketChannel ch : connections) {
-//            server.userdata(ch, this);
-//        }
+        if (role != Role.SHADOWBANNED) {
+            for (WebSocketChannel ch : connections) {
+                App.getServer().getPacketHandler().userdata(ch, this);
+            }
+        }
     }
 
     public String getBanReason() {
@@ -134,9 +136,11 @@ public class User {
 
     public void setBanExpiryTime(long banExpiryTime) {
         this.banExpiryTime = banExpiryTime;
-//        for (WebSocketChannel ch : connections) {
-//            server.userdata(ch, this);
-//        }
+        if (role != Role.SHADOWBANNED) {
+            for (WebSocketChannel ch : connections) {
+                App.getServer().getPacketHandler().userdata(ch, this);
+            }
+        }
     }
 
     public Set<WebSocketChannel> getConnections() {

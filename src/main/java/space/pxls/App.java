@@ -107,7 +107,7 @@ public class App {
             } else if (token[0].equalsIgnoreCase("unban")) {
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
-                    userManager.banUser(user, 0);
+                    userManager.unbanUser(user);
                     System.out.println("Unbanned " + user.getName() + ".");
                 } else {
                     System.out.println("Cannot find user " + token[1]);
@@ -222,5 +222,9 @@ public class App {
 
     public static Database getDatabase() {
         return database;
+    }
+
+    public static UndertowServer getServer() {
+        return server;
     }
 }

@@ -47,8 +47,10 @@ public class UndertowServer {
                 .addPrefixPath("/signin", webHandler::signIn)
                 .addPrefixPath("/auth", new RateLimitingHandler(webHandler::auth, (int) App.getConfig().getDuration("server.limits.auth.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.auth.count")))
                 .addPrefixPath("/signup/do", new RateLimitingHandler(webHandler::signUp, (int) App.getConfig().getDuration("server.limits.signup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.signup.count")))
-                .addPrefixPath("/admin/ban", new RoleGate(Role.ADMIN, webHandler::ban))
-                .addPrefixPath("/admin/unban", new RoleGate(Role.ADMIN, webHandler::unban))
+                .addPrefixPath("/admin/ban", new RoleGate(Role.MODERATOR, webHandler::ban))
+                .addPrefixPath("/admin/unban", new RoleGate(Role.MODERATOR, webHandler::unban))
+                .addPrefixPath("/admin/permaban", new RoleGate(Role.MODERATOR, webHandler::permaban))
+                .addPrefixPath("/admin/shadowban", new RoleGate(Role.ADMIN, webHandler::shadowban))
                 .addPrefixPath("/admin/check", new RoleGate(Role.MODERATOR, webHandler::check))
                 .addPrefixPath("/admin", new RoleGate(Role.MODERATOR, Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/"))
                         .setCacheTime(10)))
@@ -130,5 +132,9 @@ public class UndertowServer {
 
     private void sendRaw(WebSocketChannel channel, String str) {
         WebSockets.sendText(str, channel, null);
+    }
+
+    public PacketHandler getPacketHandler() {
+        return socketHandler;
     }
 }

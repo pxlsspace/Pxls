@@ -108,12 +108,14 @@ public class Packet {
         boolean banned;
 
         Long banExpiry;
+        String ban_reason;
 
-        public ServerUserInfo(String name, boolean banned, String role, Long banExpiry) {
+        public ServerUserInfo(String name, boolean banned, String role, Long banExpiry, String ban_reason) {
             this.name = name;
             this.banned = banned;
             this.role = role;
             this.banExpiry = banExpiry;
+            this.ban_reason = ban_reason;
         }
     }
 

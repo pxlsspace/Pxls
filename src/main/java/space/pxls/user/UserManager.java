@@ -79,9 +79,14 @@ public class UserManager {
         usersByToken.remove(value);
     }
 
-    public void shadowBanUser(User user) {
+    public void shadowBanUser(User user, String reason) {
+        App.getDatabase().updateBanReason(user, reason);
         App.getDatabase().setUserRole(user, Role.SHADOWBANNED);
         user.setRole(Role.SHADOWBANNED);
+    }
+
+    public void shadowBanUser(User user) {
+        shadowBanUser(user, "");
     }
 
     public void banUser(User user, long timeFromNowSeconds, String reason) {
@@ -91,5 +96,16 @@ public class UserManager {
 
     public void banUser(User user, long timeFromNowSeconds) {
         banUser(user, timeFromNowSeconds, "");
+    }
+
+    public void unbanUser(User user) {
+        banUser(user, 0);
+        user.setRole(Role.USER);
+    }
+
+    public void permaBanUser(User user, String reason) {
+        App.getDatabase().updateBanReason(user, reason);
+        App.getDatabase().setUserRole(user, Role.BANNED);
+        user.setRole(Role.BANNED);
     }
 }

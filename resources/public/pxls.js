@@ -147,6 +147,11 @@ window.App = (function () {
                         return new ws(a, b);
                     };
                     
+                    // don't even try to generate mouse events. I am being nice
+                    window.MouseEvent = function() {
+                        self.me();
+                    };
+                    
                     // listen to script insertions
                     $(window).on("DOMNodeInserted", function (evt) {
                         if (evt.target.nodeName != "SCRIPT") {
@@ -1071,9 +1076,21 @@ window.App = (function () {
                         self.role = data.role;
                         
                         if (self.role == "BANNED") {
-                            banmsg = "You are permanently banned from placing pixels. If you think this is wrong, please check by by with us.";
+                            banmsg = "You are permanently banned from placing pixels. Reason: "+data.ban_reason+". If you think this is wrong, please check it with us.";
                         } else if (data.banned) {
-                            banmsg = "You are banned from placing pixels. Your ban will expire on " + new Date(data.banExpiry).toLocaleString() + ".";
+                            banmsg = "You are banned from placing pixels. Reason: "+data.ban_reason+". Your ban will expire on " + new Date(data.banExpiry).toLocaleString() + ".";
+                        } else if (["MODERATOR", "ADMIN"].indexOf(self.role) != -1) {
+                            $.getScript("admin/admin.js").done(function () {
+                                initAdmin({
+                                    board: board,
+                                    socket: socket,
+                                    user: user,
+                                    place: place,
+                                    alert: alert
+                                });
+                            });
+                        } else if (window.deInitAdmin) {
+                            deInitAdmin();
                         }
                         if (banmsg) {
                             self.elements.loginOverlay.text(banmsg).fadeIn(200);
@@ -1149,15 +1166,6 @@ window.App = (function () {
     // and here we finally go...
     board.start();
     
-    $.getScript("admin/admin.js").done(function () {
-        initAdmin({
-            board: board,
-            socket: socket,
-            user: user,
-            place: place,
-            alert: alert
-        });
-    });
     
     return {
         ls: ls,

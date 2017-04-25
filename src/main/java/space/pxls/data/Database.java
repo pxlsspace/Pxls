@@ -74,6 +74,10 @@ public class Database implements Closeable {
         handle.updateUserBan(user.getId(), timeFromNowSeconds, reason);
     }
 
+    public void updateBanReason(User user, String reason) {
+        handle.updateUserBanReason(user.getId(), reason);
+    }
+
     public void updateUserIP(User user, String ip) {
         handle.updateUserIP(user.getId(), ip);
     }

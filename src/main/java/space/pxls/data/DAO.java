@@ -47,6 +47,9 @@ public interface DAO extends Closeable {
     @SqlUpdate("UPDATE users SET ban_expiry = now() + INTERVAL :expiry SECOND, ban_reason = :ban_reason WHERE id = :id")
     void updateUserBan(@Bind("id") int id, @Bind("expiry") long expiryFromNow, @Bind("ban_reason") String reason);
 
+    @SqlUpdate("UPDATE users SET ban_reason = :ban_reason WHERE id = :id")
+    void updateUserBanReason(@Bind("id") int id, @Bind("ban_reason") String reason);
+
     @SqlUpdate("UPDATE users SET last_ip = INET6_ATON(:ip) WHERE id = :id")
     void updateUserIP(@Bind("id") int id, @Bind("ip") String ip);
 
