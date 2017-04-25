@@ -325,7 +325,7 @@ a, a:hover, a:visited, a:active {
     display: block;
 }
 
-.pixelate {
+.noselect {
     /* don't allow selecting them */
     -webkit-touch-callout:none;
     -webkit-user-select:none;
@@ -334,7 +334,9 @@ a, a:hover, a:visited, a:active {
     -ms-user-select:none;
     -o-user-select:none;
     user-select:none;
+}
 
+.pixelate {
     /* and actually pixelate them */
     image-rendering: optimizeSpeed; /* Legal fallback */
     -ms-interpolation-mode: nearest-neighbor;

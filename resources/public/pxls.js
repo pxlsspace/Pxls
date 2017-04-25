@@ -447,13 +447,6 @@ window.App = (function () {
                         $.get("/boarddata", self.draw);
                         if (self.use_js_render) {
                             $(window).resize(function () {
-                                var ctx2 = self.elements.board_render[0].getContext("2d");
-                                ctx2.canvas.width = window.innerWidth;
-                                ctx2.canvas.height = window.innerHeight;
-                                ctx2.mozImageSmoothingEnabled = false;
-                                ctx2.webkitImageSmoothingEnabled = false;
-                                ctx2.msImageSmoothingEnabled = false;
-                                ctx2.imageSmoothingEnabled = false;
                                 self.update();
                             }).resize();
                         } else {
@@ -482,6 +475,10 @@ window.App = (function () {
                         var ctx2 = self.elements.board_render[0].getContext("2d"),
                             pxl_x = -self.pan.x + ((self.width - (window.innerWidth / self.scale)) / 2),
                             pxl_y = -self.pan.y + ((self.height - (window.innerHeight / self.scale)) / 2);
+                        
+                        ctx2.canvas.width = window.innerWidth;
+                        ctx2.canvas.height = window.innerHeight;
+                        ctx2.mozImageSmoothingEnabled = ctx2.webkitImageSmoothingEnabled = ctx2.msImageSmoothingEnabled = ctx2.imageSmoothingEnabled = (self.scale < 1);
 
                         ctx2.globalAlpha = 1;
                         ctx2.fillStyle = '#CCCCCC';
@@ -496,6 +493,11 @@ window.App = (function () {
                     }
                     if (optional) {
                         return false;
+                    }
+                    if (self.scale < 1) {
+                        self.elements.board.removeClass("pixelate");
+                    } else {
+                        self.elements.board.addClass("pixelate");
                     }
                     self.elements.mover.css({
                         width: self.width,
@@ -625,7 +627,7 @@ window.App = (function () {
                     }
                     self.t.use = true;
 
-                    self.elements.template = $("<img>").addClass("board-template pixelate").attr({
+                    self.elements.template = $("<img>").addClass("board-template noselect pixelate").attr({
                         src: self.t.url,
                         alt: "template"
                     }).css({
