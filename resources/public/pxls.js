@@ -1080,6 +1080,9 @@ window.App = (function () {
                         } else if (data.banned) {
                             banmsg = "You are banned from placing pixels. Reason: "+data.ban_reason+". Your ban will expire on " + new Date(data.banExpiry).toLocaleString() + ".";
                         } else if (["MODERATOR", "ADMIN"].indexOf(self.role) != -1) {
+                            if (window.deInitAdmin) {
+                                window.deInitAdmin();
+                            }
                             $.getScript("admin/admin.js").done(function () {
                                 initAdmin({
                                     board: board,

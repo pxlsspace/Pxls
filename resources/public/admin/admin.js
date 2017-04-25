@@ -75,6 +75,11 @@ var lookupPanelHTML = "<div class=\'admin-lookup\'>\n    <div><b>Coords: </b><sp
                 )
             ));
         },
+        checkUser = function (username) {
+            $.post("/admin/check", {username: username}, checkUserCallback).fail(function () {
+                admin.alert.show("User not found");
+            });
+        },
         modPanel = function () {
             return $("<div>").addClass("admin panel").append(
                 $("<h1>").text("MOD"),
@@ -97,11 +102,7 @@ var lookupPanelHTML = "<div class=\'admin-lookup\'>\n    <div><b>Coords: </b><sp
                         );
                     }], ["Unban user", function (username) {
                         $.post("/admin/unban", {username: unbanInput.val()});
-                    }], ["Check user", function (username) {
-                        $.post("/admin/check", {username: username}, checkUserCallback).fail(function () {
-                            admin.alert.show("User not found");
-                        });
-                    }]], function (o) {
+                    }], ["Check user", checkUser]], function (o) {
                         return $("<input>").attr({
                             type: "text",
                             placeholder: o[0]
@@ -175,6 +176,11 @@ var lookupPanelHTML = "<div class=\'admin-lookup\'>\n    <div><b>Coords: </b><sp
                             username: lookupPaneUser.u.username,
                             reason: prompt("Ban reason")
                         });
+                        lookupPaneElements.pane.fadeOut(200);
+                        lookupPaneUser.u = null;
+                    }),
+                    $("<div>").addClass("button").text("More...").click(function () {
+                        checkUser(lookupPaneUser.u.username);
                         lookupPaneElements.pane.fadeOut(200);
                         lookupPaneUser.u = null;
                     }),
