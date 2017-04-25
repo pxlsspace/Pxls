@@ -100,26 +100,67 @@ window.App = (function () {
         // this object is used to access the query parameters (and in the future probably to set them), it is prefered to use # now instead of ? as JS can change them
         query = (function() {
             var self = {
-                search: function(variable, str) {
-                    var vars = str.split('&');
+                params: {},
+                init: function () {
+                    if (ss.get("url_params")) {
+                        window.location.hash = ss.get("url_params");
+                        ss.remove("url_params");
+                    }
+                    var s = window.location.hash.substring(1)+"&"+window.location.search.substring(1),
+                        vars = s.split("&");
                     for (var i = 0; i < vars.length; i++) {
-                        var pair = vars[i].split('=');
-                        if (decodeURIComponent(pair[0]) === variable) {
-                            return decodeURIComponent(pair[1]);
+                        if (vars[i]) {
+                            var pair = vars[i].split('='),
+                                n = decodeURIComponent(pair[0]),
+                                v = decodeURIComponent(pair[1]) || null;
+                            if (!self.params.hasOwnProperty(n)) {
+                                self.params[n] = v;
+                            }
                         }
                     }
-                    return undefined;
                 },
-                get: function(variable) {
-                    var v = self.search(variable, window.location.hash.substring(1));
-                    if (v !== undefined) {
-                        return v;
+                update: function () {
+                    var params = [];
+                    for (var p in self.params) {
+                        if (self.params.hasOwnProperty(p)) {
+                            var s = encodeURIComponent(p);
+                            if (self.params[p] !== null) {
+                                s += "="+encodeURIComponent(self.params[p]);
+                            }
+                            params.push(s);
+                        }
                     }
-                    return self.search(variable, window.location.search.substring(1));
+                    window.location.hash = params.join("&");
+                },
+                set: function (n, v) {
+                    self.params[n] = v.toString();
+                    self.lazy_update();
+                },
+                get: function (n) {
+                    return self.params[n];
+                },
+                remove: function (n) {
+                    delete self.params[n];
+                    self.lazy_update();
+                },
+                timer: null,
+                lazy_update: function () {
+                    if (self.timer !== null) {
+                        clearTimeout(self.timer);
+                    }
+                    self.timer = setTimeout(function () {
+                        self.timer = null;
+                        self.update();
+                    }, 200);
                 }
             };
             return {
-                get: self.get
+                init: self.init,
+                get: self.get,
+                set: self.set,
+                update: self.update,
+                remove: self.remove,
+                lazy_update: self.lazy_update
             };
         })(),
         // this object is responsible for detecting pxls placement and banning them
@@ -138,7 +179,6 @@ window.App = (function () {
                 init: function() {
                     setInterval(self.update, 5000);
                     window.clearInterval = function () {};
-                    window.clearTimeout = function () {};
                     
                     // don't allow new websocket connections
                     var ws = window.WebSocket;
@@ -476,6 +516,9 @@ window.App = (function () {
                 update: function (optional) {
                     self.pan.x = Math.min(self.width / 2, Math.max(-self.width / 2, self.pan.x));
                     self.pan.y = Math.min(self.height / 2, Math.max(-self.height / 2, self.pan.y));
+                    query.set("x", Math.round((self.width / 2) - self.pan.x));
+                    query.set("y", Math.round((self.height / 2) - self.pan.y));
+                    query.set("scale", self.scale);
                     if (self.use_js_render) {
                         var ctx2 = self.elements.board_render[0].getContext("2d"),
                             pxl_x = -self.pan.x + ((self.width - (window.innerWidth / self.scale)) / 2),
@@ -626,6 +669,21 @@ window.App = (function () {
                     width: -1,
                     opacity: 0.5
                 },
+                update_query: function () {
+                    $.map([
+                        ["template", "url", ""],
+                        ["ox", "x", 0],
+                        ["oy", "y", 0],
+                        ["oo", "opacity", 0.5],
+                        ["tw", "width", -1]
+                    ], function (o) {
+                        if (self.t[o[1]] == o[2]) {
+                            query.remove(o[0]);
+                        } else {
+                            query.set(o[0], self.t[o[1]]);
+                        }
+                    });
+                },
                 lazy_init: function () {
                     if (self.t.use) { // already inited
                         return;
@@ -655,11 +713,15 @@ window.App = (function () {
                             self.t.width = t.width || -1;
                             self.t.url = t.url || '';
                             self.lazy_init();
+                            self.update_query();
                         } else {
                             self.t.use = false;
                             self.elements.template.remove();
                             self.elements.template = null;
                             board.update(true);
+                            $.map(["template", "ox", "oy", "oo", "tw"], function (o) {
+                                query.remove(o);
+                            });
                         }
                         return;
                     }
@@ -679,7 +741,7 @@ window.App = (function () {
                     if (t.width === -1) {
                         self.elements.template.css('width', 'auto');
                     }
-                    
+                    self.update_query();
                     board.update(true);
                 },
                 draw: function (ctx2, pxl_x, pxl_y) {
@@ -1141,10 +1203,6 @@ window.App = (function () {
             }
         })();
     // init progress
-    if (ss.get("url_params")) {
-        window.location.hash = ss.get("url_params");
-        ss.remove("url_params");
-    }
     $(".login-overlay a").click(function (evt) {
         var hash = window.location.hash.substring(1),
             search = window.location.search.substring(1),
@@ -1156,6 +1214,7 @@ window.App = (function () {
         }
         ss.set('url_params',  url);
     });
+    query.init();
     board.init();
     ban.init();
     grid.init();
@@ -1173,6 +1232,7 @@ window.App = (function () {
     return {
         ls: ls,
         ss: ss,
+        query: query,
         updateTemplate: function(t) {
             template.update(t);
         },

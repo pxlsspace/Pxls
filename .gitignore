@@ -2,4 +2,8 @@
 .idea/
 target/
 run/
+logs/
+backups/
+board.dat
+pxls.conf
 TODO
