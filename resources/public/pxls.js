@@ -130,7 +130,11 @@ window.App = (function () {
                             params.push(s);
                         }
                     }
-                    window.location.hash = params.join("&");
+                    if (window.history.replaceState) {
+                        window.history.replaceState(null, null, '#' + params.join("&"));
+                    } else {
+                        window.location.hash = params.join("&");
+                    }
                 },
                 set: function (n, v) {
                     self.params[n] = v.toString();
