@@ -64,54 +64,69 @@
     </div>
 </div>
 
-<div class="info">
-    <div>
-        <h1>Information</h1>
-        <a href="https://reddit.com/r/pxlsspace" target="_blank">Subreddit</a>
-        <a href="https://discord.gg/pxls" target="_blank">Discord</a>
-        <a href="https://twitter.com/pxls_space" target="_blank">Twitter</a>
-        <a href="https://kms-hosting.com/" target="_blank">Sponsored by kms-hosting</a>
-    </div>
-    <div>
+<div class="info drawer">
+    <div class="drawer-content">
         <div>
-            <h1>Controls</h1>
-            <p>Mouse/arrows to pan</p>
-            <p>Scroll to zoom</p>
-            <p>G to toggle grid</p>
-            <p>I to toggle info</p>
-            <p>P to take a snapshot</p>
+            <h1>Information</h1>
+            <a href="https://reddit.com/r/pxlsspace" target="_blank">Subreddit</a>
+            <a href="https://discord.gg/pxls" target="_blank">Discord</a>
+            <a href="https://twitter.com/pxls_space" target="_blank">Twitter</a>
+            <a href="https://kms-hosting.com/" target="_blank">Sponsored by kms-hosting</a>
+        </div>
+        <div>
+            <div>
+                <h1>Controls</h1>
+                <p>Mouse/arrows to pan</p>
+                <p>Scroll to zoom</p>
+                <p>G to toggle grid</p>
+                <p>I to toggle info</p>
+                <p>T to toggle grid control</p>
+                <p>P to take a snapshot</p>
+            </div>
+        </div>
+        <div>
+            <h1>Donate</h1>
+            <p>Everything is greatly appreciated!</p>
+            <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
+                <input type="hidden" name="cmd" value="_s-xclick">
+                <input type="hidden" name="hosted_button_id" value="KWYD7GZPZGXPU">
+                <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0"
+                       name="submit" alt="PayPal - The safer, easier way to pay online!">
+                <img alt="" border="0" src="https://www.paypalobjects.com/da_DK/i/scr/pixel.gif" width="1" height="1">
+            </form>
+            <div id="coinwidget-bitcoin-1H8tA9gjWT23edDAUTY1dY6C8Hd3j7n2zk"></div>
+        </div>
+        <div>
+            <iframe class='gfm-media-widget' image='0' coinfo='0' width='100%' height='100%' frameborder='0'
+                    id='pxlsspace-collaborative-canvas'></iframe>
+            <script src='//funds.gofundme.com/js/5.0/media-widget.js'></script>
+        </div>
+        <div style="float: right;">
+            <h1>Settings</h1>
+            <div>
+                <input id="audiotoggle" name="audiotoggle" type="checkbox"/>
+                <label for="audiotoggle">Turn off sounds</label>
+            </div>
         </div>
     </div>
-    <div>
-        <h1>Donate</h1>
-        <p>Everything is greatly appreciated!</p>
-        <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
-            <input type="hidden" name="cmd" value="_s-xclick">
-            <input type="hidden" name="hosted_button_id" value="KWYD7GZPZGXPU">
-            <input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" border="0"
-                   name="submit" alt="PayPal - The safer, easier way to pay online!">
-            <img alt="" border="0" src="https://www.paypalobjects.com/da_DK/i/scr/pixel.gif" width="1" height="1">
-        </form>
-        <div id="coinwidget-bitcoin-1H8tA9gjWT23edDAUTY1dY6C8Hd3j7n2zk"></div>
-    </div>
-    <div>
-        <iframe class='gfm-media-widget' image='0' coinfo='0' width='100%' height='100%' frameborder='0'
-                id='pxlsspace-collaborative-canvas'></iframe>
-        <script src='//funds.gofundme.com/js/5.0/media-widget.js'></script>
-    </div>
-    <div style="float: right;">
-        <h1>Settings</h1>
-        <div>
-            <input id="audiotoggle" name="audiotoggle" type="checkbox"/>
-            <label for="audiotoggle">Turn off sounds</label>
-        </div>
-    </div>
-
     <div class="open">info</div>
 </div>
 
+<div class="template-control drawer">
+    <div class="drawer-content">
+        <div>
+            <h1>Template control</h1>
+            <p>Hold down ctrl to drag the template around</p>
+            <p><label>Use template: <input type="checkbox" class="template-use"></label></p>
+            <p><label>URL: <input type="text" class="template-url"></label></p>
+            <p><label>Opacity: <input type="range" min="0" max="1" step="0.01" class="template-opacity"></label></p>
+        </div>
+    </div>
+    <div class="open">template</div>
+</div>
+
 <div class="ui" id="ui">
-    <div>
+    <div class="ui-bar">
         <div class="login-overlay">
             You are not signed in. Sign in with <a href="/signin/reddit">Reddit</a> | <a
                 href="/signin/google">Google</a> | <a href="/signin/discord">Discord</a>.

@@ -694,6 +694,10 @@ window.App = (function () {
                     }
                     self.t.use = true;
 
+                    var drag = {
+                            x: 0,
+                            y: 0
+                        };
                     self.elements.template = $("<img>").addClass("board-template noselect pixelate").attr({
                         src: self.t.url,
                         alt: "template"
@@ -702,20 +706,61 @@ window.App = (function () {
                         left: self.t.x,
                         opacity: self.t.opacity,
                         width: self.t.width === -1 ? 'auto' : self.t.width
+                    }).data("dragging", false).mousedown(function (evt) {
+                        evt.preventDefault();
+                        $(this).data("dragging", true);
+                        drag.x = evt.clientX;
+                        drag.y = evt.clientY;
+                        evt.stopPropagation();
+                    }).mouseup(function (evt) {
+                        evt.preventDefault();
+                        $(this).data("dragging", false);
+                        evt.stopPropagation();
+                    }).mousemove(function (evt) {
+                        evt.preventDefault();
+                        if ($(this).data("dragging")) {
+                            var px_old = board.fromScreen(drag.x, drag.y),
+                                px_new = board.fromScreen(evt.clientX, evt.clientY),
+                                dx = (px_new.x | 0) - (px_old.x | 0),
+                                dy = (px_new.y | 0) - (px_old.y | 0);
+                            self.update({
+                                x: self.t.x + dx,
+                                y: self.t.y + dy
+                            });
+                            if (dx != 0) {
+                                drag.x = evt.clientX;
+                            }
+                            if (dy != 0) {
+                                drag.y = evt.clientY;
+                            }
+                        }
                     });
                     if (board.update(true)) {
                         return;
                     }
                     board.getRenderBoard().parent().prepend(self.elements.template);
                 },
+                update_drawer: function () {
+                    $(".template-use")[0].checked = self.t.use;
+                    $(".template-url").val(self.t.url);
+                    $(".template-opacity").val(self.t.opacity);
+                },
                 update: function (t) {
                     if (t.hasOwnProperty('use') && t.use !== self.t.use) {
                         if (t.use) {
-                            self.t.x = t.x || 0;
-                            self.t.y = t.y || 0;
-                            self.t.opacity = t.opacity || 0.5;
-                            self.t.width = t.width || -1;
-                            self.t.url = t.url || '';
+                            if (t.hasOwnProperty("url")) {
+                                self.t.x = t.x || 0;
+                                self.t.y = t.y || 0;
+                                self.t.opacity = t.opacity || 0.5;
+                                self.t.width = t.width || -1;
+                                self.t.url = t.url || '';
+                            } else {
+                                $.map(['x', 'y', 'opacity', 'width', 'url'], function (e) {
+                                    if (t.hasOwnProperty(e)) {
+                                        self.t[e] = t[e];
+                                    }
+                                });
+                            }
                             self.lazy_init();
                             self.update_query();
                         } else {
@@ -727,11 +772,14 @@ window.App = (function () {
                                 query.remove(o);
                             });
                         }
+                        self.update_drawer();
                         return;
                     }
                     if (t.hasOwnProperty('url')) {
                         self.t.url = t.url;
-                        self.elements.template.attr('src', t.url);
+                        if (self.t.use) {
+                            self.elements.template.attr('src', t.url);
+                        }
                         if (!t.hasOwnProperty('width')) {
                             t.width = -1; // reset just in case
                         }
@@ -739,13 +787,18 @@ window.App = (function () {
                     $.map([['x', 'left'], ['y', 'top'], ['opacity', 'opacity'], ['width', 'width']], function (e) {
                         if (t.hasOwnProperty(e[0])) {
                             self.t[e[0]] = t[e[0]];
-                            self.elements.template.css(e[1], t[e[0]]);
+                            if (self.t.use) {
+                                self.elements.template.css(e[1], t[e[0]]);
+                            }
                         }
                     });
-                    if (t.width === -1) {
-                        self.elements.template.css('width', 'auto');
+                    if (self.t.use) {
+                        if (t.width === -1) {
+                            self.elements.template.css('width', 'auto');
+                        }
                     }
                     self.update_query();
+                    self.update_drawer();
                     board.update(true);
                 },
                 draw: function (ctx2, pxl_x, pxl_y) {
@@ -761,11 +814,38 @@ window.App = (function () {
                     }
                     ctx2.globalAlpha = self.t.opacity;
                     ctx2.drawImage(self.elements.template[0], (self.t.x - pxl_x) * scale, (self.t.y - pxl_y) * scale, width * scale, height * scale);
+                },
+                init: function () {
+                    drawer.create(".template-control", 84, "template_open", false);
+                    $(".template-use").change(function () {
+                        self.update({use: this.checked});
+                    });
+                    $(".template-url").change(function () {
+                        self.update({url: this.value});
+                    }).keydown(function (evt) {
+                        if (evt.which === 13) {
+                            $(this).change();
+                        }
+                        evt.stopPropagation();
+                    });
+                    $(".template-opacity").change(function () {
+                        self.update({opacity: parseFloat(this.value)});
+                    });
+                    $(window).keydown(function (evt) {
+                        if (evt.ctrlKey && self.t.use) {
+                            self.elements.template.css("pointer-events", "initial");
+                        }
+                    }).keyup(function (evt) {
+                        if (self.t.use) {
+                            self.elements.template.css("pointer-events", "none").data("dragging", false);
+                        }
+                    });
                 }
             };
             return {
                 update: self.update,
-                draw: self.draw
+                draw: self.draw,
+                init: self.init
             };
         })(),
         // here all the grid stuff happens
@@ -959,23 +1039,35 @@ window.App = (function () {
                 setAutoReset: self.setAutoReset
             };
         })(),
+        // helper object for drawers
+        drawer = (function() {
+            var self = {
+                create: function (html_class, keycode, localstorage, open) {
+                    var elem = $(html_class);
+                    $(html_class+" .open").click(function () {
+                        elem.toggleClass("open");
+                        ls.set(localstorage, elem.hasClass("open") ^ open);
+                    });
+                    if (ls.get(localstorage) ^ open) {
+                        elem.addClass("open");
+                    }
+                    $(document.body).keydown(function (evt) {
+                        if (evt.keyCode === keycode) {
+                            elem.toggleClass("open");
+                            ls.set(localstorage, elem.hasClass("open") ^ open);
+                        }
+                    });
+                }
+            };
+            return {
+                create: self.create
+            };
+        })(),
         // this takes care of the info slidedown and some settings (audio)
         info = (function() {
             var self = {
                 init: function () {
-                    $("div.open").click(function () {
-                        $(".info").toggleClass("open");
-                        ls.set('info_closed', !$(".info").hasClass("open"));
-                    });
-                    if (!ls.get('info_closed')) {
-                        $(".info").addClass("open");
-                    }
-                    $(document.body).keydown(function (evt) {
-                        if (evt.keyCode === 73) {
-                            $(".info").toggleClass("open");
-                            ls.set('info_closed', !$(".info").hasClass("open"));
-                        }
-                    });
+                    drawer.create(".info", 73, "info_closed", true);
                     $("#audiotoggle")[0].checked = ls.get("audio_muted");
                     $("#audiotoggle").change(function () {
                         ls.set("audio_muted", $(this).is(":checked"));
@@ -1220,6 +1312,7 @@ window.App = (function () {
     });
     query.init();
     board.init();
+    template.init();
     ban.init();
     grid.init();
     place.init();

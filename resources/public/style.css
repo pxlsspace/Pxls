@@ -1,3 +1,20 @@
+/*
+z-index:
+ 0 - canvas
+ 1 - grid
+ 2 - reticule
+ 3 - template
+ 4 - drawer openers
+ 5 - drawer
+ 6 - palette
+ 7 - timer
+ 8 - login overlay
+ 9 - ui blobs
+10 - admin boxes
+
+99 - alert box
+*/
+
 /*//////////////////////////*\
 | General Styles
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
@@ -85,79 +102,102 @@ a, a:hover, a:visited, a:active {
 }
 
 /*//////////////////////////*\
-| Info Drawer
+| Info / Template Drawer
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
-.info {
+.drawer {
     position: fixed;
     left: 0;
     width: 100%;
-    background: #333;
-    padding: 20px;
+    padding: 0;
+    margin: 0;
+    z-index: 5;
 
     transform: translateY(-100%);
     transition: transform 0.3s ease-in-out;
 }
 
-.info.open {
+.drawer-content {
+    transform: translateZ(+1em);
+    transform-style: preserve-3d;
+    margin: 0;
+    padding: 20px;
+    width: 100%;
+    background: #333;
+}
+
+.drawer.open {
     transform: translateY(0);
 }
 
-.info > .open {
+.drawer > .open {
     position: fixed;
+    transform: translateZ(-1em);
+    transform-style: preserve-3d;
+    z-index: 4;
     top: 100%;
-    left: 0;
     background: #333;
     padding: 10px;
-    width: 50px;
+    margin: 0;
     text-align: center;
     cursor: pointer;
     font-weight: 700;
+}
+
+.info > .open {
+    left: 0;
+    width: 50px;
     border-radius: 0 0 5px 0;
 }
 
-.info div {
+.template-control > .open {
+    right: 0;
+    width: 100px;
+    border-radius: 0 0 0 5px;
+}
+
+.drawer div {
     display: inline-block;
     color: #fff;
     vertical-align: top;
 }
 
-.info > div {
+.drawer-content > div {
     margin-right: 30px;
 }
 
-.info > div h1 {
+.drawer-content > div h1 {
     margin: 0 0 10px 0;
     font-size: 25px;
 }
 
-.info > div p,
-.info > div a {
+.drawer-content > div p,
+.drawer-content > div a {
     margin-top: 0;
     margin-bottom: 0;
     display: block;
 }
 
-.info > div > div {
+.drawer-content > div > div {
     margin-right: 20px;
 }
 
-.info div > * {
+.drawer-content div > * {
     margin-left: 1px;
 }
 
-.info form {
+.drawer-content form {
     margin-top: 10px;
     display: inline-block;
 }
 
-.info div[id*="bitcoin"] {
+.info .drawer-content div[id*="bitcoin"] {
     margin-top: 7px;
     margin-left: 10px;
     display: inline-block;
 }
 
-.info div[id*="bitcoin"] a {
+.info .drawer-content div[id*="bitcoin"] a {
     display: inline-block;
 }
 
@@ -165,12 +205,9 @@ a, a:hover, a:visited, a:active {
 | UI
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
-.ui {
-    z-index: 99;
-}
-
-.ui > div:first-child {
+.ui-bar {
     position: fixed;
+    z-index: 6;
     bottom: 0;
     width: 100%;
     background-color: rgba(255, 255, 255, 0.8);
@@ -192,13 +229,19 @@ a, a:hover, a:visited, a:active {
     vertical-align: middle;
 }
 
+.login-overlay {
+    z-index: 8;
+}
+
 .cooldown-timer {
+    z-index: 7;
     font-size: 24px;
     pointer-events: none;
     user-select: none;
 }
 
 .palette {
+    z-index: 6;
     padding: 10px 0 7px;
     margin: 0 auto;
 
@@ -253,7 +296,7 @@ a, a:hover, a:visited, a:active {
 .reticule, .cursor {
     pointer-events: none;
     will-change: transform;
-    z-index: 1;
+    z-index: 2;
 }
 
 .bubble {
@@ -262,21 +305,20 @@ a, a:hover, a:visited, a:active {
     background-color: rgba(0, 0, 0, 0.7);
     border-radius: 5px;
     color: #fff;
-    z-index: 9;
 }
 
 .left {
     position: fixed;
     left: 10px;
     bottom: 10px;
-    z-index: 10;
+    z-index: 9;
 }
 
 .right {
     position: fixed;
     right: 10px;
     bottom: 10px;
-    z-index: 10;
+    z-index: 9;
 }
 
 .userinfo .logout {
@@ -354,7 +396,7 @@ a, a:hover, a:visited, a:active {
     top: 0;
     left: 0;
     margin: 0;
-    z-index: 5;
+    z-index: 3;
 }
 
 .grid {
@@ -441,7 +483,7 @@ a, a:hover, a:visited, a:active {
 }
 
 @media (max-width: 768px) {
-    .info {
+    .info, .template-control {
         display: none;
     }
 
