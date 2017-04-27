@@ -100,6 +100,7 @@ public class UserManager {
 
     public void unbanUser(User user) {
         banUser(user, 0);
+        App.getDatabase().setUserRole(user, Role.USER);
         user.setRole(Role.USER);
     }
 

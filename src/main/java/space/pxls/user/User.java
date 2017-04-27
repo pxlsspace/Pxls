@@ -84,6 +84,10 @@ public class User {
         return role;
     }
 
+    public String getLogin() {
+        return login;
+    }
+
     public void setRole(Role role) {
         this.role = role;
         if (role != Role.SHADOWBANNED) {

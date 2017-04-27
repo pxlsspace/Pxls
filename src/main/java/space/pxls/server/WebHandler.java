@@ -47,8 +47,14 @@ public class WebHandler {
     public void ban(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
         if (user != null) {
-            
-            App.getUserManager().banUser(user, 86400, getBanReason(exchange));
+            String time = "86400";
+            FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+            FormData.FormValue time_form = data.getFirst("time");
+            if (time_form != null) {
+                time = time_form.getValue();
+            }
+            App.getUserManager().banUser(user, Integer.parseInt(time), getBanReason(exchange));
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             exchange.setStatusCode(200);
         } else {
             exchange.setStatusCode(400);
@@ -59,6 +65,7 @@ public class WebHandler {
         User user = parseUserFromForm(exchange);
         if (user != null) {
             App.getUserManager().unbanUser(user);
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             exchange.setStatusCode(200);
         } else {
             exchange.setStatusCode(400);
@@ -69,6 +76,7 @@ public class WebHandler {
         User user = parseUserFromForm(exchange);
         if (user != null) {
             App.getUserManager().permaBanUser(user, getBanReason(exchange));
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             exchange.setStatusCode(200);
         } else {
             exchange.setStatusCode(400);
@@ -79,6 +87,7 @@ public class WebHandler {
         User user = parseUserFromForm(exchange);
         if (user != null) {
             App.getUserManager().shadowBanUser(user, getBanReason(exchange));
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             exchange.setStatusCode(200);
         } else {
             exchange.setStatusCode(400);
@@ -89,7 +98,14 @@ public class WebHandler {
         User user = parseUserFromForm(exchange);
         if (user != null) {
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-            exchange.getResponseSender().send(App.getGson().toJson(new Packet.UserInfo(user.getName(), user.getRole().name(), user.isBanned(), user.getBanReason(), user.getBanExpiryTime())));
+            exchange.getResponseSender().send(App.getGson().toJson(
+                new Packet.UserInfo(user.getName(),
+                user.getLogin(),
+                user.getRole().name(),
+                user.isBanned(),
+                user.getBanReason(),
+                user.getBanExpiryTime()
+            )));
         } else {
             exchange.setStatusCode(400);
         }
@@ -221,6 +237,7 @@ public class WebHandler {
     }
 
     public void data(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/binary");
         exchange.getResponseSender().send(ByteBuffer.wrap(App.getBoardData()));
     }
 

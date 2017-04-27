@@ -986,6 +986,9 @@ window.App = (function () {
                         self.update(evt.clientX, evt.clientY);
                     });
                     $(window).on("pointermove mousemove", function (evt) {
+                        if (self.color === -1) {
+                            return;
+                        }
                         self.elements.cursor.css("transform", "translate(" + evt.clientX + "px, " + evt.clientY + "px)");
                     });
                     socket.on("pixel", function (data) {
@@ -1229,7 +1232,7 @@ window.App = (function () {
                     });
                     socket.on("userinfo", function (data) {
                         var banmsg = '';
-                        self.elements.userInfo.find("span.name").text(data.name);
+                        self.elements.userInfo.find("span.name").text(data.username);
                         self.elements.userInfo.fadeIn(200);
                         self.role = data.role;
                         
@@ -1242,7 +1245,7 @@ window.App = (function () {
                                 window.deInitAdmin();
                             }
                             $.getScript("admin/admin.js").done(function () {
-                                initAdmin({
+                                window.initAdmin({
                                     board: board,
                                     socket: socket,
                                     user: user,
@@ -1251,10 +1254,13 @@ window.App = (function () {
                                 });
                             });
                         } else if (window.deInitAdmin) {
-                            deInitAdmin();
+                            window.deInitAdmin();
                         }
                         if (banmsg) {
                             self.elements.loginOverlay.text(banmsg).fadeIn(200);
+                            if (window.deInitAdmin) {
+                                window.deInitAdmin();
+                            }
                         } else {
                             self.elements.loginOverlay.hide();
                         }

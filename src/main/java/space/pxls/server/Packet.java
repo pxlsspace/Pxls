@@ -103,15 +103,15 @@ public class Packet {
 
     public static class ServerUserInfo {
         String type = "userinfo";
-        String name;
+        String username;
         String role;
         boolean banned;
 
         Long banExpiry;
         String ban_reason;
 
-        public ServerUserInfo(String name, boolean banned, String role, Long banExpiry, String ban_reason) {
-            this.name = name;
+        public ServerUserInfo(String username, boolean banned, String role, Long banExpiry, String ban_reason) {
+            this.username = username;
             this.banned = banned;
             this.role = role;
             this.banExpiry = banExpiry;
@@ -146,14 +146,16 @@ public class Packet {
     }
 
     public static class UserInfo {
-        public String name;
+        public String username;
+        public String login;
         public String role;
         public boolean banned;
         public String ban_reason;
         public long ban_expiry;
         
-        public UserInfo(String name, String role, boolean banned, String ban_reason, long ban_expiry) {
-            this.name = name;
+        public UserInfo(String username, String login, String role, boolean banned, String ban_reason, long ban_expiry) {
+            this.username = username;
+            this.login = login;
             this.role = role;
             this.banned = banned;
             this.ban_reason = ban_reason;
