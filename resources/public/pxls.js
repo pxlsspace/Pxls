@@ -833,10 +833,12 @@ window.App = (function () {
                     });
                     $(window).keydown(function (evt) {
                         if (evt.ctrlKey && self.t.use) {
+                            evt.preventDefault();
                             self.elements.template.css("pointer-events", "initial");
                         }
                     }).keyup(function (evt) {
                         if (self.t.use) {
+                            evt.preventDefault();
                             self.elements.template.css("pointer-events", "none").data("dragging", false);
                         }
                     });
