@@ -836,9 +836,8 @@ window.App = (function () {
                             evt.preventDefault();
                             self.elements.template.css("pointer-events", "initial");
                         }
-                    }).keyup(function (evt) {
+                    }).on("keyup blur", function (evt) {
                         if (self.t.use) {
-                            evt.preventDefault();
                             self.elements.template.css("pointer-events", "none").data("dragging", false);
                         }
                     });
