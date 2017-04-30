@@ -4,13 +4,13 @@ z-index:
  1 - grid
  2 - reticule
  3 - template
- 4 - drawer openers
- 5 - drawer
  6 - palette
  7 - timer
  8 - login overlay
  9 - ui blobs
 10 - admin boxes
+11 - drawer openers
+12 - drawer
 
 19 - drawer opener in mobile
 20 - drawer in mobile mode
@@ -114,7 +114,7 @@ a, a:hover, a:visited, a:active {
     width: 100%;
     padding: 0;
     margin: 0;
-    z-index: 5;
+    z-index: 12;
 
     transform: translateY(-100%);
     transition: transform 0.3s ease-in-out;
@@ -128,6 +128,10 @@ a, a:hover, a:visited, a:active {
     width: 100%;
     background: #333;
     display: none;
+    max-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    text-align: center;
 }
 
 .drawer.open {
@@ -142,7 +146,7 @@ a, a:hover, a:visited, a:active {
     position: fixed;
     transform: translateZ(-1em);
     transform-style: preserve-3d;
-    z-index: 4;
+    z-index: 11;
     top: 100%;
     background: #333;
     padding: 10px;
@@ -180,6 +184,7 @@ a, a:hover, a:visited, a:active {
 
 .drawer-content > div {
     margin-right: 30px;
+    text-align: left;
 }
 
 .drawer-content > div h1 {
@@ -188,10 +193,12 @@ a, a:hover, a:visited, a:active {
 }
 
 .drawer-content > div p,
-.drawer-content > div a {
+.drawer-content > div a,
+.drawer-content > div ol {
     margin-top: 0;
     margin-bottom: 0;
     display: block;
+    max-width: 350px;
 }
 
 .drawer-content > div > div {
@@ -215,6 +222,19 @@ a, a:hover, a:visited, a:active {
 
 .info .drawer-content div[id*="bitcoin"] a {
     display: inline-block;
+}
+
+.info .rules-button {
+    font-weight: 800;
+    font-size: 1.3em;
+}
+
+.info .rules-content {
+    display: none;
+}
+
+.info .donate, .info .donate > * {
+    max-width: 600px;
 }
 
 /* menu-style drawer */
@@ -537,6 +557,12 @@ a, a:hover, a:visited, a:active {
 | Mobile Styles
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
+@media (max-width: 1500px) {
+    .info .donate, .info .donate > * {
+        max-width: 300px;
+    }
+}
+
 @media (max-width: 1300px) {
     .ui .left, .ui .right {
         bottom: 70px;
@@ -570,17 +596,27 @@ a, a:hover, a:visited, a:active {
         display: none;
     }
 
+    .drawer-content > div {
+        margin-bottom: 30px;
+    }
+
     .drawer, .drawer > .drawer-content {
         z-index: 20;
         width: 100vw;
         height: 100vh;
-        overflow-y: auto;
-        overflow-x: hidden;
     }
 
     .drawer.open, .drawer.open > .drawer-content {
         position: fixed;
         left: 0;
         top: 0;
+    }
+
+    .info .rules-button {
+        display: none;
+    }
+
+    .info .rules-content {
+        display: inline-block;
     }
 }

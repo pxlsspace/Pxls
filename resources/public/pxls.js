@@ -1134,6 +1134,10 @@ window.App = (function () {
                     $("#audiotoggle").change(function () {
                         ls.set("audio_muted", $(this).is(":checked"));
                     });
+                    $(".rules-button").click(function (evt) {
+                        evt.stopPropagation();
+                        alert.show($(".rules-content").html());
+                    });
                 }
             };
             return {
