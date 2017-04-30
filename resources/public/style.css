@@ -12,6 +12,9 @@ z-index:
  9 - ui blobs
 10 - admin boxes
 
+19 - drawer opener in mobile
+20 - drawer in mobile mode
+
 99 - alert box
 */
 
@@ -124,10 +127,15 @@ a, a:hover, a:visited, a:active {
     padding: 20px;
     width: 100%;
     background: #333;
+    display: none;
 }
 
 .drawer.open {
     transform: translateY(0);
+}
+
+.drawer.open > .drawer-content {
+    display: inline-block;
 }
 
 .drawer > .open {
@@ -160,6 +168,14 @@ a, a:hover, a:visited, a:active {
     display: inline-block;
     color: #fff;
     vertical-align: top;
+}
+
+.drawer-content > .close {
+    margin-right: 100%;
+    font-weight: 800;
+    padding: 5px;
+    cursor: pointer;
+    color: #7BCDFC;
 }
 
 .drawer-content > div {
@@ -200,6 +216,51 @@ a, a:hover, a:visited, a:active {
 .info .drawer-content div[id*="bitcoin"] a {
     display: inline-block;
 }
+
+/* menu-style drawer */
+.drawers-opener {
+    display: none;
+    position: fixed;
+    right: 0;
+    z-index: 19;
+    margin: 0;
+    padding: 0;
+    color: #fff;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease-in-out;
+}
+
+.drawers-opener.open {
+    transform: translateY(0);
+}
+
+.drawers-opener-content {
+    margin: 0;
+    padding: 10px;
+    background: #333;
+    border-radius: 0 0 0 5px;
+}
+
+.drawers-opener-content > div {
+    cursor: pointer;
+    font-weight: 700;
+    padding: 2px;
+}
+
+.drawers-opener > .open {
+    position: fixed;
+    z-index: 19;
+    top: 100%;
+    background: #333;
+    padding: 10px;
+    cursor: pointer;
+    right: 0;
+    width: 32px;
+    height: 32px;
+    background: url("menu.png") #333;
+    border-radius: 0 0 0 5px;
+}
+
 
 /*//////////////////////////*\
 | UI
@@ -483,10 +544,6 @@ a, a:hover, a:visited, a:active {
 }
 
 @media (max-width: 768px) {
-    .info, .template-control {
-        display: none;
-    }
-
     .palette {
         width: 100%;
     }
@@ -503,5 +560,27 @@ a, a:hover, a:visited, a:active {
         left: 16px;
         bottom: auto;
         right: auto;
+    }
+
+    .drawers-opener {
+        display: inline-block;
+    }
+
+    .drawer > .open {
+        display: none;
+    }
+
+    .drawer, .drawer > .drawer-content {
+        z-index: 20;
+        width: 100vw;
+        height: 100vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    .drawer.open, .drawer.open > .drawer-content {
+        position: fixed;
+        left: 0;
+        top: 0;
     }
 }

@@ -1046,11 +1046,19 @@ window.App = (function () {
         // helper object for drawers
         drawer = (function() {
             var self = {
+                elements: {
+                    container: $(".drawers"),
+                    opener: $(".drawers-opener")
+                },
                 create: function (html_class, keycode, localstorage, open) {
                     var elem = $(html_class);
-                    $(html_class+" .open").click(function () {
+                    $(html_class+" > .open").click(function () {
                         elem.toggleClass("open");
                         ls.set(localstorage, elem.hasClass("open") ^ open);
+                    });
+                    $(html_class+" .close").click(function () {
+                        elem.removeClass("open");
+                        ls.set(localstorage, false ^ open);
                     });
                     if (ls.get(localstorage) ^ open) {
                         elem.addClass("open");
@@ -1061,10 +1069,34 @@ window.App = (function () {
                             ls.set(localstorage, elem.hasClass("open") ^ open);
                         }
                     });
+                },
+                updateDropdown: function () {
+                    $(".drawers-opener-content").empty().append(
+                        $(".drawers > .drawer").map(function () {
+                            var _self = $(this);
+                            return $("<div>").text(_self.find(".open").text()).click(function (evt) {
+                                evt.stopPropagation();
+                                _self.toggleClass("open");
+                                self.elements.opener.removeClass("open");
+                            });
+                        }).get()
+                    );
+                },
+                init: function () {
+                    self.elements.opener.find(".open").click(function (evt) {
+                        self.elements.opener.toggleClass("open");
+                    });
+                    self.elements.container.on("DOMNodeInserted", function (evt) {
+                        if ($(evt.target).hasClass("drawer")) {
+                            self.updateDropdown();
+                        }
+                    });
+                    self.updateDropdown();
                 }
             };
             return {
-                create: self.create
+                create: self.create,
+                init: self.init
             };
         })(),
         // this takes care of the info slidedown and some settings (audio)
@@ -1319,6 +1351,7 @@ window.App = (function () {
     });
     query.init();
     board.init();
+    drawer.init();
     template.init();
     ban.init();
     grid.init();
