@@ -78,7 +78,7 @@ public class PacketHandler {
 
     private void handleCooldownOverride(WebSocketChannel channel, User user, Packet.ClientAdminCooldownOverride obj) {
         user.setOverrideCooldown(obj.override);
-        sendCooldownData(channel, user);
+        sendCooldownData(user);
     }
 
     private void handlePlace(WebSocketChannel channel, User user, Packet.ClientPlace cp, String ip) {
@@ -110,7 +110,7 @@ public class PacketHandler {
             }
         }
 
-        sendCooldownData(channel, user);
+        sendCooldownData(user);
     }
 
     private void handleCaptcha(WebSocketChannel channel, User user, Packet.ClientCaptcha cc) {
@@ -157,6 +157,12 @@ public class PacketHandler {
 
     private void sendCooldownData(WebSocketChannel channel, User user) {
         server.send(channel, new Packet.ServerCooldown(user.getRemainingCooldown()));
+    }
+
+    private void sendCooldownData(User user) {
+        for (WebSocketChannel ch: user.getConnections()) {
+            sendCooldownData(ch, user);
+        }
     }
 
     private void broadcastPixelUpdate(int x, int y, int color) {
