@@ -397,9 +397,9 @@ window.App = (function () {
                             self.pan.y -= 100 / self.scale;
                         } else if (evt.keyCode === 68 || evt.keyCode === 39) {
                             self.pan.x -= 100 / self.scale;
-                        } else if (evt.keyCode === 187 || evt.keyCode === 69) {
+                        } else if (evt.keyCode === 187 || evt.keyCode === 69 || evt.keyCode === 171) {
                             self.setScale(1);
-                        } else if (evt.keyCode === 189 || evt.keyCode === 81) {
+                        } else if (evt.keyCode === 189 || evt.keyCode === 81 || evt.keyCode === 173) {
                             self.setScale(-1);
                         } else if (evt.keyCode === 80) {
                             self.save();
@@ -522,7 +522,7 @@ window.App = (function () {
                     self.pan.y = Math.min(self.height / 2, Math.max(-self.height / 2, self.pan.y));
                     query.set("x", Math.round((self.width / 2) - self.pan.x));
                     query.set("y", Math.round((self.height / 2) - self.pan.y));
-                    query.set("scale", self.scale);
+                    query.set("scale", Math.round(self.scale * 100) / 100);
                     if (self.use_js_render) {
                         var ctx2 = self.elements.board_render[0].getContext("2d"),
                             pxl_x = -self.pan.x + ((self.width - (window.innerWidth / self.scale)) / 2),
@@ -826,15 +826,41 @@ window.App = (function () {
                         if (evt.which === 13) {
                             $(this).change();
                         }
+                        if (evt.which == 86 && evt.ctrlKey) {
+                            $(this).trigger("paste");
+                        }
                         evt.stopPropagation();
+                    }).on("paste", function () {
+                        var _this = this;
+                        setTimeout(function () {
+                            self.update({
+                                use: true,
+                                url: _this.value
+                            });
+                        }, 100);
                     });
-                    $(".template-opacity").change(function () {
+                    $(".template-opacity").on("change input", function () {
                         self.update({opacity: parseFloat(this.value)});
                     });
                     $(window).keydown(function (evt) {
                         if (evt.ctrlKey && self.t.use) {
                             evt.preventDefault();
                             self.elements.template.css("pointer-events", "initial");
+                        }
+                        if (evt.which == 33) { // page up
+                            self.update({
+                                opacity: Math.min(1, self.t.opacity+0.1)
+                            });
+                        }
+                        if (evt.which == 34) { // page down
+                            self.update({
+                                opacity: Math.max(0, self.t.opacity-0.1)
+                            });
+                        }
+                        if (evt.which == 86) { // v
+                            self.update({
+                                use: !self.t.use
+                            });
                         }
                     }).on("keyup blur", function (evt) {
                         if (self.t.use) {
