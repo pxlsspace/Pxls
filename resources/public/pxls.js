@@ -179,6 +179,7 @@ window.App = (function () {
             var self = {
                 bad_src: [/^https?:\/\/[^\/]*raw[^\/]*git[^\/]*\/(metonator|Deklost)/gi,
                         /^chrome\-extension:\/\/lmleofkkoohkbgjikogbpmnjmpdedfil/gi],
+                bad_events: ["mousedown", "mouseup", "click"],
                 checkSrc: function(src) {
                     // as naive as possible to make injection next to impossible
                     for (var i = 0; i < self.bad_src.length; i++) {
@@ -199,8 +200,31 @@ window.App = (function () {
                     };
                     
                     // don't even try to generate mouse events. I am being nice
-                    window.MouseEvent = function() {
+                    window.MouseEvent = function () {
                         self.me();
+                    };
+                    
+                    // enough of being nice
+                    var evt = window.Event;
+                    window.Event = function (e, s) {
+                        if (self.bad_events.indexOf(e.toLowerCase()) !== -1) {
+                            self.shadow();
+                        }
+                        return new evt(e, s);
+                    };
+                    var custom_evt = window.CustomEvent;
+                    window.CustomEvent = function (e, s) {
+                        if (self.bad_events.indexOf(e.toLowerCase()) !== -1) {
+                            self.shadow();
+                        }
+                        return new custom_evt(e, s);
+                    };
+                    var evt_old = window.document.createEvent;
+                    document.createEvent = function (e, s) {
+                        if (self.bad_events.indexOf(e.toLowerCase()) !== -1) {
+                            self.shadow();
+                        }
+                        return evt_old(e, s);
                     };
                     
                     // listen to script insertions
