@@ -273,7 +273,18 @@ window.App = (function () {
                 hooks: [],
                 wps: WebSocket.prototype.send, // make sure we have backups of those....
                 wpc: WebSocket.prototype.close,
-                init: function() {
+                reconnect: function () {
+                    $(".reconnecting").show();
+                    setTimeout(function () {
+                        $.get(window.location.pathname + "?_" + (new Date()).getTime(), function () {
+                            window.location.reload();
+                        }).fail(function () {
+                            console.log("Server still down...");
+                            self.reconnect();
+                        });
+                    }, 3000);
+                },
+                init: function () {
                     if (self.ws !== null) {
                         return; // already inited!
                     }
@@ -289,10 +300,7 @@ window.App = (function () {
                         });
                     };
                     self.ws.onclose = function () {
-                        setTimeout(function () {
-                            window.location.reload();
-                        }, 10000 * Math.random() + 3000);
-                        alert.show("Lost connection to server, reconnecting...");
+                        self.reconnect();
                     };
                     
                     $(window).on("beforeunload", function () {
@@ -327,7 +335,8 @@ window.App = (function () {
                 init: self.init,
                 on: self.on,
                 send: self.send,
-                close: self.close
+                close: self.close,
+                reconnect: self.reconnect
             };
         })(),
         // this object holds all board information and is responsible of rendering the board
@@ -500,7 +509,9 @@ window.App = (function () {
                         self.scale = query.get("scale") || self.scale;
                         self.centerOn(cx, cy);
                         socket.init();
-                        $.get("/boarddata", self.draw);
+                        $.get("/boarddata", self.draw).fail(function () {
+                            socket.reconnect();
+                        });
                         if (self.use_js_render) {
                             $(window).resize(function () {
                                 self.update();
@@ -522,6 +533,8 @@ window.App = (function () {
                                 url: url
                             });
                         }
+                    }).fail(function () {
+                        socket.reconnect();
                     });
                 },
                 update: function (optional) {

@@ -15,6 +15,7 @@ z-index:
 19 - drawer opener in mobile
 20 - drawer in mobile mode
 
+98 - lost connection
 99 - alert box
 */
 
@@ -38,6 +39,22 @@ html, body {
 
 a, a:hover, a:visited, a:active {
     color: inherit;
+}
+
+.reconnecting {
+    position: fixed;
+    display: none;
+    top: 0;
+    left: 0;
+    z-index: 98;
+    width: 100vw;
+    background: #333;
+    text-align: center;
+    margin: 0;
+    padding: 20px;
+    font-weight: 800;
+    color: #fff;
+    font-size: 25px;
 }
 
 /*//////////////////////////*\
