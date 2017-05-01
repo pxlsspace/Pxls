@@ -118,8 +118,11 @@ window.App = (function () {
                             }
                         }
                     }
+                    if (window.location.search.substring(1)) {
+                        window.location = window.location.pathname + "#" + self.getStr();
+                    }
                 },
-                update: function () {
+                getStr: function () {
                     var params = [];
                     for (var p in self.params) {
                         if (self.params.hasOwnProperty(p)) {
@@ -130,10 +133,14 @@ window.App = (function () {
                             params.push(s);
                         }
                     }
+                    return params.join("&");
+                },
+                update: function () {
+                    var s = self.getStr();
                     if (window.history.replaceState) {
-                        window.history.replaceState(null, null, '#' + params.join("&"));
+                        window.history.replaceState(null, null, '#' + s);
                     } else {
-                        window.location.hash = params.join("&");
+                        window.location.hash = s;
                     }
                 },
                 set: function (n, v) {
