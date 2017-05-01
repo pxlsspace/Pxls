@@ -33,6 +33,7 @@ public class Database implements Closeable {
 
         handle.createPixelsTable();
         handle.createUsersTable();
+        handle.createSessionsTable();
     }
 
     public void placePixel(int x, int y, int color, User who, boolean mod_action) {
@@ -61,9 +62,25 @@ public class Database implements Closeable {
         return user;
     }
 
+    public DBUser getUserByToken(String token) {
+        return handle.getUserByToken(token);
+    }
+
     public DBUser createUser(String name, String login, String ip) {
         handle.createUser(name, login, ip);
         return getUserByName(name);
+    }
+
+    public void createSession(int who, String token) {
+        handle.createSession(who, token);
+    }
+
+    public void destroySession(String token) {
+        handle.destroySession(token);
+    }
+
+    public void updateSession(String token) {
+        handle.updateSession(token);
     }
 
     public void setUserRole(User user, Role role) {

@@ -65,5 +65,24 @@ public interface DAO extends Closeable {
     @SqlQuery("SELECT ban_reason FROM users WHERE id = :id")
     DBUserBanReason getUserBanReason(@Bind("id") int userId);
 
+    @SqlUpdate("CREATE TABLE IF NOT EXISTS sessions ("+
+            "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,"+
+            "who INT UNSIGNED NOT NULL,"+
+            "token VARCHAR(60) NOT NULL,"+
+            "time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)")
+    void createSessionsTable();
+
+    @SqlQuery("SELECT * FROM users INNER JOIN sessions ON users.id = sessions.who WHERE sessions.token = :token")
+    DBUser getUserByToken(@Bind("token") String token);
+
+    @SqlUpdate("INSERT INTO sessions (who, token) VALUES (:who, :token)")
+    void createSession(@Bind("who") int who, @Bind("token") String token);
+
+    @SqlUpdate("DELETE FROM sessions WHERE token = :token")
+    void destroySession(@Bind("token") String token);
+
+    @SqlUpdate("UPDATE sessions SET time=CURRENT_TIMESTAMP WHERE token = :token")
+    void updateSession(@Bind("token") String token);
+
     void close();
 }

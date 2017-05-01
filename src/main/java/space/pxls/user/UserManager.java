@@ -29,8 +29,28 @@ public class UserManager {
         return res.toString();
     }
 
+    private void addUserToken(String token, User user) {
+        usersByToken.put(token, user);
+        App.getDatabase().createSession(user.getId(), token);
+    }
+
+    private void removeUserToken(String token) {
+        usersByToken.remove(token);
+        App.getDatabase().destroySession(token);
+    }
+
     public User getByToken(String token) {
-        return usersByToken.get(token);
+        User u = usersByToken.get(token);
+        if (u != null) {
+            return u;
+        }
+        u = getByDB(App.getDatabase().getUserByToken(token));
+        if (u == null) {
+            return null;
+        }
+        App.getDatabase().updateSession(token);
+        usersByToken.put(token, u); // insert it in the hashmap for quicker access
+        return u;
     }
 
     public User getByLogin(String login) {
@@ -43,8 +63,9 @@ public class UserManager {
     }
 
     public String logIn(User user, String ip) {
-        String token = generateRandom();
-        usersByToken.put(token, user);
+        Integer uid = new Integer(user.getId());
+        String token = uid.toString()+"|"+generateRandom();
+        addUserToken(token, user);
         App.getDatabase().updateUserIP(user, ip);
         return token;
     }
@@ -76,7 +97,7 @@ public class UserManager {
     }
 
     public void logOut(String value) {
-        usersByToken.remove(value);
+        removeUserToken(value);
     }
 
     public void shadowBanUser(User user, String reason) {
