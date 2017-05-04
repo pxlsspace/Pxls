@@ -3,6 +3,7 @@ package space.pxls.data;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.skife.jdbi.v2.DBI;
+import org.skife.jdbi.v2.Handle;
 import space.pxls.App;
 import space.pxls.server.Packet;
 import space.pxls.user.Role;
@@ -55,7 +56,22 @@ public class Database implements Closeable {
     }
 
     public List<Packet.ServerPlace.Pixel> getPreviousPixels(User who) {
-        List<Map<String, Object>> output = dbi.open().createQuery("SELECT x, y, prev_color FROM pixels AS p WHERE p.who = :who AND NOT p.rollback_action AND NOT EXISTS(SELECT 1 FROM pixels AS pp WHERE p.x=pp.x AND p.y=pp.y AND pp.id > p.id AND NOT rollback_action AND NOT EXISTS(SELECT 1 FROM users AS uu WHERE uu.id=pp.id AND (uu.ban_expiry > NOW() OR uu.role = 'BANNED' OR uu.role = 'SHADOWBANNED')));").bind("who",who.getId()).list();
+        Handle h = dbi.open();
+        List<Map<String, Object>> output = h.createQuery("SELECT x, y, prev_color FROM pixels AS p WHERE p.who = :who AND NOT p.rollback_action AND NOT EXISTS(SELECT 1 FROM pixels AS pp WHERE p.x=pp.x AND p.y=pp.y AND pp.id > p.id AND NOT rollback_action AND NOT EXISTS(SELECT 1 FROM users AS uu WHERE uu.id=pp.id AND (uu.ban_expiry > NOW() OR uu.role = 'BANNED' OR uu.role = 'SHADOWBANNED')));").bind("who",who.getId()).list();
+        List<Packet.ServerPlace.Pixel> pixels = packPixels(output);
+        h.close();
+        return pixels;
+    }
+
+    public List<Packet.ServerPlace.Pixel> getPreviousPixelsForUndo(User who) {
+        Handle h = dbi.open();
+        List<Map<String, Object>> output = h.createQuery("SELECT x, y, prev_color FROM pixels AS p WHERE p.who = :who AND p.rollback_action AND NOT EXISTS(SELECT 1 FROM pixels AS pp WHERE p.x=pp.x AND p.y=pp.y AND pp.id > p.id AND NOT rollback_action AND NOT EXISTS(SELECT 1 FROM users AS uu WHERE uu.role != 'SHADOWBANNED' and uu.role != 'BANNED' AND uu.id=pp.id AND uu.ban_expiry < NOW()));").bind("who",who.getId()).list();
+        List<Packet.ServerPlace.Pixel> pixels = packPixels(output);
+        h.close();
+        return pixels;
+    }
+
+    private List<Packet.ServerPlace.Pixel> packPixels(List<Map<String, Object>> output){
         List<Packet.ServerPlace.Pixel> pixels = new ArrayList<>();
         for (Map<String, Object> entry : output) {
             int x = toIntExact((long) entry.get("x"));

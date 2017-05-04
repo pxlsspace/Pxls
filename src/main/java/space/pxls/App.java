@@ -193,6 +193,14 @@ public class App {
         server.broadcast(new Packet.ServerPlace(pixels));
     }
 
+    public static void undoRollbackAfterBan(User who) {
+        List<Packet.ServerPlace.Pixel> pixels = database.getPreviousPixelsForUndo(who);
+        for (Packet.ServerPlace.Pixel pixel : pixels) {
+            putPixel(pixel.x, pixel.y, pixel.color, who, false, false, "(undo rollback)");
+        }
+        server.broadcast(new Packet.ServerPlace(pixels));
+    }
+
     private static void loadMap() {
         try {
             byte[] bytes = Files.readAllBytes(getStorageDir().resolve("board.dat"));

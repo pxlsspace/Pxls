@@ -104,6 +104,7 @@ public class UserManager {
         App.getDatabase().updateBanReason(user, reason);
         App.getDatabase().setUserRole(user, Role.SHADOWBANNED);
         user.setRole(Role.SHADOWBANNED);
+        App.doRollbackAfterBan(user);
     }
 
     public void shadowBanUser(User user) {
@@ -126,11 +127,13 @@ public class UserManager {
         banUser(user, 0);
         App.getDatabase().setUserRole(user, Role.USER);
         user.setRole(Role.USER);
+        App.undoRollbackAfterBan(user);
     }
 
     public void permaBanUser(User user, String reason) {
         App.getDatabase().updateBanReason(user, reason);
         App.getDatabase().setUserRole(user, Role.BANNED);
         user.setRole(Role.BANNED);
+        App.doRollbackAfterBan(user);
     }
 }
