@@ -131,7 +131,7 @@ public class User {
     }
 
     public boolean isBanned() {
-        return banExpiryTime > System.currentTimeMillis();
+        return banExpiryTime > System.currentTimeMillis() || role == Role.BANNED; // shadowbans are hidden....
     }
 
     public long getBanExpiryTime() {
