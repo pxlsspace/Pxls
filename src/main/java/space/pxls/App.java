@@ -185,12 +185,15 @@ public class App {
         database.placePixel(x, y, color, previous_color, user, mod_action, rollback_action);
     }
 
-    public static void rollbackAfterBan(User who, boolean isUndo) {
-        List<Packet.ServerPlace.Pixel> pixels = database.getPreviousPixels(who, isUndo, 18000); // 60*60*5 = 18000 = 5h
+    public static void rollbackAfterBan(User who, boolean isUndo, int seconds) {
+        if (seconds <= 0 && !isUndo) {
+            return;
+        }
+        List<Packet.ServerPlace.Pixel> pixels = database.getPreviousPixels(who, isUndo, seconds);
         for (Packet.ServerPlace.Pixel pixel : pixels) {
             putPixel(pixel.x, pixel.y, pixel.color, who, false, true, isUndo ? "(undo rollback)" : "");
         }
-        server.broadcast(new Packet.ServerPlace(pixels));
+        server.broadcast_noshadow(new Packet.ServerPlace(pixels));
     }
 
     private static void loadMap() {

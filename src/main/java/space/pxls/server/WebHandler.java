@@ -44,6 +44,16 @@ public class WebHandler {
         return reason_str;
     }
 
+    private int getRollbackTime(HttpServerExchange exchange) {
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+        FormData.FormValue rollback = data.getFirst("rollback_time");
+        String rollback_int = "0";
+        if (rollback != null) {
+            rollback_int = rollback.getValue();
+        }
+        return Integer.parseInt(rollback_int);
+    }
+
     public void ban(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
         if (user != null) {
@@ -53,7 +63,7 @@ public class WebHandler {
             if (time_form != null) {
                 time = time_form.getValue();
             }
-            App.getUserManager().banUser(user, Integer.parseInt(time), getBanReason(exchange));
+            App.getUserManager().banUser(user, Integer.parseInt(time), getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             exchange.setStatusCode(200);
         } else {
@@ -75,7 +85,7 @@ public class WebHandler {
     public void permaban(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
         if (user != null) {
-            App.getUserManager().permaBanUser(user, getBanReason(exchange));
+            App.getUserManager().permaBanUser(user, getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             exchange.setStatusCode(200);
         } else {
@@ -86,7 +96,7 @@ public class WebHandler {
     public void shadowban(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
         if (user != null) {
-            App.getUserManager().shadowBanUser(user, getBanReason(exchange));
+            App.getUserManager().shadowBanUser(user, getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             exchange.setStatusCode(200);
         } else {

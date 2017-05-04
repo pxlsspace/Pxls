@@ -55,9 +55,25 @@ public class Database implements Closeable {
         return handle.getPixel(x, y);
     }
 
+/*
+This is a lengthy explenation of the huge query in getPrevoiusPixels.
+Let's break up the query first
+SELECT x, y, prev_color FROM pixels AS p WHERE // we want to select the x, y and prev_color
+    p.who = :who // pixels by our user
+    AND p.rollback_action = :undo // pixels that are "legit" actions on banning and "non-legit" actions on reverting
+    AND (:undo OR p.time + INTERVAL :seconds SECOND > NOW()) // and were recent (undoing doesn't matter)
+    AND NOT EXISTS( // this entire block now checks if there are any more recent pixels set.
+        // so this should select pixels now that were added ontop
+        SELECT 1 FROM pixels AS pp INNER JOIN users AS uu ON uu.id = pp.who WHERE
+            p.x=pp.x AND p.y=pp.y AND pp.id > p.id // coordinates must be the same and must be placed afterwards
+        AND (:undo OR NOT pp.rollback_action) // when banning we only want to select "legit" pixels, when reverting we need obviously all
+        AND pp.who != :who // we only want pixels that weren't placed by us
+        AND NOT (uu.ban_expiry > NOW() OR uu.role = 'BANNED' OR uu.role = 'SHADOWBANNED') // and we don#t want the user to be banned
+) GROUP BY x, y; // and now let's filterthe multiple pixels out
+*/
     public List<Packet.ServerPlace.Pixel> getPreviousPixels(User who, boolean isUndo, int fromSeconds) {
         Handle h = dbi.open();
-        List<Map<String, Object>> output = h.createQuery("SELECT x, y, prev_color FROM pixels AS p WHERE p.who = :who AND p.rollback_action = :undo AND p.time + INTERVAL :seconds SECOND > NOW() AND NOT EXISTS(SELECT 1 FROM pixels AS pp INNER JOIN users AS uu ON uu.id = pp.id WHERE p.x=pp.x AND p.y=pp.y AND pp.id > p.id AND NOT pp.rollback_action AND pp.who != :who AND NOT (uu.ban_expiry > NOW() OR uu.role = 'BANNED' OR uu.role = 'SHADOWBANNED')) GROUP BY x, y;").bind("who", who.getId()).bind("undo", isUndo).bind("seconds", fromSeconds).list();
+        List<Map<String, Object>> output = h.createQuery("SELECT x, y, prev_color FROM pixels AS p WHERE p.who = :who AND p.rollback_action = :undo AND (:undo OR p.time + INTERVAL :seconds SECOND > NOW()) AND NOT EXISTS(SELECT 1 FROM pixels AS pp INNER JOIN users AS uu ON uu.id = pp.who WHERE p.x=pp.x AND p.y=pp.y AND pp.id > p.id AND (:undo OR NOT pp.rollback_action) AND pp.who != :who AND NOT (uu.ban_expiry > NOW() OR uu.role = 'BANNED' OR uu.role = 'SHADOWBANNED')) GROUP BY x, y;").bind("who", who.getId()).bind("undo", isUndo).bind("seconds", fromSeconds).list();
         List<Packet.ServerPlace.Pixel> pixels = new ArrayList<>();
         for (Map<String, Object> entry : output) {
             int x = toIntExact((long) entry.get("x"));

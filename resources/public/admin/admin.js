@@ -35,7 +35,8 @@
                 deinit: function () {
                     self.elements.prompt.remove();
                 },
-                prompt: function (s, fn) {
+                prompt: function (s, time, fn) {
+                    var time_input = $("<input>").attr("type", "number").addClass("admin-bannumber").val(time);
                     self.elements.prompt.empty().append(
                         $("<p>").addClass("text").text(s),
                         $("<input>").addClass("prompt").attr("type","text").css("width", "100%").keydown(function (evt) {
@@ -45,6 +46,9 @@
                             }
                             evt.stopPropagation();
                         }),
+                        $("<div>").addClass("text").append(
+                            "Revert pixels of the last ", time_input, " hours"
+                        ),
                         genButton("Cancel").css({
                             position: "fixed",
                             bottom: 20,
@@ -57,16 +61,17 @@
                             bottom: 20,
                             right: 30
                         }).click(function () {
-                            fn(self.elements.prompt.find(".prompt").val());
+                            fn(self.elements.prompt.find(".prompt").val(), parseFloat(time_input.val()));
                             self.elements.prompt.fadeOut(200);
                         })
                     ).fadeIn(200);
                 },
                 ban_internal: function (username, fn, msg, done_msg, path, time) {
-                    self.prompt(msg, function (reason) {
+                    self.prompt(msg, time ? 0 : 24, function (reason, length) {
                         var data = {
                             username: username,
-                            reason: reason
+                            reason: reason,
+                            rollback_time: length*3600
                         };
                         if (time) {
                             data.time = time;

@@ -100,40 +100,56 @@ public class UserManager {
         removeUserToken(value);
     }
 
-    public void shadowBanUser(User user, String reason) {
+    public void shadowBanUser(User user, String reason, int rollback_time) {
         App.getDatabase().updateBanReason(user, reason);
         App.getDatabase().setUserRole(user, Role.SHADOWBANNED);
         user.setRole(Role.SHADOWBANNED);
-        App.rollbackAfterBan(user, false);
+        App.rollbackAfterBan(user, false, rollback_time);
+    }
+
+    public void shadowBanUser(User user, String reason) {
+        shadowBanUser(user, reason, 24*3600);
     }
 
     public void shadowBanUser(User user) {
         shadowBanUser(user, "");
     }
 
-    public void banUser(User user, long timeFromNowSeconds, String reason) {
+    public void banUser(User user, long timeFromNowSeconds, String reason, int rollback_time) {
         App.getDatabase().updateBan(user, timeFromNowSeconds, reason);
         user.setBanExpiryTime(timeFromNowSeconds * 1000 + System.currentTimeMillis());
         if (timeFromNowSeconds > 0) {
-            App.rollbackAfterBan(user, false);
+            App.rollbackAfterBan(user, false, rollback_time);
         }
     }
 
+    public void banUser(User user, long timeFromNowSeconds, String reason) {
+        banUser(user, timeFromNowSeconds, reason, 24*3600);
+    }
+
     public void banUser(User user, long timeFromNowSeconds) {
-        banUser(user, timeFromNowSeconds, "");
+        banUser(user, timeFromNowSeconds, "", 0);
     }
 
     public void unbanUser(User user) {
         banUser(user, 0);
         App.getDatabase().setUserRole(user, Role.USER);
         user.setRole(Role.USER);
-        App.rollbackAfterBan(user, true);
+        App.rollbackAfterBan(user, true, 0);
     }
 
-    public void permaBanUser(User user, String reason) {
+    public void permaBanUser(User user, String reason, int rollback_time) {
         App.getDatabase().updateBanReason(user, reason);
         App.getDatabase().setUserRole(user, Role.BANNED);
         user.setRole(Role.BANNED);
-        App.rollbackAfterBan(user, false);
+        App.rollbackAfterBan(user, false, rollback_time);
+    }
+
+    public void permaBanUser(User user, String reason) {
+        permaBanUser(user, reason, 24*3600);
+    }
+
+    public Map getAllUsersByToken() {
+        return usersByToken;
     }
 }

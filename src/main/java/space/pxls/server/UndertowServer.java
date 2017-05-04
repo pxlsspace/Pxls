@@ -18,10 +18,14 @@ import space.pxls.util.AuthReader;
 import space.pxls.util.IPReader;
 import space.pxls.util.RateLimitingHandler;
 import space.pxls.util.RoleGate;
+import space.pxls.user.UserManager;
+import space.pxls.user.User;
+import space.pxls.user.Role;
 
 import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.Map;
 
 public class UndertowServer {
     private int port;
@@ -128,6 +132,19 @@ public class UndertowServer {
         for (WebSocketChannel channel : connections) {
             sendRaw(channel, json);
         }
+    }
+
+    public void broadcast_noshadow(Object obj) {
+        String json = App.getGson().toJson(obj);
+        Map<String, User> users = App.getUserManager().getAllUsersByToken();
+        for (User u : users.values()) {
+            if (u.getRole() != Role.SHADOWBANNED) {
+                for (WebSocketChannel channel : u.getConnections()) {
+                    sendRaw(channel, json);
+                }
+            }
+        }
+        
     }
 
     private void sendRaw(WebSocketChannel channel, String str) {
