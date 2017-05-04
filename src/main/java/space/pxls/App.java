@@ -187,8 +187,9 @@ public class App {
 
     public static void doRollbackAfterBan(User who) {
         List<Packet.ServerPlace.Pixel> pixels = database.getPreviousPixels(who);
-        for (Packet.ServerPlace.Pixel pixel : pixels)
+        for (Packet.ServerPlace.Pixel pixel : pixels) {
             putPixel(pixel.x, pixel.y, pixel.color, who, false, true, "");
+        }
         server.broadcast(new Packet.ServerPlace(pixels));
     }
 
