@@ -188,7 +188,7 @@ public class App {
     public static void rollbackAfterBan(User who, boolean isUndo) {
         List<Packet.ServerPlace.Pixel> pixels = database.getPreviousPixels(who, isUndo, 18000); // 60*60*5 = 18000 = 5h
         for (Packet.ServerPlace.Pixel pixel : pixels) {
-            putPixel(pixel.x, pixel.y, pixel.color, who, false, !isUndo, isUndo ? "(undo rollback)" : "");
+            putPixel(pixel.x, pixel.y, pixel.color, who, false, true, isUndo ? "(undo rollback)" : "");
         }
         server.broadcast(new Packet.ServerPlace(pixels));
     }

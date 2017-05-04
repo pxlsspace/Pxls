@@ -57,7 +57,7 @@ public class Database implements Closeable {
 
     public List<Packet.ServerPlace.Pixel> getPreviousPixels(User who, boolean isUndo, int fromSeconds) {
         Handle h = dbi.open();
-        List<Map<String, Object>> output = h.createQuery("SELECT x, y, prev_color FROM pixels AS p WHERE p.who = :who AND p.rollback_action = :undo AND p.time + INTERVAL :seconds SECOND > NOW() AND NOT EXISTS(SELECT 1 FROM pixels AS pp WHERE p.x=pp.x AND p.y=pp.y AND pp.id > p.id AND NOT pp.rollback_action AND pp.who != :who AND NOT EXISTS(SELECT 1 FROM users AS uu WHERE uu.id=pp.id AND (uu.ban_expiry > NOW() OR uu.role = 'BANNED' OR uu.role = 'SHADOWBANNED'))) GROUP BY x, y;").bind("who", who.getId()).bind("undo", isUndo).bind("seconds", fromSeconds).list();
+        List<Map<String, Object>> output = h.createQuery("SELECT x, y, prev_color FROM pixels AS p WHERE p.who = :who AND p.rollback_action = :undo AND p.time + INTERVAL :seconds SECOND > NOW() AND NOT EXISTS(SELECT 1 FROM pixels AS pp INNER JOIN users AS uu ON uu.id = pp.id WHERE p.x=pp.x AND p.y=pp.y AND pp.id > p.id AND NOT pp.rollback_action AND pp.who != :who AND NOT (uu.ban_expiry > NOW() OR uu.role = 'BANNED' OR uu.role = 'SHADOWBANNED')) GROUP BY x, y;").bind("who", who.getId()).bind("undo", isUndo).bind("seconds", fromSeconds).list();
         List<Packet.ServerPlace.Pixel> pixels = new ArrayList<>();
         for (Map<String, Object> entry : output) {
             int x = toIntExact((long) entry.get("x"));
