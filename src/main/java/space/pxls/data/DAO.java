@@ -14,13 +14,16 @@ public interface DAO extends Closeable {
             "x INT UNSIGNED NOT NULL," +
             "y INT UNSIGNED NOT NULL," +
             "color TINYINT UNSIGNED NOT NULL," +
+            "prev_color TINYINT UNSIGNED NOT NULL DEFAULT 0," +
             "who INT UNSIGNED," +
             "time TIMESTAMP NOT NULL DEFAULT now(6)," +
-            "mod_action BOOLEAN NOT NULL DEFAULT false)")
+            "mod_action BOOLEAN NOT NULL DEFAULT false," +
+            "rollback_action BOOLEAN NOT NULL DEFAULT false)")
     void createPixelsTable();
 
-    @SqlUpdate("INSERT INTO pixels (x, y, color, who, mod_action) VALUES (:x, :y, :color, :who, :mod)")
-    void putPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") Integer who, @Bind("mod") boolean mod);
+    @SqlUpdate("INSERT INTO pixels (x, y, color, prev_color, who, mod_action, rollback_action) VALUES (:x, :y, :color, :prev, :who, :mod, :rollback)")
+    void putPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("prev") byte prev,
+                  @Bind("who") Integer who, @Bind("mod") boolean mod, @Bind("rollback") boolean rollback);
 
     @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users ON pixels.who = users.id WHERE x = :x AND y = :y ORDER BY time DESC LIMIT 1")
     DBPixelPlacement getPixel(@Bind("x") int x, @Bind("y") int y);
@@ -34,7 +37,7 @@ public interface DAO extends Closeable {
             "role VARCHAR(16) NOT NULL DEFAULT 'USER'," +
             "ban_expiry TIMESTAMP," +
             "signup_ip BINARY(16)," +
-            "last_ip BINARY(16)," + 
+            "last_ip BINARY(16)," +
             "ban_reason VARCHAR(512) NOT NULL DEFAULT '')")
     void createUsersTable();
 

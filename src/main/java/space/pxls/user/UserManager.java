@@ -104,6 +104,7 @@ public class UserManager {
         App.getDatabase().updateBanReason(user, reason);
         App.getDatabase().setUserRole(user, Role.SHADOWBANNED);
         user.setRole(Role.SHADOWBANNED);
+        App.rollbackAfterBan(user, false);
     }
 
     public void shadowBanUser(User user) {
@@ -113,6 +114,9 @@ public class UserManager {
     public void banUser(User user, long timeFromNowSeconds, String reason) {
         App.getDatabase().updateBan(user, timeFromNowSeconds, reason);
         user.setBanExpiryTime(timeFromNowSeconds * 1000 + System.currentTimeMillis());
+        if (timeFromNowSeconds > 0) {
+            App.rollbackAfterBan(user, false);
+        }
     }
 
     public void banUser(User user, long timeFromNowSeconds) {
@@ -123,11 +127,13 @@ public class UserManager {
         banUser(user, 0);
         App.getDatabase().setUserRole(user, Role.USER);
         user.setRole(Role.USER);
+        App.rollbackAfterBan(user, true);
     }
 
     public void permaBanUser(User user, String reason) {
         App.getDatabase().updateBanReason(user, reason);
         App.getDatabase().setUserRole(user, Role.BANNED);
         user.setRole(Role.BANNED);
+        App.rollbackAfterBan(user, false);
     }
 }
