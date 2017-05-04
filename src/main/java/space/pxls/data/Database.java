@@ -55,23 +55,9 @@ public class Database implements Closeable {
         return handle.getPixel(x, y);
     }
 
-    public List<Packet.ServerPlace.Pixel> getPreviousPixels(User who) {
+    public List<Packet.ServerPlace.Pixel> getPreviousPixels(User who, boolean isUndo, int fromSeconds) {
         Handle h = dbi.open();
-        List<Map<String, Object>> output = h.createQuery("SELECT x, y, prev_color FROM pixels AS p WHERE p.who = :who AND NOT p.rollback_action AND NOT EXISTS(SELECT 1 FROM pixels AS pp WHERE p.x=pp.x AND p.y=pp.y AND pp.id > p.id AND NOT rollback_action AND NOT EXISTS(SELECT 1 FROM users AS uu WHERE uu.id=pp.id AND (uu.ban_expiry > NOW() OR uu.role = 'BANNED' OR uu.role = 'SHADOWBANNED')));").bind("who",who.getId()).list();
-        List<Packet.ServerPlace.Pixel> pixels = packPixels(output);
-        h.close();
-        return pixels;
-    }
-
-    public List<Packet.ServerPlace.Pixel> getPreviousPixelsForUndo(User who) {
-        Handle h = dbi.open();
-        List<Map<String, Object>> output = h.createQuery("SELECT x, y, prev_color FROM pixels AS p WHERE p.who = :who AND p.rollback_action AND NOT EXISTS(SELECT 1 FROM pixels AS pp WHERE p.x=pp.x AND p.y=pp.y AND pp.id > p.id AND NOT rollback_action AND NOT EXISTS(SELECT 1 FROM users AS uu WHERE uu.id=pp.id AND (uu.ban_expiry > NOW() OR uu.role = 'BANNED' OR uu.role = 'SHADOWBANNED')));").bind("who",who.getId()).list();
-        List<Packet.ServerPlace.Pixel> pixels = packPixels(output);
-        h.close();
-        return pixels;
-    }
-
-    private List<Packet.ServerPlace.Pixel> packPixels(List<Map<String, Object>> output){
+        List<Map<String, Object>> output = h.createQuery("SELECT x, y, prev_color FROM pixels AS p WHERE p.who = :who AND p.rollback_action = :undo AND p.time + INTERVAL :seconds SECOND > NOW() AND NOT EXISTS(SELECT 1 FROM pixels AS pp WHERE p.x=pp.x AND p.y=pp.y AND pp.id > p.id AND NOT pp.rollback_action AND NOT EXISTS(SELECT 1 FROM users AS uu WHERE uu.id=pp.id AND (uu.ban_expiry > NOW() OR uu.role = 'BANNED' OR uu.role = 'SHADOWBANNED')));").bind("who", who.getId()).bind("undo", isUndo).bind("seconds", fromSeconds).list();
         List<Packet.ServerPlace.Pixel> pixels = new ArrayList<>();
         for (Map<String, Object> entry : output) {
             int x = toIntExact((long) entry.get("x"));
@@ -79,6 +65,7 @@ public class Database implements Closeable {
             int color = (int) entry.get("prev_color");
             pixels.add(new Packet.ServerPlace.Pixel(x, y, color));
         }
+        h.close();
         return pixels;
     }
 
