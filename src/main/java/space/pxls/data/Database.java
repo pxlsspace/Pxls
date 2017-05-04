@@ -55,7 +55,7 @@ public class Database implements Closeable {
     }
 
     public List<Packet.ServerPlace.Pixel> getPreviousPixels(User who) {
-        List<Map<String, Object>> output = dbi.open().select("SELECT x, y, prev_color FROM pixels AS p WHERE p.who = " + Integer.toString(who.getId()) + " AND NOT p.rollback_action AND NOT EXISTS(SELECT 1 FROM pixels AS pp WHERE p.x=pp.x AND p.y=pp.y AND pp.id > p.id AND NOT rollback_action AND NOT EXISTS(SELECT 1 FROM users AS uu WHERE uu.ban_expiry > NOW() AND uu.id=pp.id));");
+        List<Map<String, Object>> output = dbi.open().createQuery("SELECT x, y, prev_color FROM pixels AS p WHERE p.who = :who AND NOT p.rollback_action AND NOT EXISTS(SELECT 1 FROM pixels AS pp WHERE p.x=pp.x AND p.y=pp.y AND pp.id > p.id AND NOT rollback_action AND EXISTS(SELECT 1 FROM users AS uu WHERE uu.id=pp.id AND (uu.ban_expiry > NOW() OR uu.role = 'BANNED' OR uu.role = 'SHADOWBANNED')));").bind("who",who.getId()).list();
         List<Packet.ServerPlace.Pixel> pixels = new ArrayList<>();
         for (Map<String, Object> entry : output) {
             int x = toIntExact((long) entry.get("x"));
