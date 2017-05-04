@@ -113,6 +113,8 @@ public class UserManager {
     public void banUser(User user, long timeFromNowSeconds, String reason) {
         App.getDatabase().updateBan(user, timeFromNowSeconds, reason);
         user.setBanExpiryTime(timeFromNowSeconds * 1000 + System.currentTimeMillis());
+        if (timeFromNowSeconds > 0)
+            App.doRollbackAfterBan(user);
     }
 
     public void banUser(User user, long timeFromNowSeconds) {

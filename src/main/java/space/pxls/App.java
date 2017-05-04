@@ -121,7 +121,7 @@ public class App {
 
                 for (int x = Math.min(fromX, toX); x <= Math.max(fromX, toX); x++) {
                     for (int y = Math.min(fromY, toY); y <= Math.max(fromY, toY); y++) {
-                        putPixel(x, y, toColor, null, true, "<nuke action>");
+                        putPixel(x, y, toColor, null, true, false, "<nuke action>");
                     }
                 }
             }
@@ -175,13 +175,21 @@ public class App {
         return board[x + y * width];
     }
 
-    public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip) {
+    public static void putPixel(int x, int y, int color, User user, boolean mod_action, boolean rollback_action, String ip) {
         if (x < 0 || x >= width || y < 0 || y >= height || color < 0 || color >= getPalette().size()) return;
         String userName = user != null ? user.getName() : "<server>";
 
+        int previous_color = getPixel(x, y);
         board[x + y * width] = (byte) color;
-        pixelLogger.log(Level.INFO, userName + " " + x + " " + y + " " + color + " " + ip + (mod_action ? " (mod)" : ""));
-        database.placePixel(x, y, color, user, mod_action);
+        pixelLogger.log(Level.INFO, userName + " " + x + " " + y + " " + color + " " + ip + (mod_action ? " (mod)" : "") + (rollback_action ? " (rollback)" : ""));
+        database.placePixel(x, y, color, previous_color, user, mod_action, rollback_action);
+    }
+
+    public static void doRollbackAfterBan(User who) {
+        List<Packet.ServerPlace.Pixel> pixels = database.getPreviousPixels(who);
+        for (Packet.ServerPlace.Pixel pixel : pixels)
+            putPixel(pixel.x, pixel.y, pixel.color, who, false, true, "");
+        server.broadcast(new Packet.ServerPlace(pixels));
     }
 
     private static void loadMap() {

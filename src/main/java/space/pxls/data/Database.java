@@ -4,10 +4,16 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.skife.jdbi.v2.DBI;
 import space.pxls.App;
+import space.pxls.server.Packet;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 
 import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import static java.lang.Math.toIntExact;
 
 public class Database implements Closeable {
     private final DBI dbi;
@@ -36,8 +42,8 @@ public class Database implements Closeable {
         handle.createSessionsTable();
     }
 
-    public void placePixel(int x, int y, int color, User who, boolean mod_action) {
-        handle.putPixel(x, y, (byte) color, who != null ? who.getId() : null, mod_action);
+    public void placePixel(int x, int y, int color, int prev, User who, boolean mod_action, boolean rollback_action) {
+        handle.putPixel(x, y, (byte) color, (byte) prev, who != null ? who.getId() : null, mod_action, rollback_action);
 
         if (who != null) {
             handle.updateUserTime(who.getId());
@@ -46,6 +52,18 @@ public class Database implements Closeable {
 
     public DBPixelPlacement getPixelAt(int x, int y) {
         return handle.getPixel(x, y);
+    }
+
+    public List<Packet.ServerPlace.Pixel> getPreviousPixels(User who) {
+        List<Map<String, Object>> output = dbi.open().select("SELECT x, y, prev_color FROM pixels AS p WHERE p.who = " + Integer.toString(who.getId()) + " AND NOT p.rollback_action AND NOT EXISTS(SELECT 1 FROM pixels AS pp WHERE p.x=pp.x AND p.y=pp.y AND pp.id > p.id AND NOT rollback_action AND NOT EXISTS(SELECT 1 FROM users AS uu WHERE uu.ban_expiry > NOW() AND uu.id=pp.id));");
+        List<Packet.ServerPlace.Pixel> pixels = new ArrayList<>();
+        for (Map<String, Object> entry : output) {
+            int x = toIntExact((long) entry.get("x"));
+            int y = toIntExact((long) entry.get("y"));
+            int color = (int) entry.get("prev_color");
+            pixels.add(new Packet.ServerPlace.Pixel(x, y, color));
+        }
+        return pixels;
     }
 
     public void close() {
