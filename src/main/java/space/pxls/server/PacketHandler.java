@@ -100,7 +100,7 @@ public class PacketHandler {
                         }
                     } else {
                         boolean mod_action = user.isOverridingCooldown();
-                        App.putPixel(cp.x, cp.y, cp.color, user, mod_action, false, ip);
+                        App.putPixel(cp.x, cp.y, cp.color, user, mod_action, ip, true);
                         App.saveMap();
                         broadcastPixelUpdate(cp.x, cp.y, cp.color);
                     }

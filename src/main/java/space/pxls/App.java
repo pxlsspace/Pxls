@@ -6,6 +6,8 @@ import com.typesafe.config.ConfigFactory;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import space.pxls.data.DBPixelPlacement;
+import space.pxls.data.DBRollbackPixel;
 import space.pxls.data.Database;
 import space.pxls.server.Packet;
 import space.pxls.server.UndertowServer;
@@ -20,10 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class App {
@@ -121,7 +120,7 @@ public class App {
 
                 for (int x = Math.min(fromX, toX); x <= Math.max(fromX, toX); x++) {
                     for (int y = Math.min(fromY, toY); y <= Math.max(fromY, toY); y++) {
-                        putPixel(x, y, toColor, null, true, false, "<nuke action>");
+                        putPixel(x, y, toColor, null, true, "<nuke action>", true);
                     }
                 }
             }
@@ -175,25 +174,40 @@ public class App {
         return board[x + y * width];
     }
 
-    public static void putPixel(int x, int y, int color, User user, boolean mod_action, boolean rollback_action, String ip) {
+    public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase) {
         if (x < 0 || x >= width || y < 0 || y >= height || color < 0 || color >= getPalette().size()) return;
         String userName = user != null ? user.getName() : "<server>";
 
-        int previous_color = getPixel(x, y);
         board[x + y * width] = (byte) color;
-        pixelLogger.log(Level.INFO, userName + " " + x + " " + y + " " + color + " " + ip + (mod_action ? " (mod)" : "") + (rollback_action ? " (rollback)" : ""));
-        database.placePixel(x, y, color, previous_color, user, mod_action, rollback_action);
+        pixelLogger.log(Level.INFO, userName + " " + x + " " + y + " " + color + " " + ip + (mod_action ? " (mod)" : ""));
+        if (updateDatabase) {
+            database.placePixel(x, y, color, user, mod_action);
+        }
     }
 
-    public static void rollbackAfterBan(User who, boolean isUndo, int seconds) {
-        if (seconds <= 0 && !isUndo) {
+    public static void rollbackAfterBan(User who, int seconds) {
+        if (seconds <= 0) {
             return;
         }
-        List<Packet.ServerPlace.Pixel> pixels = database.getPreviousPixels(who, isUndo, seconds);
-        for (Packet.ServerPlace.Pixel pixel : pixels) {
-            putPixel(pixel.x, pixel.y, pixel.color, who, false, true, isUndo ? "(undo rollback)" : "");
+        List<DBRollbackPixel> pixels = database.getRollbackPixels(who, seconds);
+        List<Packet.ServerPlace.Pixel> forBroadcast = new ArrayList<>();
+        for (DBRollbackPixel rbPixel : pixels) {
+            if (rbPixel.toPixel != null) {
+                putPixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color, who, false, "", false);
+                forBroadcast.add(new Packet.ServerPlace.Pixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color));
+                database.putRollbackPixel(who, rbPixel.toPixel.id, rbPixel.fromId);
+            }else{
+                DBPixelPlacement fromPixel = database.getPixelByID(rbPixel.fromId);
+                putPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, false, "", false);
+                forBroadcast.add(new Packet.ServerPlace.Pixel(fromPixel.x, fromPixel.y, 0));
+                database.putRollbackPixelNoPrevious(fromPixel.x, fromPixel.y, who, fromPixel.id);
+            }
         }
-        server.broadcast_noshadow(new Packet.ServerPlace(pixels));
+        server.broadcast_noshadow(new Packet.ServerPlace(forBroadcast));
+    }
+
+    public static void undoRollback(User who) {
+
     }
 
     private static void loadMap() {

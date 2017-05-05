@@ -1,8 +1,6 @@
 package space.pxls.data;
 
-import org.skife.jdbi.v2.sqlobject.Bind;
-import org.skife.jdbi.v2.sqlobject.SqlQuery;
-import org.skife.jdbi.v2.sqlobject.SqlUpdate;
+import org.skife.jdbi.v2.sqlobject.*;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
 
 import java.io.Closeable;
@@ -14,19 +12,46 @@ public interface DAO extends Closeable {
             "x INT UNSIGNED NOT NULL," +
             "y INT UNSIGNED NOT NULL," +
             "color TINYINT UNSIGNED NOT NULL," +
-            "prev_color TINYINT UNSIGNED NOT NULL DEFAULT 0," +
             "who INT UNSIGNED," +
+            "secondary_id INT UNSIGNED," + //is previous pixel's id normally, is the id that was changed from for rollback action
             "time TIMESTAMP NOT NULL DEFAULT now(6)," +
             "mod_action BOOLEAN NOT NULL DEFAULT false," +
-            "rollback_action BOOLEAN NOT NULL DEFAULT false)")
+            "rollback_action BOOLEAN NOT NULL DEFAULT false," +
+            "most_recent BOOLEAN NOT NULL DEFAULT true)") //is true and is the only thing we alter
     void createPixelsTable();
 
-    @SqlUpdate("INSERT INTO pixels (x, y, color, prev_color, who, mod_action, rollback_action) VALUES (:x, :y, :color, :prev, :who, :mod, :rollback)")
-    void putPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("prev") byte prev,
-                  @Bind("who") Integer who, @Bind("mod") boolean mod, @Bind("rollback") boolean rollback);
+
+    @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, mod_action)" +
+            "VALUES (:x, :y, :color, :who, (SELECT id FROM pixels AS pp WHERE pp.x = :x AND pp.y = :y AND pp.most_recent),  :mod);" +
+            "UPDATE pixels SET most_recent = false WHERE x = :x AND y = :y AND NOT id = LAST_INSERT_ID();")
+    void putPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("mod") boolean mod);
+
+    @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
+            "VALUES ((SELECT x, y, color FROM pixels AS pp WHERE pp.id = :to_id), :who, :from_id, true, false);" +
+            "UPDATE pixels SET most_recent = true WHERE id = :to_id;" +
+            "UPDATE pixels SET most_recent = false WHERE id = :from_id")
+    void putRollbackPixel(@Bind("who") int who, @Bind("from_id") int fromId, @Bind("to_id") int toId);
+
+    @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
+            "VALUES (:x, :y, 0, :who, :from_id, true, false);" +
+            "UPDATE pixels SET most_recent = false WHERE id = :from_id")
+    void putRollbackPixelNoPrevious(@Bind("x") int x, @Bind("y") int y, @Bind("who") int who, @Bind("from_id") int fromId);
 
     @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users ON pixels.who = users.id WHERE x = :x AND y = :y ORDER BY time DESC LIMIT 1")
     DBPixelPlacement getPixel(@Bind("x") int x, @Bind("y") int y);
+
+    @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users on pixels.who = users.id WHERE pixels.id = :id")
+    DBPixelPlacement getPixel(@Bind("id") int id);
+
+    @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users on pixels.who = users.id WHERE pixels.prev_id = :id")
+    DBPixelPlacement getUndoPixel(@Bind("id") int prevId);
+
+    @SqlUpdate("UPDATE pixels SET most_recent = :isrecent WHERE id = :id")
+    void updateCurrentPixel(@Bind("id") int id, @Bind("isrecent") boolean isRecent);
+
+    @SqlUpdate("UPDATE pixels SET most_recent = false WHERE x = :x AND y = :y;" +
+            "UPDATE pixel SET most_recent = true WHERE id = :id")
+    void updateCurrentPixel(@Bind("x") int x, @Bind("y") int y, @Bind("id") int id);
 
     @SqlUpdate("CREATE TABLE IF NOT EXISTS users (" +
             "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT," +
@@ -68,10 +93,10 @@ public interface DAO extends Closeable {
     @SqlQuery("SELECT ban_reason FROM users WHERE id = :id")
     DBUserBanReason getUserBanReason(@Bind("id") int userId);
 
-    @SqlUpdate("CREATE TABLE IF NOT EXISTS sessions ("+
-            "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,"+
-            "who INT UNSIGNED NOT NULL,"+
-            "token VARCHAR(60) NOT NULL,"+
+    @SqlUpdate("CREATE TABLE IF NOT EXISTS sessions (" +
+            "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT," +
+            "who INT UNSIGNED NOT NULL," +
+            "token VARCHAR(60) NOT NULL," +
             "time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)")
     void createSessionsTable();
 
