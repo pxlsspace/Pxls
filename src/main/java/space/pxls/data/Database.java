@@ -120,7 +120,7 @@ public class Database implements Closeable {
     }
 
     public void putRollbackPixelNoPrevious(int x, int y, User who, int fromId) {
-        handle.putRollbackPixelNoPrevious(x, y, who.getId(), fromId);
+        handle.putRollbackPixelNoPrevious(x, y, who.getId(), fromId, (byte) App.getConfig().getInt("board.defaultColor"));
     }
 
     public void close() {

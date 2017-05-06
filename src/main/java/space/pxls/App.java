@@ -6,6 +6,7 @@ import com.typesafe.config.ConfigFactory;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.plugins.convert.TypeConverters;
 import space.pxls.data.DBPixelPlacement;
 import space.pxls.data.DBRollbackPixel;
 import space.pxls.data.Database;
@@ -35,6 +36,7 @@ public class App {
     private static int width;
     private static int height;
     private static byte[] board;
+    private static byte defaultColor;
 
     private static Timer mapSaveTimer;
     private static Timer mapBackupTimer;
@@ -49,9 +51,14 @@ public class App {
 
         width = config.getInt("board.width");
         height = config.getInt("board.height");
+        defaultColor = (byte) config.getInt("board.defaultColor");
         board = new byte[width * height];
 
-        loadMap();
+        if (!loadMap()) {
+            for (int i = 0; i < width * height; i++) {
+                board[i] = defaultColor;
+            }
+        }
 
         database = new Database();
         userManager = new UserManager();
@@ -202,8 +209,8 @@ public class App {
                 database.putRollbackPixel(who, rbPixel.fromId, rbPixel.toPixel.id);
             } else { //else rollback to blank canvas
                 DBPixelPlacement fromPixel = database.getPixelByID(rbPixel.fromId);
-                putPixel(fromPixel.x, fromPixel.y, 0, who, false, "(rollback)", false);
-                forBroadcast.add(new Packet.ServerPlace.Pixel(fromPixel.x, fromPixel.y, 0));
+                putPixel(fromPixel.x, fromPixel.y, defaultColor, who, false, "(rollback)", false);
+                forBroadcast.add(new Packet.ServerPlace.Pixel(fromPixel.x, fromPixel.y, defaultColor));
                 database.putRollbackPixelNoPrevious(fromPixel.x, fromPixel.y, who, fromPixel.id);
             }
         }
@@ -222,15 +229,17 @@ public class App {
         server.broadcast_noshadow(new Packet.ServerPlace(forBroadcast));
     }
 
-    private static void loadMap() {
+    private static boolean loadMap() {
         try {
             byte[] bytes = Files.readAllBytes(getStorageDir().resolve("board.dat"));
             System.arraycopy(bytes, 0, board, 0, width * height);
         } catch (NoSuchFileException e) {
             System.out.println("Warning: Cannot find board.dat in working directory, using blank board");
+            return false;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return true;
     }
 
     public static void saveMap() {

@@ -37,10 +37,10 @@ public interface DAO extends Closeable {
     void putRollbackPixel(@Bind("who") int who, @Bind("from_id") int fromId, @Bind("to_id") int toId);
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
-            "VALUES (:x, :y, 0, :who, :from_id, true, false);" +
+            "VALUES (:x, :y, :default_color, :who, :from_id, true, false);" +
             "UPDATE pixels SET most_recent = false WHERE x = :x and y = :y;" +
             "UPDATE users SET pixel_count = pixel_count - 1 WHERE id = :who")
-    void putRollbackPixelNoPrevious(@Bind("x") int x, @Bind("y") int y, @Bind("who") int who, @Bind("from_id") int fromId);
+    void putRollbackPixelNoPrevious(@Bind("x") int x, @Bind("y") int y, @Bind("who") int who, @Bind("from_id") int fromId, @Bind("default_color") byte defaultColor);
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
             "VALUES (:x, :y, :color, :who, NULL, true, false);" +
