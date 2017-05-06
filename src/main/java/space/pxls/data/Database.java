@@ -75,13 +75,13 @@ public class Database implements Closeable {
             try {
                 int prevId = toIntExact((long) entry.get("secondary_id"));
                 toPixel = handle.getPixel(prevId); //if previous pixel exists
-                //while the user who placed the previous pixel is banned
+                // while the user who placed the previous pixel is banned
                 while (toPixel.role.lessThan(Role.GUEST) || toPixel.banExpiry > Instant.now().toEpochMilli() || toPixel.userId == who.getId()) {
                     if (toPixel.secondaryId != 0) {
                         toPixel = handle.getPixel(toPixel.secondaryId); //if is banned gets previous pixel
                     } else {
-                        toPixel = null; //if is banned but no previous pixel exists return blank pixel
-                        break; //and do reason to loop because blank pixel isn't place by an user
+                        toPixel = null; // if is banned but no previous pixel exists return blank pixel
+                        break; // and no reason to loop because blank pixel isn't placed by an user
                     }
                 }
             } catch (NullPointerException e) { // .get() throws NullPointerException if secondary_id is NULL
@@ -93,19 +93,18 @@ public class Database implements Closeable {
         return pixels;
     }
 
-    //
     public List<DBPixelPlacement> getUndoPixels(User who) {
         Handle h = dbi.open();
         List<Map<String, Object>> output = h
-                .createQuery("SELECT DISTINCT id, secondary_id FROM pixels WHERE rollback_action AND who = :who AND secondary_id != NULL")
+                .createQuery("SELECT DISTINCT secondary_id FROM pixels WHERE rollback_action AND who = :who AND secondary_id IS NOT NULL")
                 .bind("who", who.getId())
-                .list(); //this selects all pixels that we previously have rolled back. If we have rolled back more than once this will return DISTINCT values
+                .list(); // this selects all pixels that we previously have rolled back.
         List<DBPixelPlacement> pixels = new ArrayList<>();
         for (Map<String, Object> entry : output) {
-            int fromId = toIntExact((long) entry.get("secondary_id")); //this can't return NULL because every rollback pixel has secondary_id
-            DBPixelPlacement fromPixel = handle.getPixel(fromId); //get the original pixel, the one that we rolled back
-            if (handle.getCanUndo(fromPixel.x, fromPixel.y, fromPixel.id)) { //this basically checks if there are pixels that are more recent
-                pixels.add(fromPixel); //add and later return
+            int fromId = toIntExact((long) entry.get("secondary_id"));
+            DBPixelPlacement fromPixel = handle.getPixel(fromId); // get the original pixel, the one that we previously rolled back
+            if (handle.getCanUndo(fromPixel.x, fromPixel.y, fromPixel.id)) { // this basically checks if there are pixels that are more recent
+                pixels.add(fromPixel); // add and later return
             }
         }
         h.close();

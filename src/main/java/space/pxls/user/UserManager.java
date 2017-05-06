@@ -124,11 +124,11 @@ public class UserManager {
     }
 
     public void banUser(User user, long timeFromNowSeconds, String reason) {
-        banUser(user, timeFromNowSeconds, reason, 24*3600);
+        banUser(user, timeFromNowSeconds, reason, 0);
     }
 
     public void banUser(User user, long timeFromNowSeconds) {
-        banUser(user, timeFromNowSeconds, "", 24*3600);
+        banUser(user, timeFromNowSeconds, "", 0);
     }
 
     public void unbanUser(User user) {

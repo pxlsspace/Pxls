@@ -200,9 +200,9 @@ public class App {
                 putPixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color, who, false, "(rollback)", false);
                 forBroadcast.add(new Packet.ServerPlace.Pixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color));
                 database.putRollbackPixel(who, rbPixel.fromId, rbPixel.toPixel.id);
-            }else{ //else rollback to blank canvas
+            } else { //else rollback to blank canvas
                 DBPixelPlacement fromPixel = database.getPixelByID(rbPixel.fromId);
-                putPixel(fromPixel.x, fromPixel.y, 0, who, false, "", false);
+                putPixel(fromPixel.x, fromPixel.y, 0, who, false, "(rollback)", false);
                 forBroadcast.add(new Packet.ServerPlace.Pixel(fromPixel.x, fromPixel.y, 0));
                 database.putRollbackPixelNoPrevious(fromPixel.x, fromPixel.y, who, fromPixel.id);
             }
@@ -213,7 +213,7 @@ public class App {
     public static void undoRollback(User who) {
         List<DBPixelPlacement> pixels = database.getUndoPixels(who); //get all pixels that can and need to be undone
         List<Packet.ServerPlace.Pixel> forBroadcast = new ArrayList<>();
-        for (DBPixelPlacement fromPixel: pixels) {
+        for (DBPixelPlacement fromPixel : pixels) {
             //restores original pixel
             putPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, false, "(undo)", false); //in board[]
             forBroadcast.add(new Packet.ServerPlace.Pixel(fromPixel.x, fromPixel.y, fromPixel.color)); //in websocket
