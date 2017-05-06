@@ -189,16 +189,20 @@ public class App {
         if (seconds <= 0) {
             return;
         }
-        List<DBRollbackPixel> pixels = database.getRollbackPixels(who, seconds);
+        List<DBRollbackPixel> pixels = database.getRollbackPixels(who, seconds); //get all pixels that can and need to be rolled back
         List<Packet.ServerPlace.Pixel> forBroadcast = new ArrayList<>();
         for (DBRollbackPixel rbPixel : pixels) {
-            if (rbPixel.toPixel != null) {
-                putPixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color, who, false, "", false);
+            //This is same for both instances
+            //  putPixel() logs and updates the board[]
+            //  forBroadcast.add() adds the pixel and later broadcasts it via websocket
+            //  putRollbackPixel() adds rollback pixel to database (TABLE pixels) for undo and timelapse purposes
+            if (rbPixel.toPixel != null) { //if previous pixel (the one we are rolling back to) exists
+                putPixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color, who, false, "(rollback)", false);
                 forBroadcast.add(new Packet.ServerPlace.Pixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color));
-                database.putRollbackPixel(who, rbPixel.toPixel.id, rbPixel.fromId);
-            }else{
+                database.putRollbackPixel(who, rbPixel.fromId, rbPixel.toPixel.id);
+            }else{ //else rollback to blank canvas
                 DBPixelPlacement fromPixel = database.getPixelByID(rbPixel.fromId);
-                putPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, false, "", false);
+                putPixel(fromPixel.x, fromPixel.y, 0, who, false, "", false);
                 forBroadcast.add(new Packet.ServerPlace.Pixel(fromPixel.x, fromPixel.y, 0));
                 database.putRollbackPixelNoPrevious(fromPixel.x, fromPixel.y, who, fromPixel.id);
             }
@@ -207,7 +211,15 @@ public class App {
     }
 
     public static void undoRollback(User who) {
-
+        List<DBPixelPlacement> pixels = database.getUndoPixels(who); //get all pixels that can and need to be undone
+        List<Packet.ServerPlace.Pixel> forBroadcast = new ArrayList<>();
+        for (DBPixelPlacement fromPixel: pixels) {
+            //restores original pixel
+            putPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, false, "(undo)", false); //in board[]
+            forBroadcast.add(new Packet.ServerPlace.Pixel(fromPixel.x, fromPixel.y, fromPixel.color)); //in websocket
+            database.putUndoPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, fromPixel.id); //in database
+        }
+        server.broadcast_noshadow(new Packet.ServerPlace(forBroadcast));
     }
 
     private static void loadMap() {

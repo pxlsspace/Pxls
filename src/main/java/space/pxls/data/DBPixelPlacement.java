@@ -51,7 +51,7 @@ public class DBPixelPlacement {
                     r.getInt("users.id"),
                     r.getString("users.username"),
                     r.getString("users.login"),
-                    Role.valueOf(r.getString("users.role")),
+                    Role.valueOf(r.getString("users.role")), // TODO: all users might not have valid roles
                     banExpiry == null ? 0 : banExpiry.getTime()
             );
         }

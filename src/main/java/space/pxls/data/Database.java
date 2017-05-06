@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import space.pxls.App;
+import space.pxls.server.Packet;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 
@@ -55,34 +56,64 @@ public class Database implements Closeable {
         return handle.getPixel(x, y);
     }
 
-    public DBPixelPlacement getPixelByID(int id){
+    public DBPixelPlacement getPixelByID(int id) {
         return handle.getPixel(id);
     }
 
-
+    // returns ids of all pixels that should be rolled back and the DBPixelPlacement for all pixels to rollback to
+    // DBRollbackPixel is (DBPixelPlacement and fromID) so it has all the info needed to rollback
     public List<DBRollbackPixel> getRollbackPixels(User who, int fromSeconds) {
         Handle h = dbi.open();
         List<Map<String, Object>> output = h
                 .createQuery("SELECT id, secondary_id FROM pixels WHERE most_recent AND who = :who AND (time + INTERVAL :seconds SECOND > NOW())")
                 .bind("who", who.getId())
                 .bind("seconds", fromSeconds)
-                .list();
+                .list(); //this selects all pixels by the banned user that are the most_recent
         List<DBRollbackPixel> pixels = new ArrayList<>();
         for (Map<String, Object> entry : output) {
-            int prevId = toIntExact((long) entry.get("secondary_id"));
-            DBPixelPlacement toPixel = handle.getPixel(prevId);
-            while (toPixel.role.lessThan(Role.GUEST) || toPixel.banExpiry > Instant.now().toEpochMilli() || toPixel.userId == who.getId()) {
-                if (toPixel.secondaryId != 0) {
-                    toPixel = handle.getPixel(toPixel.secondaryId);
-                } else {
-                    toPixel = null;
-                    break;
+            DBPixelPlacement toPixel;
+            try {
+                int prevId = toIntExact((long) entry.get("secondary_id"));
+                toPixel = handle.getPixel(prevId); //if previous pixel exists
+                //while the user who placed the previous pixel is banned
+                while (toPixel.role.lessThan(Role.GUEST) || toPixel.banExpiry > Instant.now().toEpochMilli() || toPixel.userId == who.getId()) {
+                    if (toPixel.secondaryId != 0) {
+                        toPixel = handle.getPixel(toPixel.secondaryId); //if is banned gets previous pixel
+                    } else {
+                        toPixel = null; //if is banned but no previous pixel exists return blank pixel
+                        break; //and do reason to loop because blank pixel isn't place by an user
+                    }
                 }
+            } catch (NullPointerException e) { // .get() throws NullPointerException if secondary_id is NULL
+                toPixel = null; //blank pixel
             }
-            pixels.add(new DBRollbackPixel(toPixel, toIntExact((long) entry.get("id"))));
+            pixels.add(new DBRollbackPixel(toPixel, toIntExact((long) entry.get("id")))); //add and later return
         }
         h.close();
         return pixels;
+    }
+
+    //
+    public List<DBPixelPlacement> getUndoPixels(User who) {
+        Handle h = dbi.open();
+        List<Map<String, Object>> output = h
+                .createQuery("SELECT DISTINCT id, secondary_id FROM pixels WHERE rollback_action AND who = :who")
+                .bind("who", who.getId())
+                .list(); //this selects all pixels that we previously have rolled back. If we have rolled back more than once this will return DISTINCT values
+        List<DBPixelPlacement> pixels = new ArrayList<>();
+        for (Map<String, Object> entry : output) {
+            int fromId = toIntExact((long) entry.get("secondary_id")); //this can't return NULL because every rollback pixel has secondary_id
+            DBPixelPlacement fromPixel = handle.getPixel(fromId); //get the original pixel, the one that we rolled back
+            if (handle.getCanUndo(fromPixel.x, fromPixel.y, fromPixel.id)) { //this basically checks if there are pixels that are more recent
+                pixels.add(fromPixel); //add and later return
+            }
+        }
+        h.close();
+        return pixels;
+    }
+
+    public void putUndoPixel(int x, int y, int color, User who, int fromId) {
+        handle.putUndoPixel(x, y, (byte) color, who.getId(), fromId);
     }
 
     public void putRollbackPixel(User who, int fromId, int toId) {
@@ -91,25 +122,6 @@ public class Database implements Closeable {
 
     public void putRollbackPixelNoPrevious(int x, int y, User who, int fromId) {
         handle.putRollbackPixelNoPrevious(x, y, who.getId(), fromId);
-    }
-
-    public void updateCurrentPixel(int id, boolean isCurrent) {
-        handle.updateCurrentPixel(id, isCurrent);
-    }
-
-    public void updateCurrentPixel(int x, int y, int id) {
-        handle.updateCurrentPixel(x, y, id);
-    }
-
-    public List<DBPixelPlacement> getRollbackPixels(User who) {
-        Handle h = dbi.open();
-        List<Map<String, Object>> output = h.createQuery("SELECT * FROM rollback_pixels WHERE who = :who").bind("who", who.getId()).list();
-        List<DBPixelPlacement> pixels = new ArrayList<>();
-        for (Map<String, Object> entry : output) {
-
-        }
-        h.close();
-        return pixels;
     }
 
     public void close() {

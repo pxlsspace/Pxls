@@ -128,13 +128,14 @@ public class UserManager {
     }
 
     public void banUser(User user, long timeFromNowSeconds) {
-        banUser(user, timeFromNowSeconds, "", 0);
+        banUser(user, timeFromNowSeconds, "", 24*3600);
     }
 
     public void unbanUser(User user) {
         banUser(user, 0);
         App.getDatabase().setUserRole(user, Role.USER);
         user.setRole(Role.USER);
+        App.undoRollback(user);
     }
 
     public void permaBanUser(User user, String reason, int rollback_time) {
