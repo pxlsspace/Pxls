@@ -19,8 +19,7 @@ public interface DAO extends Closeable {
             "time TIMESTAMP NOT NULL DEFAULT now(6)," +
             "mod_action BOOLEAN NOT NULL DEFAULT false," +
             "rollback_action BOOLEAN NOT NULL DEFAULT false," +
-            "most_recent BOOLEAN NOT NULL DEFAULT true)")
-        //is true and is the only thing we alter
+            "most_recent BOOLEAN NOT NULL DEFAULT true)") //is true and is the only thing we alter
     void createPixelsTable();
 
 

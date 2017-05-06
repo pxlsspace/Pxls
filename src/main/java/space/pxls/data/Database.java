@@ -29,7 +29,7 @@ public class Database implements Closeable {
         }
 
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(App.getConfig().getString("database.url"));
+        config.setJdbcUrl(App.getConfig().getString("database.url") + "?allowMultiQueries=true");
         config.setUsername(App.getConfig().getString("database.user"));
         config.setPassword(App.getConfig().getString("database.pass"));
         config.addDataSourceProperty("cachePrepStmts", "true");
