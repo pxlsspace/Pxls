@@ -97,7 +97,7 @@ public class Database implements Closeable {
     public List<DBPixelPlacement> getUndoPixels(User who) {
         Handle h = dbi.open();
         List<Map<String, Object>> output = h
-                .createQuery("SELECT DISTINCT id, secondary_id FROM pixels WHERE rollback_action AND who = :who")
+                .createQuery("SELECT DISTINCT id, secondary_id FROM pixels WHERE rollback_action AND who = :who AND secondary_id != NULL")
                 .bind("who", who.getId())
                 .list(); //this selects all pixels that we previously have rolled back. If we have rolled back more than once this will return DISTINCT values
         List<DBPixelPlacement> pixels = new ArrayList<>();
