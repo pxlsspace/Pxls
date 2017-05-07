@@ -7,7 +7,7 @@ import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
 
 import java.io.Closeable;
 
-@RegisterMapper({DBUser.Mapper.class, DBPixelPlacement.Mapper.class, DBPixelPlacementUser.Mapper.class, DBUserBanReason.Mapper.class})
+@RegisterMapper({DBUser.Mapper.class, DBPixelPlacement.Mapper.class, DBPixelPlacementUser.Mapper.class, DBUserBanReason.Mapper.class, DBExists.Mapper.class})
 public interface DAO extends Closeable {
     @SqlUpdate("CREATE TABLE IF NOT EXISTS pixels (" +
             "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT," +
@@ -65,7 +65,7 @@ public interface DAO extends Closeable {
             "username VARCHAR(32) NOT NULL," +
             "login VARCHAR(64) NOT NULL," +
             "signup_time TIMESTAMP NOT NULL DEFAULT now(6)," +
-            "last_pixel_time TIMESTAMP," +
+            "cooldown_expiry TIMESTAMP," +
             "role VARCHAR(16) NOT NULL DEFAULT 'USER'," +
             "ban_expiry TIMESTAMP," +
             "signup_ip BINARY(16)," +
@@ -74,8 +74,8 @@ public interface DAO extends Closeable {
             "pixel_count INT UNSIGNED NOT NULL DEFAULT 0)")
     void createUsersTable();
 
-    @SqlUpdate("UPDATE users SET last_pixel_time = now(6) WHERE id = :id")
-    void updateUserTime(@Bind("id") int userId);
+    @SqlUpdate("UPDATE users SET cooldown_expiry = now(6) + :seconds WHERE id = :id")
+    void updateUserTime(@Bind("id") int userId, @Bind("seconds") long sec);
 
     @SqlUpdate("UPDATE users SET role = :role WHERE id = :id")
     void updateUserRole(@Bind("id") int userId, @Bind("role") String newRole);
@@ -100,6 +100,9 @@ public interface DAO extends Closeable {
 
     @SqlQuery("SELECT ban_reason FROM users WHERE id = :id")
     DBUserBanReason getUserBanReason(@Bind("id") int userId);
+
+    @SqlQuery("SELECT 1 FROM pixels WHERE x = :x AND y = :y AND most_recent")
+    DBExists didPixelChange(@Bind("x") int x, @Bind("y") int y);
 
     @SqlUpdate("CREATE TABLE IF NOT EXISTS sessions ("+
             "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,"+

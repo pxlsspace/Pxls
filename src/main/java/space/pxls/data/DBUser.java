@@ -12,15 +12,15 @@ public class DBUser {
     public int id;
     public String username;
     public String login;
-    public long lastPlaceTime;
+    public long cooldownExpiry;
     public Role role;
     public long banExpiry;
 
-    public DBUser(int id, String username, String login, long lastPlaceTime, Role role, long banExpiry) {
+    public DBUser(int id, String username, String login, long cooldownExpiry, Role role, long banExpiry) {
         this.id = id;
         this.username = username;
         this.login = login;
-        this.lastPlaceTime = lastPlaceTime;
+        this.cooldownExpiry = cooldownExpiry;
         this.role = role;
         this.banExpiry = banExpiry;
     }
@@ -28,7 +28,7 @@ public class DBUser {
     public static class Mapper implements ResultSetMapper<DBUser> {
         @Override
         public DBUser map(int index, ResultSet r, StatementContext ctx) throws SQLException {
-            Timestamp stamp = r.getTimestamp("last_pixel_time");
+            Timestamp stamp = r.getTimestamp("cooldown_expiry");
             Timestamp ban = r.getTimestamp("ban_expiry");
             return new DBUser(
                     r.getInt("id"),

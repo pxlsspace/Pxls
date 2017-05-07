@@ -46,10 +46,10 @@ public class Database implements Closeable {
 
     public void placePixel(int x, int y, int color, User who, boolean mod_action) {
         handle.putPixel(x, y, (byte) color, who != null ? who.getId() : null, mod_action);
+    }
 
-        if (who != null) {
-            handle.updateUserTime(who.getId());
-        }
+    public void updateUserTime(int uid, long seconds) {
+        handle.updateUserTime(uid, seconds);
     }
 
     public DBPixelPlacement getPixelAt(int x, int y) {
@@ -184,5 +184,13 @@ public class Database implements Closeable {
 
     public void clearOldSessions() {
         handle.clearOldSessions();
+    }
+
+    public boolean didPixelChange(int x, int y) {
+        DBExists e = handle.didPixelChange(x, y);
+        if (e == null) {
+            return false;
+        }
+        return true;
     }
 }
