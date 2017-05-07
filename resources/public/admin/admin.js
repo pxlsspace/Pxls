@@ -81,6 +81,8 @@
                             if (fn) {
                                 fn();
                             }
+                        }).fail(function () {
+                            admin.alert.show("Something went wrong! Perhaps insufficient permissions?");
                         });
                     })
                 },

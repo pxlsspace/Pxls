@@ -1133,7 +1133,7 @@ window.App = (function () {
                                 $("<span>").text(data[o[1]])
                             );
                         }),
-                        $("<div>").addClass("button").text("Close").click(function () {
+                        $("<div>").addClass("button").css("float", "right").text("Close").click(function () {
                             self.elements.lookup.fadeOut(200);
                         })
                     ).fadeIn(200);

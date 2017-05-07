@@ -65,7 +65,8 @@ public class WebHandler {
 
     public void ban(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
-        if (user != null) {
+        User user_perform = exchange.getAttachment(AuthReader.USER);
+        if (user != null && user.getRole().lessThan(user_perform.getRole())) {
             String time = "86400";
             FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
             FormData.FormValue time_form = data.getFirst("time");
@@ -93,7 +94,8 @@ public class WebHandler {
 
     public void permaban(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
-        if (user != null) {
+        User user_perform = exchange.getAttachment(AuthReader.USER);
+        if (user != null && user.getRole().lessThan(user_perform.getRole())) {
             App.getUserManager().permaBanUser(user, getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             exchange.setStatusCode(200);
@@ -104,7 +106,8 @@ public class WebHandler {
 
     public void shadowban(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
-        if (user != null) {
+        User user_perform = exchange.getAttachment(AuthReader.USER);
+        if (user != null && user.getRole().lessThan(user_perform.getRole())) {
             App.getUserManager().shadowBanUser(user, getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             exchange.setStatusCode(200);
