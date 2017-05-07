@@ -26,20 +26,20 @@ public interface DAO extends Closeable {
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, mod_action)" +
             "VALUES (:x, :y, :color, :who, (SELECT id FROM pixels AS pp WHERE pp.x = :x AND pp.y = :y AND pp.most_recent),  :mod);" +
             "UPDATE pixels SET most_recent = false WHERE x = :x AND y = :y AND NOT id = LAST_INSERT_ID();" +
-            "UPDATE users SET pixel_count = pixel_count + 1 WHERE id = :who;")
+            "IF NOT :mod THEN UPDATE users SET pixel_count = pixel_count + 1 WHERE id = :who; END IF;")
     void putPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("mod") boolean mod);
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
             "SELECT x, y, color, :who, :from_id, true, false FROM pixels AS pp WHERE pp.id = :to_id;" +
             "UPDATE pixels SET most_recent = true WHERE id = :to_id;" +
             "UPDATE pixels SET most_recent = false WHERE id = :from_id;" +
-            "UPDATE users SET pixel_count = pixel_count - 1 WHERE id = :who")
+            "UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0) WHERE id = :who")
     void putRollbackPixel(@Bind("who") int who, @Bind("from_id") int fromId, @Bind("to_id") int toId);
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
             "VALUES (:x, :y, :default_color, :who, :from_id, true, false);" +
             "UPDATE pixels SET most_recent = false WHERE x = :x and y = :y;" +
-            "UPDATE users SET pixel_count = pixel_count - 1 WHERE id = :who")
+            "UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0) WHERE id = :who")
     void putRollbackPixelNoPrevious(@Bind("x") int x, @Bind("y") int y, @Bind("who") int who, @Bind("from_id") int fromId, @Bind("default_color") byte defaultColor);
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
