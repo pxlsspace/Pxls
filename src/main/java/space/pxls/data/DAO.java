@@ -14,19 +14,48 @@ public interface DAO extends Closeable {
             "x INT UNSIGNED NOT NULL," +
             "y INT UNSIGNED NOT NULL," +
             "color TINYINT UNSIGNED NOT NULL," +
-            "prev_color TINYINT UNSIGNED NOT NULL DEFAULT 0," +
             "who INT UNSIGNED," +
+            "secondary_id INT UNSIGNED," + //is previous pixel's id normally, is the id that was changed from for rollback action, is NULL if there's no previous or it was undo of rollback
             "time TIMESTAMP NOT NULL DEFAULT now(6)," +
             "mod_action BOOLEAN NOT NULL DEFAULT false," +
-            "rollback_action BOOLEAN NOT NULL DEFAULT false)")
+            "rollback_action BOOLEAN NOT NULL DEFAULT false," +
+            "most_recent BOOLEAN NOT NULL DEFAULT true)") //is true and is the only thing we alter
     void createPixelsTable();
 
-    @SqlUpdate("INSERT INTO pixels (x, y, color, prev_color, who, mod_action, rollback_action) VALUES (:x, :y, :color, :prev, :who, :mod, :rollback)")
-    void putPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("prev") byte prev,
-                  @Bind("who") Integer who, @Bind("mod") boolean mod, @Bind("rollback") boolean rollback);
+
+    @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, mod_action)" +
+            "VALUES (:x, :y, :color, :who, (SELECT id FROM pixels AS pp WHERE pp.x = :x AND pp.y = :y AND pp.most_recent),  :mod);" +
+            "UPDATE pixels SET most_recent = false WHERE x = :x AND y = :y AND NOT id = LAST_INSERT_ID();" +
+            "UPDATE users SET pixel_count = pixel_count + 1 WHERE id = :who;")
+    void putPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("mod") boolean mod);
+
+    @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
+            "SELECT x, y, color, :who, :from_id, true, false FROM pixels AS pp WHERE pp.id = :to_id;" +
+            "UPDATE pixels SET most_recent = true WHERE id = :to_id;" +
+            "UPDATE pixels SET most_recent = false WHERE id = :from_id;" +
+            "UPDATE users SET pixel_count = pixel_count - 1 WHERE id = :who")
+    void putRollbackPixel(@Bind("who") int who, @Bind("from_id") int fromId, @Bind("to_id") int toId);
+
+    @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
+            "VALUES (:x, :y, :default_color, :who, :from_id, true, false);" +
+            "UPDATE pixels SET most_recent = false WHERE x = :x and y = :y;" +
+            "UPDATE users SET pixel_count = pixel_count - 1 WHERE id = :who")
+    void putRollbackPixelNoPrevious(@Bind("x") int x, @Bind("y") int y, @Bind("who") int who, @Bind("from_id") int fromId, @Bind("default_color") byte defaultColor);
+
+    @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
+            "VALUES (:x, :y, :color, :who, NULL, true, false);" +
+            "UPDATE pixels SET most_recent = true WHERE id = :from_id;" +
+            "UPDATE users SET pixel_count = pixel_count + 1 WHERE id = :who")
+    void putUndoPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("from_id") int fromId);
 
     @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users ON pixels.who = users.id WHERE x = :x AND y = :y ORDER BY time DESC LIMIT 1")
     DBPixelPlacement getPixel(@Bind("x") int x, @Bind("y") int y);
+
+    @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users on pixels.who = users.id WHERE pixels.id = :id")
+    DBPixelPlacement getPixel(@Bind("id") int id);
+
+    @SqlQuery("SELECT NOT EXISTS(SELECT 1 FROM pixels WHERE x = :x AND y = :y AND most_recent AND id > :id)")
+    boolean getCanUndo(@Bind("x") int x, @Bind("y") int y, @Bind("id") int id);
 
     @SqlUpdate("CREATE TABLE IF NOT EXISTS users (" +
             "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT," +
@@ -38,7 +67,8 @@ public interface DAO extends Closeable {
             "ban_expiry TIMESTAMP," +
             "signup_ip BINARY(16)," +
             "last_ip BINARY(16)," +
-            "ban_reason VARCHAR(512) NOT NULL DEFAULT '')")
+            "ban_reason VARCHAR(512) NOT NULL DEFAULT ''," +
+            "pixel_count INT UNSIGNED NOT NULL DEFAULT 0)")
     void createUsersTable();
 
     @SqlUpdate("UPDATE users SET last_pixel_time = now(6) WHERE id = :id")
