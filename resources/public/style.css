@@ -7,7 +7,7 @@ z-index:
  6 - palette
  7 - timer
  8 - login overlay
- 9 - ui blobs
+ 9 - ui blobs, lookup
 10 - admin boxes
 11 - drawer openers
 12 - drawer
@@ -114,6 +114,18 @@ a, a:hover, a:visited, a:active {
     border: 1px solid #ccc;
     padding: 5px 10px;
     border-radius: 3px;
+}
+
+.lookup {
+    top: 50px;
+    right: 16px;
+    z-index: 9;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    background-color: #eee;
+    padding: 16px;
+
+    position: fixed;
 }
 
 .button:hover {

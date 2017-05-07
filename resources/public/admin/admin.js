@@ -295,17 +295,18 @@
         lookup = (function() {
             var self = {
                 elements: {
-                    lookup: $("<div>").addClass("admin-lookup")
+                    lookup: $(".lookup")
                 },
                 create: function (data) {
                     data.coords = "(" + data.x + ", " + data.y + ")";
-                    data.time = (new Date(data.time)).toLocaleString()
+                    data.time = (new Date(data.time)).toLocaleString();
                     self.elements.lookup.empty().append(
                         $.map([
                             ["Coords", "coords"],
                             ["Username", "username"],
                             ["Login", "login"],
-                            ["Time", "time"]
+                            ["Time", "time_str"],
+                            ["Total Pixels", "pixel_count"]
                         ], function (o) {
                             return $("<div>").append(
                                 $("<b>").text(o[0]+": "),
@@ -329,24 +330,11 @@
                         )
                     ).fadeIn(200);
                 },
-                event: function (evt) {
-                    if (evt.shiftKey) {
-                        var pos = admin.board.fromScreen(evt.clientX, evt.clientY);
-
-                        $.get("/lookup", {x: Math.floor(pos.x), y: Math.floor(pos.y)}, function (data) {
-                            if (data) {
-                                self.create(data);
-                            }
-                        });
-                    }
-                },
                 init: function () {
-                    self.elements.lookup.hide().appendTo(document.body);
-                    admin.board.getRenderBoard().on("click", self.event);
+                    admin.lookup.registerHandle(self.create);
                 },
                 deinit: function () {
-                    self.elements.lookup.remove();
-                    admin.board.getRenderBoard().off("click", self.event);
+                    admin.lookup.clearHandle(self.create);
                 }
             };
             return {

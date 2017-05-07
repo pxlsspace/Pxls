@@ -15,6 +15,7 @@ import space.pxls.auth.DiscordAuthService;
 import space.pxls.auth.GoogleAuthService;
 import space.pxls.auth.RedditAuthService;
 import space.pxls.data.DBPixelPlacement;
+import space.pxls.data.DBPixelPlacementUser;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.util.AuthReader;
@@ -265,11 +266,6 @@ public class WebHandler {
 
     public void lookup(HttpServerExchange exchange) {
         User user = exchange.getAttachment(AuthReader.USER);
-        if (user == null || user.getRole().lessThan(Role.MODERATOR)) {
-            exchange.setStatusCode(StatusCodes.FORBIDDEN);
-            exchange.endExchange();
-            return;
-        }
 
         Deque<String> xq = exchange.getQueryParameters().get("x");
         Deque<String> yq = exchange.getQueryParameters().get("y");
@@ -288,9 +284,15 @@ public class WebHandler {
             return;
         }
 
-        DBPixelPlacement pp = App.getDatabase().getPixelAt(x, y);
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-        exchange.getResponseSender().send(App.getGson().toJson(pp));
+
+        if (user == null || user.getRole().lessThan(Role.MODERATOR)) {
+            DBPixelPlacementUser pp = App.getDatabase().getPixelAtUser(x, y);
+            exchange.getResponseSender().send(App.getGson().toJson(pp));
+        } else {
+            DBPixelPlacement pp = App.getDatabase().getPixelAt(x, y);
+            exchange.getResponseSender().send(App.getGson().toJson(pp));
+        }
     }
 
     private User parseUserFromForm(HttpServerExchange exchange) {

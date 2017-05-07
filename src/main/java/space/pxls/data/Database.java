@@ -56,6 +56,10 @@ public class Database implements Closeable {
         return handle.getPixel(x, y);
     }
 
+    public DBPixelPlacementUser getPixelAtUser(int x, int y) {
+        return handle.getPixelUser(x, y);
+    }
+
     public DBPixelPlacement getPixelByID(int id) {
         return handle.getPixel(id);
     }
@@ -76,7 +80,7 @@ public class Database implements Closeable {
                 int prevId = toIntExact((long) entry.get("secondary_id"));
                 toPixel = handle.getPixel(prevId); //if previous pixel exists
                 // while the user who placed the previous pixel is banned
-                while (toPixel.role.lessThan(Role.GUEST) || toPixel.banExpiry > Instant.now().toEpochMilli() || toPixel.userId == who.getId()) {
+                while (toPixel.role.lessThan(Role.GUEST) || toPixel.ban_expiry > Instant.now().toEpochMilli() || toPixel.userId == who.getId()) {
                     if (toPixel.secondaryId != 0) {
                         toPixel = handle.getPixel(toPixel.secondaryId); //if is banned gets previous pixel
                     } else {
