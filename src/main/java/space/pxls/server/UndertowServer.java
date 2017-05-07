@@ -23,6 +23,8 @@ import space.pxls.user.User;
 import space.pxls.user.Role;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.Map;
@@ -137,15 +139,19 @@ public class UndertowServer {
     public void broadcast_noshadow(Object obj) {
         String json = App.getGson().toJson(obj);
         Map<String, User> users = App.getUserManager().getAllUsersByToken();
+        List<WebSocketChannel> shadowbannedConnections = new ArrayList<>();
         for (User u : users.values()) {
-            if (u.getRole() != Role.SHADOWBANNED) {
-                for (WebSocketChannel channel : u.getConnections()) {
-                    sendRaw(channel, json);
-                }
+            if (u.getRole() == Role.SHADOWBANNED) {
+                shadowbannedConnections.addAll(u.getConnections());
             }
         }
-        
+        for (WebSocketChannel channel : connections) {
+            if (!shadowbannedConnections.contains(channel)) {
+                sendRaw(channel, json);
+            }
+        }
     }
+
 
     private void sendRaw(WebSocketChannel channel, String str) {
         WebSockets.sendText(str, channel, null);
