@@ -15,7 +15,9 @@ import space.pxls.server.UndertowServer;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.user.UserManager;
-import space.pxls.util.Timer;
+import space.pxls.util.PxlsTimer;
+import space.pxls.util.SessionTimer;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -38,8 +40,8 @@ public class App {
     private static byte[] board;
     private static byte defaultColor;
 
-    private static Timer mapSaveTimer;
-    private static Timer mapBackupTimer;
+    private static PxlsTimer mapSaveTimer;
+    private static PxlsTimer mapBackupTimer;
     private static UndertowServer server;
 
     public static void main(String[] args) {
@@ -69,6 +71,8 @@ public class App {
                 handleCommand(s.nextLine());
             }
         }).start();
+
+        new Timer().schedule(new SessionTimer(), 0, 1000 * 3600); // execute once every hour
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             saveMapBackup();
@@ -140,8 +144,8 @@ public class App {
         config = ConfigFactory.parseFile(new File("pxls.conf")).withFallback(ConfigFactory.load());
         config.checkValid(ConfigFactory.load());
 
-        mapSaveTimer = new Timer(config.getDuration("board.saveInterval", TimeUnit.SECONDS));
-        mapBackupTimer = new Timer(config.getDuration("board.backupInterval", TimeUnit.SECONDS));
+        mapSaveTimer = new PxlsTimer(config.getDuration("board.saveInterval", TimeUnit.SECONDS));
+        mapBackupTimer = new PxlsTimer(config.getDuration("board.backupInterval", TimeUnit.SECONDS));
     }
 
 
@@ -261,6 +265,10 @@ public class App {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static Logger getLogger() {
+        return pixelLogger;
     }
 
     public static UserManager getUserManager() {

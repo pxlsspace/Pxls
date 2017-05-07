@@ -24,6 +24,8 @@ import space.pxls.util.IPReader;
 import java.nio.ByteBuffer;
 import java.util.Deque;
 import java.util.Map;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class WebHandler {
@@ -53,6 +55,12 @@ public class WebHandler {
             rollback_int = rollback.getValue();
         }
         return Integer.parseInt(rollback_int);
+    }
+
+    private Cookie pxlsTokenCookie(String loginToken, int days) {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, days);
+        return new CookieImpl("pxls-token", loginToken).setHttpOnly(true).setPath("/").setExpires(cal.getTime());
     }
 
     public void ban(HttpServerExchange exchange) {
@@ -171,7 +179,7 @@ public class WebHandler {
         String loginToken = App.getUserManager().logIn(user, ip);
         exchange.setStatusCode(StatusCodes.SEE_OTHER);
         exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-        exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setPath("/"));
+        exchange.setResponseCookie(pxlsTokenCookie(loginToken, 24));
         exchange.getResponseSender().send("");
     }
 
@@ -219,7 +227,7 @@ public class WebHandler {
                     String loginToken = App.getUserManager().logIn(user, ip);
                     exchange.setStatusCode(StatusCodes.SEE_OTHER);
                     exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-                    exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setPath("/"));
+                    exchange.setResponseCookie(pxlsTokenCookie(loginToken, 24));
                     exchange.getResponseSender().send("");
                 }
             } else {
@@ -249,6 +257,13 @@ public class WebHandler {
 
     public void data(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/binary");
+
+        // let's also update the cookie, if present. This place will get called frequent enough
+        Cookie tokenCookie = exchange.getRequestCookies().get("pxls-token");
+        if (tokenCookie != null) {
+            exchange.setResponseCookie(pxlsTokenCookie(tokenCookie.getValue(), 24));
+        }
+
         exchange.getResponseSender().send(ByteBuffer.wrap(App.getBoardData()));
     }
 
@@ -261,6 +276,7 @@ public class WebHandler {
 
         exchange.setStatusCode(StatusCodes.SEE_OTHER);
         exchange.getResponseHeaders().put(Headers.LOCATION, "/");
+        exchange.setResponseCookie(pxlsTokenCookie("", -1));
         exchange.getResponseSender().send("");
     }
 

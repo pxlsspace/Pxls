@@ -41,6 +41,7 @@ public class UserManager {
 
     public User getByToken(String token) {
         User u = usersByToken.get(token);
+        App.getDatabase().updateSession(token);
         if (u != null) {
             return u;
         }
@@ -48,7 +49,6 @@ public class UserManager {
         if (u == null) {
             return null;
         }
-        App.getDatabase().updateSession(token);
         usersByToken.put(token, u); // insert it in the hashmap for quicker access
         return u;
     }

@@ -181,4 +181,8 @@ public class Database implements Closeable {
     public String getUserBanReason(int id) {
         return handle.getUserBanReason(id).ban_reason;
     }
+
+    public void clearOldSessions() {
+        handle.clearOldSessions();
+    }
 }

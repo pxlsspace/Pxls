@@ -9,13 +9,13 @@ import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
 import space.pxls.user.Role;
 import space.pxls.user.User;
-import space.pxls.util.Timer;
+import space.pxls.util.PxlsTimer;
 
 import java.util.Collections;
 
 public class PacketHandler {
     private UndertowServer server;
-    private Timer userData = new Timer(5);
+    private PxlsTimer userData = new PxlsTimer(5);
 
     public PacketHandler(UndertowServer server) {
         this.server = server;
