@@ -98,7 +98,7 @@ public class User {
         return App.getDatabase().getUserBanReason(this.id);
     }
 
-    public void setCooldown(long seconds) {
+    public void setCooldown(int seconds) {
         cooldownExpiry = System.currentTimeMillis() + (seconds * 1000);
     }
 

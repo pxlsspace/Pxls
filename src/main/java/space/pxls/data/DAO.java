@@ -74,7 +74,7 @@ public interface DAO extends Closeable {
             "pixel_count INT UNSIGNED NOT NULL DEFAULT 0)")
     void createUsersTable();
 
-    @SqlUpdate("UPDATE users SET cooldown_expiry = now(6) + :seconds WHERE id = :id")
+    @SqlUpdate("UPDATE users SET cooldown_expiry = now() + INTERVAL :seconds SECOND WHERE id = :id")
     void updateUserTime(@Bind("id") int userId, @Bind("seconds") long sec);
 
     @SqlUpdate("UPDATE users SET role = :role WHERE id = :id")
