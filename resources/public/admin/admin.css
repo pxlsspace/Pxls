@@ -30,7 +30,7 @@
     left: 172px;
 }
 
-.admin-lookup, .admin-check {
+.admin-check {
     border-radius: 0 8px 8px 8px;
     border: 1px solid #ccc;
     background-color: #eee;
@@ -43,12 +43,6 @@
     left: 50%;
     transform: translateX(-50%) translateY(-50%);
     padding-bottom: 60px;
-}
-
-.admin-lookup {
-    top: 16px;
-    right: 16px;
-    z-index: 999;
 }
 
 .admin input[type=text] {

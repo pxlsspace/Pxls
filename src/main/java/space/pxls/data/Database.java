@@ -10,6 +10,7 @@ import space.pxls.user.Role;
 import space.pxls.user.User;
 
 import java.io.Closeable;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,7 @@ public class Database implements Closeable {
         }
 
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(App.getConfig().getString("database.url"));
+        config.setJdbcUrl(App.getConfig().getString("database.url") + "?allowMultiQueries=true");
         config.setUsername(App.getConfig().getString("database.user"));
         config.setPassword(App.getConfig().getString("database.pass"));
         config.addDataSourceProperty("cachePrepStmts", "true");
@@ -43,46 +44,87 @@ public class Database implements Closeable {
         handle.createSessionsTable();
     }
 
-    public void placePixel(int x, int y, int color, int prev, User who, boolean mod_action, boolean rollback_action) {
-        handle.putPixel(x, y, (byte) color, (byte) prev, who != null ? who.getId() : null, mod_action, rollback_action);
+    public void placePixel(int x, int y, int color, User who, boolean mod_action) {
+        handle.putPixel(x, y, (byte) color, who != null ? who.getId() : null, mod_action);
+    }
 
-        if (who != null) {
-            handle.updateUserTime(who.getId());
-        }
+    public void updateUserTime(int uid, long seconds) {
+        handle.updateUserTime(uid, seconds);
     }
 
     public DBPixelPlacement getPixelAt(int x, int y) {
         return handle.getPixel(x, y);
     }
 
-/*
-This is a lengthy explenation of the huge query in getPrevoiusPixels.
-Let's break up the query first
-SELECT x, y, prev_color FROM pixels AS p WHERE // we want to select the x, y and prev_color
-    p.who = :who // pixels by our user
-    AND p.rollback_action = :undo // pixels that are "legit" actions on banning and "non-legit" actions on reverting
-    AND (:undo OR p.time + INTERVAL :seconds SECOND > NOW()) // and were recent (undoing doesn't matter)
-    AND NOT EXISTS( // this entire block now checks if there are any more recent pixels set.
-        // so this should select pixels now that were added ontop
-        SELECT 1 FROM pixels AS pp INNER JOIN users AS uu ON uu.id = pp.who WHERE
-            p.x=pp.x AND p.y=pp.y AND pp.id > p.id // coordinates must be the same and must be placed afterwards
-        AND (:undo OR NOT pp.rollback_action) // when banning we only want to select "legit" pixels, when reverting we need obviously all
-        AND pp.who != :who // we only want pixels that weren't placed by us
-        AND NOT (uu.ban_expiry > NOW() OR uu.role = 'BANNED' OR uu.role = 'SHADOWBANNED') // and we don#t want the user to be banned
-) GROUP BY x, y; // and now let's filterthe multiple pixels out
-*/
-    public List<Packet.ServerPlace.Pixel> getPreviousPixels(User who, boolean isUndo, int fromSeconds) {
+    public DBPixelPlacementUser getPixelAtUser(int x, int y) {
+        return handle.getPixelUser(x, y);
+    }
+
+    public DBPixelPlacement getPixelByID(int id) {
+        return handle.getPixel(id);
+    }
+
+    // returns ids of all pixels that should be rolled back and the DBPixelPlacement for all pixels to rollback to
+    // DBRollbackPixel is (DBPixelPlacement and fromID) so it has all the info needed to rollback
+    public List<DBRollbackPixel> getRollbackPixels(User who, int fromSeconds) {
         Handle h = dbi.open();
-        List<Map<String, Object>> output = h.createQuery("SELECT x, y, prev_color FROM pixels AS p WHERE p.who = :who AND p.rollback_action = :undo AND (:undo OR p.time + INTERVAL :seconds SECOND > NOW()) AND NOT EXISTS(SELECT 1 FROM pixels AS pp INNER JOIN users AS uu ON uu.id = pp.who WHERE p.x=pp.x AND p.y=pp.y AND pp.id > p.id AND (:undo OR NOT pp.rollback_action) AND pp.who != :who AND NOT (uu.ban_expiry > NOW() OR uu.role = 'BANNED' OR uu.role = 'SHADOWBANNED')) GROUP BY x, y;").bind("who", who.getId()).bind("undo", isUndo).bind("seconds", fromSeconds).list();
-        List<Packet.ServerPlace.Pixel> pixels = new ArrayList<>();
+        List<Map<String, Object>> output = h
+                .createQuery("SELECT id, secondary_id FROM pixels WHERE most_recent AND who = :who AND (time + INTERVAL :seconds SECOND > NOW())")
+                .bind("who", who.getId())
+                .bind("seconds", fromSeconds)
+                .list(); //this selects all pixels by the banned user that are the most_recent
+        List<DBRollbackPixel> pixels = new ArrayList<>();
         for (Map<String, Object> entry : output) {
-            int x = toIntExact((long) entry.get("x"));
-            int y = toIntExact((long) entry.get("y"));
-            int color = (int) entry.get("prev_color");
-            pixels.add(new Packet.ServerPlace.Pixel(x, y, color));
+            DBPixelPlacement toPixel;
+            try {
+                int prevId = toIntExact((long) entry.get("secondary_id"));
+                toPixel = handle.getPixel(prevId); //if previous pixel exists
+                // while the user who placed the previous pixel is banned
+                while (toPixel.role.lessThan(Role.GUEST) || toPixel.ban_expiry > Instant.now().toEpochMilli() || toPixel.userId == who.getId()) {
+                    if (toPixel.secondaryId != 0) {
+                        toPixel = handle.getPixel(toPixel.secondaryId); //if is banned gets previous pixel
+                    } else {
+                        toPixel = null; // if is banned but no previous pixel exists return blank pixel
+                        break; // and no reason to loop because blank pixel isn't placed by an user
+                    }
+                }
+            } catch (NullPointerException e) { // .get() throws NullPointerException if secondary_id is NULL
+                toPixel = null; //blank pixel
+            }
+            pixels.add(new DBRollbackPixel(toPixel, toIntExact((long) entry.get("id")))); //add and later return
         }
         h.close();
         return pixels;
+    }
+
+    public List<DBPixelPlacement> getUndoPixels(User who) {
+        Handle h = dbi.open();
+        List<Map<String, Object>> output = h
+                .createQuery("SELECT DISTINCT secondary_id FROM pixels WHERE rollback_action AND who = :who AND secondary_id IS NOT NULL")
+                .bind("who", who.getId())
+                .list(); // this selects all pixels that we previously have rolled back.
+        List<DBPixelPlacement> pixels = new ArrayList<>();
+        for (Map<String, Object> entry : output) {
+            int fromId = toIntExact((long) entry.get("secondary_id"));
+            DBPixelPlacement fromPixel = handle.getPixel(fromId); // get the original pixel, the one that we previously rolled back
+            if (handle.getCanUndo(fromPixel.x, fromPixel.y, fromPixel.id)) { // this basically checks if there are pixels that are more recent
+                pixels.add(fromPixel); // add and later return
+            }
+        }
+        h.close();
+        return pixels;
+    }
+
+    public void putUndoPixel(int x, int y, int color, User who, int fromId) {
+        handle.putUndoPixel(x, y, (byte) color, who.getId(), fromId);
+    }
+
+    public void putRollbackPixel(User who, int fromId, int toId) {
+        handle.putRollbackPixel(who.getId(), fromId, toId);
+    }
+
+    public void putRollbackPixelNoPrevious(int x, int y, User who, int fromId) {
+        handle.putRollbackPixelNoPrevious(x, y, who.getId(), fromId, (byte) App.getConfig().getInt("board.defaultColor"));
     }
 
     public void close() {
@@ -138,5 +180,17 @@ SELECT x, y, prev_color FROM pixels AS p WHERE // we want to select the x, y and
 
     public String getUserBanReason(int id) {
         return handle.getUserBanReason(id).ban_reason;
+    }
+
+    public void clearOldSessions() {
+        handle.clearOldSessions();
+    }
+
+    public boolean didPixelChange(int x, int y) {
+        DBExists e = handle.didPixelChange(x, y);
+        if (e == null) {
+            return false;
+        }
+        return true;
     }
 }

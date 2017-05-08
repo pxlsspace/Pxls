@@ -15,6 +15,7 @@ import space.pxls.auth.DiscordAuthService;
 import space.pxls.auth.GoogleAuthService;
 import space.pxls.auth.RedditAuthService;
 import space.pxls.data.DBPixelPlacement;
+import space.pxls.data.DBPixelPlacementUser;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.util.AuthReader;
@@ -23,6 +24,8 @@ import space.pxls.util.IPReader;
 import java.nio.ByteBuffer;
 import java.util.Deque;
 import java.util.Map;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class WebHandler {
@@ -54,9 +57,16 @@ public class WebHandler {
         return Integer.parseInt(rollback_int);
     }
 
+    private Cookie pxlsTokenCookie(String loginToken, int days) {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, days);
+        return new CookieImpl("pxls-token", loginToken).setHttpOnly(true).setPath("/").setExpires(cal.getTime());
+    }
+
     public void ban(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
-        if (user != null) {
+        User user_perform = exchange.getAttachment(AuthReader.USER);
+        if (user != null && user.getRole().lessThan(user_perform.getRole())) {
             String time = "86400";
             FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
             FormData.FormValue time_form = data.getFirst("time");
@@ -84,7 +94,8 @@ public class WebHandler {
 
     public void permaban(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
-        if (user != null) {
+        User user_perform = exchange.getAttachment(AuthReader.USER);
+        if (user != null && user.getRole().lessThan(user_perform.getRole())) {
             App.getUserManager().permaBanUser(user, getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             exchange.setStatusCode(200);
@@ -95,7 +106,8 @@ public class WebHandler {
 
     public void shadowban(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
-        if (user != null) {
+        User user_perform = exchange.getAttachment(AuthReader.USER);
+        if (user != null && user.getRole().lessThan(user_perform.getRole())) {
             App.getUserManager().shadowBanUser(user, getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             exchange.setStatusCode(200);
@@ -170,7 +182,7 @@ public class WebHandler {
         String loginToken = App.getUserManager().logIn(user, ip);
         exchange.setStatusCode(StatusCodes.SEE_OTHER);
         exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-        exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setPath("/"));
+        exchange.setResponseCookie(pxlsTokenCookie(loginToken, 24));
         exchange.getResponseSender().send("");
     }
 
@@ -218,7 +230,7 @@ public class WebHandler {
                     String loginToken = App.getUserManager().logIn(user, ip);
                     exchange.setStatusCode(StatusCodes.SEE_OTHER);
                     exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-                    exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setPath("/"));
+                    exchange.setResponseCookie(pxlsTokenCookie(loginToken, 24));
                     exchange.getResponseSender().send("");
                 }
             } else {
@@ -248,6 +260,13 @@ public class WebHandler {
 
     public void data(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/binary");
+
+        // let's also update the cookie, if present. This place will get called frequent enough
+        Cookie tokenCookie = exchange.getRequestCookies().get("pxls-token");
+        if (tokenCookie != null) {
+            exchange.setResponseCookie(pxlsTokenCookie(tokenCookie.getValue(), 24));
+        }
+
         exchange.getResponseSender().send(ByteBuffer.wrap(App.getBoardData()));
     }
 
@@ -260,16 +279,12 @@ public class WebHandler {
 
         exchange.setStatusCode(StatusCodes.SEE_OTHER);
         exchange.getResponseHeaders().put(Headers.LOCATION, "/");
+        exchange.setResponseCookie(pxlsTokenCookie("", -1));
         exchange.getResponseSender().send("");
     }
 
     public void lookup(HttpServerExchange exchange) {
         User user = exchange.getAttachment(AuthReader.USER);
-        if (user == null || user.getRole().lessThan(Role.MODERATOR)) {
-            exchange.setStatusCode(StatusCodes.FORBIDDEN);
-            exchange.endExchange();
-            return;
-        }
 
         Deque<String> xq = exchange.getQueryParameters().get("x");
         Deque<String> yq = exchange.getQueryParameters().get("y");
@@ -288,9 +303,15 @@ public class WebHandler {
             return;
         }
 
-        DBPixelPlacement pp = App.getDatabase().getPixelAt(x, y);
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-        exchange.getResponseSender().send(App.getGson().toJson(pp));
+
+        if (user == null || user.getRole().lessThan(Role.MODERATOR)) {
+            DBPixelPlacementUser pp = App.getDatabase().getPixelAtUser(x, y);
+            exchange.getResponseSender().send(App.getGson().toJson(pp));
+        } else {
+            DBPixelPlacement pp = App.getDatabase().getPixelAt(x, y);
+            exchange.getResponseSender().send(App.getGson().toJson(pp));
+        }
     }
 
     private User parseUserFromForm(HttpServerExchange exchange) {

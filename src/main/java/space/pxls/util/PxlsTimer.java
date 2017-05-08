@@ -1,10 +1,10 @@
 package space.pxls.util;
 
-public class Timer {
+public class PxlsTimer {
     private long lastRun;
     private float wait;
 
-    public Timer(float wait) {
+    public PxlsTimer(float wait) {
         this.wait = wait;
     }
 

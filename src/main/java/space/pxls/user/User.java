@@ -7,7 +7,6 @@ import space.pxls.server.UndertowServer;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 
 public class User {
     private int id;
@@ -18,18 +17,18 @@ public class User {
     private boolean overrideCooldown;
     private boolean flaggedForCaptcha = true;
     private boolean justShowedCaptcha;
-    private long lastPlaceTime;
+    private long cooldownExpiry;
 
     // 0 = not banned
     private long banExpiryTime;
 
     private Set<WebSocketChannel> connections = new HashSet<>();
 
-    public User(int id, String name, String login, long lastPlaceTime, Role role, long banExpiryTime) {
+    public User(int id, String name, String login, long cooldownExpiry, Role role, long banExpiryTime) {
         this.id = id;
         this.name = name;
         this.login = login;
-        this.lastPlaceTime = lastPlaceTime;
+        this.cooldownExpiry = cooldownExpiry;
         this.role = role;
         this.banExpiryTime = banExpiryTime;
     }
@@ -41,15 +40,13 @@ public class User {
     public boolean canPlace() {
         if (role.greaterEqual(Role.MODERATOR) && overrideCooldown) return true;
         if (!role.greaterEqual(Role.USER) && role != Role.SHADOWBANNED) return false; // shadowbanned seems to be able to place
-        int serverCooldown = (int) App.getConfig().getDuration("cooldown", TimeUnit.SECONDS);
-        return lastPlaceTime + serverCooldown * 1000 < System.currentTimeMillis();
+        return cooldownExpiry < System.currentTimeMillis();
     }
 
     public float getRemainingCooldown() {
         if (role.greaterEqual(Role.MODERATOR) && overrideCooldown) return 0;
 
-        int serverCooldown = (int) App.getConfig().getDuration("cooldown", TimeUnit.SECONDS);
-        return Math.max(0, lastPlaceTime + serverCooldown * 1000 - System.currentTimeMillis()) / 1000f;
+        return Math.max(0, cooldownExpiry - System.currentTimeMillis()) / 1000f;
     }
 
     public boolean updateCaptchaFlagPrePlace() {
@@ -101,8 +98,8 @@ public class User {
         return App.getDatabase().getUserBanReason(this.id);
     }
 
-    public void resetCooldown() {
-        lastPlaceTime = System.currentTimeMillis();
+    public void setCooldown(long seconds) {
+        cooldownExpiry = System.currentTimeMillis() + (seconds * 1000);
     }
 
     public boolean isOverridingCooldown() {

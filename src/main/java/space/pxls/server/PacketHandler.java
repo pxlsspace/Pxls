@@ -9,13 +9,14 @@ import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
 import space.pxls.user.Role;
 import space.pxls.user.User;
-import space.pxls.util.Timer;
+import space.pxls.util.PxlsTimer;
 
 import java.util.Collections;
+import java.util.concurrent.TimeUnit;
 
 public class PacketHandler {
     private UndertowServer server;
-    private Timer userData = new Timer(5);
+    private PxlsTimer userData = new PxlsTimer(5);
 
     public PacketHandler(UndertowServer server) {
         this.server = server;
@@ -91,6 +92,10 @@ public class PacketHandler {
                 server.send(channel, new Packet.ServerCaptchaRequired());
             } else {
                 if (App.getPixel(cp.x, cp.y) != cp.color) {
+                    int seconds = (int) App.getConfig().getDuration("cooldown", TimeUnit.SECONDS);
+                    if (!App.getDatabase().didPixelChange(cp.x, cp.y)) {
+                        seconds = seconds / 2;
+                    }
                     if (user.isShadowBanned()) {
                         // ok let's just pretend to set a pixel...
                         System.out.println("shadowban pixel!");
@@ -100,12 +105,14 @@ public class PacketHandler {
                         }
                     } else {
                         boolean mod_action = user.isOverridingCooldown();
-                        App.putPixel(cp.x, cp.y, cp.color, user, mod_action, false, ip);
+                        App.putPixel(cp.x, cp.y, cp.color, user, mod_action, ip, true);
                         App.saveMap();
                         broadcastPixelUpdate(cp.x, cp.y, cp.color);
                     }
-                    if (!user.isOverridingCooldown())
-                        user.resetCooldown();
+                    if (!user.isOverridingCooldown()) {
+                        user.setCooldown(seconds);
+                        App.getDatabase().updateUserTime(user.getId(), seconds);
+                    }
                 }
             }
         }

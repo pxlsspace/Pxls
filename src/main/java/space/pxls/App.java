@@ -6,13 +6,18 @@ import com.typesafe.config.ConfigFactory;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.plugins.convert.TypeConverters;
+import space.pxls.data.DBPixelPlacement;
+import space.pxls.data.DBRollbackPixel;
 import space.pxls.data.Database;
 import space.pxls.server.Packet;
 import space.pxls.server.UndertowServer;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.user.UserManager;
-import space.pxls.util.Timer;
+import space.pxls.util.PxlsTimer;
+import space.pxls.util.SessionTimer;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -20,10 +25,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class App {
@@ -36,9 +38,10 @@ public class App {
     private static int width;
     private static int height;
     private static byte[] board;
+    private static byte defaultColor;
 
-    private static Timer mapSaveTimer;
-    private static Timer mapBackupTimer;
+    private static PxlsTimer mapSaveTimer;
+    private static PxlsTimer mapBackupTimer;
     private static UndertowServer server;
 
     public static void main(String[] args) {
@@ -50,9 +53,14 @@ public class App {
 
         width = config.getInt("board.width");
         height = config.getInt("board.height");
+        defaultColor = (byte) config.getInt("board.defaultColor");
         board = new byte[width * height];
 
-        loadMap();
+        if (!loadMap()) {
+            for (int i = 0; i < width * height; i++) {
+                board[i] = defaultColor;
+            }
+        }
 
         database = new Database();
         userManager = new UserManager();
@@ -63,6 +71,8 @@ public class App {
                 handleCommand(s.nextLine());
             }
         }).start();
+
+        new Timer().schedule(new SessionTimer(), 0, 1000 * 3600); // execute once every hour
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             saveMapBackup();
@@ -121,7 +131,7 @@ public class App {
 
                 for (int x = Math.min(fromX, toX); x <= Math.max(fromX, toX); x++) {
                     for (int y = Math.min(fromY, toY); y <= Math.max(fromY, toY); y++) {
-                        putPixel(x, y, toColor, null, true, false, "<nuke action>");
+                        putPixel(x, y, toColor, null, true, "<nuke action>", true);
                     }
                 }
             }
@@ -134,8 +144,8 @@ public class App {
         config = ConfigFactory.parseFile(new File("pxls.conf")).withFallback(ConfigFactory.load());
         config.checkValid(ConfigFactory.load());
 
-        mapSaveTimer = new Timer(config.getDuration("board.saveInterval", TimeUnit.SECONDS));
-        mapBackupTimer = new Timer(config.getDuration("board.backupInterval", TimeUnit.SECONDS));
+        mapSaveTimer = new PxlsTimer(config.getDuration("board.saveInterval", TimeUnit.SECONDS));
+        mapBackupTimer = new PxlsTimer(config.getDuration("board.backupInterval", TimeUnit.SECONDS));
     }
 
 
@@ -175,36 +185,65 @@ public class App {
         return board[x + y * width];
     }
 
-    public static void putPixel(int x, int y, int color, User user, boolean mod_action, boolean rollback_action, String ip) {
+    public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase) {
         if (x < 0 || x >= width || y < 0 || y >= height || color < 0 || color >= getPalette().size()) return;
         String userName = user != null ? user.getName() : "<server>";
 
-        int previous_color = getPixel(x, y);
         board[x + y * width] = (byte) color;
-        pixelLogger.log(Level.INFO, userName + " " + x + " " + y + " " + color + " " + ip + (mod_action ? " (mod)" : "") + (rollback_action ? " (rollback)" : ""));
-        database.placePixel(x, y, color, previous_color, user, mod_action, rollback_action);
+        pixelLogger.log(Level.INFO, userName + " " + x + " " + y + " " + color + " " + ip + (mod_action ? " (mod)" : ""));
+        if (updateDatabase) {
+            database.placePixel(x, y, color, user, mod_action);
+        }
     }
 
-    public static void rollbackAfterBan(User who, boolean isUndo, int seconds) {
-        if (seconds <= 0 && !isUndo) {
+    public static void rollbackAfterBan(User who, int seconds) {
+        if (seconds <= 0) {
             return;
         }
-        List<Packet.ServerPlace.Pixel> pixels = database.getPreviousPixels(who, isUndo, seconds);
-        for (Packet.ServerPlace.Pixel pixel : pixels) {
-            putPixel(pixel.x, pixel.y, pixel.color, who, false, true, isUndo ? "(undo rollback)" : "");
+        List<DBRollbackPixel> pixels = database.getRollbackPixels(who, seconds); //get all pixels that can and need to be rolled back
+        List<Packet.ServerPlace.Pixel> forBroadcast = new ArrayList<>();
+        for (DBRollbackPixel rbPixel : pixels) {
+            //This is same for both instances
+            //  putPixel() logs and updates the board[]
+            //  forBroadcast.add() adds the pixel and later broadcasts it via websocket
+            //  putRollbackPixel() adds rollback pixel to database (TABLE pixels) for undo and timelapse purposes
+            if (rbPixel.toPixel != null) { //if previous pixel (the one we are rolling back to) exists
+                putPixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color, who, false, "(rollback)", false);
+                forBroadcast.add(new Packet.ServerPlace.Pixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color));
+                database.putRollbackPixel(who, rbPixel.fromId, rbPixel.toPixel.id);
+            } else { //else rollback to blank canvas
+                DBPixelPlacement fromPixel = database.getPixelByID(rbPixel.fromId);
+                putPixel(fromPixel.x, fromPixel.y, defaultColor, who, false, "(rollback)", false);
+                forBroadcast.add(new Packet.ServerPlace.Pixel(fromPixel.x, fromPixel.y, defaultColor));
+                database.putRollbackPixelNoPrevious(fromPixel.x, fromPixel.y, who, fromPixel.id);
+            }
         }
-        server.broadcast_noshadow(new Packet.ServerPlace(pixels));
+        server.broadcast_noshadow(new Packet.ServerPlace(forBroadcast));
     }
 
-    private static void loadMap() {
+    public static void undoRollback(User who) {
+        List<DBPixelPlacement> pixels = database.getUndoPixels(who); //get all pixels that can and need to be undone
+        List<Packet.ServerPlace.Pixel> forBroadcast = new ArrayList<>();
+        for (DBPixelPlacement fromPixel : pixels) {
+            //restores original pixel
+            putPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, false, "(undo)", false); //in board[]
+            forBroadcast.add(new Packet.ServerPlace.Pixel(fromPixel.x, fromPixel.y, fromPixel.color)); //in websocket
+            database.putUndoPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, fromPixel.id); //in database
+        }
+        server.broadcast_noshadow(new Packet.ServerPlace(forBroadcast));
+    }
+
+    private static boolean loadMap() {
         try {
             byte[] bytes = Files.readAllBytes(getStorageDir().resolve("board.dat"));
             System.arraycopy(bytes, 0, board, 0, width * height);
         } catch (NoSuchFileException e) {
             System.out.println("Warning: Cannot find board.dat in working directory, using blank board");
+            return false;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        return true;
     }
 
     public static void saveMap() {
@@ -226,6 +265,10 @@ public class App {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static Logger getLogger() {
+        return pixelLogger;
     }
 
     public static UserManager getUserManager() {

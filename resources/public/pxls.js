@@ -1113,6 +1113,75 @@ window.App = (function () {
                 setAutoReset: self.setAutoReset
             };
         })(),
+        // this is the user lookup helper
+        lookup = (function() {
+            var self = {
+                elements: {
+                    lookup: $(".lookup")
+                },
+                handle: null,
+                create: function (data) {
+                    self.elements.lookup.empty().append(
+                        $.map([
+                            ["Coords", "coords"],
+                            ["Username", "username"],
+                            ["Time", "time_str"],
+                            ["Total Pixels", "pixel_count"]
+                        ], function (o) {
+                            return $("<div>").append(
+                                $("<b>").text(o[0]+": "),
+                                $("<span>").text(data[o[1]])
+                            );
+                        }),
+                        $("<div>").addClass("button").css("float", "right").text("Close").click(function () {
+                            self.elements.lookup.fadeOut(200);
+                        })
+                    ).fadeIn(200);
+                },
+                init: function () {
+                    self.elements.lookup.hide();
+                    board.getRenderBoard().on("click", function (evt) {
+                        if (evt.shiftKey) {
+                            evt.preventDefault();
+                            var pos = board.fromScreen(evt.clientX, evt.clientY);
+                            $.get("/lookup", {x: Math.floor(pos.x), y: Math.floor(pos.y)}, function (data) {
+                                if (data) {
+                                    data.coords = "(" + data.x + ", " + data.y + ")";
+                                    var delta = ((new Date()).getTime() - data.time) / 1000;
+                                    if (delta > 24*3600) {
+                                        data.time_str = (new Date(data.time)).toLocaleString();
+                                    } else {
+                                        var secs = Math.floor(delta % 60),
+                                            secsStr = secs < 10 ? "0" + secs : secs,
+                                            minutes = Math.floor((delta / 60)) % 60,
+                                            minuteStr = minutes < 10 ? "0" + minutes : minutes,
+                                            hours = Math.floor(delta / 3600),
+                                            hoursStr = hours < 10 ? "0" + hours : hours;
+                                        data.time_str = hoursStr+":"+minuteStr+":"+secsStr+" ago";
+                                    }
+                                    if (self.handle) {
+                                        self.handle(data);
+                                    } else {
+                                        self.create(data);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                },
+                registerHandle: function (fn) {
+                    self.handle = fn;
+                },
+                clearHandle: function () {
+                    self.handle = null;
+                }
+            };
+            return {
+                init: self.init,
+                registerHandle: self.registerHandle,
+                clearHandle: self.clearHandle
+            };
+        })(),
         // helper object for drawers
         drawer = (function() {
             var self = {
@@ -1353,11 +1422,11 @@ window.App = (function () {
                             }
                             $.getScript("admin/admin.js").done(function () {
                                 window.initAdmin({
-                                    board: board,
                                     socket: socket,
                                     user: user,
                                     place: place,
-                                    alert: alert
+                                    alert: alert,
+                                    lookup: lookup
                                 });
                             });
                         } else if (window.deInitAdmin) {
@@ -1426,6 +1495,7 @@ window.App = (function () {
     query.init();
     board.init();
     drawer.init();
+    lookup.init();
     template.init();
     ban.init();
     grid.init();

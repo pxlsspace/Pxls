@@ -41,6 +41,7 @@ public class UserManager {
 
     public User getByToken(String token) {
         User u = usersByToken.get(token);
+        App.getDatabase().updateSession(token);
         if (u != null) {
             return u;
         }
@@ -48,7 +49,6 @@ public class UserManager {
         if (u == null) {
             return null;
         }
-        App.getDatabase().updateSession(token);
         usersByToken.put(token, u); // insert it in the hashmap for quicker access
         return u;
     }
@@ -59,7 +59,7 @@ public class UserManager {
 
     private User getByDB(DBUser user) {
         if (user == null) return null;
-        return userCache.computeIfAbsent(user.id, (k) -> new User(user.id, user.username, user.login, user.lastPlaceTime, user.role, user.banExpiry));
+        return userCache.computeIfAbsent(user.id, (k) -> new User(user.id, user.username, user.login, user.cooldownExpiry, user.role, user.banExpiry));
     }
 
     public String logIn(User user, String ip) {
@@ -104,7 +104,7 @@ public class UserManager {
         App.getDatabase().updateBanReason(user, reason);
         App.getDatabase().setUserRole(user, Role.SHADOWBANNED);
         user.setRole(Role.SHADOWBANNED);
-        App.rollbackAfterBan(user, false, rollback_time);
+        App.rollbackAfterBan(user, rollback_time);
     }
 
     public void shadowBanUser(User user, String reason) {
@@ -119,12 +119,12 @@ public class UserManager {
         App.getDatabase().updateBan(user, timeFromNowSeconds, reason);
         user.setBanExpiryTime(timeFromNowSeconds * 1000 + System.currentTimeMillis());
         if (timeFromNowSeconds > 0) {
-            App.rollbackAfterBan(user, false, rollback_time);
+            App.rollbackAfterBan(user, rollback_time);
         }
     }
 
     public void banUser(User user, long timeFromNowSeconds, String reason) {
-        banUser(user, timeFromNowSeconds, reason, 24*3600);
+        banUser(user, timeFromNowSeconds, reason, 0);
     }
 
     public void banUser(User user, long timeFromNowSeconds) {
@@ -133,16 +133,18 @@ public class UserManager {
 
     public void unbanUser(User user) {
         banUser(user, 0);
-        App.getDatabase().setUserRole(user, Role.USER);
-        user.setRole(Role.USER);
-        App.rollbackAfterBan(user, true, 0);
+        if (user.getRole().lessThan(Role.USER)) {
+            App.getDatabase().setUserRole(user, Role.USER);
+            user.setRole(Role.USER);
+        }
+        App.undoRollback(user);
     }
 
     public void permaBanUser(User user, String reason, int rollback_time) {
         App.getDatabase().updateBanReason(user, reason);
         App.getDatabase().setUserRole(user, Role.BANNED);
         user.setRole(Role.BANNED);
-        App.rollbackAfterBan(user, false, rollback_time);
+        App.rollbackAfterBan(user, rollback_time);
     }
 
     public void permaBanUser(User user, String reason) {
