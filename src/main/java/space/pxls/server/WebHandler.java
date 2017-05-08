@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 public class WebHandler {
     private Map<String, AuthService> services = new ConcurrentHashMap<>();
@@ -255,7 +256,13 @@ public class WebHandler {
     public void info(HttpServerExchange exchange) {
         exchange.getResponseHeaders().add(HttpString.tryFromString("Content-Type"), "application/json");
         exchange.getResponseSender().send(App.getGson().toJson(
-                new Packet.HttpInfo(App.getWidth(), App.getHeight(), App.getConfig().getStringList("board.palette"), App.getConfig().getString("captcha.key"))));
+                new Packet.HttpInfo(
+                    App.getWidth(),
+                    App.getHeight(),
+                    App.getConfig().getStringList("board.palette"),
+                    App.getConfig().getString("captcha.key"),
+                    (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS)
+                )));
     }
 
     public void data(HttpServerExchange exchange) {
@@ -268,6 +275,11 @@ public class WebHandler {
         }
 
         exchange.getResponseSender().send(ByteBuffer.wrap(App.getBoardData()));
+    }
+
+    public void heatmap(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/binary");
+        exchange.getResponseSender().send(ByteBuffer.wrap(App.getHeatmapData()));
     }
 
     public void logout(HttpServerExchange exchange) {

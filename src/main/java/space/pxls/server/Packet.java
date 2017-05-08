@@ -136,11 +136,14 @@ public class Packet {
 
         public String captchaKey;
 
-        public HttpInfo(int width, int height, List<String> palette, String captchaKey) {
+        public int heatmap_cooldown;
+
+        public HttpInfo(int width, int height, List<String> palette, String captchaKey, int heatmap_cooldown) {
             this.width = width;
             this.height = height;
             this.palette = palette;
             this.captchaKey = captchaKey;
+            this.heatmap_cooldown = heatmap_cooldown;
         }
 
     }

@@ -48,6 +48,7 @@ public class UndertowServer {
                 .addPrefixPath("/ws", Handlers.websocket(this::webSocketHandler))
                 .addPrefixPath("/info", webHandler::info)
                 .addPrefixPath("/boarddata", webHandler::data)
+                .addPrefixPath("/heatmap", webHandler::heatmap)
                 .addPrefixPath("/logout", webHandler::logout)
                 .addPrefixPath("/lookup", webHandler::lookup)
                 .addPrefixPath("/signin", webHandler::signIn)

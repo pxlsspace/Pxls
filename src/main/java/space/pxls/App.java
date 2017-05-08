@@ -17,6 +17,7 @@ import space.pxls.user.User;
 import space.pxls.user.UserManager;
 import space.pxls.util.PxlsTimer;
 import space.pxls.util.SessionTimer;
+import space.pxls.util.HeatmapTimer;
 
 
 import java.io.File;
@@ -38,6 +39,7 @@ public class App {
     private static int width;
     private static int height;
     private static byte[] board;
+    private static byte[] heatmap;
     private static byte defaultColor;
 
     private static PxlsTimer mapSaveTimer;
@@ -55,12 +57,15 @@ public class App {
         height = config.getInt("board.height");
         defaultColor = (byte) config.getInt("board.defaultColor");
         board = new byte[width * height];
+        heatmap = new byte[width * height];
 
         if (!loadMap()) {
             for (int i = 0; i < width * height; i++) {
                 board[i] = defaultColor;
             }
         }
+
+        loadHeatmap();
 
         database = new Database();
         userManager = new UserManager();
@@ -73,6 +78,9 @@ public class App {
         }).start();
 
         new Timer().schedule(new SessionTimer(), 0, 1000 * 3600); // execute once every hour
+
+        int heatmap_timer_cd = (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS);
+        new Timer().schedule(new HeatmapTimer(), 0, heatmap_timer_cd * 1000 / 256);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             saveMapBackup();
@@ -165,6 +173,10 @@ public class App {
         return height;
     }
 
+    public static byte[] getHeatmapData() {
+        return heatmap;
+    }
+
     public static byte[] getBoardData() {
         return board;
     }
@@ -190,6 +202,7 @@ public class App {
         String userName = user != null ? user.getName() : "<server>";
 
         board[x + y * width] = (byte) color;
+        heatmap[x + y * width] = (byte) 0xFF;
         pixelLogger.log(Level.INFO, userName + " " + x + " " + y + " " + color + " " + ip + (mod_action ? " (mod)" : ""));
         if (updateDatabase) {
             database.placePixel(x, y, color, user, mod_action);
@@ -246,6 +259,25 @@ public class App {
         return true;
     }
 
+    private static void loadHeatmap() {
+        try {
+            byte[] bytes = Files.readAllBytes(getStorageDir().resolve("heatmap.dat"));
+            System.arraycopy(bytes, 0, heatmap, 0, width * height);
+        } catch (NoSuchFileException e) {
+            System.out.println("Warning: Cannot find heatmap.dat in working directory, using blank heatmap");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void updateHeatmap() {
+        for (int i = 0; i < width * height; i++) {
+            if (heatmap[i] != 0) {
+                heatmap[i]--;
+            }
+        }
+    }
+
     public static void saveMap() {
         mapSaveTimer.run(App::saveMapForce);
         mapBackupTimer.run(App::saveMapBackup);
@@ -253,6 +285,7 @@ public class App {
 
     private static void saveMapForce() {
         saveMapToDir(getStorageDir().resolve("board.dat"));
+        saveHeatmapToDir(getStorageDir().resolve("heatmap.dat"));
     }
 
     private static void saveMapBackup() {
@@ -262,6 +295,14 @@ public class App {
     private static void saveMapToDir(Path path) {
         try {
             Files.write(path, board);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void saveHeatmapToDir(Path path) {
+        try {
+            Files.write(path, heatmap);
         } catch (IOException e) {
             e.printStackTrace();
         }

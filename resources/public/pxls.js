@@ -515,6 +515,7 @@ window.App = (function () {
                 },
                 start: function () {
                     $.get("/info", function (data) {
+                        heatmap.webinit(data);
                         self.width = data.width;
                         self.height = data.height;
                         place.setPalette(data.palette);
@@ -701,6 +702,135 @@ window.App = (function () {
                 toScreen: self.toScreen,
                 save: self.save,
                 getRenderBoard: self.getRenderBoard
+            };
+        })(),
+        // heatmap init stuff
+        heatmap = (function() {
+            var self = {
+                elements: {
+                    heatmap: $("#heatmap")
+                },
+                width: 0,
+                height: 0,
+                lazy_inited: false,
+                show: false,
+                color: 0x005C5CCD,
+                loop: function () {
+                    var ctx = self.elements.heatmap[0].getContext("2d"),
+                        id;
+                    try {
+                        id = new ImageData(1, 1);
+                    } catch (e) {
+                        // workaround when ImageData is unavailable (Such as under MS Edge)
+                        var imgCanv = document.createElement('canvas');
+                        imgCanv.width = 1;
+                        imgCanv.height = 1;
+                        id = imgCanv.getContext('2d').getImageData(0, 0, 1, 1);
+                    }
+                    var intView = new Uint32Array(id.data.buffer);
+                    for (var y = 0; y < self.height; y++) {
+                        for (var x = 0; x < self.width; x++) {
+                            var p = ctx.getImageData(x, y, 1, 1).data;
+                            if (p[3] > 0) {
+                                p[3]--;
+                                intView[0] = p[3] << 24 | p[2] << 16 | p[1] << 8 | p[0];
+                                ctx.putImageData(id, x, y);
+                            }
+                        }
+                    }
+                    setTimeout(self.loop, self.seconds * 1000 / 256);
+                },
+                lazy_init: function () {
+                    if (self.lazy_inited) {
+                        return;
+                    }
+                    self.lazy_inited = true;
+                    // we use xhr directly because of jquery being weird on raw binary
+                    var xhr = new XMLHttpRequest();
+                    xhr.open("GET", "/heatmap", true);
+                    xhr.responseType = "arraybuffer";
+
+                    xhr.onload = function (event) {
+                        if (xhr.response) {
+                            var data = new Uint8Array(xhr.response),
+                                ctx = self.elements.heatmap[0].getContext("2d"),
+                                id;
+                            try {
+                                id = new ImageData(self.width, self.height);
+                            } catch (e) {
+                                // workaround when ImageData is unavailable (Such as under MS Edge)
+                                var imgCanv = document.createElement('canvas');
+                                imgCanv.width = self.width;
+                                imgCanv.height = self.height;
+                                id = imgCanv.getContext('2d').getImageData(0, 0, self.width, self.height);
+                            }
+                            var intView = new Uint32Array(id.data.buffer);
+                            for (var i = 0; i < self.width * self.height; i++) {
+                                intView[i] = (data[i] << 24) | self.color;
+                            }
+                            ctx.putImageData(id, 0, 0);
+                            self.elements.heatmap.fadeIn(200);
+                            setTimeout(self.loop, self.seconds * 1000 / 256);
+                        }
+                        var ctx = self.elements.heatmap[0].getContext("2d"),
+                            id;
+                        try {
+                            id = new ImageData(1, 1);
+                        } catch (e) {
+                            // workaround when ImageData is unavailable (Such as under MS Edge)
+                            var imgCanv = document.createElement('canvas');
+                            imgCanv.width = 1;
+                            imgCanv.height = 1;
+                            id = imgCanv.getContext('2d').getImageData(0, 0, 1, 1);
+                        }
+                        var intView = new Uint32Array(id.data.buffer);
+                        intView[0] = 0xff000000 | self.color;
+                        socket.on("pixel", function (data) {
+                            $.map(data.pixels, function (px) {
+                                ctx.putImageData(id, px.x, px.y);
+                            });
+                        });
+                    };
+                    xhr.send(null);
+                },
+                init: function () {
+                    self.elements.heatmap.hide();
+                },
+                toggle: function () {
+                    self.show = !self.show;
+                    if (self.lazy_inited) {
+                        if (self.show) {
+                            this.elements.heatmap.fadeIn(200);
+                        } else {
+                            this.elements.heatmap.fadeOut(200);
+                        }
+                    }
+                    if (self.show) {
+                        self.lazy_init();
+                    }
+                },
+                webinit: function (data) {
+                    self.width = data.width;
+                    self.height = data.height;
+                    self.seconds = data.heatmap_cooldown;
+                    self.elements.heatmap.attr({
+                        width: self.width,
+                        height: self.height
+                    });
+                    if (ls.get("heatmap")) {
+                        self.lazy_init();
+                    }
+                    $(window).keydown(function (e) {
+                        if (e.which == 72) { // h key
+                            self.toggle();
+                        }
+                    });
+                }
+            };
+            return {
+                init: self.init,
+                webinit: self.webinit,
+                toggle: self.toggle
             };
         })(),
         // here all the template stuff happens
@@ -1494,6 +1624,7 @@ window.App = (function () {
     });
     query.init();
     board.init();
+    heatmap.init();
     drawer.init();
     lookup.init();
     template.init();
