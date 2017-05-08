@@ -452,6 +452,12 @@ a, a:hover, a:visited, a:active {
 | Board Stuff
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
+#heatmap {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+}
+
 .board-container {
     z-index: 0;
     position: fixed;
