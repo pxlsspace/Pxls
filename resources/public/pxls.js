@@ -92,7 +92,7 @@ window.App = (function () {
         })(),
         ios_safari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i)),
         ms_edge = nua.indexOf('Edge') > -1;
-    if (ms_edge) {
+    if (ms_edge || ios_safari) {
         have_image_rendering = false;
     }
     var ls = storageFactory(localStorage, 'ls_', 99),
@@ -374,7 +374,7 @@ window.App = (function () {
                     container: $(".board-container")
                 },
                 use_js_render: !have_image_rendering,
-                use_zoom: have_image_rendering && ios_safari,
+                use_zoom: have_image_rendering && false,
                 width: 0,
                 height: 0,
                 scale: 4,
