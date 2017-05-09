@@ -24,7 +24,7 @@ public interface DAO extends Closeable {
 
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, mod_action)" +
-            "VALUES (:x, :y, :color, :who, (SELECT id FROM pixels AS pp WHERE pp.x = :x AND pp.y = :y AND pp.most_recent),  :mod);" +
+            "VALUES (:x, :y, :color, :who, (SELECT id FROM pixels AS pp WHERE pp.x = :x AND pp.y = :y AND pp.most_recent ORDER BY id DESC LIMIT 1),  :mod);" +
             "UPDATE pixels SET most_recent = false WHERE x = :x AND y = :y AND NOT id = LAST_INSERT_ID();" +
             "UPDATE users SET pixel_count = pixel_count + (1 - :mod) WHERE id = :who")
     void putPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("mod") boolean mod);
