@@ -76,6 +76,7 @@ public class WebHandler {
             if (time_form != null) {
                 time = time_form.getValue();
             }
+            App.getDatabase().adminLog("ban "+user.getName(), user_perform.getId());
             App.getUserManager().banUser(user, Integer.parseInt(time), getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             exchange.setStatusCode(200);
@@ -86,9 +87,11 @@ public class WebHandler {
 
     public void unban(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
+        User user_perform = exchange.getAttachment(AuthReader.USER);
         if (user != null) {
             App.getUserManager().unbanUser(user);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
+            App.getDatabase().adminLog("unban "+user.getName(), user_perform.getId());
             exchange.setStatusCode(200);
         } else {
             exchange.setStatusCode(400);
@@ -101,6 +104,7 @@ public class WebHandler {
         if (user != null && user.getRole().lessThan(user_perform.getRole())) {
             App.getUserManager().permaBanUser(user, getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
+            App.getDatabase().adminLog("permaban "+user.getName(), user_perform.getId());
             exchange.setStatusCode(200);
         } else {
             exchange.setStatusCode(400);
@@ -113,6 +117,7 @@ public class WebHandler {
         if (user != null && user.getRole().lessThan(user_perform.getRole())) {
             App.getUserManager().shadowBanUser(user, getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
+            App.getDatabase().adminLog("shadowban "+user.getName(), user_perform.getId());
             exchange.setStatusCode(200);
         } else {
             exchange.setStatusCode(400);

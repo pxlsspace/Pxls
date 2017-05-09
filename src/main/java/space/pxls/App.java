@@ -117,8 +117,30 @@ public class App {
             } else if (token[0].equalsIgnoreCase("ban")) {
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
-                    userManager.banUser(user, 24 * 60 * 60);
+                    String reason = line.substring(token[0].length() + token[1].length() + 2).trim();
+                    userManager.banUser(user, 24 * 60 * 60, reason);
+                    database.adminLogServer("ban "+user.getName());
                     System.out.println("Banned " + user.getName() + " for 24 hours.");
+                } else {
+                    System.out.println("Cannot find user " + token[1]);
+                }
+            } else if (token[0].equalsIgnoreCase("permaban")) {
+                User user = userManager.getByName(token[1]);
+                if (user != null) {
+                    String reason = line.substring(token[0].length() + token[1].length() + 2).trim();
+                    userManager.permaBanUser(user, reason);
+                    database.adminLogServer("permaban "+user.getName());
+                    System.out.println("Permabanned " + user.getName());
+                } else {
+                    System.out.println("Cannot find user " + token[1]);
+                }
+            } else if (token[0].equalsIgnoreCase("shadowban")) {
+                User user = userManager.getByName(token[1]);
+                if (user != null) {
+                    String reason = line.substring(token[0].length() + token[1].length() + 2).trim();
+                    userManager.shadowBanUser(user, reason);
+                    database.adminLogServer("shadowban "+user.getName());
+                    System.out.println("Shadowbanned " + user.getName());
                 } else {
                     System.out.println("Cannot find user " + token[1]);
                 }
@@ -126,6 +148,7 @@ public class App {
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
                     userManager.unbanUser(user);
+                    database.adminLogServer("unban "+user.getName());
                     System.out.println("Unbanned " + user.getName() + ".");
                 } else {
                     System.out.println("Cannot find user " + token[1]);

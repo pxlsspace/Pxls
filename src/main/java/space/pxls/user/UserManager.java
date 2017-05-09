@@ -128,7 +128,7 @@ public class UserManager {
     }
 
     public void banUser(User user, long timeFromNowSeconds) {
-        banUser(user, timeFromNowSeconds, "", 0);
+        banUser(user, timeFromNowSeconds, "");
     }
 
     public void unbanUser(User user) {
