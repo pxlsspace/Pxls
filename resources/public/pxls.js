@@ -760,7 +760,7 @@ window.App = (function () {
                             self.elements.heatmap.fadeIn(200);
                             setTimeout(self.loop, self.seconds * 1000 / 256);
                             socket.on("pixel", function (data) {
-                                self.ctx.fillStyle = 0xFF000000 | self.color;
+                                self.ctx.fillStyle = "#CD5C5C";
                                 $.map(data.pixels, function (px) {
                                     self.ctx.fillRect(px.x, px.y, 1, 1);
                                     self.intView[px.y * self.width + px.x] = 0xFF000000 | self.color;
