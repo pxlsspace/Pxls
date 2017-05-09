@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.exceptions.NoResultsException;
 import space.pxls.App;
 import space.pxls.server.Packet;
 import space.pxls.user.Role;
@@ -187,7 +188,12 @@ public class Database implements Closeable {
     }
 
     public boolean didPixelChange(int x, int y) {
-        DBExists e = handle.didPixelChange(x, y);
+        DBExists e;
+        try {
+            e = handle.didPixelChange(x, y);
+        } catch (NoResultsException exp) {
+            return false;
+        }
         if (e == null) {
             return false;
         }

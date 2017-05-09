@@ -123,7 +123,7 @@ public interface DAO extends Closeable {
     @SqlUpdate("UPDATE sessions SET time=CURRENT_TIMESTAMP WHERE token = :token")
     void updateSession(@Bind("token") String token);
 
-    @SqlUpdate("DELETE FROM sessions WHERE time < CURRENT_TIMESTAMP + 24*3600*24")
+    @SqlUpdate("DELETE FROM sessions WHERE (time + INTERVAL (24*3600*24) SECOND) < now()")
     void clearOldSessions();
 
     void close();
