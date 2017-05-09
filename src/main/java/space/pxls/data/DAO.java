@@ -21,7 +21,7 @@ public interface DAO extends Closeable {
     @SqlUpdate("INSERT INTO admin_log (channel, level, message, time, userid) VALUES ('pxlsCanvas', 200, :message, UNIX_TIMESTAMP(), :uid)")
     void adminLog(@Bind("message") String message, @Bind("uid") int uid);
 
-    @SqlUpdate("INSERT INTO admin_log (channel, level, message, time, userid) VALUES ('pxlsCanvas', 200, :message, UNIX_TIMESTAMP(), NULL)")
+    @SqlUpdate("INSERT INTO admin_log (channel, level, message, time, userid) VALUES ('pxlsConsole', 200, :message, UNIX_TIMESTAMP(), NULL)")
     void adminLogServer(@Bind("message") String message);
 
     @SqlUpdate("CREATE TABLE IF NOT EXISTS pixels (" +

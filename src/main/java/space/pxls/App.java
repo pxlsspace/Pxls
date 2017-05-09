@@ -107,6 +107,7 @@ public class App {
                     Role role = Role.valueOf(token[2].toUpperCase());
                     user.setRole(role);
                     database.setUserRole(user, role);
+                    database.adminLogServer("Set "+user.getName()+"'s role to "+role.name());
                     System.out.println("Set " + user.getName() + "'s role to " + role.name());
                 } else {
                     System.out.println("Cannot find user " + token[1]);
