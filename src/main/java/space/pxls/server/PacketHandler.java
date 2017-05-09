@@ -134,7 +134,7 @@ public class PacketHandler {
                     public void completed(HttpResponse<JsonNode> response) {
                         JsonNode body = response.getBody();
 
-                        String hostname = App.getConfig().getString("captcha.host");
+                        String hostname = App.getConfig().getString("host");
 
                         boolean success = body.getObject().getBoolean("success") && body.getObject().getString("hostname").equals(hostname);
                         if (success) {

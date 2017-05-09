@@ -58,10 +58,12 @@ public class WebHandler {
         return Integer.parseInt(rollback_int);
     }
 
-    private Cookie pxlsTokenCookie(String loginToken, int days) {
+    private void pxlsTokenCookie(HttpServerExchange exchange, String loginToken, int days) {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, days);
-        return new CookieImpl("pxls-token", loginToken).setHttpOnly(true).setPath("/").setDomain(".pxls.space").setExpires(cal.getTime());
+        String hostname = App.getConfig().getString("host");
+        exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setHttpOnly(true).setPath("/").setDomain("."+hostname).setExpires(cal.getTime()));
+        exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setHttpOnly(true).setPath("/").setDomain(hostname).setExpires(cal.getTime()));
     }
 
     public void ban(HttpServerExchange exchange) {
@@ -183,7 +185,7 @@ public class WebHandler {
         String loginToken = App.getUserManager().logIn(user, ip);
         exchange.setStatusCode(StatusCodes.SEE_OTHER);
         exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-        exchange.setResponseCookie(pxlsTokenCookie(loginToken, 24));
+        pxlsTokenCookie(exchange, loginToken, 24);
         exchange.getResponseSender().send("");
     }
 
@@ -224,14 +226,15 @@ public class WebHandler {
                     String signUpToken = App.getUserManager().generateUserCreationToken(login);
 
                     exchange.setStatusCode(StatusCodes.SEE_OTHER);
-                    exchange.setResponseCookie(new CookieImpl("pxls-signup-token", signUpToken).setPath("/"));
+                    String hostname = App.getConfig().getString("host");
+                    exchange.setResponseCookie(new CookieImpl("pxls-signup-token", signUpToken).setPath("/").setDomain("."+hostname));
                     exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + signUpToken);
                     exchange.getResponseSender().send("");
                 } else {
                     String loginToken = App.getUserManager().logIn(user, ip);
                     exchange.setStatusCode(StatusCodes.SEE_OTHER);
                     exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-                    exchange.setResponseCookie(pxlsTokenCookie(loginToken, 24));
+                    pxlsTokenCookie(exchange, loginToken, 24);
                     exchange.getResponseSender().send("");
                 }
             } else {
@@ -249,6 +252,7 @@ public class WebHandler {
         if (service != null) {
             exchange.setStatusCode(StatusCodes.SEE_OTHER);
             exchange.getResponseHeaders().put(Headers.LOCATION, service.getRedirectUrl());
+            pxlsTokenCookie(exchange, "", -1); // make sure that we don't have one...
             exchange.getResponseSender().send("");
         }
     }
@@ -271,7 +275,7 @@ public class WebHandler {
         // let's also update the cookie, if present. This place will get called frequent enough
         Cookie tokenCookie = exchange.getRequestCookies().get("pxls-token");
         if (tokenCookie != null) {
-            exchange.setResponseCookie(pxlsTokenCookie(tokenCookie.getValue(), 24));
+            pxlsTokenCookie(exchange, tokenCookie.getValue(), 24);
         }
 
         exchange.getResponseSender().send(ByteBuffer.wrap(App.getBoardData()));
@@ -291,7 +295,7 @@ public class WebHandler {
 
         exchange.setStatusCode(StatusCodes.SEE_OTHER);
         exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-        exchange.setResponseCookie(pxlsTokenCookie("", -1));
+        pxlsTokenCookie(exchange, "", -1);
         exchange.getResponseSender().send("");
     }
 
