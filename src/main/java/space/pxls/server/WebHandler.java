@@ -61,7 +61,7 @@ public class WebHandler {
     private Cookie pxlsTokenCookie(String loginToken, int days) {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, days);
-        return new CookieImpl("pxls-token", loginToken).setHttpOnly(true).setPath("/").setExpires(cal.getTime());
+        return new CookieImpl("pxls-token", loginToken).setHttpOnly(true).setPath("/").setDomain(".pxls.space").setExpires(cal.getTime());
     }
 
     public void ban(HttpServerExchange exchange) {
