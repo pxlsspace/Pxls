@@ -1292,7 +1292,11 @@ window.App = (function () {
                                     } else {
                                         self.create(data);
                                     }
+                                } else {
+                                    self.elements.lookup.fadeOut(200);
                                 }
+                            }).fail(function () {
+                                self.elements.lookup.fadeOut(200);
                             });
                         }
                     });
