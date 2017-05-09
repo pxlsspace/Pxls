@@ -710,34 +710,23 @@ window.App = (function () {
                 elements: {
                     heatmap: $("#heatmap")
                 },
+                ctx: null,
+                id: null,
+                intView: null,
                 width: 0,
                 height: 0,
                 lazy_inited: false,
-                show: false,
+                is_shown: false,
                 color: 0x005C5CCD,
                 loop: function () {
-                    var ctx = self.elements.heatmap[0].getContext("2d"),
-                        id;
-                    try {
-                        id = new ImageData(1, 1);
-                    } catch (e) {
-                        // workaround when ImageData is unavailable (Such as under MS Edge)
-                        var imgCanv = document.createElement('canvas');
-                        imgCanv.width = 1;
-                        imgCanv.height = 1;
-                        id = imgCanv.getContext('2d').getImageData(0, 0, 1, 1);
-                    }
-                    var intView = new Uint32Array(id.data.buffer);
-                    for (var y = 0; y < self.height; y++) {
-                        for (var x = 0; x < self.width; x++) {
-                            var p = ctx.getImageData(x, y, 1, 1).data;
-                            if (p[3] > 0) {
-                                p[3]--;
-                                intView[0] = p[3] << 24 | p[2] << 16 | p[1] << 8 | p[0];
-                                ctx.putImageData(id, x, y);
-                            }
+                    for (var i = 0; i < self.width * self.height; i++) {
+                        var opacity = self.intView[i] >> 24;
+                        if (opacity) {
+                            opacity--;
+                            self.intView[i] = (opacity << 24) | self.color;
                         }
                     }
+                    self.ctx.putImageData(self.id, 0, 0);
                     setTimeout(self.loop, self.seconds * 1000 / 256);
                 },
                 lazy_init: function () {
@@ -752,60 +741,59 @@ window.App = (function () {
 
                     xhr.onload = function (event) {
                         if (xhr.response) {
-                            var data = new Uint8Array(xhr.response),
-                                ctx = self.elements.heatmap[0].getContext("2d"),
-                                id;
+                            var data = new Uint8Array(xhr.response);
+                            self.ctx = self.elements.heatmap[0].getContext("2d");
                             try {
-                                id = new ImageData(self.width, self.height);
+                                self.id = new ImageData(self.width, self.height);
                             } catch (e) {
                                 // workaround when ImageData is unavailable (Such as under MS Edge)
                                 var imgCanv = document.createElement('canvas');
                                 imgCanv.width = self.width;
                                 imgCanv.height = self.height;
-                                id = imgCanv.getContext('2d').getImageData(0, 0, self.width, self.height);
+                                self.id = imgCanv.getContext('2d').getImageData(0, 0, self.width, self.height);
                             }
-                            var intView = new Uint32Array(id.data.buffer);
+                            self.intView = new Uint32Array(self.id.data.buffer);
                             for (var i = 0; i < self.width * self.height; i++) {
-                                intView[i] = (data[i] << 24) | self.color;
+                                self.intView[i] = (data[i] << 24) | self.color;
                             }
-                            ctx.putImageData(id, 0, 0);
+                            self.ctx.putImageData(self.id, 0, 0);
                             self.elements.heatmap.fadeIn(200);
                             setTimeout(self.loop, self.seconds * 1000 / 256);
-                        }
-                        var ctx = self.elements.heatmap[0].getContext("2d"),
-                            id;
-                        try {
-                            id = new ImageData(1, 1);
-                        } catch (e) {
-                            // workaround when ImageData is unavailable (Such as under MS Edge)
-                            var imgCanv = document.createElement('canvas');
-                            imgCanv.width = 1;
-                            imgCanv.height = 1;
-                            id = imgCanv.getContext('2d').getImageData(0, 0, 1, 1);
-                        }
-                        var intView = new Uint32Array(id.data.buffer);
-                        intView[0] = 0xff000000 | self.color;
-                        socket.on("pixel", function (data) {
-                            $.map(data.pixels, function (px) {
-                                ctx.putImageData(id, px.x, px.y);
+                            socket.on("pixel", function (data) {
+                                self.ctx.fillStyle = 0xFF000000 | self.color;
+                                $.map(data.pixels, function (px) {
+                                    self.ctx.fillRect(px.x, px.y, 1, 1);
+                                    self.intView[px.y * self.width + px.x] = 0xFF000000 | self.color;
+                                });
                             });
-                        });
+                        }
                     };
                     xhr.send(null);
                 },
                 init: function () {
                     self.elements.heatmap.hide();
                 },
+                show: function () {
+                    self.is_shown = false;
+                    self.toggle();
+                },
+                hide: function () {
+                    self.is_shown = true;
+                    self.toggle();
+                },
                 toggle: function () {
-                    self.show = !self.show;
+                    self.is_shown = !self.is_shown;
+                    ls.set("heatmap", self.is_shown);
+                    $("#heatmaptoggle")[0].checked = self.is_shown;
                     if (self.lazy_inited) {
-                        if (self.show) {
+                        if (self.is_shown) {
                             this.elements.heatmap.fadeIn(200);
                         } else {
                             this.elements.heatmap.fadeOut(200);
                         }
+                        return;
                     }
-                    if (self.show) {
+                    if (self.is_shown) {
                         self.lazy_init();
                     }
                 },
@@ -818,11 +806,21 @@ window.App = (function () {
                         height: self.height
                     });
                     if (ls.get("heatmap")) {
-                        self.lazy_init();
+                        self.show();
                     }
+                    $("#heatmaptoggle")[0].checked = ls.get("heatmap");
+                    $("#heatmaptoggle").change(function () {
+                        if ($(this).is(":checked")) {
+                            self.show();
+                        } else {
+                            self.hide();
+                        }
+                    });
+                    
                     $(window).keydown(function (e) {
                         if (e.which == 72) { // h key
                             self.toggle();
+                            $("#heatmaptoggle")[0].checked = ls.get("heatmap");
                         }
                     });
                 }
