@@ -234,40 +234,86 @@ public class App {
     }
 
     public static void rollbackAfterBan(User who, int seconds) {
-        if (seconds <= 0) {
-            return;
+        new Thread(new RollbackClass(who, seconds)).start();
+    }
+
+    public static class RollbackClass implements Runnable{
+        private User who;
+        private int seconds;
+        private int counter = 0;
+
+        public RollbackClass(User who, int seconds) {
+            this.who = who;
+            this.seconds = seconds;
         }
-        List<DBRollbackPixel> pixels = database.getRollbackPixels(who, seconds); //get all pixels that can and need to be rolled back
-        List<Packet.ServerPlace.Pixel> forBroadcast = new ArrayList<>();
-        for (DBRollbackPixel rbPixel : pixels) {
-            //This is same for both instances
-            //  putPixel() logs and updates the board[]
-            //  forBroadcast.add() adds the pixel and later broadcasts it via websocket
-            //  putRollbackPixel() adds rollback pixel to database (TABLE pixels) for undo and timelapse purposes
-            if (rbPixel.toPixel != null) { //if previous pixel (the one we are rolling back to) exists
-                putPixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color, who, false, "(rollback)", false);
-                forBroadcast.add(new Packet.ServerPlace.Pixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color));
-                database.putRollbackPixel(who, rbPixel.fromId, rbPixel.toPixel.id);
-            } else { //else rollback to blank canvas
-                DBPixelPlacement fromPixel = database.getPixelByID(rbPixel.fromId);
-                putPixel(fromPixel.x, fromPixel.y, defaultColor, who, false, "(rollback)", false);
-                forBroadcast.add(new Packet.ServerPlace.Pixel(fromPixel.x, fromPixel.y, defaultColor));
-                database.putRollbackPixelNoPrevious(fromPixel.x, fromPixel.y, who, fromPixel.id);
+
+        @Override
+        public void run() {
+            if (seconds <= 0) {
+                return;
             }
+            List<DBRollbackPixel> pixels = database.getRollbackPixels(who, seconds); //get all pixels that can and need to be rolled back
+            List<Packet.ServerPlace.Pixel> forBroadcast = new ArrayList<>();
+            for (DBRollbackPixel rbPixel : pixels) {
+                if (counter%50==0){
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                counter++;
+                //This is same for both instances
+                //  putPixel() logs and updates the board[]
+                //  forBroadcast.add() adds the pixel and later broadcasts it via websocket
+                //  putRollbackPixel() adds rollback pixel to database (TABLE pixels) for undo and timelapse purposes
+                if (rbPixel.toPixel != null) { //if previous pixel (the one we are rolling back to) exists
+                    putPixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color, who, false, "(rollback)", false);
+                    forBroadcast.add(new Packet.ServerPlace.Pixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color));
+                    database.putRollbackPixel(who, rbPixel.fromId, rbPixel.toPixel.id);
+                } else { //else rollback to blank canvas
+                    DBPixelPlacement fromPixel = database.getPixelByID(rbPixel.fromId);
+                    putPixel(fromPixel.x, fromPixel.y, defaultColor, who, false, "(rollback)", false);
+                    forBroadcast.add(new Packet.ServerPlace.Pixel(fromPixel.x, fromPixel.y, defaultColor));
+                    database.putRollbackPixelNoPrevious(fromPixel.x, fromPixel.y, who, fromPixel.id);
+                }
+            }
+            server.broadcast_noshadow(new Packet.ServerPlace(forBroadcast));
         }
-        server.broadcast_noshadow(new Packet.ServerPlace(forBroadcast));
     }
 
     public static void undoRollback(User who) {
-        List<DBPixelPlacement> pixels = database.getUndoPixels(who); //get all pixels that can and need to be undone
-        List<Packet.ServerPlace.Pixel> forBroadcast = new ArrayList<>();
-        for (DBPixelPlacement fromPixel : pixels) {
-            //restores original pixel
-            putPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, false, "(undo)", false); //in board[]
-            forBroadcast.add(new Packet.ServerPlace.Pixel(fromPixel.x, fromPixel.y, fromPixel.color)); //in websocket
-            database.putUndoPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, fromPixel.id); //in database
+        new Thread(new UndoRollbackClass(who)).start();
+    }
+
+    public static class UndoRollbackClass implements Runnable{
+        private User who;
+        private int counter = 0;
+
+        public UndoRollbackClass(User who) {
+            this.who = who;
         }
-        server.broadcast_noshadow(new Packet.ServerPlace(forBroadcast));
+
+        @Override
+        public void run() {
+            List<DBPixelPlacement> pixels = database.getUndoPixels(who); //get all pixels that can and need to be undone
+            List<Packet.ServerPlace.Pixel> forBroadcast = new ArrayList<>();
+            for (DBPixelPlacement fromPixel : pixels) {
+                if (counter%50==0){
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                counter++;
+                //restores original pixel
+                putPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, false, "(undo)", false); //in board[]
+                forBroadcast.add(new Packet.ServerPlace.Pixel(fromPixel.x, fromPixel.y, fromPixel.color)); //in websocket
+                database.putUndoPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, fromPixel.id); //in database
+            }
+            server.broadcast_noshadow(new Packet.ServerPlace(forBroadcast));
+        }
     }
 
     private static boolean loadMap() {
