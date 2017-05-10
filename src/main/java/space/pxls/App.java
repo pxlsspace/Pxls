@@ -255,9 +255,11 @@ public class App {
             List<DBRollbackPixel> pixels = database.getRollbackPixels(who, seconds); //get all pixels that can and need to be rolled back
             List<Packet.ServerPlace.Pixel> forBroadcast = new ArrayList<>();
             for (DBRollbackPixel rbPixel : pixels) {
-                if (counter%50==0){
+                if (counter % config.getInt("rollbackPerPixels") == 0) {
                     try {
-                        Thread.sleep(500);
+                        server.broadcast_noshadow(new Packet.ServerPlace(forBroadcast));
+                        forBroadcast.clear();
+                        Thread.sleep(config.getDuration("rollbackWait", TimeUnit.MILLISECONDS));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -299,9 +301,11 @@ public class App {
             List<DBPixelPlacement> pixels = database.getUndoPixels(who); //get all pixels that can and need to be undone
             List<Packet.ServerPlace.Pixel> forBroadcast = new ArrayList<>();
             for (DBPixelPlacement fromPixel : pixels) {
-                if (counter%50==0){
+                if (counter % config.getInt("rollbackPerPixels") == 0) {
                     try {
-                        Thread.sleep(500);
+                        server.broadcast_noshadow(new Packet.ServerPlace(forBroadcast));
+                        forBroadcast.clear();
+                        Thread.sleep(config.getDuration("rollbackWait", TimeUnit.MILLISECONDS));
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
