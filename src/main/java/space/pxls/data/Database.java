@@ -44,6 +44,7 @@ public class Database implements Closeable {
         handle.createUsersTable();
         handle.createSessionsTable();
         handle.createAdminLogTable();
+        handle.createReportsTable();
     }
 
     public void placePixel(int x, int y, int color, User who, boolean mod_action) {
@@ -207,5 +208,9 @@ public class Database implements Closeable {
 
     public void adminLogServer(String message) {
         handle.adminLogServer(message);
+    }
+
+    public void addReport(int who, int pixel_id, int x, int y, String message) {
+        handle.addReport(who, pixel_id, x, y, message);
     }
 }

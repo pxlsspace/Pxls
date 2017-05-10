@@ -27,7 +27,7 @@
         ban = (function() {
             var self = {
                 elements: {
-                    prompt: $("<div>").addClass("message admin-prompt")
+                    prompt: $("#prompt")
                 },
                 init: function () {
                     self.elements.prompt.hide().appendTo(document.body);

@@ -335,6 +335,45 @@ public class WebHandler {
         }
     }
 
+    public void report(HttpServerExchange exchange) {
+        User user = exchange.getAttachment(AuthReader.USER);
+
+        if (user == null) {
+            exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+            exchange.endExchange();
+            return;
+        }
+
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+        
+        FormData.FormValue xq = data.getFirst("x");
+        FormData.FormValue yq = data.getFirst("y");
+        FormData.FormValue idq = data.getFirst("id");
+        FormData.FormValue msgq = data.getFirst("message");
+
+        if (xq == null || yq == null || idq == null || msgq == null) {
+            exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+            exchange.endExchange();
+            return;
+        }
+        int x = Integer.parseInt(xq.getValue());
+        int y = Integer.parseInt(yq.getValue());
+        int id = Integer.parseInt(idq.getValue());
+        if (x < 0 || x >= App.getWidth() || y < 0 || y >= App.getHeight()) {
+            exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+            exchange.endExchange();
+            return;
+        }
+        DBPixelPlacement pxl = App.getDatabase().getPixelByID(id);
+        if (pxl.x != x || pxl.y != y) {
+            exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+            exchange.endExchange();
+            return;
+        }
+        App.getDatabase().addReport(user.getId(), id, x, y, msgq.getValue());
+        exchange.setStatusCode(200);
+    }
+
     private User parseUserFromForm(HttpServerExchange exchange) {
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         if (data != null) {

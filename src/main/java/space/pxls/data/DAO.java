@@ -9,6 +9,19 @@ import java.io.Closeable;
 
 @RegisterMapper({DBUser.Mapper.class, DBPixelPlacement.Mapper.class, DBPixelPlacementUser.Mapper.class, DBUserBanReason.Mapper.class, DBExists.Mapper.class})
 public interface DAO extends Closeable {
+    @SqlUpdate("CREATE TABLE IF NOT EXISTS reports(" +
+            "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT," +
+            "who INT UNSIGNED," +
+            "x INT UNSIGNED," +
+            "y INT UNSIGNED," +
+            "message LONGTEXT," +
+            "pixel_id INT UNSIGNED," +
+            "time INT(10) UNSIGNED)")
+    void createReportsTable();
+
+    @SqlUpdate("INSERT INTO reports (who, pixel_id, x, y, message, time) VALUES (:who, :pixel_id, :x, :y, :message, UNIX_TIMESTAMP())")
+    void addReport(@Bind("who") int who, @Bind("pixel_id") int pixel_id, @Bind("x") int x, @Bind("y") int y, @Bind("message") String message);
+
     @SqlUpdate("CREATE TABLE IF NOT EXISTS admin_log(" +
             "id BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT," +
             "channel VARCHAR(255)," +

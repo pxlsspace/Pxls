@@ -95,7 +95,6 @@ window.App = (function () {
     if (ms_edge || ios_safari) {
         have_image_rendering = false;
     }
-    have_image_rendering = false;
     var ls = storageFactory(localStorage, 'ls_', 99),
         ss = storageFactory(sessionStorage, 'ss_', null),
         // this object is used to access the query parameters (and in the future probably to set them), it is prefered to use # now instead of ? as JS can change them
@@ -1285,9 +1284,56 @@ window.App = (function () {
         lookup = (function() {
             var self = {
                 elements: {
-                    lookup: $(".lookup")
+                    lookup: $(".lookup"),
+                    prompt: $("#prompt")
                 },
                 handle: null,
+                report: function (id, x, y) {
+                    self.elements.prompt.empty().append(
+                        $("<p>").addClass("text").css({
+                            fontWeight: 800,
+                            marginTop: 0
+                        }).text("Report pixel to moderator"),
+                        $("<p>").addClass("text").text("message:"),
+                        $("<textarea>").css({
+                            width: '100%',
+                            height: '5em'
+                        }).keydown(function (evt) {
+                            evt.stopPropagation();
+                        }),
+                        $("<div>").addClass("button").text("Cancel").css({
+                            position: "fixed",
+                            bottom: 20,
+                            left: 30,
+                            width: 66
+                        }).click(function () {
+                            self.elements.prompt.fadeOut(200);
+                        }),
+                        $("<div>").addClass("button").text("Report").css({
+                            position: "fixed",
+                            bottom: 20,
+                            right: 30
+                        }).click(function () {
+                            var msg = self.elements.prompt.find("textarea").val().trim();
+                            if (!msg) {
+                                alert.show("You must enter a message!");
+                                return;
+                            }
+                            $.post("/report", {
+                                id: id,
+                                x: x,
+                                y: y,
+                                message: msg
+                            }, function () {
+                                alert.show("Sent report!");
+                                self.elements.prompt.hide();
+                                self.elements.lookup.hide();
+                            }).fail(function () {
+                                alert.show("Error sending report.");
+                            })
+                        })
+                    ).fadeIn(200);
+                },
                 create: function (data) {
                     self.elements.lookup.empty().append(
                         $.map([
@@ -1301,6 +1347,9 @@ window.App = (function () {
                                 $("<span>").text(data[o[1]])
                             );
                         }),
+                        $("<div>").addClass("button").css("float", "left").text("Report").click(function () {
+                            self.report(data.id, data.x, data.y);
+                        }),
                         $("<div>").addClass("button").css("float", "right").text("Close").click(function () {
                             self.elements.lookup.fadeOut(200);
                         })
@@ -1308,6 +1357,7 @@ window.App = (function () {
                 },
                 init: function () {
                     self.elements.lookup.hide();
+                    self.elements.prompt.hide();
                     board.getRenderBoard().on("click", function (evt) {
                         if (evt.shiftKey) {
                             evt.preventDefault();
@@ -1433,7 +1483,7 @@ window.App = (function () {
         alert = (function() {
             var self = {
                 elements: {
-                    alert: $(".message")
+                    alert: $("#message")
                 },
                 show: function (s) {
                     self.elements.alert.find(".text").empty().append(s);
