@@ -2,6 +2,8 @@ package space.pxls.user;
 
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
+import space.pxls.server.Packet;
+import space.pxls.server.UndertowServer;
 
 import java.util.HashSet;
 import java.util.Set;

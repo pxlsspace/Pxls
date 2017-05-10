@@ -90,10 +90,18 @@ public class PacketHandler {
         if (user.canUndo()) {
             user.setLastUndoTime();
             user.setCooldown(0);
-            DBPixelPlacement lastPixel = App.getDatabase().getUserUndoPixel(user);
-            App.getDatabase().putUserUndoPixel(lastPixel, user);
-            App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, "(user undo)", false);
-            broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
+            DBPixelPlacement thisPixel = App.getDatabase().getUserUndoPixel(user);
+            DBPixelPlacement lastPixel = App.getDatabase().getPixelByID(thisPixel.secondaryId);
+            if (lastPixel != null) {
+                App.getDatabase().putUserUndoPixel(lastPixel, user);
+                App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, "(user undo)", false);
+                broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
+            } else {
+                int defaultColor = App.getConfig().getInt("board.defaultColor");
+                App.getDatabase().putUserUndoPixel(thisPixel.x, thisPixel.y, defaultColor, user);
+                App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, "(user undo)", false);
+                broadcastPixelUpdate(thisPixel.x, thisPixel.y, defaultColor);
+            }
         }
     }
 

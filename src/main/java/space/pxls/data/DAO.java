@@ -78,11 +78,11 @@ public interface DAO extends Closeable {
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
             "VALUES (:x, :y, :color, :who, NULL, true, false);" +
-            "UPDATE pixels SET most_recent = true WHERE id = :back_id" +
-            "UPDATE user SET pixel_count = pixel_count - 1, last_undo_time = NOW(6) WHERE id = :who")
+            "UPDATE pixels SET most_recent = true WHERE id = :back_id;" +
+            "UPDATE users SET pixel_count = pixel_count - 1 WHERE id = :who")
     void putUserUndoPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("back_id") int backId);
 
-    @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users ON pixels.who = users.id WHERE who = :who AND NOT rollback_action ORDER BY id DESC LIMIT 1")
+    @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users ON pixels.who = users.id WHERE who = :who AND NOT rollback_action ORDER BY pixels.id DESC LIMIT 1")
     DBPixelPlacement getUserUndoPixel(@Bind("who") int who);
 
     @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users ON pixels.who = users.id WHERE x = :x AND y = :y ORDER BY time DESC LIMIT 1")
@@ -103,7 +103,6 @@ public interface DAO extends Closeable {
             "login VARCHAR(64) NOT NULL," +
             "signup_time TIMESTAMP NOT NULL DEFAULT now(6)," +
             "cooldown_expiry TIMESTAMP," +
-            "last_undo_time TIMESTAMP," +
             "role VARCHAR(16) NOT NULL DEFAULT 'USER'," +
             "ban_expiry TIMESTAMP," +
             "signup_ip BINARY(16)," +
