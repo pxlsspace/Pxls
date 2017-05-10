@@ -134,12 +134,12 @@ public class Database implements Closeable {
         return handle.getUserUndoPixel(who.getId());
     }
 
-    public void putUserUndoPixel(DBPixelPlacement backPixel, User who){
-        handle.putUserUndoPixel(backPixel.x, backPixel.y, (byte) backPixel.color, who.getId(), backPixel.id);
+    public void putUserUndoPixel(DBPixelPlacement backPixel, User who, int fromId) {
+        handle.putUserUndoPixel(backPixel.x, backPixel.y, (byte) backPixel.color, who.getId(), backPixel.id, fromId);
     }
 
-    public void putUserUndoPixel(int x, int y, int color, User who){
-        handle.putUserUndoPixel(x, y, (byte) color, who.getId(), 0);
+    public void putUserUndoPixel(int x, int y, int color, User who, int fromId) {
+        handle.putUserUndoPixel(x, y, (byte) color, who.getId(), 0, fromId);
     }
 
     public void close() {

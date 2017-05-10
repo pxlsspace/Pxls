@@ -79,8 +79,9 @@ public interface DAO extends Closeable {
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
             "VALUES (:x, :y, :color, :who, NULL, true, false);" +
             "UPDATE pixels SET most_recent = true WHERE id = :back_id;" +
+            "UPDATE pixels SET most_recent = false WHERE id = :from_id;" +
             "UPDATE users SET pixel_count = pixel_count - 1 WHERE id = :who")
-    void putUserUndoPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("back_id") int backId);
+    void putUserUndoPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("back_id") int backId, @Bind("from_id") int fromId);
 
     @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users ON pixels.who = users.id WHERE who = :who AND NOT rollback_action ORDER BY pixels.id DESC LIMIT 1")
     DBPixelPlacement getUserUndoPixel(@Bind("who") int who);
