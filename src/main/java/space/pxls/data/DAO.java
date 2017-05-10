@@ -135,9 +135,6 @@ public interface DAO extends Closeable {
     @SqlQuery("SELECT * FROM users WHERE username = :name")
     DBUser getUserByName(@Bind("name") String name);
 
-    @SqlQuery("SELECT * FROM users WHERE id = :id")
-    DBUser getUserById(@Bind("id") int id);
-
     @SqlQuery("SELECT ban_reason FROM users WHERE id = :id")
     DBUserBanReason getUserBanReason(@Bind("id") int userId);
 
