@@ -6,7 +6,7 @@ import com.typesafe.config.ConfigFactory;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.plugins.convert.TypeConverters;
+import org.xnio.XnioWorker;
 import space.pxls.data.DBPixelPlacement;
 import space.pxls.data.DBRollbackPixel;
 import space.pxls.data.Database;
@@ -237,6 +237,12 @@ public class App {
         if (seconds <= 0) {
             return;
         }
+
+        XnioWorker worker = server.getServer().getWorker();
+        worker.execute(() -> rollbackAfterBan_(who, seconds));
+    }
+
+    public static void rollbackAfterBan_(User who, int seconds) {
         List<DBRollbackPixel> pixels = database.getRollbackPixels(who, seconds); //get all pixels that can and need to be rolled back
         List<Packet.ServerPlace.Pixel> forBroadcast = new ArrayList<>();
         for (DBRollbackPixel rbPixel : pixels) {
@@ -255,7 +261,7 @@ public class App {
                 database.putRollbackPixelNoPrevious(fromPixel.x, fromPixel.y, who, fromPixel.id);
             }
         }
-        server.broadcast_noshadow(new Packet.ServerPlace(forBroadcast));
+        server.broadcastNoShadow(new Packet.ServerPlace(forBroadcast));
     }
 
     public static void undoRollback(User who) {
@@ -267,7 +273,7 @@ public class App {
             forBroadcast.add(new Packet.ServerPlace.Pixel(fromPixel.x, fromPixel.y, fromPixel.color)); //in websocket
             database.putUndoPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, fromPixel.id); //in database
         }
-        server.broadcast_noshadow(new Packet.ServerPlace(forBroadcast));
+        server.broadcastNoShadow(new Packet.ServerPlace(forBroadcast));
     }
 
     private static boolean loadMap() {

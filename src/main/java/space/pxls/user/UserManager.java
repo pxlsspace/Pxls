@@ -151,7 +151,7 @@ public class UserManager {
         permaBanUser(user, reason, 24*3600);
     }
 
-    public Map getAllUsersByToken() {
+    public Map<String, User> getAllUsersByToken() {
         return usersByToken;
     }
 }

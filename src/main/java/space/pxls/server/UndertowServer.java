@@ -35,6 +35,7 @@ public class UndertowServer {
     private WebHandler webHandler;
 
     private Set<WebSocketChannel> connections;
+    private Undertow server;
 
     public UndertowServer(int port) {
         this.port = port;
@@ -65,7 +66,7 @@ public class UndertowServer {
                 .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/"))
                         .setCacheTime(10));
         //EncodingHandler encoder = new EncodingHandler(mainHandler, new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50, Predicates.parse("max-content-size(1024)")));
-        Undertow server = Undertow.builder()
+        server = Undertow.builder()
                 .addHttpListener(port, "0.0.0.0")
                 .setIoThreads(32)
                 .setWorkerThreads(128)
@@ -139,7 +140,7 @@ public class UndertowServer {
         }
     }
 
-    public void broadcast_noshadow(Object obj) {
+    public void broadcastNoShadow(Object obj) {
         String json = App.getGson().toJson(obj);
         Map<String, User> users = App.getUserManager().getAllUsersByToken();
         List<WebSocketChannel> shadowbannedConnection = new ArrayList<>();
@@ -161,5 +162,9 @@ public class UndertowServer {
 
     public PacketHandler getPacketHandler() {
         return socketHandler;
+    }
+
+    public Undertow getServer() {
+        return server;
     }
 }
