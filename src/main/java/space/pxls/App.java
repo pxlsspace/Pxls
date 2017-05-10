@@ -264,7 +264,13 @@ public class App {
         server.broadcastNoShadow(new Packet.ServerPlace(forBroadcast));
     }
 
+
     public static void undoRollback(User who) {
+        XnioWorker worker = server.getServer().getWorker();
+        worker.execute(() -> undoRollback_(who));
+    }
+
+    public static void undoRollback_(User who) {
         List<DBPixelPlacement> pixels = database.getUndoPixels(who); //get all pixels that can and need to be undone
         List<Packet.ServerPlace.Pixel> forBroadcast = new ArrayList<>();
         for (DBPixelPlacement fromPixel : pixels) {
