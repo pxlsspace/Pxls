@@ -56,11 +56,19 @@ public class Database implements Closeable {
     }
 
     public DBPixelPlacement getPixelAt(int x, int y) {
-        return handle.getPixel(x, y);
+        try {
+            return handle.getPixel(x, y);
+        } catch (NoResultsException exp) {
+            return null;
+        }
     }
 
     public DBPixelPlacementUser getPixelAtUser(int x, int y) {
-        return handle.getPixelUser(x, y);
+        try {
+            return handle.getPixelUser(x, y);
+        } catch (NoResultsException exp) {
+            return null;
+        }
     }
 
     public DBPixelPlacement getPixelByID(int id) {
@@ -110,7 +118,13 @@ public class Database implements Closeable {
         for (Map<String, Object> entry : output) {
             int fromId = toIntExact((long) entry.get("secondary_id"));
             DBPixelPlacement fromPixel = handle.getPixel(fromId); // get the original pixel, the one that we previously rolled back
-            if (handle.getCanUndo(fromPixel.x, fromPixel.y, fromPixel.id)) { // this basically checks if there are pixels that are more recent
+            boolean can_undo = false;
+            try {
+                can_undo = handle.getCanUndo(fromPixel.x, fromPixel.y, fromPixel.id);
+            } catch (NoResultsException exp) {
+                can_undo = false;
+            }
+            if (can_undo) { // this basically checks if there are pixels that are more recent
                 pixels.add(fromPixel); // add and later return
             }
         }
@@ -202,7 +216,11 @@ public class Database implements Closeable {
     }
 
     public boolean didPixelChange(int x, int y) {
-        return handle.didPixelChange(x, y);
+        try {
+            return handle.didPixelChange(x, y);
+        } catch (NoResultsException exp) {
+            return false;
+        }
     }
 
     public void adminLog(String message, int uid) {
