@@ -95,6 +95,7 @@ window.App = (function () {
     if (ms_edge || ios_safari) {
         have_image_rendering = false;
     }
+    have_image_rendering = false;
     var ls = storageFactory(localStorage, 'ls_', 99),
         ss = storageFactory(sessionStorage, 'ss_', null),
         // this object is used to access the query parameters (and in the future probably to set them), it is prefered to use # now instead of ? as JS can change them
@@ -571,7 +572,37 @@ window.App = (function () {
                     if (self.use_js_render) {
                         var ctx2 = self.elements.board_render[0].getContext("2d"),
                             pxl_x = -self.pan.x + ((self.width - (window.innerWidth / self.scale)) / 2),
-                            pxl_y = -self.pan.y + ((self.height - (window.innerHeight / self.scale)) / 2);
+                            pxl_y = -self.pan.y + ((self.height - (window.innerHeight / self.scale)) / 2),
+                            dx = 0,
+                            dy = 0,
+                            dw = 0,
+                            dh = 0,
+                            pxl_w = window.innerWidth / self.scale,
+                            pxl_h = window.innerHeight / self.scale;
+                        
+                        if (pxl_x < 0) {
+                            dx = -pxl_x;
+                            pxl_x = 0;
+                            pxl_w -= dx;
+                            dw += dx;
+                        }
+                        
+                        if (pxl_y < 0) {
+                            dy = -pxl_y;
+                            pxl_y = 0;
+                            pxl_h -= dy;
+                            dh += dy;
+                        }
+                        
+                        if (pxl_x + pxl_w > self.width) {
+                            dw += pxl_w + pxl_x - self.width;
+                            pxl_w = self.width - pxl_x;
+                        }
+                        
+                        if (pxl_y + pxl_h > self.height) {
+                            dh += pxl_h + pxl_y - self.height;
+                            pxl_h = self.height - pxl_y;
+                        }
                         
                         ctx2.canvas.width = window.innerWidth;
                         ctx2.canvas.height = window.innerHeight;
@@ -580,7 +611,16 @@ window.App = (function () {
                         ctx2.globalAlpha = 1;
                         ctx2.fillStyle = '#CCCCCC';
                         ctx2.fillRect(0, 0, ctx2.canvas.width, ctx2.canvas.height);
-                        ctx2.drawImage(self.elements.board[0], pxl_x, pxl_y, window.innerWidth / self.scale, window.innerHeight / self.scale, 0, 0, window.innerWidth, window.innerHeight);
+                        ctx2.drawImage(self.elements.board[0],
+                            pxl_x,
+                            pxl_y,
+                            pxl_w,
+                            pxl_h,
+                            0 + (dx * self.scale),
+                            0 + (dy * self.scale),
+                            window.innerWidth - (dw * self.scale),
+                            window.innerHeight - (dh * self.scale)
+                        );
                         
                         template.draw(ctx2, pxl_x, pxl_y);
                         
