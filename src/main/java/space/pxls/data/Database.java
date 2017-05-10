@@ -130,6 +130,18 @@ public class Database implements Closeable {
         handle.putRollbackPixelNoPrevious(x, y, who.getId(), fromId, (byte) App.getConfig().getInt("board.defaultColor"));
     }
 
+    public DBPixelPlacement getUserUndoPixel(User who){
+        return handle.getUserUndoPixel(who.getId());
+    }
+
+    public void putUserUndoPixel(DBPixelPlacement backPixel, User who){
+        handle.putUserUndoPixel(backPixel.x, backPixel.y, (byte) backPixel.color, who.getId(), backPixel.id);
+    }
+
+    public void putUserUndoPixel(int x, int y, int color, User who){
+        handle.putUserUndoPixel(x, y, (byte) color, who.getId(), 0);
+    }
+
     public void close() {
         handle.close();
     }
@@ -190,16 +202,7 @@ public class Database implements Closeable {
     }
 
     public boolean didPixelChange(int x, int y) {
-        DBExists e;
-        try {
-            e = handle.didPixelChange(x, y);
-        } catch (NoResultsException exp) {
-            return false;
-        }
-        if (e == null) {
-            return false;
-        }
-        return true;
+        return handle.didPixelChange(x, y);
     }
 
     public void adminLog(String message, int uid) {

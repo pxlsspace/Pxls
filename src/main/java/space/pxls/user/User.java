@@ -7,6 +7,7 @@ import space.pxls.server.UndertowServer;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 public class User {
     private int id;
@@ -18,6 +19,8 @@ public class User {
     private boolean flaggedForCaptcha = true;
     private boolean justShowedCaptcha;
     private long cooldownExpiry;
+    private long lastPixelTime = 0;
+    private long lastUndoTime = 0;
 
     // 0 = not banned
     private long banExpiryTime;
@@ -41,6 +44,18 @@ public class User {
         if (role.greaterEqual(Role.MODERATOR) && overrideCooldown) return true;
         if (!role.greaterEqual(Role.USER) && role != Role.SHADOWBANNED) return false; // shadowbanned seems to be able to place
         return cooldownExpiry < System.currentTimeMillis();
+    }
+
+    public boolean canUndo() {
+        return lastPixelTime < System.currentTimeMillis() + App.getConfig().getDuration("undoWindow", TimeUnit.MILLISECONDS) && lastUndoTime < System.currentTimeMillis() + App.getConfig().getDuration("undoCooldown", TimeUnit.MILLISECONDS);
+    }
+
+    public void setLastPixelTime() {
+        lastPixelTime = System.currentTimeMillis();
+    }
+
+    public void setLastUndoTime() {
+        lastUndoTime = System.currentTimeMillis();
     }
 
     public float getRemainingCooldown() {

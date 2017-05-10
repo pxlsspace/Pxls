@@ -97,6 +97,7 @@ public class UndertowServer {
 
                 Object obj = null;
                 if (type.equals("place")) obj = App.getGson().fromJson(jsonObj, Packet.ClientPlace.class);
+                if (type.equals("undo")) obj = App.getGson().fromJson(jsonObj, Packet.ClientUndo.class);
                 if (type.equals("captcha")) obj = App.getGson().fromJson(jsonObj, Packet.ClientCaptcha.class);
                 if (type.equals("admin_cdoverride"))
                     obj = App.getGson().fromJson(jsonObj, Packet.ClientAdminCooldownOverride.class);
