@@ -20,6 +20,9 @@ public class Packet {
     public static class ClientBanMe {
     }
 
+    public class ClientUndo {
+    }
+
     public static class ClientAdminCooldownOverride {
         public boolean override;
 

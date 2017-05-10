@@ -7,6 +7,7 @@ import com.mashape.unirest.http.async.Callback;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
+import space.pxls.data.DBPixelPlacement;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.util.PxlsTimer;
@@ -45,6 +46,7 @@ public class PacketHandler {
     public void accept(WebSocketChannel channel, User user, Object obj, String ip) {
         if (user != null) {
             if (obj instanceof Packet.ClientPlace) handlePlace(channel, user, ((Packet.ClientPlace) obj), ip);
+            if (obj instanceof Packet.ClientUndo) handleUndo(channel, user, ((Packet.ClientUndo) obj));
             if (obj instanceof Packet.ClientCaptcha) handleCaptcha(channel, user, ((Packet.ClientCaptcha) obj));
             if (obj instanceof Packet.ClientShadowBanMe) handleShadowBanMe(channel, user, ((Packet.ClientShadowBanMe) obj));
             if (obj instanceof Packet.ClientBanMe) handleBanMe(channel, user, ((Packet.ClientBanMe) obj));
@@ -84,6 +86,17 @@ public class PacketHandler {
         sendCooldownData(user);
     }
 
+    private void handleUndo(WebSocketChannel channel, User user, Packet.ClientUndo cu){
+        if (user.canUndo()) {
+            user.setLastUndoTime();
+            user.setCooldown(0);
+            DBPixelPlacement lastPixel = App.getDatabase().getUserUndoPixel(user);
+            App.getDatabase().putUserUndoPixel(lastPixel, user);
+            App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, "(user undo)", false);
+            broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
+        }
+    }
+
     private void handlePlace(WebSocketChannel channel, User user, Packet.ClientPlace cp, String ip) {
         if (cp.x < 0 || cp.x >= App.getWidth() || cp.y < 0 || cp.y >= App.getHeight()) return;
         if (cp.color < 0 || cp.color >= App.getConfig().getStringList("board.palette").size()) return;
@@ -113,6 +126,7 @@ public class PacketHandler {
                     }
                     if (!user.isOverridingCooldown()) {
                         user.setCooldown(seconds);
+                        user.setLastPixelTime();
                         App.getDatabase().updateUserTime(user.getId(), seconds);
                     }
                 }
