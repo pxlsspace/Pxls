@@ -59,6 +59,9 @@ public class WebHandler {
     }
 
     private void pxlsTokenCookie(HttpServerExchange exchange, String loginToken, int days) {
+        Calendar cal2 = Calendar.getInstance();
+        cal2.add(Calendar.DATE, -1);
+        exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setPath("/").setExpires(cal2.getTime()));
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, days);
         String hostname = App.getConfig().getString("host");
