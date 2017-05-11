@@ -39,7 +39,7 @@ public class Database implements Closeable {
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
         config.addDataSourceProperty("allowMultiQueries", "true");
-        config.setMaximumPoolSize(100); // this is plenty, the websocket uses 32
+        config.setMaximumPoolSize(200); // this is plenty, the websocket uses 32
 
         dbi = new DBI(new HikariDataSource(config));
         
@@ -70,7 +70,7 @@ public class Database implements Closeable {
     public void cleanup() {
         for (Thread t : handles.keySet()) {
             Database_handle d = handles.get(t);
-            if (d.last_use + (1000 * 60 * 10)  < System.currentTimeMillis()) {
+            if (d.last_use + (1000 * 60 * 5)  < System.currentTimeMillis()) {
                 // ok destroy it
                 System.out.println("Destroying mariadb connection...");
                 System.out.println(d.dao);
