@@ -15,12 +15,14 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.Math.toIntExact;
 
 public class Database implements Closeable {
     private final DBI dbi;
-    private final DAO handle;
+    
+    private Map<Thread,DAO> handles = new ConcurrentHashMap<>();;
 
     public Database() {
         try {
@@ -30,53 +32,57 @@ public class Database implements Closeable {
         }
 
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl(App.getConfig().getString("database.url") + "?allowMultiQueries=true");
+        config.setJdbcUrl(App.getConfig().getString("database.url"));
         config.setUsername(App.getConfig().getString("database.user"));
         config.setPassword(App.getConfig().getString("database.pass"));
         config.addDataSourceProperty("cachePrepStmts", "true");
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        config.addDataSourceProperty("allowMultiQueries", "true");
+
+        System.out.println(new HikariDataSource(config));
 
         dbi = new DBI(new HikariDataSource(config));
-        handle = dbi.open(DAO.class);
+        
 
-        handle.createPixelsTable();
-        handle.createUsersTable();
-        handle.createSessionsTable();
-        handle.createAdminLogTable();
-        handle.createReportsTable();
+        getHandle().createPixelsTable();
+        getHandle().createUsersTable();
+        getHandle().createSessionsTable();
+        getHandle().createAdminLogTable();
+        getHandle().createReportsTable();
+    }
+
+    private DAO getHandle() {
+        Thread t = Thread.currentThread();
+        DAO h = handles.get(t);
+        if (h != null) {
+            return h;
+        }
+        h = dbi.open(DAO.class);
+        System.out.println("Creating new mariadb connection...");
+        System.out.println(h);
+        handles.put(t, h);
+        return h;
     }
 
     public void placePixel(int x, int y, int color, User who, boolean mod_action) {
-        handle.putPixel(x, y, (byte) color, who != null ? who.getId() : null, mod_action);
+        getHandle().putPixel(x, y, (byte) color, who != null ? who.getId() : null, mod_action);
     }
 
     public void updateUserTime(int uid, long seconds) {
-        handle.updateUserTime(uid, seconds);
+        getHandle().updateUserTime(uid, seconds);
     }
 
     public DBPixelPlacement getPixelAt(int x, int y) {
-        try {
-            return handle.getPixel(x, y);
-        } catch (NoResultsException exp) {
-            return null;
-        }
+        return getHandle().getPixel(x, y);
     }
 
     public DBPixelPlacementUser getPixelAtUser(int x, int y) {
-        try {
-            return handle.getPixelUser(x, y);
-        } catch (NoResultsException exp) {
-            return null;
-        }
+        return getHandle().getPixelUser(x, y);
     }
 
     public DBPixelPlacement getPixelByID(int id) {
-        try {
-            return handle.getPixel(id);
-        } catch (NoResultsException exp) {
-            return null;
-        }
+        return getHandle().getPixel(id);
     }
 
     // returns ids of all pixels that should be rolled back and the DBPixelPlacement for all pixels to rollback to
@@ -93,20 +99,12 @@ public class Database implements Closeable {
             DBPixelPlacement toPixel;
             try {
                 int prevId = toIntExact((long) entry.get("secondary_id"));
-                try {
-                    toPixel = handle.getPixel(prevId); //if previous pixel exists
-                } catch (NoResultsException exp) {
-                    toPixel = null;
-                }
+                toPixel = getHandle().getPixel(prevId); //if previous pixel exists
+                
                 // while the user who placed the previous pixel is banned
                 while (toPixel.role.lessThan(Role.GUEST) || toPixel.ban_expiry > Instant.now().toEpochMilli() || toPixel.userId == who.getId()) {
                     if (toPixel.secondaryId != 0) {
-                        try {
-                            toPixel = handle.getPixel(toPixel.secondaryId); //if is banned gets previous pixel
-                        } catch (NoResultsException exp) {
-                            toPixel = null;
-                            break;
-                        }
+                        toPixel = getHandle().getPixel(toPixel.secondaryId); //if is banned gets previous pixel
                     } else {
                         toPixel = null; // if is banned but no previous pixel exists return blank pixel
                         break; // and no reason to loop because blank pixel isn't placed by an user
@@ -130,18 +128,9 @@ public class Database implements Closeable {
         List<DBPixelPlacement> pixels = new ArrayList<>();
         for (Map<String, Object> entry : output) {
             int fromId = toIntExact((long) entry.get("secondary_id"));
-            DBPixelPlacement fromPixel;
-            try {
-                fromPixel = handle.getPixel(fromId); // get the original pixel, the one that we previously rolled back
-            } catch (NoResultsException exp) {
-                fromPixel = null;
-            }
-            boolean can_undo = false;
-            try {
-                can_undo = handle.getCanUndo(fromPixel.x, fromPixel.y, fromPixel.id);
-            } catch (NoResultsException exp) {
-                can_undo = false;
-            }
+            DBPixelPlacement fromPixel = getHandle().getPixel(fromId); // get the original pixel, the one that we previously rolled back
+            
+            boolean can_undo = getHandle().getCanUndo(fromPixel.x, fromPixel.y, fromPixel.id);
             if (can_undo) { // this basically checks if there are pixels that are more recent
                 pixels.add(fromPixel); // add and later return
             }
@@ -151,127 +140,99 @@ public class Database implements Closeable {
     }
 
     public void putUndoPixel(int x, int y, int color, User who, int fromId) {
-        handle.putUndoPixel(x, y, (byte) color, who.getId(), fromId);
+        getHandle().putUndoPixel(x, y, (byte) color, who.getId(), fromId);
     }
 
     public void putRollbackPixel(User who, int fromId, int toId) {
-        handle.putRollbackPixel(who.getId(), fromId, toId);
+        getHandle().putRollbackPixel(who.getId(), fromId, toId);
     }
 
     public void putRollbackPixelNoPrevious(int x, int y, User who, int fromId) {
-        handle.putRollbackPixelNoPrevious(x, y, who.getId(), fromId, (byte) App.getConfig().getInt("board.defaultColor"));
+        getHandle().putRollbackPixelNoPrevious(x, y, who.getId(), fromId, (byte) App.getConfig().getInt("board.defaultColor"));
     }
 
     public DBPixelPlacement getUserUndoPixel(User who){
-        try {
-            return handle.getUserUndoPixel(who.getId());
-        } catch (NoResultsException exp) {
-            return null;
-        }
+        return getHandle().getUserUndoPixel(who.getId());
     }
 
     public void putUserUndoPixel(DBPixelPlacement backPixel, User who, int fromId) {
-        handle.putUserUndoPixel(backPixel.x, backPixel.y, (byte) backPixel.color, who.getId(), backPixel.id, fromId);
+        getHandle().putUserUndoPixel(backPixel.x, backPixel.y, (byte) backPixel.color, who.getId(), backPixel.id, fromId);
     }
 
     public void putUserUndoPixel(int x, int y, int color, User who, int fromId) {
-        handle.putUserUndoPixel(x, y, (byte) color, who.getId(), 0, fromId);
+        getHandle().putUserUndoPixel(x, y, (byte) color, who.getId(), 0, fromId);
     }
 
     public void close() {
-        handle.close();
+        getHandle().close();
     }
 
     public DBUser getUserByLogin(String login) {
-        try {
-            return handle.getUserByLogin(login);
-        } catch (NoResultsException exp) {
-            return null;
-        }
+        return getHandle().getUserByLogin(login);
     }
 
     public DBUser getUserByName(String name) {
-        try {
-            return handle.getUserByName(name);
-        } catch (NoResultsException exp) {
-            return null;
-        }
+        return getHandle().getUserByName(name);
     }
 
     public DBUser getUserByToken(String token) {
-        try {
-            return handle.getUserByToken(token);
-        } catch (NoResultsException exp) {
-            return null;
-        }
+        return getHandle().getUserByToken(token);
     }
 
     public DBUser createUser(String name, String login, String ip) {
-        handle.createUser(name, login, ip);
-        try {
-            return getUserByName(name);
-        } catch (NoResultsException exp) {
-            return null;
-        }
+        getHandle().createUser(name, login, ip);
+        return getUserByName(name);
     }
 
     public void createSession(int who, String token) {
-        handle.createSession(who, token);
+        getHandle().createSession(who, token);
     }
 
     public void destroySession(String token) {
-        handle.destroySession(token);
+        getHandle().destroySession(token);
     }
 
     public void updateSession(String token) {
-        handle.updateSession(token);
+        getHandle().updateSession(token);
     }
 
     public void setUserRole(User user, Role role) {
-        handle.updateUserRole(user.getId(), role.name());
+        getHandle().updateUserRole(user.getId(), role.name());
     }
 
     public void updateBan(User user, long timeFromNowSeconds, String reason) {
-        handle.updateUserBan(user.getId(), timeFromNowSeconds, reason);
+        getHandle().updateUserBan(user.getId(), timeFromNowSeconds, reason);
     }
 
     public void updateBanReason(User user, String reason) {
-        handle.updateUserBanReason(user.getId(), reason);
+        getHandle().updateUserBanReason(user.getId(), reason);
     }
 
     public void updateUserIP(User user, String ip) {
-        handle.updateUserIP(user.getId(), ip);
+        getHandle().updateUserIP(user.getId(), ip);
     }
 
     public String getUserBanReason(int id) {
-        try {
-            return handle.getUserBanReason(id).ban_reason;
-        } catch (NoResultsException exp) {
-            return "";
-        }
+        return getHandle().getUserBanReason(id).ban_reason;
     }
 
     public void clearOldSessions() {
-        handle.clearOldSessions();
+        getHandle().clearOldSessions();
     }
 
     public boolean didPixelChange(int x, int y) {
-        try {
-            return handle.didPixelChange(x, y);
-        } catch (NoResultsException exp) {
-            return false;
-        }
+        return getHandle().didPixelChange(x, y);
     }
 
     public void adminLog(String message, int uid) {
-        handle.adminLog(message, uid);
+        getHandle().adminLog(message, uid);
     }
 
     public void adminLogServer(String message) {
-        handle.adminLogServer(message);
+        getHandle().adminLogServer(message);
     }
 
     public void addReport(int who, int pixel_id, int x, int y, String message) {
-        handle.addReport(who, pixel_id, x, y, message);
+        getHandle().addReport(who, pixel_id, x, y, message);
     }
 }
