@@ -72,7 +72,11 @@ public class Database implements Closeable {
     }
 
     public DBPixelPlacement getPixelByID(int id) {
-        return handle.getPixel(id);
+        try {
+            return handle.getPixel(id);
+        } catch (NoResultsException exp) {
+            return null;
+        }
     }
 
     // returns ids of all pixels that should be rolled back and the DBPixelPlacement for all pixels to rollback to
@@ -89,11 +93,20 @@ public class Database implements Closeable {
             DBPixelPlacement toPixel;
             try {
                 int prevId = toIntExact((long) entry.get("secondary_id"));
-                toPixel = handle.getPixel(prevId); //if previous pixel exists
+                try {
+                    toPixel = handle.getPixel(prevId); //if previous pixel exists
+                } catch (NoResultsException exp) {
+                    toPixel = null;
+                }
                 // while the user who placed the previous pixel is banned
                 while (toPixel.role.lessThan(Role.GUEST) || toPixel.ban_expiry > Instant.now().toEpochMilli() || toPixel.userId == who.getId()) {
                     if (toPixel.secondaryId != 0) {
-                        toPixel = handle.getPixel(toPixel.secondaryId); //if is banned gets previous pixel
+                        try {
+                            toPixel = handle.getPixel(toPixel.secondaryId); //if is banned gets previous pixel
+                        } catch (NoResultsException exp) {
+                            toPixel = null;
+                            break;
+                        }
                     } else {
                         toPixel = null; // if is banned but no previous pixel exists return blank pixel
                         break; // and no reason to loop because blank pixel isn't placed by an user
@@ -117,7 +130,12 @@ public class Database implements Closeable {
         List<DBPixelPlacement> pixels = new ArrayList<>();
         for (Map<String, Object> entry : output) {
             int fromId = toIntExact((long) entry.get("secondary_id"));
-            DBPixelPlacement fromPixel = handle.getPixel(fromId); // get the original pixel, the one that we previously rolled back
+            DBPixelPlacement fromPixel;
+            try {
+                fromPixel = handle.getPixel(fromId); // get the original pixel, the one that we previously rolled back
+            } catch (NoResultsException exp) {
+                fromPixel = null;
+            }
             boolean can_undo = false;
             try {
                 can_undo = handle.getCanUndo(fromPixel.x, fromPixel.y, fromPixel.id);
@@ -145,7 +163,11 @@ public class Database implements Closeable {
     }
 
     public DBPixelPlacement getUserUndoPixel(User who){
-        return handle.getUserUndoPixel(who.getId());
+        try {
+            return handle.getUserUndoPixel(who.getId());
+        } catch (NoResultsException exp) {
+            return null;
+        }
     }
 
     public void putUserUndoPixel(DBPixelPlacement backPixel, User who, int fromId) {
@@ -161,22 +183,36 @@ public class Database implements Closeable {
     }
 
     public DBUser getUserByLogin(String login) {
-        return handle.getUserByLogin(login);
+        try {
+            return handle.getUserByLogin(login);
+        } catch (NoResultsException exp) {
+            return null;
+        }
     }
 
     public DBUser getUserByName(String name) {
-        DBUser user = handle.getUserByName(name);
-        if (user == null) return null;
-        return user;
+        try {
+            return handle.getUserByName(name);
+        } catch (NoResultsException exp) {
+            return null;
+        }
     }
 
     public DBUser getUserByToken(String token) {
-        return handle.getUserByToken(token);
+        try {
+            return handle.getUserByToken(token);
+        } catch (NoResultsException exp) {
+            return null;
+        }
     }
 
     public DBUser createUser(String name, String login, String ip) {
         handle.createUser(name, login, ip);
-        return getUserByName(name);
+        try {
+            return getUserByName(name);
+        } catch (NoResultsException exp) {
+            return null;
+        }
     }
 
     public void createSession(int who, String token) {
@@ -208,7 +244,11 @@ public class Database implements Closeable {
     }
 
     public String getUserBanReason(int id) {
-        return handle.getUserBanReason(id).ban_reason;
+        try {
+            return handle.getUserBanReason(id).ban_reason;
+        } catch (NoResultsException exp) {
+            return "";
+        }
     }
 
     public void clearOldSessions() {
