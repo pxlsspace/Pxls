@@ -39,8 +39,7 @@ public class Database implements Closeable {
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
         config.addDataSourceProperty("allowMultiQueries", "true");
-
-        System.out.println(new HikariDataSource(config));
+        config.setMaximumPoolSize(100); // this is plenty, the websocket uses 32
 
         dbi = new DBI(new HikariDataSource(config));
         
