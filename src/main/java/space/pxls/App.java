@@ -17,6 +17,7 @@ import space.pxls.user.User;
 import space.pxls.user.UserManager;
 import space.pxls.util.PxlsTimer;
 import space.pxls.util.SessionTimer;
+import space.pxls.util.DatabaseTimer;
 import space.pxls.util.HeatmapTimer;
 
 
@@ -78,6 +79,8 @@ public class App {
         }).start();
 
         new Timer().schedule(new SessionTimer(), 0, 1000 * 3600); // execute once every hour
+
+        new Timer().schedule(new DatabaseTimer(), 0, 1000 * 60 * 10);
 
         int heatmap_timer_cd = (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS);
         new Timer().schedule(new HeatmapTimer(), 0, heatmap_timer_cd * 1000 / 256);

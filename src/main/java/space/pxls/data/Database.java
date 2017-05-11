@@ -22,7 +22,7 @@ import static java.lang.Math.toIntExact;
 public class Database implements Closeable {
     private final DBI dbi;
     
-    private Map<Thread,DAO> handles = new ConcurrentHashMap<>();;
+    private Map<Thread,Database_handle> handles = new ConcurrentHashMap<>();;
 
     public Database() {
         try {
@@ -53,15 +53,31 @@ public class Database implements Closeable {
 
     private DAO getHandle() {
         Thread t = Thread.currentThread();
-        DAO h = handles.get(t);
+        Database_handle h = handles.get(t);
         if (h != null) {
-            return h;
+            h.last_use = System.currentTimeMillis();
+            return h.dao;
         }
-        h = dbi.open(DAO.class);
+        h = new Database_handle();
+        h.dao = dbi.open(DAO.class);
+        h.last_use = System.currentTimeMillis();
         System.out.println("Creating new mariadb connection...");
         System.out.println(h);
         handles.put(t, h);
-        return h;
+        return h.dao;
+    }
+
+    public void cleanup() {
+        for (Thread t : handles.keySet()) {
+            Database_handle d = handles.get(t);
+            if (d.last_use + (1000 * 60 * 10)  < System.currentTimeMillis()) {
+                // ok destroy it
+                System.out.println("Destroying mariadb connection...");
+                System.out.println(d.dao);
+                d.dao.close();
+                handles.remove(t);
+            }
+        }
     }
 
     public void placePixel(int x, int y, int color, User who, boolean mod_action) {
@@ -234,4 +250,9 @@ public class Database implements Closeable {
     public void addReport(int who, int pixel_id, int x, int y, String message) {
         getHandle().addReport(who, pixel_id, x, y, message);
     }
+}
+
+class Database_handle {
+    public DAO dao;
+    public long last_use;
 }
