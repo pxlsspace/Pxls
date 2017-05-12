@@ -1737,6 +1737,9 @@ window.App = (function () {
         ls: ls,
         ss: ss,
         query: query,
+        centerBoardOn: function(x, y) {
+            board.centerOn(x, y);
+        },
         updateTemplate: function(t) {
             template.update(t);
         },
