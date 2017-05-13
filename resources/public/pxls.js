@@ -721,7 +721,9 @@ window.App = (function () {
                     var a = document.createElement("a");
                     a.href = self.elements.board[0].toDataURL("image/png");
                     a.download = "canvas.png";
+                    document.body.appendChild(a);
                     a.click();
+                    document.removeChild(a);
                     if (typeof a.remove === "function") {
                         a.remove();
                     }
