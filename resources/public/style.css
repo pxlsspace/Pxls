@@ -598,7 +598,7 @@ a, a:hover, a:visited, a:active {
     }
 }
 
-@media (max-width: 1300px) {
+@media (max-width: 1600px) {
     .ui .left, .ui .right {
         bottom: 70px;
     }
