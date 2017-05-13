@@ -129,7 +129,14 @@ public class Packet {
         public ServerAlert(String message) {
             this.message = message;
         }
+    }
 
+    public static class CanUndo {
+        public String type = "can_undo";
+        public long time;
+        public CanUndo(long time) {
+            this.time = time;
+        }
     }
 
     public static class HttpInfo {

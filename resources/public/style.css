@@ -393,14 +393,23 @@ a, a:hover, a:visited, a:active {
 }
 
 #cursor {
+    position: fixed;
+    top: 20px;
+    left: 10px;
+
     width: 36px;
     height: 36px;
     border: 2px solid black;
     border-radius: 3px;
+}
 
-    position: relative;
+#undo {
+    position: fixed;
     top: 20px;
     left: 10px;
+    background: white;
+    will-change: transform;
+    z-index: 2;
 }
 
 #reticule, #cursor {

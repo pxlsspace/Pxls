@@ -87,7 +87,7 @@ public class PacketHandler {
     }
 
     private void handleUndo(WebSocketChannel channel, User user, Packet.ClientUndo cu){
-        if (user.canUndo()) {
+        if (user.canUndoNow()) {
             user.setLastUndoTime();
             user.setCooldown(0);
             DBPixelPlacement thisPixel = App.getDatabase().getUserUndoPixel(user);
@@ -102,6 +102,7 @@ public class PacketHandler {
                 App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, "(user undo)", false);
                 broadcastPixelUpdate(thisPixel.x, thisPixel.y, defaultColor);
             }
+            sendCooldownData(user);
         }
     }
 
@@ -136,6 +137,9 @@ public class PacketHandler {
                         user.setCooldown(seconds);
                         user.setLastPixelTime();
                         App.getDatabase().updateUserTime(user.getId(), seconds);
+                        if (user.canUndo()) {
+                            server.send(channel, new Packet.CanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
+                        }
                     }
                 }
             }

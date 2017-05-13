@@ -46,8 +46,12 @@ public class User {
         return cooldownExpiry < System.currentTimeMillis();
     }
 
+    public boolean canUndoNow() {
+        return canUndo() && (lastPixelTime + App.getConfig().getDuration("undo.window", TimeUnit.MILLISECONDS) > System.currentTimeMillis());
+    }
+
     public boolean canUndo() {
-        return lastPixelTime < System.currentTimeMillis() + App.getConfig().getDuration("undoWindow", TimeUnit.MILLISECONDS) && lastUndoTime < System.currentTimeMillis() + App.getConfig().getDuration("undoCooldown", TimeUnit.MILLISECONDS);
+        return lastUndoTime + App.getConfig().getDuration("undo.cooldown", TimeUnit.MILLISECONDS) < System.currentTimeMillis();
     }
 
     public void setLastPixelTime() {

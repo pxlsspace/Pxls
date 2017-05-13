@@ -55,12 +55,12 @@ public class Database implements Closeable {
         Thread t = Thread.currentThread();
         Database_handle h = handles.get(t);
         if (h != null) {
-            h.last_use = System.currentTimeMillis();
+            h.lastUse = System.currentTimeMillis();
             return h.dao;
         }
         h = new Database_handle();
         h.dao = dbi.open(DAO.class);
-        h.last_use = System.currentTimeMillis();
+        h.lastUse = System.currentTimeMillis();
         System.out.println("Creating new mariadb connection...");
         System.out.println(h);
         handles.put(t, h);
@@ -70,7 +70,7 @@ public class Database implements Closeable {
     public void cleanup() {
         for (Thread t : handles.keySet()) {
             Database_handle d = handles.get(t);
-            if (d.last_use + (1000 * 60 * 5)  < System.currentTimeMillis()) {
+            if (d.lastUse + (1000 * 60 * 5)  < System.currentTimeMillis()) {
                 // ok destroy it
                 System.out.println("Destroying mariadb connection...");
                 System.out.println(d.dao);
@@ -254,5 +254,5 @@ public class Database implements Closeable {
 
 class Database_handle {
     public DAO dao;
-    public long last_use;
+    public long lastUse;
 }

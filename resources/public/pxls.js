@@ -1126,7 +1126,8 @@ window.App = (function () {
                 elements: {
                     palette: $("#palette"),
                     cursor: $("#cursor"),
-                    reticule: $("#reticule")
+                    reticule: $("#reticule"),
+                    undo: $("#undo")
                 },
                 palette: [],
                 reticule: {
@@ -1222,9 +1223,17 @@ window.App = (function () {
                         })
                     );
                 },
+                can_undo: false,
+                undo: function (evt) {
+                    evt.stopPropagation();
+                    socket.send({type: 'undo'});
+                    self.can_undo = false;
+                    self.elements.undo.hide();
+                },
                 init: function () {
                     self.elements.reticule.hide();
                     self.elements.cursor.hide();
+                    self.elements.undo.hide();
                     board.getRenderBoard().on("pointermove mousemove", function (evt) {
                         self.update(evt.clientX, evt.clientY);
                     });
@@ -1233,6 +1242,19 @@ window.App = (function () {
                             return;
                         }
                         self.elements.cursor.css("transform", "translate(" + evt.clientX + "px, " + evt.clientY + "px)");
+                        if (self.can_undo) {
+                            return;
+                        }
+                        self.elements.undo.css("transform", "translate(" + evt.clientX + "px, " + evt.clientY + "px)");
+                    }).keydown(function (evt) {
+                        if (self.can_undo && evt.keyCode == 90 && evt.ctrlKey) {
+                            self.undo(evt);
+                        }
+                    }).on("touchstart", function (evt) {
+                        if (self.color === -1 || self.can_undo) {
+                            return;
+                        }
+                        self.elements.undo.css("transform", "translate(" + evt.originalEvent.changedTouches[0].clientX + "px, " + evt.originalEvent.changedTouches[0].clientY + "px)");
                     });
                     socket.on("pixel", function (data) {
                         $.map(data.pixels, function (px) {
@@ -1253,6 +1275,15 @@ window.App = (function () {
                             alert.show("Failed captcha verification");
                         }
                     });
+                    socket.on("can_undo", function (data) {
+                        self.elements.undo.show();
+                        self.can_undo = true;
+                        setTimeout(function () {
+                            self.elements.undo.hide();
+                            self.can_undo = false;
+                        }, data.time * 1000);
+                    });
+                    self.elements.undo.click(self.undo);
                     window.recaptchaCallback = function (token) {
                         socket.send({
                             type: "captcha",
