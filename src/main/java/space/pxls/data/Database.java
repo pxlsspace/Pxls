@@ -115,9 +115,9 @@ public class Database implements Closeable {
             try {
                 int prevId = toIntExact((long) entry.get("secondary_id"));
                 toPixel = getHandle().getPixel(prevId); //if previous pixel exists
-                
-                // while the user who placed the previous pixel is banned
-                while (toPixel.role.lessThan(Role.GUEST) || toPixel.ban_expiry > Instant.now().toEpochMilli() || toPixel.userId == who.getId()) {
+
+                // while the user who placed the previous pixel is banned or previous pixel was undone
+                while (toPixel.role.lessThan(Role.GUEST) || toPixel.ban_expiry > Instant.now().toEpochMilli() || toPixel.userId == who.getId() || toPixel.undoAction) {
                     if (toPixel.secondaryId != 0) {
                         toPixel = getHandle().getPixel(toPixel.secondaryId); //if is banned gets previous pixel
                     } else {
