@@ -47,6 +47,7 @@ public interface DAO extends Closeable {
             "time TIMESTAMP NOT NULL DEFAULT now(6)," +
             "mod_action BOOLEAN NOT NULL DEFAULT false," +
             "rollback_action BOOLEAN NOT NULL DEFAULT false," +
+            "undo_action BOOLEAN NOT NULL DEFAULT false," +
             "most_recent BOOLEAN NOT NULL DEFAULT true)") //is true and is the only thing we alter
     void createPixelsTable();
 
@@ -76,7 +77,7 @@ public interface DAO extends Closeable {
             "UPDATE users SET pixel_count = pixel_count + 1 WHERE id = :who")
     void putUndoPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("from_id") int fromId);
 
-    @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
+    @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, undo_action, most_recent)" +
             "VALUES (:x, :y, :color, :who, NULL, true, false);" +
             "UPDATE pixels SET most_recent = true WHERE id = :back_id;" +
             "UPDATE pixels SET most_recent = false WHERE id = :from_id;" +
