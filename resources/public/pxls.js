@@ -298,7 +298,7 @@ window.App = (function () {
                 wps: WebSocket.prototype.send, // make sure we have backups of those....
                 wpc: WebSocket.prototype.close,
                 reconnect: function () {
-                    $(".reconnecting").show();
+                    $("#reconnecting").show();
                     setTimeout(function () {
                         $.get(window.location.pathname + "?_" + (new Date()).getTime(), function () {
                             window.location.reload();
@@ -332,9 +332,9 @@ window.App = (function () {
                         self.close();
                     });
                     
-                    $(".board-container").show();
-                    $(".ui").show();
-                    $(".loading").fadeOut(500);
+                    $("#board-container").show();
+                    $("#ui").show();
+                    $("#loading").fadeOut(500);
                 },
                 on: function (type, fn) {
                     self.hooks.push({
@@ -369,9 +369,9 @@ window.App = (function () {
                 elements: {
                     board: $("#board"),
                     board_render: null, // populated on init based on rendering method
-                    mover: $(".board-mover"),
-                    zoomer: $(".board-zoomer"),
-                    container: $(".board-container")
+                    mover: $("#board-mover"),
+                    zoomer: $("#board-zoomer"),
+                    container: $("#board-container")
                 },
                 use_js_render: !have_image_rendering,
                 use_zoom: have_image_rendering && false,
@@ -496,7 +496,7 @@ window.App = (function () {
                     });
                 },
                 init: function () {
-                    $(".ui").hide();
+                    $("#ui").hide();
                     self.elements.container.hide();
                     
                     if (self.use_js_render) {
@@ -895,7 +895,11 @@ window.App = (function () {
                         if (self.t[o[1]] == o[2]) {
                             query.remove(o[0]);
                         } else {
-                            query.set(o[0], self.t[o[1]]);
+                            var v = self.t[o[1]];
+                            if (o[0] == "oo") {
+                                v = Math.round(v * 100) / 100;
+                            }
+                            query.set(o[0], v);
                         }
                     });
                 },
@@ -909,7 +913,8 @@ window.App = (function () {
                             x: 0,
                             y: 0
                         };
-                    self.elements.template = $("<img>").addClass("board-template noselect pixelate").attr({
+                    self.elements.template = $("<img>").addClass("noselect pixelate").attr({
+                        id: "board-template",
                         src: self.t.url,
                         alt: "template"
                     }).css({
@@ -952,9 +957,9 @@ window.App = (function () {
                     board.getRenderBoard().parent().prepend(self.elements.template);
                 },
                 update_drawer: function () {
-                    $(".template-use")[0].checked = self.t.use;
-                    $(".template-url").val(self.t.url);
-                    $(".template-opacity").val(self.t.opacity);
+                    $("#template-use")[0].checked = self.t.use;
+                    $("#template-url").val(self.t.url);
+                    $("#template-opacity").val(self.t.opacity);
                 },
                 update: function (t) {
                     if (t.hasOwnProperty('use') && t.use !== self.t.use) {
@@ -1027,11 +1032,11 @@ window.App = (function () {
                     ctx2.drawImage(self.elements.template[0], (self.t.x - pxl_x) * scale, (self.t.y - pxl_y) * scale, width * scale, height * scale);
                 },
                 init: function () {
-                    drawer.create(".template-control", 84, "template_open", false);
-                    $(".template-use").change(function () {
+                    drawer.create("#template-control", 84, "template_open", false);
+                    $("#template-use").change(function () {
                         self.update({use: this.checked});
                     });
-                    $(".template-url").change(function () {
+                    $("#template-url").change(function () {
                         self.update({url: this.value});
                     }).keydown(function (evt) {
                         if (evt.which === 13) {
@@ -1050,7 +1055,7 @@ window.App = (function () {
                             });
                         }, 100);
                     });
-                    $(".template-opacity").on("change input", function () {
+                    $("#template-opacity").on("change input", function () {
                         self.update({opacity: parseFloat(this.value)});
                     });
                     $(window).keydown(function (evt) {
@@ -1090,7 +1095,7 @@ window.App = (function () {
         grid = (function() {
             var self = {
                 elements: {
-                    grid: $(".grid")
+                    grid: $("#grid")
                 },
                 init: function () {
                     self.elements.grid.hide();
@@ -1119,9 +1124,9 @@ window.App = (function () {
         place = (function() {
             var self = {
                 elements: {
-                    palette: $(".palette"),
-                    cursor: $(".cursor"),
-                    reticule: $(".reticule")
+                    palette: $("#palette"),
+                    cursor: $("#cursor"),
+                    reticule: $("#reticule")
                 },
                 palette: [],
                 reticule: {
@@ -1284,7 +1289,7 @@ window.App = (function () {
         lookup = (function() {
             var self = {
                 elements: {
-                    lookup: $(".lookup"),
+                    lookup: $("#lookup"),
                     prompt: $("#prompt")
                 },
                 handle: null,
@@ -1408,8 +1413,8 @@ window.App = (function () {
         drawer = (function() {
             var self = {
                 elements: {
-                    container: $(".drawers"),
-                    opener: $(".drawers-opener")
+                    container: $("#drawers"),
+                    opener: $("#drawers-opener")
                 },
                 create: function (html_class, keycode, localstorage, open) {
                     var elem = $(html_class);
@@ -1432,8 +1437,8 @@ window.App = (function () {
                     });
                 },
                 updateDropdown: function () {
-                    $(".drawers-opener-content").empty().append(
-                        $(".drawers > .drawer").map(function () {
+                    $("#drawers-opener-content").empty().append(
+                        $("#drawers > .drawer").map(function () {
                             var _self = $(this);
                             return $("<div>").text(_self.find(".open").text()).click(function (evt) {
                                 evt.stopPropagation();
@@ -1464,14 +1469,14 @@ window.App = (function () {
         info = (function() {
             var self = {
                 init: function () {
-                    drawer.create(".info", 73, "info_closed", true);
+                    drawer.create("#info", 73, "info_closed", true);
                     $("#audiotoggle")[0].checked = ls.get("audio_muted");
                     $("#audiotoggle").change(function () {
                         ls.set("audio_muted", $(this).is(":checked"));
                     });
-                    $(".rules-button").click(function (evt) {
+                    $("#rules-button").click(function (evt) {
                         evt.stopPropagation();
-                        alert.show($(".rules-content").html());
+                        alert.show($("#rules-content").html());
                     });
                 }
             };
@@ -1483,7 +1488,7 @@ window.App = (function () {
         alert = (function() {
             var self = {
                 elements: {
-                    alert: $("#message")
+                    alert: $("#alert")
                 },
                 show: function (s) {
                     self.elements.alert.find(".text").empty().append(s);
@@ -1507,7 +1512,7 @@ window.App = (function () {
         timer = (function() {
             var self = {
                 elements: {
-                    timer: $(".cooldown-timer")
+                    timer: $("#cooldown-timer")
                 },
                 hasFiredNotification: true,
                 cooldown: 0,
@@ -1587,7 +1592,7 @@ window.App = (function () {
         coords = (function() {
             var self = {
                 elements: {
-                    coords: $(".coords")
+                    coords: $("#coords")
                 },
                 init: function () {
                     self.elements.coords.hide();
@@ -1610,9 +1615,9 @@ window.App = (function () {
         user = (function() {
             var self = {
                 elements: {
-                    users: $(".online"),
-                    userInfo: $(".userinfo"),
-                    loginOverlay: $(".login-overlay")
+                    users: $("#online"),
+                    userInfo: $("#userinfo"),
+                    loginOverlay: $("#login-overlay")
                 },
                 role: "USER",
                 getRole: function () {
@@ -1703,7 +1708,7 @@ window.App = (function () {
             }
         })();
     // init progress
-    $(".login-overlay a").click(function (evt) {
+    $("#login-overlay a").click(function (evt) {
         var hash = window.location.hash.substring(1),
             search = window.location.search.substring(1),
             url = hash;

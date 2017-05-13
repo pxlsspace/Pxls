@@ -55,28 +55,28 @@
 </head>
 <body>
 
-<div class="reconnecting">Lost connection to server, reconnecting...</div>
+<div id="reconnecting">Lost connection to server, reconnecting...</div>
 
-<div class="board-container">
-    <div class="grid"></div>
-    <div class="board-zoomer">
-        <div class="board-mover">
+<div id="board-container">
+    <div id="grid"></div>
+    <div id="board-zoomer">
+        <div id="board-mover">
             <canvas id="heatmap" class="pixelate noselect"></canvas>
             <canvas id="board" class="pixelate noselect" width="100" height="100"></canvas>
         </div>
     </div>
 </div>
 
-<div class="drawers">
-    <div class="info drawer">
+<div id="drawers">
+    <div id="info" class="drawer">
         <div class="drawer-content">
             <div class="close">Close</div>
             <div>
                 <h1>Welcome!</h1>
                 <p>Welcome to pxls.space! Pxls is an open-source project created by Ske and maintained by a dedicated team of volunteers. The best place to reach staff and fellow community is in the discord! Check out our social media pages, and please take the time to read the rules below. Have fun creating (or changing) art!</p>
                 <p>&nbsp;</p>
-                <div class="button rules-button">View rules</div>
-                <div class="rules-content">
+                <div id="rules-button" class="button">View rules</div>
+                <div id="rules-content">
                     <h1>Rules</h1>
                     <p>We pride ourselves on trying to keep an open canvas for all free from outside interference on our end, and especially censorship. However, for the good of the community and on accounts of our own beliefs, please acknowledge and obey the following guidelines:</p>
                     <ol>
@@ -102,7 +102,7 @@
                 <br>
                 <a href="http://www.piskelapp.com/p/create" target="_blank">Single-player mode</a>
             </div>
-            <div class="donate">
+            <div id="donate">
                 <h1>Donate</h1>
                 <p>Our GoFundMe will allow us to achieve specific goals.</p>
                 <p>Paypal and BTC donations go towards Ske and the team :)</p>
@@ -122,10 +122,8 @@
             <div>
                 <h1>Settings</h1>
                 <div>
-                    <input id="audiotoggle" name="audiotoggle" type="checkbox"/>
-                    <label for="audiotoggle">Turn off sounds</label><br>
-                    <input id="heatmaptoggle" type="checkbox"/>
-                    <label for="heatmaptoggle">Turn on heatmap</label>
+                    <label><input id="audiotoggle" type="checkbox"/>Turn off sounds</label><br>
+                    <label><input id="heatmaptoggle" type="checkbox"/>Turn on heatmap</label>
                 </div>
                 <p>&nbsp;</p>
                 <h1>Controls</h1>
@@ -141,15 +139,15 @@
         <div class="open">info</div>
     </div>
 
-    <div class="template-control drawer">
+    <div id="template-control" class="drawer">
         <div class="drawer-content">
             <div class="close">Close</div>
             <div>
                 <h1>Template control</h1>
                 <p>Hold down ctrl to drag the template around</p>
-                <p><label>Use template: <input type="checkbox" class="template-use"></label></p>
-                <p><label>URL: <input type="text" class="template-url"></label></p>
-                <p><label>Opacity: <input type="range" min="0" max="1" step="0.01" class="template-opacity"></label></p>
+                <p><label>Use template: <input type="checkbox" id="template-use"></label></p>
+                <p><label>URL: <input type="text" id="template-url"></label></p>
+                <p><label>Opacity: <input type="range" min="0" max="1" step="0.01" id="template-opacity"></label></p>
             </div>
             <div>
                 <h1>Keyboard controls</h1>
@@ -161,39 +159,39 @@
         <div class="open">template</div>
     </div>
 
-    <div class="drawers-opener">
-        <div class="drawers-opener-content">
+    <div id="drawers-opener">
+        <div id="drawers-opener-content">
             
         </div>
         <div class="open"></div>
     </div>
 </div>
 
-<div class="ui" id="ui">
+<div id="ui">
     <div class="ui-bar">
-        <div class="login-overlay">
+        <div id="login-overlay">
             You are not signed in. Sign in with <a href="/signin/reddit">Reddit</a> | <a
                 href="/signin/google">Google</a> | <a href="/signin/discord">Discord</a>.
         </div>
-        <div class="cooldown-timer"></div>
-        <div class="palette"></div>
+        <div id="cooldown-timer"></div>
+        <div id="palette"></div>
     </div>
 
     <div class="left">
-        <div class="bubble coords"></div>
+        <div id="coords" class="bubble"></div>
     </div>
     <div class="right">
-        <div class="bubble userinfo"><span class="name"></span> <a href="/logout" class="logout">logout</a></div>
-        <div class="bubble online"></div>
+        <div id="userinfo" class="bubble"><span class="name"></span> <a href="/logout" class="logout">logout</a></div>
+        <div id="online" class="bubble"></div>
     </div>
 </div>
 
-<div class="lookup"></div>
-<div class="loading"><span>Loading...</span></div>
-<div class="cursor" id="cursor"></div>
-<div class="reticule" id="reticule"></div>
-<div class="message prompt" id="prompt"></div>
-<div class="message" id="message"><span class="text"></span> <span class="button">OK</span></div>
+<div id="lookup"></div>
+<div id="loading"><span>Loading...</span></div>
+<div id="cursor"></div>
+<div id="reticule"></div>
+<div id="prompt" class="message"></div>
+<div id="alert" class="message" ><span class="text"></span> <span class="button">OK</span></div>
 
 
 <div class="g-recaptcha"

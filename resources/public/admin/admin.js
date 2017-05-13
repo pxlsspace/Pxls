@@ -297,7 +297,7 @@
         lookup = (function() {
             var self = {
                 elements: {
-                    lookup: $(".lookup")
+                    lookup: $("#lookup")
                 },
                 create: function (data) {
                     data.coords = "(" + data.x + ", " + data.y + ")";

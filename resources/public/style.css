@@ -41,7 +41,7 @@ a, a:hover, a:visited, a:active {
     color: inherit;
 }
 
-.reconnecting {
+#reconnecting {
     position: fixed;
     display: none;
     top: 0;
@@ -61,7 +61,7 @@ a, a:hover, a:visited, a:active {
 | Overlays
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
-.loading {
+#loading {
     position: fixed;
     top: 0;
     left: 0;
@@ -71,7 +71,7 @@ a, a:hover, a:visited, a:active {
     z-index: 999;
 }
 
-.loading span {
+#loading span {
     text-align: center;
     font-size: 36px;
     color: white;
@@ -116,7 +116,7 @@ a, a:hover, a:visited, a:active {
     border-radius: 3px;
 }
 
-.lookup {
+#lookup {
     top: 50px;
     right: 16px;
     z-index: 9;
@@ -185,13 +185,13 @@ a, a:hover, a:visited, a:active {
     font-weight: 700;
 }
 
-.info > .open {
+#info > .open {
     left: 0;
     width: 50px;
     border-radius: 0 0 5px 0;
 }
 
-.template-control > .open {
+#template-control > .open {
     right: 0;
     width: 100px;
     border-radius: 0 0 0 5px;
@@ -243,31 +243,31 @@ a, a:hover, a:visited, a:active {
     display: inline-block;
 }
 
-.info .drawer-content div[id*="bitcoin"] {
+#info .drawer-content div[id*="bitcoin"] {
     margin-top: 7px;
     margin-left: 10px;
     display: inline-block;
 }
 
-.info .drawer-content div[id*="bitcoin"] a {
+#info .drawer-content div[id*="bitcoin"] a {
     display: inline-block;
 }
 
-.info .rules-button {
+#rules-button {
     font-weight: 800;
     font-size: 1.3em;
 }
 
-.info .rules-content {
+#rules-content {
     display: none;
 }
 
-.info .donate, .info .donate > * {
+#donate, #donate > * {
     max-width: 600px;
 }
 
 /* menu-style drawer */
-.drawers-opener {
+#drawers-opener {
     display: none;
     position: fixed;
     right: 0;
@@ -279,24 +279,24 @@ a, a:hover, a:visited, a:active {
     transition: transform 0.3s ease-in-out;
 }
 
-.drawers-opener.open {
+#drawers-opener.open {
     transform: translateY(0);
 }
 
-.drawers-opener-content {
+#drawers-opener-content {
     margin: 0;
     padding: 10px;
     background: #333;
     border-radius: 0 0 0 5px;
 }
 
-.drawers-opener-content > div {
+#drawers-opener-content > div {
     cursor: pointer;
     font-weight: 700;
     padding: 2px;
 }
 
-.drawers-opener > .open {
+#drawers-opener > .open {
     position: fixed;
     z-index: 19;
     top: 100%;
@@ -324,7 +324,7 @@ a, a:hover, a:visited, a:active {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
-.login-overlay, .cooldown-timer {
+#login-overlay, #cooldown-timer {
     position: fixed;
     bottom: 0;
     padding: 0 32px;
@@ -339,18 +339,18 @@ a, a:hover, a:visited, a:active {
     vertical-align: middle;
 }
 
-.login-overlay {
+#login-overlay {
     z-index: 8;
 }
 
-.cooldown-timer {
+#cooldown-timer {
     z-index: 7;
     font-size: 24px;
     pointer-events: none;
     user-select: none;
 }
 
-.palette {
+#palette {
     z-index: 6;
     padding: 10px 0 7px;
     margin: 0 auto;
@@ -382,7 +382,7 @@ a, a:hover, a:visited, a:active {
     bottom: 7px;
 }
 
-.reticule {
+#reticule {
     position: fixed;
     top: 0;
     left: 0;
@@ -392,7 +392,7 @@ a, a:hover, a:visited, a:active {
     box-sizing: content-box;
 }
 
-.cursor {
+#cursor {
     width: 36px;
     height: 36px;
     border: 2px solid black;
@@ -403,7 +403,7 @@ a, a:hover, a:visited, a:active {
     left: 10px;
 }
 
-.reticule, .cursor {
+#reticule, #cursor {
     pointer-events: none;
     will-change: transform;
     z-index: 2;
@@ -458,7 +458,7 @@ a, a:hover, a:visited, a:active {
     user-select: none;
 }
 
-.board-container {
+#board-container {
     z-index: 0;
     position: fixed;
     top: 0;
@@ -471,15 +471,15 @@ a, a:hover, a:visited, a:active {
     justify-content: center;
 }
 
-.board-zoomer {
+#board-zoomer {
     flex: 0 0 100px;
 }
 
-.board-mover {
+#board-mover {
     background-color: #fff;
 }
 
-.board {
+#board {
     display: block;
 }
 
@@ -506,7 +506,7 @@ a, a:hover, a:visited, a:active {
     image-rendering: crisp-edges;
 }
 
-.board-template {
+#board-template {
     position: absolute;
     pointer-events: none;
     top: 0;
@@ -515,7 +515,7 @@ a, a:hover, a:visited, a:active {
     z-index: 3;
 }
 
-.grid {
+#grid {
     position: fixed;
     top: 0;
     left: 0;
@@ -593,13 +593,13 @@ a, a:hover, a:visited, a:active {
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
 @media (max-width: 1500px) {
-    .info .donate, .info .donate > * {
+    #donate, #donate > * {
         max-width: 300px;
     }
 }
 
 @media (max-width: 1600px) {
-    .ui .left, .ui .right {
+    #ui .left, #ui .right {
         bottom: 70px;
     }
 }
@@ -609,21 +609,21 @@ a, a:hover, a:visited, a:active {
         width: 100%;
     }
 
-    .ui .left {
+    #ui .left {
         top: 64px;
         left: 16px;
         bottom: auto;
         right: auto;
     }
 
-    .ui .right {
+    #ui .right {
         top: 16px;
         left: 16px;
         bottom: auto;
         right: auto;
     }
 
-    .drawers-opener {
+    #drawers-opener {
         display: inline-block;
     }
 
@@ -647,11 +647,11 @@ a, a:hover, a:visited, a:active {
         top: 0;
     }
 
-    .info .rules-button {
+    #rules-button {
         display: none;
     }
 
-    .info .rules-content {
+    #rules-content {
         display: inline-block;
     }
 }
