@@ -742,6 +742,7 @@ window.App = (function () {
                 fromScreen: self.fromScreen,
                 toScreen: self.toScreen,
                 save: self.save,
+                centerOn: self.centerOn,
                 getRenderBoard: self.getRenderBoard
             };
         })(),
