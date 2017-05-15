@@ -1,0 +1,24 @@
+<html>
+
+</head>
+<body>
+<div
+        class="g-recaptcha"
+        id="captcha"
+        data-callback="cb"
+        data-size="invisible">
+</div>
+    <script>
+        function cb(key) {
+            ctx.finishCaptcha(key);
+        }
+        document.getElementById("captcha").setAttribute("data-sitekey", ctx.getKey());
+    </script>
+<script async defer src='https://www.google.com/recaptcha/api.js'></script>
+<script>
+    setInterval(function() {
+        grecaptcha.execute();
+    }, 100);
+</script>
+</body>
+</html>

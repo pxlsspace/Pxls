@@ -4,9 +4,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
-import org.skife.jdbi.v2.exceptions.NoResultsException;
 import space.pxls.App;
-import space.pxls.server.Packet;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 
@@ -22,7 +20,7 @@ import static java.lang.Math.toIntExact;
 public class Database implements Closeable {
     private final DBI dbi;
     
-    private Map<Thread,Database_handle> handles = new ConcurrentHashMap<>();;
+    private Map<Thread,DatabaseHandle> handles = new ConcurrentHashMap<>();;
 
     public Database() {
         try {
@@ -53,12 +51,12 @@ public class Database implements Closeable {
 
     private DAO getHandle() {
         Thread t = Thread.currentThread();
-        Database_handle h = handles.get(t);
+        DatabaseHandle h = handles.get(t);
         if (h != null) {
             h.lastUse = System.currentTimeMillis();
             return h.dao;
         }
-        h = new Database_handle();
+        h = new DatabaseHandle();
         h.dao = dbi.open(DAO.class);
         h.lastUse = System.currentTimeMillis();
         System.out.println("Creating new mariadb connection...");
@@ -69,7 +67,7 @@ public class Database implements Closeable {
 
     public void cleanup() {
         for (Thread t : handles.keySet()) {
-            Database_handle d = handles.get(t);
+            DatabaseHandle d = handles.get(t);
             if (d.lastUse + (1000 * 60 * 5)  < System.currentTimeMillis()) {
                 // ok destroy it
                 System.out.println("Destroying mariadb connection...");
@@ -250,9 +248,9 @@ public class Database implements Closeable {
     public void addReport(int who, int pixel_id, int x, int y, String message) {
         getHandle().addReport(who, pixel_id, x, y, message);
     }
-}
 
-class Database_handle {
-    public DAO dao;
-    public long lastUse;
+    class DatabaseHandle {
+        public DAO dao;
+        public long lastUse;
+    }
 }

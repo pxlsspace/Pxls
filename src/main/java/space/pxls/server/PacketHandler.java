@@ -158,7 +158,7 @@ public class PacketHandler {
                 .post("https://www.google.com/recaptcha/api/siteverify")
                 .field("secret", App.getConfig().getString("captcha.secret"))
                 .field("response", cc.token)
-                .field("remoteip", "null")
+                //.field("remoteip", "null")
                 .asJsonAsync(new Callback<JsonNode>() {
                     @Override
                     public void completed(HttpResponse<JsonNode> response) {
