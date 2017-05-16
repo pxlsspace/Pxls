@@ -151,7 +151,7 @@ public class WebHandler {
         FormData.FormValue nameVal = data.getFirst("name");
         FormData.FormValue tokenVal = data.getFirst("token");
         if (nameVal == null || tokenVal == null) {
-            exchange.setStatusCode(StatusCodes.SEE_OTHER);
+            exchange.setStatusCode(StatusCodes.FOUND);
             exchange.getResponseHeaders().put(Headers.LOCATION, "/");
             exchange.getResponseSender().send("");
             return;
@@ -160,22 +160,22 @@ public class WebHandler {
         String name = nameVal.getValue();
         String token = tokenVal.getValue();
         if (token.isEmpty()) {
-            exchange.setStatusCode(StatusCodes.SEE_OTHER);
+            exchange.setStatusCode(StatusCodes.FOUND);
             exchange.getResponseHeaders().put(Headers.LOCATION, "/");
             exchange.getResponseSender().send("");
             return;
         } else if (name.isEmpty()) {
-            exchange.setStatusCode(StatusCodes.SEE_OTHER);
+            exchange.setStatusCode(StatusCodes.FOUND);
             exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + token + "&error=Username%20cannot%20be%20empty.");
             exchange.getResponseSender().send("");
             return;
         } else if (!name.matches("[a-zA-Z0-9_\\-]+")) {
-            exchange.setStatusCode(StatusCodes.SEE_OTHER);
+            exchange.setStatusCode(StatusCodes.FOUND);
             exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + token + "&error=Name%20contains%20invalid%20characters.");
             exchange.getResponseSender().send("");
             return;
         } else if (!App.getUserManager().isValidSignupToken(token)) {
-            exchange.setStatusCode(StatusCodes.SEE_OTHER);
+            exchange.setStatusCode(StatusCodes.FOUND);
             exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + token + "&error=Invalid%20signup%20token.");
             exchange.getResponseSender().send("");
             return;
@@ -184,14 +184,14 @@ public class WebHandler {
         User user = App.getUserManager().signUp(name, token, ip);
 
         if (user == null) {
-            exchange.setStatusCode(StatusCodes.SEE_OTHER);
+            exchange.setStatusCode(StatusCodes.FOUND);
             exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + token + "&error=Username%20is%20taken,%20try%20another%3F");
             exchange.getResponseSender().send("");
             return;
         }
 
         String loginToken = App.getUserManager().logIn(user, ip);
-        exchange.setStatusCode(StatusCodes.SEE_OTHER);
+        exchange.setStatusCode(StatusCodes.FOUND);
         exchange.getResponseHeaders().put(Headers.LOCATION, "/");
         pxlsTokenCookie(exchange, loginToken, 24);
         exchange.getResponseSender().send("");
@@ -208,9 +208,11 @@ public class WebHandler {
 
         AuthService service = services.get(id);
         if (service != null) {
+            boolean returnJustToken = exchange.getQueryParameters().containsKey("rawToken");
+
             Deque<String> code = exchange.getQueryParameters().get("code");
             if (code == null) {
-                exchange.setStatusCode(StatusCodes.SEE_OTHER);
+                exchange.setStatusCode(StatusCodes.FOUND);
                 exchange.getResponseHeaders().put(Headers.LOCATION, "/");
                 exchange.getResponseSender().send("");
 
@@ -221,7 +223,7 @@ public class WebHandler {
             try {
                 identifier = service.getIdentifier(token);
             } catch (AuthService.InvalidAccountException e) {
-                exchange.setStatusCode(StatusCodes.SEE_OTHER);
+                exchange.setStatusCode(StatusCodes.FOUND);
                 exchange.getResponseHeaders().put(Headers.LOCATION, "/error.html?error=" + e.getMessage());
                 exchange.getResponseSender().send("");
                 return;
@@ -233,20 +235,29 @@ public class WebHandler {
                 if (user == null) {
                     String signUpToken = App.getUserManager().generateUserCreationToken(login);
 
-                    exchange.setStatusCode(StatusCodes.SEE_OTHER);
-                    String hostname = App.getConfig().getString("host");
-                    exchange.setResponseCookie(new CookieImpl("pxls-signup-token", signUpToken).setPath("/").setDomain("."+hostname));
-                    exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + signUpToken);
-                    exchange.getResponseSender().send("");
+                    if (returnJustToken) {
+                        exchange.getResponseSender().send("pxls-signup-token=" + signUpToken);
+                    } else {
+                        exchange.setStatusCode(StatusCodes.FOUND);
+                        String hostname = App.getConfig().getString("host");
+                        exchange.setResponseCookie(new CookieImpl("pxls-signup-token", signUpToken).setPath("/").setDomain("." + hostname));
+                        exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + signUpToken);
+                        exchange.getResponseSender().send("");
+                    }
                 } else {
                     String loginToken = App.getUserManager().logIn(user, ip);
-                    exchange.setStatusCode(StatusCodes.SEE_OTHER);
-                    exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-                    pxlsTokenCookie(exchange, loginToken, 24);
-                    exchange.getResponseSender().send("");
+
+                    if (returnJustToken) {
+                        exchange.getResponseSender().send("pxls-token=" + loginToken);
+                    } else {
+                        exchange.setStatusCode(StatusCodes.FOUND);
+                        exchange.getResponseHeaders().put(Headers.LOCATION, "/");
+                        pxlsTokenCookie(exchange, loginToken, 24);
+                        exchange.getResponseSender().send("");
+                    }
                 }
             } else {
-                exchange.setStatusCode(StatusCodes.SEE_OTHER);
+                exchange.setStatusCode(StatusCodes.FOUND);
                 exchange.getResponseHeaders().put(Headers.LOCATION, "/");
                 exchange.getResponseSender().send("");
             }
@@ -258,7 +269,7 @@ public class WebHandler {
 
         AuthService service = services.get(id);
         if (service != null) {
-            exchange.setStatusCode(StatusCodes.SEE_OTHER);
+            exchange.setStatusCode(StatusCodes.FOUND);
             exchange.getResponseHeaders().put(Headers.LOCATION, service.getRedirectUrl());
             pxlsTokenCookie(exchange, "", -1); // make sure that we don't have one...
             exchange.getResponseSender().send("");
@@ -301,7 +312,7 @@ public class WebHandler {
             App.getUserManager().logOut(tokenCookie.getValue());
         }
 
-        exchange.setStatusCode(StatusCodes.SEE_OTHER);
+        exchange.setStatusCode(StatusCodes.FOUND);
         exchange.getResponseHeaders().put(Headers.LOCATION, "/");
         pxlsTokenCookie(exchange, "", -1);
         exchange.getResponseSender().send("");
