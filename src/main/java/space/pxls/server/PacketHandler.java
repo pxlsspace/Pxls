@@ -87,25 +87,32 @@ public class PacketHandler {
     }
 
     private void handleUndo(WebSocketChannel channel, User user, Packet.ClientUndo cu){
-        if (user.canUndoNow()) {
+        if (!user.canUndoNow()) {
+            return;
+        }
+        if (user.isShadowBanned()) {
             user.setLastUndoTime();
             user.setCooldown(0);
-            DBPixelPlacement thisPixel = App.getDatabase().getUserUndoPixel(user);
-            DBPixelPlacement recentPixel = App.getDatabase().getPixelAt(thisPixel.x, thisPixel.y);
-            if (thisPixel.id != recentPixel.id) return;
-            DBPixelPlacement lastPixel = App.getDatabase().getPixelByID(thisPixel.secondaryId);
-            if (lastPixel != null) {
-                App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
-                App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, "(user undo)", false);
-                broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
-            } else {
-                int defaultColor = App.getConfig().getInt("board.defaultColor");
-                App.getDatabase().putUserUndoPixel(thisPixel.x, thisPixel.y, defaultColor, user, thisPixel.id);
-                App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, "(user undo)", false);
-                broadcastPixelUpdate(thisPixel.x, thisPixel.y, defaultColor);
-            }
             sendCooldownData(user);
+            return;
         }
+        user.setLastUndoTime();
+        user.setCooldown(0);
+        DBPixelPlacement thisPixel = App.getDatabase().getUserUndoPixel(user);
+        DBPixelPlacement recentPixel = App.getDatabase().getPixelAt(thisPixel.x, thisPixel.y);
+        if (thisPixel.id != recentPixel.id) return;
+        DBPixelPlacement lastPixel = App.getDatabase().getPixelByID(thisPixel.secondaryId);
+        if (lastPixel != null) {
+            App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
+            App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, "(user undo)", false);
+            broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
+        } else {
+            int defaultColor = App.getConfig().getInt("board.defaultColor");
+            App.getDatabase().putUserUndoPixel(thisPixel.x, thisPixel.y, defaultColor, user, thisPixel.id);
+            App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, "(user undo)", false);
+            broadcastPixelUpdate(thisPixel.x, thisPixel.y, defaultColor);
+        }
+        sendCooldownData(user);
     }
 
     private void handlePlace(WebSocketChannel channel, User user, Packet.ClientPlace cp, String ip) {
@@ -128,6 +135,9 @@ public class PacketHandler {
                         Packet.ServerPlace msg = new Packet.ServerPlace(Collections.singleton(new Packet.ServerPlace.Pixel(cp.x, cp.y, cp.color)));
                         for (WebSocketChannel ch : user.getConnections()) {
                             server.send(ch, msg);
+                        }
+                        if (user.canUndo()) {
+                            server.send(channel, new Packet.CanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
                         }
                     } else {
                         boolean mod_action = user.isOverridingCooldown();
