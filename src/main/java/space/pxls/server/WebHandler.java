@@ -145,6 +145,8 @@ public class WebHandler {
     }
 
     public void signUp(HttpServerExchange exchange) {
+        boolean returnJustToken = exchange.getQueryParameters().containsKey("rawToken");
+
         String ip = exchange.getAttachment(IPReader.IP);
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
 
@@ -184,6 +186,10 @@ public class WebHandler {
         User user = App.getUserManager().signUp(name, token, ip);
 
         if (user == null) {
+            if (returnJustToken) {
+                exchange.getResponseSender().send("null");
+                return;
+            }
             exchange.setStatusCode(StatusCodes.FOUND);
             exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + token + "&error=Username%20is%20taken,%20try%20another%3F");
             exchange.getResponseSender().send("");
@@ -191,10 +197,14 @@ public class WebHandler {
         }
 
         String loginToken = App.getUserManager().logIn(user, ip);
-        exchange.setStatusCode(StatusCodes.FOUND);
-        exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-        pxlsTokenCookie(exchange, loginToken, 24);
-        exchange.getResponseSender().send("");
+        if (!returnJustToken) {
+            exchange.setStatusCode(StatusCodes.FOUND);
+            exchange.getResponseHeaders().put(Headers.LOCATION, "/");
+            pxlsTokenCookie(exchange, loginToken, 24);
+            exchange.getResponseSender().send("");
+        } else {
+            exchange.getResponseSender().send(loginToken);
+        }
     }
 
     public void auth(HttpServerExchange exchange) throws UnirestException {
