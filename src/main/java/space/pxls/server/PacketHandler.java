@@ -23,7 +23,7 @@ public class PacketHandler {
     private int getCooldown() {
         // TODO: make these parameters somehow configurable
         
-        // expondent function of form a*exp(-b*(x - d)) + c
+        // exponential function of form a*exp(-b*(x - d)) + c
         double a = -8.04044740e+01;
         double b = 1.19078478e-03;
         double c = 9.63956320e+01;
