@@ -14,10 +14,23 @@ import space.pxls.util.PxlsTimer;
 
 import java.util.Collections;
 import java.util.concurrent.TimeUnit;
+import java.lang.Math;
 
 public class PacketHandler {
     private UndertowServer server;
     private PxlsTimer userData = new PxlsTimer(5);
+
+    private int getCooldown() {
+        // TODO: make these parameters somehow configurable
+        
+        // expondent function of form a*exp(-b*(x - d)) + c
+        double a = -8.04044740e+01;
+        double b = 1.19078478e-03;
+        double c = 9.63956320e+01;
+        double d = -2.14065886e+00;
+        double x = (double)server.getConnections().size();
+        return (int)Math.ceil(a*Math.exp(-b*(x - d)) + c);
+    }
 
     public PacketHandler(UndertowServer server) {
         this.server = server;
@@ -125,9 +138,9 @@ public class PacketHandler {
                 server.send(channel, new Packet.ServerCaptchaRequired());
             } else {
                 if (App.getPixel(cp.x, cp.y) != cp.color) {
-                    int seconds = (int) App.getConfig().getDuration("cooldown", TimeUnit.SECONDS);
-                    if (!App.getDatabase().didPixelChange(cp.x, cp.y)) {
-                        seconds = seconds / 2;
+                    int seconds = getCooldown();
+                    if (App.getDatabase().didPixelChange(cp.x, cp.y)) {
+                        seconds = seconds * 2;
                     }
                     if (user.isShadowBanned()) {
                         // ok let's just pretend to set a pixel...
