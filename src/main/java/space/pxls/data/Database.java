@@ -213,8 +213,8 @@ public class Database implements Closeable {
         getHandle().updateUserRole(user.getId(), role.name());
     }
 
-    public void updateBan(User user, long timeFromNowSeconds, String reason) {
-        getHandle().updateUserBan(user.getId(), timeFromNowSeconds, reason);
+    public void updateBan(User user, long timeFromNowSeconds) {
+        getHandle().updateUserBan(user.getId(), timeFromNowSeconds);
     }
 
     public void updateBanReason(User user, String reason) {

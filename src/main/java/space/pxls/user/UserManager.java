@@ -100,57 +100,6 @@ public class UserManager {
         removeUserToken(value);
     }
 
-    public void shadowBanUser(User user, String reason, int rollback_time) {
-        App.getDatabase().updateBanReason(user, reason);
-        App.getDatabase().setUserRole(user, Role.SHADOWBANNED);
-        user.setRole(Role.SHADOWBANNED);
-        App.rollbackAfterBan(user, rollback_time);
-    }
-
-    public void shadowBanUser(User user, String reason) {
-        shadowBanUser(user, reason, 24*3600);
-    }
-
-    public void shadowBanUser(User user) {
-        shadowBanUser(user, "");
-    }
-
-    public void banUser(User user, long timeFromNowSeconds, String reason, int rollback_time) {
-        App.getDatabase().updateBan(user, timeFromNowSeconds, reason);
-        user.setBanExpiryTime(timeFromNowSeconds * 1000 + System.currentTimeMillis());
-        if (timeFromNowSeconds > 0) {
-            App.rollbackAfterBan(user, rollback_time);
-        }
-    }
-
-    public void banUser(User user, long timeFromNowSeconds, String reason) {
-        banUser(user, timeFromNowSeconds, reason, 0);
-    }
-
-    public void banUser(User user, long timeFromNowSeconds) {
-        banUser(user, timeFromNowSeconds, "");
-    }
-
-    public void unbanUser(User user) {
-        banUser(user, 0);
-        if (user.getRole().lessThan(Role.USER)) {
-            App.getDatabase().setUserRole(user, Role.USER);
-            user.setRole(Role.USER);
-        }
-        App.undoRollback(user);
-    }
-
-    public void permaBanUser(User user, String reason, int rollback_time) {
-        App.getDatabase().updateBanReason(user, reason);
-        App.getDatabase().setUserRole(user, Role.BANNED);
-        user.setRole(Role.BANNED);
-        App.rollbackAfterBan(user, rollback_time);
-    }
-
-    public void permaBanUser(User user, String reason) {
-        permaBanUser(user, reason, 24*3600);
-    }
-
     public Map<String, User> getAllUsersByToken() {
         return usersByToken;
     }

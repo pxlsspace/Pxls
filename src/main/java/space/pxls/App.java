@@ -122,7 +122,7 @@ public class App {
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
                     String reason = line.substring(token[0].length() + token[1].length() + 2).trim();
-                    userManager.banUser(user, 24 * 60 * 60, reason);
+                    user.ban(24 * 60 * 60, reason);
                     database.adminLogServer("ban "+user.getName());
                     System.out.println("Banned " + user.getName() + " for 24 hours.");
                 } else {
@@ -132,7 +132,7 @@ public class App {
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
                     String reason = line.substring(token[0].length() + token[1].length() + 2).trim();
-                    userManager.permaBanUser(user, reason);
+                    user.permaban(reason);
                     database.adminLogServer("permaban "+user.getName());
                     System.out.println("Permabanned " + user.getName());
                 } else {
@@ -142,7 +142,7 @@ public class App {
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
                     String reason = line.substring(token[0].length() + token[1].length() + 2).trim();
-                    userManager.shadowBanUser(user, reason);
+                    user.shadowban(reason);
                     database.adminLogServer("shadowban "+user.getName());
                     System.out.println("Shadowbanned " + user.getName());
                 } else {
@@ -151,7 +151,7 @@ public class App {
             } else if (token[0].equalsIgnoreCase("unban")) {
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
-                    userManager.unbanUser(user);
+                    user.unban();
                     database.adminLogServer("unban "+user.getName());
                     System.out.println("Unbanned " + user.getName() + ".");
                 } else {

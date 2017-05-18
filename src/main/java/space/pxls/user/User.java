@@ -104,17 +104,26 @@ public class User {
         return login;
     }
 
+    private void sendUserData() {
+        for (WebSocketChannel ch : connections) {
+            App.getServer().getPacketHandler().userdata(ch, this);
+        }
+    }
+
     public void setRole(Role role) {
         this.role = role;
+        App.getDatabase().setUserRole(this, role);
         if (role != Role.SHADOWBANNED) {
-            for (WebSocketChannel ch : connections) {
-                App.getServer().getPacketHandler().userdata(ch, this);
-            }
+            sendUserData();
         }
     }
 
     public String getBanReason() {
         return App.getDatabase().getUserBanReason(this.id);
+    }
+
+    public void setBanReason(String reason) {
+        App.getDatabase().updateBanReason(this, reason);
     }
 
     public void setCooldown(int seconds) {
@@ -154,16 +163,67 @@ public class User {
         return banExpiryTime;
     }
 
-    public void setBanExpiryTime(long banExpiryTime) {
-        this.banExpiryTime = banExpiryTime;
+    private void setBanExpiryTime(long timeFromNowSeconds) {
+        this.banExpiryTime = (timeFromNowSeconds*1000) + System.currentTimeMillis();
+        App.getDatabase().updateBan(this, timeFromNowSeconds);
         if (role != Role.SHADOWBANNED) {
-            for (WebSocketChannel ch : connections) {
-                App.getServer().getPacketHandler().userdata(ch, this);
-            }
+            sendUserData();
         }
     }
 
     public Set<WebSocketChannel> getConnections() {
         return connections;
+    }
+
+    public void shadowban(String reason, int rollbackTime) {
+        setBanReason(reason);
+        setRole(role.SHADOWBANNED);
+        App.rollbackAfterBan(this, rollbackTime);
+    }
+
+    public void shadowban(String reason) {
+        shadowban(reason, 24*3600);
+    }
+
+    public void shadowban() {
+        shadowban("");
+    }
+
+    public void ban(long timeFromNowSeconds, String reason, int rollbackTime) {
+        setBanExpiryTime(timeFromNowSeconds * 1000);
+        setBanReason(reason);
+        sendUserData();
+        App.rollbackAfterBan(this, rollbackTime);
+    }
+
+    public void ban(long timeFromNowSeconds, String reason) {
+        ban(timeFromNowSeconds, reason, 0);
+    }
+
+    public void ban(long timeFromNowSeconds) {
+        ban(timeFromNowSeconds, "");
+    }
+
+    public void permaban(String reason, int rollbackTime) {
+        setBanReason(reason);
+        setRole(role.BANNED);
+        App.rollbackAfterBan(this, rollbackTime);
+    }
+
+    public void permaban(String reason) {
+        permaban(reason, 24*3600);
+    }
+
+    public void permaban() {
+        permaban("");
+    }
+
+    public void unban() {
+        setBanExpiryTime(0);
+        if (role.lessThan(Role.USER)) {
+            setRole(Role.USER);
+        }
+        sendUserData();
+        App.undoRollback(this);
     }
 }
