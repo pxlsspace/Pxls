@@ -58,6 +58,11 @@ public class WebHandler {
         return Integer.parseInt(rollback_int);
     }
 
+    private boolean doLog(HttpServerExchange exchange) {
+        FormData.FormValue nolog = exchange.getAttachment(FormDataParser.FORM_DATA).getFirst("nolog");
+        return nolog == null;
+    }
+
     private void pxlsTokenCookie(HttpServerExchange exchange, String loginToken, int days) {
         Calendar cal2 = Calendar.getInstance();
         cal2.add(Calendar.DATE, -1);
@@ -79,7 +84,9 @@ public class WebHandler {
             if (time_form != null) {
                 time = time_form.getValue();
             }
-            App.getDatabase().adminLog("ban "+user.getName(), user_perform.getId());
+            if (doLog(exchange)) {
+                App.getDatabase().adminLog("ban "+user.getName(), user_perform.getId());
+            }
             user.ban(Integer.parseInt(time), getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             exchange.setStatusCode(200);
@@ -94,7 +101,9 @@ public class WebHandler {
         if (user != null) {
             user.unban();
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
-            App.getDatabase().adminLog("unban "+user.getName(), user_perform.getId());
+            if (doLog(exchange)) {
+                App.getDatabase().adminLog("unban "+user.getName(), user_perform.getId());
+            }
             exchange.setStatusCode(200);
         } else {
             exchange.setStatusCode(400);
@@ -107,7 +116,9 @@ public class WebHandler {
         if (user != null && user.getRole().lessThan(user_perform.getRole())) {
             user.permaban(getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
-            App.getDatabase().adminLog("permaban "+user.getName(), user_perform.getId());
+            if (doLog(exchange)) {
+                App.getDatabase().adminLog("permaban "+user.getName(), user_perform.getId());
+            }
             exchange.setStatusCode(200);
         } else {
             exchange.setStatusCode(400);
@@ -120,7 +131,9 @@ public class WebHandler {
         if (user != null && user.getRole().lessThan(user_perform.getRole())) {
             user.shadowban(getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
-            App.getDatabase().adminLog("shadowban "+user.getName(), user_perform.getId());
+            if (doLog(exchange)) {
+                App.getDatabase().adminLog("shadowban "+user.getName(), user_perform.getId());
+            }
             exchange.setStatusCode(200);
         } else {
             exchange.setStatusCode(400);
