@@ -177,7 +177,7 @@ window.App = (function () {
         // this object is responsible for detecting pxls placement and banning them
         ban = (function() {
             var self = {
-                bad_src: [/^https?:\/\/[^\/]*raw[^\/]*git[^\/]*\/(metonator|Deklost)/gi,
+                bad_src: [/^https?:\/\/[^\/]*raw[^\/]*git[^\/]*\/(metonator|Deklost|NomoX)/gi,
                         /^chrome\-extension:\/\/lmleofkkoohkbgjikogbpmnjmpdedfil/gi],
                 bad_events: ["mousedown", "mouseup", "click"],
                 checkSrc: function(src) {
