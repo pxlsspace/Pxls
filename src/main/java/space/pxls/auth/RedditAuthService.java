@@ -56,4 +56,8 @@ public class RedditAuthService extends AuthService {
             return json.getString("name");
         }
     }
+
+    public String getName() {
+        return "Reddit";
+    }
 }

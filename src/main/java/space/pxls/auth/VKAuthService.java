@@ -5,60 +5,68 @@ import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
+import org.json.JSONException;
 import space.pxls.App;
 
 import java.util.concurrent.TimeUnit;
 
-public class DiscordAuthService extends AuthService {
-    public DiscordAuthService(String id) {
+public class VKAuthService extends AuthService {
+    public VKAuthService(String id) {
         super(id);
     }
 
     public String getRedirectUrl() {
-        return "https://discordapp.com/api/oauth2/authorize?client_id=" + App.getConfig().getString("oauth.discord.key") + "&response_type=code&redirect_uri=" + getCallbackUrl() + "&duration=temporary&scope=identify&state=potato";
+        return "https://oauth.vk.com/authorize?" +
+            "client_id=" + App.getConfig().getString("oauth.vk.key") +
+            "&response_type=code" +
+            "&redirect_uri=" + getCallbackUrl() +
+            "&duration=temporary" +
+            "&scope=status" +
+            "&display=page" +
+            "&state=potato" +
+            "&v=5.64";
     }
 
     public String getToken(String code) throws UnirestException {
-        HttpResponse<JsonNode> response = Unirest.post("https://discordapp.com/api/oauth2/token")
+        HttpResponse<JsonNode> response = Unirest.post("https://oauth.vk.com/access_token")
                 .header("User-Agent", "pxls.space")
                 .field("grant_type", "authorization_code")
                 .field("code", code)
                 .field("redirect_uri", getCallbackUrl())
-                .basicAuth(App.getConfig().getString("oauth.discord.key"), App.getConfig().getString("oauth.discord.secret"))
+                .field("client_id", App.getConfig().getString("oauth.vk.key"))
+                .field("client_secret", App.getConfig().getString("oauth.vk.secret"))
                 .asJson();
 
         JSONObject json = response.getBody().getObject();
 
         if (json.has("error")) {
+            System.out.println("nuuu");
             return null;
         } else {
+            System.out.println(json.getString("access_token"));
             return json.getString("access_token");
         }
     }
 
     public String getIdentifier(String token) throws UnirestException, InvalidAccountException {
-        HttpResponse<JsonNode> me = Unirest.get("https://discordapp.com/api/users/@me")
-                .header("Authorization", "Bearer " + token)
+        HttpResponse<JsonNode> me = Unirest.get("https://api.vk.com/method/users.get?access_token=" + token)
                 .header("User-Agent", "pxls.space")
                 .asJson();
         JSONObject json = me.getBody().getObject();
+        System.out.println(me.getBody());
+        
         if (json.has("error")) {
             return null;
         } else {
-            long id = json.getLong("id");
-            long signupTimeMillis = (id >> 22) + 1420070400000L;
-            long ageMillis = System.currentTimeMillis() - signupTimeMillis;
-
-            long minAgeMillis = App.getConfig().getDuration("oauth.discord.minAge", TimeUnit.MILLISECONDS);
-            if (ageMillis < minAgeMillis){
-                long days = minAgeMillis / 86400 / 1000;
-                throw new InvalidAccountException("Account too young");
+            try {
+                return new Integer(json.getJSONArray("response").getJSONObject(0).getInt("uid")).toString();
+            } catch (JSONException e) {
+                return null;
             }
-            return json.getString("id");
         }
     }
 
     public String getName() {
-        return "Discord";
+        return "VK";
     }
 }

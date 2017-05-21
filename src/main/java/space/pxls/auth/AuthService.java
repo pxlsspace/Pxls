@@ -25,4 +25,6 @@ public abstract class AuthService {
             super(s);
         }
     }
+
+    public abstract String getName();
 }

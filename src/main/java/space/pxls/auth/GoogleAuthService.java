@@ -57,4 +57,8 @@ public class GoogleAuthService extends AuthService {
             return json.getString("id");
         }
     }
+
+    public String getName() {
+        return "Google";
+    }
 }
