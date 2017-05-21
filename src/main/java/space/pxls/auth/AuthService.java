@@ -27,4 +27,8 @@ public abstract class AuthService {
     }
 
     public abstract String getName();
+
+    public boolean use() {
+        return !App.getConfig().getString("oauth."+id+".key").isEmpty();
+    }
 }

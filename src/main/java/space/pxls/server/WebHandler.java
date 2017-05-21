@@ -305,7 +305,8 @@ public class WebHandler {
                     App.getHeight(),
                     App.getConfig().getStringList("board.palette"),
                     App.getConfig().getString("captcha.key"),
-                    (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS)
+                    (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS),
+                    services
                 )));
     }
 

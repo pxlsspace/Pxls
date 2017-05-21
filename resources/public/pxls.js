@@ -516,6 +516,7 @@ window.App = (function () {
                 start: function () {
                     $.get("/info", function (data) {
                         heatmap.webinit(data);
+                        user.webinit(data);
                         self.width = data.width;
                         self.height = data.height;
                         place.setPalette(data.palette);
@@ -1651,11 +1652,45 @@ window.App = (function () {
                 elements: {
                     users: $("#online"),
                     userInfo: $("#userinfo"),
-                    loginOverlay: $("#login-overlay")
+                    loginOverlay: $("#login-overlay"),
+                    prompt: $("#prompt")
                 },
                 role: "USER",
                 getRole: function () {
                     return self.role;
+                },
+                webinit: function (data) {
+                    self.elements.loginOverlay.find("a").click(function (evt) {
+                        evt.preventDefault();
+                        self.elements.prompt.empty().append(
+                            $("<h1>").text("Sign in with..."),
+                            $("<ul>").append(
+                                $.map(data.auth_services, function (a) {
+                                    return $("<li>").append(
+                                        $("<a>").attr("href", "/signin/"+a.id).text(a.name).click(function (evt) {
+                                            var hash = window.location.hash.substring(1),
+                                                search = window.location.search.substring(1),
+                                                url = hash;
+                                            if (!url) {
+                                                url = search;
+                                            } else if (search) {
+                                                url += '&' + search;
+                                            }
+                                            ss.set('url_params',  url);
+                                        })
+                                    );
+                                })
+                            ),
+                            $("<div>").addClass("button").text("Close").css({
+                                position: "fixed",
+                                bottom: 20,
+                                right: 30,
+                                width: 55
+                            }).click(function () {
+                                self.elements.prompt.fadeOut(200);
+                            })
+                        ).fadeIn(200);
+                    });
                 },
                 init: function () {
                     self.elements.users.hide();
@@ -1705,9 +1740,9 @@ window.App = (function () {
                 }
             };
             return {
-                board: self.board,
                 init: self.init,
-                getRole: self.getRole
+                getRole: self.getRole,
+                webinit: self.webinit
             };
         })(),
         // this takes care of browser notifications
@@ -1742,17 +1777,6 @@ window.App = (function () {
             }
         })();
     // init progress
-    $("#login-overlay a").click(function (evt) {
-        var hash = window.location.hash.substring(1),
-            search = window.location.search.substring(1),
-            url = hash;
-        if (!url) {
-            url = search;
-        } else if (search) {
-            url += '&' + search;
-        }
-        ss.set('url_params',  url);
-    });
     query.init();
     board.init();
     heatmap.init();

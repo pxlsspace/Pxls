@@ -2,6 +2,9 @@ package space.pxls.server;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import space.pxls.auth.AuthService;
 
 public class Packet {
     public static class ClientPlace {
@@ -143,17 +146,33 @@ public class Packet {
         public int width;
         public int height;
         public List<String> palette;
+        public List<_AuthService> auth_services = new ArrayList<_AuthService>();;
 
         public String captchaKey;
 
         public int heatmap_cooldown;
 
-        public HttpInfo(int width, int height, List<String> palette, String captchaKey, int heatmap_cooldown) {
+        public HttpInfo(int width, int height, List<String> palette, String captchaKey, int heatmap_cooldown, Map<String, AuthService> services) {
             this.width = width;
             this.height = height;
             this.palette = palette;
             this.captchaKey = captchaKey;
             this.heatmap_cooldown = heatmap_cooldown;
+            for ( String id : services.keySet()) {
+                AuthService s = services.get(id);
+                if (s.use()) {
+                    this.auth_services.add(new _AuthService(id, s.getName()));
+                }
+            }
+        }
+
+        private class _AuthService {
+            public String id;
+            public String name;
+            public _AuthService(String id, String name) {
+                this.id = id;
+                this.name = name;
+            }
         }
 
     }
