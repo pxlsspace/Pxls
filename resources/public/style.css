@@ -663,4 +663,8 @@ a, a:hover, a:visited, a:active {
     #rules-content {
         display: inline-block;
     }
+
+    .message {
+        max-width: 100%;
+    }
 }

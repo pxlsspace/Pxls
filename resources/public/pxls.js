@@ -1663,7 +1663,7 @@ window.App = (function () {
                     self.elements.loginOverlay.find("a").click(function (evt) {
                         evt.preventDefault();
                         self.elements.prompt.empty().append(
-                            $("<h1>").text("Sign in with..."),
+                            $("<h1>").html("Sign&nbsp;in&nbsp;with..."),
                             $("<ul>").append(
                                 $.map(data.auth_services, function (a) {
                                     return $("<li>").append(

@@ -31,9 +31,7 @@ public class TumblrAuthService extends AuthService {
             if (query.get("oauth_token") == null) {
                 return "/";
             }
-            System.out.println(query);
             tokens.put(query.get("oauth_token"), query.get("oauth_token_secret"));
-            System.out.println(tokens);
             return "https://www.tumblr.com/oauth/authorize?oauth_token=" + query.get("oauth_token");
         } catch (UnirestException e) {
             return "/";
@@ -42,17 +40,14 @@ public class TumblrAuthService extends AuthService {
 
     public String getToken(String code) throws UnirestException {
         String[] codes = code.split("\\|");
-        System.out.println(getOauthAccessToken("https://www.tumblr.com/oauth/access_token", codes[0], codes[1], tokens.get(codes[0])));
         HttpResponse<String> response = Unirest.post("https://www.tumblr.com/oauth/access_token?" + getOauthAccessToken("https://www.tumblr.com/oauth/access_token", codes[0], codes[1], tokens.get(codes[0])))
             .header("User-Agent", "pxls.space")
             .asString();
         tokens.remove(codes[0]);
-        System.out.println(response.getBody());
         Map<String, String> query = parseQuery(response.getBody());
         if (query.get("oauth_token") == null) {
             return null;
         }
-        System.out.println("yaaaay");
         return query.get("oauth_token") + "|" + query.get("oauth_token_secret");
     }
 
@@ -62,7 +57,6 @@ public class TumblrAuthService extends AuthService {
                 .header("User-Agent", "pxls.space")
                 .asJson();
         JSONObject json = me.getBody().getObject();
-        System.out.println(me.getBody());
         if (json.has("error")) {
             return null;
         } else {
