@@ -425,6 +425,11 @@ public class WebHandler {
         exchange.setStatusCode(200);
     }
 
+    public void users(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+        exchange.getResponseSender().send(App.getGson().toJson(new Packet.Users((double)App.getServer().getConnections().size())));
+    }
+
     private User parseUserFromForm(HttpServerExchange exchange) {
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         if (data != null) {

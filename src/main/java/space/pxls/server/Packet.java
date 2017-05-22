@@ -194,4 +194,12 @@ public class Packet {
             this.ban_expiry = ban_expiry;
         }
     }
+
+    public static class Users {
+        public double users;
+        
+        public Users(double users) {
+            this.users = users;
+        }
+    }
 }
