@@ -34,6 +34,7 @@ public class WebHandler {
         services.put("google", new GoogleAuthService("google"));
         services.put("discord", new DiscordAuthService("discord"));
         services.put("vk", new VKAuthService("vk"));
+        services.put("tumblr", new TumblrAuthService("tumblr"));
     }
 
     private String getBanReason(HttpServerExchange exchange) {
@@ -232,14 +233,28 @@ public class WebHandler {
             boolean returnJustToken = exchange.getQueryParameters().containsKey("rawToken");
 
             Deque<String> code = exchange.getQueryParameters().get("code");
+            String codeStr = "";
             if (code == null) {
-                exchange.setStatusCode(StatusCodes.FOUND);
-                exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-                exchange.getResponseSender().send("");
-
-                return;
+                code = exchange.getQueryParameters().get("oauth_token");
+                if (code == null) {
+                    exchange.setStatusCode(StatusCodes.FOUND);
+                    exchange.getResponseHeaders().put(Headers.LOCATION, "/");
+                    exchange.getResponseSender().send("");
+                    return;
+                }
+                codeStr = code.element() + "|";
+                code = exchange.getQueryParameters().get("oauth_verifier");
+                if (code == null) {
+                    exchange.setStatusCode(StatusCodes.FOUND);
+                    exchange.getResponseHeaders().put(Headers.LOCATION, "/");
+                    exchange.getResponseSender().send("");
+                    return;
+                }
+                codeStr += code.element();
+            } else {
+                codeStr = code.element();
             }
-            String token = service.getToken(code.element());
+            String token = service.getToken(codeStr);
             String identifier;
             try {
                 identifier = service.getIdentifier(token);
