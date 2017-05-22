@@ -535,7 +535,7 @@ window.App = (function () {
                         self.scale = query.get("scale") || self.scale;
                         self.centerOn(cx, cy);
                         socket.init();
-                        $.get("/boarddata", self.draw).fail(function () {
+                        $.get("/boarddata" + "?_" + (new Date()).getTime(), self.draw).fail(function () {
                             socket.reconnect();
                         });
                         if (self.use_js_render) {
