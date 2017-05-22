@@ -383,8 +383,8 @@ window.App = (function () {
                     y: 0
                 },
                 centerOn: function (x, y) {
-                    self.pan.x = (self.width / 2 - x) - 0.5;
-                    self.pan.y = (self.height / 2 - y) - 0.5;
+                    self.pan.x = (self.width / 2 - x);
+                    self.pan.y = (self.height / 2 - y);
                     self.update();
                 },
                 draw: function (data) {
