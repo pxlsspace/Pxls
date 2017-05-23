@@ -22,7 +22,7 @@ public class PacketHandler {
 
     private int getCooldown() {
         // TODO: make these parameters somehow configurable
-        
+
         // exponential function of form a*exp(-b*(x - d)) + c
         double a = -8.04044740e+01;
         double b = 1.19078478e-03;
@@ -38,7 +38,14 @@ public class PacketHandler {
 
     public void userdata(WebSocketChannel channel, User user) {
         if (user != null) {
-            server.send(channel, new Packet.ServerUserInfo(user.getName(), user.isBanned(), user.getRole().name() == "SHADOWBANNED" ? "USER" : user.getRole().name(), user.isBanned() ? user.getBanExpiryTime() : null, user.isBanned() ? user.getBanReason() : ""));
+            server.send(channel, new Packet.ServerUserInfo(
+                    user.getName(),
+                    user.isBanned(),
+                    user.getRole().name().equals("SHADOWBANNED") ? "USER" : user.getRole().name(),
+                    user.isBanned() ? user.getBanExpiryTime() : null,
+                    user.isBanned() ? user.getBanReason() : "",
+                    user.getLogin().split(":")[0]
+            ));
         }
     }
 

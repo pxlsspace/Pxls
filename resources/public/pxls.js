@@ -1184,6 +1184,8 @@ window.App = (function () {
                         y: y,
                         color: self.color
                     });
+
+                    window.ga("send", "event", "Pixels", "Place");
                     if (self.autoreset) {
                         self.switch(-1);
                     }
@@ -1269,14 +1271,19 @@ window.App = (function () {
                     socket.on("captcha_required", function (data) {
                         grecaptcha.reset();
                         grecaptcha.execute();
+
+                        window.ga("send", "event", "Captcha", "Execute")
                     });
                     socket.on("captcha_status", function (data) {
                         if (data.success) {
                             var pending = self.pendingPixel;
                             self.switch(pending.color);
                             self._place(pending.x, pending.y);
+
+                            window.ga("send", "event", "Captcha", "Accepted")
                         } else {
                             alert.show("Failed captcha verification");
+                            window.ga("send", "event", "Captcha", "Failed")
                         }
                     });
                     socket.on("can_undo", function (data) {
@@ -1293,6 +1300,7 @@ window.App = (function () {
                             type: "captcha",
                             token: token
                         });
+                        window.ga("send", "event", "Captcha", "Sent")
                     };
                 },
                 hexToRgb: function(hex) {
@@ -1736,6 +1744,8 @@ window.App = (function () {
                         } else {
                             self.elements.loginOverlay.hide();
                         }
+
+                        window.ga("send", "event", "Auth", "Login", data.method);
                     });
                 }
             };
