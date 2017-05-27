@@ -564,7 +564,7 @@ window.App = (function () {
                                 y: parseFloat(query.get("oy")),
                                 opacity: parseFloat(query.get("oo")),
                                 width: parseFloat(query.get("tw")),
-                                url: url
+                                url: url.replace(/^http:\/\/(i\.imgur\.com)(.*)$/, "https://$1$2")
                             });
                         }
                     }).fail(function () {
