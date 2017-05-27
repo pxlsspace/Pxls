@@ -315,6 +315,14 @@ a, a:hover, a:visited, a:active {
 | UI
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
+#ui .left, #ui .right {
+    pointer-events: none;
+}
+
+#ui .left a, #ui .right a {
+    pointer-events: auto;
+}
+
 .ui-bar {
     position: fixed;
     z-index: 6;
@@ -324,7 +332,7 @@ a, a:hover, a:visited, a:active {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
-#login-overlay, #cooldown-timer {
+.palette-overlay {
     position: fixed;
     bottom: 0;
     padding: 0 32px;
@@ -337,10 +345,6 @@ a, a:hover, a:visited, a:active {
 
     text-align: center;
     vertical-align: middle;
-}
-
-#login-overlay {
-    z-index: 8;
 }
 
 #cooldown-timer {

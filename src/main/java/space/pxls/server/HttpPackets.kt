@@ -18,3 +18,5 @@ data class SignUpResponse(val token: String)
 data class AuthResponse(val token: String, val signup: Boolean)
 
 data class Error(val error: String, val message: String)
+
+class EmptyResponse()

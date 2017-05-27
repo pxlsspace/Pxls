@@ -19,6 +19,15 @@ public class TumblrAuthService extends AuthService {
 
     private transient Map<String, String> tokens = new ConcurrentHashMap<String, String>();
 
+    // OAuth1 doesn't have states.... (stuff is instead handled by oauth_token's)
+    public String generateState() {
+        return "";
+    }
+
+    public boolean verifyState(String state) {
+        return true;
+    }
+
     public String getRedirectUrl(String state) {
         try {
             HttpResponse<String> response = Unirest.get("https://www.tumblr.com/oauth/request_token?" + getOauthRequestToken("https://www.tumblr.com/oauth/request_token"))

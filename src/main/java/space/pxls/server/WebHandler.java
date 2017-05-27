@@ -204,12 +204,28 @@ public class WebHandler {
         AuthService service = services.get(id);
         if (service != null) {
             // Verify the given OAuth state, to make sure people don't double-send requests
-            Deque<String> state = exchange.getQueryParameters().get("state");
-            if (state.isEmpty()) {
-                respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_state", "No state token specified"));
-                return;
+            Deque<String> stateQ = exchange.getQueryParameters().get("state");
+
+            String state_ = "";
+            if (stateQ != null) {
+                state_ = stateQ.element();
             }
-            if (!service.verifyState(state.element())) {
+            String[] stateArray = state_.split("\\|");
+            String state = stateArray[0];
+            boolean redirect = false;
+            if (stateArray.length > 1) {
+                redirect = stateArray[1].equals("redirect");
+            } else {
+                // check for cookie...
+                Cookie redirectCookie = exchange.getRequestCookies().get("pxls-auth-redirect");
+                redirect = redirectCookie != null;
+            }
+            // let's just delete the redirect cookie
+            Calendar cal = Calendar.getInstance();
+            cal.add(Calendar.DATE, -1);
+            exchange.setResponseCookie(new CookieImpl("pxls-auth-redirect", "").setPath("/").setExpires(cal.getTime()));
+
+            if (!service.verifyState(state)) {
                 respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_state", "Invalid state token"));
                 return;
             }
@@ -243,14 +259,22 @@ public class WebHandler {
                 // If there is no user with that identifier, we make a signup token and tell the client to sign up with that token
                 if (user == null) {
                     String signUpToken = App.getUserManager().generateUserCreationToken(login);
-                    respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
+                    if (redirect) {
+                        redirect(exchange, "/auth_done.html?token=" + signUpToken + "&signup=true");
+                    } else {
+                        respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
+                    }
                     return;
                 } else {
                     // We need the IP for logging/db purposes
                     String ip = exchange.getAttachment(IPReader.IP);
                     String loginToken = App.getUserManager().logIn(user, ip);
                     setAuthCookie(exchange, loginToken, 24);
-                    respond(exchange, StatusCodes.OK, new AuthResponse(loginToken, false));
+                    if (redirect) {
+                        redirect(exchange, "/auth_done.html?token=" + loginToken + "&signup=false");
+                    } else {
+                        respond(exchange, StatusCodes.OK, new AuthResponse(loginToken, false));
+                    }
                     return;
                 }
             } else {
@@ -263,23 +287,29 @@ public class WebHandler {
     private String extractOAuthCode(HttpServerExchange exchange) {
         // Most implementations just add a "code" parameter
         Deque<String> code = exchange.getQueryParameters().get("code");
-        if (!code.isEmpty()) return code.element();
+        if (code != null && !code.isEmpty()) return code.element();
 
-        // But some are tricky and do some weird stuff (idk)
+        // OAuth 1 still uses these parameters
         Deque<String> oauthToken = exchange.getQueryParameters().get("oauth_token");
         Deque<String> oauthVerifier = exchange.getQueryParameters().get("oauth_verifier");
 
-        if (oauthToken.isEmpty() || oauthVerifier.isEmpty()) return null;
+        if (oauthToken == null || oauthVerifier == null || oauthToken.isEmpty() || oauthVerifier.isEmpty()) return null;
         return oauthToken.element() + "|" + oauthVerifier.element();
     }
 
     public void signIn(HttpServerExchange exchange) {
         String id = exchange.getRelativePath().substring(1);
+        boolean redirect = !exchange.getQueryParameters().get("redirect").isEmpty();
 
         AuthService service = services.get(id);
         if (service != null) {
             String state = service.generateState();
-            respond(exchange, StatusCodes.OK, new SignInResponse(service.getRedirectUrl(state)));
+            if (redirect) {
+                exchange.setResponseCookie(new CookieImpl("pxls-auth-redirect", "1").setPath("/"));
+                redirect(exchange, service.getRedirectUrl(state+"|redirect"));
+            } else {
+                respond(exchange, StatusCodes.OK, new SignInResponse(service.getRedirectUrl(state+"|json")));
+            }
         } else {
             respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_service", "No auth method named " + id));
         }
@@ -322,10 +352,8 @@ public class WebHandler {
             App.getUserManager().logOut(tokenCookie.getValue());
         }
 
-        exchange.setStatusCode(StatusCodes.FOUND);
-        exchange.getResponseHeaders().put(Headers.LOCATION, "/");
         setAuthCookie(exchange, "", -1);
-        exchange.getResponseSender().send("");
+        respond(exchange, StatusCodes.OK, new EmptyResponse());
     }
 
     public void lookup(HttpServerExchange exchange) {
@@ -419,5 +447,11 @@ public class WebHandler {
         exchange.setStatusCode(code);
         exchange.getResponseSender().send(App.getGson().toJson(obj));
         exchange.endExchange();
+    }
+
+    private void redirect(HttpServerExchange exchange, String url) {
+        exchange.setStatusCode(StatusCodes.FOUND);
+        exchange.getResponseHeaders().put(Headers.LOCATION, url);
+        exchange.getResponseSender().send("");
     }
 }

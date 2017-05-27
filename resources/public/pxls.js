@@ -341,6 +341,7 @@ window.App = (function () {
                     $("#board-container").show();
                     $("#ui").show();
                     $("#loading").fadeOut(500);
+                    user.wsinit();
                 },
                 on: function (type, fn) {
                     self.hooks.push({
@@ -1668,6 +1669,7 @@ window.App = (function () {
                     users: $("#online"),
                     userInfo: $("#userinfo"),
                     loginOverlay: $("#login-overlay"),
+                    userMessage: $("#user-message"),
                     prompt: $("#prompt"),
                     signup: $("#signup")
                 },
@@ -1675,6 +1677,20 @@ window.App = (function () {
                 pendingSignupToken: null,
                 getRole: function () {
                     return self.role;
+                },
+                signin: function() {
+                    var data = ls.get("auth_respond");
+                    if (!data) {
+                        return;
+                    }
+                    ls.remove("auth_respond");
+                    if (data.signup) {
+                        self.pendingSignupToken = data.token;
+                        self.elements.signup.fadeIn(200);
+                    } else {
+                        socket.reconnectSocket();
+                    }
+                    self.elements.prompt.fadeOut(200);
                 },
                 webinit: function (data) {
                     self.elements.loginOverlay.find("a").click(function (evt) {
@@ -1684,44 +1700,12 @@ window.App = (function () {
                             $("<ul>").append(
                                 $.map(data.authServices, function (a) {
                                     return $("<li>").append(
-                                        $("<a>").attr("href", "#").text(a.name).click(function (evt) {
-                                            var hash = window.location.hash.substring(1),
-                                                search = window.location.search.substring(1),
-                                                url = hash;
-                                            if (!url) {
-                                                url = search;
-                                            } else if (search) {
-                                                url += '&' + search;
+                                        $("<a>").attr("href", "/signin/" + a.id + "?redirect=1").text(a.name).click(function (evt) {
+                                            if (window.open(this.href, "_blank")) {
+                                                evt.preventDefault();
+                                                return;
                                             }
-                                            ss.set('url_params',  url);
-
-                                            $.get("/signin/" + a.id, function(data) {
-                                                var w = window.open(data.url, "_blank");
-
-                                                var interval = setInterval(function() {
-                                                    try {
-                                                        if (w.closed) {
-                                                            clearInterval(interval);
-                                                        } else if (w.location.pathname.indexOf("/auth/") === 0) {
-                                                            clearInterval(interval);
-                                                            w.onload = function() {
-                                                                var d = JSON.parse(w.document.body.innerText);
-
-                                                                if (d.signup) {
-                                                                    self.pendingSignupToken = d.token;
-                                                                    self.elements.signup.fadeIn(100);
-                                                                } else {
-                                                                    socket.reconnectSocket();
-                                                                }
-                                                                self.elements.prompt.fadeOut(200);
-                                                                w.close();
-                                                            };
-                                                        }
-                                                    } catch (e) {
-                                                        // pass
-                                                    }
-                                                }, 100);
-                                            });
+                                            ls.set("auth_same_window", true);
                                         })
                                     );
                                 })
@@ -1737,6 +1721,13 @@ window.App = (function () {
                         ).fadeIn(200);
                     });
                 },
+                wsinit: function () {
+                    if (ls.get("auth_proceed")) {
+                        // we need to authenticate...
+                        ls.remove("auth_proceed");
+                        self.signin();
+                    }
+                },
                 doSignup: function() {
                     if (!self.pendingSignupToken) return;
 
@@ -1750,8 +1741,8 @@ window.App = (function () {
                         success: function() {
                             self.elements.signup.find("#error").text("");
                             self.elements.signup.find("input").val("");
-                            self.elements.signup.fadeOut();
-                            socket.reconnect();
+                            self.elements.signup.fadeOut(200);
+                            socket.reconnectSocket();
                             self.pendingSignupToken = null;
                         },
                         error: function(data) {
@@ -1762,9 +1753,34 @@ window.App = (function () {
                 },
                 init: function () {
                     self.elements.signup.hide();
+                    self.elements.signup.find("input").keydown(function (evt) {
+                        evt.stopPropagation();
+                        if (evt.which === 13) {
+                            self.doSignup();
+                        }
+                    });
                     self.elements.signup.find("#signup-button").click(self.doSignup);
                     self.elements.users.hide();
                     self.elements.userInfo.hide();
+                    self.elements.userInfo.find(".logout").click(function (evt) {
+                        evt.preventDefault();
+                        $.get("/logout", function () {
+                            self.elements.userInfo.fadeOut(200);
+                            self.elements.userMessage.hide();
+                            self.elements.loginOverlay.show();
+                            if (window.deInitAdmin) {
+                                window.deInitAdmin();
+                            }
+                            
+                            socket.reconnectSocket();
+                        });
+                    });
+                    $(window).bind("storage", function (evt) {
+                        if (evt.originalEvent.key == "auth") {
+                            localStorage.removeItem("auth");
+                            self.signin();
+                        }
+                    });
                     socket.on("users", function (data) {
                         self.elements.users.text(data.count + " online").fadeIn(200);
                     });
@@ -1774,6 +1790,7 @@ window.App = (function () {
                     });
                     socket.on("userinfo", function (data) {
                         var banmsg = '';
+                        self.elements.loginOverlay.hide();
                         self.elements.userInfo.find("span.name").text(data.username);
                         self.elements.userInfo.fadeIn(200);
                         self.role = data.role;
@@ -1799,12 +1816,12 @@ window.App = (function () {
                             window.deInitAdmin();
                         }
                         if (banmsg) {
-                            self.elements.loginOverlay.text(banmsg).fadeIn(200);
+                            self.elements.userMessage.text(banmsg).fadeIn(200);
                             if (window.deInitAdmin) {
                                 window.deInitAdmin();
                             }
                         } else {
-                            self.elements.loginOverlay.hide();
+                            self.elements.userMessage.hide();
                         }
 
                         window.ga("send", "event", "Auth", "Login", data.method);
@@ -1814,7 +1831,8 @@ window.App = (function () {
             return {
                 init: self.init,
                 getRole: self.getRole,
-                webinit: self.webinit
+                webinit: self.webinit,
+                wsinit: self.wsinit
             };
         })(),
         // this takes care of browser notifications
