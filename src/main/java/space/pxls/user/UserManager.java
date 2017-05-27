@@ -2,10 +2,9 @@ package space.pxls.user;
 
 import space.pxls.App;
 import space.pxls.data.DBUser;
-import space.pxls.data.DBUserBanReason;
+import space.pxls.util.Util;
 
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class UserManager {
@@ -16,17 +15,6 @@ public class UserManager {
 
     public UserManager() {
 
-    }
-
-    private static String generateRandom() {
-        String charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-        Random rand = new Random();
-        StringBuilder res = new StringBuilder();
-        for (int i = 0; i <= 32; i++) {
-            int randIndex = rand.nextInt(charset.length());
-            res.append(charset.charAt(randIndex));
-        }
-        return res.toString();
     }
 
     private void addUserToken(String token, User user) {
@@ -63,15 +51,15 @@ public class UserManager {
     }
 
     public String logIn(User user, String ip) {
-        Integer uid = new Integer(user.getId());
-        String token = uid.toString()+"|"+generateRandom();
+        Integer uid = user.getId();
+        String token = uid.toString()+"|"+ Util.generateRandomToken();
         addUserToken(token, user);
         App.getDatabase().updateUserIP(user, ip);
         return token;
     }
 
     public String generateUserCreationToken(String login) {
-        String token = generateRandom();
+        String token = Util.generateRandomToken();
         userSignupTokens.put(token, login);
         return token;
     }

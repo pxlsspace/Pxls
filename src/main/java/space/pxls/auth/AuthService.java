@@ -11,15 +11,27 @@ import javax.crypto.spec.SecretKeySpec;
 import java.net.URLEncoder;
 import java.net.URLDecoder;
 import org.apache.commons.codec.binary.Base64;
+import space.pxls.util.Util;
+
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.InvalidKeyException;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AuthService {
     private String id;
+    private String name = getName();
+    private transient Set<String> validStates = ConcurrentHashMap.newKeySet();
 
     public AuthService(String id) {
         this.id = id;
+    }
+
+    public String generateState() {
+        String s = Util.generateRandomToken();
+        validStates.add(s);
+        return s;
     }
 
     protected static Map<String, String> parseQuery(String s) {
@@ -53,11 +65,7 @@ public abstract class AuthService {
             // encode it, base64 it, change it to string and return.
             return new String(new Base64().encode(mac.doFinal(base.getBytes(
                 "UTF-8"))), "UTF-8").trim();
-        } catch (UnsupportedEncodingException e) {
-            return "";
-        } catch (NoSuchAlgorithmException e) {
-            return "";
-        } catch (InvalidKeyException e) {
+        } catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException e) {
             return "";
         }
     }
@@ -95,7 +103,11 @@ public abstract class AuthService {
         }
     }
 
-    public abstract String getRedirectUrl();
+    public boolean verifyState(String state) {
+        return validStates.remove(state);
+    }
+
+    public abstract String getRedirectUrl(String state);
 
     public String getCallbackUrl() {
         return App.getConfig().getString("oauth.callbackBase") + "/" + id;
@@ -111,9 +123,9 @@ public abstract class AuthService {
         }
     }
 
-    public abstract String getName();
-
     public boolean use() {
         return !App.getConfig().getString("oauth."+id+".key").isEmpty();
     }
+
+    public abstract String getName();
 }

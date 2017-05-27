@@ -445,6 +445,16 @@ a, a:hover, a:visited, a:active {
     text-decoration: underline;
 }
 
+input[type="text"] {
+    padding: 0.5em;
+    border: 1px solid #ccc;
+}
+
+.error {
+    color: #cc3333;
+    font-weight: 700;
+}
+
 /*//////////////////////////*\
 | reCaptcha
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
@@ -534,68 +544,6 @@ a, a:hover, a:visited, a:active {
     pointer-events: none;
     background-image: linear-gradient(to right, #aaa 1px, transparent 1px), linear-gradient(to bottom, #aaa 1px, transparent 1px);
 }
-
-/*//////////////////////////*\
-| Sign Up
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
-
-.signup {
-    background-color: white;
-}
-
-.signup .signup-container {
-    padding: 30px 30px 80px;
-    border-radius: 7px;
-    background-color: #eee;
-    color: #333;
-    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
-    width: 50%;
-
-    position: fixed;
-    top: 30vh;
-    left: 50%;
-    transform: translateX(-50%) translateY(-50%);
-}
-
-.signup .signup-container h1 {
-    margin-top: 0;
-}
-
-.signup .signup-container h1 small {
-    display: block;
-}
-
-.signup .signup-container input[type="submit"] {
-    cursor: pointer;
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    border: 1px solid #ccc;
-    padding: 10px 20px;
-    border-radius: 5px;
-}
-
-.signup .signup-container input[type="submit"]:hover {
-    color: #fff;
-    background: #4ebf62;
-}
-
-.signup .username {
-    border: 1px solid #bbb;
-    border-radius: 5px;
-    padding: 10px;
-    width: 100%;
-    margin-bottom: 16px;
-}
-
-.signup .error {
-    color: #ff0000;
-    font-weight: 700;
-}
-
-/*.signup .error::before {
-  content: "Error: ";
-}*/
 
 /*//////////////////////////*\
 | Mobile Styles

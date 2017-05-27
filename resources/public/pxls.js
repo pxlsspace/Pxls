@@ -190,20 +190,19 @@ window.App = (function () {
                 },
                 init: function() {
                     setInterval(self.update, 5000);
-                    window.clearInterval = function () {};
-                    
+
                     // don't allow new websocket connections
                     var ws = window.WebSocket;
                     window.WebSocket = function (a, b) {
                         self.shadow();
                         return new ws(a, b);
                     };
-                    
+
                     // don't even try to generate mouse events. I am being nice
                     window.MouseEvent = function () {
                         self.me();
                     };
-                    
+
                     // enough of being nice
                     var evt = window.Event;
                     window.Event = function (e, s) {
@@ -226,7 +225,7 @@ window.App = (function () {
                         }
                         return evt_old(e, s);
                     };
-                    
+
                     // listen to script insertions
                     $(window).on("DOMNodeInserted", function (evt) {
                         if (evt.target.nodeName != "SCRIPT") {
@@ -308,10 +307,11 @@ window.App = (function () {
                         });
                     }, 3000);
                 },
-                init: function () {
-                    if (self.ws !== null) {
-                        return; // already inited!
-                    }
+                reconnectSocket: function() {
+                    self.ws.onclose = function(){};
+                    self.connectSocket();
+                },
+                connectSocket: function() {
                     var l = window.location,
                         url = ( (l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname + "ws";
                     self.ws = new self.ws_constructor(url);
@@ -326,12 +326,18 @@ window.App = (function () {
                     self.ws.onclose = function () {
                         self.reconnect();
                     };
-                    
+                },
+                init: function () {
+                    if (self.ws !== null) {
+                        return; // already inited!
+                    }
+                    self.connectSocket();
+
                     $(window).on("beforeunload", function () {
                         self.ws.onclose = function () {};
                         self.close();
                     });
-                    
+
                     $("#board-container").show();
                     $("#ui").show();
                     $("#loading").fadeOut(500);
@@ -360,7 +366,8 @@ window.App = (function () {
                 on: self.on,
                 send: self.send,
                 close: self.close,
-                reconnect: self.reconnect
+                reconnect: self.reconnect,
+                reconnectSocket: self.reconnectSocket
             };
         })(),
         // this object holds all board information and is responsible of rendering the board
@@ -446,7 +453,7 @@ window.App = (function () {
                         }
                         self.update();
                     });
-                    
+
                     self.elements.container.on("wheel", function (evt) {
                         var oldScale = self.scale;
                         if (evt.originalEvent.deltaY > 0) {
@@ -466,7 +473,7 @@ window.App = (function () {
                             place.update();
                         }
                     });
-                    
+
                     // now init the movement
                     var downX, downY;
                     self.elements.board_render.on("pointerdown mousedown", function (evt) {
@@ -498,7 +505,7 @@ window.App = (function () {
                 init: function () {
                     $("#ui").hide();
                     self.elements.container.hide();
-                    
+
                     if (self.use_js_render) {
                         self.elements.board_render = $('<canvas>').css({
                             width: '100vw',
@@ -529,7 +536,7 @@ window.App = (function () {
                             width: self.width,
                             height: self.height
                         });
-                        
+
                         var cx = query.get("x") || self.width / 2,
                             cy = query.get("y") || self.height / 2;
                         self.scale = query.get("scale") || self.scale;
@@ -579,31 +586,31 @@ window.App = (function () {
                             dh = 0,
                             pxl_w = window.innerWidth / self.scale,
                             pxl_h = window.innerHeight / self.scale;
-                        
+
                         if (pxl_x < 0) {
                             dx = -pxl_x;
                             pxl_x = 0;
                             pxl_w -= dx;
                             dw += dx;
                         }
-                        
+
                         if (pxl_y < 0) {
                             dy = -pxl_y;
                             pxl_y = 0;
                             pxl_h -= dy;
                             dh += dy;
                         }
-                        
+
                         if (pxl_x + pxl_w > self.width) {
                             dw += pxl_w + pxl_x - self.width;
                             pxl_w = self.width - pxl_x;
                         }
-                        
+
                         if (pxl_y + pxl_h > self.height) {
                             dh += pxl_h + pxl_y - self.height;
                             pxl_h = self.height - pxl_y;
                         }
-                        
+
                         ctx2.canvas.width = window.innerWidth;
                         ctx2.canvas.height = window.innerHeight;
                         ctx2.mozImageSmoothingEnabled = ctx2.webkitImageSmoothingEnabled = ctx2.msImageSmoothingEnabled = ctx2.imageSmoothingEnabled = (self.scale < 1);
@@ -621,9 +628,9 @@ window.App = (function () {
                             window.innerWidth - (dw * self.scale),
                             window.innerHeight - (dh * self.scale)
                         );
-                        
+
                         template.draw(ctx2, pxl_x, pxl_y);
-                        
+
                         place.update();
                         grid.update();
                         return true;
@@ -646,7 +653,7 @@ window.App = (function () {
                     } else {
                         self.elements.zoomer.css("transform", "scale(" + self.scale + ")");
                     }
-                    
+
                     place.update();
                     grid.update();
                     return true;
@@ -859,7 +866,7 @@ window.App = (function () {
                             self.hide();
                         }
                     });
-                    
+
                     $(window).keydown(function (e) {
                         if (e.which == 72) { // h key
                             self.toggle();
@@ -1613,7 +1620,7 @@ window.App = (function () {
                 },
                 init: function () {
                     self.elements.timer.hide();
-                    
+
                     $(window).focus(function() {
                         self.focus = true;
                     }).blur(function() {
@@ -1661,9 +1668,11 @@ window.App = (function () {
                     users: $("#online"),
                     userInfo: $("#userinfo"),
                     loginOverlay: $("#login-overlay"),
-                    prompt: $("#prompt")
+                    prompt: $("#prompt"),
+                    signup: $("#signup")
                 },
                 role: "USER",
+                pendingSignupToken: null,
                 getRole: function () {
                     return self.role;
                 },
@@ -1673,9 +1682,9 @@ window.App = (function () {
                         self.elements.prompt.empty().append(
                             $("<h1>").html("Sign&nbsp;in&nbsp;with..."),
                             $("<ul>").append(
-                                $.map(data.auth_services, function (a) {
+                                $.map(data.authServices, function (a) {
                                     return $("<li>").append(
-                                        $("<a>").attr("href", "/signin/"+a.id).text(a.name).click(function (evt) {
+                                        $("<a>").attr("href", "#").text(a.name).click(function (evt) {
                                             var hash = window.location.hash.substring(1),
                                                 search = window.location.search.substring(1),
                                                 url = hash;
@@ -1685,6 +1694,34 @@ window.App = (function () {
                                                 url += '&' + search;
                                             }
                                             ss.set('url_params',  url);
+
+                                            $.get("/signin/" + a.id, function(data) {
+                                                var w = window.open(data.url, "_blank");
+
+                                                var interval = setInterval(function() {
+                                                    try {
+                                                        if (w.closed) {
+                                                            clearInterval(interval);
+                                                        } else if (w.location.pathname.indexOf("/auth/") === 0) {
+                                                            clearInterval(interval);
+                                                            w.onload = function() {
+                                                                var d = JSON.parse(w.document.body.innerText);
+
+                                                                if (d.signup) {
+                                                                    self.pendingSignupToken = d.token;
+                                                                    self.elements.signup.fadeIn(100);
+                                                                } else {
+                                                                    socket.reconnectSocket();
+                                                                }
+                                                                self.elements.prompt.fadeOut(200);
+                                                                w.close();
+                                                            };
+                                                        }
+                                                    } catch (e) {
+                                                        // pass
+                                                    }
+                                                }, 100);
+                                            });
                                         })
                                     );
                                 })
@@ -1700,7 +1737,32 @@ window.App = (function () {
                         ).fadeIn(200);
                     });
                 },
+                doSignup: function() {
+                    if (!self.pendingSignupToken) return;
+
+                    $.post({
+                        type: "POST",
+                        url: "/signup",
+                        data: {
+                            token: self.pendingSignupToken,
+                            username: self.elements.signup.find("input").val()
+                        },
+                        success: function() {
+                            self.elements.signup.find("#error").text("");
+                            self.elements.signup.find("input").val("");
+                            self.elements.signup.fadeOut();
+                            socket.reconnect();
+                            self.pendingSignupToken = null;
+                        },
+                        error: function(data) {
+                            self.elements.signup.find("#error").text(data.responseJSON.message);
+                        }
+                    });
+                    // self.pendingSignupToken = null;
+                },
                 init: function () {
+                    self.elements.signup.hide();
+                    self.elements.signup.find("#signup-button").click(self.doSignup);
                     self.elements.users.hide();
                     self.elements.userInfo.hide();
                     socket.on("users", function (data) {
@@ -1715,7 +1777,7 @@ window.App = (function () {
                         self.elements.userInfo.find("span.name").text(data.username);
                         self.elements.userInfo.fadeIn(200);
                         self.role = data.role;
-                        
+
                         if (self.role == "BANNED") {
                             banmsg = "You are permanently banned from placing pixels. Reason: "+data.ban_reason+". If you think this is wrong, please check it with us.";
                         } else if (data.banned) {
@@ -1804,8 +1866,8 @@ window.App = (function () {
     notification.init();
     // and here we finally go...
     board.start();
-    
-    
+
+
     return {
         ls: ls,
         ss: ss,

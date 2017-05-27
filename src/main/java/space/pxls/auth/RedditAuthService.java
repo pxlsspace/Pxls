@@ -14,8 +14,8 @@ public class RedditAuthService extends AuthService {
         super(id);
     }
 
-    public String getRedirectUrl() {
-        return "https://www.reddit.com/api/v1/authorize?client_id=" + App.getConfig().getString("oauth.reddit.key") + "&response_type=code&redirect_uri=" + getCallbackUrl() + "&duration=temporary&scope=identity&state=potato";
+    public String getRedirectUrl(String state) {
+        return "https://www.reddit.com/api/v1/authorize?client_id=" + App.getConfig().getString("oauth.reddit.key") + "&response_type=code&redirect_uri=" + getCallbackUrl() + "&duration=temporary&scope=identity&state=" + state;
     }
 
     public String getToken(String code) throws UnirestException {

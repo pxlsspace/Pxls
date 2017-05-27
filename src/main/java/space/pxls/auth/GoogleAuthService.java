@@ -13,12 +13,12 @@ public class GoogleAuthService extends AuthService {
     }
 
     @Override
-    public String getRedirectUrl() {
+    public String getRedirectUrl(String state) {
         return "https://accounts.google.com/o/oauth2/v2/auth?" +
                 "scope=profile%20email&" +
                 "access_type=online&" +
                 "include_granted_scopes=true&" +
-                "state=potato&" +
+                "state=" + state + "&" +
                 "redirect_uri=" + getCallbackUrl() + "&" +
                 "response_type=code&" +
                 "client_id=" + App.getConfig().getString("oauth.google.key");

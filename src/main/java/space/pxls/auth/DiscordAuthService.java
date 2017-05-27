@@ -14,8 +14,8 @@ public class DiscordAuthService extends AuthService {
         super(id);
     }
 
-    public String getRedirectUrl() {
-        return "https://discordapp.com/api/oauth2/authorize?client_id=" + App.getConfig().getString("oauth.discord.key") + "&response_type=code&redirect_uri=" + getCallbackUrl() + "&duration=temporary&scope=identify&state=potato";
+    public String getRedirectUrl(String state) {
+        return "https://discordapp.com/api/oauth2/authorize?client_id=" + App.getConfig().getString("oauth.discord.key") + "&response_type=code&redirect_uri=" + getCallbackUrl() + "&duration=temporary&scope=identify&state=" + state;
     }
 
     public String getToken(String code) throws UnirestException {

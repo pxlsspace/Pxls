@@ -19,10 +19,9 @@ import space.pxls.util.AuthReader;
 import space.pxls.util.IPReader;
 
 import java.nio.ByteBuffer;
+import java.util.Calendar;
 import java.util.Deque;
 import java.util.Map;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
@@ -62,14 +61,14 @@ public class WebHandler {
         return nolog == null;
     }
 
-    private void pxlsTokenCookie(HttpServerExchange exchange, String loginToken, int days) {
+    private void setAuthCookie(HttpServerExchange exchange, String loginToken, int days) {
         Calendar cal2 = Calendar.getInstance();
         cal2.add(Calendar.DATE, -1);
         exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setPath("/").setExpires(cal2.getTime()));
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, days);
         String hostname = App.getConfig().getString("host");
-        exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setHttpOnly(true).setPath("/").setDomain("."+hostname).setExpires(cal.getTime()));
+        exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setHttpOnly(true).setPath("/").setDomain("." + hostname).setExpires(cal.getTime()));
         exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setHttpOnly(true).setPath("/").setDomain(hostname).setExpires(cal.getTime()));
     }
 
@@ -84,7 +83,7 @@ public class WebHandler {
                 time = time_form.getValue();
             }
             if (doLog(exchange)) {
-                App.getDatabase().adminLog("ban "+user.getName(), user_perform.getId());
+                App.getDatabase().adminLog("ban " + user.getName(), user_perform.getId());
             }
             user.ban(Integer.parseInt(time), getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
@@ -101,7 +100,7 @@ public class WebHandler {
             user.unban();
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             if (doLog(exchange)) {
-                App.getDatabase().adminLog("unban "+user.getName(), user_perform.getId());
+                App.getDatabase().adminLog("unban " + user.getName(), user_perform.getId());
             }
             exchange.setStatusCode(200);
         } else {
@@ -116,7 +115,7 @@ public class WebHandler {
             user.permaban(getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             if (doLog(exchange)) {
-                App.getDatabase().adminLog("permaban "+user.getName(), user_perform.getId());
+                App.getDatabase().adminLog("permaban " + user.getName(), user_perform.getId());
             }
             exchange.setStatusCode(200);
         } else {
@@ -131,7 +130,7 @@ public class WebHandler {
             user.shadowban(getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             if (doLog(exchange)) {
-                App.getDatabase().adminLog("shadowban "+user.getName(), user_perform.getId());
+                App.getDatabase().adminLog("shadowban " + user.getName(), user_perform.getId());
             }
             exchange.setStatusCode(200);
         } else {
@@ -144,79 +143,54 @@ public class WebHandler {
         if (user != null) {
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
             exchange.getResponseSender().send(App.getGson().toJson(
-                new Packet.UserInfo(user.getName(),
-                user.getLogin(),
-                user.getRole().name(),
-                user.isBanned(),
-                user.getBanReason(),
-                user.getBanExpiryTime()
-            )));
+                    new ServerUserInfo(user.getName(),
+                            user.getRole().name(),
+                            user.isBanned(),
+                            user.getBanExpiryTime(),
+                            user.getBanReason(),
+                            user.getLogin().split(":")[0]
+                    )));
         } else {
             exchange.setStatusCode(400);
         }
     }
 
     public void signUp(HttpServerExchange exchange) {
-        boolean returnJustToken = exchange.getQueryParameters().containsKey("rawToken");
-
-        String ip = exchange.getAttachment(IPReader.IP);
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-
-        FormData.FormValue nameVal = data.getFirst("name");
+        FormData.FormValue nameVal = data.getFirst("username");
         FormData.FormValue tokenVal = data.getFirst("token");
         if (nameVal == null || tokenVal == null) {
-            exchange.setStatusCode(StatusCodes.FOUND);
-            exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-            exchange.getResponseSender().send("");
+            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_params", "Missing parameters"));
             return;
         }
 
         String name = nameVal.getValue();
         String token = tokenVal.getValue();
         if (token.isEmpty()) {
-            exchange.setStatusCode(StatusCodes.FOUND);
-            exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-            exchange.getResponseSender().send("");
+            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_token", "Missing signup token"));
             return;
         } else if (name.isEmpty()) {
-            exchange.setStatusCode(StatusCodes.FOUND);
-            exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + token + "&error=Username%20cannot%20be%20empty.");
-            exchange.getResponseSender().send("");
+            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_username", "Username may not be empty"));
             return;
         } else if (!name.matches("[a-zA-Z0-9_\\-]+")) {
-            exchange.setStatusCode(StatusCodes.FOUND);
-            exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + token + "&error=Name%20contains%20invalid%20characters.");
-            exchange.getResponseSender().send("");
+            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_username", "Username contains invalid characters"));
             return;
         } else if (!App.getUserManager().isValidSignupToken(token)) {
-            exchange.setStatusCode(StatusCodes.FOUND);
-            exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + token + "&error=Invalid%20signup%20token.");
-            exchange.getResponseSender().send("");
+            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_token", "Invalid signup token"));
             return;
         }
 
+        String ip = exchange.getAttachment(IPReader.IP);
         User user = App.getUserManager().signUp(name, token, ip);
 
         if (user == null) {
-            if (returnJustToken) {
-                exchange.getResponseSender().send("null");
-                return;
-            }
-            exchange.setStatusCode(StatusCodes.FOUND);
-            exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + token + "&error=Username%20is%20taken,%20try%20another%3F");
-            exchange.getResponseSender().send("");
+            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_username", "Username taken, try another?"));
             return;
         }
 
         String loginToken = App.getUserManager().logIn(user, ip);
-        if (!returnJustToken) {
-            exchange.setStatusCode(StatusCodes.FOUND);
-            exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-            pxlsTokenCookie(exchange, loginToken, 24);
-            exchange.getResponseSender().send("");
-        } else {
-            exchange.getResponseSender().send(loginToken);
-        }
+        setAuthCookie(exchange, loginToken, 24);
+        respond(exchange, StatusCodes.OK, new SignUpResponse(loginToken));
     }
 
     public void auth(HttpServerExchange exchange) throws UnirestException {
@@ -226,78 +200,77 @@ public class WebHandler {
         }
 
         String id = exchange.getRelativePath().substring(1);
-        String ip = exchange.getAttachment(IPReader.IP);
 
         AuthService service = services.get(id);
         if (service != null) {
-            boolean returnJustToken = exchange.getQueryParameters().containsKey("rawToken");
-
-            Deque<String> code = exchange.getQueryParameters().get("code");
-            String codeStr = "";
-            if (code == null) {
-                code = exchange.getQueryParameters().get("oauth_token");
-                if (code == null) {
-                    exchange.setStatusCode(StatusCodes.FOUND);
-                    exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-                    exchange.getResponseSender().send("");
-                    return;
-                }
-                codeStr = code.element() + "|";
-                code = exchange.getQueryParameters().get("oauth_verifier");
-                if (code == null) {
-                    exchange.setStatusCode(StatusCodes.FOUND);
-                    exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-                    exchange.getResponseSender().send("");
-                    return;
-                }
-                codeStr += code.element();
-            } else {
-                codeStr = code.element();
+            // Verify the given OAuth state, to make sure people don't double-send requests
+            Deque<String> state = exchange.getQueryParameters().get("state");
+            if (state.isEmpty()) {
+                respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_state", "No state token specified"));
+                return;
             }
-            String token = service.getToken(codeStr);
+            if (!service.verifyState(state.element())) {
+                respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_state", "Invalid state token"));
+                return;
+            }
+
+            // Get the one-time authorization code from the request
+            String code = extractOAuthCode(exchange);
+            if (code == null) {
+                respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_code", "No OAuth code specified"));
+                return;
+            }
+
+            // Get a more persistent user token
+            String token = service.getToken(code);
+            if (token == null) {
+                respond(exchange, StatusCodes.UNAUTHORIZED, new Error("bad_code", "OAuth code invalid"));
+                return;
+            }
+
+            // And get an account identifier from that
             String identifier;
             try {
                 identifier = service.getIdentifier(token);
             } catch (AuthService.InvalidAccountException e) {
-                exchange.setStatusCode(StatusCodes.FOUND);
-                exchange.getResponseHeaders().put(Headers.LOCATION, "/error.html?error=" + e.getMessage());
-                exchange.getResponseSender().send("");
+                respond(exchange, StatusCodes.UNAUTHORIZED, new Error("invalid_account", e.getMessage()));
                 return;
             }
 
-            if (token != null && identifier != null) {
+            if (identifier != null) {
                 String login = id + ":" + identifier;
                 User user = App.getUserManager().getByLogin(login);
+                // If there is no user with that identifier, we make a signup token and tell the client to sign up with that token
                 if (user == null) {
                     String signUpToken = App.getUserManager().generateUserCreationToken(login);
-
-                    if (returnJustToken) {
-                        exchange.getResponseSender().send("pxls-signup-token=" + signUpToken);
-                    } else {
-                        exchange.setStatusCode(StatusCodes.FOUND);
-                        String hostname = App.getConfig().getString("host");
-                        exchange.setResponseCookie(new CookieImpl("pxls-signup-token", signUpToken).setPath("/").setDomain("." + hostname));
-                        exchange.getResponseHeaders().put(Headers.LOCATION, "/signup.html?token=" + signUpToken);
-                        exchange.getResponseSender().send("");
-                    }
+                    respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
+                    return;
                 } else {
+                    // We need the IP for logging/db purposes
+                    String ip = exchange.getAttachment(IPReader.IP);
                     String loginToken = App.getUserManager().logIn(user, ip);
-
-                    if (returnJustToken) {
-                        exchange.getResponseSender().send("pxls-token=" + loginToken);
-                    } else {
-                        exchange.setStatusCode(StatusCodes.FOUND);
-                        exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-                        pxlsTokenCookie(exchange, loginToken, 24);
-                        exchange.getResponseSender().send("");
-                    }
+                    setAuthCookie(exchange, loginToken, 24);
+                    respond(exchange, StatusCodes.OK, new AuthResponse(loginToken, false));
+                    return;
                 }
             } else {
-                exchange.setStatusCode(StatusCodes.FOUND);
-                exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-                exchange.getResponseSender().send("");
+                respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_service", "No auth service named " + id));
+                return;
             }
         }
+    }
+
+    private String extractOAuthCode(HttpServerExchange exchange) {
+        // Most implementations just add a "code" parameter
+        Deque<String> code = exchange.getQueryParameters().get("code");
+        if (!code.isEmpty()) return code.element();
+
+        // But some are tricky and do some weird stuff (idk)
+        Deque<String> oauthToken = exchange.getQueryParameters().get("oauth_token");
+        Deque<String> oauthVerifier = exchange.getQueryParameters().get("oauth_verifier");
+
+        if (oauthToken.isEmpty() || oauthVerifier.isEmpty()) return null;
+        return oauthToken.element() + "|" + oauthVerifier.element();
     }
 
     public void signIn(HttpServerExchange exchange) {
@@ -305,23 +278,23 @@ public class WebHandler {
 
         AuthService service = services.get(id);
         if (service != null) {
-            exchange.setStatusCode(StatusCodes.FOUND);
-            exchange.getResponseHeaders().put(Headers.LOCATION, service.getRedirectUrl());
-            pxlsTokenCookie(exchange, "", -1); // make sure that we don't have one...
-            exchange.getResponseSender().send("");
+            String state = service.generateState();
+            respond(exchange, StatusCodes.OK, new SignInResponse(service.getRedirectUrl(state)));
+        } else {
+            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_service", "No auth method named " + id));
         }
     }
 
     public void info(HttpServerExchange exchange) {
         exchange.getResponseHeaders().add(HttpString.tryFromString("Content-Type"), "application/json");
         exchange.getResponseSender().send(App.getGson().toJson(
-                new Packet.HttpInfo(
-                    App.getWidth(),
-                    App.getHeight(),
-                    App.getConfig().getStringList("board.palette"),
-                    App.getConfig().getString("captcha.key"),
-                    (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS),
-                    services
+                new CanvasInfo(
+                        App.getWidth(),
+                        App.getHeight(),
+                        App.getConfig().getStringList("board.palette"),
+                        App.getConfig().getString("captcha.key"),
+                        (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS),
+                        services
                 )));
     }
 
@@ -331,7 +304,7 @@ public class WebHandler {
         // let's also update the cookie, if present. This place will get called frequent enough
         Cookie tokenCookie = exchange.getRequestCookies().get("pxls-token");
         if (tokenCookie != null) {
-            pxlsTokenCookie(exchange, tokenCookie.getValue(), 24);
+            setAuthCookie(exchange, tokenCookie.getValue(), 24);
         }
 
         exchange.getResponseSender().send(ByteBuffer.wrap(App.getBoardData()));
@@ -351,7 +324,7 @@ public class WebHandler {
 
         exchange.setStatusCode(StatusCodes.FOUND);
         exchange.getResponseHeaders().put(Headers.LOCATION, "/");
-        pxlsTokenCookie(exchange, "", -1);
+        setAuthCookie(exchange, "", -1);
         exchange.getResponseSender().send("");
     }
 
@@ -396,7 +369,7 @@ public class WebHandler {
         }
 
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-        
+
         FormData.FormValue xq = data.getFirst("x");
         FormData.FormValue yq = data.getFirst("y");
         FormData.FormValue idq = data.getFirst("id");
@@ -427,7 +400,7 @@ public class WebHandler {
 
     public void users(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-        exchange.getResponseSender().send(App.getGson().toJson(new Packet.Users((double)App.getServer().getConnections().size())));
+        exchange.getResponseSender().send(App.getGson().toJson(new ServerUsers(App.getServer().getConnections().size())));
     }
 
     private User parseUserFromForm(HttpServerExchange exchange) {
@@ -439,5 +412,12 @@ public class WebHandler {
             }
         }
         return null;
+    }
+
+    private void respond(HttpServerExchange exchange, int code, Object obj) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+        exchange.setStatusCode(code);
+        exchange.getResponseSender().send(App.getGson().toJson(obj));
+        exchange.endExchange();
     }
 }

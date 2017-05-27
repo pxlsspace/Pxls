@@ -17,9 +17,9 @@ public class TumblrAuthService extends AuthService {
         super(id);
     }
 
-    private Map<String, String> tokens = new ConcurrentHashMap<String, String>();
+    private transient Map<String, String> tokens = new ConcurrentHashMap<String, String>();
 
-    public String getRedirectUrl() {
+    public String getRedirectUrl(String state) {
         try {
             HttpResponse<String> response = Unirest.get("https://www.tumblr.com/oauth/request_token?" + getOauthRequestToken("https://www.tumblr.com/oauth/request_token"))
                 .header("User-Agent", "pxls.space")

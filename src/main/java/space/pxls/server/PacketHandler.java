@@ -38,11 +38,11 @@ public class PacketHandler {
 
     public void userdata(WebSocketChannel channel, User user) {
         if (user != null) {
-            server.send(channel, new Packet.ServerUserInfo(
+            server.send(channel, new ServerUserInfo(
                     user.getName(),
-                    user.isBanned(),
                     user.getRole().name().equals("SHADOWBANNED") ? "USER" : user.getRole().name(),
-                    user.isBanned() ? user.getBanExpiryTime() : null,
+                    user.isBanned(),
+                    user.isBanned() ? user.getBanExpiryTime() : 0,
                     user.isBanned() ? user.getBanReason() : "",
                     user.getLogin().split(":")[0]
             ));
@@ -65,48 +65,48 @@ public class PacketHandler {
 
     public void accept(WebSocketChannel channel, User user, Object obj, String ip) {
         if (user != null) {
-            if (obj instanceof Packet.ClientPlace) handlePlace(channel, user, ((Packet.ClientPlace) obj), ip);
-            if (obj instanceof Packet.ClientUndo) handleUndo(channel, user, ((Packet.ClientUndo) obj));
-            if (obj instanceof Packet.ClientCaptcha) handleCaptcha(channel, user, ((Packet.ClientCaptcha) obj));
-            if (obj instanceof Packet.ClientShadowBanMe) handleShadowBanMe(channel, user, ((Packet.ClientShadowBanMe) obj));
-            if (obj instanceof Packet.ClientBanMe) handleBanMe(channel, user, ((Packet.ClientBanMe) obj));
+            if (obj instanceof ClientPlace) handlePlace(channel, user, ((ClientPlace) obj), ip);
+            if (obj instanceof ClientUndo) handleUndo(channel, user, ((ClientUndo) obj));
+            if (obj instanceof ClientCaptcha) handleCaptcha(channel, user, ((ClientCaptcha) obj));
+            if (obj instanceof ClientShadowBanMe) handleShadowBanMe(channel, user, ((ClientShadowBanMe) obj));
+            if (obj instanceof ClientBanMe) handleBanMe(channel, user, ((ClientBanMe) obj));
 
             if (user.getRole().greaterEqual(Role.MODERATOR)) {
-                if (obj instanceof Packet.ClientAdminCooldownOverride)
-                    handleCooldownOverride(channel, user, ((Packet.ClientAdminCooldownOverride) obj));
+                if (obj instanceof ClientAdminCooldownOverride)
+                    handleCooldownOverride(channel, user, ((ClientAdminCooldownOverride) obj));
 
-                if (obj instanceof Packet.ClientAdminMessage)
-                    handleAdminMessage(channel, user, ((Packet.ClientAdminMessage) obj));
+                if (obj instanceof ClientAdminMessage)
+                    handleAdminMessage(channel, user, ((ClientAdminMessage) obj));
             }
         }
     }
 
-    private void handleAdminMessage(WebSocketChannel channel, User user, Packet.ClientAdminMessage obj) {
-        User u = App.getUserManager().getByName(obj.username);
+    private void handleAdminMessage(WebSocketChannel channel, User user, ClientAdminMessage obj) {
+        User u = App.getUserManager().getByName(obj.getUsername());
         if (u != null) {
-            Packet.ServerAlert msg = new Packet.ServerAlert(obj.message);
+            ServerAlert msg = new ServerAlert(obj.getMessage());
             for (WebSocketChannel ch : u.getConnections()) {
                 server.send(ch, msg);
             }
         }
     }
 
-    private void handleShadowBanMe(WebSocketChannel channel, User user, Packet.ClientShadowBanMe obj) {
+    private void handleShadowBanMe(WebSocketChannel channel, User user, ClientShadowBanMe obj) {
         App.getDatabase().adminLog("self-shadowban via script", user.getId());
         user.shadowban("auto-ban via script");
     }
 
-    private void handleBanMe(WebSocketChannel channel, User user, Packet.ClientBanMe obj) {
+    private void handleBanMe(WebSocketChannel channel, User user, ClientBanMe obj) {
         App.getDatabase().adminLog("self-ban via script", user.getId());
         user.ban(86400, "auto-ban via script");
     }
 
-    private void handleCooldownOverride(WebSocketChannel channel, User user, Packet.ClientAdminCooldownOverride obj) {
-        user.setOverrideCooldown(obj.override);
+    private void handleCooldownOverride(WebSocketChannel channel, User user, ClientAdminCooldownOverride obj) {
+        user.setOverrideCooldown(obj.getOverride());
         sendCooldownData(user);
     }
 
-    private void handleUndo(WebSocketChannel channel, User user, Packet.ClientUndo cu){
+    private void handleUndo(WebSocketChannel channel, User user, ClientUndo cu){
         if (!user.canUndoNow()) {
             return;
         }
@@ -135,42 +135,42 @@ public class PacketHandler {
         sendCooldownData(user);
     }
 
-    private void handlePlace(WebSocketChannel channel, User user, Packet.ClientPlace cp, String ip) {
-        if (cp.x < 0 || cp.x >= App.getWidth() || cp.y < 0 || cp.y >= App.getHeight()) return;
-        if (cp.color < 0 || cp.color >= App.getConfig().getStringList("board.palette").size()) return;
+    private void handlePlace(WebSocketChannel channel, User user, ClientPlace cp, String ip) {
+        if (cp.getX() < 0 || cp.getX() >= App.getWidth() || cp.getY() < 0 || cp.getY() >= App.getHeight()) return;
+        if (cp.getColor() < 0 || cp.getColor() >= App.getConfig().getStringList("board.palette").size()) return;
         if (user.isBanned()) return;
 
         if (user.canPlace()) {
             if (user.updateCaptchaFlagPrePlace() && App.isCaptchaEnabled()) {
-                server.send(channel, new Packet.ServerCaptchaRequired());
+                server.send(channel, new ServerCaptchaRequired());
             } else {
-                if (App.getPixel(cp.x, cp.y) != cp.color) {
+                if (App.getPixel(cp.getX(), cp.getY()) != cp.getColor()) {
                     int seconds = getCooldown();
-                    if (App.getDatabase().didPixelChange(cp.x, cp.y)) {
+                    if (App.getDatabase().didPixelChange(cp.getX(), cp.getY())) {
                         seconds = seconds * 2;
                     }
                     if (user.isShadowBanned()) {
                         // ok let's just pretend to set a pixel...
                         System.out.println("shadowban pixel!");
-                        Packet.ServerPlace msg = new Packet.ServerPlace(Collections.singleton(new Packet.ServerPlace.Pixel(cp.x, cp.y, cp.color)));
+                        ServerPlace msg = new ServerPlace(Collections.singleton(new ServerPlace.Pixel(cp.getX(), cp.getY(), cp.getColor())));
                         for (WebSocketChannel ch : user.getConnections()) {
                             server.send(ch, msg);
                         }
                         if (user.canUndo()) {
-                            server.send(channel, new Packet.CanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
+                            server.send(channel, new ServerCanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
                         }
                     } else {
                         boolean mod_action = user.isOverridingCooldown();
-                        App.putPixel(cp.x, cp.y, cp.color, user, mod_action, ip, true);
+                        App.putPixel(cp.getX(), cp.getY(), cp.getColor(), user, mod_action, ip, true);
                         App.saveMap();
-                        broadcastPixelUpdate(cp.x, cp.y, cp.color);
+                        broadcastPixelUpdate(cp.getX(), cp.getY(), cp.getColor());
                     }
                     if (!user.isOverridingCooldown()) {
                         user.setCooldown(seconds);
                         user.setLastPixelTime();
                         App.getDatabase().updateUserTime(user.getId(), seconds);
                         if (user.canUndo()) {
-                            server.send(channel, new Packet.CanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
+                            server.send(channel, new ServerCanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
                         }
                     }
                 }
@@ -180,14 +180,14 @@ public class PacketHandler {
         sendCooldownData(user);
     }
 
-    private void handleCaptcha(WebSocketChannel channel, User user, Packet.ClientCaptcha cc) {
+    private void handleCaptcha(WebSocketChannel channel, User user, ClientCaptcha cc) {
         if (!user.isFlaggedForCaptcha()) return;
         if (user.isBanned()) return;
 
         Unirest
                 .post("https://www.google.com/recaptcha/api/siteverify")
                 .field("secret", App.getConfig().getString("captcha.secret"))
-                .field("response", cc.token)
+                .field("response", cc.getToken())
                 //.field("remoteip", "null")
                 .asJsonAsync(new Callback<JsonNode>() {
                     @Override
@@ -201,7 +201,7 @@ public class PacketHandler {
                             user.validateCaptcha();
                         }
 
-                        server.send(channel, new Packet.ServerCaptchaStatus(success));
+                        server.send(channel, new ServerCaptchaStatus(success));
                     }
 
                     @Override
@@ -218,12 +218,12 @@ public class PacketHandler {
 
     private void updateUserData() {
         userData.run(() -> {
-            server.broadcast(new Packet.ServerUsers(server.getConnections().size()));
+            server.broadcast(new ServerUsers(server.getConnections().size()));
         });
     }
 
     private void sendCooldownData(WebSocketChannel channel, User user) {
-        server.send(channel, new Packet.ServerCooldown(user.getRemainingCooldown()));
+        server.send(channel, new ServerCooldown(user.getRemainingCooldown()));
     }
 
     private void sendCooldownData(User user) {
@@ -233,6 +233,6 @@ public class PacketHandler {
     }
 
     private void broadcastPixelUpdate(int x, int y, int color) {
-        server.broadcast(new Packet.ServerPlace(Collections.singleton(new Packet.ServerPlace.Pixel(x, y, color))));
+        server.broadcast(new ServerPlace(Collections.singleton(new ServerPlace.Pixel(x, y, color))));
     }
 }

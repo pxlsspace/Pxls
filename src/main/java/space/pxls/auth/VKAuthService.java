@@ -15,7 +15,7 @@ public class VKAuthService extends AuthService {
         super(id);
     }
 
-    public String getRedirectUrl() {
+    public String getRedirectUrl(String state) {
         return "https://oauth.vk.com/authorize?" +
             "client_id=" + App.getConfig().getString("oauth.vk.key") +
             "&response_type=code" +
@@ -23,7 +23,7 @@ public class VKAuthService extends AuthService {
             "&duration=temporary" +
             "&scope=status" +
             "&display=page" +
-            "&state=potato" +
+            "&state=" + state +
             "&v=5.64";
     }
 
@@ -40,10 +40,8 @@ public class VKAuthService extends AuthService {
         JSONObject json = response.getBody().getObject();
 
         if (json.has("error")) {
-            System.out.println("nuuu");
             return null;
         } else {
-            System.out.println(json.getString("access_token"));
             return json.getString("access_token");
         }
     }
@@ -53,13 +51,12 @@ public class VKAuthService extends AuthService {
                 .header("User-Agent", "pxls.space")
                 .asJson();
         JSONObject json = me.getBody().getObject();
-        System.out.println(me.getBody());
-        
+
         if (json.has("error")) {
             return null;
         } else {
             try {
-                return new Integer(json.getJSONArray("response").getJSONObject(0).getInt("uid")).toString();
+                return Integer.toString(json.getJSONArray("response").getJSONObject(0).getInt("uid"));
             } catch (JSONException e) {
                 return null;
             }

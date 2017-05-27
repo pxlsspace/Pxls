@@ -56,7 +56,7 @@ public class UndertowServer {
                 .addPrefixPath("/signin", webHandler::signIn)
                 .addPrefixPath("/users", webHandler::users)
                 .addPrefixPath("/auth", new RateLimitingHandler(webHandler::auth, (int) App.getConfig().getDuration("server.limits.auth.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.auth.count")))
-                .addPrefixPath("/signup/do", new RateLimitingHandler(webHandler::signUp, (int) App.getConfig().getDuration("server.limits.signup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.signup.count")))
+                .addPrefixPath("/signup", new RateLimitingHandler(webHandler::signUp, (int) App.getConfig().getDuration("server.limits.signup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.signup.count")))
                 .addPrefixPath("/admin/ban", new RoleGate(Role.MODERATOR, webHandler::ban))
                 .addPrefixPath("/admin/unban", new RoleGate(Role.MODERATOR, webHandler::unban))
                 .addPrefixPath("/admin/permaban", new RoleGate(Role.MODERATOR, webHandler::permaban))
@@ -98,18 +98,18 @@ public class UndertowServer {
                 String type = jsonObj.get("type").getAsString();
 
                 Object obj = null;
-                if (type.equals("place")) obj = App.getGson().fromJson(jsonObj, Packet.ClientPlace.class);
-                if (type.equals("undo")) obj = App.getGson().fromJson(jsonObj, Packet.ClientUndo.class);
-                if (type.equals("captcha")) obj = App.getGson().fromJson(jsonObj, Packet.ClientCaptcha.class);
+                if (type.equals("place")) obj = App.getGson().fromJson(jsonObj, ClientPlace.class);
+                if (type.equals("undo")) obj = App.getGson().fromJson(jsonObj, ClientUndo.class);
+                if (type.equals("captcha")) obj = App.getGson().fromJson(jsonObj, ClientCaptcha.class);
                 if (type.equals("admin_cdoverride"))
-                    obj = App.getGson().fromJson(jsonObj, Packet.ClientAdminCooldownOverride.class);
+                    obj = App.getGson().fromJson(jsonObj, ClientAdminCooldownOverride.class);
                 if (type.equals("admin_message"))
-                    obj = App.getGson().fromJson(jsonObj, Packet.ClientAdminMessage.class);
-                if (type.equals("shadowbanme")) obj = App.getGson().fromJson(jsonObj, Packet.ClientShadowBanMe.class);
-                if (type.equals("banme")) obj = App.getGson().fromJson(jsonObj, Packet.ClientBanMe.class);
+                    obj = App.getGson().fromJson(jsonObj, ClientAdminMessage.class);
+                if (type.equals("shadowbanme")) obj = App.getGson().fromJson(jsonObj, ClientShadowBanMe.class);
+                if (type.equals("banme")) obj = App.getGson().fromJson(jsonObj, ClientBanMe.class);
 
                 // lol
-                if (type.equals("placepixel")) obj = App.getGson().fromJson(jsonObj, Packet.ClientBanMe.class);
+                if (type.equals("placepixel")) obj = App.getGson().fromJson(jsonObj, ClientBanMe.class);
 
                 if (obj != null) {
                     socketHandler.accept(channel, user, obj, ip);
