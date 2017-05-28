@@ -851,7 +851,7 @@ window.App = (function () {
                 webinit: function (data) {
                     self.width = data.width;
                     self.height = data.height;
-                    self.seconds = data.heatmap_cooldown;
+                    self.seconds = data.heatmapCooldown;
                     self.elements.heatmap.attr({
                         width: self.width,
                         height: self.height
@@ -1693,6 +1693,7 @@ window.App = (function () {
                     self.elements.prompt.fadeOut(200);
                 },
                 webinit: function (data) {
+                    console.log("wat");
                     self.elements.loginOverlay.find("a").click(function (evt) {
                         evt.preventDefault();
                         self.elements.prompt.empty().append(
@@ -1766,8 +1767,8 @@ window.App = (function () {
                         evt.preventDefault();
                         $.get("/logout", function () {
                             self.elements.userInfo.fadeOut(200);
-                            self.elements.userMessage.hide();
-                            self.elements.loginOverlay.show();
+                            self.elements.userMessage.fadeOut(200);
+                            self.elements.loginOverlay.fadeIn(200);
                             if (window.deInitAdmin) {
                                 window.deInitAdmin();
                             }
@@ -1790,7 +1791,7 @@ window.App = (function () {
                     });
                     socket.on("userinfo", function (data) {
                         var banmsg = '';
-                        self.elements.loginOverlay.hide();
+                        self.elements.loginOverlay.fadeOut(200);
                         self.elements.userInfo.find("span.name").text(data.username);
                         self.elements.userInfo.fadeIn(200);
                         self.role = data.role;

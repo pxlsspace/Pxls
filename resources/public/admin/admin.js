@@ -30,10 +30,8 @@
                     prompt: $("#prompt")
                 },
                 init: function () {
-                    self.elements.prompt.hide().appendTo(document.body);
                 },
                 deinit: function () {
-                    self.elements.prompt.remove();
                 },
                 prompt: function (s, time, fn) {
                     var time_input = $("<input>").attr("type", "number").addClass("admin-bannumber").val(time);
