@@ -83,17 +83,26 @@
                 }
             }
         }
-        ls.set("auth_respond", {
-            signup: query_params["signup"] && query_params["signup"] == "true" ? true : false,
-            token: query_params["token"]
-        });
-        if (ls.get("auth_same_window")) {
-            ls.remove("auth_same_window");
-            ls.set("auth_proceed", true);
-            window.location = "/";
+        if (query_params['nologin']) {
+            if (ls.get("auth_same_window")) {
+                ls.remove("auth_same_window");
+                window.location = "/";
+            } else {
+                window.close();
+            }
         } else {
-            localStorage.setItem("auth", (new Date()).toString());
-            window.close();
+            ls.set("auth_respond", {
+                signup: query_params["signup"] && query_params["signup"] == "true" ? true : false,
+                token: query_params["token"]
+            });
+            if (ls.get("auth_same_window")) {
+                ls.remove("auth_same_window");
+                ls.set("auth_proceed", true);
+                window.location = "/";
+            } else {
+                localStorage.setItem("auth", (new Date()).toString());
+                window.close();
+            }
         }
     </script>
 </body>

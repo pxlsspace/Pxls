@@ -203,13 +203,6 @@ public class WebHandler {
 
         AuthService service = services.get(id);
         if (service != null) {
-            // Check for errors reported by server
-            if (exchange.getQueryParameters().containsKey("error")) {
-                String error = exchange.getQueryParameters().get("error").element();
-                if (error.equals("access_denied")) error = "Authentication denied by user";
-                respond(exchange, StatusCodes.UNAUTHORIZED, new Error("oauth_error", error));
-                return;
-            }
 
             // Verify the given OAuth state, to make sure people don't double-send requests
             Deque<String> stateQ = exchange.getQueryParameters().get("state");
@@ -233,6 +226,18 @@ public class WebHandler {
             cal.add(Calendar.DATE, -1);
             exchange.setResponseCookie(new CookieImpl("pxls-auth-redirect", "").setPath("/").setExpires(cal.getTime()));
 
+            // Check for errors reported by server
+            if (exchange.getQueryParameters().containsKey("error")) {
+                String error = exchange.getQueryParameters().get("error").element();
+                if (error.equals("access_denied")) error = "Authentication denied by user";
+                if (redirect) {
+                    redirect(exchange, "/auth_done.html?nologin=1");
+                } else {
+                    respond(exchange, StatusCodes.UNAUTHORIZED, new Error("oauth_error", error));
+                }
+                return;
+            }
+
             if (!service.verifyState(state)) {
                 respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_state", "Invalid state token"));
                 return;
@@ -241,7 +246,11 @@ public class WebHandler {
             // Get the one-time authorization code from the request
             String code = extractOAuthCode(exchange);
             if (code == null) {
-                respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_code", "No OAuth code specified"));
+                if (redirect) {
+                    redirect(exchange, "/auth_done.html?nologin=1");
+                } else {
+                    respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_code", "No OAuth code specified"));
+                }
                 return;
             }
 
