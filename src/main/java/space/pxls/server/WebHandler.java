@@ -203,6 +203,14 @@ public class WebHandler {
 
         AuthService service = services.get(id);
         if (service != null) {
+            // Check for errors reported by server
+            if (exchange.getQueryParameters().containsKey("error")) {
+                String error = exchange.getQueryParameters().get("error").element();
+                if (error.equals("access_denied")) error = "Authentication denied by user";
+                respond(exchange, StatusCodes.UNAUTHORIZED, new Error("oauth_error", error));
+                return;
+            }
+
             // Verify the given OAuth state, to make sure people don't double-send requests
             Deque<String> stateQ = exchange.getQueryParameters().get("state");
 
@@ -299,7 +307,7 @@ public class WebHandler {
 
     public void signIn(HttpServerExchange exchange) {
         String id = exchange.getRelativePath().substring(1);
-        boolean redirect = !exchange.getQueryParameters().get("redirect").isEmpty();
+        boolean redirect = exchange.getQueryParameters().get("redirect") != null;
 
         AuthService service = services.get(id);
         if (service != null) {
