@@ -188,7 +188,7 @@ public class User {
     }
 
     public void ban(long timeFromNowSeconds, String reason, int rollbackTime) {
-        setBanExpiryTime(timeFromNowSeconds * 1000);
+        setBanExpiryTime(timeFromNowSeconds);
         setBanReason(reason);
         sendUserData();
         App.rollbackAfterBan(this, rollbackTime);
