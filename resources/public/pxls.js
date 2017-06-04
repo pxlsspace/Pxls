@@ -729,7 +729,7 @@ window.App = (function () {
                 save: function () {
                     var a = document.createElement("a");
                     a.href = self.elements.board[0].toDataURL("image/png");
-                    a.download = "pxls canvas " + (new Date()).toISOString().replace(/[T]/g," ").split(".")[0].replace(/[:]/g,".") + ".png";
+                    a.download = "pxls canvas " + (new Date()).toISOString().replace("T"," ").split(".")[0].replace(/\:/g,".") + ".png";
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
