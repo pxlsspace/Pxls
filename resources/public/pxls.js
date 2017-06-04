@@ -732,7 +732,7 @@ window.App = (function () {
                     a.download = "canvas.png";
                     document.body.appendChild(a);
                     a.click();
-                    document.removeChild(a);
+                    document.body.removeChild(a);
                     if (typeof a.remove === "function") {
                         a.remove();
                     }
