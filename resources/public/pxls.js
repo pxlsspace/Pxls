@@ -398,6 +398,7 @@ window.App = (function () {
                 draw: function (data) {
                     var ctx = self.elements.board[0].getContext("2d"),
                         id;
+                    ctx.mozImageSmoothingEnabled = ctx.webkitImageSmoothingEnabled = ctx.msImageSmoothingEnabled = ctx.imageSmoothingEnabled = false;
                     try {
                         id = new ImageData(self.width, self.height);
                     } catch (e) {
@@ -564,7 +565,7 @@ window.App = (function () {
                                 y: parseFloat(query.get("oy")),
                                 opacity: parseFloat(query.get("oo")),
                                 width: parseFloat(query.get("tw")),
-                                url: url.replace(/^http:\/\/(i\.imgur\.com)(.*)$/, "https://$1$2")
+                                url: url
                             });
                         }
                     }).fail(function () {
@@ -794,6 +795,7 @@ window.App = (function () {
                         if (xhr.response) {
                             var data = new Uint8Array(xhr.response);
                             self.ctx = self.elements.heatmap[0].getContext("2d");
+                            self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
                             try {
                                 self.id = new ImageData(self.width, self.height);
                             } catch (e) {
@@ -974,6 +976,9 @@ window.App = (function () {
                     $("#template-opacity").val(self.t.opacity);
                 },
                 update: function (t) {
+                    if (t.hasOwnProperty('url')) {
+                        t['url'] = t['url'].replace(/^http:\/\/(i\.imgur\.com)(.*)$/, "https://$1$2");
+                    }
                     if (t.hasOwnProperty('use') && t.use !== self.t.use) {
                         if (t.use) {
                             if (t.hasOwnProperty("url")) {
