@@ -1199,9 +1199,9 @@ window.App = (function () {
                     });
 
                     window.ga("send", "event", "Pixels", "Place");
-                    if (self.autoreset) {
-                        self.switch(-1);
-                    }
+                    //if (self.autoreset) {
+                    //    self.switch(-1);
+                    //}
                 },
                 update: function (clientX, clientY) {
                     if (clientX !== undefined) {
