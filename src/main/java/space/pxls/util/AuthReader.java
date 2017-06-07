@@ -7,8 +7,13 @@ import io.undertow.util.AttachmentKey;
 import space.pxls.App;
 import space.pxls.user.User;
 
+import java.util.concurrent.ConcurrentHashMap;
+
 public class AuthReader implements HttpHandler {
     public static AttachmentKey<User> USER = AttachmentKey.create(User.class);
+
+    private static ConcurrentHashMap<String, String> loginCache = new ConcurrentHashMap<>();
+
     private HttpHandler next;
 
     public AuthReader(HttpHandler next) {
@@ -17,13 +22,33 @@ public class AuthReader implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        Cookie header = exchange.getRequestCookies().get("pxls-token");
-        if (header != null) {
-            User user = App.getUserManager().getByToken(header.getValue());
-            if (user != null) {
-                exchange.putAttachment(USER, user);
-            }
+//        Cookie header = exchange.getRequestCookies().get("pxls-token");
+//        if (header != null) {
+//            User user = App.getUserManager().getByToken(header.getValue());
+//            if (user != null) {
+//                exchange.putAttachment(USER, user);
+//            }
+//        }
+
+        String ip = exchange.getAttachment(IPReader.IP);
+
+        final User[] user = new User[1];
+        if (loginCache.containsKey(ip)) {
+            user[0] = App.getUserManager().getByToken(loginCache.get(ip));
+        } else {
+            loginCache.compute(ip, (key, old) -> {
+                user[0] = App.getUserManager().getByLogin("ip:" + ip);
+
+                if (user[0] == null) {
+                    String signupToken = App.getUserManager().generateUserCreationToken("ip:" + ip);
+                    user[0] = App.getUserManager().signUp(ip, signupToken, ip);
+                }
+
+                return App.getUserManager().logIn(user[0], ip);
+            });
         }
+        exchange.putAttachment(USER, user[0]);
+
         next.handleRequest(exchange);
     }
 }
