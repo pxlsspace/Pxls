@@ -615,7 +615,7 @@ window.App = (function () {
 
                         ctx2.canvas.width = window.innerWidth;
                         ctx2.canvas.height = window.innerHeight;
-                        ctx2.mozImageSmoothingEnabled = ctx2.webkitImageSmoothingEnabled = ctx2.msImageSmoothingEnabled = ctx2.imageSmoothingEnabled = (self.scale < 1);
+                        ctx2.mozImageSmoothingEnabled = ctx2.webkitImageSmoothingEnabled = ctx2.msImageSmoothingEnabled = ctx2.imageSmoothingEnabled = (Math.abs(self.scale) < 1);
 
                         ctx2.globalAlpha = 1;
                         ctx2.fillStyle = '#CCCCCC';
@@ -640,7 +640,7 @@ window.App = (function () {
                     if (optional) {
                         return false;
                     }
-                    if (self.scale < 1) {
+                    if (Math.abs(self.scale) < 1) {
                         self.elements.board.removeClass("pixelate");
                     } else {
                         self.elements.board.addClass("pixelate");
