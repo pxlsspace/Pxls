@@ -661,17 +661,18 @@ window.App = (function () {
                     return true;
                 },
                 getScale: function () {
-                    return self.scale;
+                    return Math.abs(self.scale);
                 },
                 setScale: function (adj) {
-                    var oldScale = self.scale;
+                    var oldScale = Math.abs(self.scale),
+                        sign = Math.sign(self.scale);
                     if (adj === -1) {
                         if (oldScale <= 1) {
                             self.scale = 0.5;
                         } else if (oldScale <= 2) {
                             self.scale = 1;
                         } else {
-                            self.scale = Math.round(Math.max(2, self.scale / 1.25));
+                            self.scale = Math.round(Math.max(2, oldScale / 1.25));
                         }
                     } else {
                         if (oldScale === 0.5) {
@@ -679,9 +680,10 @@ window.App = (function () {
                         } else if (oldScale === 1) {
                             self.scale = 2;
                         } else {
-                            self.scale = Math.round(Math.min(50, self.scale * 1.25));
+                            self.scale = Math.round(Math.min(50, oldScale * 1.25));
                         }
                     }
+                    self.scale *= sign;
                     self.update();
                 },
                 setPixel: function (x, y, c) {
@@ -690,25 +692,35 @@ window.App = (function () {
                     ctx.fillRect(x, y, 1, 1);
                 },
                 fromScreen: function (screenX, screenY) {
+                    var adjust_x = 0,
+                        adjust_y = 0;
+                    if (self.scale < 0) {
+                        adjust_x = self.width;
+                        adjust_y = self.height;
+                    }
                     if (self.use_js_render) {
                        return {
-                           x: -self.pan.x + ((self.width - (window.innerWidth / self.scale)) / 2) + (screenX / self.scale),
-                           y: -self.pan.y + ((self.height - (window.innerHeight / self.scale)) / 2) + (screenY / self.scale)
+                           x: -self.pan.x + ((self.width - (window.innerWidth / self.scale)) / 2) + (screenX / self.scale) + adjust_x,
+                           y: -self.pan.y + ((self.height - (window.innerHeight / self.scale)) / 2) + (screenY / self.scale) + adjust_y
                        };
                    }
                    var boardBox = self.elements.board[0].getBoundingClientRect();
                    if (self.use_zoom) {
                        return {
-                           x: (screenX / self.scale) - boardBox.left,
-                           y: (screenY / self.scale) - boardBox.top
+                           x: (screenX / self.scale) - boardBox.left + adjust_x,
+                           y: (screenY / self.scale) - boardBox.top + adjust_y
                        };
                    }
                    return {
-                       x: ((screenX - boardBox.left) / self.scale),
-                       y: ((screenY - boardBox.top) / self.scale)
+                       x: ((screenX - boardBox.left) / self.scale) + adjust_x,
+                       y: ((screenY - boardBox.top) / self.scale) + adjust_y
                    };
                 },
                 toScreen: function (boardX, boardY) {
+                    if (self.scale < 0) {
+                        boardX -= self.width - 1;
+                        boardY -= self.height - 1;
+                    }
                     if (self.use_js_render) {
                         return {
                             x: (boardX + self.pan.x - ((self.width - (window.innerWidth / self.scale)) / 2)) * self.scale,
