@@ -568,6 +568,24 @@ window.App = (function () {
                                 url: url
                             });
                         }
+                        var spin = parseFloat(query.get("spin"));
+                        if (spin) { // SPIN SPIN SPIN!!!!
+                            spin = 360 / (spin * 1000);
+                            var degree = 0,
+                                start = null,
+                                spiiiiiin = function (timestamp) {
+                                    if (!start) {
+                                        start = timestamp;
+                                    }
+                                    var delta = (timestamp - start);
+                                    degree += spin * delta;
+                                    degree %= 360;
+                                    start = timestamp;
+                                    self.elements.container.css("transform", "rotate("+degree+"deg)");
+                                    window.requestAnimationFrame(spiiiiiin);
+                                };
+                            window.requestAnimationFrame(spiiiiiin);
+                        }
                     }).fail(function () {
                         socket.reconnect();
                     });
@@ -1710,7 +1728,6 @@ window.App = (function () {
                     self.elements.prompt.fadeOut(200);
                 },
                 webinit: function (data) {
-                    console.log("wat");
                     self.elements.loginOverlay.find("a").click(function (evt) {
                         evt.preventDefault();
                         self.elements.prompt.empty().append(
