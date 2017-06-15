@@ -79,7 +79,8 @@ public class Database implements Closeable {
     }
 
     public void placePixel(int x, int y, int color, User who, boolean mod_action) {
-        getHandle().putPixel(x, y, (byte) color, who != null ? who.getId() : 0, mod_action);
+        int second_id = getHandle().getMostResentId(x, y);
+        getHandle().putPixel(x, y, (byte) color, who != null ? who.getId() : 0, mod_action, second_id);
     }
 
     public void updateUserTime(int uid, long seconds) {

@@ -51,12 +51,14 @@ public interface DAO extends Closeable {
             "most_recent BOOLEAN NOT NULL DEFAULT true)") //is true and is the only thing we alter
     void createPixelsTable();
 
+    @SqlQuery("SELECT id FROM pixels AS pp WHERE pp.x = :x AND pp.y = :y AND pp.most_recent ORDER BY id DESC LIMIT 1;")
+    int getMostResentId(@Bind("x") int x, @Bind("y") int y);
 
-    @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, mod_action)" +
-            "VALUES (:x, :y, :color, :who, (SELECT id FROM pixels AS pp WHERE pp.x = :x AND pp.y = :y AND pp.most_recent ORDER BY id DESC LIMIT 1),  :mod);" +
-            "UPDATE pixels SET most_recent = false WHERE x = :x AND y = :y AND NOT id = LAST_INSERT_ID();" +
+    @SqlUpdate("UPDATE pixels SET most_recent = false WHERE x = :x AND y = :y;" +
+            "INSERT INTO pixels (x, y, color, who, secondary_id, mod_action)" +
+            "VALUES (:x, :y, :color, :who, :second_id, :mod);" +
             "UPDATE users SET pixel_count = pixel_count + (1 - :mod) WHERE id = :who")
-    void putPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("mod") boolean mod);
+    void putPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("mod") boolean mod, @Bind("second_id") int second_id);
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
             "SELECT x, y, color, :who, :from_id, true, false FROM pixels AS pp WHERE pp.id = :to_id ORDER BY id DESC LIMIT 1;" +
