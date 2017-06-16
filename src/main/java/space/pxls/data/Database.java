@@ -88,15 +88,42 @@ public class Database implements Closeable {
     }
 
     public DBPixelPlacement getPixelAt(int x, int y) {
-        return getHandle().getPixel(x, y);
+        DBPixelPlacement pp;
+        try {
+            pp = getHandle().getPixel(x, y);
+        } catch (NullPointerException e) {
+            return null;
+        }
+        if (pp != null && pp.userId == 0) {
+            return null;
+        }
+        return pp;
     }
 
     public DBPixelPlacementUser getPixelAtUser(int x, int y) {
-        return getHandle().getPixelUser(x, y);
+        DBPixelPlacementUser pp;
+        try {
+            pp = getHandle().getPixelUser(x, y);
+        } catch (NullPointerException e) {
+            return null;
+        }
+        if (pp != null && (pp.username == null || pp.username.isEmpty())) {
+            return null;
+        }
+        return pp;
     }
 
     public DBPixelPlacement getPixelByID(int id) {
-        return getHandle().getPixel(id);
+        DBPixelPlacement pp;
+        try {
+            pp = getHandle().getPixel(id);
+        } catch (NullPointerException e) {
+            return null;
+        }
+        if (pp != null && pp.userId == 0) {
+            return null;
+        }
+        return pp;
     }
 
     // returns ids of all pixels that should be rolled back and the DBPixelPlacement for all pixels to rollback to
@@ -163,6 +190,11 @@ public class Database implements Closeable {
 
     public void putRollbackPixelNoPrevious(int x, int y, User who, int fromId) {
         getHandle().putRollbackPixelNoPrevious(x, y, who.getId(), fromId, (byte) App.getConfig().getInt("board.defaultColor"));
+    }
+
+    public void putNukePixel(int x, int y, int color) {
+        DBPixelPlacement pp = getPixelAt(x, y);
+        getHandle().putNukePixel(x, y, color, pp != null ? pp.userId : 0, pp != null ? (pp.secondaryId > 0) : false);
     }
 
     public DBPixelPlacement getUserUndoPixel(User who){

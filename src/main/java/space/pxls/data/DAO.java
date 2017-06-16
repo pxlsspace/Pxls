@@ -73,6 +73,12 @@ public interface DAO extends Closeable {
             "UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0) WHERE id = :who")
     void putRollbackPixelNoPrevious(@Bind("x") int x, @Bind("y") int y, @Bind("who") int who, @Bind("from_id") int fromId, @Bind("default_color") byte defaultColor);
 
+    @SqlUpdate("UPDATE pixels SET most_recent = false WHERE x = :x AND y = :y;" +
+            "INSERT INTO pixels (x, y, color, most_recent)" +
+            "VALUES (:x, :y, :color, :recent);" +
+            "UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0) WHERE id = :who")
+    void putNukePixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") int color, @Bind("who") int who, @Bind("recent") boolean recent);
+
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
             "VALUES (:x, :y, :color, :who, NULL, true, false);" +
             "UPDATE pixels SET most_recent = true WHERE id = :from_id;" +

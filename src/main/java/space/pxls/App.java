@@ -164,12 +164,7 @@ public class App {
                 int toX = Integer.parseInt(token[3]);
                 int toY = Integer.parseInt(token[4]);
                 int toColor = token.length >= 6 ? Integer.parseInt(token[5]) : 0;
-
-                for (int x = Math.min(fromX, toX); x <= Math.max(fromX, toX); x++) {
-                    for (int y = Math.min(fromY, toY); y <= Math.max(fromY, toY); y++) {
-                        putPixel(x, y, toColor, null, true, "<nuke action>", true);
-                    }
-                }
+                nuke(fromX, fromY, toX, toY, toColor);
             }
         } catch (RuntimeException e) {
             e.printStackTrace();
@@ -246,7 +241,7 @@ public class App {
         worker.execute(() -> rollbackAfterBan_(who, seconds));
     }
 
-    public static void rollbackAfterBan_(User who, int seconds) {
+    private static void rollbackAfterBan_(User who, int seconds) {
         List<DBRollbackPixel> pixels = database.getRollbackPixels(who, seconds); //get all pixels that can and need to be rolled back
         List<ServerPlace.Pixel> forBroadcast = new ArrayList<>();
         for (DBRollbackPixel rbPixel : pixels) {
@@ -274,7 +269,7 @@ public class App {
         worker.execute(() -> undoRollback_(who));
     }
 
-    public static void undoRollback_(User who) {
+    private static void undoRollback_(User who) {
         List<DBPixelPlacement> pixels = database.getUndoPixels(who); //get all pixels that can and need to be undone
         List<ServerPlace.Pixel> forBroadcast = new ArrayList<>();
         for (DBPixelPlacement fromPixel : pixels) {
@@ -282,6 +277,25 @@ public class App {
             putPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, false, "(undo)", false); //in board[]
             forBroadcast.add(new ServerPlace.Pixel(fromPixel.x, fromPixel.y, fromPixel.color)); //in websocket
             database.putUndoPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, fromPixel.id); //in database
+        }
+        server.broadcastNoShadow(new ServerPlace(forBroadcast));
+    }
+
+    private static void nuke(int fromX, int fromY, int toX, int toY, int toColor) {
+        XnioWorker worker = server.getServer().getWorker();
+        worker.execute(() -> nuke_(fromX, fromY, toX, toY, toColor));
+    }
+
+    private static void nuke_(int fromX, int fromY, int toX, int toY, int toColor) {
+        List<ServerPlace.Pixel> forBroadcast = new ArrayList<>();
+        for (int x = Math.min(fromX, toX); x <= Math.max(fromX, toX); x++) {
+            for (int y = Math.min(fromY, toY); y <= Math.max(fromY, toY); y++) {
+                if (getPixel(x, y) != toColor) {
+                    putPixel(x, y, toColor, null, true, "<nuke action>", false);
+                    forBroadcast.add(new ServerPlace.Pixel(x, y, toColor));
+                    database.putNukePixel(x, y, toColor);
+                }
+            }
         }
         server.broadcastNoShadow(new ServerPlace(forBroadcast));
     }

@@ -116,11 +116,12 @@ public class PacketHandler {
             sendCooldownData(user);
             return;
         }
-        user.setLastUndoTime();
-        user.setCooldown(0);
         DBPixelPlacement thisPixel = App.getDatabase().getUserUndoPixel(user);
         DBPixelPlacement recentPixel = App.getDatabase().getPixelAt(thisPixel.x, thisPixel.y);
         if (thisPixel.id != recentPixel.id) return;
+        
+        user.setLastUndoTime();
+        user.setCooldown(0);
         DBPixelPlacement lastPixel = App.getDatabase().getPixelByID(thisPixel.secondaryId);
         if (lastPixel != null) {
             App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
