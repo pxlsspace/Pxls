@@ -128,7 +128,7 @@ public class PacketHandler {
             App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, "(user undo)", false);
             broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
         } else {
-            int defaultColor = App.getConfig().getInt("board.defaultColor");
+            byte defaultColor = App.getDefaultColor(thisPixel.x, thisPixel.y);
             App.getDatabase().putUserUndoPixel(thisPixel.x, thisPixel.y, defaultColor, user, thisPixel.id);
             App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, "(user undo)", false);
             broadcastPixelUpdate(thisPixel.x, thisPixel.y, defaultColor);
@@ -145,7 +145,8 @@ public class PacketHandler {
             if (user.updateCaptchaFlagPrePlace() && App.isCaptchaEnabled()) {
                 server.send(channel, new ServerCaptchaRequired());
             } else {
-                if (App.getPixel(cp.getX(), cp.getY()) != cp.getColor()) {
+                int c = App.getPixel(cp.getX(), cp.getY());
+                if (c != cp.getColor() && c != 0xFF && c != -1) {
                     int seconds = getCooldown();
                     if (App.getDatabase().didPixelChange(cp.getX(), cp.getY())) {
                         seconds = seconds * 2;

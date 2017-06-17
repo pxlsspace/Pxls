@@ -189,7 +189,7 @@ public class Database implements Closeable {
     }
 
     public void putRollbackPixelNoPrevious(int x, int y, User who, int fromId) {
-        getHandle().putRollbackPixelNoPrevious(x, y, who.getId(), fromId, (byte) App.getConfig().getInt("board.defaultColor"));
+        getHandle().putRollbackPixelNoPrevious(x, y, who.getId(), fromId, App.getDefaultColor(x, y));
     }
 
     public void putNukePixel(int x, int y, int color) {

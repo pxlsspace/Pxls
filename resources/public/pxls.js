@@ -64,6 +64,34 @@ window.App = (function () {
                 }
             };
         },
+        binary_ajax = function (url, fn, failfn) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", url, true);
+            xhr.responseType = "arraybuffer";
+            xhr.onload = function (event) {
+                if (xhr.readyState == 4) {
+                    if (xhr.status == 200) {
+                        if (xhr.response) {
+                            var data = new Uint8Array(xhr.response);
+                            fn(data);
+                        }
+                    } else if (failfn) {
+                        failfn();
+                    }
+                }
+            };
+            xhr.send(null);
+        },
+        createImageData = function(w, h) {
+            try {
+                return new ImageData(w, h);
+            } catch (e) {
+                var imgCanv = document.createElement('canvas');
+                imgCanv.width = w;
+                imgCanv.height = h;
+                return imgCanv.getContext('2d').getImageData(0, 0, w, h);
+            }
+        },
         nua = navigator.userAgent,
         have_image_rendering = (function() {
             var checkImageRendering = function(prefix, crisp, pixelated, optimize_contrast){
@@ -381,6 +409,7 @@ window.App = (function () {
                     zoomer: $("#board-zoomer"),
                     container: $("#board-container")
                 },
+                ctx: null,
                 use_js_render: !have_image_rendering,
                 use_zoom: have_image_rendering && false,
                 width: 0,
@@ -396,26 +425,21 @@ window.App = (function () {
                     self.update();
                 },
                 draw: function (data) {
-                    var ctx = self.elements.board[0].getContext("2d"),
-                        id;
-                    ctx.mozImageSmoothingEnabled = ctx.webkitImageSmoothingEnabled = ctx.msImageSmoothingEnabled = ctx.imageSmoothingEnabled = false;
-                    try {
-                        id = new ImageData(self.width, self.height);
-                    } catch (e) {
-                        // workaround when ImageData is unavailable (Such as under MS Edge)
-                        var imgCanv = document.createElement('canvas');
-                        imgCanv.width = self.width;
-                        imgCanv.height = self.height;
-                        id = imgCanv.getContext('2d').getImageData(0, 0, self.width, self.height);
-                    }
+                    var id = createImageData(self.width, self.height);
+                    self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
+                    
                     var intView = new Uint32Array(id.data.buffer),
                         rgbPalette = place.getPaletteRGB();
 
                     for (var i = 0; i < self.width * self.height; i++) {
-                        intView[i] = rgbPalette[data.charCodeAt(i)];
+                        if (data[i] == 0xFF) {
+                            intView[i] = 0xFFCCCCCC; // transparent pixel!
+                        } else {
+                            intView[i] = rgbPalette[data[i]];
+                        }
                     }
 
-                    ctx.putImageData(id, 0, 0);
+                    self.ctx.putImageData(id, 0, 0);
                     self.update();
                 },
                 initInteraction: function () {
@@ -520,6 +544,7 @@ window.App = (function () {
                     } else {
                         self.elements.board_render = self.elements.board;
                     }
+                    self.ctx = self.elements.board[0].getContext("2d");
                     self.initInteraction();
                 },
                 start: function () {
@@ -544,9 +569,8 @@ window.App = (function () {
                         self.scale = query.get("scale") || self.scale;
                         self.centerOn(cx, cy);
                         socket.init();
-                        $.get("/boarddata" + "?_" + (new Date()).getTime(), self.draw).fail(function () {
-                            socket.reconnect();
-                        });
+                        binary_ajax("/boarddata" + "?_" + (new Date()).getTime(), self.draw, socket.reconnect);
+                        
                         if (self.use_js_render) {
                             $(window).resize(function () {
                                 self.update();
@@ -705,9 +729,8 @@ window.App = (function () {
                     self.update();
                 },
                 setPixel: function (x, y, c) {
-                    var ctx = self.elements.board[0].getContext("2d");
-                    ctx.fillStyle = c;
-                    ctx.fillRect(x, y, 1, 1);
+                    self.ctx.fillStyle = c;
+                    self.ctx.fillRect(x, y, 1, 1);
                 },
                 fromScreen: function (screenX, screenY) {
                     var adjust_x = 0,
@@ -817,41 +840,26 @@ window.App = (function () {
                     }
                     self.lazy_inited = true;
                     // we use xhr directly because of jquery being weird on raw binary
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("GET", "/heatmap", true);
-                    xhr.responseType = "arraybuffer";
-
-                    xhr.onload = function (event) {
-                        if (xhr.response) {
-                            var data = new Uint8Array(xhr.response);
-                            self.ctx = self.elements.heatmap[0].getContext("2d");
-                            self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
-                            try {
-                                self.id = new ImageData(self.width, self.height);
-                            } catch (e) {
-                                // workaround when ImageData is unavailable (Such as under MS Edge)
-                                var imgCanv = document.createElement('canvas');
-                                imgCanv.width = self.width;
-                                imgCanv.height = self.height;
-                                self.id = imgCanv.getContext('2d').getImageData(0, 0, self.width, self.height);
-                            }
-                            self.intView = new Uint32Array(self.id.data.buffer);
-                            for (var i = 0; i < self.width * self.height; i++) {
-                                self.intView[i] = (data[i] << 24) | self.color;
-                            }
-                            self.ctx.putImageData(self.id, 0, 0);
-                            self.elements.heatmap.fadeIn(200);
-                            setTimeout(self.loop, self.seconds * 1000 / 256);
-                            socket.on("pixel", function (data) {
-                                self.ctx.fillStyle = "#CD5C5C";
-                                $.map(data.pixels, function (px) {
-                                    self.ctx.fillRect(px.x, px.y, 1, 1);
-                                    self.intView[px.y * self.width + px.x] = 0xFF000000 | self.color;
-                                });
-                            });
+                    binary_ajax("/heatmap" + "?_" + (new Date()).getTime(), function (data) {
+                        self.ctx = self.elements.heatmap[0].getContext("2d");
+                        self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
+                        self.id = createImageData(self.width, self.height);
+                        
+                        self.intView = new Uint32Array(self.id.data.buffer);
+                        for (var i = 0; i < self.width * self.height; i++) {
+                            self.intView[i] = (data[i] << 24) | self.color;
                         }
-                    };
-                    xhr.send(null);
+                        self.ctx.putImageData(self.id, 0, 0);
+                        self.elements.heatmap.fadeIn(200);
+                        setTimeout(self.loop, self.seconds * 1000 / 256);
+                        socket.on("pixel", function (data) {
+                            self.ctx.fillStyle = "#CD5C5C";
+                            $.map(data.pixels, function (px) {
+                                self.ctx.fillRect(px.x, px.y, 1, 1);
+                                self.intView[px.y * self.width + px.x] = 0xFF000000 | self.color;
+                            });
+                        });
+                    });
                 },
                 init: function () {
                     self.elements.heatmap.hide();
@@ -1355,10 +1363,12 @@ window.App = (function () {
                     } : null;
                 },
                 getPaletteRGB: function () {
-                    return $.map(self.palette, function (c) {
+                    a = new Uint32Array(self.palette.length);
+                    $.map(self.palette, function (c, i) {
                         var rgb = self.hexToRgb(c);
-                        return 0xff000000 | rgb.b << 16 | rgb.g << 8 | rgb.r;
+                        a[i] = 0xff000000 | rgb.b << 16 | rgb.g << 8 | rgb.r;
                     });
+                    return a;
                 }
             };
             return {

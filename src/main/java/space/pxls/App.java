@@ -24,6 +24,7 @@ import space.pxls.util.HeatmapTimer;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -42,7 +43,6 @@ public class App {
     private static int height;
     private static byte[] board;
     private static byte[] heatmap;
-    private static byte defaultColor;
 
     private static PxlsTimer mapSaveTimer;
     private static PxlsTimer mapBackupTimer;
@@ -57,13 +57,14 @@ public class App {
 
         width = config.getInt("board.width");
         height = config.getInt("board.height");
-        defaultColor = (byte) config.getInt("board.defaultColor");
         board = new byte[width * height];
         heatmap = new byte[width * height];
 
         if (!loadMap()) {
-            for (int i = 0; i < width * height; i++) {
-                board[i] = defaultColor;
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    board[x + width * y] = getDefaultColor(x, y);
+                }
             }
         }
 
@@ -163,7 +164,7 @@ public class App {
                 int fromY = Integer.parseInt(token[2]);
                 int toX = Integer.parseInt(token[3]);
                 int toY = Integer.parseInt(token[4]);
-                int toColor = token.length >= 6 ? Integer.parseInt(token[5]) : 0;
+                byte toColor = (byte)(token.length >= 6 ? Integer.parseInt(token[5]) : 0xFF);
                 nuke(fromX, fromY, toX, toY, toColor);
             }
         } catch (RuntimeException e) {
@@ -221,7 +222,7 @@ public class App {
     }
 
     public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase) {
-        if (x < 0 || x >= width || y < 0 || y >= height || color < 0 || color >= getPalette().size()) return;
+        if (x < 0 || x >= width || y < 0 || y >= height || (color >= getPalette().size() && !(color == 0xFF || color == -1))) return;
         String userName = user != null ? user.getName() : "<server>";
 
         board[x + y * width] = (byte) color;
@@ -255,8 +256,9 @@ public class App {
                 database.putRollbackPixel(who, rbPixel.fromId, rbPixel.toPixel.id);
             } else { //else rollback to blank canvas
                 DBPixelPlacement fromPixel = database.getPixelByID(rbPixel.fromId);
-                putPixel(fromPixel.x, fromPixel.y, defaultColor, who, false, "(rollback)", false);
-                forBroadcast.add(new ServerPlace.Pixel(fromPixel.x, fromPixel.y, defaultColor));
+                byte rollbackDefault = getDefaultColor(fromPixel.x, fromPixel.y);
+                putPixel(fromPixel.x, fromPixel.y, rollbackDefault, who, false, "(rollback)", false);
+                forBroadcast.add(new ServerPlace.Pixel(fromPixel.x, fromPixel.y, rollbackDefault));
                 database.putRollbackPixelNoPrevious(fromPixel.x, fromPixel.y, who, fromPixel.id);
             }
         }
@@ -281,19 +283,26 @@ public class App {
         server.broadcastNoShadow(new ServerPlace(forBroadcast));
     }
 
-    private static void nuke(int fromX, int fromY, int toX, int toY, int toColor) {
+    private static void nuke(int fromX, int fromY, int toX, int toY, byte toColor) {
         XnioWorker worker = server.getServer().getWorker();
         worker.execute(() -> nuke_(fromX, fromY, toX, toY, toColor));
     }
 
-    private static void nuke_(int fromX, int fromY, int toX, int toY, int toColor) {
+    private static void nuke_(int fromX, int fromY, int toX, int toY, byte toColor) {
         List<ServerPlace.Pixel> forBroadcast = new ArrayList<>();
         for (int x = Math.min(fromX, toX); x <= Math.max(fromX, toX); x++) {
             for (int y = Math.min(fromY, toY); y <= Math.max(fromY, toY); y++) {
-                if (getPixel(x, y) != toColor) {
-                    putPixel(x, y, toColor, null, true, "<nuke action>", false);
-                    forBroadcast.add(new ServerPlace.Pixel(x, y, toColor));
-                    database.putNukePixel(x, y, toColor);
+                byte c = toColor;
+                if (toColor == 0xFF || toColor == -1) {
+                    c = getDefaultColor(x, y);
+                }
+                System.out.println(c);
+                if (getPixel(x, y) != c) {
+                    putPixel(x, y, c, null, true, "<nuke action>", false);
+                    forBroadcast.add(new ServerPlace.Pixel(x, y, c));
+                    if (c != 0xFF && c != -1) {
+                        database.putNukePixel(x, y, c);
+                    }
                 }
             }
         }
@@ -368,6 +377,19 @@ public class App {
 
     public static UserManager getUserManager() {
         return userManager;
+    }
+
+    public static byte getDefaultColor(int x, int y) {
+        try {
+            RandomAccessFile raf = new RandomAccessFile(getStorageDir().resolve("default_board.dat").toAbsolutePath().toString(), "r");
+            raf.seek(x + y*width);
+            byte b = raf.readByte();
+            raf.close();
+            return b;
+        } catch (NoSuchFileException e) {
+        } catch (IOException e) {
+        }
+        return (byte) config.getInt("board.defaultColor");
     }
 
     public static Database getDatabase() {
