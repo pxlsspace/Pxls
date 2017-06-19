@@ -6,6 +6,7 @@ run/
 logs/
 backups/
 board.dat
+default_board.dat
 heatmap.dat
 pxls.conf
 TODO

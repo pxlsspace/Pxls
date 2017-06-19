@@ -48,7 +48,9 @@ public interface DAO extends Closeable {
             "mod_action BOOLEAN NOT NULL DEFAULT false," +
             "rollback_action BOOLEAN NOT NULL DEFAULT false," +
             "undo_action BOOLEAN NOT NULL DEFAULT false," +
-            "most_recent BOOLEAN NOT NULL DEFAULT true)") //is true and is the only thing we alter
+            "most_recent BOOLEAN NOT NULL DEFAULT true);" +
+            "CREATE INDEX IF NOT EXISTS pos ON pixels (x,y) COMMENT 'pos';" +
+            "CREATE INDEX IF NOT EXISTS most_recent ON pixels (most_recent) COMMENT 'most_recent';") //is true and is the only thing we alter
     void createPixelsTable();
 
     @SqlQuery("SELECT id FROM pixels AS pp WHERE pp.x = :x AND pp.y = :y AND pp.most_recent ORDER BY id DESC LIMIT 1;")
@@ -155,7 +157,8 @@ public interface DAO extends Closeable {
             "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,"+
             "who INT UNSIGNED NOT NULL,"+
             "token VARCHAR(60) NOT NULL,"+
-            "time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP)")
+            "time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP);" +
+            "CREATE INDEX IF NOT EXISTS token ON sessions (token) COMMENT 'token';")
     void createSessionsTable();
 
     @SqlQuery("SELECT * FROM users INNER JOIN sessions ON users.id = sessions.who WHERE sessions.token = :token")
