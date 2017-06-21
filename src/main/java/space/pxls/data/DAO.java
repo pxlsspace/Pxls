@@ -59,39 +59,39 @@ public interface DAO extends Closeable {
     @SqlUpdate("UPDATE pixels SET most_recent = false WHERE x = :x AND y = :y;" +
             "INSERT INTO pixels (x, y, color, who, secondary_id, mod_action)" +
             "VALUES (:x, :y, :color, :who, :second_id, :mod);" +
-            "UPDATE users SET pixel_count = pixel_count + (1 - :mod) WHERE id = :who")
+            "UPDATE users SET pixel_count = pixel_count + (1 - :mod), pixel_count_alltime = pixel_count_alltime + (1 - :mod) WHERE id = :who")
     void putPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("mod") boolean mod, @Bind("second_id") int second_id);
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
             "SELECT x, y, color, :who, :from_id, true, false FROM pixels AS pp WHERE pp.id = :to_id ORDER BY id DESC LIMIT 1;" +
             "UPDATE pixels SET most_recent = true WHERE id = :to_id;" +
             "UPDATE pixels SET most_recent = false WHERE id = :from_id;" +
-            "UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0) WHERE id = :who")
+            "UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0), pixel_count_alltime = IF(pixel_count_alltime, pixel_count_alltime-1, 0) WHERE id = :who")
     void putRollbackPixel(@Bind("who") int who, @Bind("from_id") int fromId, @Bind("to_id") int toId);
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
             "VALUES (:x, :y, :default_color, :who, :from_id, true, false);" +
             "UPDATE pixels SET most_recent = false WHERE x = :x and y = :y;" +
-            "UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0) WHERE id = :who")
+            "UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0), pixel_count_alltime = IF(pixel_count_alltime, pixel_count_alltime-1, 0) WHERE id = :who")
     void putRollbackPixelNoPrevious(@Bind("x") int x, @Bind("y") int y, @Bind("who") int who, @Bind("from_id") int fromId, @Bind("default_color") byte defaultColor);
 
     @SqlUpdate("UPDATE pixels SET most_recent = false WHERE x = :x AND y = :y;" +
             "INSERT INTO pixels (x, y, color, most_recent)" +
             "VALUES (:x, :y, :color, :recent);" +
-            "UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0) WHERE id = :who")
+            "UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0), pixel_count_alltime = IF(pixel_count_alltime, pixel_count_alltime-1, 0) WHERE id = :who")
     void putNukePixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") int color, @Bind("who") int who, @Bind("recent") boolean recent);
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
             "VALUES (:x, :y, :color, :who, NULL, true, false);" +
             "UPDATE pixels SET most_recent = true WHERE id = :from_id;" +
-            "UPDATE users SET pixel_count = pixel_count + 1 WHERE id = :who")
+            "UPDATE users SET pixel_count = pixel_count + 1, pixel_count_alltime = pixel_count_alltime + 1 WHERE id = :who")
     void putUndoPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("from_id") int fromId);
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, undo_action, most_recent)" +
             "VALUES (:x, :y, :color, :who, NULL, true, false);" +
             "UPDATE pixels SET most_recent = true WHERE id = :back_id;" +
             "UPDATE pixels SET most_recent = false WHERE id = :from_id;" +
-            "UPDATE users SET pixel_count = pixel_count - 1 WHERE id = :who")
+            "UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0), pixel_count_alltime = IF(pixel_count_alltime, pixel_count_alltime-1, 0) WHERE id = :who")
     void putUserUndoPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("back_id") int backId, @Bind("from_id") int fromId);
 
     @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users ON pixels.who = users.id WHERE who = :who AND NOT rollback_action ORDER BY pixels.id DESC LIMIT 1")
@@ -120,7 +120,8 @@ public interface DAO extends Closeable {
             "signup_ip BINARY(16)," +
             "last_ip BINARY(16)," +
             "ban_reason VARCHAR(512) NOT NULL DEFAULT ''," +
-            "pixel_count INT UNSIGNED NOT NULL DEFAULT 0)")
+            "pixel_count INT UNSIGNED NOT NULL DEFAULT 0," +
+            "pixel_count_alltime INT UNSIGNED NOT NULL DEFAULT 0)")
     void createUsersTable();
 
     @SqlUpdate("UPDATE users SET cooldown_expiry = now() + INTERVAL :seconds SECOND WHERE id = :id")

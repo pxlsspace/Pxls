@@ -414,7 +414,7 @@ window.App = (function () {
                 use_zoom: have_image_rendering && false,
                 width: 0,
                 height: 0,
-                scale: 4,
+                scale: 1,
                 pan: {
                     x: 0,
                     y: 0
