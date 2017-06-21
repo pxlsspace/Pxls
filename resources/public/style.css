@@ -498,10 +498,6 @@ input[type="text"] {
     flex: 0 0 100px;
 }
 
-#board-mover {
-    background-color: #fff;
-}
-
 #board {
     display: block;
 }

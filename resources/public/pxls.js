@@ -433,7 +433,7 @@ window.App = (function () {
 
                     for (var i = 0; i < self.width * self.height; i++) {
                         if (data[i] == 0xFF) {
-                            intView[i] = 0xFFCCCCCC; // transparent pixel!
+                            intView[i] = 0x00000000; // transparent pixel!
                         } else {
                             intView[i] = rgbPalette[data[i]];
                         }
