@@ -1452,9 +1452,11 @@ window.App = (function () {
                                 $("<span>").text(data[o[1]])
                             );
                         }),
-                        $("<div>").addClass("button").css("float", "left").text("Report").click(function () {
-                            self.report(data.id, data.x, data.y);
-                        }),
+                        (user.isLoggedIn() ?
+                            $("<div>").addClass("button").css("float", "left").text("Report").click(function () {
+                                self.report(data.id, data.x, data.y);
+                            })
+                        : ""),
                         $("<div>").addClass("button").css("float", "right").text("Close").click(function () {
                             self.elements.lookup.fadeOut(200);
                         })
@@ -1735,6 +1737,7 @@ window.App = (function () {
                 },
                 role: "USER",
                 pendingSignupToken: null,
+                loggedIn: false,
                 getRole: function () {
                     return self.role;
                 },
@@ -1751,6 +1754,9 @@ window.App = (function () {
                         socket.reconnectSocket();
                     }
                     self.elements.prompt.fadeOut(200);
+                },
+                isLoggedIn: function () {
+                    return self.loggedIn;
                 },
                 webinit: function (data) {
                     self.elements.loginOverlay.find("a").click(function (evt) {
@@ -1831,7 +1837,7 @@ window.App = (function () {
                             if (window.deInitAdmin) {
                                 window.deInitAdmin();
                             }
-                            
+                            self.loggedIn = false;
                             socket.reconnectSocket();
                         });
                     });
@@ -1850,6 +1856,7 @@ window.App = (function () {
                     });
                     socket.on("userinfo", function (data) {
                         var banmsg = '';
+                        self.loggedIn = true;
                         self.elements.loginOverlay.fadeOut(200);
                         self.elements.userInfo.find("span.name").text(data.username);
                         self.elements.userInfo.fadeIn(200);
@@ -1892,7 +1899,8 @@ window.App = (function () {
                 init: self.init,
                 getRole: self.getRole,
                 webinit: self.webinit,
-                wsinit: self.wsinit
+                wsinit: self.wsinit,
+                isLoggedIn: self.isLoggedIn
             };
         })(),
         // this takes care of browser notifications
