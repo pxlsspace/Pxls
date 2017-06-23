@@ -1475,6 +1475,8 @@ window.App = (function () {
                                     var delta = ((new Date()).getTime() - data.time) / 1000;
                                     if (delta > 24*3600) {
                                         data.time_str = (new Date(data.time)).toLocaleString();
+                                    } else if (delta < 5) {
+                                        data.time_str = 'just now';
                                     } else {
                                         var secs = Math.floor(delta % 60),
                                             secsStr = secs < 10 ? "0" + secs : secs,
