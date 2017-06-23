@@ -1199,6 +1199,7 @@ window.App = (function () {
                 autoreset: true,
                 setAutoReset: function (v) {
                     self.autoreset = v ? true : false;
+                    ls.set("auto_reset", self.autoreset);
                 },
                 switch: function (newColor) {
                     self.color = newColor;
@@ -1573,6 +1574,12 @@ window.App = (function () {
                     $("#rules-button").click(function (evt) {
                         evt.stopPropagation();
                         alert.show($("#rules-content").html());
+                    });
+                    //stickyColorToggle ("Keep color selected"). Checked = don't auto reset.
+                    place.setAutoReset(ls.get("auto_reset") === true);
+                    $("#stickyColorToggle")[0].checked = ls.get("auto_reset") ===  false;
+                    $("#stickyColorToggle").change(function() {
+                        place.setAutoReset(!$(this).is(":checked"));
                     });
                 }
             };
