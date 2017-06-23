@@ -1576,10 +1576,14 @@ window.App = (function () {
                         alert.show($("#rules-content").html());
                     });
                     //stickyColorToggle ("Keep color selected"). Checked = don't auto reset.
-                    place.setAutoReset(ls.get("auto_reset") === true);
-                    $("#stickyColorToggle")[0].checked = ls.get("auto_reset") ===  false;
+                    if (ls.get("auto_reset") === undefined) {
+                        place.setAutoReset(true);
+                    } else {
+                        place.setAutoReset(ls.get("auto_reset"));
+                    }
+                    $("#stickyColorToggle")[0].checked = !ls.get("auto_reset");
                     $("#stickyColorToggle").change(function() {
-                        place.setAutoReset(!$(this).is(":checked"));
+                        place.setAutoReset(!this.checked);
                     });
                 }
             };
@@ -1829,7 +1833,7 @@ window.App = (function () {
                     });
                     $(window).bind("storage", function (evt) {
                         if (evt.originalEvent.key == "auth") {
-                            localStorage.removeItem("auth");
+                            ls.remove("auth");
                             self.signin();
                         }
                     });

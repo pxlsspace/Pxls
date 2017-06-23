@@ -123,23 +123,6 @@
                         id='pxlsspace-collaborative-canvas'></iframe>
                 <script src='//funds.gofundme.com/js/5.0/media-widget.js'></script>
             </div>
-            <div>
-                <h1>Settings</h1>
-                <div>
-                    <label><input id="audiotoggle" type="checkbox"/>Turn off sounds</label><br>
-                    <label><input id="heatmaptoggle" type="checkbox"/>Turn on heatmap</label><br>
-                    <label><input id="stickyColorToggle" type="checkbox"/>Keep color selected</label>
-                </div>
-                <p>&nbsp;</p>
-                <h1>Controls</h1>
-                <p>Mouse/arrows to pan</p>
-                <p>Scroll to zoom</p>
-                <p>G to toggle grid</p>
-                <p>I to toggle info</p>
-                <p>T to toggle template control</p>
-                <p>P to take a snapshot</p>
-                <p>H to toggle heatmap</p>
-            </div>
         </div>
         <div class="open">info</div>
     </div>
@@ -148,6 +131,24 @@
         <div class="drawer-content">
             <div class="close">Close</div>
             <div>
+                <h1>General settings</h1>
+                <div>
+                    <label><input id="audiotoggle" type="checkbox"/>Mute sound</label><br>
+                    <label><input id="heatmaptoggle" type="checkbox"/>Turn on heatmap</label><br>
+                    <label><input id="stickyColorToggle" type="checkbox"/>Keep color selected</label>
+                </div>
+            </div>
+            <div>
+                <h1>Keyboard controls</h1>
+                <p>Mouse/arrows to pan</p>
+                <p>Scroll to zoom</p>
+                <p>G to toggle grid</p>
+                <p>I to toggle info</p>
+                <p>T to toggle template control</p>
+                <p>P to take a snapshot</p>
+                <p>H to toggle heatmap</p>
+            </div>
+            <div>
                 <h1>Template control</h1>
                 <p>Hold down ctrl to drag the template around</p>
                 <p><label>Use template: <input type="checkbox" id="template-use"></label></p>
@@ -155,13 +156,13 @@
                 <p><label>Opacity: <input type="range" min="0" max="1" step="0.01" id="template-opacity"></label></p>
             </div>
             <div>
-                <h1>Keyboard controls</h1>
+                <h1>Template controls</h1>
                 <p>page up - increase opacity</p>
                 <p>page down - decrease opacity</p>
                 <p>v - toggle visibility</p>
             </div>
         </div>
-        <div class="open">template</div>
+        <div class="open">settings</div>
     </div>
 
     <div id="drawers-opener">
