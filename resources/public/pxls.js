@@ -1576,12 +1576,13 @@ window.App = (function () {
                         alert.show($("#rules-content").html());
                     });
                     //stickyColorToggle ("Keep color selected"). Checked = don't auto reset.
-                    if (ls.get("auto_reset") === undefined) {
-                        place.setAutoReset(true);
-                    } else {
-                        place.setAutoReset(ls.get("auto_reset"));
+                    var auto_reset = ls.get("auto_reset");
+                    if (auto_reset === undefined || auto_reset === null) {
+                        auto_reset = true;
                     }
-                    $("#stickyColorToggle")[0].checked = !ls.get("auto_reset");
+                    place.setAutoReset(auto_reset);
+                    $("#stickyColorToggle")[0].checked = !auto_reset;
+                    
                     $("#stickyColorToggle").change(function() {
                         place.setAutoReset(!this.checked);
                     });
