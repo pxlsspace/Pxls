@@ -46,10 +46,13 @@
                         } else {
                             s = getCookie(prefix+name);
                         }
+                        if (s === undefined) {
+                            s = null;
+                        }
                         try {
                             return JSON.parse(s);
                         } catch(e) {
-                            return undefined;
+                            return null;
                         }
                     },
                     set: function(name, value) {

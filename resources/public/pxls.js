@@ -41,10 +41,13 @@ window.App = (function () {
                     } else {
                         s = getCookie(prefix+name);
                     }
+                    if (s === undefined) {
+                        s = null;
+                    }
                     try {
                         return JSON.parse(s);
                     } catch(e) {
-                        return undefined;
+                        return null;
                     }
                 },
                 set: function(name, value) {
@@ -1577,7 +1580,7 @@ window.App = (function () {
                     });
                     //stickyColorToggle ("Keep color selected"). Checked = don't auto reset.
                     var auto_reset = ls.get("auto_reset");
-                    if (auto_reset === undefined || auto_reset === null) {
+                    if (auto_reset === null) {
                         auto_reset = true;
                     }
                     place.setAutoReset(auto_reset);
