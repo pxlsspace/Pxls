@@ -178,6 +178,11 @@ public class App {
 
         mapSaveTimer = new PxlsTimer(config.getDuration("board.saveInterval", TimeUnit.SECONDS));
         mapBackupTimer = new PxlsTimer(config.getDuration("board.backupInterval", TimeUnit.SECONDS));
+        try {
+            Files.deleteIfExists(getStorageDir().resolve("index_cache.html"));
+        } catch (IOException e) {
+            // do nothing
+        }
     }
 
 

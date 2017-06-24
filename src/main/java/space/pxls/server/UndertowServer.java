@@ -46,6 +46,7 @@ public class UndertowServer {
 
     public void start() {
         PathHandler mainHandler = Handlers.path()
+                .addExactPath("/ws", Handlers.websocket(this::webSocketHandler))
                 .addPrefixPath("/ws", Handlers.websocket(this::webSocketHandler))
                 .addPrefixPath("/info", webHandler::info)
                 .addPrefixPath("/boarddata", webHandler::data)
@@ -64,6 +65,8 @@ public class UndertowServer {
                 .addPrefixPath("/admin/check", new RoleGate(Role.MODERATOR, webHandler::check))
                 .addPrefixPath("/admin", new RoleGate(Role.MODERATOR, Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/"))
                         .setCacheTime(10)))
+                .addExactPath("/", webHandler::index)
+                .addExactPath("/index.html", webHandler::index)
                 .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/"))
                         .setCacheTime(10));
         //EncodingHandler encoder = new EncodingHandler(mainHandler, new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50, Predicates.parse("max-content-size(1024)")));

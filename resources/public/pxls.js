@@ -913,7 +913,7 @@ window.App = (function () {
                     }
                     $("#heatmaptoggle")[0].checked = ls.get("heatmap");
                     $("#heatmaptoggle").change(function () {
-                        if ($(this).is(":checked")) {
+                        if (this.checked) {
                             self.show();
                         } else {
                             self.hide();
@@ -1166,9 +1166,18 @@ window.App = (function () {
                 },
                 init: function () {
                     self.elements.grid.hide();
+                    $("#gridtoggle")[0].checked = ls.get("view_grid");
+                    $("#gridtoggle").change(function () {
+                        ls.set("view_grid", this.checked);
+                        self.elements.grid.fadeToggle({duration: 100});
+                    });
+                    if (ls.get("view_grid")) {
+                        self.elements.grid.fadeToggle({duration: 100});
+                    }
                     $(document.body).on("keydown", function (evt) {
                         if (evt.keyCode === 71) {
-                            self.elements.grid.fadeToggle({duration: 100});
+                            $("#gridtoggle")[0].checked = !$("#gridtoggle")[0].checked;
+                            $("#gridtoggle").trigger("change");
                         }
                     });
                 },
@@ -1585,7 +1594,7 @@ window.App = (function () {
                     drawer.create("#info", 73, "info_closed", true);
                     $("#audiotoggle")[0].checked = ls.get("audio_muted");
                     $("#audiotoggle").change(function () {
-                        ls.set("audio_muted", $(this).is(":checked"));
+                        ls.set("audio_muted", this.checked);
                     });
                     $("#rules-button").click(function (evt) {
                         evt.stopPropagation();
@@ -1643,6 +1652,7 @@ window.App = (function () {
                 runningTimer: false,
                 focus: true,
                 audio: new Audio('notify.wav'),
+                title: "",
                 cooledDown: function () {
                     return self.cooldown < (new Date()).getTime();
                 },
@@ -1665,7 +1675,7 @@ window.App = (function () {
 
                         $(".palette-color").css("cursor", "not-allowed");
 
-                        document.title = "[" + minuteStr + ":" + secsStr + "] pxls";
+                        document.title = "[" + minuteStr + ":" + secsStr + "] " + self.title;
 
                         if (self.runningTimer && !die) {
                             return;
@@ -1688,11 +1698,12 @@ window.App = (function () {
                         self.hasFiredNotification = true;
                     }
 
-                    document.title = "pxls x vectorama";
+                    document.title = self.title;
                     self.elements.timer.hide();
                     $(".palette-color").css("cursor", "");
                 },
                 init: function () {
+                    self.title = document.title;
                     self.elements.timer.hide();
 
                     $(window).focus(function() {

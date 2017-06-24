@@ -6,6 +6,7 @@ import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
+import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 import io.undertow.util.StatusCodes;
@@ -18,7 +19,19 @@ import space.pxls.user.User;
 import space.pxls.util.AuthReader;
 import space.pxls.util.IPReader;
 
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.Deque;
 import java.util.Map;
@@ -26,6 +39,72 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class WebHandler {
+    private String fileToString (File f) {
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(f));
+            String s = "";
+            String line;
+            while ((line = br.readLine()) != null) {
+                s += line + "\n";
+            }
+            return s;
+        } catch (IOException e) {
+            return "";
+        }
+    }
+    private String fileToString (String s) {
+        return fileToString(new File(s));
+    }
+    private String resourceToString (String r) {
+        try {
+            InputStream in = getClass().getResourceAsStream(r); 
+            BufferedReader br = new BufferedReader(new InputStreamReader(in));
+            String s = "";
+            String line;
+            while ((line = br.readLine()) != null) {
+                s += line + "\n";
+            }
+            return s;
+        } catch (IOException e) {
+            return "";
+        }
+    }
+    public void index(HttpServerExchange exchange) {
+        File index_cache = new File(App.getStorageDir().resolve("index_cache.html").toString());
+        if (index_cache.exists()) {
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
+            exchange.getResponseSender().send(fileToString(index_cache));
+            return;
+        }
+        ClassPathResourceManager cprm = new ClassPathResourceManager(App.class.getClassLoader(), "public/");
+        String s = resourceToString("/public/index.html");
+        String[] replacements = {"title", "head", "info"};
+        for (String p : replacements) {
+            String r = App.getConfig().getString("html." + p);
+            if (r == null) {
+                r = "";
+            }
+            if (r.startsWith("resource:")) {
+                r = resourceToString(r.substring(9));
+            } else if (r.startsWith("file:")) {
+                r = fileToString(App.getStorageDir().resolve(r.substring(5)).toString());
+            }
+            s = s.replace("{{" + p + "}}", r);
+        }
+        try {
+            FileWriter fw = new FileWriter(index_cache);
+            fw.write(s);
+            fw.flush();
+            fw.close();
+            index(exchange); // we created the file, now output it!
+        } catch (IOException e) {
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
+            exchange.getResponseSender().send("error");
+            return;
+        }
+    }
+
+
     private Map<String, AuthService> services = new ConcurrentHashMap<>();
 
     {
