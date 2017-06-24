@@ -422,6 +422,8 @@ window.App = (function () {
                     x: 0,
                     y: 0
                 },
+                allowDrag: true,
+                pannedWithKeys: false,
                 centerOn: function (x, y) {
                     self.pan.x = (self.width / 2 - x);
                     self.pan.y = (self.height / 2 - y);
@@ -448,6 +450,7 @@ window.App = (function () {
                 initInteraction: function () {
                     // first zooming and stuff
                     var handleMove = function (evt) {
+                        if (!self.allowDrag) return;
                         self.pan.x += evt.dx / self.scale;
                         self.pan.y += evt.dy / self.scale;
 
@@ -479,11 +482,15 @@ window.App = (function () {
                             self.setScale(-1);
                         } else if (evt.keyCode === 80) {
                             self.save();
+                        } else if (evt.keyCode === 76) {
+                            self.allowDrag = !self.allowDrag;
                         }
+                        self.pannedWithKeys = true;
                         self.update();
                     });
 
                     self.elements.container.on("wheel", function (evt) {
+                        if (!self.allowDrag) return;
                         var oldScale = self.scale;
                         if (evt.originalEvent.deltaY > 0) {
                             self.setScale(-1);
@@ -690,11 +697,13 @@ window.App = (function () {
                     } else {
                         self.elements.board.addClass("pixelate");
                     }
-                    self.elements.mover.css({
-                        width: self.width,
-                        height: self.height,
-                        transform: "translate(" + self.pan.x + "px, " + self.pan.y + "px)"
-                    });
+                    if (self.allowDrag || (!self.allowDrag && self.pannedWithKeys)) {
+                        self.elements.mover.css({
+                            width: self.width,
+                            height: self.height,
+                            transform: "translate(" + self.pan.x + "px, " + self.pan.y + "px)"
+                        });
+                    }
                     if (self.use_zoom) {
                         self.elements.zoomer.css("zoom", (self.scale * 100).toString() + "%");
                     } else {
