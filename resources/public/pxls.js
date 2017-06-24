@@ -1656,7 +1656,7 @@ window.App = (function () {
 
                         $(".palette-color").css("cursor", "not-allowed");
 
-                        document.title = "[" + minuteStr + ":" + secsStr + "] pxls.space";
+                        document.title = "[" + minuteStr + ":" + secsStr + "] pxls";
 
                         if (self.runningTimer && !die) {
                             return;
@@ -1679,7 +1679,7 @@ window.App = (function () {
                         self.hasFiredNotification = true;
                     }
 
-                    document.title = "pxls.space";
+                    document.title = "pxls x vectorama";
                     self.elements.timer.hide();
                     $(".palette-color").css("cursor", "");
                 },
