@@ -391,6 +391,7 @@ window.App = (function () {
                     y: 0
                 },
                 allowDrag: true,
+                pannedWithKeys: false,
                 centerOn: function (x, y) {
                     self.pan.x = (self.width / 2 - x);
                     self.pan.y = (self.height / 2 - y);
@@ -457,6 +458,7 @@ window.App = (function () {
                         } else if (evt.keyCode === 76) {
                             self.allowDrag = !self.allowDrag;
                         }
+                        self.pannedWithKeys = true;
                         self.update();
                     });
 
@@ -650,7 +652,7 @@ window.App = (function () {
                     } else {
                         self.elements.board.addClass("pixelate");
                     }
-                    if (self.allowDrag) {
+                    if (self.allowDrag || (!self.allowDrag && self.pannedWithKeys)) {
                         self.elements.mover.css({
                             width: self.width,
                             height: self.height,
