@@ -873,8 +873,24 @@ window.App = (function () {
                         });
                     });
                 },
+                setBackgroundOpacity: function(opacity) {
+                    if (typeof(opacity) === "string") {
+                        opacity = Number(opacity);
+                        if (isNaN(opacity)) opacity = 0.5;
+                    }
+                    if (opacity === null || opacity === undefined) opacity = 0.5;
+                    if (opacity < 0 || opacity > 1) opacity = 0.5;
+
+                    ls.set("heatmap_background_opacity", opacity);
+                    self.elements.heatmap[0].style["background-color"] = "rgba(0, 0, 0, " + opacity +")";
+                },
                 init: function () {
                     self.elements.heatmap.hide();
+                    self.setBackgroundOpacity(ls.get("heatmap_background_opacity"));
+                    $("#heatmap-opacity").val(ls.get("heatmap_background_opacity")); //heatmap_background_opacity should always be valid after a call to self.setBackgroundOpacity.
+                    $("#heatmap-opacity").on("change input", function() {
+                        self.setBackgroundOpacity(parseFloat(this.value));
+                    });
                 },
                 show: function () {
                     self.is_shown = false;
@@ -931,7 +947,8 @@ window.App = (function () {
             return {
                 init: self.init,
                 webinit: self.webinit,
-                toggle: self.toggle
+                toggle: self.toggle,
+                setBackgroundOpacity: self.setBackgroundOpacity
             };
         })(),
         // here all the template stuff happens
