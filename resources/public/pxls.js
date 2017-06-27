@@ -95,6 +95,11 @@ window.App = (function () {
                 return imgCanv.getContext('2d').getImageData(0, 0, w, h);
             }
         },
+        analytics = function () {
+            if (window.ga) {
+                window.ga.apply(this, arguments);
+            }
+        },
         nua = navigator.userAgent,
         have_image_rendering = (function() {
             var checkImageRendering = function(prefix, crisp, pixelated, optimize_contrast){
@@ -875,14 +880,14 @@ window.App = (function () {
                 },
                 setBackgroundOpacity: function(opacity) {
                     if (typeof(opacity) === "string") {
-                        opacity = Number(opacity);
+                        opacity = parseFloat(opacity);
                         if (isNaN(opacity)) opacity = 0.5;
                     }
                     if (opacity === null || opacity === undefined) opacity = 0.5;
                     if (opacity < 0 || opacity > 1) opacity = 0.5;
 
                     ls.set("heatmap_background_opacity", opacity);
-                    self.elements.heatmap[0].style["background-color"] = "rgba(0, 0, 0, " + opacity +")";
+                    self.elements.heatmap.css("background-color", "rgba(0, 0, 0, " + opacity + ")");
                 },
                 init: function () {
                     self.elements.heatmap.hide();
@@ -1275,7 +1280,7 @@ window.App = (function () {
                         color: self.color
                     });
 
-                    window.ga("send", "event", "Pixels", "Place");
+                    analytics("send", "event", "Pixels", "Place");
                     if (self.autoreset) {
                         self.switch(-1);
                     }
@@ -1362,7 +1367,7 @@ window.App = (function () {
                         grecaptcha.reset();
                         grecaptcha.execute();
 
-                        window.ga("send", "event", "Captcha", "Execute")
+                        analytics("send", "event", "Captcha", "Execute")
                     });
                     socket.on("captcha_status", function (data) {
                         if (data.success) {
@@ -1370,10 +1375,10 @@ window.App = (function () {
                             self.switch(pending.color);
                             self._place(pending.x, pending.y);
 
-                            window.ga("send", "event", "Captcha", "Accepted")
+                            analytics("send", "event", "Captcha", "Accepted")
                         } else {
                             alert.show("Failed captcha verification");
-                            window.ga("send", "event", "Captcha", "Failed")
+                            analytics("send", "event", "Captcha", "Failed")
                         }
                     });
                     socket.on("can_undo", function (data) {
@@ -1390,7 +1395,7 @@ window.App = (function () {
                             type: "captcha",
                             token: token
                         });
-                        window.ga("send", "event", "Captcha", "Sent")
+                        analytics("send", "event", "Captcha", "Sent")
                     };
                 },
                 hexToRgb: function(hex) {
@@ -1930,7 +1935,7 @@ window.App = (function () {
                             self.elements.userMessage.hide();
                         }
 
-                        window.ga("send", "event", "Auth", "Login", data.method);
+                        analytics("send", "event", "Auth", "Login", data.method);
                     });
                 }
             };
