@@ -13,12 +13,14 @@ import space.pxls.user.User;
 import space.pxls.util.PxlsTimer;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.lang.Math;
 
 public class PacketHandler {
     private UndertowServer server;
     private PxlsTimer userData = new PxlsTimer(5);
+    private int numAllCons = 0;
 
     private int getCooldown() {
         // TODO: make these parameters somehow configurable
@@ -54,12 +56,19 @@ public class PacketHandler {
             userdata(channel, user);
             sendCooldownData(channel, user);
             user.flagForCaptcha();
+            server.addAuthedUser(user);
         }
+        numAllCons++;
 
         updateUserData();
     }
 
     public void disconnect(WebSocketChannel channel, User user) {
+        if (user != null) {
+            server.removeAuthedUser(user);
+        }
+        numAllCons--;
+
         updateUserData();
     }
 
@@ -220,7 +229,7 @@ public class PacketHandler {
 
     private void updateUserData() {
         userData.run(() -> {
-            server.broadcast(new ServerUsers(server.getConnections().size()));
+            server.broadcast(new ServerUsers(server.getAuthedUsers().size()));
         });
     }
 
@@ -236,5 +245,9 @@ public class PacketHandler {
 
     private void broadcastPixelUpdate(int x, int y, int color) {
         server.broadcast(new ServerPlace(Collections.singleton(new ServerPlace.Pixel(x, y, color))));
+    }
+
+    public int getNumAllCons() {
+        return numAllCons;
     }
 }

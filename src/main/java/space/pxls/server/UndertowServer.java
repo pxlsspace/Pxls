@@ -23,16 +23,14 @@ import space.pxls.user.User;
 import space.pxls.user.Role;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.Map;
 
 public class UndertowServer {
     private int port;
     private PacketHandler socketHandler;
     private WebHandler webHandler;
+    private HashMap<Integer, User> authedUsers = new HashMap<Integer, User>();
 
     private Set<WebSocketChannel> connections;
     private Undertow server;
@@ -166,6 +164,20 @@ public class UndertowServer {
 
     public PacketHandler getPacketHandler() {
         return socketHandler;
+    }
+
+    public void addAuthedUser(User user) {
+        if (!authedUsers.containsKey(user.getId())) {
+            authedUsers.put(user.getId(), user);
+        }
+    }
+
+    public void removeAuthedUser(User user) {
+        authedUsers.remove(user.getId());
+    }
+
+    public HashMap<Integer, User> getAuthedUsers() {
+        return this.authedUsers;
     }
 
     public Undertow getServer() {
