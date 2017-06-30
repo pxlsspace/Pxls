@@ -24,13 +24,14 @@ import space.pxls.user.Role;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class UndertowServer {
     private int port;
     private PacketHandler socketHandler;
     private WebHandler webHandler;
-    private HashMap<Integer, User> authedUsers = new HashMap<Integer, User>();
+    private ConcurrentHashMap<Integer, User> authedUsers = new ConcurrentHashMap<Integer, User>();
 
     private Set<WebSocketChannel> connections;
     private Undertow server;
@@ -176,7 +177,7 @@ public class UndertowServer {
         authedUsers.remove(user.getId());
     }
 
-    public HashMap<Integer, User> getAuthedUsers() {
+    public ConcurrentHashMap<Integer, User> getAuthedUsers() {
         return this.authedUsers;
     }
 
