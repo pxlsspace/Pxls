@@ -64,7 +64,7 @@ public class PacketHandler {
     }
 
     public void disconnect(WebSocketChannel channel, User user) {
-        if (user != null) {
+        if (user != null && user.getConnections().size() == 0) {
             server.removeAuthedUser(user);
         }
         numAllCons--;
