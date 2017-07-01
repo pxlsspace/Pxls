@@ -27,7 +27,7 @@ public class PacketHandler {
 
         // exponential function of form a*exp(-b*(x - d)) + c
         double a = -8.04044740e+01;
-        double b = 1.19078478e-03;
+        double b = 2.73880499e-03;
         double c = 9.63956320e+01;
         double d = -2.14065886e+00;
         double x = (double)server.getAuthedUsers().size();
