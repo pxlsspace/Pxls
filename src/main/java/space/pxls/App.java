@@ -166,6 +166,23 @@ public class App {
                 int toY = Integer.parseInt(token[4]);
                 byte toColor = (byte)(token.length >= 6 ? Integer.parseInt(token[5]) : 0xFF);
                 nuke(fromX, fromY, toX, toY, toColor);
+            } else if (token[0].equalsIgnoreCase("cons")) {
+                if (token.length > 1) {
+                    if (token[1].equalsIgnoreCase("authed") || token[1].equalsIgnoreCase("authd")) {
+                        System.out.println("Authenticated connections count: " + server.getAuthedUsers().size());
+                    } else {
+                        System.out.println("All connections count: " + server.getPacketHandler().getNumAllCons());
+                        System.out.println("Authenticated connections count: " + server.getAuthedUsers().size());
+                    }
+                } else {
+                    System.out.println("All connections count: " + server.getPacketHandler().getNumAllCons());
+                    System.out.println("Authenticated connections count: " + server.getAuthedUsers().size());
+                }
+            } else if (token[0].equalsIgnoreCase("users")) {
+                System.out.println("Number of authenticated users: " + server.getAuthedUsers().size());
+                for (User user : server.getAuthedUsers().values()) {
+                    System.out.println(String.format("[%d] %s (%s) (num connections: %d)", user.getId(), user.getName(), user.getRole().name(), user.getConnections().size()));
+                }
             }
         } catch (RuntimeException e) {
             e.printStackTrace();
@@ -232,7 +249,7 @@ public class App {
 
         board[x + y * width] = (byte) color;
         heatmap[x + y * width] = (byte) 0xFF;
-        pixelLogger.log(Level.INFO, userName + " " + x + " " + y + " " + color + " " + ip + (mod_action ? " (mod)" : ""));
+        pixelLogger.log(Level.INFO, String.format("%s %d %d %d %s %s", userName, x, y, color, ip, mod_action ? " (mod)" : ""));
         if (updateDatabase) {
             database.placePixel(x, y, color, user, mod_action);
         }
