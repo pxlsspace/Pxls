@@ -524,6 +524,7 @@ window.App = (function () {
                         downX = evt.originalEvent.changedTouches[0].clientX;
                         downY = evt.originalEvent.changedTouches[0].clientY;
                     }).on("pointerup mouseup touchend", function (evt) {
+                        if (evt.shiftKey === true) return;
                         var touch = false,
                             clientX = evt.clientX,
                             clientY = evt.clientY;
