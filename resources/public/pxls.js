@@ -524,6 +524,7 @@ window.App = (function () {
                         downX = evt.originalEvent.changedTouches[0].clientX;
                         downY = evt.originalEvent.changedTouches[0].clientY;
                     }).on("pointerup mouseup touchend", function (evt) {
+                        if (evt.shiftKey === true) return;
                         var touch = false,
                             clientX = evt.clientX,
                             clientY = evt.clientY;
@@ -1317,7 +1318,7 @@ window.App = (function () {
                                 .addClass("ontouchstart" in window ? "touch" : "no-touch")
                                 .css("background-color", self.palette[idx])
                                 .click(function () {
-                                    if (timer.cooledDown()) {
+                                    if (ls.get("auto_reset") === false || timer.cooledDown()) {
                                         self.switch(idx);
                                     }
                                 });
@@ -1667,7 +1668,9 @@ window.App = (function () {
         timer = (function() {
             var self = {
                 elements: {
-                    timer: $("#cooldown-timer")
+                    timer_bubble: $("#cd-timer-bubble"),
+                    timer_overlay: $("#cd-timer-overlay"),
+                    timer: null
                 },
                 hasFiredNotification: true,
                 cooldown: 0,
@@ -1682,6 +1685,12 @@ window.App = (function () {
                     // subtract one extra millisecond to prevent the first displaying to be derped
                     var delta = (self.cooldown - (new Date()).getTime() - 1) / 1000;
 
+                    if (self.runningTimer === false) {
+                        self.elements.timer = ls.get("auto_reset") === false ? self.elements.timer_bubble : self.elements.timer_overlay;
+                        self.elements.timer_bubble.hide();
+                        self.elements.timer_overlay.hide();
+                    }
+
                     if (self.status) {
                         self.elements.timer.text(self.status);
                     }
@@ -1694,8 +1703,6 @@ window.App = (function () {
                             minutes = Math.floor(delta / 60),
                             minuteStr = minutes < 10 ? "0" + minutes : minutes;
                         self.elements.timer.text(minuteStr + ":" + secsStr);
-
-                        $(".palette-color").css("cursor", "not-allowed");
 
                         document.title = "[" + minuteStr + ":" + secsStr + "] " + self.title;
 
@@ -1722,11 +1729,11 @@ window.App = (function () {
 
                     document.title = self.title;
                     self.elements.timer.hide();
-                    $(".palette-color").css("cursor", "");
                 },
                 init: function () {
                     self.title = document.title;
-                    self.elements.timer.hide();
+                    self.elements.timer_bubble.hide();
+                    self.elements.timer_overlay.hide();
 
                     $(window).focus(function() {
                         self.focus = true;
