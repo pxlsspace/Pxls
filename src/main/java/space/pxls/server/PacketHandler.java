@@ -158,7 +158,7 @@ public class PacketHandler {
                 if (c != cp.getColor() && c != 0xFF && c != -1) {
                     int seconds = getCooldown();
                     if (App.getDatabase().didPixelChange(cp.getX(), cp.getY())) {
-                        seconds = seconds * 2;
+                        seconds = (int)Math.round(seconds * 1.6);
                     }
                     if (user.isShadowBanned()) {
                         // ok let's just pretend to set a pixel...
