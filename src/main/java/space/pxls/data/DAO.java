@@ -41,7 +41,7 @@ public interface DAO extends Closeable {
             "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT," +
             "x INT UNSIGNED NOT NULL," +
             "y INT UNSIGNED NOT NULL," +
-            "color TINYINT UNSIGNED NOT NULL," +
+            "color TINYINT NOT NULL," +
             "who INT UNSIGNED," +
             "secondary_id INT UNSIGNED," + //is previous pixel's id normally, is the id that was changed from for rollback action, is NULL if there's no previous or it was undo of rollback
             "time TIMESTAMP NOT NULL DEFAULT now(6)," +
