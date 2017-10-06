@@ -155,7 +155,27 @@ public class PacketHandler {
                 server.send(channel, new ServerCaptchaRequired());
             } else {
                 int c = App.getPixel(cp.getX(), cp.getY());
-                if (c != cp.getColor() && c != 0xFF && c != -1) {
+                boolean canPlace = c != cp.getColor() && c != 0xFF && c != -1;
+                if (!canPlace && (c == 0xFF || c == -1)) {
+                    // tendril expansion!
+                    if (!canPlace && cp.getX() + 1 < App.getWidth()) {
+                        c = App.getPixel(cp.getX() + 1, cp.getY());
+                        canPlace = c != 0xFF && c != -1;
+                    }
+                    if (!canPlace && cp.getX() - 1 >= 0) {
+                        c = App.getPixel(cp.getX() - 1, cp.getY());
+                        canPlace = c != 0xFF && c != -1;
+                    }
+                    if (!canPlace && cp.getY() + 1 < App.getHeight()) {
+                        c = App.getPixel(cp.getX(), cp.getY() + 1);
+                        canPlace = c != 0xFF && c != -1;
+                    }
+                    if (!canPlace && cp.getY() - 1 >= 0) {
+                        c = App.getPixel(cp.getX(), cp.getY() - 1);
+                        canPlace = c != 0xFF && c != -1;
+                    }
+                }
+                if (canPlace) {
                     int seconds = getCooldown();
                     if (App.getDatabase().didPixelChange(cp.getX(), cp.getY())) {
                         seconds = (int)Math.round(seconds * 1.6);
