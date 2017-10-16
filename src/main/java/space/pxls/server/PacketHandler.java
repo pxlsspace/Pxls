@@ -219,10 +219,6 @@ public class PacketHandler {
     }
 
     private void handlePlaceMaybe(WebSocketChannel channel, User user, ClientPlace cp, String ip) {
-        if (user.getRole().greaterEqual(Role.USER)) {
-            App.getDatabase().adminLog("self-shadowban via old API", user.getId());
-            user.shadowban("auto-ban via old API", 999*24*3600);
-        }
     }
 
     private void handleCaptcha(WebSocketChannel channel, User user, ClientCaptcha cc) {

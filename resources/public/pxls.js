@@ -1416,7 +1416,7 @@ window.App = (function () {
                     } : null;
                 },
                 getPaletteRGB: function () {
-                    a = new Uint32Array(self.palette.length);
+                    var a = new Uint32Array(self.palette.length);
                     $.map(self.palette, function (c, i) {
                         var rgb = self.hexToRgb(c);
                         a[i] = 0xff000000 | rgb.b << 16 | rgb.g << 8 | rgb.r;
