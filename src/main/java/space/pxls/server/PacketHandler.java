@@ -101,8 +101,10 @@ public class PacketHandler {
     }
 
     private void handleShadowBanMe(WebSocketChannel channel, User user, ClientShadowBanMe obj) {
-        App.getDatabase().adminLog("self-shadowban via script", user.getId());
-        user.shadowban("auto-ban via script");
+        if (user.getRole().greaterEqual(Role.USER)) {
+            App.getDatabase().adminLog("self-shadowban via script", user.getId());
+            user.shadowban("auto-ban via script");
+        }
     }
 
     private void handleBanMe(WebSocketChannel channel, User user, ClientBanMe obj) {

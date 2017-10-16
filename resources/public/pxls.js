@@ -213,8 +213,9 @@ window.App = (function () {
         // this object is responsible for detecting pxls placement and banning them
         ban = (function() {
             var self = {
-                bad_src: [/^https?:\/\/[^\/]*raw[^\/]*git[^\/]*\/(metonator|Deklost|NomoX)/gi,
-                        /^chrome\-extension:\/\/lmleofkkoohkbgjikogbpmnjmpdedfil/gi],
+                bad_src: [/^https?:\/\/[^\/]*raw[^\/]*git[^\/]*\/(metonator|Deklost|NomoX|RogerioBlanco)/gi,
+                        /^chrome\-extension:\/\/lmleofkkoohkbgjikogbpmnjmpdedfil/gi,
+                        /^https?:\/\/.*mlpixel\.org/gi],
                 bad_events: ["mousedown", "mouseup", "click"],
                 checkSrc: function(src) {
                     // as naive as possible to make injection next to impossible
@@ -423,33 +424,36 @@ window.App = (function () {
                 width: 0,
                 height: 0,
                 scale: 1,
+                id: null,
+                intView: null,
                 pan: {
                     x: 0,
                     y: 0
                 },
                 allowDrag: true,
                 pannedWithKeys: false,
+                rgbPalette: [],
                 centerOn: function (x, y) {
                     self.pan.x = (self.width / 2 - x);
                     self.pan.y = (self.height / 2 - y);
                     self.update();
                 },
                 draw: function (data) {
-                    var id = createImageData(self.width, self.height);
+                    self.id = createImageData(self.width, self.height);
                     self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
                     
-                    var intView = new Uint32Array(id.data.buffer),
-                        rgbPalette = place.getPaletteRGB();
+                    self.intView = new Uint32Array(self.id.data.buffer);
+                    self.rgbPalette = place.getPaletteRGB();
 
                     for (var i = 0; i < self.width * self.height; i++) {
                         if (data[i] == 0xFF) {
-                            intView[i] = 0x00000000; // transparent pixel!
+                            self.intView[i] = 0x00000000; // transparent pixel!
                         } else {
-                            intView[i] = rgbPalette[data[i]];
+                            self.intView[i] = self.rgbPalette[data[i]];
                         }
                     }
 
-                    self.ctx.putImageData(id, 0, 0);
+                    self.ctx.putImageData(self.id, 0, 0);
                     self.update();
                 },
                 initInteraction: function () {
@@ -747,8 +751,12 @@ window.App = (function () {
                     self.update();
                 },
                 setPixel: function (x, y, c) {
-                    self.ctx.fillStyle = c;
-                    self.ctx.fillRect(x, y, 1, 1);
+                    if (c == -1 || c == 0xFF) {
+                        self.intView[y*self.width + x] = 0x00000000;
+                    } else {
+                        self.intView[y*self.width + x] = self.rgbPalette[c];
+                    }
+                    self.ctx.putImageData(self.id, 0, 0);
                 },
                 fromScreen: function (screenX, screenY) {
                     var adjust_x = 0,
@@ -1360,7 +1368,7 @@ window.App = (function () {
                     });
                     socket.on("pixel", function (data) {
                         $.map(data.pixels, function (px) {
-                            board.setPixel(px.x, px.y, self.palette[px.color]);
+                            board.setPixel(px.x, px.y, px.color);
                         });
                         board.update(true);
                     });
@@ -1486,7 +1494,8 @@ window.App = (function () {
                             ["Coords", "coords"],
                             ["Username", "username"],
                             ["Time", "time_str"],
-                            ["Total Pixels", "pixel_count"]
+                            ["Total Pixels", "pixel_count"],
+                            ["Alltime Pixels", "pixel_count_alltime"]
                         ], function (o) {
                             return $("<div>").append(
                                 $("<b>").text(o[0]+": "),

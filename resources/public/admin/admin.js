@@ -140,7 +140,7 @@
                     check: $("<div>").addClass("admin-check")
                 },
                 callback: function (data) {
-                    var delta = (data.ban_expiry - (new Date()).getTime()) / 1000,
+                    var delta = (data.banExpiry - (new Date()).getTime()) / 1000,
                         secs = Math.floor(delta % 60),
                         secsStr = secs < 10 ? "0" + secs : secs,
                         minutes = Math.floor((delta / 60)) % 60,
@@ -306,7 +306,8 @@
                             ["Username", "username"],
                             ["Login", "login"],
                             ["Time", "time_str"],
-                            ["Total Pixels", "pixel_count"]
+                            ["Total Pixels", "pixel_count"],
+                            ["Alltime Pixels", "pixel_count_alltime"]
                         ], function (o) {
                             return $("<div>").append(
                                 $("<b>").text(o[0]+": "),

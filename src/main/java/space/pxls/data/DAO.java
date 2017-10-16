@@ -100,7 +100,7 @@ public interface DAO extends Closeable {
     @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users ON pixels.who = users.id WHERE x = :x AND y = :y ORDER BY time DESC LIMIT 1")
     DBPixelPlacement getPixel(@Bind("x") int x, @Bind("y") int y);
 
-    @SqlQuery("SELECT pixels.id, pixels.x, pixels.y, pixels.color, pixels.time, users.username, users.pixel_count FROM pixels LEFT JOIN users ON pixels.who = users.id WHERE x = :x AND y = :y AND most_recent ORDER BY time DESC LIMIT 1")
+    @SqlQuery("SELECT pixels.id, pixels.x, pixels.y, pixels.color, pixels.time, users.username, users.pixel_count, users.pixel_count_alltime FROM pixels LEFT JOIN users ON pixels.who = users.id WHERE x = :x AND y = :y AND most_recent ORDER BY time DESC LIMIT 1")
     DBPixelPlacementUser getPixelUser(@Bind("x") int x, @Bind("y") int y);
 
     @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users on pixels.who = users.id WHERE pixels.id = :id")
