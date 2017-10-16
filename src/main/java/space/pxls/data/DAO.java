@@ -120,6 +120,7 @@ public interface DAO extends Closeable {
             "signup_ip BINARY(16)," +
             "last_ip BINARY(16)," +
             "ban_reason VARCHAR(512) NOT NULL DEFAULT ''," +
+            "user_agent VARCHAR(512) NOT NULL DEFAULT ''," +
             "pixel_count INT UNSIGNED NOT NULL DEFAULT 0," +
             "pixel_count_alltime INT UNSIGNED NOT NULL DEFAULT 0)")
     void createUsersTable();
@@ -135,6 +136,9 @@ public interface DAO extends Closeable {
 
     @SqlUpdate("UPDATE users SET ban_reason = :ban_reason WHERE id = :id")
     void updateUserBanReason(@Bind("id") int id, @Bind("ban_reason") String reason);
+
+    @SqlUpdate("UPDATE users SET user_agent = :user_agent WHERE id = :id")
+    void updateUseragent(@Bind("id") int id, @Bind("user_agent") String reason);
 
     @SqlUpdate("UPDATE users SET last_ip = INET6_ATON(:ip) WHERE id = :id")
     void updateUserIP(@Bind("id") int id, @Bind("ip") String ip);

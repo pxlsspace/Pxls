@@ -254,6 +254,10 @@ public class Database implements Closeable {
         getHandle().updateUserBanReason(user.getId(), reason);
     }
 
+    public void updateUseragent(User user, String agent) {
+        getHandle().updateUseragent(user.getId(), agent);
+    }
+
     public void updateUserIP(User user, String ip) {
         getHandle().updateUserIP(user.getId(), ip);
     }

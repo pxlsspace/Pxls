@@ -2,7 +2,8 @@ package space.pxls.server
 
 import space.pxls.auth.AuthService
 
-data class ClientPlace(val x: Int, val y: Int, val color: Int)
+data class ClientPlace(val type: String, val x: Int, val y: Int, val color: Int)
+data class ClientPlaceMaybe(val x: Int, val y: Int, val color: Int)
 data class ClientCaptcha(val token: String)
 data class ClientAdminCooldownOverride(val override: Boolean)
 data class ClientAdminMessage(val username: String, val message: String)

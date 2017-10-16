@@ -1283,7 +1283,7 @@ window.App = (function () {
                     self.pendingPixel.y = y;
                     self.pendingPixel.color = self.color;
                     socket.send({
-                        type: "place",
+                        type: "pixel",
                         x: x,
                         y: y,
                         color: self.color

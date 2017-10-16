@@ -11,6 +11,7 @@ public class User {
     private int id;
     private String name;
     private String login;
+    private String useragent;
 
     private Role role = Role.USER;
     private boolean overrideCooldown;
@@ -223,5 +224,14 @@ public class User {
         }
         sendUserData();
         App.undoRollback(this);
+    }
+
+    public void setUseragent(String s) {
+        useragent = s;
+        App.getDatabase().updateUseragent(this, s);
+    }
+
+    public String getUseragent() {
+        return useragent;
     }
 }

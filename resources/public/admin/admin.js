@@ -307,7 +307,8 @@
                             ["Login", "login"],
                             ["Time", "time_str"],
                             ["Total Pixels", "pixel_count"],
-                            ["Alltime Pixels", "pixel_count_alltime"]
+                            ["Alltime Pixels", "pixel_count_alltime"],
+                            ["User-Agent", "userAgent"]
                         ], function (o) {
                             return $("<div>").append(
                                 $("<b>").text(o[0]+": "),

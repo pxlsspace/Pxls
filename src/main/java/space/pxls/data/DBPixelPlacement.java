@@ -25,8 +25,9 @@ public class DBPixelPlacement {
     public final String ban_reason;
     public final boolean banned;
     public final boolean undoAction;
+    public final String userAgent;
 
-    public DBPixelPlacement(int id, int x, int y, int color, int secondaryId, long time, int userId, String username, String login, Role role, long ban_expiry, int pixel_count, int pixel_count_alltime, String ban_reason, boolean banned, boolean undoAction) {
+    public DBPixelPlacement(int id, int x, int y, int color, int secondaryId, long time, int userId, String username, String login, Role role, long ban_expiry, int pixel_count, int pixel_count_alltime, String ban_reason, boolean banned, boolean undoAction, String userAgent) {
         this.id = id;
         this.x = x;
         this.y = y;
@@ -43,6 +44,7 @@ public class DBPixelPlacement {
         this.ban_reason = ban_reason;
         this.banned = banned;
         this.undoAction = undoAction;
+        this.userAgent = userAgent;
     }
 
     public static class Mapper implements ResultSetMapper<DBPixelPlacement> {
@@ -71,7 +73,8 @@ public class DBPixelPlacement {
                     r.getInt("pixel_count_alltime"),
                     r.getString("users.ban_reason"),
                     banned,
-                    r.getBoolean("undo_action")
+                    r.getBoolean("undo_action"),
+                    r.getString("user_agent")
             );
         }
     }

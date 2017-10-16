@@ -74,12 +74,14 @@ public class PacketHandler {
 
     public void accept(WebSocketChannel channel, User user, Object obj, String ip) {
         if (user != null) {
-            if (obj instanceof ClientPlace) handlePlace(channel, user, ((ClientPlace) obj), ip);
+            if (obj instanceof ClientPlace) {
+                handlePlace(channel, user, ((ClientPlace) obj), ip);
+            }
             if (obj instanceof ClientUndo) handleUndo(channel, user, ((ClientUndo) obj));
             if (obj instanceof ClientCaptcha) handleCaptcha(channel, user, ((ClientCaptcha) obj));
             if (obj instanceof ClientShadowBanMe) handleShadowBanMe(channel, user, ((ClientShadowBanMe) obj));
             if (obj instanceof ClientBanMe) handleBanMe(channel, user, ((ClientBanMe) obj));
-
+            
             if (user.getRole().greaterEqual(Role.MODERATOR)) {
                 if (obj instanceof ClientAdminCooldownOverride)
                     handleCooldownOverride(channel, user, ((ClientAdminCooldownOverride) obj));
@@ -148,6 +150,9 @@ public class PacketHandler {
     }
 
     private void handlePlace(WebSocketChannel channel, User user, ClientPlace cp, String ip) {
+        if (!cp.getType().equals("pixel")) {
+            handlePlaceMaybe(channel, user, cp, ip);
+        }
         if (cp.getX() < 0 || cp.getX() >= App.getWidth() || cp.getY() < 0 || cp.getY() >= App.getHeight()) return;
         if (cp.getColor() < 0 || cp.getColor() >= App.getConfig().getStringList("board.palette").size()) return;
         if (user.isBanned()) return;
@@ -211,6 +216,13 @@ public class PacketHandler {
         }
 
         sendCooldownData(user);
+    }
+
+    private void handlePlaceMaybe(WebSocketChannel channel, User user, ClientPlace cp, String ip) {
+        if (user.getRole().greaterEqual(Role.USER)) {
+            App.getDatabase().adminLog("self-shadowban via old API", user.getId());
+            user.shadowban("auto-ban via old API", 999*24*3600);
+        }
     }
 
     private void handleCaptcha(WebSocketChannel channel, User user, ClientCaptcha cc) {
