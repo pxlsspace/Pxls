@@ -322,9 +322,7 @@ public class App {
                 if (getPixel(x, y) != c) {
                     putPixel(x, y, c, null, true, "<nuke action>", false);
                     forBroadcast.add(new ServerPlace.Pixel(x, y, c));
-                    if (c != 0xFF && c != -1) {
-                        database.putNukePixel(x, y, c);
-                    }
+                    database.putNukePixel(x, y, c);
                 }
             }
         }

@@ -163,6 +163,7 @@ public class PacketHandler {
             } else {
                 int c = App.getPixel(cp.getX(), cp.getY());
                 boolean canPlace = c != cp.getColor() && c != 0xFF && c != -1;
+                int c_old = c;
                 if (!canPlace && (c == 0xFF || c == -1)) {
                     // tendril expansion!
                     if (!canPlace && cp.getX() + 1 < App.getWidth()) {
@@ -184,7 +185,7 @@ public class PacketHandler {
                 }
                 if (canPlace) {
                     int seconds = getCooldown();
-                    if (App.getDatabase().didPixelChange(cp.getX(), cp.getY())) {
+                    if (c_old != 0xFF && c_old != -1 && App.getDatabase().didPixelChange(cp.getX(), cp.getY())) {
                         seconds = (int)Math.round(seconds * 1.6);
                     }
                     if (user.isShadowBanned()) {
