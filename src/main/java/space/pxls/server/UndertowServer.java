@@ -185,7 +185,7 @@ public class UndertowServer {
     }
 
     public void addAuthedUser(User user) {
-        if (!authedUsers.containsKey(user.getId())) {
+        if (!authedUsers.containsKey(user.getId()) && !user.isBanned()) {
             authedUsers.put(user.getId(), user);
         }
     }
