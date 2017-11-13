@@ -1188,10 +1188,18 @@ window.App = (function () {
                     }, 200);
                 },
                 _update: function(options) {
-                    let urlUpdated = false;
+                    let urlUpdated = (options.url !== self.options.url && decodeURIComponent(options.url) !== self.options.url && options.url != null && self.options.url != null);
                     if (options.url != null && options.url.length > 0) {
                         options.url = decodeURIComponent(options.url);
-                        urlUpdated = self.options.url != null && self.elements.template != null && self.options.url !== options.url;
+                    }
+
+                    //fix for `width` and other props being set after disabling template with the 'v' key then enabling a template without said prop set in the URL.
+                    if (urlUpdated && !self.options.use) {
+                        ["width", "x", "y", "opacity"].forEach(x => {
+                            if (!options.hasOwnProperty(x)) {
+                                options[x] = self._defaults[x];
+                            }
+                        });
                     }
 
                     options = Object.assign({}, self._defaults, self.options, self.normalizeTemplateObj(options, true)); //ensure every option needed to move forward is present
@@ -1212,7 +1220,7 @@ window.App = (function () {
                         ["template", "ox", "oy", "oo", "tw"].forEach(x => query.remove(x, true));
                     } else {
                         self.options.use = true;
-                        if (urlUpdated === true) {
+                        if (urlUpdated === true && self.elements.template != null) {
                             self.elements.template.remove(); //necessary so everything gets redrawn properly 'n whatnot. could probably just update the url directly...
                             self.elements.template = null;
                         }
