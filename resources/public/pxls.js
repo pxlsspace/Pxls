@@ -137,26 +137,95 @@ window.App = (function () {
         query = (function() {
             var self = {
                 params: {},
+                initialized: false,
+                _trigger: function(propName, oldValue, newValue) {
+                    $(window).trigger("pxls:queryUpdated", [propName, oldValue, newValue]); //window.on("queryUpdated", (event, propName, oldValue, newValue) => {...});
+                    //this will cause issues if you're not paying attention. always check for `newValue` to be null in the event of a deleted key.
+                },
+                _update: function(fromEvent) {
+                    let toSplit = window.location.hash.substring(1);
+                    if (window.location.search.length > 0)
+                        toSplit += ("&" + window.location.search.substring(1));
+
+                    var _varsTemp = toSplit.split("&"),
+                        vars = {};
+                    _varsTemp.forEach(val => {
+                        let split = val.split("="),
+                            key = split.shift().toLowerCase();
+                        if (!key.length) return;
+                        vars[key] = split.shift();
+                    });
+
+                    let varKeys = Object.keys(vars);
+                    for (let i = 0; i < varKeys.length; i++) {
+                        let key = varKeys[i],
+                            value = vars[key];
+                        if (fromEvent === true) {
+                            if (!self.params.hasOwnProperty(key) || self.params[key] !== vars[key]) {
+                                let oldValue = self.params[key],
+                                    newValue = vars[key] == null ? null : vars[key].toString();
+                                self.params[key] = newValue;
+                                self._trigger(key, oldValue, value); //if value == null || !value.length, shouldn't we be removing?
+                            } else {
+                            }
+                        } else if (!self.params.hasOwnProperty(key)) {
+                            self.params[key] = vars[key];
+                        }
+                    }
+
+                    if (fromEvent === true) {
+                        //Filter out removed params (removed from URL, but still present in self.params)
+                        //Get self.params keys, filter out any that don't exist in varKeys, and for each remaining value, call `self.remove` on it.
+                        Object.keys(self.params).filter(x => !varKeys.includes(x)).forEach(value => self.remove(value));
+                    }
+
+                    if (window.location.search.substring(1)) {
+                        window.location = window.location.pathname + "#" + self.getStr();
+                    }
+                },
+                setIfDifferent: function() {
+                    //setIfDifferent({oo: 0.3, template: "https://i.trg0d.com/gpq0786uCk4"}, [silent=false]);
+                    //setIfDifferent("template", "https://i.trg0d.com/gpq0786uCk4", [silent=false]);
+
+                    let workWith = {},
+                        silent = false;
+                    if ((typeof arguments[0]) === "string") {
+                        let key = arguments[0],
+                            value = arguments[1],
+                            silent = arguments[2];
+                        workWith[key] = value;
+                    } else if ((typeof arguments[0]) === "object") {
+                        workWith = arguments[0];
+                        silent = arguments[1];
+                    }
+                    silent = silent == null ? false : silent === true; //set the default value if necessary or coerce to bool.
+                    let KVPs = Object.entries(workWith);
+                    for (let i = 0; i < KVPs.length; i++) {
+                        let k = KVPs[i][0],
+                            v = KVPs[i][1].toString();
+                        if (self.get(k) === v)
+                            continue;
+                        self.set(k, v, silent);
+                    }
+                },
                 init: function () {
                     if (ss.get("url_params")) {
                         window.location.hash = ss.get("url_params");
                         ss.remove("url_params");
-                    }
-                    var s = window.location.hash.substring(1)+"&"+window.location.search.substring(1),
-                        vars = s.split("&");
-                    for (var i = 0; i < vars.length; i++) {
-                        if (vars[i]) {
-                            var pair = vars[i].split('='),
-                                n = decodeURIComponent(pair[0]),
-                                v = decodeURIComponent(pair[1]) || null;
-                            if (!self.params.hasOwnProperty(n)) {
-                                self.params[n] = v;
-                            }
+                    } else {
+                        self._update();
+
+                        if ("replaceState" in window.history) {
+                            // We disable this if `replaceState` is missing because this will call _update every time the `window.location.hash` is set programatically.
+                            // Simply scrolling around the map would constantly call `board.centerOn` because x/y would be modified.
+                            window.onhashchange = function() {
+                                self._update(true);
+                            };
                         }
                     }
-                    if (window.location.search.substring(1)) {
-                        window.location = window.location.pathname + "#" + self.getStr();
-                    }
+                },
+                has: function(key) {
+                    return self.get(key) != null;
                 },
                 getStr: function () {
                     var params = [];
@@ -164,7 +233,11 @@ window.App = (function () {
                         if (self.params.hasOwnProperty(p)) {
                             var s = encodeURIComponent(p);
                             if (self.params[p] !== null) {
-                                s += "="+encodeURIComponent(self.params[p]);
+                                let decoded = decodeURIComponent(self.params[p]),
+                                    toSet = self.params[p];
+                                if (decoded === toSet)
+                                    toSet = encodeURIComponent(toSet); //ensure already URL-encoded values don't get re-encoded. if decoded === toSet, then it's already in an un-encoded form, and we can encode "safely".
+                                s += "="+toSet;
                             }
                             params.push(s);
                         }
@@ -179,16 +252,21 @@ window.App = (function () {
                         window.location.hash = s;
                     }
                 },
-                set: function (n, v) {
+                set: function (n, v, silent) {
+                    let oldValue = self.params[n];
                     self.params[n] = v.toString();
+                    if (silent !== true) self._trigger(n, oldValue, v.toString());
                     self.lazy_update();
                 },
                 get: function (n) {
                     return self.params[n];
                 },
-                remove: function (n) {
+                remove: function (n, silent) {
                     delete self.params[n];
                     self.lazy_update();
+
+                    if (silent !== true)
+                        self._trigger(n, self.params[n], null);
                 },
                 timer: null,
                 lazy_update: function () {
@@ -204,7 +282,8 @@ window.App = (function () {
             return {
                 init: self.init,
                 get: self.get,
-                set: self.set,
+                set: self.setIfDifferent,
+                has: self.has,
                 update: self.update,
                 remove: self.remove,
                 lazy_update: self.lazy_update
@@ -486,9 +565,9 @@ window.App = (function () {
                         } else if (evt.keyCode === 68 || evt.keyCode === 39) {
                             self.pan.x -= 100 / self.scale;
                         } else if (evt.keyCode === 187 || evt.keyCode === 69 || evt.keyCode === 171) {
-                            self.setScale(1);
+                            self.nudgeScale(1);
                         } else if (evt.keyCode === 189 || evt.keyCode === 81 || evt.keyCode === 173) {
-                            self.setScale(-1);
+                            self.nudgeScale(-1);
                         } else if (evt.keyCode === 80) {
                             self.save();
                         } else if (evt.keyCode === 76) {
@@ -502,9 +581,9 @@ window.App = (function () {
                         if (!self.allowDrag) return;
                         var oldScale = self.scale;
                         if (evt.originalEvent.deltaY > 0) {
-                            self.setScale(-1);
+                            self.nudgeScale(-1);
                         } else {
-                            self.setScale(1);
+                            self.nudgeScale(1);
                         }
 
                         if (oldScale !== self.scale) {
@@ -549,6 +628,35 @@ window.App = (function () {
                     });
                 },
                 init: function () {
+                    $(window).on("pxls:queryUpdated", (evt, propName, oldValue, newValue) => {
+                        switch(propName.toLowerCase()) {
+                            case "x":
+                            case "y":
+                                board.centerOn(query.get("x") >> 0, query.get("y") >> 0);
+                                break;
+                            case "scale":
+                                board.setScale(newValue >> 0);
+                                break;
+
+                            case "template":
+                                template.queueUpdate({template: newValue, use: newValue !== null});
+                                break;
+                            case "ox":
+                                template.queueUpdate({ox: newValue === null ? null : newValue >> 0});
+                                break;
+                            case "oy":
+                                template.queueUpdate({oy: newValue === null ? null : newValue >> 0});
+                                break;
+                            case "tw":
+                                template.queueUpdate({tw: newValue === null ? null : newValue >> 0});
+                                break;
+                            case "oo":
+                                let parsed = parseFloat(newValue);
+                                if (!Number.isFinite(parsed)) parsed = null;
+                                template.queueUpdate({oo: parsed === null ? null : parsed});
+                                break;
+                        }
+                    });
                     $("#ui").hide();
                     self.elements.container.hide();
 
@@ -603,7 +711,7 @@ window.App = (function () {
                         }
                         var url = query.get("template");
                         if (url) { // we have a template!
-                            template.update({
+                            template.queueUpdate({
                                 use: true,
                                 x: parseFloat(query.get("ox")),
                                 y: parseFloat(query.get("oy")),
@@ -637,9 +745,11 @@ window.App = (function () {
                 update: function (optional) {
                     self.pan.x = Math.min(self.width / 2, Math.max(-self.width / 2, self.pan.x));
                     self.pan.y = Math.min(self.height / 2, Math.max(-self.height / 2, self.pan.y));
-                    query.set("x", Math.round((self.width / 2) - self.pan.x));
-                    query.set("y", Math.round((self.height / 2) - self.pan.y));
-                    query.set("scale", Math.round(self.scale * 100) / 100);
+                    query.set({
+                        x: Math.round((self.width / 2) - self.pan.x),
+                        y: Math.round((self.height / 2) - self.pan.y),
+                        scale: Math.round(self.scale * 100) / 100
+                    }, true);
                     if (self.use_js_render) {
                         var ctx2 = self.elements.board_render[0].getContext("2d"),
                             pxl_x = -self.pan.x + ((self.width - (window.innerWidth / self.scale)) / 2),
@@ -727,7 +837,13 @@ window.App = (function () {
                 getScale: function () {
                     return Math.abs(self.scale);
                 },
-                setScale: function (adj) {
+                setScale: function(scale) {
+                    if (scale > 50) scale = 50;
+                    else if (scale <= 0) scale = 0.5; //enforce the [0.5, 50] limit without blindly resetting to 0.5 when the user was trying to zoom in farther than 50x
+                    self.scale = scale;
+                    self.update();
+                },
+                nudgeScale: function (adj) {
                     var oldScale = Math.abs(self.scale),
                         sign = Math.sign(self.scale);
                     if (adj === -1) {
@@ -826,6 +942,7 @@ window.App = (function () {
                 start: self.start,
                 update: self.update,
                 getScale: self.getScale,
+                nudgeScale: self.nudgeScale,
                 setScale: self.setScale,
                 setPixel: self.setPixel,
                 fromScreen: self.fromScreen,
@@ -971,38 +1088,21 @@ window.App = (function () {
                 elements: {
                     template: null
                 },
-                t: {
-                    use: false,
-                    url: '',
+                queueTimer: 0,
+                _queuedUpdates: {},
+                _defaults: {
+                    url: "",
                     x: 0,
                     y: 0,
                     width: -1,
                     opacity: 0.5
                 },
-                update_query: function () {
-                    $.map([
-                        ["template", "url", ""],
-                        ["ox", "x", 0],
-                        ["oy", "y", 0],
-                        ["oo", "opacity", 0.5],
-                        ["tw", "width", -1]
-                    ], function (o) {
-                        if (self.t[o[1]] == o[2]) {
-                            query.remove(o[0]);
-                        } else {
-                            var v = self.t[o[1]];
-                            if (o[0] == "oo") {
-                                v = Math.round(v * 100) / 100;
-                            }
-                            query.set(o[0], v);
-                        }
-                    });
-                },
+                options: {},
                 lazy_init: function () {
-                    if (self.t.use) { // already inited
+                    if (self.elements.template != null) { // already inited
                         return;
                     }
-                    self.t.use = true;
+                    self.options.use = true;
 
                     var drag = {
                             x: 0,
@@ -1010,13 +1110,13 @@ window.App = (function () {
                         };
                     self.elements.template = $("<img>").addClass("noselect pixelate").attr({
                         id: "board-template",
-                        src: self.t.url,
+                        src: self.options.url,
                         alt: "template"
                     }).css({
-                        top: self.t.y,
-                        left: self.t.x,
-                        opacity: self.t.opacity,
-                        width: self.t.width === -1 ? 'auto' : self.t.width
+                        top: self.options.y,
+                        left: self.options.x,
+                        opacity: self.options.opacity,
+                        width: self.options.width === -1 ? 'auto' : self.options.width
                     }).data("dragging", false).mousedown(function (evt) {
                         evt.preventDefault();
                         $(this).data("dragging", true);
@@ -1033,11 +1133,11 @@ window.App = (function () {
                             var px_old = board.fromScreen(drag.x, drag.y),
                                 px_new = board.fromScreen(evt.clientX, evt.clientY),
                                 dx = (px_new.x | 0) - (px_old.x | 0),
-                                dy = (px_new.y | 0) - (px_old.y | 0);
-                            self.update({
-                                x: self.t.x + dx,
-                                y: self.t.y + dy
-                            });
+                                dy = (px_new.y | 0) - (px_old.y | 0),
+                                newX = self.options.x + dx,
+                                newY = self.options.y + dy;
+                            self._update({x: newX, y: newY});
+                            query.set({ox: newX, oy: newY}, true);
                             if (dx != 0) {
                                 drag.x = evt.clientX;
                             }
@@ -1052,90 +1152,108 @@ window.App = (function () {
                     board.getRenderBoard().parent().prepend(self.elements.template);
                 },
                 update_drawer: function () {
-                    $("#template-use")[0].checked = self.t.use;
-                    $("#template-url").val(self.t.url);
-                    $("#template-opacity").val(self.t.opacity);
+                    $("#template-use")[0].checked = self.options.use;
+                    $("#template-url").val(self.options.url);
+                    $("#template-opacity").val(self.options.opacity);
                 },
-                update: function (t) {
-                    if (t.hasOwnProperty('url')) {
-                        t['url'] = t['url'].replace(/^http:\/\/(i\.imgur\.com)(.*)$/, "https://$1$2");
-                    }
-                    if (t.hasOwnProperty('use') && t.use !== self.t.use) {
-                        if (t.use) {
-                            if (t.hasOwnProperty("url")) {
-                                self.t.x = t.x || 0;
-                                self.t.y = t.y || 0;
-                                self.t.opacity = t.opacity || 0.5;
-                                self.t.width = t.width || -1;
-                                self.t.url = t.url || '';
-                            } else {
-                                $.map(['x', 'y', 'opacity', 'width', 'url'], function (e) {
-                                    if (t.hasOwnProperty(e)) {
-                                        self.t[e] = t[e];
-                                    }
-                                });
-                            }
-                            self.lazy_init();
-                            self.update_query();
-                        } else {
-                            self.t.use = false;
-                            self.elements.template.remove();
-                            self.elements.template = null;
-                            board.update(true);
-                            $.map(["template", "ox", "oy", "oo", "tw"], function (o) {
-                                query.remove(o);
-                            });
-                        }
-                        self.update_drawer();
-                        return;
-                    }
-                    if (t.hasOwnProperty('url')) {
-                        self.t.url = t.url;
-                        if (self.t.use) {
-                            self.elements.template.attr('src', t.url);
-                        }
-                        if (!t.hasOwnProperty('width')) {
-                            t.width = -1; // reset just in case
+                normalizeTemplateObj(objectToNormalize, direction) {
+                    //direction: true = url_to_template_obj, else = template_obj_to_url
+                    //normalize the given update object with settings that may be present from someone guessing options based on the URL
+
+                    let iterOver = [["tw", "width"], ["ox", "x"], ["oy", "y"], ["oo", "opacity"], ["template", "url"]];
+                    if (direction !== true)
+                        for (let i = 0; i < iterOver.length; i++)
+                            iterOver[i].reverse();
+
+                    for (let i = 0; i < iterOver.length; i++) {
+                        let x = iterOver[i];
+                        if ((x[0] in objectToNormalize) && objectToNormalize[x[1]] == null) { //if "tw" is set on `objectToNormalize` and `objectToNormalize.width` is not set
+                            objectToNormalize[x[1]] = objectToNormalize[x[0]]; //set `objectToNormalize["width"]` to `objectToNormalize["tw"]`
+                            delete objectToNormalize[x[0]]; //and delete `objectToNormalize["tw"]`
                         }
                     }
-                    $.map([['x', 'left'], ['y', 'top'], ['opacity', 'opacity'], ['width', 'width']], function (e) {
-                        if (t.hasOwnProperty(e[0])) {
-                            self.t[e[0]] = t[e[0]];
-                            if (self.t.use) {
-                                self.elements.template.css(e[1], t[e[0]]);
-                            }
+
+                    return objectToNormalize;
+                },
+                queueUpdate: function(obj) {
+                    obj = self.normalizeTemplateObj(obj, true);
+                    self._queuedUpdates = Object.assign(self._queuedUpdates, obj);
+                    if (self.queueTimer) {
+                        clearTimeout(self.queueTimer);
+                    }
+                    self.queueTimer = setTimeout(function() {
+                        self._update(self._queuedUpdates);
+                        self._queuedUpdates = {};
+                        self.queueTimer = 0;
+                    }, 200);
+                },
+                _update: function(options) {
+                    let urlUpdated = false;
+                    if (options.url != null && options.url.length > 0) {
+                        options.url = decodeURIComponent(options.url);
+                        urlUpdated = self.options.url != null && self.elements.template != null && self.options.url !== options.url;
+                    }
+
+                    options = Object.assign({}, self._defaults, self.options, self.normalizeTemplateObj(options, true)); //ensure every option needed to move forward is present
+                    Object.keys(self._defaults).forEach(x => { //and make sure they're all usable "out of the box"
+                        if (options[x] == null || (typeof options[x] === "number" && isNaN(options[x]))) {
+                            options[x] = self._defaults[x];
                         }
                     });
-                    if (self.t.use) {
-                        if (t.width === -1) {
-                            self.elements.template.css('width', 'auto');
+                    self.options = options;
+
+                    if (options.url.length === 0 || options.use === false) {
+                        self.options.use = false;
+                        if (self.elements.template) {
+                            self.elements.template.remove();
+                            self.elements.template = null;
                         }
+                        board.update(true);
+                        ["template", "ox", "oy", "oo", "tw"].forEach(x => query.remove(x, true));
+                    } else {
+                        self.options.use = true;
+                        if (urlUpdated === true) {
+                            self.elements.template.remove(); //necessary so everything gets redrawn properly 'n whatnot. could probably just update the url directly...
+                            self.elements.template = null;
+                        }
+                        self.lazy_init();
+
+                        [["left", "x"], ["top", "y"], ["opacity", "opacity"]].forEach(x => {
+                            self.elements.template.css(x[0], options[x[1]]);
+                        });
+                        self.elements.template.css("width", options.width > 0 ? options.width : "auto");
+
+                        [["url", "template"],["x", "ox"],["y", "oy"],["width", "tw"],["opacity", "oo"]].forEach(x => {
+                            if (self.options[x[0]] === self._defaults[x[0]]) return; //don't force default values to be present in the URL.
+                            query.set(x[1], self.options[x[0]], true);
+                        });
                     }
-                    self.update_query();
                     self.update_drawer();
-                    board.update(true);
+                },
+                disableTemplate: function() {
+                    self._update({url: null});
                 },
                 draw: function (ctx2, pxl_x, pxl_y) {
-                    if (!self.t.use) {
+                    if (!self.options.use) {
                         return;
                     }
                     var width = self.elements.template[0].width,
                         height = self.elements.template[0].height,
                         scale = board.getScale();
-                    if (self.t.width !== -1) {
-                        height *= (self.t.width / width);
-                        width = self.t.width;
+                    if (self.options.width !== -1) {
+                        height *= (self.options.width / width);
+                        width = self.options.width;
                     }
-                    ctx2.globalAlpha = self.t.opacity;
-                    ctx2.drawImage(self.elements.template[0], (self.t.x - pxl_x) * scale, (self.t.y - pxl_y) * scale, width * scale, height * scale);
+                    ctx2.globalAlpha = self.options.opacity;
+                    ctx2.drawImage(self.elements.template[0], (self.options.x - pxl_x) * scale, (self.options.y - pxl_y) * scale, width * scale, height * scale);
                 },
                 init: function () {
                     drawer.create("#template-control", 84, "template_open", false);
                     $("#template-use").change(function () {
-                        self.update({use: this.checked});
+                        self._update({use: this.checked});
                     });
                     $("#template-url").change(function () {
-                        self.update({url: this.value});
+                        self._update({url: this.value});
                     }).keydown(function (evt) {
                         if (evt.which === 13) {
                             $(this).change();
@@ -1147,46 +1265,46 @@ window.App = (function () {
                     }).on("paste", function () {
                         var _this = this;
                         setTimeout(function () {
-                            self.update({
+                            self._update({
                                 use: true,
                                 url: _this.value
                             });
                         }, 100);
                     });
                     $("#template-opacity").on("change input", function () {
-                        self.update({opacity: parseFloat(this.value)});
+                        self._update({opacity: parseFloat(this.value)});
                     });
                     $(window).keydown(function (evt) {
-                        if (evt.ctrlKey && self.t.use) {
+                        if (evt.ctrlKey && self.options.use) {
                             evt.preventDefault();
                             self.elements.template.css("pointer-events", "initial");
                         }
                         if (evt.which == 33) { // page up
-                            self.update({
-                                opacity: Math.min(1, self.t.opacity+0.1)
-                            });
+                            let newOpacity = Math.min(1, self.options.opacity+0.1);
+                            self._update({oo: newOpacity});
                         }
                         if (evt.which == 34) { // page down
-                            self.update({
-                                opacity: Math.max(0, self.t.opacity-0.1)
-                            });
+                            let newOpacity = Math.max(0, self.options.opacity-0.1)
+                            self._update({opacity: newOpacity});
                         }
                         if (evt.which == 86) { // v
-                            self.update({
-                                use: !self.t.use
+                            self._update({
+                                use: !self.options.use
                             });
                         }
                     }).on("keyup blur", function (evt) {
-                        if (self.t.use) {
+                        if (self.options.use) {
                             self.elements.template.css("pointer-events", "none").data("dragging", false);
                         }
                     });
                 }
             };
             return {
-                update: self.update,
+                normalizeTemplateObj: self.normalizeTemplateObj,
+                update: self._update,
                 draw: self.draw,
-                init: self.init
+                init: self.init,
+                queueUpdate: self.queueUpdate
             };
         })(),
         // here all the grid stuff happens
@@ -2018,11 +2136,19 @@ window.App = (function () {
         ls: ls,
         ss: ss,
         query: query,
+        template: {
+            update: function(t) {
+                template.queueUpdate(t);
+            },
+            normalize: function(obj, dir=true) {
+                return template.normalizeTemplateObj(obj, dir);
+            }
+        },
         centerBoardOn: function(x, y) {
             board.centerOn(x, y);
         },
         updateTemplate: function(t) {
-            template.update(t);
+            template.queueUpdate(t);
         },
         alert: function(s) {
             alert.show(s);
