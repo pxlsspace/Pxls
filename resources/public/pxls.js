@@ -433,10 +433,19 @@ window.App = (function () {
                 allowDrag: true,
                 pannedWithKeys: false,
                 rgbPalette: [],
+                loaded: false,
+                pixelBuffer: [],
                 centerOn: function (x, y) {
                     self.pan.x = (self.width / 2 - x);
                     self.pan.y = (self.height / 2 - y);
                     self.update();
+                },
+                replayBuffer: function () {
+                    $.map(self.pixelBuffer, function (p) {
+                        self.setPixel(p.x, p.y, p.c, false);
+                    });
+                    self.refresh();
+                    self.pixelBuffer = [];
                 },
                 draw: function (data) {
                     self.id = createImageData(self.width, self.height);
@@ -455,6 +464,8 @@ window.App = (function () {
 
                     self.ctx.putImageData(self.id, 0, 0);
                     self.update();
+                    self.loaded = true;
+                    self.replayBuffer();
                 },
                 initInteraction: function () {
                     // first zooming and stuff
@@ -750,12 +761,28 @@ window.App = (function () {
                     self.scale *= sign;
                     self.update();
                 },
-                setPixel: function (x, y, c) {
+                setPixel: function (x, y, c, refresh) {
+                    if (!self.loaded) {
+                        self.pixelBuffer.push({
+                            x: x,
+                            y: y,
+                            c: c
+                        });
+                        return;
+                    }
+                    if (refresh === undefined) {
+                        refresh = true;
+                    }
                     if (c == -1 || c == 0xFF) {
                         self.intView[y*self.width + x] = 0x00000000;
                     } else {
                         self.intView[y*self.width + x] = self.rgbPalette[c];
                     }
+                    if (refresh) {
+                        self.ctx.putImageData(self.id, 0, 0);
+                    }
+                },
+                refresh: function () {
                     self.ctx.putImageData(self.id, 0, 0);
                 },
                 fromScreen: function (screenX, screenY) {
@@ -832,7 +859,8 @@ window.App = (function () {
                 toScreen: self.toScreen,
                 save: self.save,
                 centerOn: self.centerOn,
-                getRenderBoard: self.getRenderBoard
+                getRenderBoard: self.getRenderBoard,
+                refresh: self.refresh
             };
         })(),
         // heatmap init stuff
@@ -1368,8 +1396,9 @@ window.App = (function () {
                     });
                     socket.on("pixel", function (data) {
                         $.map(data.pixels, function (px) {
-                            board.setPixel(px.x, px.y, px.color);
+                            board.setPixel(px.x, px.y, px.color, false);
                         });
+                        board.refresh();
                         board.update(true);
                     });
                     socket.on("captcha_required", function (data) {
