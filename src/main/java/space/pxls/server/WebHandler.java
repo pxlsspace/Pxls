@@ -47,6 +47,7 @@ public class WebHandler {
             while ((line = br.readLine()) != null) {
                 s += line + "\n";
             }
+            br.close();
             return s;
         } catch (IOException e) {
             return "";
