@@ -783,7 +783,9 @@ window.App = (function () {
                     }
                 },
                 refresh: function () {
-                    self.ctx.putImageData(self.id, 0, 0);
+                    if (self.loaded) {
+                        self.ctx.putImageData(self.id, 0, 0);
+                    }
                 },
                 fromScreen: function (screenX, screenY) {
                     var adjust_x = 0,
