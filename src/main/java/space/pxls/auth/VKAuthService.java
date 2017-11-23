@@ -4,6 +4,8 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import org.json.JSONObject;
 import org.json.JSONException;
 import space.pxls.App;
@@ -16,6 +18,13 @@ public class VKAuthService extends AuthService {
     }
 
     public String getRedirectUrl(String state) {
+        // we need to double-encode state because of the pingpong game
+        try {
+            state = URLEncoder.encode(URLEncoder.encode(state, "UTF-8"), "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            // do nothing
+        }
+        
         return "https://oauth.vk.com/authorize?" +
             "client_id=" + App.getConfig().getString("oauth.vk.key") +
             "&response_type=code" +
