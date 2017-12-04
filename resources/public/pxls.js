@@ -1238,6 +1238,7 @@ window.App = (function () {
                             options[x] = self._defaults[x];
                         }
                     });
+                    options.opacity = parseFloat(options.opacity.toFixed(2)); //cleans up opacity for the URL, e.g. 1.3877787807814457e-16 => 0
                     self.options = options;
 
                     if (options.url.length === 0 || options.use === false) {
@@ -1262,7 +1263,6 @@ window.App = (function () {
                         self.elements.template.css("width", options.width > 0 ? options.width : "auto");
 
                         [["url", "template"],["x", "ox"],["y", "oy"],["width", "tw"],["opacity", "oo"]].forEach(x => {
-                            if (self.options[x[0]] === self._defaults[x[0]]) return; //don't force default values to be present in the URL.
                             query.set(x[1], self.options[x[0]], true);
                         });
                     }
@@ -1319,10 +1319,10 @@ window.App = (function () {
                         }
                         if (evt.which == 33) { // page up
                             let newOpacity = Math.min(1, self.options.opacity+0.1);
-                            self._update({oo: newOpacity});
+                            self._update({opacity: newOpacity});
                         }
                         if (evt.which == 34) { // page down
-                            let newOpacity = Math.max(0, self.options.opacity-0.1)
+                            let newOpacity = Math.max(0, self.options.opacity-0.1);
                             self._update({opacity: newOpacity});
                         }
                         if (evt.which == 86) { // v
