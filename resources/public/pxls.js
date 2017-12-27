@@ -126,9 +126,20 @@ window.App = (function () {
             };
             return checkImageRendering('', true, true, false) || checkImageRendering('-o-', true, false, false) || checkImageRendering('-moz-', true, false, false) || checkImageRendering('-webkit-', true, false, true);
         })(),
+        have_zoom_rendering = false,
         ios_safari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i)),
         ms_edge = nua.indexOf('Edge') > -1;
-    if (ms_edge || ios_safari) {
+    if (ios_safari) {
+        var iOS = parseFloat(
+            ('' + (/CPU.*OS ([0-9_]{1,5})|(CPU like).*AppleWebKit.*Mobile/i.exec(navigator.userAgent) || [0,''])[1])
+            .replace('undefined', '3_2').replace('_', '.').replace('_', '')
+        ) || false;
+        have_image_rendering = false;
+        if (iOS >= 11) {
+            have_zoom_rendering = true;
+        }
+    }
+    if (ms_edge) {
         have_image_rendering = false;
     }
     var ls = storageFactory(localStorage, 'ls_', 99),
@@ -498,8 +509,8 @@ window.App = (function () {
                     container: $("#board-container")
                 },
                 ctx: null,
-                use_js_render: !have_image_rendering,
-                use_zoom: have_image_rendering && false,
+                use_js_render: !have_image_rendering && !have_zoom_rendering,
+                use_zoom: !have_image_rendering && have_zoom_rendering,
                 width: 0,
                 height: 0,
                 scale: 1,
