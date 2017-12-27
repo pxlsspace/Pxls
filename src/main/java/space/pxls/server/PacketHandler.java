@@ -164,7 +164,7 @@ public class PacketHandler {
                 int c = App.getPixel(cp.getX(), cp.getY());
                 boolean canPlace = c != cp.getColor() && c != 0xFF && c != -1;
                 int c_old = c;
-                if (!canPlace && (c == 0xFF || c == -1)) {
+                /*if (!canPlace && (c == 0xFF || c == -1)) {
                     // tendril expansion!
                     if (!canPlace && cp.getX() + 1 < App.getWidth()) {
                         c = App.getPixel(cp.getX() + 1, cp.getY());
@@ -182,7 +182,7 @@ public class PacketHandler {
                         c = App.getPixel(cp.getX(), cp.getY() - 1);
                         canPlace = c != 0xFF && c != -1;
                     }
-                }
+                }*/
                 if (canPlace) {
                     int seconds = getCooldown();
                     if (c_old != 0xFF && c_old != -1 && App.getDatabase().didPixelChange(cp.getX(), cp.getY())) {
