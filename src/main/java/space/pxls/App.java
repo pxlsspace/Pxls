@@ -29,6 +29,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -94,6 +95,13 @@ public class App {
 
         server = new UndertowServer(config.getInt("server.port"));
         server.start();
+
+        new Timer().schedule(new TimerTask(){
+            @Override
+            public void run() {
+                tickStackedPixels();
+            }
+        }, 0, 5000);
 
         saveMap();
     }
@@ -357,6 +365,23 @@ public class App {
         for (int i = 0; i < width * height; i++) {
             if (heatmap[i] != 0) {
                 heatmap[i]--;
+            }
+        }
+    }
+
+    public static void tickStackedPixels() {
+        int multiplier = config.getInt("stacking.cooldownMultiplier");
+        int maxStacked = config.getInt("stacking.maxStacked");
+
+        for (User user : server.getAuthedUsers().values()) {
+            long lastPixelTime = user.getLastPixelTime() == 0 ? user.getInitialAuthTime() : user.getLastPixelTime();
+            long delta = (Instant.now().toEpochMilli()-lastPixelTime) / 1000 >> 0;
+            int target = (server.getPacketHandler().getCooldown() * multiplier) * (1 + user.getStacked());
+            if (lastPixelTime > 0 && delta >= target) {
+                if (user.getStacked() < maxStacked) {
+                    user.setStacked(user.getStacked() + 1);
+                    server.getPacketHandler().sendStackedCount(user);
+                }
             }
         }
     }

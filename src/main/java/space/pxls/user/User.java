@@ -3,12 +3,14 @@ package space.pxls.user;
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
 
+import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class User {
     private int id;
+    private int stacked = 0;
     private String name;
     private String login;
     private String useragent;
@@ -17,17 +19,20 @@ public class User {
     private boolean overrideCooldown;
     private boolean flaggedForCaptcha = true;
     private boolean justShowedCaptcha;
+    private boolean lastPlaceWasStack = false;
     private long cooldownExpiry;
     private long lastPixelTime = 0;
     private long lastUndoTime = 0;
+    private long initialAuthTime = 0L;
 
     // 0 = not banned
     private long banExpiryTime;
 
     private Set<WebSocketChannel> connections = new HashSet<>();
 
-    public User(int id, String name, String login, long cooldownExpiry, Role role, long banExpiryTime) {
+    public User(int id, int stacked, String name, String login, long cooldownExpiry, Role role, long banExpiryTime) {
         this.id = id;
+        this.stacked = stacked;
         this.name = name;
         this.login = login;
         this.cooldownExpiry = cooldownExpiry;
@@ -55,6 +60,10 @@ public class User {
 
     public void setLastPixelTime() {
         lastPixelTime = System.currentTimeMillis();
+    }
+
+    public long getLastPixelTime() {
+        return this.lastPixelTime;
     }
 
     public void setLastUndoTime() {
@@ -233,5 +242,30 @@ public class User {
 
     public String getUseragent() {
         return useragent;
+    }
+
+    public int getStacked() {
+        return stacked;
+    }
+
+    public void setStacked(int stacked) {
+        this.stacked = stacked;
+        App.getDatabase().updateUserStacked(this, stacked);
+    }
+    
+    public long getInitialAuthTime() {
+        return initialAuthTime;
+    }
+
+    public void setInitialAuthTime(long initialAuthTime) {
+        this.initialAuthTime = initialAuthTime;
+    }
+
+    public boolean lastPlaceWasStack() {
+        return lastPlaceWasStack;
+    }
+
+    public void setLastPlaceWasStack(boolean lastPlaceWasStack) {
+        this.lastPlaceWasStack = lastPlaceWasStack;
     }
 }

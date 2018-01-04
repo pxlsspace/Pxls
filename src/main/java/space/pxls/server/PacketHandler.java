@@ -16,13 +16,14 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.lang.Math;
+import java.time.Instant;
 
 public class PacketHandler {
     private UndertowServer server;
     private PxlsTimer userData = new PxlsTimer(5);
     private int numAllCons = 0;
 
-    private int getCooldown() {
+    public int getCooldown() {
         // TODO: make these parameters somehow configurable
 
         // exponential function of form a*exp(-b*(x - d)) + c
@@ -55,8 +56,10 @@ public class PacketHandler {
         if (user != null) {
             userdata(channel, user);
             sendCooldownData(channel, user);
+            sendStackedCount(channel, user);
             user.flagForCaptcha();
             server.addAuthedUser(user);
+            user.setInitialAuthTime(Instant.now().toEpochMilli());
         }
         numAllCons++;
 
@@ -132,7 +135,11 @@ public class PacketHandler {
         DBPixelPlacement thisPixel = App.getDatabase().getUserUndoPixel(user);
         DBPixelPlacement recentPixel = App.getDatabase().getPixelAt(thisPixel.x, thisPixel.y);
         if (thisPixel.id != recentPixel.id) return;
-        
+
+        if (user.lastPlaceWasStack()) {
+            user.setStacked(Math.max(user.getStacked() + 1, App.getConfig().getInt("stacking.maxStacked")));
+            sendStackedCount(user);
+        }
         user.setLastUndoTime();
         user.setCooldown(0);
         DBPixelPlacement lastPixel = App.getDatabase().getPixelByID(thisPixel.secondaryId);
@@ -205,9 +212,16 @@ public class PacketHandler {
                         broadcastPixelUpdate(cp.getX(), cp.getY(), cp.getColor());
                     }
                     if (!user.isOverridingCooldown()) {
-                        user.setCooldown(seconds);
                         user.setLastPixelTime();
-                        App.getDatabase().updateUserTime(user.getId(), seconds);
+                        if (user.getStacked() > 0) {
+                            user.setLastPlaceWasStack(true);
+                            user.setStacked(user.getStacked()-1);
+                            sendStackedCount(user);
+                        } else {
+                            user.setLastPlaceWasStack(false);
+                            user.setCooldown(seconds);
+                            App.getDatabase().updateUserTime(user.getId(), seconds);
+                        }
                         if (user.canUndo()) {
                             server.send(channel, new ServerCanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
                         }
@@ -276,6 +290,15 @@ public class PacketHandler {
 
     private void broadcastPixelUpdate(int x, int y, int color) {
         server.broadcast(new ServerPlace(Collections.singleton(new ServerPlace.Pixel(x, y, color))));
+    }
+
+    public void sendStackedCount(WebSocketChannel ch, User user) {
+        server.send(ch, new ServerStack(user.getStacked()));
+    }
+    public void sendStackedCount(User user) {
+        for (WebSocketChannel ch : user.getConnections()) {
+            sendStackedCount(ch, user);
+        }
     }
 
     public int getNumAllCons() {

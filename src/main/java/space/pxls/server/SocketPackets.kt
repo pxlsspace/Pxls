@@ -49,3 +49,7 @@ data class ServerCanUndo(val time: Long) {
 data class ServerAlert(val message: String) {
     val type = "alert"
 }
+
+data class ServerStack(val count: Int) {
+    val type = "stack"
+}

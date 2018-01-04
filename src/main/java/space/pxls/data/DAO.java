@@ -111,6 +111,7 @@ public interface DAO extends Closeable {
 
     @SqlUpdate("CREATE TABLE IF NOT EXISTS users (" +
             "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT," +
+            "stacked INT DEFAULT 0," +
             "username VARCHAR(32) NOT NULL," +
             "login VARCHAR(64) NOT NULL," +
             "signup_time TIMESTAMP NOT NULL DEFAULT now(6)," +
@@ -142,6 +143,9 @@ public interface DAO extends Closeable {
 
     @SqlUpdate("UPDATE users SET last_ip = INET6_ATON(:ip) WHERE id = :id")
     void updateUserIP(@Bind("id") int id, @Bind("ip") String ip);
+
+    @SqlUpdate("UPDATE users SET stacked = :stacked WHERE id = :id")
+    void updateUserStacked(@Bind("id") int id, @Bind("stacked") int stacked);
 
     @SqlUpdate("INSERT INTO users (username, login, signup_ip, last_ip) VALUES (:username, :login, INET6_ATON(:ip), INET6_ATON(:ip))")
     void createUser(@Bind("username") String username, @Bind("login") String login, @Bind("ip") String ip);

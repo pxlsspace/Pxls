@@ -1841,6 +1841,29 @@ window.App = (function () {
                 show: self.show
             };
         })(),
+        stackHelper = (function() {
+            var self = {
+                elements: {
+                    stackCount: $("#stackCount")
+                },
+                _seconds: -1,
+                timerID: -1,
+                init: function() {
+                    socket.on("stack", function(data) {
+                        self.updateStacked(data.count);
+                    });
+                },
+                updateStacked: function(count) {
+                    self.elements.stackCount[0].innerText = count.toString();
+                }
+            };
+
+            return {
+                init: self.init,
+                updateTimer: self.updateTimer,
+                updateStacked: self.updateStacked
+            };
+        })(),
         // this takes care of the countdown timer
         timer = (function() {
             var self = {
@@ -2175,6 +2198,7 @@ window.App = (function () {
     info.init();
     alert.init();
     timer.init();
+    stackHelper.init();
     coords.init();
     user.init();
     notification.init();
