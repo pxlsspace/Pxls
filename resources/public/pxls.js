@@ -527,6 +527,7 @@ window.App = (function () {
                 pixelBuffer: [],
                 holdTimer: -1,
                 _holdHandler: function(args) {
+                    self.holdTimer = -1;
                     lookup.runLookup(args.x, args.y);
                 },
                 centerOn: function (x, y) {
@@ -665,6 +666,8 @@ window.App = (function () {
                         evt.preventDefault();
                         place.switch(-1);
                     });
+
+                    //Separated some of these events from jQuery to deal with chrome's complaints about passive event violations. Has around 50% market share so I suppose I should care what they say.
                     self.elements.board_render[0].addEventListener("touchstart", function(evt) {
                         if (self.holdTimer === -1) {
                             self.holdTimer = setTimeout(self._holdHandler, 1000, {x: evt.changedTouches[0].clientX, y: evt.changedTouches[0].clientY});
