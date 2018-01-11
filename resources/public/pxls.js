@@ -525,6 +525,10 @@ window.App = (function () {
                 rgbPalette: [],
                 loaded: false,
                 pixelBuffer: [],
+                holdTimer: -1,
+                _holdHandler: function(args) {
+                    lookup.runLookup(args.x, args.y);
+                },
                 centerOn: function (x, y) {
                     self.pan.x = (self.width / 2 - x);
                     self.pan.y = (self.height / 2 - y);
@@ -599,10 +603,10 @@ window.App = (function () {
                         self.update();
                     });
 
-                    self.elements.container.on("wheel", function (evt) {
+                    self.elements.container[0].addEventListener("wheel", function(evt) {
                         if (!self.allowDrag) return;
                         var oldScale = self.scale;
-                        if (evt.originalEvent.deltaY > 0) {
+                        if (evt.deltaY > 0) {
                             self.nudgeScale(-1);
                         } else {
                             self.nudgeScale(1);
@@ -618,36 +622,63 @@ window.App = (function () {
                             self.update();
                             place.update();
                         }
-                    });
+                    }, {passive: true});
 
                     // now init the movement
-                    var downX, downY;
+                    var downX, downY, downStart;
                     self.elements.board_render.on("pointerdown mousedown", function (evt) {
                         downX = evt.clientX;
                         downY = evt.clientY;
-                    }).on("touchstart", function (evt) {
-                        downX = evt.originalEvent.changedTouches[0].clientX;
-                        downY = evt.originalEvent.changedTouches[0].clientY;
+                        downStart = Date.now();
+                        if (evt.button != null && evt.button === 0 && self.holdTimer === -1) { //evt.button: 0 => LMB
+                            self.holdTimer = setTimeout(self._holdHandler, 500, {x: evt.clientX, y: evt.clientY});
+                        }
+                    }).on("pointermove mousemove", function(e) {
+                        if (self.holdTimer === -1) return;
+                        if (Math.abs(downX - e.clientX) > 5 || Math.abs(downY - e.clientY) > 5) {
+                            clearTimeout(self.holdTimer);
+                            self.holdTimer = -1;
+                        }
                     }).on("pointerup mouseup touchend", function (evt) {
                         if (evt.shiftKey === true) return;
+                        if (self.holdTimer !== -1) {
+                            clearTimeout(self.holdTimer);
+                        }
+                        self.holdTimer = -1;
                         var touch = false,
                             clientX = evt.clientX,
-                            clientY = evt.clientY;
+                            clientY = evt.clientY,
+                            downDelta = Date.now() - downStart;
                         if (evt.type === 'touchend') {
                             touch = true;
-                            clientX = evt.originalEvent.changedTouches[0].clientX;
-                            clientY = evt.originalEvent.changedTouches[0].clientY;
+                            clientX = evt.changedTouches[0].clientX;
+                            clientY = evt.changedTouches[0].clientY;
                         }
                         var dx = Math.abs(downX - clientX),
                             dy = Math.abs(downY - clientY);
-                        if (dx < 5 && dy < 5 && (evt.button === 0 || touch)) {
+                        if (dx < 5 && dy < 5 && (evt.button === 0 || touch) && downDelta < 500) {
                             var pos = self.fromScreen(clientX, clientY);
                             place.place(pos.x | 0, pos.y | 0);
                         }
+                        downDelta = 0;
                     }).contextmenu(function (evt) {
                         evt.preventDefault();
                         place.switch(-1);
                     });
+                    self.elements.board_render[0].addEventListener("touchstart", function(evt) {
+                        if (self.holdTimer === -1) {
+                            self.holdTimer = setTimeout(self._holdHandler, 1000, {x: evt.changedTouches[0].clientX, y: evt.changedTouches[0].clientY});
+                        }
+                        downX = evt.changedTouches[0].clientX;
+                        downY = evt.changedTouches[0].clientY;
+                    }, {passive: false});
+                    self.elements.board_render[0].addEventListener("touchmove", function(e) {
+                        if (self.holdTimer === -1) return;
+                        if (Math.abs(downX - e.changedTouches[0].clientX) > 5 || Math.abs(downY - e.changedTouches[0].clientY) > 5) {
+                            clearTimeout(self.holdTimer);
+                            self.holdTimer = -1;
+                        }
+                    }, {passive: false});
                 },
                 init: function () {
                     $(window).on("pxls:queryUpdated", (evt, propName, oldValue, newValue) => {
@@ -1680,41 +1711,44 @@ window.App = (function () {
                         })
                     ).fadeIn(200);
                 },
+                runLookup(clientX, clientY) {
+                    const pos = board.fromScreen(clientX, clientY);
+                    $.get("/lookup", {x: Math.floor(pos.x), y: Math.floor(pos.y)}, function (data) {
+                        if (data) {
+                            data.coords = "(" + data.x + ", " + data.y + ")";
+                            var delta = ((new Date()).getTime() - data.time) / 1000;
+                            if (delta > 24*3600) {
+                                data.time_str = (new Date(data.time)).toLocaleString();
+                            } else if (delta < 5) {
+                                data.time_str = 'just now';
+                            } else {
+                                var secs = Math.floor(delta % 60),
+                                    secsStr = secs < 10 ? "0" + secs : secs,
+                                    minutes = Math.floor((delta / 60)) % 60,
+                                    minuteStr = minutes < 10 ? "0" + minutes : minutes,
+                                    hours = Math.floor(delta / 3600),
+                                    hoursStr = hours < 10 ? "0" + hours : hours;
+                                data.time_str = hoursStr+":"+minuteStr+":"+secsStr+" ago";
+                            }
+                            if (self.handle) {
+                                self.handle(data);
+                            } else {
+                                self.create(data);
+                            }
+                        } else {
+                            self.elements.lookup.fadeOut(200);
+                        }
+                    }).fail(function () {
+                        self.elements.lookup.fadeOut(200);
+                    });
+                },
                 init: function () {
                     self.elements.lookup.hide();
                     self.elements.prompt.hide();
                     board.getRenderBoard().on("click", function (evt) {
                         if (evt.shiftKey) {
                             evt.preventDefault();
-                            var pos = board.fromScreen(evt.clientX, evt.clientY);
-                            $.get("/lookup", {x: Math.floor(pos.x), y: Math.floor(pos.y)}, function (data) {
-                                if (data) {
-                                    data.coords = "(" + data.x + ", " + data.y + ")";
-                                    var delta = ((new Date()).getTime() - data.time) / 1000;
-                                    if (delta > 24*3600) {
-                                        data.time_str = (new Date(data.time)).toLocaleString();
-                                    } else if (delta < 5) {
-                                        data.time_str = 'just now';
-                                    } else {
-                                        var secs = Math.floor(delta % 60),
-                                            secsStr = secs < 10 ? "0" + secs : secs,
-                                            minutes = Math.floor((delta / 60)) % 60,
-                                            minuteStr = minutes < 10 ? "0" + minutes : minutes,
-                                            hours = Math.floor(delta / 3600),
-                                            hoursStr = hours < 10 ? "0" + hours : hours;
-                                        data.time_str = hoursStr+":"+minuteStr+":"+secsStr+" ago";
-                                    }
-                                    if (self.handle) {
-                                        self.handle(data);
-                                    } else {
-                                        self.create(data);
-                                    }
-                                } else {
-                                    self.elements.lookup.fadeOut(200);
-                                }
-                            }).fail(function () {
-                                self.elements.lookup.fadeOut(200);
-                            });
+                            self.runLookup(evt.clientX, evt.clientY);
                         }
                     });
                 },
@@ -1728,6 +1762,7 @@ window.App = (function () {
             return {
                 init: self.init,
                 registerHandle: self.registerHandle,
+                runLookup: self.runLookup,
                 clearHandle: self.clearHandle
             };
         })(),
@@ -1937,15 +1972,26 @@ window.App = (function () {
                 },
                 init: function () {
                     self.elements.coords.hide();
-                    board.getRenderBoard().on("pointermove mousemove", function (evt) {
+                    const _board = board.getRenderBoard()[0];
+                    _board.addEventListener("pointermove", pointerHandler, {passive: false});
+                    _board.addEventListener("mousemove", pointerHandler, {passive: false});
+                    _board.addEventListener("touchstart", touchHandler, {passive: false});
+                    _board.addEventListener("touchmove", touchHandler, {passive: false});
+                    // board.getRenderBoard().on("pointermove mousemove", function (evt) {
+                    // }).on("touchstart touchmove", function (evt) {
+                    // });
+
+                    function pointerHandler(evt) {
                         var boardPos = board.fromScreen(evt.clientX, evt.clientY);
 
                         self.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")").fadeIn(200);
-                    }).on("touchstart touchmove", function (evt) {
-                        var boardPos = board.fromScreen(evt.originalEvent.changedTouches[0].clientX, evt.originalEvent.changedTouches[0].clientY);
+                    }
+
+                    function touchHandler(evt) {
+                        var boardPos = board.fromScreen(evt.changedTouches[0].clientX, evt.changedTouches[0].clientY);
 
                         self.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")").fadeIn(200);
-                    });
+                    }
                 }
             };
             return {
