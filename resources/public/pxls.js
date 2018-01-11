@@ -674,6 +674,7 @@ window.App = (function () {
                         }
                         downX = evt.changedTouches[0].clientX;
                         downY = evt.changedTouches[0].clientY;
+                        downStart = Date.now();
                     }, {passive: false});
                     self.elements.board_render[0].addEventListener("touchmove", function(e) {
                         if (self.holdTimer === -1) return;
