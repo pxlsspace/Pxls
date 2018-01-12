@@ -627,62 +627,75 @@ window.App = (function () {
 
                     // now init the movement
                     var downX, downY, downStart;
-                    self.elements.board_render.on("pointerdown mousedown", function (evt) {
-                        downX = evt.clientX;
-                        downY = evt.clientY;
-                        downStart = Date.now();
-                        if (evt.button != null && evt.button === 0 && self.holdTimer === -1) { //evt.button: 0 => LMB
-                            self.holdTimer = setTimeout(self._holdHandler, 500, {x: evt.clientX, y: evt.clientY});
+                    self.elements.board_render.on("pointerdown mousedown", handleInputDown)
+                        .on("pointermove mousemove", handleInputMove)
+                        .on("pointerup mouseup touchend", handleInputUp)
+                        .contextmenu(function (evt) {
+                            evt.preventDefault();
+                            place.switch(-1);
+                        });
+
+                    //Separated some of these events from jQuery to deal with chrome's complaints about passive event violations.
+                    self.elements.board_render[0].addEventListener("touchstart", handleInputDown, {passive: false});
+                    self.elements.board_render[0].addEventListener("touchmove", handleInputMove, {passive: false});
+
+                    function handleInputDown(event) {
+                        let clientX = 0,
+                            clientY = 0,
+                            prereq = true;
+                        if (event.changedTouches && event.changedTouches[0]) {
+                            clientX = event.changedTouches[0].clientX;
+                            clientY = event.changedTouches[0].clientY;
+                        } else {
+                            clientX = event.clientX;
+                            clientY = event.clientY;
+                            if (event.button != null) prereq = event.button === 0; //if there are buttons, is the the left mouse button?
                         }
-                    }).on("pointermove mousemove", function(e) {
+                        downX = clientX, downY = clientY;
+                        if (prereq && self.holdTimer === -1) {
+                            self.holdTimer = setTimeout(self._holdHandler, 1000, {x: clientX, y: clientY});
+                        }
+                        downStart = Date.now();
+                    }
+                    function handleInputMove(event) {
                         if (self.holdTimer === -1) return;
-                        if (Math.abs(downX - e.clientX) > 5 || Math.abs(downY - e.clientY) > 5) {
+                        let clientX = -1, clientY = -1;
+
+                        if (event.changedTouches && event.changedTouches[0]) {
+                            clientX = event.changedTouches[0].clientX;
+                            clientY = event.changedTouches[0].clientY;
+                        } else {
+                            clientX = event.clientX;
+                            clientY = event.clientY;
+                        }
+                        if (Math.abs(downX - clientX) > 5 || Math.abs(downY - clientY) > 5) {
                             clearTimeout(self.holdTimer);
                             self.holdTimer = -1;
                         }
-                    }).on("pointerup mouseup touchend", function (evt) {
-                        if (evt.shiftKey === true) return;
+                    }
+                    function handleInputUp(event) {
+                        if (event.shiftKey === true) return;
                         if (self.holdTimer !== -1) {
                             clearTimeout(self.holdTimer);
                         }
                         self.holdTimer = -1;
                         var touch = false,
-                            clientX = evt.clientX,
-                            clientY = evt.clientY,
+                            clientX = event.clientX,
+                            clientY = event.clientY,
                             downDelta = Date.now() - downStart;
-                        if (evt.type === 'touchend') {
+                        if (event.type === 'touchend') {
                             touch = true;
-                            clientX = evt.changedTouches[0].clientX;
-                            clientY = evt.changedTouches[0].clientY;
+                            clientX = event.changedTouches[0].clientX;
+                            clientY = event.changedTouches[0].clientY;
                         }
                         var dx = Math.abs(downX - clientX),
                             dy = Math.abs(downY - clientY);
-                        if (dx < 5 && dy < 5 && (evt.button === 0 || touch) && downDelta < 500) {
+                        if (dx < 5 && dy < 5 && (event.button === 0 || touch) && downDelta < 500) {
                             var pos = self.fromScreen(clientX, clientY);
                             place.place(pos.x | 0, pos.y | 0);
                         }
                         downDelta = 0;
-                    }).contextmenu(function (evt) {
-                        evt.preventDefault();
-                        place.switch(-1);
-                    });
-
-                    //Separated some of these events from jQuery to deal with chrome's complaints about passive event violations. Has around 50% market share so I suppose I should care what they say.
-                    self.elements.board_render[0].addEventListener("touchstart", function(evt) {
-                        if (self.holdTimer === -1) {
-                            self.holdTimer = setTimeout(self._holdHandler, 1000, {x: evt.changedTouches[0].clientX, y: evt.changedTouches[0].clientY});
-                        }
-                        downX = evt.changedTouches[0].clientX;
-                        downY = evt.changedTouches[0].clientY;
-                        downStart = Date.now();
-                    }, {passive: false});
-                    self.elements.board_render[0].addEventListener("touchmove", function(e) {
-                        if (self.holdTimer === -1) return;
-                        if (Math.abs(downX - e.changedTouches[0].clientX) > 5 || Math.abs(downY - e.changedTouches[0].clientY) > 5) {
-                            clearTimeout(self.holdTimer);
-                            self.holdTimer = -1;
-                        }
-                    }, {passive: false});
+                    }
                 },
                 init: function () {
                     $(window).on("pxls:queryUpdated", (evt, propName, oldValue, newValue) => {
