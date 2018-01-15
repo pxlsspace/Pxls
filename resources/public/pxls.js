@@ -525,10 +525,13 @@ window.App = (function () {
                 rgbPalette: [],
                 loaded: false,
                 pixelBuffer: [],
-                holdTimer: -1,
-                _holdHandler: function(args) {
-                    self.holdTimer = -1;
-                    lookup.runLookup(args.x, args.y);
+                holdTimer: {
+                    id: -1,
+                    holdTimeout: 500,
+                    handler: function(args) { //self.holdTimer.handler
+                        self.holdTimer.id = -1;
+                        lookup.runLookup(args.x, args.y);
+                    }
                 },
                 centerOn: function (x, y) {
                     self.pan.x = (self.width / 2 - x);
@@ -652,13 +655,13 @@ window.App = (function () {
                             if (event.button != null) prereq = event.button === 0; //if there are buttons, is the the left mouse button?
                         }
                         downX = clientX, downY = clientY;
-                        if (prereq && self.holdTimer === -1) {
-                            self.holdTimer = setTimeout(self._holdHandler, 1000, {x: clientX, y: clientY});
+                        if (prereq && self.holdTimer.id === -1) {
+                            self.holdTimer.id = setTimeout(self.holdTimer.handler, self.holdTimer.holdTimeout, {x: clientX, y: clientY});
                         }
                         downStart = Date.now();
                     }
                     function handleInputMove(event) {
-                        if (self.holdTimer === -1) return;
+                        if (self.holdTimer.id === -1) return;
                         let clientX = -1, clientY = -1;
 
                         if (event.changedTouches && event.changedTouches[0]) {
@@ -669,16 +672,16 @@ window.App = (function () {
                             clientY = event.clientY;
                         }
                         if (Math.abs(downX - clientX) > 5 || Math.abs(downY - clientY) > 5) {
-                            clearTimeout(self.holdTimer);
-                            self.holdTimer = -1;
+                            clearTimeout(self.holdTimer.id);
+                            self.holdTimer.id = -1;
                         }
                     }
                     function handleInputUp(event) {
                         if (event.shiftKey === true) return;
-                        if (self.holdTimer !== -1) {
-                            clearTimeout(self.holdTimer);
+                        if (self.holdTimer.id !== -1) {
+                            clearTimeout(self.holdTimer.id);
                         }
-                        self.holdTimer = -1;
+                        self.holdTimer.id = -1;
                         var touch = false,
                             clientX = event.clientX,
                             clientY = event.clientY,
