@@ -2267,7 +2267,7 @@ window.App = (function () {
             template.queueUpdate(t);
         },
         alert: function(s) {
-            alert.show(s);
+            alert.show($('<span>').text(s).html());
         },
         doPlace: function() {
             ban.me();

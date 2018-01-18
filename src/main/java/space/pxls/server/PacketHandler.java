@@ -11,6 +11,8 @@ import space.pxls.data.DBPixelPlacement;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.util.PxlsTimer;
+import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
+
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -95,7 +97,7 @@ public class PacketHandler {
     private void handleAdminMessage(WebSocketChannel channel, User user, ClientAdminMessage obj) {
         User u = App.getUserManager().getByName(obj.getUsername());
         if (u != null) {
-            ServerAlert msg = new ServerAlert(obj.getMessage());
+            ServerAlert msg = new ServerAlert(escapeHtml4(obj.getMessage()));
             for (WebSocketChannel ch : u.getConnections()) {
                 server.send(ch, msg);
             }
