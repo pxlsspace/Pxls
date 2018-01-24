@@ -139,7 +139,7 @@ public class PacketHandler {
         if (thisPixel.id != recentPixel.id) return;
 
         if (user.lastPlaceWasStack()) {
-            user.setStacked(Math.max(user.getStacked() + 1, App.getConfig().getInt("stacking.maxStacked")));
+            user.setStacked(Math.min(user.getStacked() + 1, App.getConfig().getInt("stacking.maxStacked")));
             sendStackedCount(user);
         }
         user.setLastUndoTime();
