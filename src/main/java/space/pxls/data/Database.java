@@ -262,6 +262,10 @@ public class Database implements Closeable {
         getHandle().updateUserIP(user.getId(), ip);
     }
 
+    public void updateUserStacked(User user, int stacked) {
+        getHandle().updateUserStacked(user.getId(), stacked);
+    }
+
     public String getUserBanReason(int id) {
         return getHandle().getUserBanReason(id).ban_reason;
     }
