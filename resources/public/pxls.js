@@ -1492,7 +1492,7 @@ window.App = (function () {
                         return;
                     }
                     if (!ls.get("audio_muted")) {
-                        self.audio.play();
+                        self.audio.cloneNode(false).play();
                     }
                     self._place(x, y);
                 },
@@ -1911,14 +1911,13 @@ window.App = (function () {
                 elements: {
                     stackCount: $("#stackCount")
                 },
-                _seconds: -1,
-                timerID: -1,
                 init: function() {
                     socket.on("stack", function(data) {
                         self.updateStacked(data.count);
                     });
                 },
                 updateStacked: function(count) {
+                    if (count > 0) timer.playAudio();
                     self.elements.stackCount[0].innerText = count.toString();
                 }
             };
@@ -1983,9 +1982,7 @@ window.App = (function () {
 
                     self.runningTimer = false;
                     if (!self.hasFiredNotification) {
-                        if (!ls.get("audio_muted")) {
-                            self.audio.play();
-                        }
+                        self.playAudio();
                         if (!self.focus) {
                             notification.show("Your next pixel is available!");
                         }
@@ -2010,11 +2007,17 @@ window.App = (function () {
                         self.hasFiredNotification = data.wait === 0;
                         self.update();
                     });
+                },
+                playAudio: function() {
+                    if (!ls.get("audio_muted")) {
+                        self.audio.play();
+                    }
                 }
             };
             return {
                 init: self.init,
-                cooledDown: self.cooledDown
+                cooledDown: self.cooledDown,
+                playAudio: self.playAudio
             };
         })(),
         // this takes care of displaying the coordinates the mouse is over
