@@ -1565,15 +1565,25 @@ window.App = (function () {
                     board.getRenderBoard().on("pointermove mousemove", function (evt) {
                         self.update(evt.clientX, evt.clientY);
                     });
-                    $(window).on("pointermove mousemove", function (evt) {
+                    $(window).on("pointermove mousemove touchstart touchmove", function (evt) {
                         if (self.color === -1) {
                             return;
                         }
-                        self.elements.cursor.css("transform", "translate(" + evt.clientX + "px, " + evt.clientY + "px)");
+                        let x = 0,
+                            y = 0;
+                        if (evt.changedTouches && evt.changedTouches[0]) {
+                            x = evt.changedTouches[0].clientX;
+                            y = evt.changedTouches[0].clientY;
+                        } else {
+                            x = evt.clientX;
+                            y = evt.clientY;
+                        }
+
+                        self.elements.cursor.css("transform", "translate(" + x + "px, " + y + "px)");
                         if (self.can_undo) {
                             return;
                         }
-                        self.elements.undo.css("transform", "translate(" + evt.clientX + "px, " + evt.clientY + "px)");
+                        self.elements.undo.css("transform", "translate(" + x + "px, " + y + "px)");
                     }).keydown(function (evt) {
                         if (self.can_undo && evt.keyCode == 90 && evt.ctrlKey) {
                             self.undo(evt);
