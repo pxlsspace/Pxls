@@ -5,6 +5,9 @@ target/
 run/
 logs/
 backups/
+.settings/
+.classpath
+.project
 board.dat
 default_board.dat
 heatmap.dat

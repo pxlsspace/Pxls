@@ -1909,16 +1909,23 @@ window.App = (function () {
         stackHelper = (function() {
             var self = {
                 elements: {
-                    stackCount: $("#stackCount")
+                    stackCount: $("#stack-count")
                 },
                 init: function() {
+                    self.updateStacked(0);
+
                     socket.on("stack", function(data) {
                         self.updateStacked(data.count);
                     });
                 },
                 updateStacked: function(count) {
-                    if (count > 0) timer.playAudio();
-                    self.elements.stackCount[0].innerText = count.toString();
+                    if (count <= 0) {
+                        self.elements.stackCount.hide()
+                    } else {
+			timer.playAudio();
+                        self.elements.stackCount.show()
+                        self.elements.stackCount.text(count + 1);
+                    }
                 }
             };
 
@@ -1982,7 +1989,9 @@ window.App = (function () {
 
                     self.runningTimer = false;
                     if (!self.hasFiredNotification) {
-                        self.playAudio();
+                        if (!ls.get("audio_muted")) {
+                            self.playAudio();
+                        }
                         if (!self.focus) {
                             notification.show("Your next pixel is available!");
                         }
