@@ -1899,17 +1899,24 @@ window.App = (function () {
         stackHelper = (function() {
             var self = {
                 elements: {
-                    stackCount: $("#stackCount")
+                    stackCount: $("#stack-count")
                 },
                 _seconds: -1,
                 timerID: -1,
                 init: function() {
+                    self.updateStacked(0);
+
                     socket.on("stack", function(data) {
                         self.updateStacked(data.count);
                     });
                 },
                 updateStacked: function(count) {
-                    self.elements.stackCount[0].innerText = count.toString();
+                    if (count <= 0) {
+                        self.elements.stackCount.hide();
+                    } else {
+                        self.elements.stackCount.show();
+                        self.elements.stackCount.text(count + 1);
+                    }
                 }
             };
 
