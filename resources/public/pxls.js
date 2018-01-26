@@ -1912,9 +1912,9 @@ window.App = (function () {
                 },
                 updateStacked: function(count) {
                     if (count <= 0) {
-                        self.elements.stackCount.hide()
+                        self.elements.stackCount.hide();
                     } else {
-                        self.elements.stackCount.show()
+                        self.elements.stackCount.show();
                         self.elements.stackCount.text(count + 1);
                     }
                 }
