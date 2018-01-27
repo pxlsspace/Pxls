@@ -418,7 +418,10 @@ a, a:hover, a:visited, a:active {
     background-color: white;
     border: 1px solid black;
     padding: 0 8px;
-    display: none;
+    user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
 }
 
 #undo {

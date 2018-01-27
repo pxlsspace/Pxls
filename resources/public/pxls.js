@@ -1601,6 +1601,15 @@ window.App = (function () {
                         board.refresh();
                         board.update(true);
                     });
+                    socket.on("ACK", function(data) {
+                        switch(data.ackFor) {
+                            case "PLACE":
+                            case "UNDO":
+                                if (stackHelper.getStacked() === 0)
+                                    stackHelper.setStackCountText(data.ackFor === "PLACE" ? 0 : 1);
+                                break;
+                        }
+                    });
                     socket.on("captcha_required", function (data) {
                         grecaptcha.reset();
                         grecaptcha.execute();
@@ -1908,31 +1917,34 @@ window.App = (function () {
         })(),
         stackHelper = (function() {
             var self = {
+                _stacked: -1,
                 elements: {
                     stackCount: $("#stack-count")
                 },
                 init: function() {
-                    self.updateStacked(0);
-
                     socket.on("stack", function(data) {
-                        self.updateStacked(data.count);
+                        self.updateStacked(data.count, data.cause);
+                        self._stacked = data.count;
                     });
                 },
-                updateStacked: function(count) {
-                    if (count <= 0) {
-                        self.elements.stackCount.hide()
-                    } else {
-			timer.playAudio();
-                        self.elements.stackCount.show()
-                        self.elements.stackCount.text(count + 1);
-                    }
+                updateStacked: function(count, cause) {
+                    if (count > 0 && cause === "gain") timer.playAudio();
+                    self.setStackCountText(count+1);
+                },
+                setStackCountText(text) {
+                    self.elements.stackCount.text(text);
+                },
+                getStacked() {
+                    return self._stacked;
                 }
             };
 
             return {
                 init: self.init,
                 updateTimer: self.updateTimer,
-                updateStacked: self.updateStacked
+                updateStacked: self.updateStacked,
+                getStacked: self.getStacked,
+                setStackCountText: self.setStackCountText
             };
         })(),
         // this takes care of the countdown timer
@@ -1989,12 +2001,11 @@ window.App = (function () {
 
                     self.runningTimer = false;
                     if (!self.hasFiredNotification) {
-                        if (!ls.get("audio_muted")) {
                             self.playAudio();
-                        }
                         if (!self.focus) {
                             notification.show("Your next pixel is available!");
                         }
+                        if (stackHelper.getStacked() === 0) stackHelper.setStackCountText(1);
                         self.hasFiredNotification = true;
                     }
 

@@ -191,6 +191,28 @@ public class App {
                 for (User user : server.getAuthedUsers().values()) {
                     System.out.println(String.format("[%d] %s (%s) (num connections: %d)", user.getId(), user.getName(), user.getRole().name(), user.getConnections().size()));
                 }
+            } else if (token[0].equalsIgnoreCase("stack")) {
+                //stack USERNAME[ set AMOUNT]
+                if (token.length > 1) {
+                    User user = userManager.getByName(token[1]);
+                    if (user != null) {
+                        if (token.length == 2) {
+                            System.out.printf("User %s has %d stacked%n", user.getName(), user.getStacked());
+                        } else {
+                            if (token[2].equalsIgnoreCase("set")) {
+                                try {
+                                    Integer toSet = Integer.valueOf(token[3]);
+                                    user.setStacked(toSet);
+                                    server.getPacketHandler().sendStackedCount(user, "override");
+                                } catch (NumberFormatException ignored) {
+                                    System.out.printf("Invalid value: %s%n", token[3]);
+                                }
+                            }
+                        }
+                    } else {
+                        System.out.printf("Unknown user: %s%n", token[1]);
+                    }
+                }
             }
         } catch (RuntimeException e) {
             e.printStackTrace();
@@ -380,7 +402,7 @@ public class App {
             if (lastPixelTime > 0 && delta >= target) {
                 if (user.getStacked() < maxStacked) {
                     user.setStacked(user.getStacked() + 1);
-                    server.getPacketHandler().sendStackedCount(user);
+                    server.getPacketHandler().sendStackedCount(user, "gain");
                 }
             }
         }

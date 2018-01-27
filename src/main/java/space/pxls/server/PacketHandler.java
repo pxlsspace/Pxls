@@ -58,7 +58,7 @@ public class PacketHandler {
         if (user != null) {
             userdata(channel, user);
             sendCooldownData(channel, user);
-            sendStackedCount(channel, user);
+            sendStackedCount(channel, user, "connect");
             user.flagForCaptcha();
             server.addAuthedUser(user);
             user.setInitialAuthTime(Instant.now().toEpochMilli());
@@ -140,7 +140,7 @@ public class PacketHandler {
 
         if (user.lastPlaceWasStack()) {
             user.setStacked(Math.min(user.getStacked() + 1, App.getConfig().getInt("stacking.maxStacked")));
-            sendStackedCount(user);
+            sendStackedCount(user, "undo");
         }
         user.setLastUndoTime();
         user.setCooldown(0);
@@ -149,11 +149,13 @@ public class PacketHandler {
             App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
             App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, "(user undo)", false);
             broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
+            ackUndo(user, lastPixel.x, lastPixel.y);
         } else {
             byte defaultColor = App.getDefaultColor(thisPixel.x, thisPixel.y);
             App.getDatabase().putUserUndoPixel(thisPixel.x, thisPixel.y, defaultColor, user, thisPixel.id);
             App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, "(user undo)", false);
             broadcastPixelUpdate(thisPixel.x, thisPixel.y, defaultColor);
+            ackUndo(user, thisPixel.x, thisPixel.y);
         }
         sendCooldownData(user);
     }
@@ -212,13 +214,14 @@ public class PacketHandler {
                         App.putPixel(cp.getX(), cp.getY(), cp.getColor(), user, mod_action, ip, true);
                         App.saveMap();
                         broadcastPixelUpdate(cp.getX(), cp.getY(), cp.getColor());
+                        ackPlace(user, cp.getX(), cp.getY());
                     }
                     if (!user.isOverridingCooldown()) {
                         user.setLastPixelTime();
                         if (user.getStacked() > 0) {
                             user.setLastPlaceWasStack(true);
                             user.setStacked(user.getStacked()-1);
-                            sendStackedCount(user);
+                            sendStackedCount(user, "consume");
                         } else {
                             user.setLastPlaceWasStack(false);
                             user.setCooldown(seconds);
@@ -294,12 +297,26 @@ public class PacketHandler {
         server.broadcast(new ServerPlace(Collections.singleton(new ServerPlace.Pixel(x, y, color))));
     }
 
-    public void sendStackedCount(WebSocketChannel ch, User user) {
-        server.send(ch, new ServerStack(user.getStacked()));
+    public void sendStackedCount(WebSocketChannel ch, User user, String cause) {
+        server.send(ch, new ServerStack(user.getStacked(), cause));
     }
-    public void sendStackedCount(User user) {
+    public void sendStackedCount(User user, String cause) {
         for (WebSocketChannel ch : user.getConnections()) {
-            sendStackedCount(ch, user);
+            sendStackedCount(ch, user, cause);
+        }
+    }
+
+    private void ackUndo(User user, int x, int y) {
+        ack(user, "UNDO", x, y);
+    }
+
+    private void ackPlace(User user, int x, int y) {
+        ack(user, "PLACE", x, y);
+    }
+
+    private void ack(User user, String _for, int x, int y) {
+        for (WebSocketChannel ch : user.getConnections()) {
+            server.send(ch, new ServerACK(_for, x, y));
         }
     }
 
