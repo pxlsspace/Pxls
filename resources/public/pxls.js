@@ -755,6 +755,7 @@ window.App = (function () {
                         self.width = data.width;
                         self.height = data.height;
                         place.setPalette(data.palette);
+                        stackHelper.setMax(data.maxStacked);
                         if (data.captchaKey) {
                             $(".g-recaptcha").attr("data-sitekey", data.captchaKey);
 
@@ -1475,6 +1476,7 @@ window.App = (function () {
                     self.color = newColor;
                     $(".palette-color").removeClass("active");
 
+                    $("body").toggleClass("show-placeable-bubble", newColor === -1);
                     if (newColor === -1) {
                         self.elements.cursor.hide();
                         self.elements.reticule.hide();
@@ -1537,7 +1539,7 @@ window.App = (function () {
                 },
                 setPalette: function (palette) {
                     self.palette = palette;
-                    self.elements.palette.empty().append(
+                    self.elements.palette.find(".palette-color").remove().end().append(
                         $.map(self.palette, function(p, idx) {
                             return $("<div>")
                                 .addClass("palette-color")
@@ -1606,7 +1608,7 @@ window.App = (function () {
                             case "PLACE":
                             case "UNDO":
                                 if (stackHelper.getStacked() === 0)
-                                    stackHelper.setStackCountText(data.ackFor === "PLACE" ? 0 : 1);
+                                    stackHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
                                 break;
                         }
                     });
@@ -1918,8 +1920,9 @@ window.App = (function () {
         stackHelper = (function() {
             var self = {
                 _stacked: -1,
+                maxStacked: -1,
                 elements: {
-                    stackCount: $("#stack-count")
+                    stackCount: $("#placeableCount-bubble, #placeableCount-cursor")
                 },
                 init: function() {
                     socket.on("stack", function(data) {
@@ -1929,10 +1932,13 @@ window.App = (function () {
                 },
                 updateStacked: function(count, cause) {
                     if (count > 0 && cause === "gain") timer.playAudio();
-                    self.setStackCountText(count+1);
+                    self.setPlaceableText(count+1);
                 },
-                setStackCountText(text) {
-                    self.elements.stackCount.text(text);
+                setMax(maxStacked) {
+                    self.maxStacked = maxStacked+1;
+                },
+                setPlaceableText(placeable) {
+                    self.elements.stackCount.text(`${placeable}/${self.maxStacked}`);
                 },
                 getStacked() {
                     return self._stacked;
@@ -1944,7 +1950,8 @@ window.App = (function () {
                 updateTimer: self.updateTimer,
                 updateStacked: self.updateStacked,
                 getStacked: self.getStacked,
-                setStackCountText: self.setStackCountText
+                setPlaceableText: self.setPlaceableText,
+                setMax: self.setMax
             };
         })(),
         // this takes care of the countdown timer
@@ -2005,7 +2012,7 @@ window.App = (function () {
                         if (!self.focus) {
                             notification.show("Your next pixel is available!");
                         }
-                        if (stackHelper.getStacked() === 0) stackHelper.setStackCountText(1);
+                        if (stackHelper.getStacked() === 0) stackHelper.setPlaceableText(1);
                         self.hasFiredNotification = true;
                     }
 
@@ -2022,6 +2029,11 @@ window.App = (function () {
                     }).blur(function() {
                         self.focus = false;
                     });
+                    setTimeout(function() {
+                        if (!self.cooledDown()) {
+                            stackHelper.setPlaceableText(1);
+                        }
+                    }, 250);
                     socket.on("cooldown", function (data) {
                         self.cooldown = (new Date()).getTime() + (data.wait * 1000);
                         self.hasFiredNotification = data.wait === 0;

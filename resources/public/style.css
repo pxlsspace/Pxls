@@ -333,8 +333,9 @@ a, a:hover, a:visited, a:active {
 }
 
 .palette-overlay {
-    position: fixed;
-    bottom: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
     padding: 0 32px;
     width: 100%;
     background-color: rgba(255, 255, 255, 0.9);
@@ -407,11 +408,15 @@ a, a:hover, a:visited, a:active {
     border-radius: 3px;
 }
 
-#stack-count {
+body:not(.show-placeable-bubble) #placeableInfoBubble {
+    display: none;
+}
+
+#placeableCount-cursor {
     position: absolute;
     min-width: 24px;
     height: 24px;
-    transform: translate(20px, 20px);
+    transform: translate(15px, 20px);
     line-height: 24px;
     border-radius: 16px;
     text-align: center;

@@ -14,7 +14,7 @@
 
     {{head}}
 </head>
-<body>
+<body class="show-placeable-bubble">
 
 <div id="reconnecting">Lost connection to server, reconnecting...</div>
 
@@ -92,13 +92,15 @@
             You are not signed in. <a href="#">Sign in with...</a>
         </div>
         <div id="user-message" class="palette-overlay"></div>
-        <div id="cd-timer-overlay" class="palette-overlay"></div>
-        <div id="palette"></div>
+        <div id="palette">
+            <div id="cd-timer-overlay" class="palette-overlay"></div>
+        </div>
     </div>
 
     <div class="left">
         <div id="coords" class="bubble"></div>
         <div id="cd-timer-bubble" class="bubble"></div>
+        <div id="placeableInfoBubble" class="bubble">Pixels available: <span id="placeableCount-bubble">0/0</span></div>
     </div>
     <div class="right">
         <div id="userinfo" class="bubble"><span class="name"></span> <a href="/logout" class="logout">logout</a></div>
@@ -109,7 +111,7 @@
 <div id="lookup"></div>
 <div id="loading"><span>Loading...</span></div>
 <div id="cursor">
-    <div id="stack-count">0</div>
+    <div id="placeableCount-cursor">0/0</div>
 </div>
 <div id="undo" class="button">Undo</div>
 <div id="reticule"></div>

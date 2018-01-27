@@ -8,6 +8,7 @@ data class CanvasInfo (
         val palette: List<String>,
         val captchaKey: String,
         val heatmapCooldown: Int,
+        val maxStacked: Int,
         val authServices: Map<String, AuthService>
 )
 

@@ -428,6 +428,7 @@ public class WebHandler {
                         App.getConfig().getStringList("board.palette"),
                         App.getConfig().getString("captcha.key"),
                         (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS),
+                        (int) App.getConfig().getInt("stacking.maxStacked"),
                         services
                 )));
     }
