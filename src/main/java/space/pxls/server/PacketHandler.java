@@ -58,10 +58,12 @@ public class PacketHandler {
         if (user != null) {
             userdata(channel, user);
             sendCooldownData(channel, user);
-            sendStackedCount(channel, user, "connect");
             user.flagForCaptcha();
             server.addAuthedUser(user);
             user.setInitialAuthTime(Instant.now().toEpochMilli());
+            
+            while(user.tickStack(false)); // pop the whole pixel stack
+            sendStackedCount(channel, user, "connect");
         }
         numAllCons++;
 
@@ -300,6 +302,7 @@ public class PacketHandler {
     public void sendStackedCount(WebSocketChannel ch, User user, String cause) {
         server.send(ch, new ServerStack(user.getStacked(), cause));
     }
+
     public void sendStackedCount(User user, String cause) {
         for (WebSocketChannel ch : user.getConnections()) {
             sendStackedCount(ch, user, cause);

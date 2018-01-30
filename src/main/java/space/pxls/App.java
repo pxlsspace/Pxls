@@ -219,17 +219,31 @@ public class App {
         }
     }
 
+    private static int stackMultiplier;
+    private static int stackMaxStacked;
+
     private static void loadConfig() {
         config = ConfigFactory.parseFile(new File("pxls.conf")).withFallback(ConfigFactory.load());
         config.checkValid(ConfigFactory.load());
 
         mapSaveTimer = new PxlsTimer(config.getDuration("board.saveInterval", TimeUnit.SECONDS));
         mapBackupTimer = new PxlsTimer(config.getDuration("board.backupInterval", TimeUnit.SECONDS));
+        stackMultiplier = App.getConfig().getInt("stacking.cooldownMultiplier");
+        stackMaxStacked = App.getConfig().getInt("stacking.maxStacked");
+        
         try {
             Files.deleteIfExists(getStorageDir().resolve("index_cache.html"));
         } catch (IOException e) {
             // do nothing
         }
+    }
+
+    public static int getStackMultiplier() {
+        return stackMultiplier;
+    }
+
+    public static int getStackMaxStacked() {
+        return stackMaxStacked;
     }
 
 
@@ -392,19 +406,8 @@ public class App {
     }
 
     public static void tickStackedPixels() {
-        int multiplier = config.getInt("stacking.cooldownMultiplier");
-        int maxStacked = config.getInt("stacking.maxStacked");
-
         for (User user : server.getAuthedUsers().values()) {
-            long lastPixelTime = user.getLastPixelTime() == 0 ? user.getInitialAuthTime() : user.getLastPixelTime();
-            long delta = (Instant.now().toEpochMilli()-lastPixelTime) / 1000 >> 0;
-            int target = (server.getPacketHandler().getCooldown() * multiplier) * (1 + user.getStacked());
-            if (lastPixelTime > 0 && delta >= target) {
-                if (user.getStacked() < maxStacked) {
-                    user.setStacked(user.getStacked() + 1);
-                    server.getPacketHandler().sendStackedCount(user, "gain");
-                }
-            }
+            user.tickStack();
         }
     }
 

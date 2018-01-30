@@ -268,4 +268,29 @@ public class User {
     public void setLastPlaceWasStack(boolean lastPlaceWasStack) {
         this.lastPlaceWasStack = lastPlaceWasStack;
     }
+
+    public boolean tickStack() {
+        return tickStack(true);
+    }
+
+    public boolean tickStack(boolean sendRes) {
+        int multiplier = App.getStackMultiplier();
+        int maxStacked = App.getStackMaxStacked();
+        
+        int curCD = App.getServer().getPacketHandler().getCooldown();
+        
+        long lastPixelTime = this.lastPixelTime == 0 ? (this.cooldownExpiry == 0 ? initialAuthTime : (this.cooldownExpiry - curCD*1000)) : this.lastPixelTime;
+        long delta = (Instant.now().toEpochMilli()-lastPixelTime) / 1000;
+        int target = (curCD * multiplier) * (1 + getStacked());
+        if (lastPixelTime > 0 && delta >= target) {
+            if (getStacked() < maxStacked) {
+                setStacked(getStacked() + 1);
+                if (sendRes) {
+                    App.getServer().getPacketHandler().sendStackedCount(this, "gain");
+                }
+                return true;
+            }
+        }
+        return false;
+    }
 }
