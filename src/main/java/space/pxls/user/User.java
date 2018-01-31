@@ -269,28 +269,43 @@ public class User {
         this.lastPlaceWasStack = lastPlaceWasStack;
     }
 
-    public boolean tickStack() {
-        return tickStack(true);
+    public void tickStack() {
+        tickStack(true);
     }
 
-    public boolean tickStack(boolean sendRes) {
+    private int addToN(int n) {
+        int s = 0;
+        for (int i = 1; i <= n; i++) {
+            s += i;
+        }
+        return s;
+    }
+
+    public void tickStack(boolean sendRes) {
         int multiplier = App.getStackMultiplier();
         int maxStacked = App.getStackMaxStacked();
         
         int curCD = App.getServer().getPacketHandler().getCooldown();
         
-        long lastPixelTime = this.lastPixelTime == 0 ? (this.cooldownExpiry == 0 ? initialAuthTime : (this.cooldownExpiry - curCD*1000)) : this.lastPixelTime;
-        long delta = (Instant.now().toEpochMilli()-lastPixelTime) / 1000;
-        int target = (curCD * multiplier) * (1 + getStacked());
-        if (lastPixelTime > 0 && delta >= target) {
-            if (getStacked() < maxStacked) {
+        long lastPixelTime = getLastPixelTime() == 0 ? (this.cooldownExpiry == 0 ? getInitialAuthTime() : (this.cooldownExpiry - (curCD*1000))) : getLastPixelTime();
+        if (lastPixelTime == 0) {
+            return;
+        }
+        long delta = (System.currentTimeMillis()-lastPixelTime) / 1000;
+        //System.out.println("=======");
+        while(true) {
+            int target = (curCD * multiplier) * (2 + getStacked() + addToN(getStacked()));
+            //System.out.print(delta);
+            //System.out.print(" : ");
+            //System.out.println(target);
+            if (delta >= target && getStacked() < maxStacked) {
                 setStacked(getStacked() + 1);
                 if (sendRes) {
                     App.getServer().getPacketHandler().sendStackedCount(this, "gain");
                 }
-                return true;
+                continue;
             }
+            return;
         }
-        return false;
     }
 }

@@ -60,9 +60,9 @@ public class PacketHandler {
             sendCooldownData(channel, user);
             user.flagForCaptcha();
             server.addAuthedUser(user);
-            user.setInitialAuthTime(Instant.now().toEpochMilli());
             
-            while(user.tickStack(false)); // pop the whole pixel stack
+            user.setInitialAuthTime(System.currentTimeMillis());
+            user.tickStack(false); // pop the whole pixel stack
             sendStackedCount(channel, user, "connect");
         }
         numAllCons++;
