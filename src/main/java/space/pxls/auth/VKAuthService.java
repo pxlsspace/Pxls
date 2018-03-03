@@ -56,7 +56,7 @@ public class VKAuthService extends AuthService {
     }
 
     public String getIdentifier(String token) throws UnirestException, InvalidAccountException {
-        HttpResponse<JsonNode> me = Unirest.get("https://api.vk.com/method/users.get?access_token=" + token)
+        HttpResponse<JsonNode> me = Unirest.get("https://api.vk.com/method/users.get?access_token=" + token + "&v=5.64")
                 .header("User-Agent", "pxls.space")
                 .asJson();
         JSONObject json = me.getBody().getObject();
@@ -65,7 +65,7 @@ public class VKAuthService extends AuthService {
             return null;
         } else {
             try {
-                return Integer.toString(json.getJSONArray("response").getJSONObject(0).getInt("uid"));
+                return Integer.toString(json.getJSONArray("response").getJSONObject(0).getInt("id"));
             } catch (JSONException e) {
                 return null;
             }
