@@ -270,6 +270,10 @@ public class Database implements Closeable {
         return getHandle().getUserBanReason(id).ban_reason;
     }
 
+    public int getUserPixels(int id) {
+        return getHandle().getUserPixels(id).pixel_count;
+    }
+
     public void clearOldSessions() {
         getHandle().clearOldSessions();
     }

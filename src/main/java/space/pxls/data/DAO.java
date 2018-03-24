@@ -7,7 +7,7 @@ import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
 
 import java.io.Closeable;
 
-@RegisterMapper({DBUser.Mapper.class, DBPixelPlacement.Mapper.class, DBPixelPlacementUser.Mapper.class, DBUserBanReason.Mapper.class})
+@RegisterMapper({DBUser.Mapper.class, DBPixelPlacement.Mapper.class, DBPixelPlacementUser.Mapper.class, DBUserBanReason.Mapper.class, DBUserPixelCount.Mapper.class})
 public interface DAO extends Closeable {
     @SqlUpdate("CREATE TABLE IF NOT EXISTS reports(" +
             "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT," +
@@ -158,6 +158,9 @@ public interface DAO extends Closeable {
 
     @SqlQuery("SELECT ban_reason FROM users WHERE id = :id")
     DBUserBanReason getUserBanReason(@Bind("id") int userId);
+
+    @SqlQuery("SELECT pixel_count FROM users WHERE id = :id")
+    DBUserPixelCount getUserPixels(@Bind("id") int userId);
 
     @SqlQuery("SELECT EXISTS(SELECT 1 FROM pixels WHERE x = :x AND y = :y AND most_recent)")
     boolean didPixelChange(@Bind("x") int x, @Bind("y") int y);

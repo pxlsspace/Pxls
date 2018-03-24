@@ -308,4 +308,8 @@ public class User {
             return;
         }
     }
+
+    public int getPixels() {
+        return App.getDatabase().getUserPixels(this.id);
+    }
 }

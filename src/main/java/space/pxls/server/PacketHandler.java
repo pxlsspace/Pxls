@@ -171,7 +171,14 @@ public class PacketHandler {
         if (user.isBanned()) return;
 
         if (user.canPlace()) {
-            if (user.updateCaptchaFlagPrePlace() && App.isCaptchaEnabled()) {
+            boolean doCaptcha = App.isCaptchaEnabled();
+            if (doCaptcha) {
+                int pixels = App.getConfig().getInt("captcha.maxPixels");
+                if (pixels != 0) {
+                    doCaptcha = user.getPixels() < pixels;
+                }
+            }
+            if (user.updateCaptchaFlagPrePlace() && doCaptcha) {
                 server.send(channel, new ServerCaptchaRequired());
             } else {
                 int c = App.getPixel(cp.getX(), cp.getY());
