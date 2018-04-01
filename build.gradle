@@ -1,0 +1,51 @@
+group = 'space.pxls'
+version = '1.0-SNAPSHOT'
+
+description = """"""
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.2.30"
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'kotlin'
+apply plugin: 'application'
+
+mainClassName = 'space.pxls.App'
+
+defaultTasks 'run'
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    jcenter()
+}
+
+// TODO: Make this a fat jar that works with kotlin.
+jar {
+    manifest {
+        attributes["Implementation-Title"] = project.group
+        attributes["Implementation-Version"] = project.version
+        attributes["Main-Class"] = mainClassName
+    }
+}
+
+dependencies {
+    runtime files('resources')
+    implementation 'io.undertow:undertow-core:1.4.12.Final'
+    implementation 'com.google.code.gson:gson:2.8.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.8.1'
+    implementation 'com.mashape.unirest:unirest-java:1.4.9'
+    implementation 'com.typesafe:config:1.3.1'
+    implementation 'org.jdbi:jdbi:2.78'
+    implementation 'org.mariadb.jdbc:mariadb-java-client:1.5.9'
+    implementation 'com.zaxxer:HikariCP:2.6.1'
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib:1.2.30'
+    implementation 'org.apache.commons:commons-lang3:3.0'
+}
