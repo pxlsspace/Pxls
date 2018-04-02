@@ -6,18 +6,15 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
 import org.json.JSONException;
-import space.pxls.App;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
-import java.util.concurrent.TimeUnit;
 
 public class TumblrAuthService extends AuthService {
     public TumblrAuthService(String id) {
         super(id);
     }
 
-    private transient Map<String, String> tokens = new ConcurrentHashMap<String, String>();
+    private transient Map<String, String> tokens = new ConcurrentHashMap<>();
 
     // OAuth1 doesn't have states.... (stuff is instead handled by oauth_token's)
     public String generateState() {
@@ -60,7 +57,7 @@ public class TumblrAuthService extends AuthService {
         return query.get("oauth_token") + "|" + query.get("oauth_token_secret");
     }
 
-    public String getIdentifier(String token) throws UnirestException, InvalidAccountException {
+    public String getIdentifier(String token) throws UnirestException {
         String[] codes = token.split("\\|");
         HttpResponse<JsonNode> me = Unirest.get("https://api.tumblr.com/v2/user/info?" + getOauthRequest("https://api.tumblr.com/v2/user/info", "oauth_token="+codes[0], "oob", "GET", codes[1]))
                 .header("User-Agent", "pxls.space")

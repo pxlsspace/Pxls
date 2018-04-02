@@ -21,9 +21,12 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AuthService {
     private String id;
+    // Gson serialization needs fields, not getters.
+    @SuppressWarnings("unused")
+    private String name = getName();
     private transient Set<String> validStates = ConcurrentHashMap.newKeySet();
 
-    public AuthService(String id) {
+    AuthService(String id) {
         this.id = id;
     }
 
@@ -34,7 +37,7 @@ public abstract class AuthService {
     }
 
     protected static Map<String, String> parseQuery(String s) {
-        Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+        Map<String, String> query_pairs = new LinkedHashMap<>();
         try {
             String[] pairs = s.split("&");
             for (String pair : pairs) {

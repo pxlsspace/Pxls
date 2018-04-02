@@ -48,7 +48,6 @@ public class RedditAuthService extends AuthService {
             long accountAgeSeconds = (System.currentTimeMillis() / 1000 - json.getLong("created"));
             long minAgeSeconds = App.getConfig().getDuration("oauth.reddit.minAge", TimeUnit.SECONDS);
             if (accountAgeSeconds < minAgeSeconds){
-                long days = minAgeSeconds / 86400;
                 throw new InvalidAccountException("Account too young");
             } else if (!json.getBoolean("has_verified_email")) {
                 throw new InvalidAccountException("Account must have a verified e-mail");

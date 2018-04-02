@@ -10,8 +10,6 @@ import org.json.JSONObject;
 import org.json.JSONException;
 import space.pxls.App;
 
-import java.util.concurrent.TimeUnit;
-
 public class VKAuthService extends AuthService {
     public VKAuthService(String id) {
         super(id);
@@ -55,7 +53,7 @@ public class VKAuthService extends AuthService {
         }
     }
 
-    public String getIdentifier(String token) throws UnirestException, InvalidAccountException {
+    public String getIdentifier(String token) throws UnirestException {
         HttpResponse<JsonNode> me = Unirest.get("https://api.vk.com/method/users.get?access_token=" + token + "&v=5.64")
                 .header("User-Agent", "pxls.space")
                 .asJson();
