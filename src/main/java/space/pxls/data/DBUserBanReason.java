@@ -2,11 +2,9 @@ package space.pxls.data;
 
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
-import space.pxls.user.Role;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 
 public class DBUserBanReason {
     public String ban_reason;

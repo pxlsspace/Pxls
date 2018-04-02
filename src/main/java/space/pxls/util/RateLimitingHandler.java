@@ -2,8 +2,6 @@ package space.pxls.util;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.RedirectHandler;
-import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.util.StatusCodes;
 
 import java.util.Map;

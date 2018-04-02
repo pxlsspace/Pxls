@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AuthService {
     private String id;
-    private String name = getName();
     private transient Set<String> validStates = ConcurrentHashMap.newKeySet();
 
     public AuthService(String id) {
@@ -37,14 +36,12 @@ public abstract class AuthService {
     protected static Map<String, String> parseQuery(String s) {
         Map<String, String> query_pairs = new LinkedHashMap<String, String>();
         try {
-            String query = s;
-            String[] pairs = query.split("&");
+            String[] pairs = s.split("&");
             for (String pair : pairs) {
                 int idx = pair.indexOf("=");
                 query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
             }
-        } catch (UnsupportedEncodingException e) {
-            
+        } catch (UnsupportedEncodingException ignore) {
         }
         return query_pairs;
     }

@@ -10,12 +10,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class UserManager {
     private Map<String, User> usersByToken = new ConcurrentHashMap<>();
     private Map<String, String> userSignupTokens = new ConcurrentHashMap<>();
-
     private Map<Integer, User> userCache = new ConcurrentHashMap<>();
-
-    public UserManager() {
-
-    }
 
     private void addUserToken(String token, User user) {
         usersByToken.put(token, user);

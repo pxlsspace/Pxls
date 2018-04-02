@@ -3,19 +3,20 @@ package space.pxls.user;
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
 
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import static space.pxls.user.Role.*;
+
 public class User {
     private int id;
-    private int stacked = 0;
+    private int stacked;
     private String name;
     private String login;
     private String useragent;
 
-    private Role role = Role.USER;
+    private Role role;
     private boolean overrideCooldown;
     private boolean flaggedForCaptcha = true;
     private boolean justShowedCaptcha;
@@ -45,9 +46,9 @@ public class User {
     }
 
     public boolean canPlace() {
-        if (role.greaterEqual(Role.MODERATOR) && overrideCooldown) return true;
-        if (!role.greaterEqual(Role.USER) && role != Role.SHADOWBANNED) return false; // shadowbanned seems to be able to place
-        return cooldownExpiry < System.currentTimeMillis();
+        if (role.greaterEqual(MODERATOR) && overrideCooldown) return true;
+        // shadowbanned seems to be able to place
+        return (role.greaterEqual(USER) || role == SHADOWBANNED) && cooldownExpiry < System.currentTimeMillis();
     }
 
     public boolean canUndoNow() {
@@ -71,13 +72,13 @@ public class User {
     }
 
     public float getRemainingCooldown() {
-        if (role.greaterEqual(Role.MODERATOR) && overrideCooldown) return 0;
+        if (role.greaterEqual(MODERATOR) && overrideCooldown) return 0;
 
         return Math.max(0, cooldownExpiry - System.currentTimeMillis()) / 1000f;
     }
 
     public boolean updateCaptchaFlagPrePlace() {
-        if (role.greaterThan(Role.USER)) {
+        if (role.greaterThan(USER)) {
             flaggedForCaptcha = false;
             return false;
         }
@@ -101,7 +102,7 @@ public class User {
 
     public void setOverrideCooldown(boolean overrideCooldown) {
         this.overrideCooldown = overrideCooldown;
-        if (role.lessThan(Role.MODERATOR)) this.overrideCooldown = false;
+        if (role.lessThan(MODERATOR)) this.overrideCooldown = false;
     }
 
     public Role getRole() {
@@ -121,7 +122,7 @@ public class User {
     public void setRole(Role role) {
         this.role = role;
         App.getDatabase().setUserRole(this, role);
-        if (role != Role.SHADOWBANNED) {
+        if (role != SHADOWBANNED) {
             sendUserData();
         }
     }
@@ -160,11 +161,11 @@ public class User {
     }
 
     public boolean isShadowBanned() {
-        return this.role == Role.SHADOWBANNED;
+        return this.role == SHADOWBANNED;
     }
 
     public boolean isBanned() {
-        return banExpiryTime > System.currentTimeMillis() || role == Role.BANNED; // shadowbans are hidden....
+        return banExpiryTime > System.currentTimeMillis() || role == BANNED; // shadowbans are hidden....
     }
 
     public long getBanExpiryTime() {
@@ -174,7 +175,7 @@ public class User {
     private void setBanExpiryTime(long timeFromNowSeconds) {
         this.banExpiryTime = (timeFromNowSeconds*1000) + System.currentTimeMillis();
         App.getDatabase().updateBan(this, timeFromNowSeconds);
-        if (role != Role.SHADOWBANNED) {
+        if (role != SHADOWBANNED) {
             sendUserData();
         }
     }
@@ -185,7 +186,7 @@ public class User {
 
     public void shadowban(String reason, int rollbackTime) {
         setBanReason(reason);
-        setRole(role.SHADOWBANNED);
+        setRole(SHADOWBANNED);
         App.rollbackAfterBan(this, rollbackTime);
     }
 
@@ -214,7 +215,7 @@ public class User {
 
     public void permaban(String reason, int rollbackTime) {
         setBanReason(reason);
-        setRole(role.BANNED);
+        setRole(BANNED);
         App.rollbackAfterBan(this, rollbackTime);
     }
 
@@ -228,8 +229,8 @@ public class User {
 
     public void unban() {
         setBanExpiryTime(0);
-        if (role.lessThan(Role.USER)) {
-            setRole(Role.USER);
+        if (role.lessThan(USER)) {
+            setRole(USER);
         }
         sendUserData();
         App.undoRollback(this);

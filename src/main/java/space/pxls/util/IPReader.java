@@ -17,7 +17,6 @@ public class IPReader implements HttpHandler {
         this.next = next;
     }
 
-
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         String addr = exchange.getSourceAddress().getAddress().getHostAddress();

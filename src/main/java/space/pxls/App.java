@@ -29,7 +29,6 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -48,6 +47,8 @@ public class App {
     private static PxlsTimer mapSaveTimer;
     private static PxlsTimer mapBackupTimer;
     private static UndertowServer server;
+
+    private static boolean isRunning = true;
 
     public static void main(String[] args) {
         gson = new Gson();
@@ -73,10 +74,9 @@ public class App {
 
         database = new Database();
         userManager = new UserManager();
-
         new Thread(() -> {
             Scanner s = new Scanner(System.in);
-            while (true) {
+            while (isRunning) {
                 handleCommand(s.nextLine());
             }
         }).start();
@@ -89,8 +89,10 @@ public class App {
         new Timer().schedule(new HeatmapTimer(), 0, heatmap_timer_cd * 1000 / 256);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Shutting down ...");
             saveMapBackup();
             saveMapForce();
+            isRunning = false;
         }));
 
         server = new UndertowServer(config.getInt("server.port"));
@@ -246,7 +248,6 @@ public class App {
         return stackMaxStacked;
     }
 
-
     public static Gson getGson() {
         return gson;
     }
@@ -288,7 +289,7 @@ public class App {
     }
 
     public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase) {
-        if (x < 0 || x >= width || y < 0 || y >= height || (color >= getPalette().size() && !(color == 0xFF || color == -1))) return;
+        if (x < 0 || x >= width || y < 0 || y >= height || color >= getPalette().size() && color != 0xFF) return;
         String userName = user != null ? user.getName() : "<server>";
 
         board[x + y * width] = (byte) color;
@@ -456,8 +457,7 @@ public class App {
             byte b = raf.readByte();
             raf.close();
             return b;
-        } catch (NoSuchFileException e) {
-        } catch (IOException e) {
+        } catch (IOException ignore) {
         }
         return (byte) config.getInt("board.defaultColor");
     }

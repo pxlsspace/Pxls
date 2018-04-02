@@ -15,10 +15,8 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 import java.lang.Math;
-import java.time.Instant;
 
 public class PacketHandler {
     private UndertowServer server;
@@ -70,7 +68,7 @@ public class PacketHandler {
         updateUserData();
     }
 
-    public void disconnect(WebSocketChannel channel, User user) {
+    public void disconnect(User user) {
         if (user != null && user.getConnections().size() == 0) {
             server.removeAuthedUser(user);
         }
@@ -163,9 +161,6 @@ public class PacketHandler {
     }
 
     private void handlePlace(WebSocketChannel channel, User user, ClientPlace cp, String ip) {
-        if (!cp.getType().equals("pixel")) {
-            handlePlaceMaybe(channel, user, cp, ip);
-        }
         if (cp.getX() < 0 || cp.getX() >= App.getWidth() || cp.getY() < 0 || cp.getY() >= App.getHeight()) return;
         if (cp.getColor() < 0 || cp.getColor() >= App.getConfig().getStringList("board.palette").size()) return;
         if (user.isBanned()) return;
@@ -247,9 +242,6 @@ public class PacketHandler {
         sendCooldownData(user);
     }
 
-    private void handlePlaceMaybe(WebSocketChannel channel, User user, ClientPlace cp, String ip) {
-    }
-
     private void handleCaptcha(WebSocketChannel channel, User user, ClientCaptcha cc) {
         if (!user.isFlaggedForCaptcha()) return;
         if (user.isBanned()) return;
@@ -287,9 +279,7 @@ public class PacketHandler {
     }
 
     private void updateUserData() {
-        userData.run(() -> {
-            server.broadcast(new ServerUsers(server.getAuthedUsers().size()));
-        });
+        userData.run(() -> server.broadcast(new ServerUsers(server.getAuthedUsers().size())));
     }
 
     private void sendCooldownData(WebSocketChannel channel, User user) {

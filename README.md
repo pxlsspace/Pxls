@@ -2,7 +2,7 @@
 Pxls is a collaborative image editor where you can only place one pixel every 3 minutes.
 
 # Requirements
-Pxls requires Maven (for building), Java 8 (for running) and MariaDB (for databasing).
+Pxls requires Maven or Gradle (for building), Java 8 (for running) and MariaDB (for databasing).
 
 # Running
 Pxls is a simple Java application, that can be run as follows:

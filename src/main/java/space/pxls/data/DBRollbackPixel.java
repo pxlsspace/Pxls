@@ -1,9 +1,5 @@
 package space.pxls.data;
 
-
-/**
- * Created by Endrik on 05-May-17.
- */
 public class DBRollbackPixel{
     public final DBPixelPlacement toPixel;
     public final int fromId;

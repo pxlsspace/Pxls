@@ -7,7 +7,6 @@ import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.form.EagerFormParsingHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.util.Headers;
-import io.undertow.util.HttpString;
 import io.undertow.websockets.core.AbstractReceiveListener;
 import io.undertow.websockets.core.BufferedTextMessage;
 import io.undertow.websockets.core.WebSocketChannel;
@@ -20,9 +19,6 @@ import space.pxls.util.AuthReader;
 import space.pxls.util.IPReader;
 import space.pxls.util.RateLimitingHandler;
 import space.pxls.util.RoleGate;
-import space.pxls.user.UserManager;
-import space.pxls.user.User;
-import space.pxls.user.Role;
 
 import java.io.IOException;
 import java.util.*;
@@ -33,7 +29,7 @@ public class UndertowServer {
     private int port;
     private PacketHandler socketHandler;
     private WebHandler webHandler;
-    private ConcurrentHashMap<Integer, User> authedUsers = new ConcurrentHashMap<Integer, User>();
+    private ConcurrentHashMap<Integer, User> authedUsers = new ConcurrentHashMap<>();
 
     private Set<WebSocketChannel> connections;
     private Undertow server;
@@ -140,7 +136,7 @@ public class UndertowServer {
                 user.getConnections().remove(channel);
             }
 
-            socketHandler.disconnect(channel, user);
+            socketHandler.disconnect(user);
         });
         channel.resumeReceives();
     }

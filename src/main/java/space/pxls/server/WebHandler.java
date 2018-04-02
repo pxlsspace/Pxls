@@ -6,7 +6,6 @@ import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
-import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 import io.undertow.util.StatusCodes;
@@ -26,12 +25,7 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.Deque;
 import java.util.Map;
@@ -39,6 +33,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class WebHandler {
+    private Map<String, AuthService> services = new ConcurrentHashMap<>();
+
+    public WebHandler() {
+        services.put("reddit", new RedditAuthService("reddit"));
+        services.put("google", new GoogleAuthService("google"));
+        services.put("discord", new DiscordAuthService("discord"));
+        services.put("vk", new VKAuthService("vk"));
+        services.put("tumblr", new TumblrAuthService("tumblr"));
+    }
+
     private String fileToString (File f) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(f));
@@ -58,7 +62,7 @@ public class WebHandler {
     }
     private String resourceToString (String r) {
         try {
-            InputStream in = getClass().getResourceAsStream(r); 
+            InputStream in = getClass().getResourceAsStream(r);
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             String s = "";
             String line;
@@ -77,7 +81,7 @@ public class WebHandler {
             exchange.getResponseSender().send(fileToString(index_cache));
             return;
         }
-        ClassPathResourceManager cprm = new ClassPathResourceManager(App.class.getClassLoader(), "public/");
+        // ClassPathResourceManager cprm = new ClassPathResourceManager(App.class.getClassLoader(), "public/");
         String s = resourceToString("/public/index.html");
         String[] replacements = {"title", "head", "info"};
         for (String p : replacements) {
@@ -101,19 +105,7 @@ public class WebHandler {
         } catch (IOException e) {
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
             exchange.getResponseSender().send("error");
-            return;
         }
-    }
-
-
-    private Map<String, AuthService> services = new ConcurrentHashMap<>();
-
-    {
-        services.put("reddit", new RedditAuthService("reddit"));
-        services.put("google", new GoogleAuthService("google"));
-        services.put("discord", new DiscordAuthService("discord"));
-        services.put("vk", new VKAuthService("vk"));
-        services.put("tumblr", new TumblrAuthService("tumblr"));
     }
 
     private String getBanReason(HttpServerExchange exchange) {
@@ -293,7 +285,7 @@ public class WebHandler {
             }
             String[] stateArray = state_.split("\\|");
             String state = stateArray[0];
-            boolean redirect = false;
+            boolean redirect;
             if (stateArray.length > 1) {
                 redirect = stateArray[1].equals("redirect");
             } else {
@@ -428,7 +420,7 @@ public class WebHandler {
                         App.getConfig().getStringList("board.palette"),
                         App.getConfig().getString("captcha.key"),
                         (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS),
-                        (int) App.getConfig().getInt("stacking.maxStacked"),
+                        App.getConfig().getInt("stacking.maxStacked"),
                         services
                 )));
     }

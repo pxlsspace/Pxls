@@ -1,6 +1,6 @@
 "use strict";
 window.App = (function () {
-    // first we define the global helperfunctions and figure out what kind of settings our browser needs to use
+    // first we define the global helper functions and figure out what kind of settings our browser needs to use
     var storageFactory = function(storageType, prefix, exdays) {
             var getCookie = function(c_name) {
                 var i, x, y, ARRcookies = document.cookie.split(";");

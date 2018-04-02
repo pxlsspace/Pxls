@@ -20,7 +20,7 @@ import static java.lang.Math.toIntExact;
 public class Database implements Closeable {
     private final DBI dbi;
     
-    private Map<Thread,DatabaseHandle> handles = new ConcurrentHashMap<>();;
+    private Map<Thread,DatabaseHandle> handles = new ConcurrentHashMap<>();
 
     public Database() {
         try {
@@ -194,7 +194,7 @@ public class Database implements Closeable {
 
     public void putNukePixel(int x, int y, int color) {
         DBPixelPlacement pp = getPixelAt(x, y);
-        getHandle().putNukePixel(x, y, color, pp != null ? pp.userId : 0, pp != null ? (pp.secondaryId > 0) : false);
+        getHandle().putNukePixel(x, y, color, pp != null ? pp.userId : 0, pp != null && (pp.secondaryId > 0));
     }
 
     public DBPixelPlacement getUserUndoPixel(User who){
@@ -295,7 +295,7 @@ public class Database implements Closeable {
     }
 
     class DatabaseHandle {
-        public DAO dao;
-        public long lastUse;
+        DAO dao;
+        long lastUse;
     }
 }
