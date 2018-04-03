@@ -4,14 +4,15 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+
 import org.json.JSONObject;
 import space.pxls.App;
 
 import java.util.concurrent.TimeUnit;
 
 public class DiscordAuthService extends AuthService {
-    public DiscordAuthService(String id) {
-        super(id);
+    public DiscordAuthService() {
+        super("discord", "Discord");
     }
 
     public String getRedirectUrl(String state) {
@@ -55,9 +56,5 @@ public class DiscordAuthService extends AuthService {
             }
             return json.getString("id");
         }
-    }
-
-    public String getName() {
-        return "Discord";
     }
 }

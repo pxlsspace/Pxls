@@ -8,8 +8,8 @@ import org.json.JSONObject;
 import space.pxls.App;
 
 public class GoogleAuthService extends AuthService {
-    public GoogleAuthService(String id) {
-        super(id);
+    public GoogleAuthService() {
+        super("google", "Google");
     }
 
     @Override
@@ -56,9 +56,5 @@ public class GoogleAuthService extends AuthService {
         } else {
             return json.getString("id");
         }
-    }
-
-    public String getName() {
-        return "Google";
     }
 }

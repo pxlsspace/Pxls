@@ -1,6 +1,7 @@
 package space.pxls.auth;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
+
 import space.pxls.App;
 
 import java.util.Map;
@@ -22,12 +23,13 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class AuthService {
     private String id;
     // Gson serialization needs fields, not getters.
-    @SuppressWarnings("unused")
-    private String name = getName();
+    @SuppressWarnings({"unused", "FieldCanBeLocal"})
+    private String name;
     private transient Set<String> validStates = ConcurrentHashMap.newKeySet();
 
-    AuthService(String id) {
+    AuthService(String id, String name) {
         this.id = id;
+        this.name = name;
     }
 
     public String generateState() {
@@ -36,7 +38,7 @@ public abstract class AuthService {
         return s;
     }
 
-    protected static Map<String, String> parseQuery(String s) {
+    static Map<String, String> parseQuery(String s) {
         Map<String, String> query_pairs = new LinkedHashMap<>();
         try {
             String[] pairs = s.split("&");
@@ -70,7 +72,7 @@ public abstract class AuthService {
         }
     }
 
-    protected String getOauthRequest(String url, String _params, String callback, String method, String key) {
+    String getOauthRequest(String url, String _params, String callback, String method, String key) {
         try {
             String params = "oauth_callback=" + URLEncoder.encode(callback, "UTF-8") +
                 "&oauth_consumer_key=" + URLEncoder.encode(App.getConfig().getString("oauth."+id+".key"), "UTF-8") +
@@ -89,11 +91,11 @@ public abstract class AuthService {
         }
     }
 
-    protected String getOauthRequestToken(String url) {
+    String getOauthRequestToken(String url) {
         return getOauthRequest(url, "", getCallbackUrl(), "GET", "");
     }
 
-    protected String getOauthAccessToken(String url, String token, String verifier, String secret) {
+    String getOauthAccessToken(String url, String token, String verifier, String secret) {
         try {
             String params = "oauth_token=" + URLEncoder.encode(token, "UTF-8") +
                 "&oauth_verifier=" + URLEncoder.encode(verifier, "UTF-8");
@@ -109,7 +111,7 @@ public abstract class AuthService {
 
     public abstract String getRedirectUrl(String state);
 
-    public String getCallbackUrl() {
+    String getCallbackUrl() {
         return App.getConfig().getString("oauth.callbackBase") + "/" + id;
     }
 
@@ -117,8 +119,12 @@ public abstract class AuthService {
 
     public abstract String getIdentifier(String token) throws UnirestException, InvalidAccountException;
 
+    public String getId() {
+        return id;
+    }
+
     public static class InvalidAccountException extends Exception {
-        public InvalidAccountException(String s) {
+        InvalidAccountException(String s) {
             super(s);
         }
     }
@@ -127,5 +133,4 @@ public abstract class AuthService {
         return !App.getConfig().getString("oauth."+id+".key").isEmpty();
     }
 
-    public abstract String getName();
 }

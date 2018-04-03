@@ -10,8 +10,8 @@ import space.pxls.App;
 import java.util.concurrent.TimeUnit;
 
 public class RedditAuthService extends AuthService {
-    public RedditAuthService(String id) {
-        super(id);
+    public RedditAuthService() {
+        super("reddit", "Reddit");
     }
 
     public String getRedirectUrl(String state) {
@@ -54,9 +54,5 @@ public class RedditAuthService extends AuthService {
             }
             return json.getString("name");
         }
-    }
-
-    public String getName() {
-        return "Reddit";
     }
 }

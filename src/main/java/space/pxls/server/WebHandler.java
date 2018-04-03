@@ -35,12 +35,15 @@ import java.util.concurrent.TimeUnit;
 public class WebHandler {
     private Map<String, AuthService> services = new ConcurrentHashMap<>();
 
-    public WebHandler() {
-        services.put("reddit", new RedditAuthService("reddit"));
-        services.put("google", new GoogleAuthService("google"));
-        services.put("discord", new DiscordAuthService("discord"));
-        services.put("vk", new VKAuthService("vk"));
-        services.put("tumblr", new TumblrAuthService("tumblr"));
+    WebHandler() {
+        for (AuthService authService : new AuthService[]{
+                new RedditAuthService(),
+                new GoogleAuthService(),
+                new DiscordAuthService(),
+                new VKAuthService(),
+                new TumblrAuthService()}) {
+                services.put(authService.getId(), authService);
+        }
     }
 
     private String fileToString (File f) {

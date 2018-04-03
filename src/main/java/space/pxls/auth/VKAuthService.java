@@ -11,8 +11,8 @@ import org.json.JSONException;
 import space.pxls.App;
 
 public class VKAuthService extends AuthService {
-    public VKAuthService(String id) {
-        super(id);
+    public VKAuthService() {
+        super("vk", "VK");
     }
 
     public String getRedirectUrl(String state) {
@@ -68,9 +68,5 @@ public class VKAuthService extends AuthService {
                 return null;
             }
         }
-    }
-
-    public String getName() {
-        return "VK";
     }
 }

@@ -10,8 +10,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class TumblrAuthService extends AuthService {
-    public TumblrAuthService(String id) {
-        super(id);
+    public TumblrAuthService() {
+        super("tumblr", "Tumblr");
     }
 
     private transient Map<String, String> tokens = new ConcurrentHashMap<>();
@@ -72,9 +72,5 @@ public class TumblrAuthService extends AuthService {
                 return null;
             }
         }
-    }
-
-    public String getName() {
-        return "Tumblr";
     }
 }
