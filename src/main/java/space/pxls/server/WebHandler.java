@@ -42,7 +42,9 @@ public class WebHandler {
                 new DiscordAuthService(),
                 new VKAuthService(),
                 new TumblrAuthService()}) {
+            if (authService.isConfigured()) {
                 services.put(authService.getId(), authService);
+            }
         }
     }
 

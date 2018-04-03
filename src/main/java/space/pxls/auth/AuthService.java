@@ -133,4 +133,8 @@ public abstract class AuthService {
         return !App.getConfig().getString("oauth."+id+".key").isEmpty();
     }
 
+    public boolean isConfigured() {
+        String key = App.getConfig().getString("oauth." + id + ".key");
+        return key != null && !key.equals("");
+    }
 }
