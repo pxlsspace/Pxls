@@ -1493,9 +1493,6 @@ window.App = (function () {
                     if (!timer.cooledDown() || self.color === -1) { // nope can't place yet
                         return;
                     }
-                    if (!ls.get("audio_muted")) {
-                        self.audio.cloneNode(false).play();
-                    }
                     self._place(x, y);
                 },
                 _place: function (x, y) {
@@ -1606,6 +1603,9 @@ window.App = (function () {
                     socket.on("ACK", function(data) {
                         switch(data.ackFor) {
                             case "PLACE":
+                                if (!ls.get("audio_muted")) {
+                                    self.audio.cloneNode(false).play();
+                                }
                             case "UNDO":
                                 if (stackHelper.getStacked() === 0)
                                     stackHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
