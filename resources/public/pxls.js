@@ -1101,6 +1101,17 @@ window.App = (function () {
                         });
                     });
                 },
+                clear: function() {
+                    if (ls.get("hm_clearable") === true) {
+                        self._clear();
+                    }
+                },
+                _clear: function() {
+                    for (var i = 0; i < self.width * self.height; i++) {
+                        self.intView[i] = 0;
+                    }
+                    self.ctx.putImageData(self.id, 0, 0);
+                },
                 setBackgroundOpacity: function(opacity) {
                     if (typeof(opacity) === "string") {
                         opacity = parseFloat(opacity);
@@ -1119,6 +1130,15 @@ window.App = (function () {
                     $("#heatmap-opacity").val(ls.get("heatmap_background_opacity")); //heatmap_background_opacity should always be valid after a call to self.setBackgroundOpacity.
                     $("#heatmap-opacity").on("change input", function() {
                         self.setBackgroundOpacity(parseFloat(this.value));
+                    });
+                    $("#heatmapClearable")[0].checked = ls.get("hm_clearable");
+                    $("#heatmapClearable").change(function () {
+                        ls.set("hm_clearable", this.checked);
+                    });
+                    $(window).keydown(function (evt) {
+                        if (evt.which == 79) { //O key
+                            self.clear();
+                        }
                     });
                 },
                 show: function () {
@@ -1177,7 +1197,8 @@ window.App = (function () {
                 init: self.init,
                 webinit: self.webinit,
                 toggle: self.toggle,
-                setBackgroundOpacity: self.setBackgroundOpacity
+                setBackgroundOpacity: self.setBackgroundOpacity,
+                clear: self.clear
             };
         })(),
         // here all the template stuff happens
@@ -2326,6 +2347,9 @@ window.App = (function () {
         ls: ls,
         ss: ss,
         query: query,
+        heatmap: {
+            clear: heatmap.clear
+        },
         template: {
             update: function(t) {
                 template.queueUpdate(t);

@@ -575,6 +575,10 @@ input[type="text"] {
     background-image: linear-gradient(to right, #aaa 1px, transparent 1px), linear-gradient(to bottom, #aaa 1px, transparent 1px);
 }
 
+.settingToggles > label {
+    display: block;
+}
+
 /*//////////////////////////*\
 | Mobile Styles
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
