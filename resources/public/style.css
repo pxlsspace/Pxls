@@ -452,6 +452,14 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     color: #fff;
 }
 
+.bubble.orange-bubble {
+    background-color: rgba(255, 115, 0, 0.7);
+}
+
+.bubble.fat-bubble {
+    padding: 16px 24px;
+}
+
 .left {
     position: fixed;
     left: 10px;

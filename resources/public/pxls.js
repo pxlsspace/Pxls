@@ -1049,7 +1049,8 @@ window.App = (function () {
         heatmap = (function() {
             var self = {
                 elements: {
-                    heatmap: $("#heatmap")
+                    heatmap: $("#heatmap"),
+                    heatmapLoadingBubble: $("#heatmapLoadingBubble")
                 },
                 ctx: null,
                 id: null,
@@ -1072,8 +1073,10 @@ window.App = (function () {
                 },
                 lazy_init: function () {
                     if (self.lazy_inited) {
+                        self.elements.heatmapLoadingBubble.hide();
                         return;
                     }
+                    self.elements.heatmapLoadingBubble.show();
                     self.lazy_inited = true;
                     // we use xhr directly because of jquery being weird on raw binary
                     binary_ajax("/heatmap" + "?_" + (new Date()).getTime(), function (data) {
@@ -1087,6 +1090,7 @@ window.App = (function () {
                         }
                         self.ctx.putImageData(self.id, 0, 0);
                         self.elements.heatmap.fadeIn(200);
+                        self.elements.heatmapLoadingBubble.hide();
                         setTimeout(self.loop, self.seconds * 1000 / 256);
                         socket.on("pixel", function (data) {
                             self.ctx.fillStyle = "#CD5C5C";
@@ -1110,6 +1114,7 @@ window.App = (function () {
                 },
                 init: function () {
                     self.elements.heatmap.hide();
+                    self.elements.heatmapLoadingBubble.hide();
                     self.setBackgroundOpacity(ls.get("heatmap_background_opacity"));
                     $("#heatmap-opacity").val(ls.get("heatmap_background_opacity")); //heatmap_background_opacity should always be valid after a call to self.setBackgroundOpacity.
                     $("#heatmap-opacity").on("change input", function() {
