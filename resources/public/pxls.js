@@ -1958,6 +1958,7 @@ window.App = (function () {
                 },
                 updateStacked: function(count, cause) {
                     if (count > 0 && cause === "gain") timer.playAudio();
+                    if (count === 0 && cause === "connect") return self.setPlaceableText(0);
                     self.setPlaceableText(count+1);
                 },
                 setMax(maxStacked) {
@@ -2056,7 +2057,7 @@ window.App = (function () {
                         self.focus = false;
                     });
                     setTimeout(function() {
-                        if (!self.cooledDown()) {
+                        if (self.cooledDown() && stackHelper.getStacked() === 0) {
                             stackHelper.setPlaceableText(1);
                         }
                     }, 250);
