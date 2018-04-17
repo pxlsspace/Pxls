@@ -452,6 +452,14 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     color: #fff;
 }
 
+.bubble.orange-bubble {
+    background-color: rgba(255, 115, 0, 0.7);
+}
+
+.bubble.fat-bubble {
+    padding: 16px 24px;
+}
+
 .left {
     position: fixed;
     left: 10px;
@@ -565,6 +573,10 @@ input[type="text"] {
     height: 110vh;
     pointer-events: none;
     background-image: linear-gradient(to right, #aaa 1px, transparent 1px), linear-gradient(to bottom, #aaa 1px, transparent 1px);
+}
+
+.settingToggles > label {
+    display: block;
 }
 
 /*//////////////////////////*\

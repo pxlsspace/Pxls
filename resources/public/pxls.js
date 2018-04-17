@@ -1049,7 +1049,8 @@ window.App = (function () {
         heatmap = (function() {
             var self = {
                 elements: {
-                    heatmap: $("#heatmap")
+                    heatmap: $("#heatmap"),
+                    heatmapLoadingBubble: $("#heatmapLoadingBubble")
                 },
                 ctx: null,
                 id: null,
@@ -1072,8 +1073,10 @@ window.App = (function () {
                 },
                 lazy_init: function () {
                     if (self.lazy_inited) {
+                        self.elements.heatmapLoadingBubble.hide();
                         return;
                     }
+                    self.elements.heatmapLoadingBubble.show();
                     self.lazy_inited = true;
                     // we use xhr directly because of jquery being weird on raw binary
                     binary_ajax("/heatmap" + "?_" + (new Date()).getTime(), function (data) {
@@ -1087,6 +1090,7 @@ window.App = (function () {
                         }
                         self.ctx.putImageData(self.id, 0, 0);
                         self.elements.heatmap.fadeIn(200);
+                        self.elements.heatmapLoadingBubble.hide();
                         setTimeout(self.loop, self.seconds * 1000 / 256);
                         socket.on("pixel", function (data) {
                             self.ctx.fillStyle = "#CD5C5C";
@@ -1096,6 +1100,17 @@ window.App = (function () {
                             });
                         });
                     });
+                },
+                clear: function() {
+                    if (ls.get("hm_clearable") === true) {
+                        self._clear();
+                    }
+                },
+                _clear: function() {
+                    for (var i = 0; i < self.width * self.height; i++) {
+                        self.intView[i] = 0;
+                    }
+                    self.ctx.putImageData(self.id, 0, 0);
                 },
                 setBackgroundOpacity: function(opacity) {
                     if (typeof(opacity) === "string") {
@@ -1110,10 +1125,20 @@ window.App = (function () {
                 },
                 init: function () {
                     self.elements.heatmap.hide();
+                    self.elements.heatmapLoadingBubble.hide();
                     self.setBackgroundOpacity(ls.get("heatmap_background_opacity"));
                     $("#heatmap-opacity").val(ls.get("heatmap_background_opacity")); //heatmap_background_opacity should always be valid after a call to self.setBackgroundOpacity.
                     $("#heatmap-opacity").on("change input", function() {
                         self.setBackgroundOpacity(parseFloat(this.value));
+                    });
+                    $("#heatmapClearable")[0].checked = ls.get("hm_clearable");
+                    $("#heatmapClearable").change(function () {
+                        ls.set("hm_clearable", this.checked);
+                    });
+                    $(window).keydown(function (evt) {
+                        if (evt.which == 79) { //O key
+                            self.clear();
+                        }
                     });
                 },
                 show: function () {
@@ -1172,7 +1197,8 @@ window.App = (function () {
                 init: self.init,
                 webinit: self.webinit,
                 toggle: self.toggle,
-                setBackgroundOpacity: self.setBackgroundOpacity
+                setBackgroundOpacity: self.setBackgroundOpacity,
+                clear: self.clear
             };
         })(),
         // here all the template stuff happens
@@ -1493,9 +1519,6 @@ window.App = (function () {
                     if (!timer.cooledDown() || self.color === -1) { // nope can't place yet
                         return;
                     }
-                    if (!ls.get("audio_muted")) {
-                        self.audio.cloneNode(false).play();
-                    }
                     self._place(x, y);
                 },
                 _place: function (x, y) {
@@ -1606,6 +1629,9 @@ window.App = (function () {
                     socket.on("ACK", function(data) {
                         switch(data.ackFor) {
                             case "PLACE":
+                                if (!ls.get("audio_muted")) {
+                                    self.audio.cloneNode(false).play();
+                                }
                             case "UNDO":
                                 if (stackHelper.getStacked() === 0)
                                     stackHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
@@ -1932,6 +1958,7 @@ window.App = (function () {
                 },
                 updateStacked: function(count, cause) {
                     if (count > 0 && cause === "gain") timer.playAudio();
+                    if (count === 0 && cause === "connect") return self.setPlaceableText(0);
                     self.setPlaceableText(count+1);
                 },
                 setMax(maxStacked) {
@@ -2030,7 +2057,7 @@ window.App = (function () {
                         self.focus = false;
                     });
                     setTimeout(function() {
-                        if (!self.cooledDown()) {
+                        if (self.cooledDown() && stackHelper.getStacked() === 0) {
                             stackHelper.setPlaceableText(1);
                         }
                     }, 250);
@@ -2321,6 +2348,9 @@ window.App = (function () {
         ls: ls,
         ss: ss,
         query: query,
+        heatmap: {
+            clear: heatmap.clear
+        },
         template: {
             update: function(t) {
                 template.queueUpdate(t);
