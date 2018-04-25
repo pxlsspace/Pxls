@@ -290,12 +290,13 @@ public class App {
     public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase) {
         if (x < 0 || x >= width || y < 0 || y >= height || (color >= getPalette().size() && !(color == 0xFF || color == -1))) return;
         String userName = user != null ? user.getName() : "<server>";
+        byte lastColor = board[x + y * width];
 
         board[x + y * width] = (byte) color;
         heatmap[x + y * width] = (byte) 0xFF;
         pixelLogger.log(Level.INFO, String.format("%s %d %d %d %s %s", userName, x, y, color, ip, mod_action ? " (mod)" : ""));
         if (updateDatabase) {
-            database.placePixel(x, y, color, user, mod_action);
+            database.placePixel(x, y, color, lastColor, user, mod_action);
         }
     }
 

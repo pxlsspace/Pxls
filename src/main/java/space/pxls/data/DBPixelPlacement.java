@@ -13,6 +13,7 @@ public class DBPixelPlacement {
     public final int x;
     public final int y;
     public final int color;
+    public final int lastColor;
     public final int secondaryId;
     public final long time;
     public final int userId;
@@ -27,11 +28,12 @@ public class DBPixelPlacement {
     public final boolean undoAction;
     public final String userAgent;
 
-    public DBPixelPlacement(int id, int x, int y, int color, int secondaryId, long time, int userId, String username, String login, Role role, long ban_expiry, int pixel_count, int pixel_count_alltime, String ban_reason, boolean banned, boolean undoAction, String userAgent) {
+    public DBPixelPlacement(int id, int x, int y, int color, int lastColor, int secondaryId, long time, int userId, String username, String login, Role role, long ban_expiry, int pixel_count, int pixel_count_alltime, String ban_reason, boolean banned, boolean undoAction, String userAgent) {
         this.id = id;
         this.x = x;
         this.y = y;
         this.color = color;
+        this.lastColor = lastColor;
         this.secondaryId = secondaryId;
         this.time = time;
         this.userId = userId;
@@ -62,6 +64,7 @@ public class DBPixelPlacement {
                     r.getInt("x"),
                     r.getInt("y"),
                     r.getInt("color"),
+                    r.getInt("lastColor"),
                     r.getInt("secondary_id"),
                     time == null ? 0 : time.getTime(),
                     r.getInt("users.id"),
