@@ -153,10 +153,10 @@ public class PacketHandler {
             broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
             ackUndo(user, lastPixel.x, lastPixel.y);
         } else {
-            byte defaultColor = App.getDefaultColor(thisPixel.x, thisPixel.y);
-            App.getDatabase().putUserUndoPixel(thisPixel.x, thisPixel.y, defaultColor, user, thisPixel.id);
-            App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, "(user undo)", false);
-            broadcastPixelUpdate(thisPixel.x, thisPixel.y, defaultColor);
+            int undoColor = thisPixel.lastColor == -1 ? App.getDefaultColor(thisPixel.x, thisPixel.y) : thisPixel.lastColor; //-1 is the default value. In the event that lastPixel doesn't get set for some reason, we default to the board's default color. Otherwise, we use whatever color was under this pixel at the time of place via App.putPixel
+            App.getDatabase().putUserUndoPixel(thisPixel.x, thisPixel.y, undoColor, user, thisPixel.id);
+            App.putPixel(thisPixel.x, thisPixel.y, undoColor, user, false, "(user undo)", false);
+            broadcastPixelUpdate(thisPixel.x, thisPixel.y, undoColor);
             ackUndo(user, thisPixel.x, thisPixel.y);
         }
         sendCooldownData(user);
