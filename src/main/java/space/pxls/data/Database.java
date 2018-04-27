@@ -298,6 +298,14 @@ public class Database implements Closeable {
         getHandle().addReport(who, pixel_id, x, y, message);
     }
 
+    public void addServerReport(String message, int reported) {
+        getHandle().addServerReport(message, reported);
+    }
+
+    public boolean haveDupeIp(String ip, int uid) {
+        return getHandle().haveDupeIp(ip, uid);
+    }
+
     class DatabaseHandle {
         public DAO dao;
         public long lastUse;

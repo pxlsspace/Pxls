@@ -16,11 +16,15 @@ public interface DAO extends Closeable {
             "y INT UNSIGNED," +
             "message LONGTEXT," +
             "pixel_id INT UNSIGNED," +
+            "reported INT UNSIGNED," +
             "time INT(10) UNSIGNED)")
     void createReportsTable();
 
     @SqlUpdate("INSERT INTO reports (who, pixel_id, x, y, message, time) VALUES (:who, :pixel_id, :x, :y, :message, UNIX_TIMESTAMP())")
     void addReport(@Bind("who") int who, @Bind("pixel_id") int pixel_id, @Bind("x") int x, @Bind("y") int y, @Bind("message") String message);
+
+    @SqlUpdate("INSERT INTO reports (who, pixel_id, x, y, message, reported, time) VALUES (0, 0, 0, 0, :message, :reported, UNIX_TIMESTAMP())")
+    void addServerReport(@Bind("message") String message, @Bind("reported") int reported);
 
     @SqlUpdate("CREATE TABLE IF NOT EXISTS admin_log(" +
             "id BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT," +
@@ -119,13 +123,16 @@ public interface DAO extends Closeable {
             "cooldown_expiry TIMESTAMP," +
             "role VARCHAR(16) NOT NULL DEFAULT 'USER'," +
             "ban_expiry TIMESTAMP," +
-            "signup_ip BINARY(16)," +
-            "last_ip BINARY(16)," +
+            "signup_ip VARBINARY(16)," +
+            "last_ip VARBINARY(16)," +
             "ban_reason VARCHAR(512) NOT NULL DEFAULT ''," +
             "user_agent VARCHAR(512) NOT NULL DEFAULT ''," +
             "pixel_count INT UNSIGNED NOT NULL DEFAULT 0," +
             "pixel_count_alltime INT UNSIGNED NOT NULL DEFAULT 0)")
     void createUsersTable();
+
+    @SqlQuery("SELECT EXISTS(SELECT 1 FROM users WHERE (last_ip = INET6_ATON(:ip) OR signup_ip = INET6_ATON(:ip)) AND id <> :uid)")
+    boolean haveDupeIp(@Bind("ip") String ip, @Bind("uid") int uid);
 
     @SqlUpdate("UPDATE users SET cooldown_expiry = now() + INTERVAL :seconds SECOND WHERE id = :id")
     void updateUserTime(@Bind("id") int userId, @Bind("seconds") long sec);

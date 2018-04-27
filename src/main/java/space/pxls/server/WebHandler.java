@@ -37,6 +37,8 @@ import java.util.Deque;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.List;
+import java.util.ArrayList;
 
 public class WebHandler {
     private String fileToString (File f) {
@@ -266,6 +268,25 @@ public class WebHandler {
         if (user == null) {
             respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_username", "Username taken, try another?"));
             return;
+        }
+
+        System.out.println("new user");
+        System.out.println(ip);
+        System.out.println(user.getId());
+
+        // do additional checks for possible multi here
+        List<String> reports = new ArrayList<String>();
+        if (App.getDatabase().haveDupeIp(ip, user.getId())) {
+            reports.add("Duplicate IP");
+            System.out.println("dupe ip");
+        }
+        if (reports.size() > 0) {
+            System.out.println("have reports");
+            String msg = "Potential dupe user. Reasons:\n\n";
+            for (String r : reports) {
+                msg += r+"\n";
+            }
+            App.getDatabase().addServerReport(msg, user.getId());
         }
 
         String loginToken = App.getUserManager().logIn(user, ip);
