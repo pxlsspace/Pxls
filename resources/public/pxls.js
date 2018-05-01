@@ -128,6 +128,7 @@ window.App = (function () {
         })(),
         have_zoom_rendering = false,
         ios_safari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i)),
+        desktop_safari = (nua.match(/safari/i) && !nua.match(/chrome/i)),
         ms_edge = nua.indexOf('Edge') > -1;
     if (ios_safari) {
         var iOS = parseFloat(
@@ -138,6 +139,9 @@ window.App = (function () {
         if (iOS >= 11) {
             have_zoom_rendering = true;
         }
+    } else if (desktop_safari) {
+        have_image_rendering = false;
+        have_zoom_rendering = true;
     }
     if (ms_edge) {
         have_image_rendering = false;
