@@ -46,7 +46,6 @@ public interface DAO extends Closeable {
             "x INT UNSIGNED NOT NULL," +
             "y INT UNSIGNED NOT NULL," +
             "color TINYINT NOT NULL," +
-            "lastColor TINYINT NOT NULL DEFAULT -1," +
             "who INT UNSIGNED," +
             "secondary_id INT UNSIGNED," + //is previous pixel's id normally, is the id that was changed from for rollback action, is NULL if there's no previous or it was undo of rollback
             "time TIMESTAMP NOT NULL DEFAULT now(6)," +
@@ -62,10 +61,10 @@ public interface DAO extends Closeable {
     int getMostResentId(@Bind("x") int x, @Bind("y") int y);
 
     @SqlUpdate("UPDATE pixels SET most_recent = false WHERE x = :x AND y = :y;" +
-            "INSERT INTO pixels (x, y, color, lastColor, who, secondary_id, mod_action)" +
-            "VALUES (:x, :y, :color, :lastColor, :who, :second_id, :mod);" +
+            "INSERT INTO pixels (x, y, color, who, secondary_id, mod_action)" +
+            "VALUES (:x, :y, :color, :who, :second_id, :mod);" +
             "UPDATE users SET pixel_count = pixel_count + (1 - :mod), pixel_count_alltime = pixel_count_alltime + (1 - :mod) WHERE id = :who")
-    void putPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("lastColor") byte lastColor, @Bind("who") int who, @Bind("mod") boolean mod, @Bind("second_id") int second_id);
+    void putPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("mod") boolean mod, @Bind("second_id") int second_id);
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
             "SELECT x, y, color, :who, :from_id, true, false FROM pixels AS pp WHERE pp.id = :to_id ORDER BY id DESC LIMIT 1;" +
