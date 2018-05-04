@@ -590,22 +590,47 @@ window.App = (function () {
                     });
 
                     $(document.body).on("keydown", function (evt) {
-                        if (evt.keyCode === 87 || evt.keyCode === 38) {
-                            self.pan.y += 100 / self.scale;
-                        } else if (evt.keyCode === 65 || evt.keyCode === 37) {
-                            self.pan.x += 100 / self.scale;
-                        } else if (evt.keyCode === 83 || evt.keyCode === 40) {
-                            self.pan.y -= 100 / self.scale;
-                        } else if (evt.keyCode === 68 || evt.keyCode === 39) {
-                            self.pan.x -= 100 / self.scale;
-                        } else if (evt.keyCode === 187 || evt.keyCode === 69 || evt.keyCode === 171) {
-                            self.nudgeScale(1);
-                        } else if (evt.keyCode === 189 || evt.keyCode === 81 || evt.keyCode === 173) {
-                            self.nudgeScale(-1);
-                        } else if (evt.keyCode === 80) {
-                            self.save();
-                        } else if (evt.keyCode === 76) {
-                            self.allowDrag = !self.allowDrag;
+                        switch(evt.key || evt.keyCode) {
+                            case "ArrowUp":
+                            case 87:
+                            case 38:
+                                self.pan.y += 100 / self.scale;
+                                break;
+                            case "ArrowRight":
+                            case 68:
+                            case 39:
+                                self.pan.x -= 100 / self.scale;
+                                break;
+                            case "ArrowDown":
+                            case 83:
+                            case 40:
+                                self.pan.y -= 100 / self.scale;
+                                break;
+                            case "ArrowLeft":
+                            case 65:
+                            case 37:
+                                self.pan.x += 100 / self.scale;
+                                break;
+                            case "=":
+                            case 187:
+                            case 69:
+                            case 171:
+                                self.nudgeScale(1);
+                                break;
+                            case "-":
+                            case 189:
+                            case 81:
+                            case 173:
+                                self.nudgeScale(-1);
+                                break;
+                            case "p":
+                            case 80:
+                                self.save();
+                                break;
+                            case "l":
+                            case 76:
+                                self.allowDrag = !self.allowDrag;
+                                break;
                         }
                         self.pannedWithKeys = true;
                         self.update();
@@ -1140,7 +1165,7 @@ window.App = (function () {
                         ls.set("hm_clearable", this.checked);
                     });
                     $(window).keydown(function (evt) {
-                        if (evt.which == 79) { //O key
+                        if (evt.key == "o" || evt.which == 79) { //O key
                             self.clear();
                         }
                     });
@@ -1190,7 +1215,7 @@ window.App = (function () {
                     });
 
                     $(window).keydown(function (e) {
-                        if (e.which == 72) { // h key
+                        if (e.key == "h" || e.which == 72) { // h key
                             self.toggle();
                             $("#heatmaptoggle")[0].checked = ls.get("heatmap");
                         }
@@ -1386,10 +1411,10 @@ window.App = (function () {
                     $("#template-url").change(function () {
                         self._update({url: this.value});
                     }).keydown(function (evt) {
-                        if (evt.which === 13) {
+                        if (evt.key == "Enter" || evt.which === 13) {
                             $(this).change();
                         }
-                        if (evt.which == 86 && evt.ctrlKey) {
+                        if ((evt.key == "p" || evt.which == 86) && evt.ctrlKey) {
                             $(this).trigger("paste");
                         }
                         evt.stopPropagation();
@@ -1410,18 +1435,24 @@ window.App = (function () {
                             evt.preventDefault();
                             self.elements.template.css("pointer-events", "initial");
                         }
-                        if (evt.which == 33) { // page up
-                            let newOpacity = Math.min(1, self.options.opacity+0.1);
-                            self._update({opacity: newOpacity});
-                        }
-                        if (evt.which == 34) { // page down
-                            let newOpacity = Math.max(0, self.options.opacity-0.1);
-                            self._update({opacity: newOpacity});
-                        }
-                        if (evt.which == 86) { // v
-                            self._update({
-                                use: !self.options.use
-                            });
+                        let newOpacity = 0;
+                        switch(evt.key || evt.which) {
+                            case "PageUp":
+                            case 33:
+                                newOpacity = Math.min(1, self.options.opacity+0.1);
+                                self._update({opacity: newOpacity});
+                                break;
+                            case "PageDown":
+                            case 34:
+                                newOpacity = Math.max(0, self.options.opacity-0.1);
+                                self._update({opacity: newOpacity});
+                                break;
+                            case "v":
+                            case "86":
+                                self._update({
+                                    use: !self.options.use
+                                });
+                                break;
                         }
                     }).on("keyup blur", function (evt) {
                         if (self.options.use) {
@@ -1455,7 +1486,7 @@ window.App = (function () {
                         self.elements.grid.fadeToggle({duration: 100});
                     }
                     $(document.body).on("keydown", function (evt) {
-                        if (evt.keyCode === 71) {
+                        if (evt.key == "g" || evt.keyCode === 71) {
                             $("#gridtoggle")[0].checked = !$("#gridtoggle")[0].checked;
                             $("#gridtoggle").trigger("change");
                         }
@@ -2221,7 +2252,7 @@ window.App = (function () {
                     self.elements.signup.hide();
                     self.elements.signup.find("input").keydown(function (evt) {
                         evt.stopPropagation();
-                        if (evt.which === 13) {
+                        if (evt.key == "Enter" || evt.which === 13) {
                             self.doSignup();
                         }
                     });
