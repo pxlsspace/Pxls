@@ -1930,7 +1930,13 @@ window.App = (function () {
                     alert: $("#alert")
                 },
                 show: function (s) {
-                    self.elements.alert.find(".text").empty().append(s);
+                    self.elements.alert.find(".text,.custWrapper").empty();
+                    self.elements.alert.find(".text").append(s);
+                    self.elements.alert.fadeIn(200);
+                },
+                showElem: function(element) {
+                    self.elements.alert.find(".text,.custWrapper").empty();
+                    self.elements.alert.find(".custWrapper").append(element);
                     self.elements.alert.fadeIn(200);
                 },
                 init: function () {
@@ -1944,7 +1950,8 @@ window.App = (function () {
             };
             return {
                 init: self.init,
-                show: self.show
+                show: self.show,
+                showElem: self.showElem
             };
         })(),
         stackHelper = (function() {
@@ -2248,7 +2255,9 @@ window.App = (function () {
                         alert.show("Too many sessions open, try closing some tabs.");
                     });
                     socket.on("userinfo", function (data) {
-                        var banmsg = '';
+                        let isBanned = false,
+                            banelem = $("<div>").addClass("ban-alert-content");
+                        console.info(data);
                         self.loggedIn = true;
                         self.elements.loginOverlay.fadeOut(200);
                         self.elements.userInfo.find("span.name").text(data.username);
@@ -2256,9 +2265,15 @@ window.App = (function () {
                         self.role = data.role;
 
                         if (self.role == "BANNED") {
-                            banmsg = "You are permanently banned from placing pixels. Reason: "+data.ban_reason+". If you think this is wrong, please check it with us.";
-                        } else if (data.banned) {
-                            banmsg = "You are banned from placing pixels. Reason: "+data.ban_reason+". Your ban will expire on " + new Date(data.banExpiry).toLocaleString() + ".";
+                            isBanned = true;
+                            banelem.append(
+                                $("<p>").text("You are permanently banned.")
+                            );
+                        } else if (data.banned === true) {
+                            isBanned = true;
+                            banelem.append(
+                                $("<p>").text(`You are temporarily banned and will not be allowed to place until ${new Date(data.banExpiry).toLocaleString()}`)
+                            );
                         } else if (["MODERATOR", "ADMIN"].indexOf(self.role) != -1) {
                             if (window.deInitAdmin) {
                                 window.deInitAdmin();
@@ -2275,8 +2290,16 @@ window.App = (function () {
                         } else if (window.deInitAdmin) {
                             window.deInitAdmin();
                         }
-                        if (banmsg) {
-                            self.elements.userMessage.text(banmsg).fadeIn(200);
+                        if (isBanned) {
+                            self.elements.userMessage.text("You can contact us using one of the links in the info menu.").fadeIn(200);
+                            banelem.append(
+                                $("<p>").text("If you think this was an error, please contact us using one of the links in the info tab.")
+                            ).append(
+                                $("<p>").append("Ban reason:")
+                            ).append(
+                                $("<p>").append(data.ban_reason)
+                            );
+                            alert.showElem(banelem);
                             if (window.deInitAdmin) {
                                 window.deInitAdmin();
                             }
