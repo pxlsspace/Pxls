@@ -2288,7 +2288,6 @@ window.App = (function () {
                     socket.on("userinfo", function (data) {
                         let isBanned = false,
                             banelem = $("<div>").addClass("ban-alert-content");
-                        console.info(data);
                         self.loggedIn = true;
                         self.elements.loginOverlay.fadeOut(200);
                         self.elements.userInfo.find("span.name").text(data.username);
