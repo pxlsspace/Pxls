@@ -430,7 +430,7 @@ window.App = (function () {
                 reconnect: function () {
                     $("#reconnecting").show();
                     setTimeout(function () {
-                        $.get(window.location.pathname + "?_" + (new Date()).getTime(), function () {
+                        $.get(window.location.pathname + "?_" + (new Date()).getTime(), function () { 
                             window.location.reload();
                         }).fail(function () {
                             console.log("Server still down...");
@@ -1790,8 +1790,8 @@ window.App = (function () {
                     ).fadeIn(200);
                 },
                 create: function (data) {
-                    self.elements.lookup.empty().append(
-                        $.map([
+                    self._makeShell().find(".content").first().append(
+                        data ? $.map([
                             ["Coords", "coords"],
                             ["Username", "username"],
                             ["Time", "time_str"],
@@ -1802,16 +1802,22 @@ window.App = (function () {
                                 $("<b>").text(o[0]+": "),
                                 $("<span>").text(data[o[1]])
                             );
-                        }),
-                        (user.isLoggedIn() ?
-                            $("<div>").addClass("button").css("float", "left").text("Report").click(function () {
+                        }) : $("<p>").text("This pixel is background (was not placed by a user).")
+                    );
+                    self.elements.lookup.fadeIn(200);
+                },
+                _makeShell: function(allowReport=true) {
+                    return self.elements.lookup.empty().append(
+                        $("<div>").addClass("content"),
+                        (allowReport && user.isLoggedIn() ?
+                            $("<div>").addClass("button").css("float", "left").addClass("report-button").text("Report").click(function () {
                                 self.report(data.id, data.x, data.y);
                             })
                         : ""),
                         $("<div>").addClass("button").css("float", "right").text("Close").click(function () {
                             self.elements.lookup.fadeOut(200);
                         })
-                    ).fadeIn(200);
+                    );
                 },
                 runLookup(clientX, clientY) {
                     const pos = board.fromScreen(clientX, clientY);
@@ -1832,16 +1838,16 @@ window.App = (function () {
                                     hoursStr = hours < 10 ? "0" + hours : hours;
                                 data.time_str = hoursStr+":"+minuteStr+":"+secsStr+" ago";
                             }
-                            if (self.handle) {
-                                self.handle(data);
-                            } else {
-                                self.create(data);
-                            }
+                        }
+                        data = data || false;
+                        if (self.handle) {
+                            self.handle(data);
                         } else {
-                            self.elements.lookup.fadeOut(200);
+                            self.create(data);
                         }
                     }).fail(function () {
-                        self.elements.lookup.fadeOut(200);
+                        self._makeShell(false).find(".content").first().append($("<p>").css("color", "#c00").text("An error occurred, you may be attempting to look up users too fast. Please try again in 60 seconds"));
+                        self.elements.lookup.fadeIn(200);
                     });
                 },
                 init: function () {

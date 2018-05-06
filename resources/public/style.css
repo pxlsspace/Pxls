@@ -124,8 +124,22 @@ a, a:hover, a:visited, a:active {
     border: 1px solid #ccc;
     background-color: #eee;
     padding: 16px;
+    max-width: 300px;
 
     position: fixed;
+}
+
+#lookup .content > div:not(:first-of-type) {
+    margin-top: 10px;
+}
+
+#lookup .report-button {
+    background-color: #e20;
+    color: #fff;
+}
+
+#lookup .report-button:hover {
+    background-color: #f10;
 }
 
 .button:hover {
