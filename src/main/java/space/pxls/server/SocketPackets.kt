@@ -50,10 +50,6 @@ data class ServerAlert(val message: String) {
     val type = "alert"
 }
 
-data class ServerStack(val count: Int, val cause: String) {
-    val type = "stack"
-}
-
 data class ServerACK(val ackFor: String, val x: Int, val y: Int) {
     val type="ACK"
 }
