@@ -203,7 +203,7 @@ public class App {
                                 try {
                                     Integer toSet = Integer.valueOf(token[3]);
                                     user.setStacked(toSet);
-                                    server.getPacketHandler().sendStackedCount(user, "override");
+                                    server.getPacketHandler().sendAvailablePixels(user, "override");
                                 } catch (NumberFormatException ignored) {
                                     System.out.printf("Invalid value: %s%n", token[3]);
                                 }

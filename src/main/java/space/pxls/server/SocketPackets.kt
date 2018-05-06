@@ -57,3 +57,7 @@ data class ServerStack(val count: Int, val cause: String) {
 data class ServerACK(val ackFor: String, val x: Int, val y: Int) {
     val type="ACK"
 }
+
+data class ServerPixels(val count: Int, val cause: String) {
+    val type="pixels"
+}

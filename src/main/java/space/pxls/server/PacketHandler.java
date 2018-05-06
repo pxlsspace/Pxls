@@ -51,6 +51,7 @@ public class PacketHandler {
                     user.isBanned() ? user.getBanReason() : "",
                     user.getLogin().split(":")[0]
             ));
+            sendAvailablePixels(channel, user, "auth");
         }
     }
 
@@ -63,7 +64,7 @@ public class PacketHandler {
             
             user.setInitialAuthTime(System.currentTimeMillis());
             user.tickStack(false); // pop the whole pixel stack
-            sendStackedCount(channel, user, "connect");
+            sendAvailablePixels(channel, user, "connect");
         }
         numAllCons++;
 
@@ -142,7 +143,7 @@ public class PacketHandler {
 
         if (user.lastPlaceWasStack()) {
             user.setStacked(Math.min(user.getStacked() + 1, App.getConfig().getInt("stacking.maxStacked")));
-            sendStackedCount(user, "undo");
+            sendAvailablePixels(user, "undo");
         }
         user.setLastUndoTime();
         user.setCooldown(0);
@@ -230,11 +231,12 @@ public class PacketHandler {
                         if (user.getStacked() > 0) {
                             user.setLastPlaceWasStack(true);
                             user.setStacked(user.getStacked()-1);
-                            sendStackedCount(user, "consume");
+                            sendAvailablePixels(user, "consume");
                         } else {
                             user.setLastPlaceWasStack(false);
                             user.setCooldown(seconds);
                             App.getDatabase().updateUserTime(user.getId(), seconds);
+                            sendAvailablePixels(user, "consume");
                         }
                         if (user.canUndo()) {
                             server.send(channel, new ServerCanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
@@ -306,13 +308,12 @@ public class PacketHandler {
         server.broadcast(new ServerPlace(Collections.singleton(new ServerPlace.Pixel(x, y, color))));
     }
 
-    public void sendStackedCount(WebSocketChannel ch, User user, String cause) {
-        server.send(ch, new ServerStack(user.getStacked(), cause));
+    public void sendAvailablePixels(WebSocketChannel ch, User user, String cause) {
+        server.send(ch, new ServerPixels(user.getAvailablePixels(), cause));
     }
-
-    public void sendStackedCount(User user, String cause) {
+    public void sendAvailablePixels(User user, String cause) {
         for (WebSocketChannel ch : user.getConnections()) {
-            sendStackedCount(ch, user, cause);
+            sendAvailablePixels(ch, user, cause);
         }
     }
 

@@ -784,7 +784,7 @@ window.App = (function () {
                         self.width = data.width;
                         self.height = data.height;
                         place.setPalette(data.palette);
-                        stackHelper.setMax(data.maxStacked);
+                        uiHelper.setMax(data.maxStacked);
                         if (data.captchaKey) {
                             $(".g-recaptcha").attr("data-sitekey", data.captchaKey);
 
@@ -1645,7 +1645,7 @@ window.App = (function () {
                         }
                         self.elements.undo.css("transform", "translate(" + x + "px, " + y + "px)");
                     }).keydown(function (evt) {
-                        if (self.can_undo && evt.keyCode == 90 && evt.ctrlKey) {
+                        if (self.can_undo && (evt.key == "z" || evt.keyCode == 90) && evt.ctrlKey) {
                             self.undo(evt);
                         }
                     }).on("touchstart", function (evt) {
@@ -1668,8 +1668,8 @@ window.App = (function () {
                                     self.audio.cloneNode(false).play();
                                 }
                             case "UNDO":
-                                if (stackHelper.getStacked() === 0)
-                                    stackHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
+                                if (uiHelper.getAvailable() === 0)
+                                    uiHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
                                 break;
                         }
                     });
@@ -1985,23 +1985,21 @@ window.App = (function () {
                 showElem: self.showElem
             };
         })(),
-        stackHelper = (function() {
+        uiHelper = (function() {
             var self = {
-                _stacked: -1,
+                _available: -1,
                 maxStacked: -1,
                 elements: {
                     stackCount: $("#placeableCount-bubble, #placeableCount-cursor")
                 },
                 init: function() {
-                    socket.on("stack", function(data) {
-                        self.updateStacked(data.count, data.cause);
-                        self._stacked = data.count;
+                    socket.on("pixels", function(data) {
+                        self.updateAvailable(data.count, data.cause);
                     });
                 },
-                updateStacked: function(count, cause) {
-                    if (count > 0 && cause === "gain") timer.playAudio();
-                    if (count === 0 && cause === "connect") return self.setPlaceableText(0);
-                    self.setPlaceableText(count+1);
+                updateAvailable: function(count, cause) {
+                    if (count > 0 && cause === "stackGain") timer.playAudio();
+                    self.setPlaceableText(count);
                 },
                 setMax(maxStacked) {
                     self.maxStacked = maxStacked+1;
@@ -2009,16 +2007,16 @@ window.App = (function () {
                 setPlaceableText(placeable) {
                     self.elements.stackCount.text(`${placeable}/${self.maxStacked}`);
                 },
-                getStacked() {
-                    return self._stacked;
+                getAvailable() {
+                    return self._available;
                 }
             };
 
             return {
                 init: self.init,
                 updateTimer: self.updateTimer,
-                updateStacked: self.updateStacked,
-                getStacked: self.getStacked,
+                updateAvailable: self.updateAvailable,
+                getAvailable: self.getAvailable,
                 setPlaceableText: self.setPlaceableText,
                 setMax: self.setMax
             };
@@ -2081,7 +2079,7 @@ window.App = (function () {
                         if (!self.focus) {
                             notification.show("Your next pixel is available!");
                         }
-                        if (stackHelper.getStacked() === 0) stackHelper.setPlaceableText(1);
+                        uiHelper.setPlaceableText(1);
                         self.hasFiredNotification = true;
                     }
 
@@ -2099,8 +2097,8 @@ window.App = (function () {
                         self.focus = false;
                     });
                     setTimeout(function() {
-                        if (self.cooledDown() && stackHelper.getStacked() === 0) {
-                            stackHelper.setPlaceableText(1);
+                        if (self.cooledDown() && uiHelper.getAvailable() === 0) {
+                            uiHelper.setPlaceableText(1);
                         }
                     }, 250);
                     socket.on("cooldown", function (data) {
@@ -2393,7 +2391,7 @@ window.App = (function () {
     info.init();
     alert.init();
     timer.init();
-    stackHelper.init();
+    uiHelper.init();
     coords.init();
     user.init();
     notification.init();

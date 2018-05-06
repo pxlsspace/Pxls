@@ -308,7 +308,7 @@ public class User {
             if (delta >= target && getStacked() < maxStacked) {
                 setStacked(getStacked() + 1);
                 if (sendRes) {
-                    App.getServer().getPacketHandler().sendStackedCount(this, "gain");
+                    App.getServer().getPacketHandler().sendAvailablePixels(this, "stackGain");
                 }
                 continue;
             }
@@ -318,5 +318,12 @@ public class User {
 
     public int getPixels() {
         return App.getDatabase().getUserPixels(this.id);
+    }
+
+    public int getAvailablePixels() {
+        boolean canPlace = canPlace();
+        if (!canPlace) return 0;
+
+        return (canPlace ? 1 : 0) + this.stacked;
     }
 }
