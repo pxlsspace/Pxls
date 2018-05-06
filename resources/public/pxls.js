@@ -1265,17 +1265,17 @@ window.App = (function () {
                         left: self.options.x,
                         opacity: self.options.opacity,
                         width: self.options.width === -1 ? 'auto' : self.options.width
-                    }).data("dragging", false).mousedown(function (evt) {
+                    }).data("dragging", false).on("mousedown pointerdown", function (evt) {
                         evt.preventDefault();
                         $(this).data("dragging", true);
                         drag.x = evt.clientX;
                         drag.y = evt.clientY;
                         evt.stopPropagation();
-                    }).mouseup(function (evt) {
+                    }).on("mouseup pointerup", function (evt) {
                         evt.preventDefault();
                         $(this).data("dragging", false);
                         evt.stopPropagation();
-                    }).mousemove(function (evt) {
+                    }).on("mousemove pointermove", function (evt) {
                         evt.preventDefault();
                         if ($(this).data("dragging")) {
                             var px_old = board.fromScreen(drag.x, drag.y),
