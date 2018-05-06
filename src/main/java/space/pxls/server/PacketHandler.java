@@ -153,12 +153,14 @@ public class PacketHandler {
             App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, "(user undo)", false);
             broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
             ackUndo(user, lastPixel.x, lastPixel.y);
+            sendAvailablePixels(user, "undo");
         } else {
             byte defaultColor = App.getDefaultColor(thisPixel.x, thisPixel.y);
             App.getDatabase().putUserUndoPixel(thisPixel.x, thisPixel.y, defaultColor, user, thisPixel.id);
             App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, "(user undo)", false);
             broadcastPixelUpdate(thisPixel.x, thisPixel.y, defaultColor);
             ackUndo(user, thisPixel.x, thisPixel.y);
+            sendAvailablePixels(user, "undo");
         }
         sendCooldownData(user);
     }
