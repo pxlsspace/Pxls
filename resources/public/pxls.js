@@ -1790,7 +1790,7 @@ window.App = (function () {
                     ).fadeIn(200);
                 },
                 create: function (data) {
-                    self._makeShell().find(".content").first().append(
+                    self._makeShell(data).find(".content").first().append(
                         data ? $.map([
                             ["Coords", "coords"],
                             ["Username", "username"],
@@ -1806,10 +1806,10 @@ window.App = (function () {
                     );
                     self.elements.lookup.fadeIn(200);
                 },
-                _makeShell: function(allowReport=true) {
+                _makeShell: function(data) {
                     return self.elements.lookup.empty().append(
                         $("<div>").addClass("content"),
-                        (allowReport && user.isLoggedIn() ?
+                        (data && user.isLoggedIn() ?
                             $("<div>").addClass("button").css("float", "left").addClass("report-button").text("Report").click(function () {
                                 self.report(data.id, data.x, data.y);
                             })
