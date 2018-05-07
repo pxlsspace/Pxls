@@ -2253,6 +2253,7 @@ window.App = (function () {
                     // self.pendingSignupToken = null;
                 },
                 init: function () {
+                    self.elements.userMessage.hide();
                     self.elements.signup.hide();
                     self.elements.signup.find("input").keydown(function (evt) {
                         evt.stopPropagation();
@@ -2325,7 +2326,7 @@ window.App = (function () {
                             window.deInitAdmin();
                         }
                         if (isBanned) {
-                            self.elements.userMessage.text("You can contact us using one of the links in the info menu.").fadeIn(200);
+                            self.elements.userMessage.show().text("You can contact us using one of the links in the info menu.").fadeIn(200);
                             banelem.append(
                                 $("<p>").text("If you think this was an error, please contact us using one of the links in the info tab.")
                             ).append(
