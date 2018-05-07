@@ -430,7 +430,7 @@ window.App = (function () {
                 reconnect: function () {
                     $("#reconnecting").show();
                     setTimeout(function () {
-                        $.get(window.location.pathname + "?_" + (new Date()).getTime(), function () {
+                        $.get(window.location.pathname + "?_" + (new Date()).getTime(), function () { 
                             window.location.reload();
                         }).fail(function () {
                             console.log("Server still down...");
@@ -590,22 +590,47 @@ window.App = (function () {
                     });
 
                     $(document.body).on("keydown", function (evt) {
-                        if (evt.keyCode === 87 || evt.keyCode === 38) {
-                            self.pan.y += 100 / self.scale;
-                        } else if (evt.keyCode === 65 || evt.keyCode === 37) {
-                            self.pan.x += 100 / self.scale;
-                        } else if (evt.keyCode === 83 || evt.keyCode === 40) {
-                            self.pan.y -= 100 / self.scale;
-                        } else if (evt.keyCode === 68 || evt.keyCode === 39) {
-                            self.pan.x -= 100 / self.scale;
-                        } else if (evt.keyCode === 187 || evt.keyCode === 69 || evt.keyCode === 171) {
-                            self.nudgeScale(1);
-                        } else if (evt.keyCode === 189 || evt.keyCode === 81 || evt.keyCode === 173) {
-                            self.nudgeScale(-1);
-                        } else if (evt.keyCode === 80) {
-                            self.save();
-                        } else if (evt.keyCode === 76) {
-                            self.allowDrag = !self.allowDrag;
+                        switch(evt.key || evt.keyCode) {
+                            case "ArrowUp":
+                            case 87:
+                            case 38:
+                                self.pan.y += 100 / self.scale;
+                                break;
+                            case "ArrowRight":
+                            case 68:
+                            case 39:
+                                self.pan.x -= 100 / self.scale;
+                                break;
+                            case "ArrowDown":
+                            case 83:
+                            case 40:
+                                self.pan.y -= 100 / self.scale;
+                                break;
+                            case "ArrowLeft":
+                            case 65:
+                            case 37:
+                                self.pan.x += 100 / self.scale;
+                                break;
+                            case "=":
+                            case 187:
+                            case 69:
+                            case 171:
+                                self.nudgeScale(1);
+                                break;
+                            case "-":
+                            case 189:
+                            case 81:
+                            case 173:
+                                self.nudgeScale(-1);
+                                break;
+                            case "p":
+                            case 80:
+                                self.save();
+                                break;
+                            case "l":
+                            case 76:
+                                self.allowDrag = !self.allowDrag;
+                                break;
                         }
                         self.pannedWithKeys = true;
                         self.update();
@@ -759,7 +784,7 @@ window.App = (function () {
                         self.width = data.width;
                         self.height = data.height;
                         place.setPalette(data.palette);
-                        stackHelper.setMax(data.maxStacked);
+                        uiHelper.setMax(data.maxStacked);
                         if (data.captchaKey) {
                             $(".g-recaptcha").attr("data-sitekey", data.captchaKey);
 
@@ -1140,7 +1165,7 @@ window.App = (function () {
                         ls.set("hm_clearable", this.checked);
                     });
                     $(window).keydown(function (evt) {
-                        if (evt.which == 79) { //O key
+                        if (evt.key == "o" || evt.which == 79) { //O key
                             self.clear();
                         }
                     });
@@ -1190,7 +1215,7 @@ window.App = (function () {
                     });
 
                     $(window).keydown(function (e) {
-                        if (e.which == 72) { // h key
+                        if (e.key == "h" || e.which == 72) { // h key
                             self.toggle();
                             $("#heatmaptoggle")[0].checked = ls.get("heatmap");
                         }
@@ -1240,17 +1265,17 @@ window.App = (function () {
                         left: self.options.x,
                         opacity: self.options.opacity,
                         width: self.options.width === -1 ? 'auto' : self.options.width
-                    }).data("dragging", false).mousedown(function (evt) {
+                    }).data("dragging", false).on("mousedown pointerdown", function (evt) {
                         evt.preventDefault();
                         $(this).data("dragging", true);
                         drag.x = evt.clientX;
                         drag.y = evt.clientY;
                         evt.stopPropagation();
-                    }).mouseup(function (evt) {
+                    }).on("mouseup pointerup", function (evt) {
                         evt.preventDefault();
                         $(this).data("dragging", false);
                         evt.stopPropagation();
-                    }).mousemove(function (evt) {
+                    }).on("mousemove pointermove", function (evt) {
                         evt.preventDefault();
                         if ($(this).data("dragging")) {
                             var px_old = board.fromScreen(drag.x, drag.y),
@@ -1386,10 +1411,10 @@ window.App = (function () {
                     $("#template-url").change(function () {
                         self._update({url: this.value});
                     }).keydown(function (evt) {
-                        if (evt.which === 13) {
+                        if (evt.key == "Enter" || evt.which === 13) {
                             $(this).change();
                         }
-                        if (evt.which == 86 && evt.ctrlKey) {
+                        if ((evt.key == "p" || evt.which == 86) && evt.ctrlKey) {
                             $(this).trigger("paste");
                         }
                         evt.stopPropagation();
@@ -1410,18 +1435,24 @@ window.App = (function () {
                             evt.preventDefault();
                             self.elements.template.css("pointer-events", "initial");
                         }
-                        if (evt.which == 33) { // page up
-                            let newOpacity = Math.min(1, self.options.opacity+0.1);
-                            self._update({opacity: newOpacity});
-                        }
-                        if (evt.which == 34) { // page down
-                            let newOpacity = Math.max(0, self.options.opacity-0.1);
-                            self._update({opacity: newOpacity});
-                        }
-                        if (evt.which == 86) { // v
-                            self._update({
-                                use: !self.options.use
-                            });
+                        let newOpacity = 0;
+                        switch(evt.key || evt.which) {
+                            case "PageUp":
+                            case 33:
+                                newOpacity = Math.min(1, self.options.opacity+0.1);
+                                self._update({opacity: newOpacity});
+                                break;
+                            case "PageDown":
+                            case 34:
+                                newOpacity = Math.max(0, self.options.opacity-0.1);
+                                self._update({opacity: newOpacity});
+                                break;
+                            case "v":
+                            case "86":
+                                self._update({
+                                    use: !self.options.use
+                                });
+                                break;
                         }
                     }).on("keyup blur", function (evt) {
                         if (self.options.use) {
@@ -1455,7 +1486,7 @@ window.App = (function () {
                         self.elements.grid.fadeToggle({duration: 100});
                     }
                     $(document.body).on("keydown", function (evt) {
-                        if (evt.keyCode === 71) {
+                        if (evt.key == "g" || evt.keyCode === 71) {
                             $("#gridtoggle")[0].checked = !$("#gridtoggle")[0].checked;
                             $("#gridtoggle").trigger("change");
                         }
@@ -1614,7 +1645,7 @@ window.App = (function () {
                         }
                         self.elements.undo.css("transform", "translate(" + x + "px, " + y + "px)");
                     }).keydown(function (evt) {
-                        if (self.can_undo && evt.keyCode == 90 && evt.ctrlKey) {
+                        if (self.can_undo && (evt.key == "z" || evt.keyCode == 90) && evt.ctrlKey) {
                             self.undo(evt);
                         }
                     }).on("touchstart", function (evt) {
@@ -1637,8 +1668,8 @@ window.App = (function () {
                                     self.audio.cloneNode(false).play();
                                 }
                             case "UNDO":
-                                if (stackHelper.getStacked() === 0)
-                                    stackHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
+                                if (uiHelper.getAvailable() === 0)
+                                    uiHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
                                 break;
                         }
                     });
@@ -1759,8 +1790,8 @@ window.App = (function () {
                     ).fadeIn(200);
                 },
                 create: function (data) {
-                    self.elements.lookup.empty().append(
-                        $.map([
+                    self._makeShell().find(".content").first().append(
+                        data ? $.map([
                             ["Coords", "coords"],
                             ["Username", "username"],
                             ["Time", "time_str"],
@@ -1771,16 +1802,22 @@ window.App = (function () {
                                 $("<b>").text(o[0]+": "),
                                 $("<span>").text(data[o[1]])
                             );
-                        }),
-                        (user.isLoggedIn() ?
-                            $("<div>").addClass("button").css("float", "left").text("Report").click(function () {
+                        }) : $("<p>").text("This pixel is background (was not placed by a user).")
+                    );
+                    self.elements.lookup.fadeIn(200);
+                },
+                _makeShell: function(allowReport=true) {
+                    return self.elements.lookup.empty().append(
+                        $("<div>").addClass("content"),
+                        (allowReport && user.isLoggedIn() ?
+                            $("<div>").addClass("button").css("float", "left").addClass("report-button").text("Report").click(function () {
                                 self.report(data.id, data.x, data.y);
                             })
                         : ""),
                         $("<div>").addClass("button").css("float", "right").text("Close").click(function () {
                             self.elements.lookup.fadeOut(200);
                         })
-                    ).fadeIn(200);
+                    );
                 },
                 runLookup(clientX, clientY) {
                     const pos = board.fromScreen(clientX, clientY);
@@ -1801,16 +1838,16 @@ window.App = (function () {
                                     hoursStr = hours < 10 ? "0" + hours : hours;
                                 data.time_str = hoursStr+":"+minuteStr+":"+secsStr+" ago";
                             }
-                            if (self.handle) {
-                                self.handle(data);
-                            } else {
-                                self.create(data);
-                            }
+                        }
+                        data = data || false;
+                        if (self.handle) {
+                            self.handle(data);
                         } else {
-                            self.elements.lookup.fadeOut(200);
+                            self.create(data);
                         }
                     }).fail(function () {
-                        self.elements.lookup.fadeOut(200);
+                        self._makeShell(false).find(".content").first().append($("<p>").css("color", "#c00").text("An error occurred, you may be attempting to look up users too fast. Please try again in 60 seconds"));
+                        self.elements.lookup.fadeIn(200);
                     });
                 },
                 init: function () {
@@ -1930,7 +1967,13 @@ window.App = (function () {
                     alert: $("#alert")
                 },
                 show: function (s) {
-                    self.elements.alert.find(".text").empty().append(s);
+                    self.elements.alert.find(".text,.custWrapper").empty();
+                    self.elements.alert.find(".text").append(s);
+                    self.elements.alert.fadeIn(200);
+                },
+                showElem: function(element) {
+                    self.elements.alert.find(".text,.custWrapper").empty();
+                    self.elements.alert.find(".custWrapper").append(element);
                     self.elements.alert.fadeIn(200);
                 },
                 init: function () {
@@ -1944,26 +1987,25 @@ window.App = (function () {
             };
             return {
                 init: self.init,
-                show: self.show
+                show: self.show,
+                showElem: self.showElem
             };
         })(),
-        stackHelper = (function() {
+        uiHelper = (function() {
             var self = {
-                _stacked: -1,
+                _available: -1,
                 maxStacked: -1,
                 elements: {
                     stackCount: $("#placeableCount-bubble, #placeableCount-cursor")
                 },
                 init: function() {
-                    socket.on("stack", function(data) {
-                        self.updateStacked(data.count, data.cause);
-                        self._stacked = data.count;
+                    socket.on("pixels", function(data) {
+                        self.updateAvailable(data.count, data.cause);
                     });
                 },
-                updateStacked: function(count, cause) {
-                    if (count > 0 && cause === "gain") timer.playAudio();
-                    if (count === 0 && cause === "connect") return self.setPlaceableText(0);
-                    self.setPlaceableText(count+1);
+                updateAvailable: function(count, cause) {
+                    if (count > 0 && cause === "stackGain") timer.playAudio();
+                    self.setPlaceableText(count);
                 },
                 setMax(maxStacked) {
                     self.maxStacked = maxStacked+1;
@@ -1971,16 +2013,16 @@ window.App = (function () {
                 setPlaceableText(placeable) {
                     self.elements.stackCount.text(`${placeable}/${self.maxStacked}`);
                 },
-                getStacked() {
-                    return self._stacked;
+                getAvailable() {
+                    return self._available;
                 }
             };
 
             return {
                 init: self.init,
                 updateTimer: self.updateTimer,
-                updateStacked: self.updateStacked,
-                getStacked: self.getStacked,
+                updateAvailable: self.updateAvailable,
+                getAvailable: self.getAvailable,
                 setPlaceableText: self.setPlaceableText,
                 setMax: self.setMax
             };
@@ -2043,7 +2085,7 @@ window.App = (function () {
                         if (!self.focus) {
                             notification.show("Your next pixel is available!");
                         }
-                        if (stackHelper.getStacked() === 0) stackHelper.setPlaceableText(1);
+                        uiHelper.setPlaceableText(1);
                         self.hasFiredNotification = true;
                     }
 
@@ -2061,8 +2103,8 @@ window.App = (function () {
                         self.focus = false;
                     });
                     setTimeout(function() {
-                        if (self.cooledDown() && stackHelper.getStacked() === 0) {
-                            stackHelper.setPlaceableText(1);
+                        if (self.cooledDown() && uiHelper.getAvailable() === 0) {
+                            uiHelper.setPlaceableText(1);
                         }
                     }, 250);
                     socket.on("cooldown", function (data) {
@@ -2214,7 +2256,7 @@ window.App = (function () {
                     self.elements.signup.hide();
                     self.elements.signup.find("input").keydown(function (evt) {
                         evt.stopPropagation();
-                        if (evt.which === 13) {
+                        if (evt.key == "Enter" || evt.which === 13) {
                             self.doSignup();
                         }
                     });
@@ -2248,7 +2290,8 @@ window.App = (function () {
                         alert.show("Too many sessions open, try closing some tabs.");
                     });
                     socket.on("userinfo", function (data) {
-                        var banmsg = '';
+                        let isBanned = false,
+                            banelem = $("<div>").addClass("ban-alert-content");
                         self.loggedIn = true;
                         self.elements.loginOverlay.fadeOut(200);
                         self.elements.userInfo.find("span.name").text(data.username);
@@ -2256,9 +2299,15 @@ window.App = (function () {
                         self.role = data.role;
 
                         if (self.role == "BANNED") {
-                            banmsg = "You are permanently banned from placing pixels. Reason: "+data.ban_reason+". If you think this is wrong, please check it with us.";
-                        } else if (data.banned) {
-                            banmsg = "You are banned from placing pixels. Reason: "+data.ban_reason+". Your ban will expire on " + new Date(data.banExpiry).toLocaleString() + ".";
+                            isBanned = true;
+                            banelem.append(
+                                $("<p>").text("You are permanently banned.")
+                            );
+                        } else if (data.banned === true) {
+                            isBanned = true;
+                            banelem.append(
+                                $("<p>").text(`You are temporarily banned and will not be allowed to place until ${new Date(data.banExpiry).toLocaleString()}`)
+                            );
                         } else if (["MODERATOR", "ADMIN"].indexOf(self.role) != -1) {
                             if (window.deInitAdmin) {
                                 window.deInitAdmin();
@@ -2275,8 +2324,16 @@ window.App = (function () {
                         } else if (window.deInitAdmin) {
                             window.deInitAdmin();
                         }
-                        if (banmsg) {
-                            self.elements.userMessage.text(banmsg).fadeIn(200);
+                        if (isBanned) {
+                            self.elements.userMessage.text("You can contact us using one of the links in the info menu.").fadeIn(200);
+                            banelem.append(
+                                $("<p>").text("If you think this was an error, please contact us using one of the links in the info tab.")
+                            ).append(
+                                $("<p>").append("Ban reason:")
+                            ).append(
+                                $("<p>").append(data.ban_reason)
+                            );
+                            alert.showElem(banelem);
                             if (window.deInitAdmin) {
                                 window.deInitAdmin();
                             }
@@ -2340,7 +2397,7 @@ window.App = (function () {
     info.init();
     alert.init();
     timer.init();
-    stackHelper.init();
+    uiHelper.init();
     coords.init();
     user.init();
     notification.init();

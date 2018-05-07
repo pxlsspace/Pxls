@@ -119,9 +119,12 @@ public class User {
     }
 
     public void setRole(Role role) {
+        setRole(role, false);
+    }
+    public void setRole(Role role, boolean skipSendUserData) {
         this.role = role;
         App.getDatabase().setUserRole(this, role);
-        if (role != Role.SHADOWBANNED) {
+        if (!skipSendUserData && role != Role.SHADOWBANNED) {
             sendUserData();
         }
     }
@@ -171,12 +174,15 @@ public class User {
         return banExpiryTime;
     }
 
-    private void setBanExpiryTime(long timeFromNowSeconds) {
+    private void setBanExpiryTime(long timeFromNowSeconds, boolean skipSendUserData) {
         this.banExpiryTime = (timeFromNowSeconds*1000) + System.currentTimeMillis();
         App.getDatabase().updateBan(this, timeFromNowSeconds);
-        if (role != Role.SHADOWBANNED) {
+        if (!skipSendUserData && role != Role.SHADOWBANNED) {
             sendUserData();
         }
+    }
+    private void setBanExpiryTime(long timeFromNowSeconds) {
+        setBanExpiryTime(timeFromNowSeconds, false);
     }
 
     public Set<WebSocketChannel> getConnections() {
@@ -185,7 +191,7 @@ public class User {
 
     public void shadowban(String reason, int rollbackTime) {
         setBanReason(reason);
-        setRole(role.SHADOWBANNED);
+        setRole(role.SHADOWBANNED, true);
         App.rollbackAfterBan(this, rollbackTime);
     }
 
@@ -198,7 +204,7 @@ public class User {
     }
 
     public void ban(long timeFromNowSeconds, String reason, int rollbackTime) {
-        setBanExpiryTime(timeFromNowSeconds);
+        setBanExpiryTime(timeFromNowSeconds, true);
         setBanReason(reason);
         sendUserData();
         App.rollbackAfterBan(this, rollbackTime);
@@ -214,7 +220,8 @@ public class User {
 
     public void permaban(String reason, int rollbackTime) {
         setBanReason(reason);
-        setRole(role.BANNED);
+        setRole(role.BANNED, true);
+        sendUserData();
         App.rollbackAfterBan(this, rollbackTime);
     }
 
@@ -227,9 +234,9 @@ public class User {
     }
 
     public void unban() {
-        setBanExpiryTime(0);
+        setBanExpiryTime(0, true);
         if (role.lessThan(Role.USER)) {
-            setRole(Role.USER);
+            setRole(Role.USER, true);
         }
         sendUserData();
         App.undoRollback(this);
@@ -301,7 +308,7 @@ public class User {
             if (delta >= target && getStacked() < maxStacked) {
                 setStacked(getStacked() + 1);
                 if (sendRes) {
-                    App.getServer().getPacketHandler().sendStackedCount(this, "gain");
+                    App.getServer().getPacketHandler().sendAvailablePixels(this, "stackGain");
                 }
                 continue;
             }
@@ -311,5 +318,12 @@ public class User {
 
     public int getPixels() {
         return App.getDatabase().getUserPixels(this.id);
+    }
+
+    public int getAvailablePixels() {
+        boolean canPlace = canPlace();
+        if (!canPlace) return 0;
+
+        return (canPlace ? 1 : 0) + this.stacked;
     }
 }
