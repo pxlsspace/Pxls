@@ -591,32 +591,38 @@ window.App = (function () {
 
                     $(document.body).on("keydown", function (evt) {
                         switch(evt.key || evt.keyCode) {
+                            case "w":
                             case "ArrowUp":
                             case 87:
                             case 38:
                                 self.pan.y += 100 / self.scale;
                                 break;
+                            case "d":
                             case "ArrowRight":
                             case 68:
                             case 39:
                                 self.pan.x -= 100 / self.scale;
                                 break;
+                            case "s":
                             case "ArrowDown":
                             case 83:
                             case 40:
                                 self.pan.y -= 100 / self.scale;
                                 break;
+                            case "a":
                             case "ArrowLeft":
                             case 65:
                             case 37:
                                 self.pan.x += 100 / self.scale;
                                 break;
+                            case "e":
                             case "=":
                             case 187:
                             case 69:
                             case 171:
                                 self.nudgeScale(1);
                                 break;
+                            case "q":
                             case "-":
                             case 189:
                             case 81:
@@ -1448,7 +1454,7 @@ window.App = (function () {
                                 self._update({opacity: newOpacity});
                                 break;
                             case "v":
-                            case "86":
+                            case 86:
                                 self._update({
                                     use: !self.options.use
                                 });
