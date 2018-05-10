@@ -647,7 +647,7 @@ window.App = (function () {
                                 break;
                             case 75:
                             case "k":
-                                if (place.color + 1 === place.getPaletteRGB().length) {
+                                if (place.color + 1 >= place.getPaletteRGB().length) {
                                     place.switch(0);
                                 } else {
                                     place.switch(place.color + 1);
