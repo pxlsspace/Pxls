@@ -1149,10 +1149,6 @@ window.App = (function () {
                                 self.ctx.fillRect(px.x, px.y, 1, 1);
                                 self.intView[px.y * self.width + px.x] = 0xFF000000 | self.color;
                             });
-
-                            if (ls.get("illuminati")) {
-                                place.centerBoardOn(px.x, px.y);
-                            }
                         });
                     });
                 },
@@ -1683,6 +1679,9 @@ window.App = (function () {
                     socket.on("pixel", function (data) {
                         $.map(data.pixels, function (px) {
                             board.setPixel(px.x, px.y, px.color, false);
+                            if (ls.get("illuminati")) {
+                                board.centerOn(px.x, px.y);
+                            }
                         });
                         board.refresh();
                         board.update(true);
