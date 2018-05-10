@@ -591,32 +591,38 @@ window.App = (function () {
 
                     $(document.body).on("keydown", function (evt) {
                         switch(evt.key || evt.keyCode) {
+                            case "w":
                             case "ArrowUp":
                             case 87:
                             case 38:
                                 self.pan.y += 100 / self.scale;
                                 break;
+                            case "d":
                             case "ArrowRight":
                             case 68:
                             case 39:
                                 self.pan.x -= 100 / self.scale;
                                 break;
+                            case "s":
                             case "ArrowDown":
                             case 83:
                             case 40:
                                 self.pan.y -= 100 / self.scale;
                                 break;
+                            case "a":
                             case "ArrowLeft":
                             case 65:
                             case 37:
                                 self.pan.x += 100 / self.scale;
                                 break;
+                            case "e":
                             case "=":
                             case 187:
                             case 69:
                             case 171:
                                 self.nudgeScale(1);
                                 break;
+                            case "q":
                             case "-":
                             case 189:
                             case 81:
@@ -630,6 +636,22 @@ window.App = (function () {
                             case "l":
                             case 76:
                                 self.allowDrag = !self.allowDrag;
+                                break;
+                            case "j":
+                            case 74:
+                                if (place.color < 1) {
+                                    place.switch(place.getPaletteRGB().length - 1);
+                                } else {
+                                    place.switch(place.color - 1);
+                                }
+                                break;
+                            case 75:
+                            case "k":
+                                if (place.color + 1 === place.getPaletteRGB().length) {
+                                    place.switch(0);
+                                } else {
+                                    place.switch(place.color + 1);
+                                }
                                 break;
                         }
                         self.pannedWithKeys = true;
@@ -1448,7 +1470,7 @@ window.App = (function () {
                                 self._update({opacity: newOpacity});
                                 break;
                             case "v":
-                            case "86":
+                            case 86:
                                 self._update({
                                     use: !self.options.use
                                 });
@@ -1732,7 +1754,10 @@ window.App = (function () {
                 switch: self.switch,
                 setPalette: self.setPalette,
                 getPaletteRGB: self.getPaletteRGB,
-                setAutoReset: self.setAutoReset
+                setAutoReset: self.setAutoReset,
+                get color() {
+                    return self.color;
+                }
             };
         })(),
         // this is the user lookup helper
