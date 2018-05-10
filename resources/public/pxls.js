@@ -637,6 +637,22 @@ window.App = (function () {
                             case 76:
                                 self.allowDrag = !self.allowDrag;
                                 break;
+                            case "j":
+                            case 74:
+                                if (place.color < 1) {
+                                    place.switch(place.getPaletteRGB().length - 1);
+                                } else {
+                                    place.switch(place.color - 1);
+                                }
+                                break;
+                            case 75:
+                            case "k":
+                                if (place.color + 1 === place.getPaletteRGB().length) {
+                                    place.switch(0);
+                                } else {
+                                    place.switch(place.color + 1);
+                                }
+                                break;
                         }
                         self.pannedWithKeys = true;
                         self.update();
@@ -1738,7 +1754,10 @@ window.App = (function () {
                 switch: self.switch,
                 setPalette: self.setPalette,
                 getPaletteRGB: self.getPaletteRGB,
-                setAutoReset: self.setAutoReset
+                setAutoReset: self.setAutoReset,
+                get color() {
+                    return self.color;
+                }
             };
         })(),
         // this is the user lookup helper
