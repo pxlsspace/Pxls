@@ -1149,6 +1149,10 @@ window.App = (function () {
                                 self.ctx.fillRect(px.x, px.y, 1, 1);
                                 self.intView[px.y * self.width + px.x] = 0xFF000000 | self.color;
                             });
+
+                            if (ls.get("illuminati")) {
+                                place.centerBoardOn(px.x, px.y);
+                            }
                         });
                     });
                 },
@@ -1964,6 +1968,11 @@ window.App = (function () {
                     $("#audiotoggle").change(function () {
                         ls.set("audio_muted", this.checked);
                     });
+                    $("#illuminati")[0].checked = ls.get("illuminati");
+                    $("#illuminati").on("change input", function () {
+                        ls.set("illuminati", this.checked);
+                    });
+
                     $("#rules-button").click(function (evt) {
                         evt.stopPropagation();
                         alert.show($("#rules-content").html());
