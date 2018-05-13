@@ -16,7 +16,7 @@ window.App = (function() {
 				},
 				setCookie = function(c_name, value, exdays2) {
 					const exdate = new Date();
-					let	c_value = escape(value);
+					let c_value = escape(value);
 					exdate.setDate(exdate.getDate() + exdays2);
 					c_value += ((exdays2 === null) ? "" : "; expires=" + exdate.toUTCString());
 					document.cookie = c_name + "=" + c_value;
@@ -29,7 +29,7 @@ window.App = (function() {
 							storageType.setItem("test", 1);
 							this.haveSupport = (storageType.getItem("test") == 1);
 							storageType.removeItem("test");
-						} catch(e) {
+						} catch (e) {
 							this.haveSupport = false;
 						}
 					}
@@ -47,7 +47,7 @@ window.App = (function() {
 					}
 					try {
 						return JSON.parse(s);
-					} catch(e) {
+					} catch (e) {
 						return null;
 					}
 				},
@@ -164,7 +164,9 @@ window.App = (function() {
 				},
 				_update: function(fromEvent) {
 					let toSplit = window.location.hash.substring(1);
-					if (window.location.search.length > 0) {toSplit += ("&" + window.location.search.substring(1));}
+					if (window.location.search.length > 0) {
+						toSplit += ("&" + window.location.search.substring(1));
+					}
 
 					const _varsTemp = toSplit.split("&"),
 						vars = {};
@@ -222,7 +224,9 @@ window.App = (function() {
 					for (let i = 0; i < KVPs.length; i++) {
 						const k = KVPs[i][0],
 							v = KVPs[i][1].toString();
-						if (self.get(k) === v) {continue;}
+						if (self.get(k) === v) {
+							continue;
+						}
 						self.set(k, v, silent);
 					}
 				},
@@ -254,7 +258,9 @@ window.App = (function() {
 								const decoded = decodeURIComponent(self.params[p]);
 								let toSet = self.params[p];
 								// ensure already URL-encoded values don't get re-encoded. if decoded === toSet, then it's already in an un-encoded form, and we can encode "safely".
-								if (decoded === toSet) {toSet = encodeURIComponent(toSet);}
+								if (decoded === toSet) {
+									toSet = encodeURIComponent(toSet);
+								}
 								s += "=" + toSet;
 							}
 							params.push(s);
@@ -283,7 +289,9 @@ window.App = (function() {
 					delete self.params[n];
 					self.lazy_update();
 
-					if (silent !== true) {self._trigger(n, self.params[n], null);}
+					if (silent !== true) {
+						self._trigger(n, self.params[n], null);
+					}
 				},
 				timer: null,
 				lazy_update: function() {
@@ -600,7 +608,7 @@ window.App = (function() {
 					});
 
 					$(document.body).on("keydown", function(evt) {
-						switch(evt.key || evt.keyCode) {
+						switch (evt.key || evt.keyCode) {
 						case "w":
 						case "ArrowUp":
 						case 87:
@@ -687,7 +695,9 @@ window.App = (function() {
 							self.update();
 							place.update();
 						}
-					}, { passive: true });
+					}, {
+						passive: true,
+					});
 
 					// now init the movement
 					let downX, downY, downStart;
@@ -700,8 +710,12 @@ window.App = (function() {
 						});
 
 					// Separated some of these events from jQuery to deal with chrome's complaints about passive event violations.
-					self.elements.board_render[0].addEventListener("touchstart", handleInputDown, { passive: false });
-					self.elements.board_render[0].addEventListener("touchmove", handleInputMove, { passive: false });
+					self.elements.board_render[0].addEventListener("touchstart", handleInputDown, {
+						passive: false,
+					});
+					self.elements.board_render[0].addEventListener("touchmove", handleInputMove, {
+						passive: false,
+					});
 
 					function handleInputDown(event) {
 						let clientX = 0,
@@ -718,13 +732,18 @@ window.App = (function() {
 						}
 						downX = clientX, downY = clientY;
 						if (prereq && self.holdTimer.id === -1) {
-							self.holdTimer.id = setTimeout(self.holdTimer.handler, self.holdTimer.holdTimeout, { x: clientX, y: clientY });
+							self.holdTimer.id = setTimeout(self.holdTimer.handler, self.holdTimer.holdTimeout, {
+								x: clientX,
+								y: clientY,
+							});
 						}
 						downStart = Date.now();
 					}
+
 					function handleInputMove(event) {
 						if (self.holdTimer.id === -1) return;
-						let clientX = -1, clientY = -1;
+						let clientX = -1,
+							clientY = -1;
 
 						if (event.changedTouches && event.changedTouches[0]) {
 							clientX = event.changedTouches[0].clientX;
@@ -738,6 +757,7 @@ window.App = (function() {
 							self.holdTimer.id = -1;
 						}
 					}
+
 					function handleInputUp(event) {
 						if (event.shiftKey === true) return;
 						if (self.holdTimer.id !== -1) {
@@ -764,7 +784,7 @@ window.App = (function() {
 				},
 				init: function() {
 					$(window).on("pxls:queryUpdated", (evt, propName, oldValue, newValue) => {
-						switch(propName.toLowerCase()) {
+						switch (propName.toLowerCase()) {
 						case "x":
 						case "y":
 							board.centerOn(query.get("x") >> 0, query.get("y") >> 0);
@@ -774,16 +794,25 @@ window.App = (function() {
 							break;
 
 						case "template":
-							template.queueUpdate({ template: newValue, use: newValue !== null });
+							template.queueUpdate({
+								template: newValue,
+								use: newValue !== null,
+							});
 							break;
 						case "ox":
-							template.queueUpdate({ ox: newValue === null ? null : newValue >> 0 });
+							template.queueUpdate({
+								ox: newValue === null ? null : newValue >> 0,
+							});
 							break;
 						case "oy":
-							template.queueUpdate({ oy: newValue === null ? null : newValue >> 0 });
+							template.queueUpdate({
+								oy: newValue === null ? null : newValue >> 0,
+							});
 							break;
 						case "tw":
-							template.queueUpdate({ tw: newValue === null ? null : newValue >> 0 });
+							template.queueUpdate({
+								tw: newValue === null ? null : newValue >> 0,
+							});
 							break;
 						case "oo":
 							template.queueUpdate({
@@ -1323,8 +1352,14 @@ window.App = (function() {
 								dy = (px_new.y | 0) - (px_old.y | 0),
 								newX = self.options.x + dx,
 								newY = self.options.y + dy;
-							self._update({ x: newX, y: newY });
-							query.set({ ox: newX, oy: newY }, true);
+							self._update({
+								x: newX,
+								y: newY,
+							});
+							query.set({
+								ox: newX,
+								oy: newY,
+							}, true);
 							if (dx != 0) {
 								drag.x = evt.clientX;
 							}
@@ -1347,9 +1382,17 @@ window.App = (function() {
 					// direction: true = url_to_template_obj, else = template_obj_to_url
 					// normalize the given update object with settings that may be present from someone guessing options based on the URL
 
-					const iterOver = [["tw", "width"], ["ox", "x"], ["oy", "y"], ["oo", "opacity"], ["template", "url"]];
+					const iterOver = [
+						["tw", "width"],
+						["ox", "x"],
+						["oy", "y"],
+						["oo", "opacity"],
+						["template", "url"],
+					];
 					if (direction !== true) {
-						for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
+						for (let i = 0; i < iterOver.length; i++) {
+							iterOver[i].reverse();
+						}
 					}
 
 					for (let i = 0; i < iterOver.length; i++) {
@@ -1421,19 +1464,31 @@ window.App = (function() {
 						}
 						self.lazy_init();
 
-						[["left", "x"], ["top", "y"], ["opacity", "opacity"]].forEach(x => {
+						[
+							["left", "x"],
+							["top", "y"],
+							["opacity", "opacity"],
+						].forEach(x => {
 							self.elements.template.css(x[0], options[x[1]]);
 						});
 						self.elements.template.css("width", options.width > 0 ? options.width : "auto");
 
-						[["url", "template"], ["x", "ox"], ["y", "oy"], ["width", "tw"], ["opacity", "oo"]].forEach(x => {
+						[
+							["url", "template"],
+							["x", "ox"],
+							["y", "oy"],
+							["width", "tw"],
+							["opacity", "oo"],
+						].forEach(x => {
 							query.set(x[1], self.options[x[0]], true);
 						});
 					}
 					self.update_drawer();
 				},
 				disableTemplate: function() {
-					self._update({ url: null });
+					self._update({
+						url: null,
+					});
 				},
 				draw: function(ctx2, pxl_x, pxl_y) {
 					if (!self.options.use) {
@@ -1452,10 +1507,14 @@ window.App = (function() {
 				init: function() {
 					drawer.create("#template-control", 84, "template_open", false);
 					$("#template-use").change(function() {
-						self._update({ use: this.checked });
+						self._update({
+							use: this.checked,
+						});
 					});
 					$("#template-url").change(function() {
-						self._update({ url: this.value });
+						self._update({
+							url: this.value,
+						});
 					}).keydown(function(evt) {
 						if (evt.key == "Enter" || evt.which === 13) {
 							$(this).change();
@@ -1474,7 +1533,9 @@ window.App = (function() {
 						}, 100);
 					});
 					$("#template-opacity").on("change input", function() {
-						self._update({ opacity: parseFloat(this.value) });
+						self._update({
+							opacity: parseFloat(this.value),
+						});
 					});
 					$(window).keydown(function(evt) {
 						if (evt.ctrlKey && self.options.use) {
@@ -1482,16 +1543,20 @@ window.App = (function() {
 							self.elements.template.css("pointer-events", "initial");
 						}
 						let newOpacity = 0;
-						switch(evt.key || evt.which) {
+						switch (evt.key || evt.which) {
 						case "PageUp":
 						case 33:
 							newOpacity = Math.min(1, self.options.opacity + 0.1);
-							self._update({ opacity: newOpacity });
+							self._update({
+								opacity: newOpacity,
+							});
 							break;
 						case "PageDown":
 						case 34:
 							newOpacity = Math.max(0, self.options.opacity - 0.1);
-							self._update({ opacity: newOpacity });
+							self._update({
+								opacity: newOpacity,
+							});
 							break;
 						case "v":
 						case 86:
@@ -1526,10 +1591,14 @@ window.App = (function() {
 					$("#gridtoggle")[0].checked = ls.get("view_grid");
 					$("#gridtoggle").change(function() {
 						ls.set("view_grid", this.checked);
-						self.elements.grid.fadeToggle({ duration: 100 });
+						self.elements.grid.fadeToggle({
+							duration: 100,
+						});
 					});
 					if (ls.get("view_grid")) {
-						self.elements.grid.fadeToggle({ duration: 100 });
+						self.elements.grid.fadeToggle({
+							duration: 100,
+						});
 					}
 					$(document.body).on("keydown", function(evt) {
 						if (evt.key == "g" || evt.keyCode === 71) {
@@ -1661,7 +1730,9 @@ window.App = (function() {
 				can_undo: false,
 				undo: function(evt) {
 					evt.stopPropagation();
-					socket.send({ type: "undo" });
+					socket.send({
+						type: "undo",
+					});
 					self.can_undo = false;
 					self.elements.undo.hide();
 				},
@@ -1709,14 +1780,16 @@ window.App = (function() {
 						board.update(true);
 					});
 					socket.on("ACK", function(data) {
-						switch(data.ackFor) {
+						switch (data.ackFor) {
 						case "PLACE":
 							if (!ls.get("audio_muted")) {
 								self.audio.cloneNode(false).play();
 							}
 							break;
 						case "UNDO":
-							if (uiHelper.getAvailable() === 0) {uiHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);}
+							if (uiHelper.getAvailable() === 0) {
+								uiHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
+							}
 							break;
 						}
 					});
@@ -1862,8 +1935,8 @@ window.App = (function() {
 						(data && user.isLoggedIn() ?
 							$("<div>").addClass("button").css("float", "left").addClass("report-button").text("Report").click(function() {
 								self.report(data.id, data.x, data.y);
-							})
-							: ""),
+							}) :
+							""),
 						$("<div>").addClass("button").css("float", "right").text("Close").click(function() {
 							self.elements.lookup.fadeOut(200);
 						})
@@ -1871,7 +1944,10 @@ window.App = (function() {
 				},
 				runLookup(clientX, clientY) {
 					const pos = board.fromScreen(clientX, clientY);
-					$.get("/lookup", { x: Math.floor(pos.x), y: Math.floor(pos.y) }, function(data) {
+					$.get("/lookup", {
+						x: Math.floor(pos.x),
+						y: Math.floor(pos.y),
+					}, function(data) {
 						if (data) {
 							data.coords = "(" + data.x + ", " + data.y + ")";
 							const delta = ((new Date()).getTime() - data.time) / 1000;
@@ -2185,10 +2261,18 @@ window.App = (function() {
 				init: function() {
 					self.elements.coords.hide();
 					const _board = board.getRenderBoard()[0];
-					_board.addEventListener("pointermove", pointerHandler, { passive: false });
-					_board.addEventListener("mousemove", pointerHandler, { passive: false });
-					_board.addEventListener("touchstart", touchHandler, { passive: false });
-					_board.addEventListener("touchmove", touchHandler, { passive: false });
+					_board.addEventListener("pointermove", pointerHandler, {
+						passive: false,
+					});
+					_board.addEventListener("mousemove", pointerHandler, {
+						passive: false,
+					});
+					_board.addEventListener("touchstart", touchHandler, {
+						passive: false,
+					});
+					_board.addEventListener("touchmove", touchHandler, {
+						passive: false,
+					});
 					// board.getRenderBoard().on("pointermove mousemove", function (evt) {
 					// }).on("touchstart touchmove", function (evt) {
 					// });
