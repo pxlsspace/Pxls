@@ -1,10 +1,11 @@
 "use strict";
 window.App = (function() {
 	// first we define the global helperfunctions and figure out what kind of settings our browser needs to use
-	let storageFactory = function(storageType, prefix, exdays) {
-			let getCookie = function(c_name) {
-					let i, x, y, ARRcookies = document.cookie.split(";");
-					for (i = 0; i < ARRcookies.length; i++) {
+	const storageFactory = function(storageType, prefix, exdays) {
+			const getCookie = function(c_name) {
+					let x, y;
+					const ARRcookies = document.cookie.split(";");
+					for (let i = 0; i < ARRcookies.length; i++) {
 						x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
 						y = ARRcookies[i].substr(ARRcookies[i].indexOf("=") + 1);
 						x = x.replace(/^\s+|\s+$/g, "");
@@ -13,11 +14,11 @@ window.App = (function() {
 						}
 					}
 				},
-				setCookie = function(c_name, value, exdays) {
-					let exdate = new Date(),
-						c_value = escape(value);
-					exdate.setDate(exdate.getDate() + exdays);
-					c_value += ((exdays === null) ? "" : "; expires=" + exdate.toUTCString());
+				setCookie = function(c_name, value, exdays2) {
+					const exdate = new Date();
+					let	c_value = escape(value);
+					exdate.setDate(exdate.getDate() + exdays2);
+					c_value += ((exdays2 === null) ? "" : "; expires=" + exdate.toUTCString());
 					document.cookie = c_name + "=" + c_value;
 				};
 			return {
@@ -71,7 +72,7 @@ window.App = (function() {
 			const xhr = new XMLHttpRequest();
 			xhr.open("GET", url, true);
 			xhr.responseType = "arraybuffer";
-			xhr.onload = function(event) {
+			xhr.onload = function() {
 				if (xhr.readyState == 4) {
 					if (xhr.status == 200) {
 						if (xhr.response) {
@@ -99,37 +100,41 @@ window.App = (function() {
 			if (window.ga) {
 				window.ga.apply(this, arguments);
 			}
-		},
-		nua = navigator.userAgent,
-		have_image_rendering = (function() {
-			const checkImageRendering = function(prefix, crisp, pixelated, optimize_contrast) {
-				const d = document.createElement("div");
-				if (crisp) {
-					d.style.imageRendering = prefix + "crisp-edges";
-					if (d.style.imageRendering === prefix + "crisp-edges") {
-						return true;
-					}
+		};
+
+	const nua = navigator.userAgent;
+	let have_image_rendering = (function() {
+		const checkImageRendering = function(prefix, crisp, pixelated, optimize_contrast) {
+			const d = document.createElement("div");
+			if (crisp) {
+				d.style.imageRendering = prefix + "crisp-edges";
+				if (d.style.imageRendering === prefix + "crisp-edges") {
+					return true;
 				}
-				if (pixelated) {
-					d.style.imageRendering = prefix + "pixelated";
-					if (d.style.imageRendering === prefix + "pixelated") {
-						return true;
-					}
+			}
+			if (pixelated) {
+				d.style.imageRendering = prefix + "pixelated";
+				if (d.style.imageRendering === prefix + "pixelated") {
+					return true;
 				}
-				if (optimize_contrast) {
-					d.style.imageRendering = prefix + "optimize-contrast";
-					if (d.style.imageRendering === prefix + "optimize-contrast") {
-						return true;
-					}
+			}
+			if (optimize_contrast) {
+				d.style.imageRendering = prefix + "optimize-contrast";
+				if (d.style.imageRendering === prefix + "optimize-contrast") {
+					return true;
 				}
-				return false;
-			};
-			return checkImageRendering("", true, true, false) || checkImageRendering("-o-", true, false, false) || checkImageRendering("-moz-", true, false, false) || checkImageRendering("-webkit-", true, false, true);
-		})(),
-		have_zoom_rendering = false,
-		ios_safari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i)),
-		desktop_safari = (nua.match(/safari/i) && !nua.match(/chrome/i)),
-		ms_edge = nua.indexOf("Edge") > -1;
+			}
+			return false;
+		};
+		return checkImageRendering("", true, true, false) || checkImageRendering("-o-", true, false, false) || checkImageRendering("-moz-", true, false, false) || checkImageRendering("-webkit-", true, false, true);
+	})();
+
+	let have_zoom_rendering = false;
+
+	const ios_safari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i));
+	const desktop_safari = (nua.match(/safari/i) && !nua.match(/chrome/i));
+	const ms_edge = nua.indexOf("Edge") > -1;
+
 	if (ios_safari) {
 		const iOS = parseFloat(
 			("" + (/CPU.*OS ([0-9_]{1,5})|(CPU like).*AppleWebKit.*Mobile/i.exec(navigator.userAgent) || [0, ""])[1])
@@ -146,25 +151,25 @@ window.App = (function() {
 	if (ms_edge) {
 		have_image_rendering = false;
 	}
-	var ls = storageFactory(localStorage, "ls_", 99),
+	const ls = storageFactory(localStorage, "ls_", 99),
 		ss = storageFactory(sessionStorage, "ss_", null),
 		// this object is used to access the query parameters (and in the future probably to set them), it is prefered to use # now instead of ? as JS can change them
 		query = (function() {
-			var self = {
+			const self = {
 				params: {},
 				initialized: false,
 				_trigger: function(propName, oldValue, newValue) {
-					$(window).trigger("pxls:queryUpdated", [propName, oldValue, newValue]); // window.on("queryUpdated", (event, propName, oldValue, newValue) => {...});
+					$(window).trigger("pxls:queryUpdated", [propName, oldValue, newValue]);
 					// this will cause issues if you're not paying attention. always check for `newValue` to be null in the event of a deleted key.
 				},
 				_update: function(fromEvent) {
 					let toSplit = window.location.hash.substring(1);
 					if (window.location.search.length > 0) {toSplit += ("&" + window.location.search.substring(1));}
 
-					let _varsTemp = toSplit.split("&"),
+					const _varsTemp = toSplit.split("&"),
 						vars = {};
 					_varsTemp.forEach(val => {
-						let split = val.split("="),
+						const split = val.split("="),
 							key = split.shift().toLowerCase();
 						if (!key.length) return;
 						vars[key] = split.shift();
@@ -172,15 +177,15 @@ window.App = (function() {
 
 					const varKeys = Object.keys(vars);
 					for (let i = 0; i < varKeys.length; i++) {
-						let key = varKeys[i],
+						const key = varKeys[i],
 							value = vars[key];
 						if (fromEvent === true) {
 							if (!self.params.hasOwnProperty(key) || self.params[key] !== vars[key]) {
-								let oldValue = self.params[key],
+								const oldValue = self.params[key],
 									newValue = vars[key] == null ? null : vars[key].toString();
 								self.params[key] = newValue;
-								self._trigger(key, oldValue, value); // if value == null || !value.length, shouldn't we be removing?
-							} else {
+								// if value == null || !value.length, shouldn't we be removing?
+								self._trigger(key, oldValue, value);
 							}
 						} else if (!self.params.hasOwnProperty(key)) {
 							self.params[key] = vars[key];
@@ -204,18 +209,18 @@ window.App = (function() {
 					let workWith = {},
 						silent = false;
 					if ((typeof arguments[0]) === "string") {
-						let key = arguments[0],
-							value = arguments[1],
-							silent = arguments[2];
+						const key = arguments[0],
+							value = arguments[1];
 						workWith[key] = value;
 					} else if ((typeof arguments[0]) === "object") {
 						workWith = arguments[0];
 						silent = arguments[1];
 					}
-					silent = silent == null ? false : silent === true; // set the default value if necessary or coerce to bool.
+					// set the default value if necessary or coerce to bool.
+					silent = silent == null ? false : silent === true;
 					const KVPs = Object.entries(workWith);
 					for (let i = 0; i < KVPs.length; i++) {
-						let k = KVPs[i][0],
+						const k = KVPs[i][0],
 							v = KVPs[i][1].toString();
 						if (self.get(k) === v) {continue;}
 						self.set(k, v, silent);
@@ -246,9 +251,10 @@ window.App = (function() {
 						if (self.params.hasOwnProperty(p)) {
 							let s = encodeURIComponent(p);
 							if (self.params[p] !== null) {
-								let decoded = decodeURIComponent(self.params[p]),
-									toSet = self.params[p];
-								if (decoded === toSet) {toSet = encodeURIComponent(toSet);} // ensure already URL-encoded values don't get re-encoded. if decoded === toSet, then it's already in an un-encoded form, and we can encode "safely".
+								const decoded = decodeURIComponent(self.params[p]);
+								let toSet = self.params[p];
+								// ensure already URL-encoded values don't get re-encoded. if decoded === toSet, then it's already in an un-encoded form, and we can encode "safely".
+								if (decoded === toSet) {toSet = encodeURIComponent(toSet);}
 								s += "=" + toSet;
 							}
 							params.push(s);
@@ -302,7 +308,7 @@ window.App = (function() {
 		})(),
 		// this object is responsible for detecting pxls placement and banning them
 		ban = (function() {
-			var self = {
+			const self = {
 				bad_src: [/^https?:\/\/[^\/]*raw[^\/]*git[^\/]*\/(metonator|Deklost|NomoX|RogerioBlanco)/gi,
 					/^chrome\-extension:\/\/lmleofkkoohkbgjikogbpmnjmpdedfil/gi,
 					/^https?:\/\/.*mlpixel\.org/gi],
@@ -354,11 +360,11 @@ window.App = (function() {
 					};
 
 					// listen to script insertions
-					$(window).on("DOMNodeInserted", function(evt) {
-						if (evt.target.nodeName != "SCRIPT") {
+					$(window).on("DOMNodeInserted", function(nodeEvt) {
+						if (nodeEvt.target.nodeName != "SCRIPT") {
 							return;
 						}
-						self.checkSrc(evt.target.src);
+						self.checkSrc(nodeEvt.target.src);
 					});
 					$("script").map(function() {
 						self.checkSrc(this.src);
@@ -368,7 +374,8 @@ window.App = (function() {
 					socket.send("{\"type\":\"shadowbanme\"}");
 				},
 				me: function() {
-					socket.send("{\"type\":\"banme\"}"); // we send as a string to not allow re-writing JSON.stringify
+					// we send as a string to not allow re-writing JSON.stringify
+					socket.send("{\"type\":\"banme\"}");
 					socket.close();
 					window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
 				},
@@ -417,11 +424,12 @@ window.App = (function() {
 		})(),
 		// this object is takes care of the websocket connection
 		socket = (function() {
-			var self = {
+			const self = {
 				ws: null,
 				ws_constructor: WebSocket,
 				hooks: [],
-				wps: WebSocket.prototype.send, // make sure we have backups of those....
+				// make sure we have backups of those....
+				wps: WebSocket.prototype.send,
 				wpc: WebSocket.prototype.close,
 				reconnect: function() {
 					$("#reconnecting").show();
@@ -435,11 +443,11 @@ window.App = (function() {
 					}, 3000);
 				},
 				reconnectSocket: function() {
-					self.ws.onclose = function() {};
+					self.ws.onclose = null;
 					self.connectSocket();
 				},
 				connectSocket: function() {
-					let l = window.location,
+					const l = window.location,
 						url = ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname + "ws";
 					self.ws = new self.ws_constructor(url);
 					self.ws.onmessage = function(msg) {
@@ -456,12 +464,13 @@ window.App = (function() {
 				},
 				init: function() {
 					if (self.ws !== null) {
-						return; // already inited!
+						// already inited!
+						return;
 					}
 					self.connectSocket();
 
 					$(window).on("beforeunload", function() {
-						self.ws.onclose = function() {};
+						self.ws.onclose = null;
 						self.close();
 					});
 
@@ -500,10 +509,11 @@ window.App = (function() {
 		})(),
 		// this object holds all board information and is responsible of rendering the board
 		board = (function() {
-			var self = {
+			const self = {
 				elements: {
 					board: $("#board"),
-					board_render: null, // populated on init based on rendering method
+					// populated on init based on rendering method
+					board_render: null,
 					mover: $("#board-mover"),
 					zoomer: $("#board-zoomer"),
 					container: $("#board-container"),
@@ -528,7 +538,8 @@ window.App = (function() {
 				holdTimer: {
 					id: -1,
 					holdTimeout: 500,
-					handler: function(args) { // self.holdTimer.handler
+					// self.holdTimer.handler
+					handler: function(args) {
 						self.holdTimer.id = -1;
 						lookup.runLookup(args.x, args.y);
 					},
@@ -554,7 +565,8 @@ window.App = (function() {
 
 					for (let i = 0; i < self.width * self.height; i++) {
 						if (data[i] == 0xFF) {
-							self.intView[i] = 0x00000000; // transparent pixel!
+							// transparent pixel!
+							self.intView[i] = 0x00000000;
 						} else {
 							self.intView[i] = self.rgbPalette[data[i]];
 						}
@@ -699,7 +711,8 @@ window.App = (function() {
 						} else {
 							clientX = event.clientX;
 							clientY = event.clientY;
-							if (event.button != null) prereq = event.button === 0; // if there are buttons, is the the left mouse button?
+							// if there are buttons, is the the left mouse button?
+							if (event.button != null) prereq = event.button === 0;
 						}
 						downX = clientX, downY = clientY;
 						if (prereq && self.holdTimer.id === -1) {
@@ -738,7 +751,7 @@ window.App = (function() {
 							clientX = event.changedTouches[0].clientX;
 							clientY = event.changedTouches[0].clientY;
 						}
-						let dx = Math.abs(downX - clientX),
+						const dx = Math.abs(downX - clientX),
 							dy = Math.abs(downY - clientY);
 						if (dx < 5 && dy < 5 && (event.button === 0 || touch) && downDelta < 500) {
 							const pos = self.fromScreen(clientX, clientY);
@@ -785,7 +798,8 @@ window.App = (function() {
 							width: "100vw",
 							height: "100vh",
 							margin: 0,
-							marginTop: 3, // wtf? Noticed by experimenting
+							// wtf? Noticed by experimenting
+							marginTop: 3,
 						});
 						self.elements.board.parent().append(self.elements.board_render);
 						self.elements.board.detach();
@@ -813,7 +827,7 @@ window.App = (function() {
 							height: self.height,
 						});
 
-						let cx = query.get("x") || self.width / 2,
+						const cx = query.get("x") || self.width / 2,
 							cy = query.get("y") || self.height / 2;
 						self.scale = query.get("scale") || self.scale;
 						self.centerOn(cx, cy);
@@ -831,7 +845,8 @@ window.App = (function() {
 							});
 						}
 						const url = query.get("template");
-						if (url) { // we have a template!
+						// we have a template!
+						if (url) {
 							template.queueUpdate({
 								use: true,
 								x: parseFloat(query.get("ox")),
@@ -842,21 +857,22 @@ window.App = (function() {
 							});
 						}
 						let spin = parseFloat(query.get("spin"));
-						if (spin) { // SPIN SPIN SPIN!!!!
+						// SPIN SPIN SPIN!!!!
+						if (spin) {
 							spin = 360 / (spin * 1000);
-							var degree = 0,
-								start = null,
-								spiiiiiin = function(timestamp) {
-									if (!start) {
-										start = timestamp;
-									}
-									const delta = (timestamp - start);
-									degree += spin * delta;
-									degree %= 360;
+							let degree = 0,
+								start = null;
+							const spiiiiiin = function(timestamp) {
+								if (!start) {
 									start = timestamp;
-									self.elements.container.css("transform", "rotate(" + degree + "deg)");
-									window.requestAnimationFrame(spiiiiiin);
-								};
+								}
+								const delta = (timestamp - start);
+								degree += spin * delta;
+								degree %= 360;
+								start = timestamp;
+								self.elements.container.css("transform", "rotate(" + degree + "deg)");
+								window.requestAnimationFrame(spiiiiiin);
+							};
 							window.requestAnimationFrame(spiiiiiin);
 						}
 					}).fail(function() {
@@ -872,8 +888,8 @@ window.App = (function() {
 						scale: Math.round(self.scale * 100) / 100,
 					}, true);
 					if (self.use_js_render) {
-						let ctx2 = self.elements.board_render[0].getContext("2d"),
-							pxl_x = -self.pan.x + ((self.width - (window.innerWidth / self.scale)) / 2),
+						const ctx2 = self.elements.board_render[0].getContext("2d");
+						let pxl_x = -self.pan.x + ((self.width - (window.innerWidth / self.scale)) / 2),
 							pxl_y = -self.pan.y + ((self.height - (window.innerHeight / self.scale)) / 2),
 							dx = 0,
 							dy = 0,
@@ -960,12 +976,13 @@ window.App = (function() {
 				},
 				setScale: function(scale) {
 					if (scale > 50) scale = 50;
-					else if (scale <= 0) scale = 0.5; // enforce the [0.5, 50] limit without blindly resetting to 0.5 when the user was trying to zoom in farther than 50x
+					// enforce the [0.5, 50] limit without blindly resetting to 0.5 when the user was trying to zoom in farther than 50x
+					else if (scale <= 0) scale = 0.5;
 					self.scale = scale;
 					self.update();
 				},
 				nudgeScale: function(adj) {
-					let oldScale = Math.abs(self.scale),
+					const oldScale = Math.abs(self.scale),
 						sign = Math.sign(self.scale);
 					if (adj === -1) {
 						if (oldScale <= 1) {
@@ -1092,7 +1109,7 @@ window.App = (function() {
 		})(),
 		// heatmap init stuff
 		heatmap = (function() {
-			var self = {
+			const self = {
 				elements: {
 					heatmap: $("#heatmap"),
 					heatmapLoadingBubble: $("#heatmapLoadingBubble"),
@@ -1137,9 +1154,9 @@ window.App = (function() {
 						self.elements.heatmap.fadeIn(200);
 						self.elements.heatmapLoadingBubble.hide();
 						setTimeout(self.loop, self.seconds * 1000 / 256);
-						socket.on("pixel", function(data) {
+						socket.on("pixel", function(pxData) {
 							self.ctx.fillStyle = "#CD5C5C";
-							$.map(data.pixels, function(px) {
+							$.map(pxData.pixels, function(px) {
 								self.ctx.fillRect(px.x, px.y, 1, 1);
 								self.intView[px.y * self.width + px.x] = 0xFF000000 | self.color;
 							});
@@ -1172,7 +1189,8 @@ window.App = (function() {
 					self.elements.heatmap.hide();
 					self.elements.heatmapLoadingBubble.hide();
 					self.setBackgroundOpacity(ls.get("heatmap_background_opacity"));
-					$("#heatmap-opacity").val(ls.get("heatmap_background_opacity")); // heatmap_background_opacity should always be valid after a call to self.setBackgroundOpacity.
+					// heatmap_background_opacity should always be valid after a call to self.setBackgroundOpacity.
+					$("#heatmap-opacity").val(ls.get("heatmap_background_opacity"));
 					$("#heatmap-opacity").on("change input", function() {
 						self.setBackgroundOpacity(parseFloat(this.value));
 					});
@@ -1181,7 +1199,8 @@ window.App = (function() {
 						ls.set("hm_clearable", this.checked);
 					});
 					$(window).keydown(function(evt) {
-						if (evt.key == "o" || evt.which == 79) { // O key
+						// O key
+						if (evt.key == "o" || evt.which == 79) {
 							self.clear();
 						}
 					});
@@ -1248,7 +1267,7 @@ window.App = (function() {
 		})(),
 		// here all the template stuff happens
 		template = (function() {
-			var self = {
+			const self = {
 				elements: {
 					template: null,
 				},
@@ -1294,7 +1313,7 @@ window.App = (function() {
 					}).on("mousemove pointermove", function(evt) {
 						evt.preventDefault();
 						if ($(this).data("dragging")) {
-							let px_old = board.fromScreen(drag.x, drag.y),
+							const px_old = board.fromScreen(drag.x, drag.y),
 								px_new = board.fromScreen(evt.clientX, evt.clientY),
 								dx = (px_new.x | 0) - (px_old.x | 0),
 								dy = (px_new.y | 0) - (px_old.y | 0),
@@ -1326,7 +1345,7 @@ window.App = (function() {
 
 					const iterOver = [["tw", "width"], ["ox", "x"], ["oy", "y"], ["oo", "opacity"], ["template", "url"]];
 					if (direction !== true) {
-for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
+						for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 					}
 
 					for (let i = 0; i < iterOver.length; i++) {
@@ -1410,8 +1429,8 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 						return;
 					}
 					let width = self.elements.template[0].width,
-						height = self.elements.template[0].height,
-						scale = board.getScale();
+						height = self.elements.template[0].height;
+					const scale = board.getScale();
 					if (self.options.width !== -1) {
 						height *= (self.options.width / width);
 						width = self.options.width;
@@ -1470,7 +1489,7 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 							});
 							break;
 						}
-					}).on("keyup blur", function(evt) {
+					}).on("keyup blur", function() {
 						if (self.options.use) {
 							self.elements.template.css("pointer-events", "none").data("dragging", false);
 						}
@@ -1487,7 +1506,7 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 		})(),
 		// here all the grid stuff happens
 		grid = (function() {
-			var self = {
+			const self = {
 				elements: {
 					grid: $("#grid"),
 				},
@@ -1509,7 +1528,7 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 					});
 				},
 				update: function() {
-					let a = board.fromScreen(0, 0),
+					const a = board.fromScreen(0, 0),
 						scale = board.getScale();
 					self.elements.grid.css({
 						backgroundSize: scale + "px " + scale + "px",
@@ -1525,7 +1544,7 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 		})(),
 		// this takes care of placing pixels, the palette, the reticule and stuff associated with that
 		place = (function() {
-			var self = {
+			const self = {
 				elements: {
 					palette: $("#palette"),
 					cursor: $("#cursor"),
@@ -1601,7 +1620,7 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 						self.elements.cursor.hide();
 						return;
 					}
-					let screenPos = board.toScreen(self.reticule.x, self.reticule.y),
+					const screenPos = board.toScreen(self.reticule.x, self.reticule.y),
 						scale = board.getScale();
 					self.elements.reticule.css({
 						left: screenPos.x - 1,
@@ -1683,12 +1702,13 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 							if (!ls.get("audio_muted")) {
 								self.audio.cloneNode(false).play();
 							}
+							break;
 						case "UNDO":
 							if (uiHelper.getAvailable() === 0) {uiHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);}
 							break;
 						}
 					});
-					socket.on("captcha_required", function(data) {
+					socket.on("captcha_required", function() {
 						grecaptcha.reset();
 						grecaptcha.execute();
 
@@ -1755,7 +1775,7 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 		})(),
 		// this is the user lookup helper
 		lookup = (function() {
-			var self = {
+			const self = {
 				elements: {
 					lookup: $("#lookup"),
 					prompt: $("#prompt"),
@@ -1848,7 +1868,7 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 							} else if (delta < 5) {
 								data.time_str = "just now";
 							} else {
-								let secs = Math.floor(delta % 60),
+								const secs = Math.floor(delta % 60),
 									secsStr = secs < 10 ? "0" + secs : secs,
 									minutes = Math.floor((delta / 60)) % 60,
 									minuteStr = minutes < 10 ? "0" + minutes : minutes,
@@ -1894,7 +1914,7 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 		})(),
 		// helper object for drawers
 		drawer = (function() {
-			var self = {
+			const self = {
 				elements: {
 					container: $("#drawers"),
 					opener: $("#drawers-opener"),
@@ -1932,7 +1952,7 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 					);
 				},
 				init: function() {
-					self.elements.opener.find(".open").click(function(evt) {
+					self.elements.opener.find(".open").click(function() {
 						self.elements.opener.toggleClass("open");
 					});
 					self.elements.container.on("DOMNodeInserted", function(evt) {
@@ -1980,7 +2000,7 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 		})(),
 		// this takes care of the custom alert look
 		alert = (function() {
-			var self = {
+			const self = {
 				elements: {
 					alert: $("#alert"),
 				},
@@ -2010,7 +2030,7 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 			};
 		})(),
 		uiHelper = (function() {
-			var self = {
+			const self = {
 				_available: -1,
 				maxStacked: -1,
 				elements: {
@@ -2047,7 +2067,7 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 		})(),
 		// this takes care of the countdown timer
 		timer = (function() {
-			var self = {
+			const self = {
 				elements: {
 					timer_bubble: $("#cd-timer-bubble"),
 					timer_overlay: $("#cd-timer-overlay"),
@@ -2078,8 +2098,9 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 
 					if (delta > 0) {
 						self.elements.timer.show();
-						delta++; // real people don't count seconds zero-based (programming is more awesome)
-						let secs = Math.floor(delta % 60),
+						// real people don't count seconds zero-based (programming is more awesome)
+						delta++;
+						const secs = Math.floor(delta % 60),
 							secsStr = secs < 10 ? "0" + secs : secs,
 							minutes = Math.floor(delta / 60),
 							minuteStr = minutes < 10 ? "0" + minutes : minutes;
@@ -2145,7 +2166,7 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 		})(),
 		// this takes care of displaying the coordinates the mouse is over
 		coords = (function() {
-			var self = {
+			const self = {
 				elements: {
 					coords: $("#coords"),
 				},
@@ -2179,7 +2200,7 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 		})(),
 		// this holds user stuff / info
 		user = (function() {
-			var self = {
+			const self = {
 				elements: {
 					users: $("#online"),
 					userInfo: $("#userinfo"),
@@ -2219,9 +2240,9 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 							$("<ul>").append(
 								$.map(data.authServices, function(a) {
 									return $("<li>").append(
-										$("<a>").attr("href", "/signin/" + a.id + "?redirect=1").text(a.name).click(function(evt) {
+										$("<a>").attr("href", "/signin/" + a.id + "?redirect=1").text(a.name).click(function(sEvt) {
 											if (window.open(this.href, "_blank")) {
-												evt.preventDefault();
+												sEvt.preventDefault();
 												return;
 											}
 											ls.set("auth_same_window", true);
@@ -2304,13 +2325,13 @@ for (let i = 0; i < iterOver.length; i++) {iterOver[i].reverse();}
 					socket.on("users", function(data) {
 						self.elements.users.text(data.count + " online").fadeIn(200);
 					});
-					socket.on("session_limit", function(data) {
+					socket.on("session_limit", function() {
 						socket.close();
 						alert.show("Too many sessions open, try closing some tabs.");
 					});
 					socket.on("userinfo", function(data) {
-						let isBanned = false,
-							banelem = $("<div>").addClass("ban-alert-content");
+						let isBanned = false;
+						const banelem = $("<div>").addClass("ban-alert-content");
 						self.loggedIn = true;
 						self.elements.loginOverlay.fadeOut(200);
 						self.elements.userInfo.find("span.name").text(data.username);
