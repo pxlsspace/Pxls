@@ -1252,7 +1252,8 @@ window.App = (function() {
 					});
 
 					$(window).keydown(function(e) {
-						if (e.key == "h" || e.which == 72) { // h key
+						// h key
+						if (e.key == "h" || e.which == 72) {
 							self.toggle();
 							$("#heatmaptoggle")[0].checked = ls.get("heatmap");
 						}
@@ -1284,7 +1285,8 @@ window.App = (function() {
 				},
 				options: {},
 				lazy_init: function() {
-					if (self.elements.template != null) { // already inited
+					// already inited
+					if (self.elements.template != null) {
 						return;
 					}
 					self.options.use = true;
@@ -1352,9 +1354,12 @@ window.App = (function() {
 
 					for (let i = 0; i < iterOver.length; i++) {
 						const x = iterOver[i];
-						if ((x[0] in objectToNormalize) && objectToNormalize[x[1]] == null) { // if "tw" is set on `objectToNormalize` and `objectToNormalize.width` is not set
-							objectToNormalize[x[1]] = objectToNormalize[x[0]]; // set `objectToNormalize["width"]` to `objectToNormalize["tw"]`
-							delete objectToNormalize[x[0]]; // and delete `objectToNormalize["tw"]`
+						if ((x[0] in objectToNormalize) && objectToNormalize[x[1]] == null) {
+							// if "tw" is set on `objectToNormalize` and `objectToNormalize.width` is not set
+							// set `objectToNormalize["width"]` to `objectToNormalize["tw"]`
+							// and delete `objectToNormalize["tw"]`
+							objectToNormalize[x[1]] = objectToNormalize[x[0]];
+							delete objectToNormalize[x[0]];
 						}
 					}
 
@@ -1387,13 +1392,16 @@ window.App = (function() {
 						});
 					}
 
-					options = Object.assign({}, self._defaults, self.options, self.normalizeTemplateObj(options, true)); // ensure every option needed to move forward is present
-					Object.keys(self._defaults).forEach(x => { // and make sure they're all usable "out of the box"
+					// ensure every option needed to move forward is present
+					options = Object.assign({}, self._defaults, self.options, self.normalizeTemplateObj(options, true));
+					// and make sure they're all usable "out of the box"
+					Object.keys(self._defaults).forEach(x => {
 						if (options[x] == null || (typeof options[x] === "number" && isNaN(options[x]))) {
 							options[x] = self._defaults[x];
 						}
 					});
-					options.opacity = parseFloat(options.opacity.toFixed(2)); // cleans up opacity for the URL, e.g. 1.3877787807814457e-16 => 0
+					// cleans up opacity for the URL, e.g. 1.3877787807814457e-16 => 0
+					options.opacity = parseFloat(options.opacity.toFixed(2));
 					self.options = options;
 
 					if (options.url.length === 0 || options.use === false) {
@@ -1407,7 +1415,8 @@ window.App = (function() {
 					} else {
 						self.options.use = true;
 						if (urlUpdated === true && self.elements.template != null) {
-							self.elements.template.remove(); // necessary so everything gets redrawn properly 'n whatnot. could probably just update the url directly...
+							// necessary so everything gets redrawn properly 'n whatnot. could probably just update the url directly...
+							self.elements.template.remove();
 							self.elements.template = null;
 						}
 						self.lazy_init();
