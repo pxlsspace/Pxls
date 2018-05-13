@@ -309,9 +309,11 @@ window.App = (function() {
 		// this object is responsible for detecting pxls placement and banning them
 		ban = (function() {
 			const self = {
-				bad_src: [/^https?:\/\/[^\/]*raw[^\/]*git[^\/]*\/(metonator|Deklost|NomoX|RogerioBlanco)/gi,
-					/^chrome\-extension:\/\/lmleofkkoohkbgjikogbpmnjmpdedfil/gi,
-					/^https?:\/\/.*mlpixel\.org/gi],
+				bad_src: [
+					/^https?:\/\/[^/]*raw[^/]*git[^/]*\/(metonator|Deklost|NomoX|RogerioBlanco)/gi,
+					/^chrome-extension:\/\/lmleofkkoohkbgjikogbpmnjmpdedfil/gi,
+					/^https?:\/\/.*mlpixel\.org/gi,
+				],
 				bad_events: ["mousedown", "mouseup", "click"],
 				checkSrc: function(src) {
 					// as naive as possible to make injection next to impossible
@@ -784,9 +786,9 @@ window.App = (function() {
 							template.queueUpdate({ tw: newValue === null ? null : newValue >> 0 });
 							break;
 						case "oo":
-							let parsed = parseFloat(newValue);
-							if (!Number.isFinite(parsed)) parsed = null;
-							template.queueUpdate({ oo: parsed === null ? null : parsed });
+							template.queueUpdate({
+								oo: Number.isFinite(parseFloat(newValue)) ? parseFloat(newValue) : null,
+							});
 							break;
 						}
 					});
@@ -1586,7 +1588,8 @@ window.App = (function() {
 					$($(".palette-color")[newColor]).addClass("active");
 				},
 				place: function(x, y) {
-					if (!timer.cooledDown() || self.color === -1) { // nope can't place yet
+					// nope can't place yet
+					if (!timer.cooledDown() || self.color === -1) {
 						return;
 					}
 					self._place(x, y);
