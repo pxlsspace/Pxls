@@ -8,6 +8,7 @@
         "ecmaVersion": 2016
     },
     "rules": {
+        "prefer-arrow-callback": "error",
         "brace-style": [
             "error",
             "1tbs",

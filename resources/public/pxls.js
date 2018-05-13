@@ -298,7 +298,7 @@ window.App = (function() {
 					if (self.timer !== null) {
 						clearTimeout(self.timer);
 					}
-					self.timer = setTimeout(function() {
+					self.timer = setTimeout(() => {
 						self.timer = null;
 						self.update();
 					}, 200);
@@ -370,7 +370,7 @@ window.App = (function() {
 					};
 
 					// listen to script insertions
-					$(window).on("DOMNodeInserted", function(nodeEvt) {
+					$(window).on("DOMNodeInserted", (nodeEvt) => {
 						if (nodeEvt.target.nodeName != "SCRIPT") {
 							return;
 						}
@@ -443,10 +443,10 @@ window.App = (function() {
 				wpc: WebSocket.prototype.close,
 				reconnect: function() {
 					$("#reconnecting").show();
-					setTimeout(function() {
-						$.get(window.location.pathname + "?_" + (new Date()).getTime(), function() {
+					setTimeout(() => {
+						$.get(window.location.pathname + "?_" + (new Date()).getTime(), () => {
 							window.location.reload();
-						}).fail(function() {
+						}).fail(() => {
 							console.log("Server still down...");
 							self.reconnect();
 						});
@@ -462,7 +462,7 @@ window.App = (function() {
 					self.ws = new self.ws_constructor(url);
 					self.ws.onmessage = function(msg) {
 						const data = JSON.parse(msg.data);
-						$.map(self.hooks, function(h) {
+						$.map(self.hooks, (h) => {
 							if (h.type === data.type) {
 								h.fn(data);
 							}
@@ -479,7 +479,7 @@ window.App = (function() {
 					}
 					self.connectSocket();
 
-					$(window).on("beforeunload", function() {
+					$(window).on("beforeunload", () => {
 						self.ws.onclose = null;
 						self.close();
 					});
@@ -560,7 +560,7 @@ window.App = (function() {
 					self.update();
 				},
 				replayBuffer: function() {
-					$.map(self.pixelBuffer, function(p) {
+					$.map(self.pixelBuffer, (p) => {
 						self.setPixel(p.x, p.y, p.c, false);
 					});
 					self.refresh();
@@ -607,7 +607,7 @@ window.App = (function() {
 						},
 					});
 
-					$(document.body).on("keydown", function(evt) {
+					$(document.body).on("keydown", (evt) => {
 						switch (evt.key || evt.keyCode) {
 						case "w":
 						case "ArrowUp":
@@ -676,7 +676,7 @@ window.App = (function() {
 						self.update();
 					});
 
-					self.elements.container[0].addEventListener("wheel", function(evt) {
+					self.elements.container[0].addEventListener("wheel", (evt) => {
 						if (!self.allowDrag) return;
 						const oldScale = self.scale;
 						if (evt.deltaY > 0) {
@@ -704,7 +704,7 @@ window.App = (function() {
 					self.elements.board_render.on("pointerdown mousedown", handleInputDown)
 						.on("pointermove mousemove", handleInputMove)
 						.on("pointerup mouseup touchend", handleInputUp)
-						.contextmenu(function(evt) {
+						.contextmenu((evt) => {
 							evt.preventDefault();
 							place.switch(-1);
 						});
@@ -841,7 +841,7 @@ window.App = (function() {
 					self.initInteraction();
 				},
 				start: function() {
-					$.get("/info", function(data) {
+					$.get("/info", (data) => {
 						heatmap.webinit(data);
 						user.webinit(data);
 						self.width = data.width;
@@ -866,11 +866,11 @@ window.App = (function() {
 						binary_ajax("/boarddata" + "?_" + (new Date()).getTime(), self.draw, socket.reconnect);
 
 						if (self.use_js_render) {
-							$(window).resize(function() {
+							$(window).resize(() => {
 								self.update();
 							}).resize();
 						} else {
-							$(window).resize(function() {
+							$(window).resize(() => {
 								place.update();
 								grid.update();
 							});
@@ -906,7 +906,7 @@ window.App = (function() {
 							};
 							window.requestAnimationFrame(spiiiiiin);
 						}
-					}).fail(function() {
+					}).fail(() => {
 						socket.reconnect();
 					});
 				},
@@ -1172,7 +1172,7 @@ window.App = (function() {
 					self.elements.heatmapLoadingBubble.show();
 					self.lazy_inited = true;
 					// we use xhr directly because of jquery being weird on raw binary
-					binary_ajax("/heatmap" + "?_" + (new Date()).getTime(), function(data) {
+					binary_ajax("/heatmap" + "?_" + (new Date()).getTime(), (data) => {
 						self.ctx = self.elements.heatmap[0].getContext("2d");
 						self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
 						self.id = createImageData(self.width, self.height);
@@ -1185,9 +1185,9 @@ window.App = (function() {
 						self.elements.heatmap.fadeIn(200);
 						self.elements.heatmapLoadingBubble.hide();
 						setTimeout(self.loop, self.seconds * 1000 / 256);
-						socket.on("pixel", function(pxData) {
+						socket.on("pixel", (pxData) => {
 							self.ctx.fillStyle = "#CD5C5C";
-							$.map(pxData.pixels, function(px) {
+							$.map(pxData.pixels, (px) => {
 								self.ctx.fillRect(px.x, px.y, 1, 1);
 								self.intView[px.y * self.width + px.x] = 0xFF000000 | self.color;
 							});
@@ -1229,7 +1229,7 @@ window.App = (function() {
 					$("#heatmapClearable").change(function() {
 						ls.set("hm_clearable", this.checked);
 					});
-					$(window).keydown(function(evt) {
+					$(window).keydown((evt) => {
 						// O key
 						if (evt.key == "o" || evt.which == 79) {
 							self.clear();
@@ -1280,7 +1280,7 @@ window.App = (function() {
 						}
 					});
 
-					$(window).keydown(function(e) {
+					$(window).keydown((e) => {
 						// h key
 						if (e.key == "h" || e.which == 72) {
 							self.toggle();
@@ -1414,7 +1414,7 @@ window.App = (function() {
 					if (self.queueTimer) {
 						clearTimeout(self.queueTimer);
 					}
-					self.queueTimer = setTimeout(function() {
+					self.queueTimer = setTimeout(() => {
 						self._update(self._queuedUpdates);
 						self._queuedUpdates = {};
 						self.queueTimer = 0;
@@ -1525,7 +1525,7 @@ window.App = (function() {
 						evt.stopPropagation();
 					}).on("paste", function() {
 						const _this = this;
-						setTimeout(function() {
+						setTimeout(() => {
 							self._update({
 								use: true,
 								url: _this.value,
@@ -1537,7 +1537,7 @@ window.App = (function() {
 							opacity: parseFloat(this.value),
 						});
 					});
-					$(window).keydown(function(evt) {
+					$(window).keydown((evt) => {
 						if (evt.ctrlKey && self.options.use) {
 							evt.preventDefault();
 							self.elements.template.css("pointer-events", "initial");
@@ -1565,7 +1565,7 @@ window.App = (function() {
 							});
 							break;
 						}
-					}).on("keyup blur", function() {
+					}).on("keyup blur", () => {
 						if (self.options.use) {
 							self.elements.template.css("pointer-events", "none").data("dragging", false);
 						}
@@ -1600,7 +1600,7 @@ window.App = (function() {
 							duration: 100,
 						});
 					}
-					$(document.body).on("keydown", function(evt) {
+					$(document.body).on("keydown", (evt) => {
 						if (evt.key == "g" || evt.keyCode === 71) {
 							$("#gridtoggle")[0].checked = !$("#gridtoggle")[0].checked;
 							$("#gridtoggle").trigger("change");
@@ -1714,12 +1714,12 @@ window.App = (function() {
 				setPalette: function(palette) {
 					self.palette = palette;
 					self.elements.palette.find(".palette-color").remove().end().append(
-						$.map(self.palette, function(p, idx) {
+						$.map(self.palette, (p, idx) => {
 							return $("<div>")
 								.addClass("palette-color")
 								.addClass("ontouchstart" in window ? "touch" : "no-touch")
 								.css("background-color", self.palette[idx])
-								.click(function() {
+								.click(() => {
 									if (ls.get("auto_reset") === false || timer.cooledDown()) {
 										self.switch(idx);
 									}
@@ -1740,10 +1740,10 @@ window.App = (function() {
 					self.elements.reticule.hide();
 					self.elements.cursor.hide();
 					self.elements.undo.hide();
-					board.getRenderBoard().on("pointermove mousemove", function(evt) {
+					board.getRenderBoard().on("pointermove mousemove", (evt) => {
 						self.update(evt.clientX, evt.clientY);
 					});
-					$(window).on("pointermove mousemove touchstart touchmove", function(evt) {
+					$(window).on("pointermove mousemove touchstart touchmove", (evt) => {
 						if (self.color === -1) {
 							return;
 						}
@@ -1762,24 +1762,24 @@ window.App = (function() {
 							return;
 						}
 						self.elements.undo.css("transform", "translate(" + x + "px, " + y + "px)");
-					}).keydown(function(evt) {
+					}).keydown((evt) => {
 						if (self.can_undo && (evt.key == "z" || evt.keyCode == 90) && evt.ctrlKey) {
 							self.undo(evt);
 						}
-					}).on("touchstart", function(evt) {
+					}).on("touchstart", (evt) => {
 						if (self.color === -1 || self.can_undo) {
 							return;
 						}
 						self.elements.undo.css("transform", "translate(" + evt.originalEvent.changedTouches[0].clientX + "px, " + evt.originalEvent.changedTouches[0].clientY + "px)");
 					});
-					socket.on("pixel", function(data) {
-						$.map(data.pixels, function(px) {
+					socket.on("pixel", (data) => {
+						$.map(data.pixels, (px) => {
 							board.setPixel(px.x, px.y, px.color, false);
 						});
 						board.refresh();
 						board.update(true);
 					});
-					socket.on("ACK", function(data) {
+					socket.on("ACK", (data) => {
 						switch (data.ackFor) {
 						case "PLACE":
 							if (!ls.get("audio_muted")) {
@@ -1793,13 +1793,13 @@ window.App = (function() {
 							break;
 						}
 					});
-					socket.on("captcha_required", function() {
+					socket.on("captcha_required", () => {
 						grecaptcha.reset();
 						grecaptcha.execute();
 
 						analytics("send", "event", "Captcha", "Execute");
 					});
-					socket.on("captcha_status", function(data) {
+					socket.on("captcha_status", (data) => {
 						if (data.success) {
 							const pending = self.pendingPixel;
 							self.switch(pending.color);
@@ -1811,10 +1811,10 @@ window.App = (function() {
 							analytics("send", "event", "Captcha", "Failed");
 						}
 					});
-					socket.on("can_undo", function(data) {
+					socket.on("can_undo", (data) => {
 						self.elements.undo.show();
 						self.can_undo = true;
-						setTimeout(function() {
+						setTimeout(() => {
 							self.elements.undo.hide();
 							self.can_undo = false;
 						}, data.time * 1000);
@@ -1838,7 +1838,7 @@ window.App = (function() {
 				},
 				getPaletteRGB: function() {
 					const a = new Uint32Array(self.palette.length);
-					$.map(self.palette, function(c, i) {
+					$.map(self.palette, (c, i) => {
 						const rgb = self.hexToRgb(c);
 						a[i] = 0xff000000 | rgb.b << 16 | rgb.g << 8 | rgb.r;
 					});
@@ -1876,7 +1876,7 @@ window.App = (function() {
 						$("<textarea>").css({
 							width: "100%",
 							height: "5em",
-						}).keydown(function(evt) {
+						}).keydown((evt) => {
 							evt.stopPropagation();
 						}),
 						$("<div>").addClass("button").text("Cancel").css({
@@ -1884,14 +1884,14 @@ window.App = (function() {
 							bottom: 20,
 							left: 30,
 							width: 66,
-						}).click(function() {
+						}).click(() => {
 							self.elements.prompt.fadeOut(200);
 						}),
 						$("<div>").addClass("button").text("Report").css({
 							position: "fixed",
 							bottom: 20,
 							right: 30,
-						}).click(function() {
+						}).click(() => {
 							const msg = self.elements.prompt.find("textarea").val().trim();
 							if (!msg) {
 								alert.show("You must enter a message!");
@@ -1902,11 +1902,11 @@ window.App = (function() {
 								x: x,
 								y: y,
 								message: msg,
-							}, function() {
+							}, () => {
 								alert.show("Sent report!");
 								self.elements.prompt.hide();
 								self.elements.lookup.hide();
-							}).fail(function() {
+							}).fail(() => {
 								alert.show("Error sending report.");
 							});
 						})
@@ -1920,7 +1920,7 @@ window.App = (function() {
 							["Time", "time_str"],
 							["Total Pixels", "pixel_count"],
 							["Alltime Pixels", "pixel_count_alltime"],
-						], function(o) {
+						], (o) => {
 							return $("<div>").append(
 								$("<b>").text(o[0] + ": "),
 								$("<span>").text(data[o[1]])
@@ -1933,11 +1933,11 @@ window.App = (function() {
 					return self.elements.lookup.empty().append(
 						$("<div>").addClass("content"),
 						(data && user.isLoggedIn() ?
-							$("<div>").addClass("button").css("float", "left").addClass("report-button").text("Report").click(function() {
+							$("<div>").addClass("button").css("float", "left").addClass("report-button").text("Report").click(() => {
 								self.report(data.id, data.x, data.y);
 							}) :
 							""),
-						$("<div>").addClass("button").css("float", "right").text("Close").click(function() {
+						$("<div>").addClass("button").css("float", "right").text("Close").click(() => {
 							self.elements.lookup.fadeOut(200);
 						})
 					);
@@ -1947,7 +1947,7 @@ window.App = (function() {
 					$.get("/lookup", {
 						x: Math.floor(pos.x),
 						y: Math.floor(pos.y),
-					}, function(data) {
+					}, (data) => {
 						if (data) {
 							data.coords = "(" + data.x + ", " + data.y + ")";
 							const delta = ((new Date()).getTime() - data.time) / 1000;
@@ -1971,7 +1971,7 @@ window.App = (function() {
 						} else {
 							self.create(data);
 						}
-					}).fail(function() {
+					}).fail(() => {
 						self._makeShell(false).find(".content").first().append($("<p>").css("color", "#c00").text("An error occurred, you may be attempting to look up users too fast. Please try again in 60 seconds"));
 						self.elements.lookup.fadeIn(200);
 					});
@@ -1979,7 +1979,7 @@ window.App = (function() {
 				init: function() {
 					self.elements.lookup.hide();
 					self.elements.prompt.hide();
-					board.getRenderBoard().on("click", function(evt) {
+					board.getRenderBoard().on("click", (evt) => {
 						if (evt.shiftKey) {
 							evt.preventDefault();
 							self.runLookup(evt.clientX, evt.clientY);
@@ -2009,18 +2009,18 @@ window.App = (function() {
 				},
 				create: function(html_class, keycode, localstorage, open) {
 					const elem = $(html_class);
-					$(html_class + " > .open").click(function() {
+					$(html_class + " > .open").click(() => {
 						elem.toggleClass("open");
 						ls.set(localstorage, elem.hasClass("open") ^ open);
 					});
-					$(html_class + " .close").click(function() {
+					$(html_class + " .close").click(() => {
 						elem.removeClass("open");
 						ls.set(localstorage, false ^ open);
 					});
 					if (ls.get(localstorage) ^ open) {
 						elem.addClass("open");
 					}
-					$(document.body).keydown(function(evt) {
+					$(document.body).keydown((evt) => {
 						if (evt.keyCode === keycode) {
 							elem.toggleClass("open");
 							ls.set(localstorage, elem.hasClass("open") ^ open);
@@ -2031,7 +2031,7 @@ window.App = (function() {
 					$("#drawers-opener-content").empty().append(
 						$("#drawers > .drawer").map(function() {
 							const _self = $(this);
-							return $("<div>").text(_self.find(".open").text()).click(function(evt) {
+							return $("<div>").text(_self.find(".open").text()).click((evt) => {
 								evt.stopPropagation();
 								_self.toggleClass("open");
 								self.elements.opener.removeClass("open");
@@ -2040,10 +2040,10 @@ window.App = (function() {
 					);
 				},
 				init: function() {
-					self.elements.opener.find(".open").click(function() {
+					self.elements.opener.find(".open").click(() => {
 						self.elements.opener.toggleClass("open");
 					});
-					self.elements.container.on("DOMNodeInserted", function(evt) {
+					self.elements.container.on("DOMNodeInserted", (evt) => {
 						if ($(evt.target).hasClass("drawer")) {
 							self.updateDropdown();
 						}
@@ -2065,7 +2065,7 @@ window.App = (function() {
 					$("#audiotoggle").change(function() {
 						ls.set("audio_muted", this.checked);
 					});
-					$("#rules-button").click(function(evt) {
+					$("#rules-button").click((evt) => {
 						evt.stopPropagation();
 						alert.show($("#rules-content").html());
 					});
@@ -2103,10 +2103,10 @@ window.App = (function() {
 					self.elements.alert.fadeIn(200);
 				},
 				init: function() {
-					self.elements.alert.hide().find(".button").click(function() {
+					self.elements.alert.hide().find(".button").click(() => {
 						self.elements.alert.fadeOut(200);
 					});
-					socket.on("alert", function(data) {
+					socket.on("alert", (data) => {
 						self.show(data.message);
 					});
 				},
@@ -2125,7 +2125,7 @@ window.App = (function() {
 					stackCount: $("#placeableCount-bubble, #placeableCount-cursor"),
 				},
 				init: function() {
-					socket.on("pixels", function(data) {
+					socket.on("pixels", (data) => {
 						self.updateAvailable(data.count, data.cause);
 					});
 				},
@@ -2200,7 +2200,7 @@ window.App = (function() {
 							return;
 						}
 						self.runningTimer = true;
-						setTimeout(function() {
+						setTimeout(() => {
 							self.update(true);
 						}, 1000);
 						return;
@@ -2224,17 +2224,17 @@ window.App = (function() {
 					self.elements.timer_bubble.hide();
 					self.elements.timer_overlay.hide();
 
-					$(window).focus(function() {
+					$(window).focus(() => {
 						self.focus = true;
-					}).blur(function() {
+					}).blur(() => {
 						self.focus = false;
 					});
-					setTimeout(function() {
+					setTimeout(() => {
 						if (self.cooledDown() && uiHelper.getAvailable() === 0) {
 							uiHelper.setPlaceableText(1);
 						}
 					}, 250);
-					socket.on("cooldown", function(data) {
+					socket.on("cooldown", (data) => {
 						self.cooldown = (new Date()).getTime() + (data.wait * 1000);
 						self.hasFiredNotification = data.wait === 0;
 						self.update();
@@ -2329,12 +2329,12 @@ window.App = (function() {
 					return self.loggedIn;
 				},
 				webinit: function(data) {
-					self.elements.loginOverlay.find("a").click(function(evt) {
+					self.elements.loginOverlay.find("a").click((evt) => {
 						evt.preventDefault();
 						self.elements.prompt.empty().append(
 							$("<h1>").html("Sign&nbsp;in&nbsp;with..."),
 							$("<ul>").append(
-								$.map(data.authServices, function(a) {
+								$.map(data.authServices, (a) => {
 									return $("<li>").append(
 										$("<a>").attr("href", "/signin/" + a.id + "?redirect=1").text(a.name).click(function(sEvt) {
 											if (window.open(this.href, "_blank")) {
@@ -2351,7 +2351,7 @@ window.App = (function() {
 								bottom: 20,
 								right: 30,
 								width: 55,
-							}).click(function() {
+							}).click(() => {
 								self.elements.prompt.fadeOut(200);
 							})
 						).fadeIn(200);
@@ -2390,7 +2390,7 @@ window.App = (function() {
 				init: function() {
 					self.elements.userMessage.hide();
 					self.elements.signup.hide();
-					self.elements.signup.find("input").keydown(function(evt) {
+					self.elements.signup.find("input").keydown((evt) => {
 						evt.stopPropagation();
 						if (evt.key == "Enter" || evt.which === 13) {
 							self.doSignup();
@@ -2399,9 +2399,9 @@ window.App = (function() {
 					self.elements.signup.find("#signup-button").click(self.doSignup);
 					self.elements.users.hide();
 					self.elements.userInfo.hide();
-					self.elements.userInfo.find(".logout").click(function(evt) {
+					self.elements.userInfo.find(".logout").click((evt) => {
 						evt.preventDefault();
-						$.get("/logout", function() {
+						$.get("/logout", () => {
 							self.elements.userInfo.fadeOut(200);
 							self.elements.userMessage.fadeOut(200);
 							self.elements.loginOverlay.fadeIn(200);
@@ -2412,20 +2412,20 @@ window.App = (function() {
 							socket.reconnectSocket();
 						});
 					});
-					$(window).bind("storage", function(evt) {
+					$(window).bind("storage", (evt) => {
 						if (evt.originalEvent.key == "auth") {
 							ls.remove("auth");
 							self.signin();
 						}
 					});
-					socket.on("users", function(data) {
+					socket.on("users", (data) => {
 						self.elements.users.text(data.count + " online").fadeIn(200);
 					});
-					socket.on("session_limit", function() {
+					socket.on("session_limit", () => {
 						socket.close();
 						alert.show("Too many sessions open, try closing some tabs.");
 					});
-					socket.on("userinfo", function(data) {
+					socket.on("userinfo", (data) => {
 						let isBanned = false;
 						const banelem = $("<div>").addClass("ban-alert-content");
 						self.loggedIn = true;
@@ -2448,7 +2448,7 @@ window.App = (function() {
 							if (window.deInitAdmin) {
 								window.deInitAdmin();
 							}
-							$.getScript("admin/admin.js").done(function() {
+							$.getScript("admin/admin.js").done(() => {
 								window.initAdmin({
 									socket: socket,
 									user: user,
