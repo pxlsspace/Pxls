@@ -18,8 +18,8 @@ window.App = (function() {
 					const exdate = new Date();
 					let c_value = escape(value);
 					exdate.setDate(exdate.getDate() + exdays2);
-					c_value += ((exdays2 === null) ? "" : "; expires=" + exdate.toUTCString());
-					document.cookie = c_name + "=" + c_value;
+					c_value += ((exdays2 === null) ? "" : `; expires=${exdate.toUTCString()}`);
+					document.cookie = `${c_name}=${c_value}`;
 				};
 			return {
 				haveSupport: null,
@@ -107,20 +107,20 @@ window.App = (function() {
 		const checkImageRendering = function(prefix, crisp, pixelated, optimize_contrast) {
 			const d = document.createElement("div");
 			if (crisp) {
-				d.style.imageRendering = prefix + "crisp-edges";
-				if (d.style.imageRendering === prefix + "crisp-edges") {
+				d.style.imageRendering = `${prefix}crisp-edges`;
+				if (d.style.imageRendering === `${prefix}crisp-edges`) {
 					return true;
 				}
 			}
 			if (pixelated) {
-				d.style.imageRendering = prefix + "pixelated";
-				if (d.style.imageRendering === prefix + "pixelated") {
+				d.style.imageRendering = `${prefix}pixelated`;
+				if (d.style.imageRendering === `${prefix}pixelated`) {
 					return true;
 				}
 			}
 			if (optimize_contrast) {
-				d.style.imageRendering = prefix + "optimize-contrast";
-				if (d.style.imageRendering === prefix + "optimize-contrast") {
+				d.style.imageRendering = `${prefix}optimize-contrast`;
+				if (d.style.imageRendering === `${prefix}optimize-contrast`) {
 					return true;
 				}
 			}
@@ -137,7 +137,7 @@ window.App = (function() {
 
 	if (ios_safari) {
 		const iOS = parseFloat(
-			("" + (/CPU.*OS ([0-9_]{1,5})|(CPU like).*AppleWebKit.*Mobile/i.exec(navigator.userAgent) || [0, ""])[1])
+			(`${(/CPU.*OS ([0-9_]{1,5})|(CPU like).*AppleWebKit.*Mobile/i.exec(navigator.userAgent) || [0, ""])[1]}`)
 				.replace("undefined", "3_2").replace("_", ".").replace("_", "")
 		) || false;
 		have_image_rendering = false;
@@ -165,7 +165,7 @@ window.App = (function() {
 				_update: function(fromEvent) {
 					let toSplit = window.location.hash.substring(1);
 					if (window.location.search.length > 0) {
-						toSplit += ("&" + window.location.search.substring(1));
+						toSplit += (`&${window.location.search.substring(1)}`);
 					}
 
 					const _varsTemp = toSplit.split("&"),
@@ -201,7 +201,7 @@ window.App = (function() {
 					}
 
 					if (window.location.search.substring(1)) {
-						window.location = window.location.pathname + "#" + self.getStr();
+						window.location = `${window.location.pathname}#${self.getStr()}`;
 					}
 				},
 				setIfDifferent: function() {
@@ -261,7 +261,7 @@ window.App = (function() {
 								if (decoded === toSet) {
 									toSet = encodeURIComponent(toSet);
 								}
-								s += "=" + toSet;
+								s += `=${toSet}`;
 							}
 							params.push(s);
 						}
@@ -271,7 +271,7 @@ window.App = (function() {
 				update: function() {
 					const s = self.getStr();
 					if (window.history.replaceState) {
-						window.history.replaceState(null, null, "#" + s);
+						window.history.replaceState(null, null, `#${s}`);
 					} else {
 						window.location.hash = s;
 					}
@@ -444,7 +444,7 @@ window.App = (function() {
 				reconnect: function() {
 					$("#reconnecting").show();
 					setTimeout(() => {
-						$.get(window.location.pathname + "?_" + (new Date()).getTime(), () => {
+						$.get(`${window.location.pathname}?_${(new Date()).getTime()}`, () => {
 							window.location.reload();
 						}).fail(() => {
 							console.log("Server still down...");
@@ -458,7 +458,7 @@ window.App = (function() {
 				},
 				connectSocket: function() {
 					const l = window.location,
-						url = ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname + "ws";
+						url = `${((l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname}ws`;
 					self.ws = new self.ws_constructor(url);
 					self.ws.onmessage = function(msg) {
 						const data = JSON.parse(msg.data);
@@ -863,7 +863,7 @@ window.App = (function() {
 						self.scale = query.get("scale") || self.scale;
 						self.centerOn(cx, cy);
 						socket.init();
-						binary_ajax("/boarddata?_" + (new Date()).getTime(), self.draw, socket.reconnect);
+						binary_ajax(`/boarddata?_${(new Date()).getTime()}`, self.draw, socket.reconnect);
 
 						if (self.use_js_render) {
 							$(window).resize(() => {
@@ -901,7 +901,7 @@ window.App = (function() {
 								degree += spin * delta;
 								degree %= 360;
 								start = timestamp;
-								self.elements.container.css("transform", "rotate(" + degree + "deg)");
+								self.elements.container.css("transform", `rotate(${degree}deg)`);
 								window.requestAnimationFrame(spiiiiiin);
 							};
 							window.requestAnimationFrame(spiiiiiin);
@@ -989,13 +989,13 @@ window.App = (function() {
 						self.elements.mover.css({
 							width: self.width,
 							height: self.height,
-							transform: "translate(" + self.pan.x + "px, " + self.pan.y + "px)",
+							transform: `translate(${self.pan.x}px, ${self.pan.y}px)`,
 						});
 					}
 					if (self.use_zoom) {
-						self.elements.zoomer.css("zoom", (self.scale * 100).toString() + "%");
+						self.elements.zoomer.css("zoom", `${(self.scale * 100).toString()}%`);
 					} else {
-						self.elements.zoomer.css("transform", "scale(" + self.scale + ")");
+						self.elements.zoomer.css("transform", `scale(${self.scale})`);
 					}
 
 					place.update();
@@ -1172,7 +1172,7 @@ window.App = (function() {
 					self.elements.heatmapLoadingBubble.show();
 					self.lazy_inited = true;
 					// we use xhr directly because of jquery being weird on raw binary
-					binary_ajax("/heatmap?_" + (new Date()).getTime(), (data) => {
+					binary_ajax(`/heatmap?_${(new Date()).getTime()}`, (data) => {
 						self.ctx = self.elements.heatmap[0].getContext("2d");
 						self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
 						self.id = createImageData(self.width, self.height);
@@ -1214,7 +1214,7 @@ window.App = (function() {
 					if (opacity < 0 || opacity > 1) opacity = 0.5;
 
 					ls.set("heatmap_background_opacity", opacity);
-					self.elements.heatmap.css("background-color", "rgba(0, 0, 0, " + opacity + ")");
+					self.elements.heatmap.css("background-color", `rgba(0, 0, 0, ${opacity})`);
 				},
 				init: function() {
 					self.elements.heatmap.hide();
@@ -1611,8 +1611,8 @@ window.App = (function() {
 					const a = board.fromScreen(0, 0),
 						scale = board.getScale();
 					self.elements.grid.css({
-						backgroundSize: scale + "px " + scale + "px",
-						transform: "translate(" + Math.floor(-a.x % 1 * scale) + "px," + Math.floor(-a.y % 1 * scale) + "px)",
+						backgroundSize: `${scale}px ${scale}px`,
+						transform: `translate(${Math.floor(-a.x % 1 * scale)}px,${Math.floor(-a.y % 1 * scale)}px)`,
 						opacity: (scale - 2) / 6,
 					});
 				},
@@ -1757,11 +1757,11 @@ window.App = (function() {
 							y = evt.clientY;
 						}
 
-						self.elements.cursor.css("transform", "translate(" + x + "px, " + y + "px)");
+						self.elements.cursor.css("transform", `translate(${x}px, ${y}px)`);
 						if (self.can_undo) {
 							return;
 						}
-						self.elements.undo.css("transform", "translate(" + x + "px, " + y + "px)");
+						self.elements.undo.css("transform", `translate(${x}px, ${y}px)`);
 					}).keydown((evt) => {
 						if (self.can_undo && (evt.key == "z" || evt.keyCode == 90) && evt.ctrlKey) {
 							self.undo(evt);
@@ -1770,7 +1770,7 @@ window.App = (function() {
 						if (self.color === -1 || self.can_undo) {
 							return;
 						}
-						self.elements.undo.css("transform", "translate(" + evt.originalEvent.changedTouches[0].clientX + "px, " + evt.originalEvent.changedTouches[0].clientY + "px)");
+						self.elements.undo.css("transform", `translate(${evt.originalEvent.changedTouches[0].clientX}px, ${evt.originalEvent.changedTouches[0].clientY}px)`);
 					});
 					socket.on("pixel", (data) => {
 						$.map(data.pixels, (px) => {
@@ -1922,7 +1922,7 @@ window.App = (function() {
 							["Alltime Pixels", "pixel_count_alltime"],
 						], (o) => {
 							return $("<div>").append(
-								$("<b>").text(o[0] + ": "),
+								$("<b>").text(`${o[0]}: `),
 								$("<span>").text(data[o[1]])
 							);
 						}) : $("<p>").text("This pixel is background (was not placed by a user).")
@@ -1949,7 +1949,7 @@ window.App = (function() {
 						y: Math.floor(pos.y),
 					}, (data) => {
 						if (data) {
-							data.coords = "(" + data.x + ", " + data.y + ")";
+							data.coords = `(${data.x}, ${data.y})`;
 							const delta = ((new Date()).getTime() - data.time) / 1000;
 							if (delta > 24 * 3600) {
 								data.time_str = (new Date(data.time)).toLocaleString();
@@ -1957,12 +1957,12 @@ window.App = (function() {
 								data.time_str = "just now";
 							} else {
 								const secs = Math.floor(delta % 60),
-									secsStr = secs < 10 ? "0" + secs : secs,
+									secsStr = secs < 10 ? `0${secs}` : secs,
 									minutes = Math.floor((delta / 60)) % 60,
-									minuteStr = minutes < 10 ? "0" + minutes : minutes,
+									minuteStr = minutes < 10 ? `0${minutes}` : minutes,
 									hours = Math.floor(delta / 3600),
-									hoursStr = hours < 10 ? "0" + hours : hours;
-								data.time_str = hoursStr + ":" + minuteStr + ":" + secsStr + " ago";
+									hoursStr = hours < 10 ? `0${hours}` : hours;
+								data.time_str = `${hoursStr}:${minuteStr}:${secsStr} ago`;
 							}
 						}
 						data = data || false;
@@ -2009,11 +2009,11 @@ window.App = (function() {
 				},
 				create: function(html_class, keycode, localstorage, open) {
 					const elem = $(html_class);
-					$(html_class + " > .open").click(() => {
+					$(`${html_class} > .open`).click(() => {
 						elem.toggleClass("open");
 						ls.set(localstorage, elem.hasClass("open") ^ open);
 					});
-					$(html_class + " .close").click(() => {
+					$(`${html_class} .close`).click(() => {
 						elem.removeClass("open");
 						ls.set(localstorage, false ^ open);
 					});
@@ -2189,12 +2189,12 @@ window.App = (function() {
 						// real people don't count seconds zero-based (programming is more awesome)
 						delta++;
 						const secs = Math.floor(delta % 60),
-							secsStr = secs < 10 ? "0" + secs : secs,
+							secsStr = secs < 10 ? `0${secs}` : secs,
 							minutes = Math.floor(delta / 60),
-							minuteStr = minutes < 10 ? "0" + minutes : minutes;
-						self.elements.timer.text(minuteStr + ":" + secsStr);
+							minuteStr = minutes < 10 ? `0${minutes}` : minutes;
+						self.elements.timer.text(`${minuteStr}:${secsStr}`);
 
-						document.title = "[" + minuteStr + ":" + secsStr + "] " + self.title;
+						document.title = `[${minuteStr}:${secsStr}] ${self.title}`;
 
 						if (self.runningTimer && !die) {
 							return;
@@ -2280,13 +2280,13 @@ window.App = (function() {
 					function pointerHandler(evt) {
 						const boardPos = board.fromScreen(evt.clientX, evt.clientY);
 
-						self.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")").fadeIn(200);
+						self.elements.coords.text(`(${boardPos.x | 0}, ${boardPos.y | 0})`).fadeIn(200);
 					}
 
 					function touchHandler(evt) {
 						const boardPos = board.fromScreen(evt.changedTouches[0].clientX, evt.changedTouches[0].clientY);
 
-						self.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")").fadeIn(200);
+						self.elements.coords.text(`(${boardPos.x | 0}, ${boardPos.y | 0})`).fadeIn(200);
 					}
 				},
 			};
@@ -2336,7 +2336,7 @@ window.App = (function() {
 							$("<ul>").append(
 								$.map(data.authServices, (a) => {
 									return $("<li>").append(
-										$("<a>").attr("href", "/signin/" + a.id + "?redirect=1").text(a.name).click(function(sEvt) {
+										$("<a>").attr("href", `/signin/${a.id}?redirect=1`).text(a.name).click(function(sEvt) {
 											if (window.open(this.href, "_blank")) {
 												sEvt.preventDefault();
 												return;
@@ -2419,7 +2419,7 @@ window.App = (function() {
 						}
 					});
 					socket.on("users", (data) => {
-						self.elements.users.text(data.count + " online").fadeIn(200);
+						self.elements.users.text(`${data.count} online`).fadeIn(200);
 					});
 					socket.on("session_limit", () => {
 						socket.close();

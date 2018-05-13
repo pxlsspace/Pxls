@@ -82,7 +82,8 @@
         ],
         "prefer-const": "error",
         "no-useless-concat": "error",
-        "prefer-const": "error",
+        "prefer-template": "error",
+        "template-curly-spacing": ["error", "never"],
         "quotes": [
             "error",
             "double"

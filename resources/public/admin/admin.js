@@ -73,7 +73,7 @@
 							data.time = time;
 						}
 						$.post(path, data, () => {
-							admin.alert.show(done_msg + " " + username);
+							admin.alert.show(`${done_msg} ${username}`);
 							if (fn) {
 								fn();
 							}
@@ -98,7 +98,7 @@
 					$.post("/admin/unban", {
 						username: username,
 					}, () => {
-						admin.alert.show("Unbanned user " + username);
+						admin.alert.show(`Unbanned user ${username}`);
 						if (fn) {
 							fn();
 						}
@@ -140,14 +140,14 @@
 				callback: function(data) {
 					const delta = (data.banExpiry - (new Date()).getTime()) / 1000,
 						secs = Math.floor(delta % 60),
-						secsStr = secs < 10 ? "0" + secs : secs,
+						secsStr = secs < 10 ? `0${secs}` : secs,
 						minutes = Math.floor((delta / 60)) % 60,
-						minuteStr = minutes < 10 ? "0" + minutes : minutes,
+						minuteStr = minutes < 10 ? `0${minutes}` : minutes,
 						hours = Math.floor(delta / 3600),
-						hoursStr = hours < 10 ? "0" + hours : hours;
+						hoursStr = hours < 10 ? `0${hours}` : hours;
 					let banned = data.banned,
 						bannedStr = "",
-						expiracyStr = hoursStr + ":" + minuteStr + ":" + secsStr;
+						expiracyStr = `${hoursStr}:${minuteStr}:${secsStr}`;
 					if (data.role == "SHADOWBANNED") {
 						bannedStr = "shadow";
 						banned = true;
@@ -172,7 +172,7 @@
 					self.elements.check.empty().append(
 						$.map(items, (o) => {
 							return $("<div>").append(
-								$("<b>").text(o[0] + ": "),
+								$("<b>").text(`${o[0]}: `),
 								$("<span>").text(o[1])
 							);
 						}),
@@ -232,7 +232,7 @@
 					$.post("/admin/check", {
 						username: username,
 					}, self.callback).fail(() => {
-						admin.alert.show("User " + username + " not found");
+						admin.alert.show(`User ${username} not found`);
 					});
 				},
 			};
@@ -297,7 +297,7 @@
 				},
 				create: function(data) {
 					if (data) {
-						data.coords = "(" + data.x + ", " + data.y + ")";
+						data.coords = `(${data.x}, ${data.y})`;
 						data.time = (new Date(data.time)).toLocaleString();
 						self.elements.lookup.empty().append(
 							$("<div>").addClass("content").append(
@@ -311,7 +311,7 @@
 									["User-Agent", "userAgent"],
 								], (o) => {
 									return $("<div>").append(
-										$("<b>").text(o[0] + ": "),
+										$("<b>").text(`${o[0]}: `),
 										$("<span>").text(data[o[1]])
 									);
 								}),
