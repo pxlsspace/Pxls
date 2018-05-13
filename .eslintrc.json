@@ -81,6 +81,8 @@
             "always"
         ],
         "prefer-const": "error",
+        "no-useless-concat": "error",
+        "prefer-const": "error",
         "quotes": [
             "error",
             "double"

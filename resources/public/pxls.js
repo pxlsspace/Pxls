@@ -863,7 +863,7 @@ window.App = (function() {
 						self.scale = query.get("scale") || self.scale;
 						self.centerOn(cx, cy);
 						socket.init();
-						binary_ajax("/boarddata" + "?_" + (new Date()).getTime(), self.draw, socket.reconnect);
+						binary_ajax("/boarddata?_" + (new Date()).getTime(), self.draw, socket.reconnect);
 
 						if (self.use_js_render) {
 							$(window).resize(() => {
@@ -1172,7 +1172,7 @@ window.App = (function() {
 					self.elements.heatmapLoadingBubble.show();
 					self.lazy_inited = true;
 					// we use xhr directly because of jquery being weird on raw binary
-					binary_ajax("/heatmap" + "?_" + (new Date()).getTime(), (data) => {
+					binary_ajax("/heatmap?_" + (new Date()).getTime(), (data) => {
 						self.ctx = self.elements.heatmap[0].getContext("2d");
 						self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
 						self.id = createImageData(self.width, self.height);
