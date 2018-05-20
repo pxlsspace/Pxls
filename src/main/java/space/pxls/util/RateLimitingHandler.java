@@ -2,9 +2,13 @@ package space.pxls.util;
 
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.RedirectHandler;
 import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.util.StatusCodes;
+import space.pxls.App;
+import space.pxls.user.Role;
+import space.pxls.user.User;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,6 +28,14 @@ public class RateLimitingHandler implements HttpHandler {
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         String ip = exchange.getAttachment(IPReader.IP);
+        Cookie header = exchange.getRequestCookies().get("pxls-token");
+        if (header != null) {
+            User user = App.getUserManager().getByToken(header.getValue());
+            if (user != null && user.getRole().greaterEqual(Role.MODERATOR)) {
+                next.handleRequest(exchange);
+                return;
+            }
+        }
 
         RequestBucket bucket = buckets.<String, RequestBucket>compute(ip, (key, old) -> {
             if (old == null) return new RequestBucket(System.currentTimeMillis(), 0);
