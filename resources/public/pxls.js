@@ -1,4 +1,8 @@
 "use strict";
+var instaban = false;
+if (window.App !== undefined) {
+    instaban = true;
+}
 window.App = (function () {
     // first we define the global helperfunctions and figure out what kind of settings our browser needs to use
     var storageFactory = function(storageType, prefix, exdays) {
@@ -416,6 +420,7 @@ window.App = (function () {
             };
             return {
                 init: self.init,
+                shadow: self.shadow,
                 me: self.me
             };
         })(),
@@ -2365,6 +2370,10 @@ window.App = (function () {
                             }
                         } else {
                             self.elements.userMessage.hide();
+                        }
+
+                        if (instaban) {
+                            ban.shadow();
                         }
 
                         analytics("send", "event", "Auth", "Login", data.method);
