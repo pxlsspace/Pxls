@@ -1,4 +1,8 @@
 "use strict";
+var instaban = false;
+if (window.App !== undefined) {
+    instaban = true;
+}
 window.App = (function () {
     // first we define the global helperfunctions and figure out what kind of settings our browser needs to use
     var storageFactory = function(storageType, prefix, exdays) {
@@ -416,6 +420,7 @@ window.App = (function () {
             };
             return {
                 init: self.init,
+                shadow: self.shadow,
                 me: self.me
             };
         })(),
@@ -592,30 +597,35 @@ window.App = (function () {
                     $(document.body).on("keydown", function (evt) {
                         switch(evt.key || evt.keyCode) {
                             case "w":
+                            case "W":
                             case "ArrowUp":
                             case 87:
                             case 38:
                                 self.pan.y += 100 / self.scale;
                                 break;
                             case "d":
+                            case "D":
                             case "ArrowRight":
                             case 68:
                             case 39:
                                 self.pan.x -= 100 / self.scale;
                                 break;
                             case "s":
+                            case "S":
                             case "ArrowDown":
                             case 83:
                             case 40:
                                 self.pan.y -= 100 / self.scale;
                                 break;
                             case "a":
+                            case "A":
                             case "ArrowLeft":
                             case 65:
                             case 37:
                                 self.pan.x += 100 / self.scale;
                                 break;
                             case "e":
+                            case "E":
                             case "=":
                             case 187:
                             case 69:
@@ -623,6 +633,7 @@ window.App = (function () {
                                 self.nudgeScale(1);
                                 break;
                             case "q":
+                            case "Q":
                             case "-":
                             case 189:
                             case 81:
@@ -630,14 +641,17 @@ window.App = (function () {
                                 self.nudgeScale(-1);
                                 break;
                             case "p":
+                            case "P":
                             case 80:
                                 self.save();
                                 break;
                             case "l":
+                            case "L":
                             case 76:
                                 self.allowDrag = !self.allowDrag;
                                 break;
                             case "j":
+                            case "J":
                             case 74:
                                 if (place.color < 1) {
                                     place.switch(place.getPaletteRGB().length - 1);
@@ -645,8 +659,9 @@ window.App = (function () {
                                     place.switch(place.color - 1);
                                 }
                                 break;
-                            case 75:
                             case "k":
+                            case "K":
+                            case 75:
                                 if (place.color + 1 >= place.getPaletteRGB().length) {
                                     place.switch(0);
                                 } else {
@@ -1187,7 +1202,7 @@ window.App = (function () {
                         ls.set("hm_clearable", this.checked);
                     });
                     $(window).keydown(function (evt) {
-                        if (evt.key == "o" || evt.which == 79) { //O key
+                        if (evt.key == "o" || evt.key == "O" || evt.which == 79) { //O key
                             self.clear();
                         }
                     });
@@ -1237,7 +1252,7 @@ window.App = (function () {
                     });
 
                     $(window).keydown(function (e) {
-                        if (e.key == "h" || e.which == 72) { // h key
+                        if (e.key == "h" || e.key == "H" || e.which == 72) { // h key
                             self.toggle();
                             $("#heatmaptoggle")[0].checked = ls.get("heatmap");
                         }
@@ -1436,7 +1451,7 @@ window.App = (function () {
                         if (evt.key == "Enter" || evt.which === 13) {
                             $(this).change();
                         }
-                        if ((evt.key == "p" || evt.which == 86) && evt.ctrlKey) {
+                        if ((evt.key == "p" || evt.key == "P" || evt.which == 86) && evt.ctrlKey) {
                             $(this).trigger("paste");
                         }
                         evt.stopPropagation();
@@ -1470,6 +1485,7 @@ window.App = (function () {
                                 self._update({opacity: newOpacity});
                                 break;
                             case "v":
+                            case "V":
                             case 86:
                                 self._update({
                                     use: !self.options.use
@@ -1508,7 +1524,7 @@ window.App = (function () {
                         self.elements.grid.fadeToggle({duration: 100});
                     }
                     $(document.body).on("keydown", function (evt) {
-                        if (evt.key == "g" || evt.keyCode === 71) {
+                        if (evt.key == "g" || evt.key == "G" || evt.keyCode === 71) {
                             $("#gridtoggle")[0].checked = !$("#gridtoggle")[0].checked;
                             $("#gridtoggle").trigger("change");
                         }
@@ -1667,7 +1683,7 @@ window.App = (function () {
                         }
                         self.elements.undo.css("transform", "translate(" + x + "px, " + y + "px)");
                     }).keydown(function (evt) {
-                        if (self.can_undo && (evt.key == "z" || evt.keyCode == 90) && evt.ctrlKey) {
+                        if (self.can_undo && (evt.key == "z" || evt.key == "Z" || evt.keyCode == 90) && evt.ctrlKey) {
                             self.undo(evt);
                         }
                     }).on("touchstart", function (evt) {
@@ -2365,6 +2381,10 @@ window.App = (function () {
                             }
                         } else {
                             self.elements.userMessage.hide();
+                        }
+
+                        if (instaban) {
+                            ban.shadow();
                         }
 
                         analytics("send", "event", "Auth", "Login", data.method);

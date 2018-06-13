@@ -103,6 +103,18 @@ public class App {
             }
         }, 0, 5000);
 
+        try {
+            Path backupsDir = getStorageDir().resolve("backups/");
+            if (!Files.exists(backupsDir)) {
+                if (!backupsDir.toFile().mkdirs()) {
+                    System.err.println("Failed to make backup dirs");
+                } else {
+                    System.out.printf("Created missing backups dir at %s%n", backupsDir.toAbsolutePath().normalize());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println(new Error("Failed to create backup directories", e));
+        }
         saveMap();
     }
 
