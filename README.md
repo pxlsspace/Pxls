@@ -80,9 +80,29 @@ An example CAPTCHA section could look like this:
 
 Commands are entered directly into the running instance (stdin).
 
-`role <user> <role>` - changes the role of a user, roles can be USER/MODERATOR/ADMIN
-`reload` - reloads the main config file, applying *most* changes immediately  
-`save` - saves the map  
+`reload` - reloads the main config, applying *most* changes immediately
+
+`save` - saves the map
+
+`role <user> <role>` - changes the role of a user, roles can be `USER`/`MODERATOR`/`ADMIN`
+
+`alert <text>` - alerts all users currently on the canvas
+
+`ban <user> <reason>` - bans the user for 24 hours
+
+`permaban <user> <reason>` - permanently bans the user
+
+`shadowban <user> <reason>` - shadowbans the user (pixels placed by this user only appears to *that user*)
+
+`unban <user>` - unbans the user
+
+`nuke <x1> <y1> <x2> <y2> <color>` - replaces all pixels from x1, y1 to x2, y2 with the color (by index)
+
+`cons [authed]` - prints the total or authed connection count, if specified
+
+`users` - prints all authed users
+
+`stack <user> [set <amount>]` - gets or sets the stack count of a user
 
 # Contributors
 
