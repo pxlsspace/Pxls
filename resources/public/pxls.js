@@ -2337,7 +2337,11 @@ window.App = (function () {
                         self.loggedIn = true;
                         self.elements.loginOverlay.fadeOut(200);
                         self.elements.userInfo.find("span.name").text(data.username);
-                        self.elements.userInfo.fadeIn(200);
+                        if (data.method == 'ip') {
+                            self.elements.userInfo.hide();
+                        } else {
+                            self.elements.userInfo.fadeIn(200);
+                        }
                         self.role = data.role;
 
                         if (self.role == "BANNED") {
