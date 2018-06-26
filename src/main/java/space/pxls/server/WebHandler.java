@@ -164,6 +164,10 @@ public class WebHandler {
             if (time_form != null) {
                 time = time_form.getValue();
             }
+            if (user.getRole().lessThan(Role.MODERATOR) && Integer.parseInt(time) > (86400*2)) {
+                exchange.setStatusCode(400);
+                return;
+            }
             if (doLog(exchange)) {
                 App.getDatabase().adminLog("ban " + user.getName(), user_perform.getId());
             }
@@ -504,7 +508,7 @@ public class WebHandler {
 
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
 
-        if (user == null || user.getRole().lessThan(Role.MODERATOR)) {
+        if (user == null || user.getRole().lessThan(Role.TRIALMOD)) {
             DBPixelPlacementUser pp = App.getDatabase().getPixelAtUser(x, y);
             exchange.getResponseSender().send(App.getGson().toJson(pp));
         } else {

@@ -2354,7 +2354,7 @@ window.App = (function () {
                             banelem.append(
                                 $("<p>").text(`You are temporarily banned and will not be allowed to place until ${new Date(data.banExpiry).toLocaleString()}`)
                             );
-                        } else if (["MODERATOR", "ADMIN"].indexOf(self.role) != -1) {
+                        } else if (["TRIALMOD", "MODERATOR", "ADMIN"].indexOf(self.role) != -1) {
                             if (window.deInitAdmin) {
                                 window.deInitAdmin();
                             }
