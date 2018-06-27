@@ -2200,7 +2200,7 @@ window.App = (function () {
 
                     $(window).keydown(event => {
                         if ((event.key === "c" || event.key === "C" || event.keyCode === 67) && navigator.clipboard && self.mouseCoords) {
-                            navigator.clipboard.writeText(location.origin + `/#x=${self.mouseCoords.x}&y=${self.mouseCoords.y}`);
+                            navigator.clipboard.writeText(location.origin + `/#x=${Math.floor(self.mouseCoords.x)}&y=${Math.floor(self.mouseCoords.y)}`);
                         }
                     });
                 }
