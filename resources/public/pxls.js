@@ -814,9 +814,9 @@ window.App = (function () {
                     self.ctx = self.elements.board[0].getContext("2d");
                     self.initInteraction();
 
-                    $("#downloadImageFormat").val(ls.get("downloadImageFormat"));
-                    $("#downloadImageFormat").on("change input", event => {
-                        ls.set("downloadImageFormat", event.target.value);
+                    $("#snapshotImageFormat").val(ls.get("snapshotImageFormat"));
+                    $("#snapshotImageFormat").on("change input", event => {
+                        ls.set("snapshotImageFormat", event.target.value);
                     });
                 },
                 start: function () {
@@ -1087,7 +1087,7 @@ window.App = (function () {
                 },
                 save: function () {
                     var a = document.createElement("a");
-                    const format = ls.get("downloadImageFormat");
+                    const format = ls.get("snapshotImageFormat");
 
                     a.href = self.elements.board[0].toDataURL(format, 1);
                     a.download = (new Date()).toISOString().replace(/^(\d+-\d+-\d+)T(\d+):(\d+):(\d).*$/,`pxls canvas $1 $2.$3.$4.${format.split("/")[1]}`);
