@@ -813,6 +813,11 @@ window.App = (function () {
                     }
                     self.ctx = self.elements.board[0].getContext("2d");
                     self.initInteraction();
+
+                    $("#downloadImageFormat").val(ls.get("downloadImageFormat"));
+                    $("#downloadImageFormat").on("change input", event => {
+                        ls.set("downloadImageFormat", event.target.value);
+                    });
                 },
                 start: function () {
                     $.get("/info", function (data) {
@@ -1082,8 +1087,10 @@ window.App = (function () {
                 },
                 save: function () {
                     var a = document.createElement("a");
-                    a.href = self.elements.board[0].toDataURL("image/png");
-                    a.download = (new Date()).toISOString().replace(/^(\d+-\d+-\d+)T(\d+):(\d+):(\d).*$/,"pxls canvas $1 $2.$3.$4.png");
+                    const format = ls.get("downloadImageFormat");
+
+                    a.href = self.elements.board[0].toDataURL(format, 1);
+                    a.download = (new Date()).toISOString().replace(/^(\d+-\d+-\d+)T(\d+):(\d+):(\d).*$/,`pxls canvas $1 $2.$3.$4.${format.split("/")[1]}`);
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
