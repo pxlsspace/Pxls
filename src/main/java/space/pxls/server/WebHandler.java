@@ -526,6 +526,12 @@ public class WebHandler {
             return;
         }
 
+        if (user.isBanned()) {
+            exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+            exchange.endExchange();
+            return;
+        }
+
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
 
         FormData.FormValue xq = data.getFirst("x");
