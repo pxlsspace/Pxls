@@ -2172,6 +2172,7 @@ window.App = (function () {
                 elements: {
                     coords: $("#coords")
                 },
+                mouseCoords: null,
                 init: function () {
                     self.elements.coords.hide();
                     const _board = board.getRenderBoard()[0];
@@ -2186,14 +2187,22 @@ window.App = (function () {
                     function pointerHandler(evt) {
                         var boardPos = board.fromScreen(evt.clientX, evt.clientY);
 
+                        self.mouseCoords = boardPos;
                         self.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")").fadeIn(200);
                     }
 
                     function touchHandler(evt) {
                         var boardPos = board.fromScreen(evt.changedTouches[0].clientX, evt.changedTouches[0].clientY);
-
+                        
+                        self.mouseCoords = boardPos;
                         self.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")").fadeIn(200);
                     }
+
+                    $(window).keydown(event => {
+                        if ((event.key === "c" || event.key === "C" || event.keyCode === 67) && navigator.clipboard && self.mouseCoords) {
+                            navigator.clipboard.writeText(location.origin + `/#x=${Math.floor(self.mouseCoords.x)}&y=${Math.floor(self.mouseCoords.y)}`);
+                        }
+                    });
                 }
             };
             return {
