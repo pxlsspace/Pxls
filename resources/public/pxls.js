@@ -743,10 +743,10 @@ window.App = (function () {
                         }
                     }
                     function handleInputUp(event) {
-                        if (event.shiftKey === true) return;
                         if (self.holdTimer.id !== -1) {
                             clearTimeout(self.holdTimer.id);
                         }
+                        if (event.shiftKey === true) return;
                         self.holdTimer.id = -1;
                         var touch = false,
                             clientX = event.clientX,
