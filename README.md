@@ -106,6 +106,6 @@ Commands are entered directly into the running instance (stdin).
 
 # Contributors
 
-* @xSke (main code)
-* @jasperandrew (client UI/UX)
-* @Sorunome (loads of client improvements)
+* [xSke](https://github.com/jasperandrew) - Main code
+* [jasperandrew](https://github.com/jasperandrew) - Client UI/UX
+* [Sorunome](https://github.com/Sorunome) - Loads of client improvements
