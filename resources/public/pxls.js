@@ -1849,7 +1849,7 @@ window.App = (function () {
                  * @param {Function} hook.get
                  */
                 registerHook: function (hook) {
-                    return this.hooks.push(hook);
+                    return self.hooks.push(hook);
                 },
                 create: function (data) {
                     self._makeShell(data).find(".content").first().append(function () {
@@ -1912,27 +1912,27 @@ window.App = (function () {
                 },
                 init: function () {
                     // Register default hooks
-                    this.registerHook({
+                    self.registerHook({
                         id: "coords",
                         name: "Coords",
                         get: data => data.coords,
                     });
-                    this.registerHook({
+                    self.registerHook({
                         id: "username",
                         name: "Username",
                         get: data => data.username,
                     });
-                    this.registerHook({
+                    self.registerHook({
                         id: "time",
                         name: "Time",
                         get: data => data.time_str,
                     });
-                    this.registerHook({
+                    self.registerHook({
                         id: "pixels",
                         name: "Pixels",
                         get: data => data.pixel_Count,
                     });
-                    this.registerHook({
+                    self.registerHook({
                         id: "pixels_alltime",
                         name: "Alltime Pixels",
                         get: data => data.pixel_count_alltime,
