@@ -108,7 +108,7 @@ a, a:hover, a:visited, a:active {
 .button {
     cursor: pointer;
     margin-top: 6px;
-    margin-right: 6px;
+    margin-right: 4.5px;
     display: inline-block;
     font-size: 12px;
     border: 1px solid #ccc;
