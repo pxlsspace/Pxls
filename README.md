@@ -106,6 +106,10 @@ Commands are entered directly into the running instance (stdin).
 
 # Contributors
 
-* @xSke (main code)
-* @jasperandrew (client UI/UX)
-* @Sorunome (loads of client improvements)
+* [xSke](https://github.com/jasperandrew) - Main code
+* [jasperandrew](https://github.com/jasperandrew) - Client UI/UX
+* [Sorunome](https://github.com/Sorunome) - Loads of client improvements
+* [TheRebelG0d](https://github.com/TheRebelG0d) - Loads of client improvements
+* [haykam821](https://github.com/haykam821) - Copy link and color-switching keybinds
+
+A full list of contributors is available [here](https://github.com/xSke/Pxls/graphs/contributors).
