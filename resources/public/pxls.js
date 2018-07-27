@@ -1847,12 +1847,14 @@ window.App = (function () {
                  * @param {String} hook.id
                  * @param {String} hook.name
                  * @param {Function} hook.get
+                 * @param {Object} hook.css
                  */
                 registerHook: function (hook) {
                     return self.hooks.push({
                         id: hook.id || "hook",
                         name: hook.name || "Hook",
                         get: hook.get || function () {},
+                        css: hook.css || {},
                     });
                 },
                 create: function (data) {
@@ -1861,7 +1863,7 @@ window.App = (function () {
                             return $.map(self.hooks, function (hook) {
                                 return $("<div>").append(
                                     $("<b>").text(hook.name + ": "),
-                                    $("<span>").text(hook.get(data))
+                                    $("<span>").text(hook.get(data).css(hook.css))
                                 ).attr("id", "lookuphook_" + hook.id);
                             });
                         } else {
