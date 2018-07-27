@@ -61,3 +61,17 @@ App.ls.get('blah'); // returns the object
 App.ls.remove('blah'); // remove the contents of blah
 App.ls.get('blah'); // not defined, returns undefined
 ```
+
+## Lookup Hooks
+
+It is possible to extend the built-in pixel lookup functionality by registering a hook which has an id, user-facing name, and a function which provides the basic lookup information.
+
+```js
+App.lookup.registerHook({
+    id: "rebel_hook",
+    name: "Rebellious Hook",
+    get: data => `Hehehe... the X is ${data.x} and Y is ${data.y}...`,
+});
+```
+
+Your function's return value is an array of or single DOM element, jQuery object, or string.
