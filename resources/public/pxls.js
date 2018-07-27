@@ -1842,20 +1842,22 @@ window.App = (function () {
                  */
                 hooks: [], 
                 /**
-                 * Registers a hook.
-                 * @param {Object} hook Information about the hook.
-                 * @param {String} hook.id An ID for the hook.
-                 * @param {String} hook.name A user-facing name for the hook.
-                 * @param {Function} hook.get A function that returns the text information shown in the lookup.
-                 * @param {Object} hook.css An object mapping CSS rules to values for the hook value.
+                 * Registers hooks.
+                 * @param {Object} hooks Information about the hook.
+                 * @param {String} hooks.id An ID for the hook.
+                 * @param {String} hooks.name A user-facing name for the hook.
+                 * @param {Function} hooks.get A function that returns the text information shown in the lookup.
+                 * @param {Object} hooks.css An object mapping CSS rules to values for the hook value.
                  */
-                registerHook: function (hook) {
-                    return self.hooks.push({
-                        id: hook.id || "hook",
-                        name: hook.name || "Hook",
-                        get: hook.get || function () {},
-                        css: hook.css || {},
-                    });
+                registerHook: function (...hooks) {
+                    return self.hooks.push(...$.map(hook, function () {
+                        return {
+                            id: hook.id || "hook",
+                            name: hook.name || "Hook",
+                            get: hook.get || function () {},
+                            css: hook.css || {},
+                        };
+                    }));
                 },
                 create: function (data) {
                     self._makeShell(data).find(".content").first().append(function () {
@@ -1918,31 +1920,29 @@ window.App = (function () {
                 },
                 init: function () {
                     // Register default hooks
-                    self.registerHook({
-                        id: "coords",
-                        name: "Coords",
-                        get: data => data.coords,
-                    });
-                    self.registerHook({
-                        id: "username",
-                        name: "Username",
-                        get: data => data.username,
-                    });
-                    self.registerHook({
-                        id: "time",
-                        name: "Time",
-                        get: data => data.time_str,
-                    });
-                    self.registerHook({
-                        id: "pixels",
-                        name: "Pixels",
-                        get: data => data.pixel_count,
-                    });
-                    self.registerHook({
-                        id: "pixels_alltime",
-                        name: "Alltime Pixels",
-                        get: data => data.pixel_count_alltime,
-                    });
+                    self.registerHook(
+                        {
+                            id: "coords",
+                            name: "Coords",
+                            get: data => data.coords,
+                        }, {
+                            id: "username",
+                            name: "Username",
+                            get: data => data.username,
+                        }, {
+                            id: "time",
+                            name: "Time",
+                            get: data => data.time_str,
+                        }, {
+                            id: "pixels",
+                            name: "Pixels",
+                            get: data => data.pixel_count,
+                        }, {
+                            id: "pixels_alltime",
+                            name: "Alltime Pixels",
+                            get: data => data.pixel_count_alltime,
+                        }
+                    );
 
                     self.elements.lookup.hide();
                     self.elements.prompt.hide();
