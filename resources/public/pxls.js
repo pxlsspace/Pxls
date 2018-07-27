@@ -1504,6 +1504,9 @@ window.App = (function () {
                             self.elements.template.css("pointer-events", "none").data("dragging", false);
                         }
                     });
+                },
+                getOptions: function () {
+                    return self.options;
                 }
             };
             return {
@@ -1511,7 +1514,8 @@ window.App = (function () {
                 update: self._update,
                 draw: self.draw,
                 init: self.init,
-                queueUpdate: self.queueUpdate
+                queueUpdate: self.queueUpdate,
+                getOptions: self.getOptions,
             };
         })(),
         // here all the grid stuff happens
@@ -1865,7 +1869,7 @@ window.App = (function () {
                         $("<div>").addClass("button").css("float", "right").text("Close").click(function () {
                             self.elements.lookup.fadeOut(200);
                         }),
-                        (data ? $("<div>").addClass("button").css("float", "right").text("Move Template Here").click(function () {
+                        (data && template.getOptions().use ? $("<div>").addClass("button").css("float", "right").text("Move Template Here").click(function () {
                             template.queueUpdate({
                                 ox: data.x,
                                 oy: data.y,
