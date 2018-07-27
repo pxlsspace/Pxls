@@ -1899,23 +1899,6 @@ window.App = (function () {
                 runLookup(clientX, clientY) {
                     const pos = board.fromScreen(clientX, clientY);
                     $.get("/lookup", {x: Math.floor(pos.x), y: Math.floor(pos.y)}, function (data) {
-                        if (data) {
-                            data.coords = "(" + data.x + ", " + data.y + ")";
-                            var delta = ((new Date()).getTime() - data.time) / 1000;
-                            if (delta > 24*3600) {
-                                data.time_str = (new Date(data.time)).toLocaleString();
-                            } else if (delta < 5) {
-                                data.time_str = 'just now';
-                            } else {
-                                var secs = Math.floor(delta % 60),
-                                    secsStr = secs < 10 ? "0" + secs : secs,
-                                    minutes = Math.floor((delta / 60)) % 60,
-                                    minuteStr = minutes < 10 ? "0" + minutes : minutes,
-                                    hours = Math.floor(delta / 3600),
-                                    hoursStr = hours < 10 ? "0" + hours : hours;
-                                data.time_str = hoursStr+":"+minuteStr+":"+secsStr+" ago";
-                            }
-                        }
                         data = data || false;
                         if (self.handle) {
                             self.handle(data);
@@ -1933,7 +1916,7 @@ window.App = (function () {
                         {
                             id: "coords",
                             name: "Coords",
-                            get: data => data.coords,
+                            get: data => "(" + data.x + ", " + data.y + ")",
                         }, {
                             id: "username",
                             name: "Username",
@@ -1941,7 +1924,22 @@ window.App = (function () {
                         }, {
                             id: "time",
                             name: "Time",
-                            get: data => data.time_str,
+                            get: data => {
+                                var delta = ((new Date()).getTime() - data.time) / 1000;
+                                if (delta > 24 * 3600) {
+                                    return (new Date(data.time)).toLocaleString();
+                                } else if (delta < 5) {
+                                    return 'just now';
+                                } else {
+                                    var secs = Math.floor(delta % 60),
+                                        secsStr = secs < 10 ? "0" + secs : secs,
+                                        minutes = Math.floor((delta / 60)) % 60,
+                                        minuteStr = minutes < 10 ? "0" + minutes : minutes,
+                                        hours = Math.floor(delta / 3600),
+                                        hoursStr = hours < 10 ? "0" + hours : hours;
+                                    return hoursStr + ":" + minuteStr + ":" + secsStr + " ago";
+                                }
+                            }
                         }, {
                             id: "pixels",
                             name: "Pixels",
