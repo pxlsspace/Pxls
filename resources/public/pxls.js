@@ -1849,7 +1849,11 @@ window.App = (function () {
                  * @param {Function} hook.get
                  */
                 registerHook: function (hook) {
-                    return self.hooks.push(hook);
+                    return self.hooks.push({
+                        id: hook.id || "hook",
+                        name: hook.name || "Hook",
+                        get: hook.get || function () {},
+                    });
                 },
                 create: function (data) {
                     self._makeShell(data).find(".content").first().append(function () {
