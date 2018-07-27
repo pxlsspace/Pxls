@@ -1850,7 +1850,7 @@ window.App = (function () {
                  * @param {Object} hooks.css An object mapping CSS rules to values for the hook value.
                  */
                 registerHook: function (...hooks) {
-                    return self.hooks.push(...$.map(hook, function () {
+                    return self.hooks.push(...$.map(hooks, function (hook) {
                         return {
                             id: hook.id || "hook",
                             name: hook.name || "Hook",
