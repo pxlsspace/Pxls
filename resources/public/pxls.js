@@ -1843,11 +1843,11 @@ window.App = (function () {
                 hooks: [], 
                 /**
                  * Registers a hook.
-                 * @param {Object} hook
-                 * @param {String} hook.id
-                 * @param {String} hook.name
-                 * @param {Function} hook.get
-                 * @param {Object} hook.css
+                 * @param {Object} hook Information about the hook.
+                 * @param {String} hook.id An ID for the hook.
+                 * @param {String} hook.name A user-facing name for the hook.
+                 * @param {Function} hook.get A function that returns the text information shown in the lookup.
+                 * @param {Object} hook.css An object mapping CSS rules to values for the hook value.
                  */
                 registerHook: function (hook) {
                     return self.hooks.push({
