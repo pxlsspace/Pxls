@@ -1854,10 +1854,10 @@ window.App = (function () {
                 create: function (data) {
                     self._makeShell(data).find(".content").first().append(function () {
                         if (data) {
-                            $.map(hooks, function (hook) {
+                            return $.map(self.hooks, function (hook) {
                                 return $("<div>").append(
                                     $("<b>").text(hook.name + ": "),
-                                    $("<span>").text(hook.get())
+                                    $("<span>").text(hook.get(data))
                                 ).attr("id", "lookuphook_" + hook.id);
                             });
                         } else {
@@ -1930,7 +1930,7 @@ window.App = (function () {
                     self.registerHook({
                         id: "pixels",
                         name: "Pixels",
-                        get: data => data.pixel_Count,
+                        get: data => data.pixel_count,
                     });
                     self.registerHook({
                         id: "pixels_alltime",
