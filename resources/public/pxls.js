@@ -1863,7 +1863,7 @@ window.App = (function () {
                             return $.map(self.hooks, function (hook) {
                                 return $("<div>").append(
                                     $("<b>").text(hook.name + ": "),
-                                    $("<span>").text(hook.get(data).css(hook.css))
+                                    $("<span>").text(hook.get(data)).css(hook.css)
                                 ).attr("id", "lookuphook_" + hook.id);
                             });
                         } else {
