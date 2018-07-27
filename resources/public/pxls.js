@@ -1957,6 +1957,7 @@ window.App = (function () {
             return {
                 init: self.init,
                 registerHandle: self.registerHandle,
+                registerHook: self.registerHook,
                 runLookup: self.runLookup,
                 clearHandle: self.clearHandle
             };
@@ -2524,6 +2525,11 @@ window.App = (function () {
             normalize: function(obj, dir=true) {
                 return template.normalizeTemplateObj(obj, dir);
             }
+        },
+        lookup: {
+            registerHook: function () {
+                return lookup.registerHook(...arguments);
+            },
         },
         centerBoardOn: function(x, y) {
             board.centerOn(x, y);
