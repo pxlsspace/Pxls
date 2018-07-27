@@ -1859,6 +1859,15 @@ window.App = (function () {
                         };
                     }));
                 },
+                /**
+                 * Unregisters a hook by its ID.
+                 * @param {string} hookId The ID of the hook to unregister.
+                 */
+                unregisterHook: function (hookId) {
+                    return self.hooks = $.grep(self.hooks, function (hook) {
+                        return hook.id !== hookId;
+                    });
+                },
                 create: function (data) {
                     self._makeShell(data).find(".content").first().append(function () {
                         if (data) {
@@ -1964,6 +1973,7 @@ window.App = (function () {
                 init: self.init,
                 registerHandle: self.registerHandle,
                 registerHook: self.registerHook,
+                unregisterHook: self.unregisterHook,
                 runLookup: self.runLookup,
                 clearHandle: self.clearHandle
             };
@@ -2535,6 +2545,9 @@ window.App = (function () {
         lookup: {
             registerHook: function () {
                 return lookup.registerHook(...arguments);
+            },
+            unregisterHook: function () {
+                return lookup.unregisterHook(...arguments);
             },
         },
         centerBoardOn: function(x, y) {
