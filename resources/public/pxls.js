@@ -1919,7 +1919,7 @@ window.App = (function () {
                         {
                             id: "coords",
                             name: "Coords",
-                            get: data => $("<a>").text("(" + data.x + ", " + data.y + ")").attr("href", location.origin + `/#x=${data.x}&y=${data.y}`),
+                            get: data => $("<a>").text("(" + data.x + ", " + data.y + ")").attr("href", getLinkToCoords(data.x, data.y)),
                         }, {
                             id: "username",
                             name: "Username",
@@ -2264,13 +2264,22 @@ window.App = (function () {
 
                     $(window).keydown(event => {
                         if ((event.key === "c" || event.key === "C" || event.keyCode === 67) && navigator.clipboard && self.mouseCoords) {
-                            navigator.clipboard.writeText(location.origin + `/#x=${Math.floor(self.mouseCoords.x)}&y=${Math.floor(self.mouseCoords.y)}`);
+                            navigator.clipboard.writeText(self.getLinkToCoords(self.mouseCoords.x, self.mouseCoords.y));
                         }
                     });
+                },
+                /**
+                 * Returns a link to the website at a specific position.
+                 * @param {number} x The X coordinate for the link to have.
+                 * @param {number} y The Y coordinate for the link to have.
+                 */
+                getLinkToCoords: (x = 0, y = 0) => {
+                    return `${location.origin}/#x=${Math.floor(x)}&y=${Math.floor(y)}`;
                 }
             };
             return {
-                init: self.init
+                init: self.init,
+                getLinkToCoords: self.getLinkToCoords,
             };
         })(),
         // this holds user stuff / info
