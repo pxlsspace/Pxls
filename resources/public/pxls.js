@@ -1872,9 +1872,10 @@ window.App = (function () {
                     self._makeShell(data).find(".content").first().append(function () {
                         if (data) {
                             return $.map(self.hooks, function (hook) {
+                                const get = hook.get(data);
                                 return $("<div>").append(
                                     $("<b>").text(hook.name + ": "),
-                                    $("<span>").text(hook.get(data)).css(hook.css)
+                                    (typeof get === "string" ? $("<span>").text(get) : get).css(hook.css)
                                 ).attr("id", "lookuphook_" + hook.id);
                             });
                         } else {

@@ -64,14 +64,17 @@ App.ls.get('blah'); // not defined, returns undefined
 
 ## Lookup Hooks
 
-It is possible to extend the built-in pixel lookup functionality by registering a hook which has an id, user-facing name, and a function which provides the basic lookup information.
+It is possible to extend the built-in pixel lookup functionality by registering a hook which has an id, user-facing name, a function which provides the basic lookup information, and an object mapping CSS rules to their values.
 
 ```js
 App.lookup.registerHook({
     id: "rebel_hook",
     name: "Rebellious Hook",
     get: data => `Hehehe... the X is ${data.x} and Y is ${data.y}...`,
+    css: {
+        color: "yellow",
+    },
 });
 ```
 
-Your function's return value is an array of or single DOM element, jQuery object, or string.
+Your function's return value is can be a jQuery object or a string that will be wrapped in a span element.
