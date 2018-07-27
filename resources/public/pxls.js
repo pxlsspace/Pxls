@@ -2218,6 +2218,10 @@ window.App = (function () {
                     $(window).keydown(event => {
                         if ((event.key === "c" || event.key === "C" || event.keyCode === 67) && navigator.clipboard && self.mouseCoords) {
                             navigator.clipboard.writeText(location.origin + `/#x=${Math.floor(self.mouseCoords.x)}&y=${Math.floor(self.mouseCoords.y)}`);
+                            self.elements.coords.addClass("copyPulse");
+                            setTimeout(() => {
+                                self.elements.coords.removeClass("copyPulse");
+                            }, 200);
                         }
                     });
                 }

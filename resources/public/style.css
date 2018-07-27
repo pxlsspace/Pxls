@@ -475,6 +475,14 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     padding: 16px 24px;
 }
 
+#coords {
+    transition: 0.2s;
+}
+
+.copyPulse {
+    background-color: rgba(0, 211, 221, 0.7);
+}
+
 .left {
     position: fixed;
     left: 10px;
