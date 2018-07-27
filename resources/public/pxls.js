@@ -2274,7 +2274,7 @@ window.App = (function () {
                  * @param {number} y The Y coordinate for the link to have.
                  */
                 getLinkToCoords: (x = 0, y = 0) => {
-                    return `${location.origin}/#x=${Math.floor(x)}&y=${Math.floor(y)}`;
+                    return `${location.origin}/#x=${Math.floor(x)}&y=${Math.floor(y)}&scale=20`;
                 }
             };
             return {
