@@ -1837,21 +1837,33 @@ window.App = (function () {
                         })
                     ).fadeIn(200);
                 },
+                /**
+                 * All lookup hooks.
+                 */
+                hooks: [], 
+                /**
+                 * Registers a hook.
+                 * @param {Object} hook
+                 * @param {String} hook.id
+                 * @param {String} hook.name
+                 * @param {Function} hook.get
+                 */
+                registerHook: function (hook) {
+                    return this.hooks.push(hook);
+                },
                 create: function (data) {
-                    self._makeShell(data).find(".content").first().append(
-                        data ? $.map([
-                            ["Coords", "coords"],
-                            ["Username", "username"],
-                            ["Time", "time_str"],
-                            ["Total Pixels", "pixel_count"],
-                            ["Alltime Pixels", "pixel_count_alltime"]
-                        ], function (o) {
-                            return $("<div>").append(
-                                $("<b>").text(o[0]+": "),
-                                $("<span>").text(data[o[1]])
-                            );
-                        }) : $("<p>").text("This pixel is background (was not placed by a user).")
-                    );
+                    self._makeShell(data).find(".content").first().append(function () {
+                        if (data) {
+                            $.map(hooks, function (hook) {
+                                return $("<div>").append(
+                                    $("<b>").text(hook.name + ": "),
+                                    $("<span>").text(hook.get())
+                                ).attr("id", "lookuphook_" + hook.id);
+                            });
+                        } else {
+                            return $("<p>").text("This pixel is background (was not placed by a user).");
+                        }
+                    });
                     self.elements.lookup.fadeIn(200);
                 },
                 _makeShell: function(data) {
@@ -1899,6 +1911,33 @@ window.App = (function () {
                     });
                 },
                 init: function () {
+                    // Register default hooks
+                    this.registerHook({
+                        id: "coords",
+                        name: "Coords",
+                        get: data => data.coords,
+                    });
+                    this.registerHook({
+                        id: "username",
+                        name: "Username",
+                        get: data => data.username,
+                    });
+                    this.registerHook({
+                        id: "time",
+                        name: "Time",
+                        get: data => data.time_str,
+                    });
+                    this.registerHook({
+                        id: "pixels",
+                        name: "Pixels",
+                        get: data => data.pixel_Count,
+                    });
+                    this.registerHook({
+                        id: "pixels_alltime",
+                        name: "Alltime Pixels",
+                        get: data => data.pixel_count_alltime,
+                    });
+
                     self.elements.lookup.hide();
                     self.elements.prompt.hide();
                     board.getRenderBoard().on("click", function (evt) {
