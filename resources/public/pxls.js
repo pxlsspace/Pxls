@@ -1873,9 +1873,11 @@ window.App = (function () {
                         if (data) {
                             return $.map(self.hooks, function (hook) {
                                 const get = hook.get(data);
+                                const value = typeof get === "object" ? get : $("<span>").text(get);
+
                                 return $("<div>").append(
                                     $("<b>").text(hook.name + ": "),
-                                    (typeof get === "string" ? $("<span>").text(get) : get).css(hook.css)
+                                    value.css(hook.css)
                                 ).attr("id", "lookuphook_" + hook.id);
                             });
                         } else {
@@ -1917,7 +1919,7 @@ window.App = (function () {
                         {
                             id: "coords",
                             name: "Coords",
-                            get: data => "(" + data.x + ", " + data.y + ")",
+                            get: data => $("<a>").text("(" + data.x + ", " + data.y + ")").attr("href", location.origin + `/#x=${data.x}&y=${data.y}`),
                         }, {
                             id: "username",
                             name: "Username",
