@@ -1864,7 +1864,13 @@ window.App = (function () {
                         : ""),
                         $("<div>").addClass("button").css("float", "right").text("Close").click(function () {
                             self.elements.lookup.fadeOut(200);
-                        })
+                        }),
+                        (data ? $("<div>").addClass("button").css("float", "right").text("Move Template").click(function () {
+                            template.queueUpdate({
+                                ox: data.x,
+                                oy: data.y,
+                            });
+                        }) : "")
                     );
                 },
                 runLookup(clientX, clientY) {
