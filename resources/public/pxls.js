@@ -1929,7 +1929,7 @@ window.App = (function () {
                         {
                             id: "coords",
                             name: "Coords",
-                            get: data => $("<a>").text("(" + data.x + ", " + data.y + ")").attr("href", getLinkToCoords(data.x, data.y)),
+                            get: data => $("<a>").text("(" + data.x + ", " + data.y + ")").attr("href", coords.getLinkToCoords(data.x, data.y)),
                         }, {
                             id: "username",
                             name: "Username",
