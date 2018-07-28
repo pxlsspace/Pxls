@@ -1841,21 +1841,53 @@ window.App = (function () {
                         })
                     ).fadeIn(200);
                 },
+                /**
+                 * All lookup hooks.
+                 */
+                hooks: [], 
+                /**
+                 * Registers hooks.
+                 * @param {Object} hooks Information about the hook.
+                 * @param {String} hooks.id An ID for the hook.
+                 * @param {String} hooks.name A user-facing name for the hook.
+                 * @param {Function} hooks.get A function that returns the text information shown in the lookup.
+                 * @param {Object} hooks.css An object mapping CSS rules to values for the hook value.
+                 */
+                registerHook: function (...hooks) {
+                    return self.hooks.push(...$.map(hooks, function (hook) {
+                        return {
+                            id: hook.id || "hook",
+                            name: hook.name || "Hook",
+                            get: hook.get || function () {},
+                            css: hook.css || {},
+                        };
+                    }));
+                },
+                /**
+                 * Unregisters a hook by its ID.
+                 * @param {string} hookId The ID of the hook to unregister.
+                 */
+                unregisterHook: function (hookId) {
+                    return self.hooks = $.grep(self.hooks, function (hook) {
+                        return hook.id !== hookId;
+                    });
+                },
                 create: function (data) {
-                    self._makeShell(data).find(".content").first().append(
-                        data ? $.map([
-                            ["Coords", "coords"],
-                            ["Username", "username"],
-                            ["Time", "time_str"],
-                            ["Total Pixels", "pixel_count"],
-                            ["Alltime Pixels", "pixel_count_alltime"]
-                        ], function (o) {
-                            return $("<div>").append(
-                                $("<b>").text(o[0]+": "),
-                                $("<span>").text(data[o[1]])
-                            );
-                        }) : $("<p>").text("This pixel is background (was not placed by a user).")
-                    );
+                    self._makeShell(data).find(".content").first().append(function () {
+                        if (data) {
+                            return $.map(self.hooks, function (hook) {
+                                const get = hook.get(data);
+                                const value = typeof get === "object" ? get : $("<span>").text(get);
+
+                                return $("<div>").append(
+                                    $("<b>").text(hook.name + ": "),
+                                    value.css(hook.css)
+                                ).attr("id", "lookuphook_" + hook.id);
+                            });
+                        } else {
+                            return $("<p>").text("This pixel is background (was not placed by a user).");
+                        }
+                    });
                     self.elements.lookup.fadeIn(200);
                 },
                 _makeShell: function(data) {
@@ -1880,23 +1912,6 @@ window.App = (function () {
                 runLookup(clientX, clientY) {
                     const pos = board.fromScreen(clientX, clientY);
                     $.get("/lookup", {x: Math.floor(pos.x), y: Math.floor(pos.y)}, function (data) {
-                        if (data) {
-                            data.coords = "(" + data.x + ", " + data.y + ")";
-                            var delta = ((new Date()).getTime() - data.time) / 1000;
-                            if (delta > 24*3600) {
-                                data.time_str = (new Date(data.time)).toLocaleString();
-                            } else if (delta < 5) {
-                                data.time_str = 'just now';
-                            } else {
-                                var secs = Math.floor(delta % 60),
-                                    secsStr = secs < 10 ? "0" + secs : secs,
-                                    minutes = Math.floor((delta / 60)) % 60,
-                                    minuteStr = minutes < 10 ? "0" + minutes : minutes,
-                                    hours = Math.floor(delta / 3600),
-                                    hoursStr = hours < 10 ? "0" + hours : hours;
-                                data.time_str = hoursStr+":"+minuteStr+":"+secsStr+" ago";
-                            }
-                        }
                         data = data || false;
                         if (self.handle) {
                             self.handle(data);
@@ -1909,6 +1924,46 @@ window.App = (function () {
                     });
                 },
                 init: function () {
+                    // Register default hooks
+                    self.registerHook(
+                        {
+                            id: "coords",
+                            name: "Coords",
+                            get: data => $("<a>").text("(" + data.x + ", " + data.y + ")").attr("href", getLinkToCoords(data.x, data.y)),
+                        }, {
+                            id: "username",
+                            name: "Username",
+                            get: data => data.username,
+                        }, {
+                            id: "time",
+                            name: "Time",
+                            get: data => {
+                                var delta = ((new Date()).getTime() - data.time) / 1000;
+                                if (delta > 24 * 3600) {
+                                    return (new Date(data.time)).toLocaleString();
+                                } else if (delta < 5) {
+                                    return 'just now';
+                                } else {
+                                    var secs = Math.floor(delta % 60),
+                                        secsStr = secs < 10 ? "0" + secs : secs,
+                                        minutes = Math.floor((delta / 60)) % 60,
+                                        minuteStr = minutes < 10 ? "0" + minutes : minutes,
+                                        hours = Math.floor(delta / 3600),
+                                        hoursStr = hours < 10 ? "0" + hours : hours;
+                                    return hoursStr + ":" + minuteStr + ":" + secsStr + " ago";
+                                }
+                            }
+                        }, {
+                            id: "pixels",
+                            name: "Pixels",
+                            get: data => data.pixel_count,
+                        }, {
+                            id: "pixels_alltime",
+                            name: "Alltime Pixels",
+                            get: data => data.pixel_count_alltime,
+                        }
+                    );
+
                     self.elements.lookup.hide();
                     self.elements.prompt.hide();
                     board.getRenderBoard().on("click", function (evt) {
@@ -1928,6 +1983,8 @@ window.App = (function () {
             return {
                 init: self.init,
                 registerHandle: self.registerHandle,
+                registerHook: self.registerHook,
+                unregisterHook: self.unregisterHook,
                 runLookup: self.runLookup,
                 clearHandle: self.clearHandle
             };
@@ -2217,13 +2274,22 @@ window.App = (function () {
 
                     $(window).keydown(event => {
                         if ((event.key === "c" || event.key === "C" || event.keyCode === 67) && navigator.clipboard && self.mouseCoords) {
-                            navigator.clipboard.writeText(location.origin + `/#x=${Math.floor(self.mouseCoords.x)}&y=${Math.floor(self.mouseCoords.y)}`);
+                            navigator.clipboard.writeText(self.getLinkToCoords(self.mouseCoords.x, self.mouseCoords.y));
                         }
                     });
+                },
+                /**
+                 * Returns a link to the website at a specific position.
+                 * @param {number} x The X coordinate for the link to have.
+                 * @param {number} y The Y coordinate for the link to have.
+                 */
+                getLinkToCoords: (x = 0, y = 0) => {
+                    return `${location.origin}/#x=${Math.floor(x)}&y=${Math.floor(y)}&scale=20`;
                 }
             };
             return {
-                init: self.init
+                init: self.init,
+                getLinkToCoords: self.getLinkToCoords,
             };
         })(),
         // this holds user stuff / info
@@ -2495,6 +2561,14 @@ window.App = (function () {
             normalize: function(obj, dir=true) {
                 return template.normalizeTemplateObj(obj, dir);
             }
+        },
+        lookup: {
+            registerHook: function () {
+                return lookup.registerHook(...arguments);
+            },
+            unregisterHook: function () {
+                return lookup.unregisterHook(...arguments);
+            },
         },
         centerBoardOn: function(x, y) {
             board.centerOn(x, y);
