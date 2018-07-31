@@ -1938,11 +1938,16 @@ window.App = (function () {
                             id: "time",
                             name: "Time",
                             get: data => {
-                                var delta = ((new Date()).getTime() - data.time) / 1000;
+                                const delta = ((new Date()).getTime() - data.time) / 1000;
+                                const stamp = (new Date(data.time)).toLocaleString();
+
+                                const span = $("<span>");
+                                span.attr("title", stamp);
+
                                 if (delta > 24 * 3600) {
-                                    return (new Date(data.time)).toLocaleString();
+                                    return span.text(stamp);
                                 } else if (delta < 5) {
-                                    return 'just now';
+                                    return span.text("just now");
                                 } else {
                                     var secs = Math.floor(delta % 60),
                                         secsStr = secs < 10 ? "0" + secs : secs,
@@ -1950,7 +1955,7 @@ window.App = (function () {
                                         minuteStr = minutes < 10 ? "0" + minutes : minutes,
                                         hours = Math.floor(delta / 3600),
                                         hoursStr = hours < 10 ? "0" + hours : hours;
-                                    return hoursStr + ":" + minuteStr + ":" + secsStr + " ago";
+                                    return span.text(hoursStr + ":" + minuteStr + ":" + secsStr + " ago");
                                 }
                             }
                         }, {
