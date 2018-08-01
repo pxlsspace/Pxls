@@ -297,54 +297,6 @@
                 elements: {
                     lookup: $("#lookup")
                 },
-                create: function (data) {
-                    if (data) {
-                        data.coords = "(" + data.x + ", " + data.y + ")";
-                        data.time = (new Date(data.time)).toLocaleString();
-                        self.elements.lookup.empty().append(
-                            $("<div>").addClass("content").append(
-                                $.map([
-                                    ["Coords", "coords"],
-                                    ["Username", "username"],
-                                    ["Login", "login"],
-                                    ["Time", "time_str"],
-                                    ["Total Pixels", "pixel_count"],
-                                    ["Alltime Pixels", "pixel_count_alltime"],
-                                    ["User-Agent", "userAgent"]
-                                ], function (o) {
-                                    return $("<div>").append(
-                                        $("<b>").text(o[0]+": "),
-                                        $("<span>").text(data[o[1]])
-                                    );
-                                }),
-                                sendAlert(data.username)
-                            ),
-                            $("<div>").append(
-                                genButton("Ban (24h)").click(function () {
-                                    
-                                }),
-                                genButton("More...").click(function () {
-                                    
-                                }),
-                                genButton("Close").click(function () {
-                                    self.elements.lookup.fadeOut(200);
-                                })
-                            )
-                        ).fadeIn(200);
-                    } else {
-                        self.elements.lookup.empty().append(
-                            $("<div>").append(
-                                $("<p>").text("This pixel is virgin.")
-                            )
-                        ).append(
-                            $("<div>").append(
-                                genButton("Close").click(function() {
-                                    self.elements.lookup.fadeOut(200)
-                                })
-                            )
-                        ).fadeIn(200);
-                    }
-                },
                 /**
                  * Register hooks for admin-specific lookups.
                  */
