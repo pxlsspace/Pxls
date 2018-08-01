@@ -345,6 +345,9 @@
                         ).fadeIn(200);
                     }
                 },
+                /**
+                 * Register hooks for admin-specific lookups.
+                 */
                 init: function () {
                     App.lookup.registerHook({
                         id: "login",
@@ -371,6 +374,9 @@
                         }),
                     });
                 },
+                /**
+                 * Unregister hooks for admin-specific lookups.
+                 */
                 deinit: function () {
                     App.lookup.unregisterHook("login");
                     App.lookup.unregisterHook("user_agent");
