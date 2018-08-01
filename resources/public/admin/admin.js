@@ -321,13 +321,10 @@
                             ),
                             $("<div>").append(
                                 genButton("Ban (24h)").click(function () {
-                                    ban.ban_24h(data.username, function () {
-                                        self.elements.lookup.fadeOut(200);
-                                    });
+                                    
                                 }),
                                 genButton("More...").click(function () {
-                                    checkUser.check(data.username);
-                                    self.elements.lookup.fadeOut(200);
+                                    
                                 }),
                                 genButton("Close").click(function () {
                                     self.elements.lookup.fadeOut(200);
@@ -349,10 +346,36 @@
                     }
                 },
                 init: function () {
-                    admin.lookup.registerHandle(self.create);
+                    App.lookup.registerHook({
+                        id: "login",
+                        name: "Login",
+                        get: data => $("<pre>").text(data.login),
+                    }, {
+                        id: "user_agent",
+                        name: "User Agent",
+                        get: data => $("<pre>").text(data.userAgent),
+                    }, {
+                        id: "day_ban",
+                        name: "Ban (24h)",
+                        get: data => $("<button>").text("Dab on this rulebreaker lmao").click(() => {
+                            ban.ban_24h(data.username, function () {
+                                self.elements.lookup.fadeOut(200);
+                            });
+                        }),
+                    }, {
+                        id: "more",
+                        name: "More",
+                        get: data => $("<button>").text(":)").click(() => {
+                            checkUser.check(data.username);
+                            self.elements.lookup.fadeOut(200);
+                        }),
+                    });
                 },
                 deinit: function () {
-                    admin.lookup.clearHandle(self.create);
+                    App.lookup.unregisterHook("login");
+                    App.lookup.unregisterHook("user_agent");
+                    App.lookup.unregisterHook("day_ban");
+                    App.lookup.unregisterHook("more");
                 }
             };
             return {
