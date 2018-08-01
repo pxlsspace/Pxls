@@ -2,6 +2,11 @@
 | Admin Box
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
+pre {
+    display: inline;
+    white-space: pre-wrap;
+}
+
 .admin {
     position: absolute;
     top: 40vh;

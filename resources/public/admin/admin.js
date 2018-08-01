@@ -357,7 +357,7 @@
                     }, {
                         id: "day_ban",
                         name: "Ban (24h)",
-                        get: data => $("<button>").text("Dab on this rulebreaker lmao").click(() => {
+                        get: data => genButton("🔨").click(() => {
                             ban.ban_24h(data.username, function () {
                                 self.elements.lookup.fadeOut(200);
                             });
@@ -365,7 +365,7 @@
                     }, {
                         id: "more",
                         name: "More",
-                        get: data => $("<button>").text(":)").click(() => {
+                        get: data => genButton("ℹ️").click(() => {
                             checkUser.check(data.username);
                             self.elements.lookup.fadeOut(200);
                         }),
