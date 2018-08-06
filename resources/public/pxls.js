@@ -2115,13 +2115,73 @@ window.App = (function () {
             var self = {
                 _available: -1,
                 maxStacked: -1,
+                _alertUpdateTimer: false,
                 elements: {
-                    stackCount: $("#placeableCount-bubble, #placeableCount-cursor")
+                    stackCount: $("#placeableCount-bubble, #placeableCount-cursor"),
+                    txtAlertLocation: $("#txtAlertLocation"),
+                    rangeAlertVolume: $("#rangeAlertVolume"),
+                    lblAlertVolume: $("#lblAlertVolume")
                 },
                 init: function() {
+                    self._initStack();
+                    self._initAudio();
+                },
+                _initStack: function() {
                     socket.on("pixels", function(data) {
                         self.updateAvailable(data.count, data.cause);
                     });
+                },
+                _initAudio: function() {
+                    let parsedVolume = parseFloat(ls.get("alert.volume"));
+                    if (isNaN(parseFloat(ls.get("alert.volume")))) {
+                        parsedVolume = 1;
+                        ls.set("alert.volume", 1);
+                    } else {
+                        parsedVolume = parseFloat(ls.get("alert.volume"));
+                        timer.audioElem.volume = parsedVolume;
+                    }
+                    self.elements.lblAlertVolume.text(`${parsedVolume * 100 >> 0}%`);
+                    self.elements.rangeAlertVolume.val(parsedVolume);
+
+                    if (ls.get("alert.src")) {
+                        self.updateAudio(ls.get("alert.src"));
+                        self.elements.txtAlertLocation.val(ls.get("alert.src"));
+                    }
+
+                    timer.audioElem.addEventListener("error", err => {
+                        alert.show("Your custom alert is either invalid or unplayable.");
+                    });
+
+                    self.elements.txtAlertLocation.change(function() { //change should only fire on blur so we normally won't be calling updateAudio for each keystroke. just in case though, we'll lazy update.
+                        if (self._alertUpdateTimer !== false) clearTimeout(self._alertUpdateTimer);
+                        self._alertUpdateTimer = setTimeout(function(url) {
+                            self.updateAudio(url);
+                            self._alertUpdateTimer = false;
+                        }, 250, this.value);
+                    });
+
+                    self.elements.rangeAlertVolume.change(function() {
+                        const parsed = parseFloat(self.elements.rangeAlertVolume.val());
+                        self.elements.lblAlertVolume.text(`${parsed * 100 >> 0}%`);
+                        ls.set("alert.volume", parsed);
+                        timer.audioElem.volume = parsed;
+                    });
+
+                    $("#btnAlertReset").click(() => {
+                        self.updateAudio("notify.wav");
+                        self.elements.txtAlertLocation.val("");
+                    });
+                },
+                updateAudio: function(url) {
+                    try {
+                        if (!url) url = "notify.wav";
+                        timer.audioElem.src = url;
+                        ls.set("alert.src", url);
+                    } catch (e) {
+                        alert.show("Failed to update audio src, using default sound");
+                        timer.audioElem.src = "notify.wav";
+                        ls.set("alert.src", "notify.wav");
+                    }
                 },
                 updateAvailable: function(count, cause) {
                     if (count > 0 && cause === "stackGain") timer.playAudio();
@@ -2144,7 +2204,8 @@ window.App = (function () {
                 updateAvailable: self.updateAvailable,
                 getAvailable: self.getAvailable,
                 setPlaceableText: self.setPlaceableText,
-                setMax: self.setMax
+                setMax: self.setMax,
+                updateAudio: self.updateAudio
             };
         })(),
         // this takes care of the countdown timer
@@ -2242,7 +2303,8 @@ window.App = (function () {
             return {
                 init: self.init,
                 cooledDown: self.cooledDown,
-                playAudio: self.playAudio
+                playAudio: self.playAudio,
+                audioElem: self.audio
             };
         })(),
         // this takes care of displaying the coordinates the mouse is over
@@ -2562,6 +2624,9 @@ window.App = (function () {
         query: query,
         heatmap: {
             clear: heatmap.clear
+        },
+        uiHelper: {
+            updateAudio: uiHelper.updateAudio
         },
         template: {
             update: function(t) {

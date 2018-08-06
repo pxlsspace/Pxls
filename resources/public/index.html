@@ -61,17 +61,26 @@
             </div>
             <div>
                 <h1>Keyboard controls</h1>
-                <p>Mouse/arrows to pan</p>
-                <p>Scroll/pinch to zoom</p>
-                <p>Shift + Click/Hold touch to lookup pixel</p>
-                <p>G to toggle grid</p>
-                <p>I to toggle info</p>
-                <p>T to toggle template control</p>
-                <p>P to take a snapshot</p>
-                <p>H to toggle heatmap</p>
-                <p>O to clear heatmap (if enabled)</p>
-                <p>J/K to cycle through palette colors</p>
-                <p>C to copy link of moused-over coordinates</p>
+                <h3>General</h3>
+                <div class="indent-1">
+                    <p>Mouse/arrows to pan</p>
+                    <p>Scroll/pinch to zoom</p>
+                    <p>Shift + Click/Hold touch to lookup pixel</p>
+                    <p>G to toggle grid</p>
+                    <p>I to toggle info</p>
+                    <p>T to toggle template control</p>
+                    <p>P to take a snapshot</p>
+                    <p>H to toggle heatmap</p>
+                    <p>O to clear heatmap (if enabled)</p>
+                    <p>J/K to cycle through palette colors</p>
+                    <p>C to copy link of moused-over coordinates</p>
+                </div>
+                <h3>Template</h3>
+                <div class="indent-1">
+                    <p>Page up - Increase opacity</p>
+                    <p>Page down - Decrease opacity</p>
+                    <p>V - Toggle visibility</p>
+                </div>
             </div>
             <div>
                 <h1>Template control</h1>
@@ -81,10 +90,10 @@
                 <p><label>Opacity: <input type="range" min="0" max="1" step="0.01" id="template-opacity"></label></p>
             </div>
             <div>
-                <h1>Template controls</h1>
-                <p>Page up - Increase opacity</p>
-                <p>Page down - Decrease opacity</p>
-                <p>V - Toggle visibility</p>
+                <h1>Pixel Ready alert settings</h1>
+                <p><label>Sound file: <input type="text" id="txtAlertLocation" placeholder="notify.wav"></label></p>
+                <p><label>Volume: <input type="range" id="rangeAlertVolume" min=0 max=1 step=".01" value=1></label><span id="lblAlertVolume"></span></p>
+                <p><button id="btnAlertReset" class="button">Use default sound</button></p>
             </div>
         </div>
         <div class="open">settings</div>
