@@ -61,6 +61,28 @@ a, a:hover, a:visited, a:active {
     text-indent: 0.75em;
 }
 
+.input-group {
+    display: flex !important;
+    margin-bottom: 1em
+}
+
+.input-group.inline {
+    display:inline-flex !important;
+}
+
+.input-group label:not(.no-center),span:not(.no-center) {
+    align-self: center;
+}
+
+.input-group button {
+    cursor: pointer;
+}
+
+.input-group input {
+    flex: 1;
+    border-radius: 0;
+}
+
 /*//////////////////////////*\
 | Overlays
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
@@ -261,11 +283,7 @@ a, a:hover, a:visited, a:active {
     max-width: 350px;
 }
 
-.drawer-content > div > div {
-    margin-right: 20px;
-}
-
-.drawer-content div > * {
+.drawer-content > div > * {
     margin-left: 1px;
 }
 

@@ -1458,7 +1458,7 @@ window.App = (function () {
                         if (evt.key == "Enter" || evt.which === 13) {
                             $(this).change();
                         }
-                        if ((evt.key == "p" || evt.key == "P" || evt.which == 86) && evt.ctrlKey) {
+                        if ((evt.key == "v" || evt.key == "V" || evt.which == 86) && evt.ctrlKey) {
                             $(this).trigger("paste");
                         }
                         evt.stopPropagation();
@@ -2120,7 +2120,8 @@ window.App = (function () {
                     stackCount: $("#placeableCount-bubble, #placeableCount-cursor"),
                     txtAlertLocation: $("#txtAlertLocation"),
                     rangeAlertVolume: $("#rangeAlertVolume"),
-                    lblAlertVolume: $("#lblAlertVolume")
+                    lblAlertVolume: $("#lblAlertVolume"),
+                    btnForceAudioUpdate: $("#btnForceAudioUpdate")
                 },
                 init: function() {
                     self._initStack();
@@ -2158,7 +2159,13 @@ window.App = (function () {
                             self.updateAudio(url);
                             self._alertUpdateTimer = false;
                         }, 250, this.value);
+                    }).keydown(function(evt) {
+                        if (evt.key == "Enter" || evt.which === 13) {
+                            $(this).change();
+                        }
+                        evt.stopPropagation();
                     });
+                    self.elements.btnForceAudioUpdate.click(() => self.elements.txtAlertLocation.change());
 
                     self.elements.rangeAlertVolume.change(function() {
                         const parsed = parseFloat(self.elements.rangeAlertVolume.val());
@@ -2167,7 +2174,10 @@ window.App = (function () {
                         timer.audioElem.volume = parsed;
                     });
 
+                    $("#btnAlertAudioTest").click(() => timer.audioElem.play());
+
                     $("#btnAlertReset").click(() => {
+                        //TODO confirm with user
                         self.updateAudio("notify.wav");
                         self.elements.txtAlertLocation.val("");
                     });
