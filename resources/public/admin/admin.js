@@ -307,7 +307,7 @@
                                     ["Coords", "coords"],
                                     ["Username", "username"],
                                     ["Login", "login"],
-                                    ["Time", "time_str"],
+                                    ["Time", "time"],
                                     ["Total Pixels", "pixel_count"],
                                     ["Alltime Pixels", "pixel_count_alltime"],
                                     ["User-Agent", "userAgent"]
