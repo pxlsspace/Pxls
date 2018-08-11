@@ -186,6 +186,7 @@ public class PacketHandler {
             } else {
                 int c = App.getPixel(cp.getX(), cp.getY());
                 boolean canPlace = c != cp.getColor() && c != 0xFF && c != -1;
+                if (App.getHavePlacemap()) canPlace = App.getPlacemap(cp.getX(), cp.getY()) == 0;
                 int c_old = c;
                 /*if (!canPlace && (c == 0xFF || c == -1)) {
                     // tendril expansion!
