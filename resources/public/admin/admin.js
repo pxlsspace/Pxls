@@ -10,19 +10,17 @@
             }).addClass("button").text(s);
         },
         sendAlert = function(username) {
-            return $("<div>").append(
-                $("<input>").attr("placeholder", "Send alert...").keydown(function (evt) {
-                    if (evt.which === 13) {
-                        admin.socket.send({
-                            type: "admin_message",
-                            username: username,
-                            message: this.value
-                        });
-                        this.value = "";
-                    }
-                    evt.stopPropagation();
-                })
-            )
+            return $("<input>").attr("placeholder", "Send alert...").keydown(function (evt) {
+				if (evt.which === 13) {
+					admin.socket.send({
+						type: "admin_message",
+						username: username,
+						message: this.value
+					});
+					this.value = "";
+				}
+				evt.stopPropagation();
+			});
         },
         ban = (function() {
             var self = {
@@ -178,7 +176,7 @@
                                 $("<span>").text(o[1])
                             );
                         }),
-                        sendAlert(data.username),
+                        $("<div>").append(sendAlert(data.username)),
                         $("<div>").append(
                             genButton("Ban (24h)").click(function () {
                                 ban.ban_24h(data.username, function () {
