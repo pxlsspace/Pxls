@@ -310,6 +310,10 @@
                         name: "User Agent",
                         get: data => $("<pre>").text(data.userAgent),
                     }, {
+						id: "alert",
+						name: "Send Alert",
+						get: data => sendAlert(data.username),
+					}, {
                         id: "day_ban",
                         name: "Ban (24h)",
                         get: data => genButton("🔨").click(() => {
