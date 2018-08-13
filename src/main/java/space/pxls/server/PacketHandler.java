@@ -185,7 +185,12 @@ public class PacketHandler {
                 server.send(channel, new ServerCaptchaRequired());
             } else {
                 int c = App.getPixel(cp.getX(), cp.getY());
-                boolean canPlace = c != cp.getColor() && c != 0xFF && c != -1;
+                boolean canPlace = false;
+                if (App.getHavePlacemap()) {
+                    canPlace = c != cp.getColor() && App.getPlacemap(cp.getX(), cp.getY()) == 0;
+                } else {
+                    canPlace = c != cp.getColor() && c != 0xFF && c != -1;
+                }
                 int c_old = c;
                 /*if (!canPlace && (c == 0xFF || c == -1)) {
                     // tendril expansion!

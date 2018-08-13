@@ -44,6 +44,8 @@ public class App {
     private static int height;
     private static byte[] board;
     private static byte[] heatmap;
+    private static byte[] placemap;
+    private static boolean havePlacemap;
 
     private static PxlsTimer mapSaveTimer;
     private static PxlsTimer mapBackupTimer;
@@ -60,6 +62,7 @@ public class App {
         height = config.getInt("board.height");
         board = new byte[width * height];
         heatmap = new byte[width * height];
+        placemap = new byte[width * height];
 
         if (!loadMap()) {
             for (int x = 0; x < width; x++) {
@@ -70,6 +73,7 @@ public class App {
         }
 
         loadHeatmap();
+        loadPlacemap();
 
         database = new Database();
         userManager = new UserManager();
@@ -283,6 +287,10 @@ public class App {
         return board;
     }
 
+    public static boolean getHavePlacemap() {
+        return havePlacemap;
+    }
+
     public static Path getStorageDir() {
         return Paths.get(config.getString("server.storage"));
     }
@@ -297,6 +305,10 @@ public class App {
 
     public static int getPixel(int x, int y) {
         return board[x + y * width];
+    }
+
+    public static int getPlacemap(int x, int y) {
+        return placemap[x + y * width];
     }
 
     public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase) {
@@ -404,6 +416,19 @@ public class App {
             System.arraycopy(bytes, 0, heatmap, 0, width * height);
         } catch (NoSuchFileException e) {
             System.out.println("Warning: Cannot find heatmap.dat in working directory, using blank heatmap");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void loadPlacemap() {
+        try {
+            byte[] bytes = Files.readAllBytes(getStorageDir().resolve("placemap.dat"));
+            System.arraycopy(bytes, 0, placemap, 0, width * height);
+            havePlacemap = true;
+        } catch (NoSuchFileException e) {
+            System.out.println("Warning: Cannot find placemap.dat in working directory, using blank placemap");
+            havePlacemap = false;
         } catch (IOException e) {
             e.printStackTrace();
         }
