@@ -91,16 +91,16 @@
             </div>
             <div>
                 <h1>Pixel Ready alert settings</h1>
-                <div class="input-group ">
-                    <label for="txtAlertLocation">Sound file: </label>
-                    <input type="text" id="txtAlertLocation" placeholder="notify.wav">
-                    <button id="btnForceAudioUpdate">Update</button>
-                    <button id="btnAlertReset">Reset</button>
+                <p class="alertLocationWrapper"><label for="txtAlertLocation">Alert URL:</label><input type="text" placeholder="notify.wav" id="txtAlertLocation"></p>
+                <div class="ButtonBar">
+                    <button id="btnForceAudioUpdate" class="button">Update</button>
+                    <button id="btnAlertAudioTest" class="button">Test</button>
+                    <button id="btnAlertReset" class="button">Reset</button>
                 </div>
-                <div class="input-group ">
+                <div>
                     <label for="rangeAlertVolume">Volume:</label>
-                    <input type="range" id="rangeAlertVolume" min=0 max=1 step=".01" value=1></label><span id="lblAlertVolume"></span>
-                    <button id="btnAlertAudioTest">Test</button>
+                    <input type="range" id="rangeAlertVolume" min=0 max=1 step=".01" value=1>
+                    <span id="lblAlertVolume"></span>
                 </div>
             </div>
         </div>

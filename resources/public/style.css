@@ -61,26 +61,12 @@ a, a:hover, a:visited, a:active {
     text-indent: 0.75em;
 }
 
-.input-group {
-    display: flex !important;
-    margin-bottom: 1em
+.alertLocationWrapper {
+    max-width: 100% !important;
 }
-
-.input-group.inline {
-    display:inline-flex !important;
-}
-
-.input-group label:not(.no-center),span:not(.no-center) {
-    align-self: center;
-}
-
-.input-group button {
-    cursor: pointer;
-}
-
-.input-group input {
-    flex: 1;
-    border-radius: 0;
+.alertLocationWrapper > input[type='text'] {
+    width: 100% !important;
+    margin-bottom: 2px;
 }
 
 /*//////////////////////////*\
@@ -141,6 +127,12 @@ a, a:hover, a:visited, a:active {
     padding: 5px 10px;
     border-radius: 3px;
     background-color: #ddd;
+}
+
+.button.dark {
+    background-color: #444;
+    border: 1px solid #222;
+    color: #fff;
 }
 
 #lookup {
@@ -646,6 +638,31 @@ input[type="text"] {
 
 .settingToggles > label {
     display: block;
+}
+
+/*//////////////////////////*\
+| Button Bar
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
+.ButtonBar {
+    display: flex !important;
+}
+.ButtonBar.inline {
+    display: flex !important;
+}
+.ButtonBar > button {
+    flex: 1 0 auto;
+    padding: 5px;
+    margin: 0;
+    border-width: 1px;
+    border-radius: 0;
+}
+.ButtonBar > button:first-child {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+.ButtonBar > button:last-child {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
 }
 
 /*//////////////////////////*\
