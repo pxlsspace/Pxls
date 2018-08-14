@@ -10,19 +10,17 @@
             }).addClass("button").text(s);
         },
         sendAlert = function(username) {
-            return $("<div>").append(
-                $("<input>").attr("placeholder", "Send alert...").keydown(function (evt) {
-                    if (evt.which === 13) {
-                        admin.socket.send({
-                            type: "admin_message",
-                            username: username,
-                            message: this.value
-                        });
-                        this.value = "";
-                    }
-                    evt.stopPropagation();
-                })
-            )
+            return $("<input>").attr("placeholder", "Send alert...").keydown(function (evt) {
+				if (evt.which === 13) {
+					admin.socket.send({
+						type: "admin_message",
+						username: username,
+						message: this.value
+					});
+					this.value = "";
+				}
+				evt.stopPropagation();
+			});
         },
         ban = (function() {
             var self = {
@@ -178,7 +176,7 @@
                                 $("<span>").text(o[1])
                             );
                         }),
-                        sendAlert(data.username),
+                        $("<div>").append(sendAlert(data.username)),
                         $("<div>").append(
                             genButton("Ban (24h)").click(function () {
                                 ban.ban_24h(data.username, function () {
@@ -297,62 +295,46 @@
                 elements: {
                     lookup: $("#lookup")
                 },
-                create: function (data) {
-                    if (data) {
-                        data.coords = "(" + data.x + ", " + data.y + ")";
-                        data.time = (new Date(data.time)).toLocaleString();
-                        self.elements.lookup.empty().append(
-                            $("<div>").addClass("content").append(
-                                $.map([
-                                    ["Coords", "coords"],
-                                    ["Username", "username"],
-                                    ["Login", "login"],
-                                    ["Time", "time_str"],
-                                    ["Total Pixels", "pixel_count"],
-                                    ["Alltime Pixels", "pixel_count_alltime"],
-                                    ["User-Agent", "userAgent"]
-                                ], function (o) {
-                                    return $("<div>").append(
-                                        $("<b>").text(o[0]+": "),
-                                        $("<span>").text(data[o[1]])
-                                    );
-                                }),
-                                sendAlert(data.username)
-                            ),
-                            $("<div>").append(
-                                genButton("Ban (24h)").click(function () {
-                                    ban.ban_24h(data.username, function () {
-                                        self.elements.lookup.fadeOut(200);
-                                    });
-                                }),
-                                genButton("More...").click(function () {
-                                    checkUser.check(data.username);
-                                    self.elements.lookup.fadeOut(200);
-                                }),
-                                genButton("Close").click(function () {
-                                    self.elements.lookup.fadeOut(200);
-                                })
-                            )
-                        ).fadeIn(200);
-                    } else {
-                        self.elements.lookup.empty().append(
-                            $("<div>").append(
-                                $("<p>").text("This pixel is virgin.")
-                            )
-                        ).append(
-                            $("<div>").append(
-                                genButton("Close").click(function() {
-                                    self.elements.lookup.fadeOut(200)
-                                })
-                            )
-                        ).fadeIn(200);
-                    }
-                },
+                /**
+                 * Register hooks for admin-specific lookups.
+                 */
                 init: function () {
-                    admin.lookup.registerHandle(self.create);
+                    App.lookup.registerHook({
+                        id: "login",
+						name: "Login",
+						get: data => $("<code>").text(data.login),
+                    }, {
+                        id: "user_agent",
+						name: "User Agent",
+						get: data => $("<code>").text(data.userAgent),
+                    }, {
+						id: "alert",
+						name: "Send Alert",
+						get: data => sendAlert(data.username),
+					}, {
+                        id: "admin_actions",
+                        name: "Mod Actions",
+                        get: data => $("<span>").append(
+							genButton("Ban (24h)").click(() => {
+								ban.ban_24h(data.username, function () {
+									self.elements.lookup.fadeOut(200);
+								});
+							}),
+							genButton("More...").click(() => {
+								checkUser.check(data.username);
+								self.elements.lookup.fadeOut(200);
+							}),
+						),
+                    });
                 },
+                /**
+                 * Unregister hooks for admin-specific lookups.
+                 */
                 deinit: function () {
-                    admin.lookup.clearHandle(self.create);
+                    App.lookup.unregisterHook("login");
+                    App.lookup.unregisterHook("user_agent");
+                    App.lookup.unregisterHook("day_ban");
+                    App.lookup.unregisterHook("more");
                 }
             };
             return {
