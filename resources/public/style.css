@@ -57,6 +57,18 @@ a, a:hover, a:visited, a:active {
     font-size: 25px;
 }
 
+.indent-1 {
+    text-indent: 0.75em;
+}
+
+.alertLocationWrapper {
+    max-width: 100% !important;
+}
+.alertLocationWrapper > input[type='text'] {
+    width: 100% !important;
+    margin-bottom: 2px;
+}
+
 /*//////////////////////////*\
 | Overlays
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
@@ -111,9 +123,16 @@ a, a:hover, a:visited, a:active {
     margin-right: 4.5px;
     display: inline-block;
     font-size: 12px;
-    border: 1px solid #ccc;
+    border: 1px solid #999;
     padding: 5px 10px;
     border-radius: 3px;
+    background-color: #ddd;
+}
+
+.button.dark {
+    background-color: #444;
+    border: 1px solid #222;
+    color: #fff;
 }
 
 #lookup {
@@ -167,7 +186,7 @@ a, a:hover, a:visited, a:active {
     transform: translateZ(+1em);
     transform-style: preserve-3d;
     margin: 0;
-    padding: 20px;
+    padding: 5px 10px 75px 10px;
     width: 100%;
     background: #333;
     display: none;
@@ -182,7 +201,8 @@ a, a:hover, a:visited, a:active {
 }
 
 .drawer.open > .drawer-content {
-    display: inline-block;
+    display: flex;
+    flex-wrap: wrap;
 }
 
 .drawer > .open {
@@ -197,6 +217,13 @@ a, a:hover, a:visited, a:active {
     text-align: center;
     cursor: pointer;
     font-weight: 700;
+}
+
+.drawer-content > div:not(.close) {
+    position: initial;
+    flex: 1 1 auto;
+    padding: 3px;
+    margin: 3px;
 }
 
 #info > .open {
@@ -218,21 +245,25 @@ a, a:hover, a:visited, a:active {
 }
 
 .drawer-content > .close {
-    margin-right: 100%;
     font-weight: 800;
     padding: 5px;
     cursor: pointer;
     color: #7BCDFC;
+    display:block;
+    width: 100%;
 }
 
 .drawer-content > div {
-    margin-right: 30px;
     text-align: left;
 }
 
 .drawer-content > div h1 {
     margin: 0 0 10px 0;
     font-size: 25px;
+    border-bottom: 2px solid #fff;
+    position: relative;
+    font-weight: bolder;
+    padding: 5px;
 }
 
 .drawer-content > div p,
@@ -244,11 +275,7 @@ a, a:hover, a:visited, a:active {
     max-width: 350px;
 }
 
-.drawer-content > div > div {
-    margin-right: 20px;
-}
-
-.drawer-content div > * {
+.drawer-content > div > * {
     margin-left: 1px;
 }
 
@@ -614,6 +641,31 @@ input[type="text"] {
 }
 
 /*//////////////////////////*\
+| Button Bar
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
+.ButtonBar {
+    display: flex !important;
+}
+.ButtonBar.inline {
+    display: flex !important;
+}
+.ButtonBar > button {
+    flex: 1 0 auto;
+    padding: 5px;
+    margin: 0;
+    border-width: 1px;
+    border-radius: 0;
+}
+.ButtonBar > button:first-child {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+.ButtonBar > button:last-child {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+/*//////////////////////////*\
 | Mobile Styles
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
@@ -656,10 +708,6 @@ input[type="text"] {
         display: none;
     }
 
-    .drawer-content > div {
-        margin-bottom: 30px;
-    }
-
     .drawer, .drawer > .drawer-content {
         z-index: 20;
         width: 100vw;
@@ -670,6 +718,10 @@ input[type="text"] {
         position: fixed;
         left: 0;
         top: 0;
+    }
+
+    .drawer-content > div:not(.close) {
+        border: 1px solid #fff;
     }
 
     #rules-button {
