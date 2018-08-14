@@ -312,20 +312,19 @@
 						name: "Send Alert",
 						get: data => sendAlert(data.username),
 					}, {
-                        id: "day_ban",
-                        name: "Ban (24h)",
-                        get: data => genButton("🔨").click(() => {
-                            ban.ban_24h(data.username, function () {
-                                self.elements.lookup.fadeOut(200);
-                            });
-                        }),
-                    }, {
-                        id: "more",
-                        name: "More",
-                        get: data => genButton("ℹ️").click(() => {
-                            checkUser.check(data.username);
-                            self.elements.lookup.fadeOut(200);
-                        }),
+                        id: "admin_actions",
+                        name: "Mod Actions",
+                        get: data => $("<span>").append(
+							genButton("Ban (24h)").click(() => {
+								ban.ban_24h(data.username, function () {
+									self.elements.lookup.fadeOut(200);
+								});
+							}),
+							genButton("More...").click(() => {
+								checkUser.check(data.username);
+								self.elements.lookup.fadeOut(200);
+							}),
+						),
                     });
                 },
                 /**
