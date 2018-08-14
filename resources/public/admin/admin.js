@@ -302,11 +302,11 @@
                     App.lookup.registerHook({
                         id: "login",
                         name: "Login",
-                        get: data => $("<pre>").text(data.login),
+						get: data => $("<code>").text(data.login),
                     }, {
                         id: "user_agent",
                         name: "User Agent",
-                        get: data => $("<pre>").text(data.userAgent),
+						get: data => $("<code>").text(data.userAgent),
                     }, {
 						id: "alert",
 						name: "Send Alert",
