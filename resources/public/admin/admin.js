@@ -301,11 +301,11 @@
                 init: function () {
                     App.lookup.registerHook({
                         id: "login",
-                        name: "Login",
+						name: "Login",
 						get: data => $("<code>").text(data.login),
                     }, {
                         id: "user_agent",
-                        name: "User Agent",
+						name: "User Agent",
 						get: data => $("<code>").text(data.userAgent),
                     }, {
 						id: "alert",
