@@ -282,6 +282,10 @@ public class Database implements Closeable {
         return getHandle().didPixelChange(x, y);
     }
 
+    public boolean shoudPixelTimeIncrease(int x, int y, int who) {
+        return getHandle().shoudPixelTimeIncrease(x, y, who);
+    }
+
     public void adminLog(String message, int uid) {
         getHandle().adminLog(message, uid);
     }
