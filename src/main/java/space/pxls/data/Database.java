@@ -283,9 +283,6 @@ public class Database implements Closeable {
     }
 
     public boolean shouldPixelTimeIncrease(int x, int y, int who) {
-        boolean selfPixelTimeIncrease = App.getConfig().getBoolean("selfPixelTimeIncrease");
-        boolean fromDatabase = getHandle().shouldPixelTimeIncrease(x, y, who);
-        System.out.printf("first: %s, second: %s%n", selfPixelTimeIncrease, fromDatabase);
         return App.getConfig().getBoolean("selfPixelTimeIncrease") ? didPixelChange(x, y) : getHandle().shouldPixelTimeIncrease(x, y, who);
     }
 
