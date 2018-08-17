@@ -213,7 +213,7 @@ public class PacketHandler {
                 }*/
                 if (canPlace) {
                     int seconds = getCooldown();
-                    if (c_old != 0xFF && c_old != -1 && App.getDatabase().didPixelChange(cp.getX(), cp.getY())) {
+                    if (c_old != 0xFF && c_old != -1 && App.getDatabase().shouldPixelTimeIncrease(cp.getX(), cp.getY(), user.getId())) {
                         seconds = (int)Math.round(seconds * 1.6);
                     }
                     if (user.isShadowBanned()) {
