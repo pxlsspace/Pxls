@@ -173,7 +173,7 @@ public interface DAO extends Closeable {
     boolean didPixelChange(@Bind("x") int x, @Bind("y") int y);
 
     @SqlQuery("SELECT EXISTS(SELECT 1 FROM pixels WHERE x = :x AND y = :y AND who <> :who AND most_recent)")
-    boolean shoudPixelTimeIncrease(@Bind("x") int x, @Bind("y") int y, @Bind("who") int who);
+    boolean shouldPixelTimeIncrease(@Bind("x") int x, @Bind("y") int y, @Bind("who") int who);
 
     @SqlUpdate("CREATE TABLE IF NOT EXISTS sessions ("+
             "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,"+
