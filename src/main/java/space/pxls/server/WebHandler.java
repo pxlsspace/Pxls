@@ -558,7 +558,7 @@ public class WebHandler {
             exchange.endExchange();
             return;
         }
-        App.getDatabase().addReport(user.getId(), id, x, y, msgq.getValue());
+        App.getDatabase().addReport(user.getId(), pxl.userId, id, x, y, msgq.getValue());
         exchange.setStatusCode(200);
     }
 

@@ -294,8 +294,8 @@ public class Database implements Closeable {
         getHandle().adminLogServer(message);
     }
 
-    public void addReport(int who, int pixel_id, int x, int y, String message) {
-        getHandle().addReport(who, pixel_id, x, y, message);
+    public void addReport(int whosReporting, int userReported, int pixel_id, int x, int y, String message) {
+        getHandle().addReport(whosReporting, userReported, pixel_id, x, y, message);
     }
 
     public void addServerReport(String message, int reported) {

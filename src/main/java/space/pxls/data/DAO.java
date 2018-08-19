@@ -20,8 +20,8 @@ public interface DAO extends Closeable {
             "time INT(10) UNSIGNED)")
     void createReportsTable();
 
-    @SqlUpdate("INSERT INTO reports (who, pixel_id, x, y, message, time) VALUES (:who, :pixel_id, :x, :y, :message, UNIX_TIMESTAMP())")
-    void addReport(@Bind("who") int who, @Bind("pixel_id") int pixel_id, @Bind("x") int x, @Bind("y") int y, @Bind("message") String message);
+    @SqlUpdate("INSERT INTO reports (who, reported, pixel_id, x, y, message, time) VALUES (:who, :reported, :pixel_id, :x, :y, :message, UNIX_TIMESTAMP())")
+    void addReport(@Bind("who") int reporter, @Bind("reported") int reported, @Bind("pixel_id") int pixel_id, @Bind("x") int x, @Bind("y") int y, @Bind("message") String message);
 
     @SqlUpdate("INSERT INTO reports (who, pixel_id, x, y, message, reported, time) VALUES (0, 0, 0, 0, :message, :reported, UNIX_TIMESTAMP())")
     void addServerReport(@Bind("message") String message, @Bind("reported") int reported);
