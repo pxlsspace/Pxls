@@ -373,8 +373,6 @@ a, a:hover, a:visited, a:active {
     z-index: 6;
     bottom: 0;
     width: 100%;
-    background-color: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 .palette-overlay {
@@ -409,6 +407,7 @@ a, a:hover, a:visited, a:active {
     overflow-x: auto;
     text-align: center;
     white-space: nowrap;
+    background-color: rgba(255, 255, 255, 0.8);
 }
 
 .palette-color {
@@ -476,12 +475,30 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
 }
 
 #undo {
-    position: fixed;
-    top: 20px;
-    left: 10px;
-    background: white;
-    will-change: transform;
-    z-index: 2;
+    width: 10em;
+    text-align: center;
+    background-color: #FFF;
+    transition: height .25s ease-in-out;
+    height: 0px;
+    flex-flow: column;
+    justify-content: center;
+    cursor: pointer;
+    display: flex;
+    color: #000;
+    font-weight: bold;
+    font-size: 1.25em;
+}
+
+#undo.open {
+    height: 2em;
+}
+
+#undo > span {
+    transition: opacity .2s linear;
+}
+
+#undo:not(.open) > span {
+    opacity: 0;
 }
 
 #reticule, #cursor {
@@ -681,7 +698,7 @@ input[type="text"] {
 
 @media (max-width: 1600px) {
     #ui .left, #ui .right {
-        bottom: 70px;
+        bottom: 112px;
     }
 }
 
