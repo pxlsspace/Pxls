@@ -491,6 +491,9 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
 }
 
 #undo.open {
+    border-top: 1px solid #000;
+    border-right: 1px solid #000;
+    border-top-right-radius: 5px;
     height: 2em;
 }
 
