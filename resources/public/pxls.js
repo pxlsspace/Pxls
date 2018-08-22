@@ -1675,9 +1675,6 @@ window.App = (function () {
                         self.update(evt.clientX, evt.clientY);
                     });
                     $(window).on("pointermove mousemove touchstart touchmove", function (evt) {
-                        if (self.color === -1) {
-                            return;
-                        }
                         let x = 0,
                             y = 0;
                         if (evt.changedTouches && evt.changedTouches[0]) {
