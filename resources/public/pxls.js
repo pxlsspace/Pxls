@@ -2185,7 +2185,7 @@ window.App = (function () {
                         timer.audioElem.src = url;
                         ls.set("alert.src", url);
                     } catch (e) {
-                        alert.show("Failed to update audio src, using default sound");
+                        alert.show("Failed to update audio src, using default sound. " + e.toString());
                         timer.audioElem.src = "notify.wav";
                         ls.set("alert.src", "notify.wav");
                     }
