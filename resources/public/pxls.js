@@ -1739,7 +1739,7 @@ window.App = (function () {
                         self.elements.undo.addClass("open");
                         self.can_undo = true;
                         setTimeout(function () {
-                            self.elements.undo.hide();
+                            self.elements.undo.removeClass("open");
                             self.can_undo = false;
                         }, data.time * 1000);
                     });
