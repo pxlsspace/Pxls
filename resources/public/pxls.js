@@ -1665,12 +1665,12 @@ window.App = (function () {
                     evt.stopPropagation();
                     socket.send({type: 'undo'});
                     self.can_undo = false;
-                    self.elements.undo.hide();
+                    self.elements.undo.removeClass("open");
                 },
                 init: function () {
                     self.elements.reticule.hide();
                     self.elements.cursor.hide();
-                    self.elements.undo.hide();
+                    self.elements.undo.removeClass("open");
                     board.getRenderBoard().on("pointermove mousemove", function (evt) {
                         self.update(evt.clientX, evt.clientY);
                     });
@@ -1689,7 +1689,6 @@ window.App = (function () {
                         if (self.can_undo) {
                             return;
                         }
-                        self.elements.undo.css("transform", "translate(" + x + "px, " + y + "px)");
                     }).keydown(function (evt) {
                         if (self.can_undo && (evt.key == "z" || evt.key == "Z" || evt.keyCode == 90) && evt.ctrlKey) {
                             self.undo(evt);
@@ -1698,7 +1697,6 @@ window.App = (function () {
                         if (self.color === -1 || self.can_undo) {
                             return;
                         }
-                        self.elements.undo.css("transform", "translate(" + evt.originalEvent.changedTouches[0].clientX + "px, " + evt.originalEvent.changedTouches[0].clientY + "px)");
                     });
                     socket.on("pixel", function (data) {
                         $.map(data.pixels, function (px) {
@@ -1738,7 +1736,7 @@ window.App = (function () {
                         }
                     });
                     socket.on("can_undo", function (data) {
-                        self.elements.undo.show();
+                        self.elements.undo.addClass("open");
                         self.can_undo = true;
                         setTimeout(function () {
                             self.elements.undo.hide();
