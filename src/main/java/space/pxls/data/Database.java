@@ -197,6 +197,11 @@ public class Database implements Closeable {
         getHandle().putNukePixel(x, y, color, pp != null ? pp.userId : 0, pp != null ? (pp.secondaryId > 0) : false);
     }
 
+    public void putNukePixel(int x, int y, int replace, int color) {
+        DBPixelPlacement pp = getPixelAt(x, y);
+        getHandle().putReplacePixel(x, y, replace, color, pp != null ? pp.userId : 0, pp != null ? (pp.secondaryId > 0) : false);
+    }
+
     public DBPixelPlacement getUserUndoPixel(User who){
         return getHandle().getUserUndoPixel(who.getId());
     }
