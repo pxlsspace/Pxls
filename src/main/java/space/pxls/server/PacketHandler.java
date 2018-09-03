@@ -192,25 +192,22 @@ public class PacketHandler {
                     canPlace = c != cp.getColor() && c != 0xFF && c != -1;
                 }
                 int c_old = c;
-                /*if (!canPlace && (c == 0xFF || c == -1)) {
-                    // tendril expansion!
-                    if (!canPlace && cp.getX() + 1 < App.getWidth()) {
-                        c = App.getPixel(cp.getX() + 1, cp.getY());
-                        canPlace = c != 0xFF && c != -1;
+                if (App.getConfig().getBoolean("tendrils")) {
+                    canPlace = false;
+                    int top = App.getPixel(cp.getX(), cp.getY() + 1);
+                    int left = App.getPixel(cp.getX() - 1, cp.getY());
+                    int right = App.getPixel(cp.getX() + 1, cp.getY());
+                    int bottom = App.getPixel(cp.getX(), cp.getY() - 1);
+
+                    int defaultTop = App.getDefaultColor(cp.getX(), cp.getY() + 1);
+                    int defaultLeft = App.getDefaultColor(cp.getX() - 1, cp.getY());
+                    int defaultRight = App.getDefaultColor(cp.getX() + 1, cp.getY());
+                    int defaultBottom = App.getDefaultColor(cp.getX(), cp.getY() - 1);
+                    if (top != defaultTop || left != defaultLeft || right != defaultRight || bottom != defaultBottom) {
+                        // The pixel has at least one other attached pixel
+                        canPlace = c != cp.getColor() && (App.getHavePlacemap() ? App.getPlacemap(cp.getX(), cp.getY()) == 0 : (c != 0xFF && c != -1));
                     }
-                    if (!canPlace && cp.getX() - 1 >= 0) {
-                        c = App.getPixel(cp.getX() - 1, cp.getY());
-                        canPlace = c != 0xFF && c != -1;
-                    }
-                    if (!canPlace && cp.getY() + 1 < App.getHeight()) {
-                        c = App.getPixel(cp.getX(), cp.getY() + 1);
-                        canPlace = c != 0xFF && c != -1;
-                    }
-                    if (!canPlace && cp.getY() - 1 >= 0) {
-                        c = App.getPixel(cp.getX(), cp.getY() - 1);
-                        canPlace = c != 0xFF && c != -1;
-                    }
-                }*/
+                }
                 if (canPlace) {
                     int seconds = getCooldown();
                     if (c_old != 0xFF && c_old != -1 && App.getDatabase().shouldPixelTimeIncrease(cp.getX(), cp.getY(), user.getId())) {
