@@ -1675,9 +1675,6 @@ window.App = (function () {
                         self.update(evt.clientX, evt.clientY);
                     });
                     $(window).on("pointermove mousemove touchstart touchmove", function (evt) {
-                        if (self.color === -1) {
-                            return;
-                        }
                         let x = 0,
                             y = 0;
                         if (evt.changedTouches && evt.changedTouches[0]) {
@@ -2160,7 +2157,7 @@ window.App = (function () {
                     }
 
                     timer.audioElem.addEventListener("error", err => {
-                        alert.show("Your custom alert is either invalid or unplayable.");
+                        alert.show("Your custom alert is either invalid or unplayable. " + err.toString());
                     });
 
                     self.elements.txtAlertLocation.change(function() { //change should only fire on blur so we normally won't be calling updateAudio for each keystroke. just in case though, we'll lazy update.
@@ -2198,7 +2195,7 @@ window.App = (function () {
                         timer.audioElem.src = url;
                         ls.set("alert.src", url);
                     } catch (e) {
-                        alert.show("Failed to update audio src, using default sound");
+                        alert.show("Failed to update audio src, using default sound. " + e.toString());
                         timer.audioElem.src = "notify.wav";
                         ls.set("alert.src", "notify.wav");
                     }
@@ -2360,7 +2357,7 @@ window.App = (function () {
                     }
 
                     $(window).keydown(event => {
-                        if ((event.key === "c" || event.key === "C" || event.keyCode === 67) && navigator.clipboard && self.mouseCoords) {
+                        if (!event.ctrlKey && (event.key === "c" || event.key === "C" || event.keyCode === 67) && navigator.clipboard && self.mouseCoords) {
                             navigator.clipboard.writeText(self.getLinkToCoords(self.mouseCoords.x, self.mouseCoords.y));
                             self.elements.coords.addClass("copyPulse");
                             setTimeout(() => {
