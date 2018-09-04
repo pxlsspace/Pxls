@@ -69,6 +69,10 @@ a, a:hover, a:visited, a:active {
     margin-bottom: 2px;
 }
 
+.useMono {
+    font-family: monospace;
+}
+
 /*//////////////////////////*\
 | Overlays
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/

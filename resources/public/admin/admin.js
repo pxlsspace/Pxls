@@ -302,11 +302,17 @@
                     App.lookup.registerHook({
                         id: "login",
 						name: "Login",
-						get: data => $("<code>").text(data.login),
+						get: data => {
+                            var addMonoClass = localStorage.getItem("monospace_lookup") === "true" ? " useMono" : ""
+                            return $("<div class=\"monoVal" + addMonoClass + "\">").text(data.login)
+                        }
                     }, {
                         id: "user_agent",
 						name: "User Agent",
-						get: data => $("<code>").text(data.userAgent),
+						get: data => {
+                            var addMonoClass = localStorage.getItem("monospace_lookup") === "true" ? " useMono" : ""
+                            return $("<div class=\"monoVal" + addMonoClass + "\">").text(data.userAgent)
+                        }
                     }, {
 						id: "alert",
 						name: "Send Alert",
