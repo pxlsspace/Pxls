@@ -198,5 +198,16 @@ public interface DAO extends Closeable {
     @SqlUpdate("DELETE FROM sessions WHERE (time + INTERVAL (24*3600*24) SECOND) < now()")
     void clearOldSessions();
 
+    @SqlUpdate("CREATE TABLE IF NOT EXISTS lookups (" +
+            "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT," +
+            "who INT UNSIGNED," +
+            "time TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP," +
+            "ip VARBINARY(16));")
+    void createLookupsTable();
+
+    @SqlUpdate("INSERT INTO lookups (who, ip)" +
+            "VALUES (:who, INET6_ATON(:ip));")
+    void putLookup(@Bind("who") Integer who, @Bind("ip") String ip);
+
     void close();
 }

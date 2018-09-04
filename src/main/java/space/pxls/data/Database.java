@@ -4,6 +4,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.sqlobject.mixins.GetHandle;
 import space.pxls.App;
 import space.pxls.user.Role;
 import space.pxls.user.User;
@@ -45,6 +46,7 @@ public class Database implements Closeable {
         getHandle().createPixelsTable();
         getHandle().createUsersTable();
         getHandle().createSessionsTable();
+        getHandle().createLookupsTable();
         getHandle().createAdminLogTable();
         getHandle().createReportsTable();
     }
@@ -304,6 +306,10 @@ public class Database implements Closeable {
 
     public boolean haveDupeIp(String ip, int uid) {
         return getHandle().haveDupeIp(ip, uid);
+    }
+
+    public void addLookup(Integer who, String ip) {
+        getHandle().putLookup(who, ip);
     }
 
     class DatabaseHandle {
