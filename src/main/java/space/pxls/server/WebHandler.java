@@ -489,6 +489,12 @@ public class WebHandler {
     public void lookup(HttpServerExchange exchange) {
         User user = exchange.getAttachment(AuthReader.USER);
 
+        if (user == null || user.getRole().lessThan(Role.USER)) {
+            exchange.setStatusCode(StatusCodes.UNAUTHORIZED);
+            exchange.endExchange();
+            return;
+        }
+
         Deque<String> xq = exchange.getQueryParameters().get("x");
         Deque<String> yq = exchange.getQueryParameters().get("y");
 
