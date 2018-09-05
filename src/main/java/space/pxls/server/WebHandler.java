@@ -513,6 +513,11 @@ public class WebHandler {
         }
 
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+        if (user == null) {
+            App.getDatabase().addLookup(null, exchange.getAttachment(IPReader.IP));
+        } else {
+            App.getDatabase().addLookup(user.getId(), exchange.getAttachment(IPReader.IP));
+        }
 
         if (user == null || user.getRole().lessThan(Role.TRIALMOD)) {
             DBPixelPlacementUser pp = App.getDatabase().getPixelAtUser(x, y);
