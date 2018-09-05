@@ -2069,6 +2069,11 @@ window.App = (function () {
                     $("#stickyColorToggle").change(function() {
                         place.setAutoReset(!this.checked);
                     });
+
+                    $("#monospaceToggle").change(function() {
+                        ls.set("monospace_lookup", this.checked);
+                        this.checked ? $(".monoVal").addClass("useMono") : $(".monoVal").removeClass("useMono");
+                    });
                 }
             };
             return {
@@ -2121,6 +2126,15 @@ window.App = (function () {
                 init: function() {
                     self._initStack();
                     self._initAudio();
+                    var useMono = ls.get("monospace_lookup")
+                    if (typeof useMono === 'undefined') {
+                        ls.set("monospace_lookup", true);
+                        useMono = true;
+                    }
+                    $("#monospaceToggle").prop('checked', useMono);
+                    if (useMono) {
+                        $(".monoVal").addClass("useMono");
+                    }
                 },
                 _initStack: function() {
                     socket.on("pixels", function(data) {
