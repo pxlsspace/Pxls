@@ -5,6 +5,7 @@ import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.async.Callback;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.typesafe.config.Config;
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
 import space.pxls.data.DBPixelPlacement;
@@ -24,6 +25,7 @@ public class PacketHandler {
     private UndertowServer server;
     private PxlsTimer userData = new PxlsTimer(5);
     private int numAllCons = 0;
+    private Config config = App.getConfig();
 
     public int getCooldown() {
         // TODO: make these parameters somehow configurable
@@ -33,8 +35,12 @@ public class PacketHandler {
         double b = 2.73880499e-03;
         double c = 9.63956320e+01;
         double d = -2.14065886e+00;
-        double x = (double)server.getAuthedUsers().size();
-        return (int)Math.ceil(a*Math.exp(-b*(x - d)) + c);
+        double multiplier = config.getDouble("activityCooldown.multiplier");
+        double x = 1;
+        if (config.getBoolean("activityCooldown.enabled")) {
+            x = (double)server.getAuthedUsers().size();
+        }
+        return (int)(Math.ceil(a*Math.exp(-b*(x - d)) + c) * multiplier);
     }
 
     public PacketHandler(UndertowServer server) {
