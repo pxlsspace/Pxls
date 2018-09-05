@@ -98,6 +98,8 @@ Commands are entered directly into the running instance (stdin).
 
 `nuke <x1> <y1> <x2> <y2> <color>` - replaces all pixels from x1, y1 to x2, y2 with the color (by index)
 
+`replace <x1> <y1> <x2> <y2> <original color> <new color>` - replaces all pixels from x2, y1 to x2, y2 matching the color index with the new color
+
 `cons [authed]` - prints the total or authed connection count, if specified
 
 `users` - prints all authed users

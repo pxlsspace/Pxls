@@ -189,7 +189,15 @@ public class App {
                 int toX = Integer.parseInt(token[3]);
                 int toY = Integer.parseInt(token[4]);
                 byte toColor = (byte)(token.length >= 6 ? Integer.parseInt(token[5]) : 0xFF);
-                nuke(fromX, fromY, toX, toY, toColor);
+                nuke(fromX, fromY, toX, toY, (byte) 0xFF, toColor);
+            } else if (token[0].equalsIgnoreCase("replace")) {
+                int fromX = Integer.parseInt(token[1]);
+                int fromY = Integer.parseInt(token[2]);
+                int toX = Integer.parseInt(token[3]);
+                int toY = Integer.parseInt(token[4]);
+                byte fromColor = (byte) Integer.parseInt(token[5]);
+                byte toColor = (byte) (token.length >= 7 ? Integer.parseInt(token[6]) : 0xFF);
+                nuke(fromX, fromY, toX, toY, fromColor, toColor);
             } else if (token[0].equalsIgnoreCase("cons")) {
                 if (token.length > 1) {
                     if (token[1].equalsIgnoreCase("authed") || token[1].equalsIgnoreCase("authd")) {
@@ -373,12 +381,12 @@ public class App {
         server.broadcastNoShadow(new ServerPlace(forBroadcast));
     }
 
-    private static void nuke(int fromX, int fromY, int toX, int toY, byte toColor) {
+    private static void nuke(int fromX, int fromY, int toX, int toY, byte fromColor, byte toColor) {
         XnioWorker worker = server.getServer().getWorker();
-        worker.execute(() -> nuke_(fromX, fromY, toX, toY, toColor));
+        worker.execute(() -> nuke_(fromX, fromY, toX, toY, fromColor, toColor));
     }
 
-    private static void nuke_(int fromX, int fromY, int toX, int toY, byte toColor) {
+    private static void nuke_(int fromX, int fromY, int toX, int toY, byte fromColor, byte toColor) {
         List<ServerPlace.Pixel> forBroadcast = new ArrayList<>();
         for (int x = Math.min(fromX, toX); x <= Math.max(fromX, toX); x++) {
             for (int y = Math.min(fromY, toY); y <= Math.max(fromY, toY); y++) {
@@ -386,11 +394,16 @@ public class App {
                 if (toColor == 0xFF || toColor == -1) {
                     c = getDefaultColor(x, y);
                 }
-                System.out.println(c);
-                if (getPixel(x, y) != c) {
+                int pixelColor = getPixel(x, y);
+                // fromColor is 0xFF or -1 if we're nuking
+                if (pixelColor != toColor) {
                     putPixel(x, y, c, null, true, "<nuke action>", false);
                     forBroadcast.add(new ServerPlace.Pixel(x, y, c));
-                    database.putNukePixel(x, y, c);
+                    if (fromColor == 0xFF || fromColor == -1) {
+                        database.putNukePixel(x, y, c);
+                    } else if (pixelColor == fromColor) {
+                        database.putNukePixel(x, y, fromColor, c);
+                    }
                 }
             }
         }
