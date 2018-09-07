@@ -2159,7 +2159,7 @@ window.App = (function () {
                     }
 
                     timer.audioElem.addEventListener("error", err => {
-                        alert.show("Your custom alert is either invalid or unplayable. " + err.toString());
+                        alert.show("Your custom alert is either invalid or unplayable.");
                     });
 
                     self.elements.txtAlertLocation.change(function() { //change should only fire on blur so we normally won't be calling updateAudio for each keystroke. just in case though, we'll lazy update.
@@ -2197,7 +2197,7 @@ window.App = (function () {
                         timer.audioElem.src = url;
                         ls.set("alert.src", url);
                     } catch (e) {
-                        alert.show("Failed to update audio src, using default sound. " + e.toString());
+                        alert.show("Failed to update audio src, using default sound.");
                         timer.audioElem.src = "notify.wav";
                         ls.set("alert.src", "notify.wav");
                     }
