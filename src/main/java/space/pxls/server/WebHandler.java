@@ -446,8 +446,7 @@ public class WebHandler {
 
     public void info(HttpServerExchange exchange) {
         exchange.getResponseHeaders()
-                .add(HttpString.tryFromString("Content-Type"), "application/json")
-                .add(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
+                .add(HttpString.tryFromString("Content-Type"), "application/json");
         exchange.getResponseSender().send(App.getGson().toJson(
                 new CanvasInfo(
                         App.getWidth(),
@@ -462,8 +461,7 @@ public class WebHandler {
 
     public void data(HttpServerExchange exchange) {
         exchange.getResponseHeaders()
-                .put(Headers.CONTENT_TYPE, "application/binary")
-                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
+                .put(Headers.CONTENT_TYPE, "application/binary");
 
         // let's also update the cookie, if present. This place will get called frequent enough
         Cookie tokenCookie = exchange.getRequestCookies().get("pxls-token");
@@ -476,8 +474,7 @@ public class WebHandler {
 
     public void heatmap(HttpServerExchange exchange) {
         exchange.getResponseHeaders()
-                .put(Headers.CONTENT_TYPE, "application/binary")
-                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
+                .put(Headers.CONTENT_TYPE, "application/binary");
         exchange.getResponseSender().send(ByteBuffer.wrap(App.getHeatmapData()));
     }
 
@@ -519,8 +516,7 @@ public class WebHandler {
         }
 
         exchange.getResponseHeaders()
-                .put(Headers.CONTENT_TYPE, "application/json")
-                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
+                .put(Headers.CONTENT_TYPE, "application/json");
         if (user == null) {
             App.getDatabase().addLookup(null, exchange.getAttachment(IPReader.IP));
         } else {
@@ -594,8 +590,7 @@ public class WebHandler {
 
     public void users(HttpServerExchange exchange) {
         exchange.getResponseHeaders()
-                .put(Headers.CONTENT_TYPE, "application/json")
-                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
+                .put(Headers.CONTENT_TYPE, "application/json");
         exchange.getResponseSender().send(App.getGson().toJson(new ServerUsers(App.getServer().getConnections().size())));
     }
 

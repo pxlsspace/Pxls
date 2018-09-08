@@ -17,6 +17,7 @@ import space.pxls.App;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.util.AuthReader;
+import space.pxls.util.CorsHandler;
 import space.pxls.util.IPReader;
 import space.pxls.util.RateLimitingHandler;
 import space.pxls.util.RoleGate;
@@ -75,7 +76,7 @@ public class UndertowServer {
                 .addHttpListener(port, "0.0.0.0")
                 .setIoThreads(32)
                 .setWorkerThreads(128)
-                .setHandler(new IPReader(new AuthReader(new EagerFormParsingHandler().setNext(mainHandler)))).build();
+                .setHandler(new IPReader(new AuthReader(new CorsHandler(new EagerFormParsingHandler().setNext(mainHandler))))).build();
         server.start();
     }
 
