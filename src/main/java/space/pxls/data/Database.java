@@ -49,6 +49,8 @@ public class Database implements Closeable {
         getHandle().createLookupsTable();
         getHandle().createAdminLogTable();
         getHandle().createReportsTable();
+        getHandle().createStatsTable();
+        getHandle().createAdminNotesTable();
     }
 
     private DAO getHandle() {
