@@ -17,7 +17,10 @@ public interface DAO extends Closeable {
             "message LONGTEXT," +
             "pixel_id INT UNSIGNED," +
             "reported INT UNSIGNED," +
-            "time INT(10) UNSIGNED)")
+            "claimed_by int(10) unsigned NOT NULL DEFAULT 0," +
+            "resolved_by int(10) unsigned NOT NULL DEFAULT 0," +
+            "closed int(1) unsigned NOT NULL DEFAULT 0," +
+            "time int(10) unsigned DEFAULT NULL)")
     void createReportsTable();
 
     @SqlUpdate("INSERT INTO reports (who, pixel_id, x, y, message, time) VALUES (:who, :pixel_id, :x, :y, :message, UNIX_TIMESTAMP())")
@@ -214,6 +217,26 @@ public interface DAO extends Closeable {
     @SqlUpdate("INSERT INTO lookups (who, ip)" +
             "VALUES (:who, INET6_ATON(:ip));")
     void putLookup(@Bind("who") Integer who, @Bind("ip") String ip);
+
+    @SqlUpdate("CREATE TABLE IF NOT EXISTS `stats` ( " +
+               "  `id` int(11) NOT NULL AUTO_INCREMENT, " +
+               "  `channel` varchar(20) NOT NULL DEFAULT '0', " +
+               "  `value` int(11) NOT NULL, " +
+               "  `timestamp` int(11) NOT NULL, " +
+               "  PRIMARY KEY (`id`) " +
+               ")")
+    void createStatsTable();
+
+    @SqlUpdate("CREATE TABLE IF NOT EXISTS `admin_notes` ( " +
+               "  `id` int(11) NOT NULL AUTO_INCREMENT, " +
+               "  `user_id` int(11) NOT NULL, " +
+               "  `target_id` int(11) NOT NULL, " +
+               "  `reply_to` int(11) DEFAULT NULL, " +
+               "  `message` longtext NOT NULL, " +
+               "  `timestamp` int(11) NOT NULL, " +
+               "  PRIMARY KEY (`id`) " +
+               ") ")
+    void createAdminNotesTable();
 
     void close();
 }
