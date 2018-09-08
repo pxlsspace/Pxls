@@ -545,10 +545,21 @@ public class WebHandler {
 
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
 
-        FormData.FormValue xq = data.getFirst("x");
-        FormData.FormValue yq = data.getFirst("y");
-        FormData.FormValue idq = data.getFirst("id");
-        FormData.FormValue msgq = data.getFirst("message");
+        FormData.FormValue xq;
+        FormData.FormValue yq;
+        FormData.FormValue idq;
+        FormData.FormValue msgq;
+
+        try {
+            xq = data.getFirst("x");
+            yq = data.getFirst("y");
+            idq = data.getFirst("id");
+            msgq = data.getFirst("message");
+        } catch (NullPointerException ex) {
+            exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+            exchange.endExchange();
+            return;
+        }
 
         if (xq == null || yq == null || idq == null || msgq == null) {
             exchange.setStatusCode(StatusCodes.BAD_REQUEST);
