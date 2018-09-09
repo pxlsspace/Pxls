@@ -966,7 +966,7 @@ window.App = (function () {
                         self.elements.mover.css({
                             width: self.width,
                             height: self.height,
-                            transform: "translate(" + self.pan.x + "px, " + self.pan.y + "px)"
+                            transform: "translate(" + (self.scale <= 1 ? Math.round(self.pan.x) : self.pan.x) + "px, " + (self.scale <= 1 ? Math.round(self.pan.y) : self.pan.y) + "px)"
                         });
                     }
                     if (self.use_zoom) {
