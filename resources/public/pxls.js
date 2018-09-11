@@ -1498,6 +1498,10 @@ window.App = (function () {
                                     use: !self.options.use
                                 });
                                 break;
+                            case "Escape":
+                            case 27:
+                                place.switch(-1);
+                                break;
                         }
                     }).on("keyup blur", function (evt) {
                         if (self.options.use) {
