@@ -2135,6 +2135,15 @@ window.App = (function () {
                     if (useMono) {
                         $(".monoVal").addClass("useMono");
                     }
+
+                    $(window).keydown(function(evt) {
+                        switch(evt.key || evt.which) {
+                            case "Escape":
+                            case 27:
+                                place.switch(-1);
+                                break;
+                        }
+                    });
                 },
                 _initStack: function() {
                     socket.on("pixels", function(data) {
