@@ -43,15 +43,15 @@
             <div>
                 <h1>General settings</h1>
                 <div class="settingToggles">
-                    <label><input id="audiotoggle" type="checkbox"/>Mute sound</label>
-                    <label><input id="heatmaptoggle" type="checkbox"/>Turn on heatmap</label>
-                    <label><input type="checkbox" id="heatmapClearable">Enable heatmap clearing (hotkey: o)</label>
-                    <label><input id="gridtoggle" type="checkbox"/>Turn on grid</label>
+                    <label><input id="audiotoggle" type="checkbox"/>Mute sound (toggle with <kbd>O</kbd>)</label>
+                    <label><input id="heatmaptoggle" type="checkbox"/>Turn on heatmap (toggle with <kbd>H</kbd>)</label>
+                    <label><input type="checkbox" id="heatmapClearable">Enable heatmap clearing (hotkey: <kbd>O</kbd>)</label>
+                    <label><input id="gridtoggle" type="checkbox"/>Turn on grid (toggle with <kbd>G</kbd>)</label>
                     <label><input id="stickyColorToggle" type="checkbox"/>Keep color selected</label>
                     <label><input id="monospaceToggle" type="checkbox"/>Toggle monospace font for lookups</label>
                     <label>Heatmap BG Opacity: <input type="range" min="0" max="1" step="0.01" id="heatmap-opacity"></label>
                     <label>
-                        Snapshot (hotkey: p) image format
+                        Snapshot (hotkey: <kbd>P</kbd>) image format
                         <select id="snapshotImageFormat">
                             <option value="image/png" selected>PNG</option>
                             <option value="image/jpeg">JPEG</option>
@@ -66,26 +66,26 @@
                 <div class="indent-1">
                     <p>Mouse/arrows to pan</p>
                     <p>Scroll/pinch to zoom</p>
-                    <p>Shift + Click/Hold touch to lookup pixel</p>
-                    <p>G to toggle grid</p>
-                    <p>I to toggle info</p>
-                    <p>T to toggle template control</p>
-                    <p>P to take a snapshot</p>
-                    <p>H to toggle heatmap</p>
-                    <p>O to clear heatmap (if enabled)</p>
-                    <p>J/K to cycle through palette colors</p>
-                    <p>C to copy link of moused-over coordinates</p>
+                    <p><kbd>Shift</kbd> + Click/Hold touch to lookup pixel</p>
+                    <p><kbd>G</kbd> to toggle grid</p>
+                    <p><kbd>I</kbd> to toggle info</p>
+                    <p><kbd>T</kbd> to toggle template control</p>
+                    <p><kbd>P</kbd> to take a snapshot</p>
+                    <p><kbd>H</kbd> to toggle heatmap</p>
+                    <p><kbd>O</kbd> to clear heatmap (if enabled)</p>
+                    <p><kbd>J</kbd>/<kbd>K</kbd> to cycle through palette colors</p>
+                    <p><kbd>C</kbd> to copy link of moused-over coordinates</p>
                 </div>
                 <h3>Template</h3>
                 <div class="indent-1">
-                    <p>Page up - Increase opacity</p>
-                    <p>Page down - Decrease opacity</p>
-                    <p>V - Toggle visibility</p>
+                    <p><kbd>Page Up</kbd> to increase opacity</p>
+                    <p><kbd>Page Down</kbd> to decrease opacity</p>
+                    <p><kbd>V</kbd> to toggle visibility</p>
                 </div>
             </div>
             <div>
                 <h1>Template control</h1>
-                <p>Hold down ctrl to drag the template around</p>
+                <p>Hold down <kbd>Ctrl</kbd> to drag the template around</p>
                 <p><label>Use template: <input type="checkbox" id="template-use"></label></p>
                 <p><label>URL: <input type="text" id="template-url"></label></p>
                 <p><label>Opacity: <input type="range" min="0" max="1" step="0.01" id="template-opacity"></label></p>
