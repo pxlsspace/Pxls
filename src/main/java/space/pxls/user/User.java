@@ -20,6 +20,7 @@ public class User {
     private boolean flaggedForCaptcha = true;
     private boolean justShowedCaptcha;
     private boolean lastPlaceWasStack = false;
+    private boolean placingLock = false;
     private long cooldownExpiry;
     private long lastPixelTime = 0;
     private long lastUndoTime = 0;
@@ -325,5 +326,27 @@ public class User {
         if (!canPlace) return 0;
 
         return (canPlace ? 1 : 0) + this.stacked;
+    }
+
+    /**
+     * Attempts to get placing lock. Weak implementation of a mutex lock.
+     * When placingLocked, we're in the process of placing a pixel and database tables pertaining to placements shouldn't be updated until lock is released.
+     *
+     * @return True if a lock was acquired, false otherwise.
+     */
+    public boolean tryGetPlacingLock() {
+        if (placingLock == true) return false;
+        return placingLock = true;
+    }
+
+    public boolean isPlacingLocked() {
+        return placingLock;
+    }
+
+    /**
+     * Releases the placingLock.
+     */
+    public void releasePlacingLock() {
+        placingLock = false;
     }
 }

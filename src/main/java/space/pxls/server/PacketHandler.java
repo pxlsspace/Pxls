@@ -179,7 +179,7 @@ public class PacketHandler {
         if (cp.getColor() < 0 || cp.getColor() >= App.getConfig().getStringList("board.palette").size()) return;
         if (user.isBanned()) return;
 
-        if (user.canPlace()) {
+        if (user.canPlace() && user.tryGetPlacingLock()) {
             boolean doCaptcha = App.isCaptchaEnabled();
             if (doCaptcha) {
                 int pixels = App.getConfig().getInt("captcha.maxPixels");
@@ -259,6 +259,7 @@ public class PacketHandler {
             }
         }
 
+        user.releasePlacingLock();
         sendCooldownData(user);
     }
 
