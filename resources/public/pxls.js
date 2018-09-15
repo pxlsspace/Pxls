@@ -983,14 +983,15 @@ window.App = (function () {
                     return Math.abs(self.scale);
                 },
                 setScale: function(scale) {
-                    if (scale > 50) scale = 50;
+                    if (ls.get("increased_zoom") !== true && scale > 50) scale = 50;
                     else if (scale <= 0) scale = 0.5; //enforce the [0.5, 50] limit without blindly resetting to 0.5 when the user was trying to zoom in farther than 50x
                     self.scale = scale;
                     self.update();
                 },
                 nudgeScale: function (adj) {
                     var oldScale = Math.abs(self.scale),
-                        sign = Math.sign(self.scale);
+                        sign = Math.sign(self.scale),
+                        maxUnlocked = ls.get("increased_zoom") === true;
                     if (adj === -1) {
                         if (oldScale <= 1) {
                             self.scale = 0.5;
@@ -1005,7 +1006,12 @@ window.App = (function () {
                         } else if (oldScale === 1) {
                             self.scale = 2;
                         } else {
-                            self.scale = Math.round(Math.min(50, oldScale * 1.25));
+                            let modifiedScale = oldScale * 1.25;
+                            if (maxUnlocked && oldScale >= 50) {
+                                modifiedScale = oldScale * 1.15;
+                            }
+                            modifiedScale = Math.ceil(modifiedScale);
+                            self.scale = maxUnlocked ? modifiedScale : Math.round(Math.min(50, modifiedScale));
                         }
                     }
                     self.scale *= sign;
@@ -2135,6 +2141,12 @@ window.App = (function () {
                     if (useMono) {
                         $(".monoVal").addClass("useMono");
                     }
+
+                    $("#increasedZoomToggle").prop("checked", ls.get("increased_zoom") === true);
+                    $("#increasedZoomToggle").change(function() {
+                        let checked = $(this).prop("checked") === true; //coerce to bool
+                        ls.set("increased_zoom", checked);
+                    });
 
                     $(window).keydown(function(evt) {
                         switch(evt.key || evt.which) {
