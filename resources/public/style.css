@@ -147,6 +147,7 @@ kbd {
     padding: 5px 10px;
     border-radius: 3px;
     background-color: #ddd;
+    color: #000;
 }
 
 .button.dark {
@@ -575,6 +576,8 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
 input[type="text"] {
     padding: 0.5em;
     border: 1px solid #ccc;
+    background-color: #fff;
+    color: #000;
 }
 
 .error {
