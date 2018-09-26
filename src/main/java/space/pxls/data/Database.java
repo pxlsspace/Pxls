@@ -315,8 +315,21 @@ public class Database implements Closeable {
         return getHandle().haveDupeIp(ip, uid);
     }
 
+    public boolean userLastIPAlerted(User u) {
+        return userLastIPAlerted(u.getId());
+    }
+
+    public boolean userLastIPAlerted(int uid) {
+        return getHandle().userLastIPAlerted(uid);
+    }
+
     public void addLookup(Integer who, String ip) {
         getHandle().putLookup(who, ip);
+    }
+
+    public void doLastIPAlert(User user) {
+        getHandle().flagLastIPAlertedOnUID(user.getId());
+        getHandle().addServerReport("User is on the same network as someone else's last known network(s)", user.getId());
     }
 
     class DatabaseHandle {

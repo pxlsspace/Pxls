@@ -274,15 +274,10 @@ public class WebHandler {
             return;
         }
 
-        System.out.println("new user");
-        System.out.println(ip);
-        System.out.println(user.getId());
-
         // do additional checks for possible multi here
         List<String> reports = new ArrayList<String>();
         if (App.getDatabase().haveDupeIp(ip, user.getId())) {
             reports.add("Duplicate IP");
-            System.out.println("dupe ip");
         }
         if (reports.size() > 0) {
             System.out.println("have reports");
