@@ -164,10 +164,6 @@ public class WebHandler {
             if (time_form != null) {
                 time = time_form.getValue();
             }
-            if (user.getRole().lessThan(Role.MODERATOR) && Integer.parseInt(time) > (86400*2)) {
-                exchange.setStatusCode(400);
-                return;
-            }
             if (doLog(exchange)) {
                 App.getDatabase().adminLog("ban " + user.getName(), user_perform.getId());
             }
