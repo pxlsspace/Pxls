@@ -1769,6 +1769,11 @@ window.App = (function () {
                         });
                         analytics("send", "event", "Captcha", "Sent")
                     };
+                    self.elements.palette.on("wheel", e => {
+                        if (ls.get("scrollSwitchEnabled") !== true) return;
+                        let newVal = (self.color + (e.originalEvent.wheelDelta > 0 ? 1 : -1)) % self.palette.length; //if wheelDelta > 0, we're scrolling up (move forward) so add 1. otherwise subtract 1. we modulus wrap in case they're scrolling up past palette.length.
+                        self.switch(newVal <= -1 ? self.palette.length-1 : newVal);
+                    });
                 },
                 hexToRgb: function(hex) {
                     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -2158,6 +2163,11 @@ window.App = (function () {
                     $("#increasedZoomToggle").change(function() {
                         let checked = $(this).prop("checked") === true; //coerce to bool
                         ls.set("increased_zoom", checked);
+                    });
+
+                    $("#scrollSwitchToggle").prop("checked", ls.get("scrollSwitchEnabled") === true);
+                    $("#scrollSwitchToggle").change(function() {
+                        ls.set("scrollSwitchEnabled", this.checked === true);
                     });
 
                     $(window).keydown(function(evt) {
