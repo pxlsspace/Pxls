@@ -454,6 +454,15 @@ kbd {
     bottom: 7px;
 }
 
+.palette-color.deselect-button {
+    background-image: url("./times.svg");
+    background-size: 100% 100%;
+}
+
+.palette-color.no-border {
+    border: none;
+}
+
 #reticule {
     position: fixed;
     top: 0;

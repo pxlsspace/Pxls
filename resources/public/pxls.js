@@ -1603,7 +1603,9 @@ window.App = (function () {
                     }
                     self.elements.cursor.css("background-color", self.palette[newColor]);
                     self.elements.reticule.css("background-color", self.palette[newColor]);
-                    $($(".palette-color")[newColor]).addClass("active");
+                    if (newColor !== -1) {
+                        $($(".palette-color[data-idx=" + newColor + "],.palette-color[data-idx=-1]")).addClass("active"); //Select both the new color AND the deselect button. Signifies more that it's a deselect button rather than a "delete pixel" button
+                    }
                 },
                 place: function (x, y) {
                     if (!timer.cooledDown() || self.color === -1) { // nope can't place yet
@@ -1655,6 +1657,7 @@ window.App = (function () {
                     self.elements.palette.find(".palette-color").remove().end().append(
                         $.map(self.palette, function(p, idx) {
                             return $("<div>")
+                                .attr("data-idx", idx)
                                 .addClass("palette-color")
                                 .addClass("ontouchstart" in window ? "touch" : "no-touch")
                                 .css("background-color", self.palette[idx])
@@ -1664,6 +1667,15 @@ window.App = (function () {
                                     }
                                 });
                         })
+                    );
+                    self.elements.palette.prepend(
+                        $("<div>")
+                            .attr("data-idx", -1)
+                            .addClass("palette-color no-border deselect-button")
+                            .addClass("ontouchstart" in window ? "touch" : "no-touch").css("background-color", "transparent")
+                            .click(function() {
+                                self.switch(-1);
+                            })
                     );
                 },
                 can_undo: false,
