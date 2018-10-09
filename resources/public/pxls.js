@@ -1571,6 +1571,7 @@ window.App = (function () {
                     reticule: $("#reticule"),
                     undo: $("#undo")
                 },
+                undoTimeout: false,
                 palette: [],
                 reticule: {
                     x: 0,
@@ -1744,9 +1745,11 @@ window.App = (function () {
                     socket.on("can_undo", function (data) {
                         self.elements.undo.addClass("open");
                         self.can_undo = true;
-                        setTimeout(function () {
+                        if (self.undoTimeout !== false) clearTimeout(self.undoTimeout);
+                        self.undoTimeout = setTimeout(function () {
                             self.elements.undo.removeClass("open");
                             self.can_undo = false;
+                            self.undoTimeout = false;
                         }, data.time * 1000);
                     });
                     self.elements.undo.click(self.undo);
