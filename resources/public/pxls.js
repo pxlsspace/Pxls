@@ -1672,11 +1672,13 @@ window.App = (function () {
                     evt.stopPropagation();
                     socket.send({type: 'undo'});
                     self.can_undo = false;
+                    document.body.classList.remove("undo-visible");
                     self.elements.undo.removeClass("open");
                 },
                 init: function () {
                     self.elements.reticule.hide();
                     self.elements.cursor.hide();
+                    document.body.classList.remove("undo-visible");
                     self.elements.undo.removeClass("open");
                     board.getRenderBoard().on("pointermove mousemove", function (evt) {
                         self.update(evt.clientX, evt.clientY);
@@ -1743,10 +1745,12 @@ window.App = (function () {
                         }
                     });
                     socket.on("can_undo", function (data) {
+                        document.body.classList.add("undo-visible");
                         self.elements.undo.addClass("open");
                         self.can_undo = true;
                         if (self.undoTimeout !== false) clearTimeout(self.undoTimeout);
                         self.undoTimeout = setTimeout(function () {
+                            document.body.classList.remove("undo-visible");
                             self.elements.undo.removeClass("open");
                             self.can_undo = false;
                             self.undoTimeout = false;
