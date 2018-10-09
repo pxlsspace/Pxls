@@ -732,6 +732,11 @@ input[type="text"] {
 
 @media (max-width: 1600px) {
     #ui .left, #ui .right {
+        bottom: 70px;
+        transition: bottom .25s ease-in-out;
+    }
+
+    body.undo-visible #ui .left, body.undo-visible #ui .right {
         bottom: 112px;
     }
 }

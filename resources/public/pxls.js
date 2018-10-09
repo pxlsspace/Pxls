@@ -1571,6 +1571,7 @@ window.App = (function () {
                     reticule: $("#reticule"),
                     undo: $("#undo")
                 },
+                undoTimeout: false,
                 palette: [],
                 reticule: {
                     x: 0,
@@ -1683,11 +1684,13 @@ window.App = (function () {
                     evt.stopPropagation();
                     socket.send({type: 'undo'});
                     self.can_undo = false;
+                    document.body.classList.remove("undo-visible");
                     self.elements.undo.removeClass("open");
                 },
                 init: function () {
                     self.elements.reticule.hide();
                     self.elements.cursor.hide();
+                    document.body.classList.remove("undo-visible");
                     self.elements.undo.removeClass("open");
                     board.getRenderBoard().on("pointermove mousemove", function (evt) {
                         self.update(evt.clientX, evt.clientY);
@@ -1754,11 +1757,15 @@ window.App = (function () {
                         }
                     });
                     socket.on("can_undo", function (data) {
+                        document.body.classList.add("undo-visible");
                         self.elements.undo.addClass("open");
                         self.can_undo = true;
-                        setTimeout(function () {
+                        if (self.undoTimeout !== false) clearTimeout(self.undoTimeout);
+                        self.undoTimeout = setTimeout(function () {
+                            document.body.classList.remove("undo-visible");
                             self.elements.undo.removeClass("open");
                             self.can_undo = false;
+                            self.undoTimeout = false;
                         }, data.time * 1000);
                     });
                     self.elements.undo.click(self.undo);
@@ -2274,10 +2281,12 @@ window.App = (function () {
         timer = (function() {
             var self = {
                 elements: {
+                    palette: $("#palette"),
                     timer_bubble: $("#cd-timer-bubble"),
                     timer_overlay: $("#cd-timer-overlay"),
                     timer: null
                 },
+                isOverlay: false,
                 hasFiredNotification: true,
                 cooldown: 0,
                 runningTimer: false,
@@ -2292,7 +2301,8 @@ window.App = (function () {
                     var delta = (self.cooldown - (new Date()).getTime() - 1) / 1000;
 
                     if (self.runningTimer === false) {
-                        self.elements.timer = ls.get("auto_reset") === false ? self.elements.timer_bubble : self.elements.timer_overlay;
+                        self.isOverlay = ls.get("auto_reset") === true;
+                        self.elements.timer = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble;
                         self.elements.timer_bubble.hide();
                         self.elements.timer_overlay.hide();
                     }
@@ -2303,6 +2313,10 @@ window.App = (function () {
 
                     if (delta > 0) {
                         self.elements.timer.show();
+                        if (self.isOverlay) {
+                            self.elements.palette.css("overflow-x", "hidden");
+                            self.elements.timer.css("left", `${self.elements.palette.scrollLeft()}px`);
+                        }
                         delta++; // real people don't count seconds zero-based (programming is more awesome)
                         var secs = Math.floor(delta % 60),
                             secsStr = secs < 10 ? "0" + secs : secs,
@@ -2333,6 +2347,10 @@ window.App = (function () {
                     }
 
                     document.title = self.title;
+                    if (self.isOverlay) {
+                        self.elements.palette.css("overflow-x", "auto");
+                        self.elements.timer.css("left", "0");
+                    }
                     self.elements.timer.hide();
                 },
                 init: function () {
