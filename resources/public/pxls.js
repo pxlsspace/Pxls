@@ -1571,6 +1571,7 @@ window.App = (function () {
                     reticule: $("#reticule"),
                     undo: $("#undo")
                 },
+                undoTimeout: false,
                 palette: [],
                 reticule: {
                     x: 0,
@@ -1603,7 +1604,9 @@ window.App = (function () {
                     }
                     self.elements.cursor.css("background-color", self.palette[newColor]);
                     self.elements.reticule.css("background-color", self.palette[newColor]);
-                    $($(".palette-color")[newColor]).addClass("active");
+                    if (newColor !== -1) {
+                        $($(".palette-color[data-idx=" + newColor + "],.palette-color[data-idx=-1]")).addClass("active"); //Select both the new color AND the deselect button. Signifies more that it's a deselect button rather than a "delete pixel" button
+                    }
                 },
                 place: function (x, y) {
                     if (!timer.cooledDown() || self.color === -1) { // nope can't place yet
@@ -1655,6 +1658,7 @@ window.App = (function () {
                     self.elements.palette.find(".palette-color").remove().end().append(
                         $.map(self.palette, function(p, idx) {
                             return $("<div>")
+                                .attr("data-idx", idx)
                                 .addClass("palette-color")
                                 .addClass("ontouchstart" in window ? "touch" : "no-touch")
                                 .css("background-color", self.palette[idx])
@@ -1665,17 +1669,28 @@ window.App = (function () {
                                 });
                         })
                     );
+                    self.elements.palette.prepend(
+                        $("<div>")
+                            .attr("data-idx", -1)
+                            .addClass("palette-color no-border deselect-button")
+                            .addClass("ontouchstart" in window ? "touch" : "no-touch").css("background-color", "transparent")
+                            .click(function() {
+                                self.switch(-1);
+                            })
+                    );
                 },
                 can_undo: false,
                 undo: function (evt) {
                     evt.stopPropagation();
                     socket.send({type: 'undo'});
                     self.can_undo = false;
+                    document.body.classList.remove("undo-visible");
                     self.elements.undo.removeClass("open");
                 },
                 init: function () {
                     self.elements.reticule.hide();
                     self.elements.cursor.hide();
+                    document.body.classList.remove("undo-visible");
                     self.elements.undo.removeClass("open");
                     board.getRenderBoard().on("pointermove mousemove", function (evt) {
                         self.update(evt.clientX, evt.clientY);
@@ -1742,11 +1757,15 @@ window.App = (function () {
                         }
                     });
                     socket.on("can_undo", function (data) {
+                        document.body.classList.add("undo-visible");
                         self.elements.undo.addClass("open");
                         self.can_undo = true;
-                        setTimeout(function () {
+                        if (self.undoTimeout !== false) clearTimeout(self.undoTimeout);
+                        self.undoTimeout = setTimeout(function () {
+                            document.body.classList.remove("undo-visible");
                             self.elements.undo.removeClass("open");
                             self.can_undo = false;
+                            self.undoTimeout = false;
                         }, data.time * 1000);
                     });
                     self.elements.undo.click(self.undo);
@@ -1757,6 +1776,11 @@ window.App = (function () {
                         });
                         analytics("send", "event", "Captcha", "Sent")
                     };
+                    self.elements.palette.on("wheel", e => {
+                        if (ls.get("scrollSwitchEnabled") !== true) return;
+                        let newVal = (self.color + (e.originalEvent.wheelDelta > 0 ? 1 : -1)) % self.palette.length; //if wheelDelta > 0, we're scrolling up (move forward) so add 1. otherwise subtract 1. we modulus wrap in case they're scrolling up past palette.length.
+                        self.switch(newVal <= -1 ? self.palette.length-1 : newVal);
+                    });
                 },
                 hexToRgb: function(hex) {
                     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
@@ -2148,6 +2172,11 @@ window.App = (function () {
                         ls.set("increased_zoom", checked);
                     });
 
+                    $("#scrollSwitchToggle").prop("checked", ls.get("scrollSwitchEnabled") === true);
+                    $("#scrollSwitchToggle").change(function() {
+                        ls.set("scrollSwitchEnabled", this.checked === true);
+                    });
+
                     $(window).keydown(function(evt) {
                         switch(evt.key || evt.which) {
                             case "Escape":
@@ -2252,10 +2281,12 @@ window.App = (function () {
         timer = (function() {
             var self = {
                 elements: {
+                    palette: $("#palette"),
                     timer_bubble: $("#cd-timer-bubble"),
                     timer_overlay: $("#cd-timer-overlay"),
                     timer: null
                 },
+                isOverlay: false,
                 hasFiredNotification: true,
                 cooldown: 0,
                 runningTimer: false,
@@ -2270,7 +2301,8 @@ window.App = (function () {
                     var delta = (self.cooldown - (new Date()).getTime() - 1) / 1000;
 
                     if (self.runningTimer === false) {
-                        self.elements.timer = ls.get("auto_reset") === false ? self.elements.timer_bubble : self.elements.timer_overlay;
+                        self.isOverlay = ls.get("auto_reset") === true;
+                        self.elements.timer = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble;
                         self.elements.timer_bubble.hide();
                         self.elements.timer_overlay.hide();
                     }
@@ -2281,6 +2313,10 @@ window.App = (function () {
 
                     if (delta > 0) {
                         self.elements.timer.show();
+                        if (self.isOverlay) {
+                            self.elements.palette.css("overflow-x", "hidden");
+                            self.elements.timer.css("left", `${self.elements.palette.scrollLeft()}px`);
+                        }
                         delta++; // real people don't count seconds zero-based (programming is more awesome)
                         var secs = Math.floor(delta % 60),
                             secsStr = secs < 10 ? "0" + secs : secs,
@@ -2311,6 +2347,10 @@ window.App = (function () {
                     }
 
                     document.title = self.title;
+                    if (self.isOverlay) {
+                        self.elements.palette.css("overflow-x", "auto");
+                        self.elements.timer.css("left", "0");
+                    }
                     self.elements.timer.hide();
                 },
                 init: function () {
