@@ -242,6 +242,21 @@ window.App = (function () {
                             };
                         }
                     }
+
+                    $(window).on("message", function(evt) {
+                        evt = evt.originalEvent;
+                        if (evt.data && evt.data.type && evt.data.data) {
+                            let data = evt.data;
+                            switch(data.type.toUpperCase().trim()) {
+                                case "TEMPLATE_UPDATE":
+                                    template.update(data.data);
+                                    break;
+                                default:
+                                    console.warn("Unknown data type: %o", data.type);
+                                    break;
+                            }
+                        }
+                    });
                 },
                 has: function(key) {
                     return self.get(key) != null;
