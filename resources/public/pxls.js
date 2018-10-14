@@ -335,7 +335,7 @@ window.App = (function () {
 
                     // don't even try to generate mouse events. I am being nice
                     window.MouseEvent = function () {
-                        self.me();
+                        self.me(2);
                     };
 
                     // enough of being nice
@@ -375,18 +375,20 @@ window.App = (function () {
                 shadow: function () {
                     socket.send('{"type":"shadowbanme"}');
                 },
-                me: function () {
-                    socket.send('{"type":"banme"}'); // we send as a string to not allow re-writing JSON.stringify
+                me: function (app = 0) {
+                    socket.send('{"type":"banme", "app": "' + String(app >> 0).substr(0, 2) + '"}'); // we send as a string to not allow re-writing JSON.stringify
                     socket.close();
                     window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
                 },
                 update: function() {
                     var _ = function () {
                         // This (still) does exactly what you think it does.
-                        self.me();
+                        self.me(1);
                     };
 
-                    window.App.attemptPlace = window.App.doPlace = _;
+                    window.App.attemptPlace = window.App.doPlace = function() {
+                        self.me(3);
+                    };
 
                     // AutoPXLS by p0358 (who, by the way, will never win this battle)
                     if (document.autoPxlsScriptRevision) _();
@@ -2631,7 +2633,7 @@ window.App = (function () {
                         }
 
                         if (instaban) {
-                            ban.shadow();
+                            ban.shadow(5);
                         }
 
                         analytics("send", "event", "Auth", "Login", data.method);
@@ -2734,13 +2736,13 @@ window.App = (function () {
             alert.show($('<span>').text(s).html());
         },
         doPlace: function() {
-            ban.me();
+            ban.me(3);
         },
         attemptPlace: function() {
-            ban.me();
+            ban.me(3);
         },
         banme: function() {
-            ban.me();
+            ban.me(4);
         }
     };
 })();

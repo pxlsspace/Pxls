@@ -7,8 +7,8 @@ data class ClientPlaceMaybe(val x: Int, val y: Int, val color: Int)
 data class ClientCaptcha(val token: String)
 data class ClientAdminCooldownOverride(val override: Boolean)
 data class ClientAdminMessage(val username: String, val message: String)
-class ClientShadowBanMe()
-class ClientBanMe()
+data class ClientShadowBanMe(val app: String)
+data class ClientBanMe(val app: String)
 class ClientUndo()
 
 class ServerCaptchaRequired {

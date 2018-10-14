@@ -125,7 +125,8 @@ public class PacketHandler {
 
     private void handleBanMe(WebSocketChannel channel, User user, ClientBanMe obj) {
         App.getDatabase().adminLog("self-ban via script", user.getId());
-        user.ban(86400, "auto-ban via script");
+        String app = obj.getApp();
+        user.ban(86400, "auto-ban via script (ap: " + app + ")");
     }
 
     private void handleCooldownOverride(WebSocketChannel channel, User user, ClientAdminCooldownOverride obj) {
