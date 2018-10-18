@@ -409,9 +409,6 @@ window.App = (function () {
                     if ($(".botpanel").length) _();
                     if (window.Notabot) _();
 
-                    // Chrome extension (PXLS RUS MOD)
-                    if ($("div:contains(Настройки)").length) _();
-
                     // "Botnet" by (unknown, obfuscated)
                     if (window.Botnet) _();
 
