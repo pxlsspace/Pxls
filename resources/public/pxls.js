@@ -2029,21 +2029,29 @@ window.App = (function () {
                     var elem = $(html_class);
                     $(html_class+" > .open").click(function () {
                         elem.toggleClass("open");
+                        doTrigger();
                         ls.set(localstorage, elem.hasClass("open") ^ open);
                     });
                     $(html_class+" .close").click(function () {
                         elem.removeClass("open");
+                        doTrigger();
                         ls.set(localstorage, false ^ open);
                     });
                     if (ls.get(localstorage) ^ open) {
                         elem.addClass("open");
+                        doTrigger();
                     }
                     $(document.body).keydown(function (evt) {
                         if (evt.keyCode === keycode) {
                             elem.toggleClass("open");
                             ls.set(localstorage, elem.hasClass("open") ^ open);
+                            doTrigger();
                         }
                     });
+
+                    function doTrigger() {
+                        elem.trigger("drawer-state-change", {isOpen: elem.hasClass("open")});
+                    }
                 },
                 updateDropdown: function () {
                     $("#drawers-opener-content").empty().append(
@@ -2053,6 +2061,7 @@ window.App = (function () {
                                 evt.stopPropagation();
                                 _self.toggleClass("open");
                                 self.elements.opener.removeClass("open");
+                                _self.trigger("drawer-state-change", {isOpen: _self.hasClass("open")});
                             });
                         }).get()
                     );
@@ -2184,6 +2193,28 @@ window.App = (function () {
                                 break;
                         }
                     });
+
+                    let _info = $("#info");
+                    if (_info.hasClass("open")) {
+                        _info.find("iframe[data-lazysrc]").each((index, elem) => {
+                            elem.src = elem.dataset.lazysrc;
+                            delete elem.dataset.lazysrc;
+                        });
+                    } else {
+                        _info.on("drawer-state-change", function(event, data) {
+                            if (data.isOpen === true) {
+                                let elems = $("#info iframe[data-lazysrc]");
+                                if (elems.length) {
+                                    elems.each((index, elem) => {
+                                        elem.src = elem.dataset.lazysrc;
+                                        delete elem.dataset.lazysrc;
+                                    });
+                                } else {
+                                    _info.off("drawer-state-change");
+                                }
+                            }
+                        })
+                    }
                 },
                 _initStack: function() {
                     socket.on("pixels", function(data) {
