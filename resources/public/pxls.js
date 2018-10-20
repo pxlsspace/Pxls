@@ -251,6 +251,9 @@ window.App = (function () {
                                 case "TEMPLATE_UPDATE":
                                     template.update(data.data);
                                     break;
+                                case "VIEWPORT_UPDATE":
+                                    board.updateViewport(data.data);
+                                    break;
                                 default:
                                     console.warn("Unknown data type: %o", data.type);
                                     break;
@@ -556,9 +559,13 @@ window.App = (function () {
                         lookup.runLookup(args.x, args.y);
                     }
                 },
+                updateViewport: function(data) {
+                    if (!isNaN(data.scale)) self.scale = parseFloat(data.scale);
+                    self.centerOn(data.x, data.y);
+                },
                 centerOn: function (x, y) {
-                    self.pan.x = (self.width / 2 - x);
-                    self.pan.y = (self.height / 2 - y);
+                    if (x != null) self.pan.x = (self.width / 2 - x);
+                    if (y != null) self.pan.y = (self.height / 2 - y);
                     self.update();
                 },
                 replayBuffer: function () {
@@ -1135,7 +1142,8 @@ window.App = (function () {
                 save: self.save,
                 centerOn: self.centerOn,
                 getRenderBoard: self.getRenderBoard,
-                refresh: self.refresh
+                refresh: self.refresh,
+                updateViewport: self.updateViewport
             };
         })(),
         // heatmap init stuff
