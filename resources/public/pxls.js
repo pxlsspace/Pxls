@@ -249,7 +249,7 @@ window.App = (function () {
                             let data = evt.data;
                             switch(data.type.toUpperCase().trim()) {
                                 case "TEMPLATE_UPDATE":
-                                    template.update(data.data);
+                                    template.queueUpdate(data.data);
                                     break;
                                 case "VIEWPORT_UPDATE":
                                     board.updateViewport(data.data);
