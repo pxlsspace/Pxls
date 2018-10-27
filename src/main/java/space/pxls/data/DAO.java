@@ -136,18 +136,11 @@ public interface DAO extends Closeable {
             "ban_reason VARCHAR(512) NOT NULL DEFAULT ''," +
             "user_agent VARCHAR(512) NOT NULL DEFAULT ''," +
             "pixel_count INT UNSIGNED NOT NULL DEFAULT 0," +
-            "last_ip_alert INT(1) NOT NULL DEFAULT 0, " +
             "pixel_count_alltime INT UNSIGNED NOT NULL DEFAULT 0)")
     void createUsersTable();
 
-    @SqlQuery("SELECT EXISTS(SELECT * FROM users WHERE id = :uid AND last_ip_alert = 1)")
-    boolean userLastIPAlerted(@Bind("uid") int uid);
-
     @SqlQuery("SELECT EXISTS(SELECT 1 FROM users WHERE (last_ip = INET6_ATON(:ip) OR signup_ip = INET6_ATON(:ip)) AND id <> :uid)")
     boolean haveDupeIp(@Bind("ip") String ip, @Bind("uid") int uid);
-
-    @SqlUpdate("UPDATE users SET last_ip_alert=1 WHERE id=:uid")
-    void flagLastIPAlertedOnUID(@Bind("uid") int uid);
 
     @SqlUpdate("UPDATE users SET cooldown_expiry = now() + INTERVAL :seconds SECOND WHERE id = :id")
     void updateUserTime(@Bind("id") int userId, @Bind("seconds") long sec);
