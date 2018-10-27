@@ -71,11 +71,6 @@ public class PacketHandler {
             user.setInitialAuthTime(System.currentTimeMillis());
             user.tickStack(false); // pop the whole pixel stack
             sendAvailablePixels(channel, user, "connect");
-
-            App.getDatabase().updateUserIP(user, channel.getSourceAddress().getHostName());
-            if (!App.getDatabase().userLastIPAlerted(user) && App.getDatabase().haveDupeIp(channel.getSourceAddress().getHostName(), user.getId())) {
-                App.getDatabase().doLastIPAlert(user);
-            }
         }
         numAllCons++;
 
