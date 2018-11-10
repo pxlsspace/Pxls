@@ -283,6 +283,10 @@ public class Database implements Closeable {
         return getHandle().getUserPixels(id).pixel_count;
     }
 
+    public int getUserPixelsAllTime(int id) {
+        return getHandle().getUserPixelsAllTime(id).pixel_count_alltime;
+    }
+
     public void clearOldSessions() {
         getHandle().clearOldSessions();
     }
