@@ -185,7 +185,8 @@ public class PacketHandler {
             if (doCaptcha) {
                 int pixels = App.getConfig().getInt("captcha.maxPixels");
                 if (pixels != 0) {
-                    doCaptcha = user.getPixels() < pixels;
+                    boolean allTime = App.getConfig().getBoolean("captcha.allTime");
+                    doCaptcha = (allTime ? user.getPixelsAllTime() : user.getPixels()) < pixels;
                 }
             }
             if (user.updateCaptchaFlagPrePlace() && doCaptcha) {

@@ -321,6 +321,10 @@ public class User {
         return App.getDatabase().getUserPixels(this.id);
     }
 
+    public int getPixelsAllTime() {
+        return App.getDatabase().getUserPixelsAllTime(this.id);
+    }
+
     public int getAvailablePixels() {
         boolean canPlace = canPlace();
         if (!canPlace) return 0;
