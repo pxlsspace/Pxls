@@ -223,8 +223,8 @@ public class PacketHandler {
                 int c_old = c;
                 if (canPlace) {
                     int seconds = getCooldown();
-                    if (c_old != 0xFF && c_old != -1 && App.getDatabase().shouldPixelTimeIncrease(cp.getX(), cp.getY(), user.getId())) {
-                        seconds = (int)Math.round(seconds * 1.6);
+                    if (c_old != 0xFF && c_old != -1 && App.getDatabase().shouldPixelTimeIncrease(cp.getX(), cp.getY(), user.getId()) && App.getConfig().getBoolean("backgroundPixel.enabled")) {
+                        seconds = (int)Math.round(seconds * App.getConfig().getDouble("backgroundPixel.multiplier"));
                     }
                     if (user.isShadowBanned()) {
                         // ok let's just pretend to set a pixel...
