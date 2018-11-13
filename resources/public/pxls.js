@@ -1887,7 +1887,7 @@ window.App = (function () {
                                 }
                                 msg = textarea;
                             } else if (textarea !== "") {
-                                msg += "\n\nAdditional information: " + textarea
+                                msg += "; additional information: " + textarea
                             }
                             $.post("/report", {
                                 id: id,
