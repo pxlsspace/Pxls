@@ -1848,8 +1848,17 @@ window.App = (function () {
                             fontWeight: 800,
                             marginTop: 0
                         }).text("Report pixel to moderator"),
-                        $("<p>").addClass("text").text("message:"),
-                        $("<textarea>").css({
+                        $("<select>").append(
+                            $("<option>").text("Rule #1: Hateful/derogatory speech or symbols"),
+                            $("<option>").text("Rule #2: Nudity, genitalia, or non-PG-13 content"),
+                            $("<option>").text("Rule #3: Multi-account"),
+                            $("<option>").text("Rule #4: Botting"),
+                            $("<option>").attr("value", "other").text("Other (specify below)")
+                        ).css({
+                            width: "100%",
+                            "margin-bottom": "1em"
+                        }),
+                        $("<textarea>").attr("placeholder", "Additional information (if applicable)").css({
                             width: '100%',
                             height: '5em'
                         }).keydown(function (evt) {
@@ -1868,10 +1877,17 @@ window.App = (function () {
                             bottom: 20,
                             right: 30
                         }).click(function () {
-                            var msg = self.elements.prompt.find("textarea").val().trim();
-                            if (!msg) {
-                                alert.show("You must enter a message!");
-                                return;
+                            var selectedRule = self.elements.prompt.find("select").val();
+                            var textarea = self.elements.prompt.find("textarea").val().trim();
+                            var msg = selectedRule;
+                            if (selectedRule === "other") {
+                                if (textarea === "") {
+                                    alert.show("You must specify the details.");
+                                    return;
+                                }
+                                msg = textarea;
+                            } else if (textarea !== "") {
+                                msg += "\n\nAdditional information: " + textarea
                             }
                             $.post("/report", {
                                 id: id,
