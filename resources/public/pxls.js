@@ -1752,7 +1752,9 @@ window.App = (function () {
                         switch(data.ackFor) {
                             case "PLACE":
                                 if (!ls.get("audio_muted")) {
-                                    self.audio.cloneNode(false).play();
+                                    var clone = self.audio.cloneNode(false);
+                                    clone.volume = parseFloat(ls.get("alert.volume"));
+                                    clone.play();
                                 }
                             case "UNDO":
                                 if (uiHelper.getAvailable() === 0)
