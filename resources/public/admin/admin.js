@@ -34,14 +34,6 @@
                 prompt: function (s, time, fn) {
                     var time_input = $("<input>").attr("type", "number").addClass("admin-bannumber").val(time);
                     self.elements.prompt.empty().append(
-                        /* $("<p>").addClass("text").text(s),
-                        $("<input>").addClass("prompt").attr("type","text").css("width", "100%").keydown(function (evt) {
-                            if (evt.which === 13) {
-                                fn(self.elements.prompt.find(".prompt").val());
-                                self.elements.prompt.fadeOut(200);
-                            }
-                            evt.stopPropagation();
-                        }), */
                         $("<p>").addClass("text").css({
                             fontWeight: 800,
                             marginTop: 0
@@ -77,8 +69,6 @@
                             bottom: 20,
                             right: 30
                         }).click(function () {
-                            //fn(self.elements.prompt.find(".prompt").val(), parseFloat(time_input.val()));
-                            //self.elements.prompt.fadeOut(200);
                             var selectedRule = self.elements.prompt.find("select").val();
                             var textarea = self.elements.prompt.find("textarea").val().trim();
                             var msg = selectedRule;
@@ -91,8 +81,7 @@
                             } else if (textarea !== "") {
                                 msg += "; additional information: " + textarea;
                             }
-                            console.log(msg, parseFloat(time_input.val()))
-                            //fn(msg, parseFloat(time_input.val()));
+                            fn(msg, parseFloat(time_input.val()));
                             self.elements.prompt.fadeOut(200);
                         })
                     ).fadeIn(200);
