@@ -1889,7 +1889,7 @@ window.App = (function () {
                                 }
                                 msg = textarea;
                             } else if (textarea !== "") {
-                                msg += "; additional information: " + textarea
+                                msg += "; additional information: " + textarea;
                             }
                             $.post("/report", {
                                 id: id,
