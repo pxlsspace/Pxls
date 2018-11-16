@@ -1152,7 +1152,6 @@ window.App = (function () {
                 getScale: self.getScale,
                 nudgeScale: self.nudgeScale,
                 setScale: self.setScale,
-                getPixel: self.getPixel,
                 setPixel: self.setPixel,
                 fromScreen: self.fromScreen,
                 toScreen: self.toScreen,
@@ -1630,7 +1629,6 @@ window.App = (function () {
                 },
                 switch: function (newColor) {
                     self.color = newColor;
-                    console.log('SWITCHING COLOR TO ' + newColor)
                     $(".palette-color").removeClass("active");
 
                     $("body").toggleClass("show-placeable-bubble", newColor === -1);
