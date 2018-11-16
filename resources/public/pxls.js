@@ -730,6 +730,15 @@ window.App = (function () {
                     self.elements.board_render[0].addEventListener("touchmove", handleInputMove, {passive: false});
 
                     function handleInputDown(event) {
+                        if (event.button != null) {
+                            // Is the button pressed the middle mouse button?
+                            if (event.button === 1) {
+                                // If so, switch to the color at the location.
+                                var { x, y } = self.fromScreen(event.clientX, event.clientY);
+                                place.switch(self.getPixel(x, y));
+                                return;
+                            }
+                        }
                         let clientX = 0,
                             clientY = 0,
                             prereq = true;
@@ -1037,6 +1046,13 @@ window.App = (function () {
                     }
                     self.scale *= sign;
                     self.update();
+                },
+                getPixel: function(x, y) {
+                    x = Math.floor(x);
+                    y = Math.floor(y);
+                    var colorInt = self.intView[y*self.width + x];
+                    var index = self.rgbPalette.indexOf(colorInt);
+                    return index;
                 },
                 setPixel: function (x, y, c, refresh) {
                     if (!self.loaded) {
