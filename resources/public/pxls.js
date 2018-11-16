@@ -2506,7 +2506,13 @@ window.App = (function () {
                  * @param {number} y The Y coordinate for the link to have.
                  */
                 getLinkToCoords: (x = 0, y = 0) => {
-                    return `${location.origin}/#x=${Math.floor(x)}&y=${Math.floor(y)}&scale=20`;
+                    var append = "";
+                    query.has("template") ? append += "&template=" + query.get("template") : 0;
+                    query.has("tw") ? append += "&tw=" + query.get("tw") : 0;
+                    query.has("oo") ? append += "&oo=" + query.get("oo") : 0;
+                    query.has("ox") ? append += "&ox=" + query.get("ox") : 0;
+                    query.has("oy") ? append += "&oy=" + query.get("oy") : 0;
+                    return `${location.origin}/#x=${Math.floor(x)}&y=${Math.floor(y)}&scale=20${append}`;
                 }
             };
             return {
