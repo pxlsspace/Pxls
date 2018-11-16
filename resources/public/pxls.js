@@ -736,6 +736,7 @@ window.App = (function () {
                                 // If so, switch to the color at the location.
                                 var { x, y } = self.fromScreen(event.clientX, event.clientY);
                                 place.switch(self.getPixel(x, y));
+                                return;
                             }
                         }
                         let clientX = 0,
@@ -1051,7 +1052,7 @@ window.App = (function () {
                     y = Math.floor(y);
                     var colorInt = self.intView[y*self.width + x];
                     var index = self.rgbPalette.indexOf(colorInt);
-                    place.switch(index);
+                    return index;
                 },
                 setPixel: function (x, y, c, refresh) {
                     if (!self.loaded) {
@@ -1629,6 +1630,7 @@ window.App = (function () {
                 },
                 switch: function (newColor) {
                     self.color = newColor;
+                    console.log('SWITCHING COLOR TO ' + newColor)
                     $(".palette-color").removeClass("active");
 
                     $("body").toggleClass("show-placeable-bubble", newColor === -1);
