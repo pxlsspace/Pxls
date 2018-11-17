@@ -1152,6 +1152,7 @@ window.App = (function () {
                 getScale: self.getScale,
                 nudgeScale: self.nudgeScale,
                 setScale: self.setScale,
+                getPixel: self.getPixel,
                 setPixel: self.setPixel,
                 fromScreen: self.fromScreen,
                 toScreen: self.toScreen,
