@@ -913,6 +913,10 @@ window.App = (function () {
                                 };
                             window.requestAnimationFrame(spiiiiiin);
                         }
+                        let color = ls.get("color");
+                        if (color != null) {
+                            place.switch(parseInt(color));
+                        }
                     }).fail(function () {
                         socket.reconnect();
                     });
@@ -1630,6 +1634,7 @@ window.App = (function () {
                 },
                 switch: function (newColor) {
                     self.color = newColor;
+                    ls.set('color', newColor);
                     $(".palette-color").removeClass("active");
 
                     $("body").toggleClass("show-placeable-bubble", newColor === -1);
