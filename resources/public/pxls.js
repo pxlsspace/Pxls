@@ -852,6 +852,7 @@ window.App = (function () {
                 start: function () {
                     $.get("/info", function (data) {
                         heatmap.webinit(data);
+                        virginmap.webinit(data);
                         user.webinit(data);
                         self.width = data.width;
                         self.height = data.height;
@@ -1220,7 +1221,7 @@ window.App = (function () {
                     });
                 },
                 clear: function() {
-                    if (ls.get("hm_clearable") === true) {
+                    if (ls.get("hvm_clearable") === true) {
                         self._clear();
                     }
                 },
@@ -1249,9 +1250,9 @@ window.App = (function () {
                     $("#heatmap-opacity").on("change input", function() {
                         self.setBackgroundOpacity(parseFloat(this.value));
                     });
-                    $("#heatmapClearable")[0].checked = ls.get("hm_clearable");
-                    $("#heatmapClearable").change(function () {
-                        ls.set("hm_clearable", this.checked);
+                    $("#hvmapClearable")[0].checked = ls.get("hvm_clearable");
+                    $("#hvmapClearable").change(function () {
+                        ls.set("hvm_clearable", this.checked);
                     });
                     $(window).keydown(function (evt) {
                         if (evt.key == "o" || evt.key == "O" || evt.which == 79) { //O key
@@ -1307,6 +1308,151 @@ window.App = (function () {
                         if (e.key == "h" || e.key == "H" || e.which == 72) { // h key
                             self.toggle();
                             $("#heatmaptoggle")[0].checked = ls.get("heatmap");
+                        }
+                    });
+                }
+            };
+            return {
+                init: self.init,
+                webinit: self.webinit,
+                toggle: self.toggle,
+                setBackgroundOpacity: self.setBackgroundOpacity,
+                clear: self.clear
+            };
+        })(),
+        // Virginmaps are like heatmaps
+        virginmap = (function () {
+            var self = {
+                elements: {
+                    virginmap: $("#virginmap"),
+                    virginmapLoadingBubble: $("#virginmapLoadingBubble")
+                },
+                ctx: null,
+                id: null,
+                width: 0,
+                height: 0,
+                lazy_inited: false,
+                is_shown: false,
+                lazy_init: function () {
+                    if (self.lazy_inited) {
+                        self.elements.virginmapLoadingBubble.hide();
+                        return;
+                    }
+                    self.elements.virginmapLoadingBubble.show();
+                    self.lazy_inited = true;
+                    // we use xhr directly because of jquery being weird on raw binary
+                    binary_ajax("/virginmap" + "?_" + (new Date()).getTime(), function (data) {
+                        self.ctx = self.elements.virginmap[0].getContext("2d");
+                        self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
+                        self.id = createImageData(self.width, self.height);
+
+                        self.ctx.putImageData(self.id, 0, 0);
+                        self.ctx.fillStyle = "#000000";
+
+                        self.intView = new Uint32Array(self.id.data.buffer);
+                        for (var i = 0; i < self.width * self.height; i++) {
+                            var x = i % self.width;
+                            var y = Math.floor(i / self.width);
+                            if (data[i] === 0) {
+                                self.ctx.fillRect(x, y, 1, 1);
+                            }
+                        }
+                        self.elements.virginmap.fadeIn(200);
+                        self.elements.virginmapLoadingBubble.hide();
+                        socket.on("pixel", function (data) {
+                            $.map(data.pixels, function (px) {
+                                self.ctx.fillRect(px.x, px.y, 1, 1);
+                            });
+                        });
+                    });
+                },
+                clear: function() {
+                    if (ls.get("hvm_clearable") === true) {
+                        self._clear();
+                    }
+                },
+                _clear: function() {
+                    self.ctx.putImageData(self.id, 0, 0);
+                    self.ctx.fillStyle = "#00FF00";
+                    self.ctx.fillRect(0, 0, self.width, self.height);
+                },
+                setBackgroundOpacity: function(opacity) {
+                    if (typeof(opacity) === "string") {
+                        opacity = parseFloat(opacity);
+                        if (isNaN(opacity)) opacity = 0.5;
+                    }
+                    if (opacity === null || opacity === undefined) opacity = 0.5;
+                    if (opacity < 0 || opacity > 1) opacity = 0.5;
+
+                    ls.set("virginmap_background_opacity", opacity);
+                    self.elements.virginmap.css("background-color", "rgba(0, 255, 0, " + opacity + ")");
+                },
+                init: function () {
+                    self.elements.virginmap.hide();
+                    self.elements.virginmapLoadingBubble.hide();
+                    self.setBackgroundOpacity(ls.get("virginmap_background_opacity"));
+                    $("#virginmap-opacity").val(ls.get("virginmap_background_opacity")); //virginmap_background_opacity should always be valid after a call to self.setBackgroundOpacity.
+                    $("#virginmap-opacity").on("change input", function() {
+                        self.setBackgroundOpacity(parseFloat(this.value));
+                    });
+                    $("#hvmapClearable")[0].checked = ls.get("hvm_clearable");
+                    $("#hvmapClearable").change(function () {
+                        ls.set("hvm_clearable", this.checked);
+                    });
+                    $(window).keydown(function (evt) {
+                        if (evt.key == "o" || evt.key == "O" || evt.which == 79) { //O key
+                            self.clear();
+                        }
+                    });
+                },
+                show: function () {
+                    self.is_shown = false;
+                    self.toggle();
+                },
+                hide: function () {
+                    self.is_shown = true;
+                    self.toggle();
+                },
+                toggle: function () {
+                    self.is_shown = !self.is_shown;
+                    ls.set("virginmap", self.is_shown);
+                    $("#virginmaptoggle")[0].checked = self.is_shown;
+                    if (self.lazy_inited) {
+                        if (self.is_shown) {
+                            this.elements.virginmap.fadeIn(200);
+                        } else {
+                            this.elements.virginmap.fadeOut(200);
+                        }
+                        return;
+                    }
+                    if (self.is_shown) {
+                        self.lazy_init();
+                    }
+                },
+                webinit: function (data) {
+                    self.width = data.width;
+                    self.height = data.height;
+                    self.seconds = data.virginmapCooldown;
+                    self.elements.virginmap.attr({
+                        width: self.width,
+                        height: self.height
+                    });
+                    if (ls.get("virginmap")) {
+                        self.show();
+                    }
+                    $("#virginmaptoggle")[0].checked = ls.get("virginmap");
+                    $("#virginmaptoggle").change(function () {
+                        if (this.checked) {
+                            self.show();
+                        } else {
+                            self.hide();
+                        }
+                    });
+
+                    $(window).keydown(function (e) {
+                        if (e.key == "x" || e.key == "X" || e.which == 88) { // x key
+                            self.toggle();
+                            $("#virginmaptoggle")[0].checked = ls.get("virginmap");
                         }
                     });
                 }
@@ -2775,6 +2921,7 @@ window.App = (function () {
     query.init();
     board.init();
     heatmap.init();
+    virginmap.init();
     drawer.init();
     lookup.init();
     template.init();
@@ -2798,6 +2945,9 @@ window.App = (function () {
         query: query,
         heatmap: {
             clear: heatmap.clear
+        },
+        virginmap: {
+            clear: virginmap.clear
         },
         uiHelper: {
             updateAudio: uiHelper.updateAudio
