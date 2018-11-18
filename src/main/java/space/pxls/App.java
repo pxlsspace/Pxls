@@ -45,6 +45,7 @@ public class App {
     private static byte[] board;
     private static byte[] heatmap;
     private static byte[] placemap;
+    private static byte[] virginmap;
     private static boolean havePlacemap;
 
     private static PxlsTimer mapSaveTimer;
@@ -63,6 +64,7 @@ public class App {
         board = new byte[width * height];
         heatmap = new byte[width * height];
         placemap = new byte[width * height];
+        virginmap = new byte[width * height];
 
         if (!loadMap()) {
             for (int x = 0; x < width; x++) {
@@ -74,6 +76,7 @@ public class App {
 
         loadHeatmap();
         loadPlacemap();
+        loadVirginmap();
 
         database = new Database();
         userManager = new UserManager();
@@ -291,6 +294,10 @@ public class App {
         return heatmap;
     }
 
+    public static byte[] getVirginmapData() {
+        return virginmap;
+    }
+
     public static byte[] getBoardData() {
         return board;
     }
@@ -319,12 +326,17 @@ public class App {
         return placemap[x + y * width];
     }
 
+    public static int getVirginmap(int x, int y) {
+        return virginmap[x + y * width];
+    }
+
     public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase) {
         if (x < 0 || x >= width || y < 0 || y >= height || (color >= getPalette().size() && !(color == 0xFF || color == -1))) return;
         String userName = user != null ? user.getName() : "<server>";
 
         board[x + y * width] = (byte) color;
         heatmap[x + y * width] = (byte) 0xFF;
+        virginmap[x + y * width] = (byte) 0x00;
         pixelLogger.log(Level.INFO, String.format("%s %d %d %d %s %s", userName, x, y, color, ip, mod_action ? " (mod)" : ""));
         if (updateDatabase) {
             database.placePixel(x, y, color, user, mod_action);
@@ -447,6 +459,17 @@ public class App {
         }
     }
 
+    private static void loadVirginmap() {
+        try {
+            byte[] bytes = Files.readAllBytes(getStorageDir().resolve("virginmap.dat"));
+            System.arraycopy(bytes, 0, virginmap, 0, width * height);
+        } catch (NoSuchFileException e) {
+            System.out.println("Warning: Cannot find virginmap.dat in working directory, using blank virginmap");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void updateHeatmap() {
         for (int i = 0; i < width * height; i++) {
             if (heatmap[i] != 0) {
@@ -469,6 +492,7 @@ public class App {
     private static void saveMapForce() {
         saveMapToDir(getStorageDir().resolve("board.dat"));
         saveHeatmapToDir(getStorageDir().resolve("heatmap.dat"));
+        saveVirginmapToDir(getStorageDir().resolve("virginmap.dat"));
     }
 
     private static void saveMapBackup() {
@@ -486,6 +510,14 @@ public class App {
     private static void saveHeatmapToDir(Path path) {
         try {
             Files.write(path, heatmap);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void saveVirginmapToDir(Path path) {
+        try {
+            Files.write(path, virginmap);
         } catch (IOException e) {
             e.printStackTrace();
         }
