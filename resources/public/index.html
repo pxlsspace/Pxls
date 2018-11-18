@@ -23,6 +23,7 @@
     <div id="board-zoomer">
         <div id="board-mover">
             <canvas id="heatmap" class="pixelate noselect"></canvas>
+            <canvas id="virginmap" class="pixelate noselect"></canvas>
             <canvas id="board" class="pixelate noselect" width="100" height="100"></canvas>
         </div>
     </div>
@@ -45,13 +46,15 @@
                 <div class="settingToggles">
                     <label><input id="audiotoggle" type="checkbox"/>Mute sound</label>
                     <label><input id="heatmaptoggle" type="checkbox"/>Turn on heatmap (toggle with <kbd>H</kbd>)</label>
-                    <label><input type="checkbox" id="heatmapClearable">Enable heatmap clearing (hotkey: <kbd>O</kbd>)</label>
+                    <label><input id="virginmaptoggle" type="checkbox"/>Turn on virginmap (toggle with <kbd>X</kbd>)</label>
+                    <label><input type="checkbox" id="hvmapClearable">Enable heatmap and virginmap clearing (hotkey: <kbd>O</kbd>)</label>
                     <label><input id="gridtoggle" type="checkbox"/>Turn on grid (toggle with <kbd>G</kbd>)</label>
                     <label><input id="stickyColorToggle" type="checkbox"/>Keep color selected</label>
                     <label><input id="monospaceToggle" type="checkbox"/>Toggle monospace font for lookups</label>
                     <label><input id="increasedZoomToggle" type="checkbox"/>Allow zoom values greater than 50x</label>
                     <label><input id="scrollSwitchToggle" type="checkbox"/>Enable scrolling on the palette to switch colors</label>
                     <label>Heatmap BG Opacity: <input type="range" min="0" max="1" step="0.01" id="heatmap-opacity"></label>
+                    <label>Virginmap BG Opacity: <input type="range" min="0" max="1" step="0.01" id="virginmap-opacity"></label>
                     <label>
                         Snapshot (hotkey: <kbd>P</kbd>) image format
                         <select id="snapshotImageFormat">
@@ -76,7 +79,8 @@
                     <p><kbd>L</kbd> to toggle locking panning of the canvas</p>
                     <p><kbd>P</kbd> to take a snapshot</p>
                     <p><kbd>H</kbd> to toggle heatmap</p>
-                    <p><kbd>O</kbd> to clear heatmap (if enabled)</p>
+                    <p><kbd>X</kbd> to toggle virginmap</p>
+                    <p><kbd>O</kbd> to clear heatmap and virginmap (if either is enabled)</p>
                     <p><kbd>J</kbd>/<kbd>K</kbd> to cycle through palette colors</p>
                     <p><kbd>C</kbd> to copy link of moused-over coordinates</p>
                     <p><kbd>ESC</kbd> to deselect current pixel</p>
@@ -136,6 +140,7 @@
     <div class="left">
         <div id="coords" class="bubble"></div>
         <div id="heatmapLoadingBubble" class="bubble orange-bubble fat-bubble">Loading heatmap...</div>
+        <div id="virginmapLoadingBubble" class="bubble orange-bubble fat-bubble">Loading virginmap...</div>
         <div id="cd-timer-bubble" class="bubble"></div>
         <div id="placeableInfoBubble" class="bubble">Pixels available: <span id="placeableCount-bubble">0/0</span></div>
     </div>
