@@ -229,7 +229,7 @@
                         ),
                         $("<div>").append(
                             $("<b>").text("Custom ban length: "), "<br>",
-                            $("<input>").attr("type", "number").addClass("admin-bannumber").val(24),
+                            $("<input>").attr("type", "number").attr("step", "any").addClass("admin-bannumber").val(24),
                             " hours ",
                             genButton("Ban").click(function () {
                                 ban.ban(data.username, parseFloat($(this).parent().find("input").val())*3600, function () {
