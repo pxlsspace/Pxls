@@ -32,7 +32,7 @@
                 deinit: function () {
                 },
                 prompt: function (s, time, fn) {
-                    var time_input = $("<input>").attr("type", "number").addClass("admin-bannumber").val(time);
+                    var time_input = $("<input>").attr("type", "number").attr("step", "any").addClass("admin-bannumber").val(time);
                     self.elements.prompt.empty().append(
                         $("<p>").addClass("text").css({
                             fontWeight: 800,
