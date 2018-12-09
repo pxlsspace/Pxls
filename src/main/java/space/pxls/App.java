@@ -330,6 +330,8 @@ public class App {
         return virginmap[x + y * width];
     }
 
+    public static boolean getRegistrationEnabled() { return getConfig().getBoolean("oauth.enableRegistration"); }
+
     public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase) {
         if (x < 0 || x >= width || y < 0 || y >= height || (color >= getPalette().size() && !(color == 0xFF || color == -1))) return;
         String userName = user != null ? user.getName() : "<server>";

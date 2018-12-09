@@ -9,7 +9,8 @@ data class CanvasInfo (
         val captchaKey: String,
         val heatmapCooldown: Int,
         val maxStacked: Int,
-        val authServices: Map<String, AuthService>
+        val authServices: Map<String, AuthService>,
+        val registrationEnabled: Boolean
 )
 
 data class SignInResponse(val url: String)

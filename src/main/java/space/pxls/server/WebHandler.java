@@ -238,6 +238,10 @@ public class WebHandler {
     }
 
     public void signUp(HttpServerExchange exchange) {
+        if (!App.getRegistrationEnabled()) {
+            respond(exchange, StatusCodes.UNAUTHORIZED, new Error("registration_disabled", "Registration has been disabled"));
+            return;
+        }
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         FormData.FormValue nameVal = data.getFirst("username");
         FormData.FormValue tokenVal = data.getFirst("token");
@@ -452,7 +456,8 @@ public class WebHandler {
                         App.getConfig().getString("captcha.key"),
                         (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS),
                         (int) App.getConfig().getInt("stacking.maxStacked"),
-                        services
+                        services,
+                        App.getRegistrationEnabled()
                 )));
     }
 
