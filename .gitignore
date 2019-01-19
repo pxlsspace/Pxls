@@ -11,6 +11,7 @@ backups/
 board.dat
 default_board.dat
 heatmap.dat
+virginmap.dat
 pxls.conf
 index_cache.html
 TODO
