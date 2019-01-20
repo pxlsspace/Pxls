@@ -52,6 +52,7 @@ public class App {
     private static PxlsTimer mapBackupTimer;
     private static UndertowServer server;
 
+    private static String cachedWhoamiOrigin = null;
     public static void main(String[] args) {
         gson = new Gson();
 
@@ -129,6 +130,7 @@ public class App {
         try {
             String[] token = line.split(" ");
             if (token[0].equalsIgnoreCase("reload")) {
+                cachedWhoamiOrigin = null;
                 loadConfig();
             } else if (token[0].equalsIgnoreCase("save")) {
                 saveMapForce();
@@ -316,6 +318,11 @@ public class App {
 
     public static boolean isCaptchaEnabled() {
         return !config.getString("captcha.key").isEmpty() && !config.getString("captcha.secret").isEmpty();
+    }
+
+    public static String getWhoamiAllowedOrigin() {
+        if (cachedWhoamiOrigin == null) cachedWhoamiOrigin = config.getString("whoamiAllowedOrigin");
+        return cachedWhoamiOrigin;
     }
 
     public static int getPixel(int x, int y) {

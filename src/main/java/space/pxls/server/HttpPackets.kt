@@ -13,6 +13,11 @@ data class CanvasInfo (
         val registrationEnabled: Boolean
 )
 
+data class WhoAmI(
+        val username: String,
+        val id: Int
+)
+
 data class SignInResponse(val url: String)
 
 data class SignUpResponse(val token: String)

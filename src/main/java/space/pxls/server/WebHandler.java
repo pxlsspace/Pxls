@@ -607,6 +607,19 @@ public class WebHandler {
         exchange.getResponseSender().send(App.getGson().toJson(new ServerUsers(App.getServer().getConnections().size())));
     }
 
+    public void whoami(HttpServerExchange exchange) {
+        exchange.getResponseHeaders()
+                .put(Headers.CONTENT_TYPE, "application/json")
+                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), App.getWhoamiAllowedOrigin())
+                .put(HttpString.tryFromString("Access-Control-Allow-Credentials"), "true");
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user != null) {
+            exchange.getResponseSender().send(App.getGson().toJson(new WhoAmI(user.getName(), user.getId())));
+        } else {
+            exchange.getResponseSender().send(App.getGson().toJson(new WhoAmI("unauthed", -1)));
+        }
+    }
+
     private User parseUserFromForm(HttpServerExchange exchange) {
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         if (data != null) {

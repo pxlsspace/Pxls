@@ -67,6 +67,7 @@ public class UndertowServer {
                 .addPrefixPath("/admin/check", new RoleGate(Role.TRIALMOD, webHandler::check))
                 .addPrefixPath("/admin", new RoleGate(Role.TRIALMOD, Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/"))
                         .setCacheTime(10)))
+                .addPrefixPath("/whoami", webHandler::whoami)
                 .addExactPath("/", webHandler::index)
                 .addExactPath("/index.html", webHandler::index)
                 .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/"))
