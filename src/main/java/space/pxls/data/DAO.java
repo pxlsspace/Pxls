@@ -54,6 +54,7 @@ public interface DAO extends Closeable {
             "time TIMESTAMP NOT NULL DEFAULT now(6)," +
             "mod_action BOOLEAN NOT NULL DEFAULT false," +
             "rollback_action BOOLEAN NOT NULL DEFAULT false," +
+            "undone TINYINT NOT NULL DEFAULT 0," +
             "undo_action BOOLEAN NOT NULL DEFAULT false," +
             "most_recent BOOLEAN NOT NULL DEFAULT true);" +
             "CREATE INDEX IF NOT EXISTS pos ON pixels (x,y) COMMENT 'pos';" +
@@ -102,8 +103,8 @@ public interface DAO extends Closeable {
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, undo_action, most_recent)" +
             "VALUES (:x, :y, :color, :who, NULL, true, false);" +
-            "UPDATE pixels SET most_recent = true WHERE id = :back_id;" +
-            "UPDATE pixels SET most_recent = false WHERE id = :from_id;" +
+            "UPDATE pixels SET most_recent = true,undone=false WHERE id = :back_id;" +
+            "UPDATE pixels SET most_recent = false,undone=true WHERE id = :from_id;" +
             "UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0), pixel_count_alltime = IF(pixel_count_alltime, pixel_count_alltime-1, 0) WHERE id = :who")
     void putUserUndoPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("back_id") int backId, @Bind("from_id") int fromId);
 
