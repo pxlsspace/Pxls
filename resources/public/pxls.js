@@ -780,9 +780,14 @@ window.App = (function () {
                         }
                         var dx = Math.abs(downX - clientX),
                             dy = Math.abs(downY - clientY);
-                        if (dx < 5 && dy < 5 && (event.button === 0 || touch) && downDelta < 500) {
-                            var pos = self.fromScreen(clientX, clientY);
-                            place.place(pos.x | 0, pos.y | 0);
+                        if ((event.button === 0 || touch) && downDelta < 500) {
+                            if (!self.allowDrag && dx < 25 && dy < 25) {
+                                var pos = self.fromScreen(downX, downY);
+                                place.place(pos.x | 0, pos.y | 0);
+                            } else if (dx < 5 && dy < 5) {
+                                var pos = self.fromScreen(clientX, clientY);
+                                place.place(pos.x | 0, pos.y | 0);
+                            }
                         }
                         downDelta = 0;
                         if (event.button != null) {
