@@ -5,72 +5,72 @@ if (window.App !== undefined) {
 }
 window.App = (function () {
     // first we define the global helperfunctions and figure out what kind of settings our browser needs to use
-    var storageFactory = function(storageType, prefix, exdays) {
-            var getCookie = function(c_name) {
-                var i, x, y, ARRcookies = document.cookie.split(";");
-                    for (i = 0; i < ARRcookies.length; i++) {
-                        x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
-                        y = ARRcookies[i].substr(ARRcookies[i].indexOf("=") + 1);
-                        x = x.replace(/^\s+|\s+$/g,"");
-                        if (x == c_name){
-                            return unescape(y);
-                        }
+    var storageFactory = function (storageType, prefix, exdays) {
+        var getCookie = function (c_name) {
+            var i, x, y, ARRcookies = document.cookie.split(";");
+            for (i = 0; i < ARRcookies.length; i++) {
+                x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
+                y = ARRcookies[i].substr(ARRcookies[i].indexOf("=") + 1);
+                x = x.replace(/^\s+|\s+$/g, "");
+                if (x == c_name) {
+                    return unescape(y);
                 }
-            },
-            setCookie = function(c_name, value, exdays) {
+            }
+        },
+            setCookie = function (c_name, value, exdays) {
                 var exdate = new Date(),
                     c_value = escape(value);
                 exdate.setDate(exdate.getDate() + exdays);
-                c_value += ((exdays===null) ? '' : '; expires=' + exdate.toUTCString());
+                c_value += ((exdays === null) ? '' : '; expires=' + exdate.toUTCString());
                 document.cookie = c_name + '=' + c_value;
             };
-            return {
-                haveSupport: null,
-                support: function () {
-                    if (this.haveSupport === null) {
-                        try {
-                            storageType.setItem('test', 1);
-                            this.haveSupport = (storageType.getItem('test') == 1);
-                            storageType.removeItem('test');
-                        } catch(e) {
-                            this.haveSupport = false;
-                        }
-                    }
-                    return this.haveSupport;
-                },
-                get: function(name) {
-                    var s;
-                    if (this.support()) {
-                        s = storageType.getItem(name)
-                    } else {
-                        s = getCookie(prefix+name);
-                    }
-                    if (s === undefined) {
-                        s = null;
-                    }
+        return {
+            haveSupport: null,
+            support: function () {
+                if (this.haveSupport === null) {
                     try {
-                        return JSON.parse(s);
-                    } catch(e) {
-                        return null;
-                    }
-                },
-                set: function(name, value) {
-                    value = JSON.stringify(value);
-                    if (this.support()) {
-                        storageType.setItem(name, value);
-                    } else {
-                        setCookie(prefix+name, value, exdays)
-                    }
-                },
-                remove: function(name) {
-                    if (this.support()) {
-                        storageType.removeItem(name);
-                    } else {
-                        setCookie(prefix+name, '', -1);
+                        storageType.setItem('test', 1);
+                        this.haveSupport = (storageType.getItem('test') == 1);
+                        storageType.removeItem('test');
+                    } catch (e) {
+                        this.haveSupport = false;
                     }
                 }
-            };
-        },
+                return this.haveSupport;
+            },
+            get: function (name) {
+                var s;
+                if (this.support()) {
+                    s = storageType.getItem(name)
+                } else {
+                    s = getCookie(prefix + name);
+                }
+                if (s === undefined) {
+                    s = null;
+                }
+                try {
+                    return JSON.parse(s);
+                } catch (e) {
+                    return null;
+                }
+            },
+            set: function (name, value) {
+                value = JSON.stringify(value);
+                if (this.support()) {
+                    storageType.setItem(name, value);
+                } else {
+                    setCookie(prefix + name, value, exdays)
+                }
+            },
+            remove: function (name) {
+                if (this.support()) {
+                    storageType.removeItem(name);
+                } else {
+                    setCookie(prefix + name, '', -1);
+                }
+            }
+        };
+    },
         binary_ajax = function (url, fn, failfn) {
             var xhr = new XMLHttpRequest();
             xhr.open("GET", url, true);
@@ -89,7 +89,7 @@ window.App = (function () {
             };
             xhr.send(null);
         },
-        createImageData = function(w, h) {
+        createImageData = function (w, h) {
             try {
                 return new ImageData(w, h);
             } catch (e) {
@@ -105,8 +105,8 @@ window.App = (function () {
             }
         },
         nua = navigator.userAgent,
-        have_image_rendering = (function() {
-            var checkImageRendering = function(prefix, crisp, pixelated, optimize_contrast){
+        have_image_rendering = (function () {
+            var checkImageRendering = function (prefix, crisp, pixelated, optimize_contrast) {
                 var d = document.createElement('div');
                 if (crisp) {
                     d.style.imageRendering = prefix + 'crisp-edges';
@@ -136,8 +136,8 @@ window.App = (function () {
         ms_edge = nua.indexOf('Edge') > -1;
     if (ios_safari) {
         var iOS = parseFloat(
-            ('' + (/CPU.*OS ([0-9_]{1,5})|(CPU like).*AppleWebKit.*Mobile/i.exec(navigator.userAgent) || [0,''])[1])
-            .replace('undefined', '3_2').replace('_', '.').replace('_', '')
+            ('' + (/CPU.*OS ([0-9_]{1,5})|(CPU like).*AppleWebKit.*Mobile/i.exec(navigator.userAgent) || [0, ''])[1])
+                .replace('undefined', '3_2').replace('_', '.').replace('_', '')
         ) || false;
         have_image_rendering = false;
         if (iOS >= 11) {
@@ -153,15 +153,15 @@ window.App = (function () {
     var ls = storageFactory(localStorage, 'ls_', 99),
         ss = storageFactory(sessionStorage, 'ss_', null),
         // this object is used to access the query parameters (and in the future probably to set them), it is prefered to use # now instead of ? as JS can change them
-        query = (function() {
+        query = (function () {
             var self = {
                 params: {},
                 initialized: false,
-                _trigger: function(propName, oldValue, newValue) {
+                _trigger: function (propName, oldValue, newValue) {
                     $(window).trigger("pxls:queryUpdated", [propName, oldValue, newValue]); //window.on("queryUpdated", (event, propName, oldValue, newValue) => {...});
                     //this will cause issues if you're not paying attention. always check for `newValue` to be null in the event of a deleted key.
                 },
-                _update: function(fromEvent) {
+                _update: function (fromEvent) {
                     let toSplit = window.location.hash.substring(1);
                     if (window.location.search.length > 0)
                         toSplit += ("&" + window.location.search.substring(1));
@@ -202,7 +202,7 @@ window.App = (function () {
                         window.location = window.location.pathname + "#" + self.getStr();
                     }
                 },
-                setIfDifferent: function() {
+                setIfDifferent: function () {
                     //setIfDifferent({oo: 0.3, template: "https://i.trg0d.com/gpq0786uCk4"}, [silent=false]);
                     //setIfDifferent("template", "https://i.trg0d.com/gpq0786uCk4", [silent=false]);
 
@@ -237,17 +237,17 @@ window.App = (function () {
                         if ("replaceState" in window.history) {
                             // We disable this if `replaceState` is missing because this will call _update every time the `window.location.hash` is set programatically.
                             // Simply scrolling around the map would constantly call `board.centerOn` because x/y would be modified.
-                            window.onhashchange = function() {
+                            window.onhashchange = function () {
                                 self._update(true);
                             };
                         }
                     }
 
-                    $(window).on("message", function(evt) {
+                    $(window).on("message", function (evt) {
                         evt = evt.originalEvent;
                         if (evt.data && evt.data.type && evt.data.data) {
                             let data = evt.data;
-                            switch(data.type.toUpperCase().trim()) {
+                            switch (data.type.toUpperCase().trim()) {
                                 case "TEMPLATE_UPDATE":
                                     template.queueUpdate(data.data);
                                     break;
@@ -261,7 +261,7 @@ window.App = (function () {
                         }
                     });
                 },
-                has: function(key) {
+                has: function (key) {
                     return self.get(key) != null;
                 },
                 getStr: function () {
@@ -274,7 +274,7 @@ window.App = (function () {
                                     toSet = self.params[p];
                                 if (decoded === toSet)
                                     toSet = encodeURIComponent(toSet); //ensure already URL-encoded values don't get re-encoded. if decoded === toSet, then it's already in an un-encoded form, and we can encode "safely".
-                                s += "="+toSet;
+                                s += "=" + toSet;
                             }
                             params.push(s);
                         }
@@ -327,13 +327,13 @@ window.App = (function () {
             };
         })(),
         // this object is responsible for detecting pxls placement and banning them
-        ban = (function() {
+        ban = (function () {
             var self = {
                 bad_src: [/^https?:\/\/[^\/]*raw[^\/]*git[^\/]*\/(metonator|Deklost|NomoX|RogerioBlanco)/gi,
-                        /^chrome\-extension:\/\/lmleofkkoohkbgjikogbpmnjmpdedfil/gi,
-                        /^https?:\/\/.*mlpixel\.org/gi],
+                    /^chrome\-extension:\/\/lmleofkkoohkbgjikogbpmnjmpdedfil/gi,
+                    /^https?:\/\/.*mlpixel\.org/gi],
                 bad_events: ["mousedown", "mouseup", "click"],
-                checkSrc: function(src) {
+                checkSrc: function (src) {
                     // as naive as possible to make injection next to impossible
                     for (var i = 0; i < self.bad_src.length; i++) {
                         if (src.match(self.bad_src[i])) {
@@ -341,7 +341,7 @@ window.App = (function () {
                         }
                     }
                 },
-                init: function() {
+                init: function () {
                     setInterval(self.update, 5000);
 
                     // don't allow new websocket connections
@@ -398,13 +398,13 @@ window.App = (function () {
                     socket.close();
                     window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
                 },
-                update: function() {
+                update: function () {
                     var _ = function () {
                         // This (still) does exactly what you think it does.
                         self.me(1);
                     };
 
-                    window.App.attemptPlace = window.App.doPlace = function() {
+                    window.App.attemptPlace = window.App.doPlace = function () {
                         self.me(3);
                     };
 
@@ -442,7 +442,7 @@ window.App = (function () {
             };
         })(),
         // this object is takes care of the websocket connection
-        socket = (function() {
+        socket = (function () {
             var self = {
                 ws: null,
                 ws_constructor: WebSocket,
@@ -452,7 +452,7 @@ window.App = (function () {
                 reconnect: function () {
                     $("#reconnecting").show();
                     setTimeout(function () {
-                        $.get(window.location.pathname + "?_" + (new Date()).getTime(), function () { 
+                        $.get(window.location.pathname + "?_" + (new Date()).getTime(), function () {
                             window.location.reload();
                         }).fail(function () {
                             console.log("Server still down...");
@@ -460,13 +460,13 @@ window.App = (function () {
                         });
                     }, 3000);
                 },
-                reconnectSocket: function() {
-                    self.ws.onclose = function(){};
+                reconnectSocket: function () {
+                    self.ws.onclose = function () { };
                     self.connectSocket();
                 },
-                connectSocket: function() {
+                connectSocket: function () {
                     var l = window.location,
-                        url = ( (l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname + "ws";
+                        url = ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname + "ws";
                     self.ws = new self.ws_constructor(url);
                     self.ws.onmessage = function (msg) {
                         var data = JSON.parse(msg.data);
@@ -487,7 +487,7 @@ window.App = (function () {
                     self.connectSocket();
 
                     $(window).on("beforeunload", function () {
-                        self.ws.onclose = function () {};
+                        self.ws.onclose = function () { };
                         self.close();
                     });
 
@@ -525,7 +525,7 @@ window.App = (function () {
             };
         })(),
         // this object holds all board information and is responsible of rendering the board
-        board = (function() {
+        board = (function () {
             var self = {
                 elements: {
                     board: $("#board"),
@@ -554,12 +554,12 @@ window.App = (function () {
                 holdTimer: {
                     id: -1,
                     holdTimeout: 500,
-                    handler: function(args) { //self.holdTimer.handler
+                    handler: function (args) { //self.holdTimer.handler
                         self.holdTimer.id = -1;
                         lookup.runLookup(args.x, args.y);
                     }
                 },
-                updateViewport: function(data) {
+                updateViewport: function (data) {
                     if (!isNaN(data.scale)) self.scale = parseFloat(data.scale);
                     self.centerOn(data.x, data.y);
                 },
@@ -578,7 +578,7 @@ window.App = (function () {
                 draw: function (data) {
                     self.id = createImageData(self.width, self.height);
                     self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
-                    
+
                     self.intView = new Uint32Array(self.id.data.buffer);
                     self.rgbPalette = place.getPaletteRGB();
 
@@ -616,85 +616,102 @@ window.App = (function () {
                     });
 
                     $(document.body).on("keydown", function (evt) {
-                        switch(evt.key || evt.keyCode) {
+                        switch (evt.code || evt.keyCode || evt.which || evt.key) {
+                            case "KeyW":        // W
+                            case "ArrowUp":
+                            case 38:            // Arrow Up
+                            case 87:            // W
                             case "w":
                             case "W":
-                            case "ArrowUp":
-                            case 87:
-                            case 38:
                                 self.pan.y += 100 / self.scale;
                                 break;
+                            case "KeyD":        // D
+                            case "ArrowRight":
+                            case 39:            // Arrow Right
+                            case 68:            // D
                             case "d":
                             case "D":
-                            case "ArrowRight":
-                            case 68:
-                            case 39:
                                 self.pan.x -= 100 / self.scale;
                                 break;
+                            case "KeyS":        // S
+                            case "ArrowDown":
+                            case 40:            // Arrow Down
+                            case 83:            // S
                             case "s":
                             case "S":
-                            case "ArrowDown":
-                            case 83:
-                            case 40:
                                 self.pan.y -= 100 / self.scale;
                                 break;
+                            case "KeyA":        // A
+                            case "ArrowLeft":
+                            case 37:            // Arrow Left
+                            case 65:            // A
                             case "a":
                             case "A":
-                            case "ArrowLeft":
-                            case 65:
-                            case 37:
                                 self.pan.x += 100 / self.scale;
                                 break;
-                            case "e":
-                            case "E":
-                            case "=":
-                            case 187:
-                            case 69:
-                            case 171:
-                                self.nudgeScale(1);
-                                break;
-                            case "q":
-                            case "Q":
-                            case "-":
-                            case 189:
-                            case 81:
-                            case 173:
-                                self.nudgeScale(-1);
-                                break;
+                            case "KeyP":
+                            case 80:            // P
                             case "p":
                             case "P":
-                            case 80:
                                 self.save();
                                 break;
+                            case "KeyL":
+                            case 76:            // L
                             case "l":
                             case "L":
-                            case 76:
                                 self.allowDrag = !self.allowDrag;
                                 break;
+                            case "keyJ":
+                            case 74:            // J
                             case "j":
                             case "J":
-                            case 74:
                                 if (place.color < 1) {
                                     place.switch(place.getPaletteRGB().length - 1);
                                 } else {
                                     place.switch(place.color - 1);
                                 }
                                 break;
+                            case "KeyK":
+                            case 75:            // K
                             case "k":
                             case "K":
-                            case 75:
                                 if (place.color + 1 >= place.getPaletteRGB().length) {
                                     place.switch(0);
                                 } else {
                                     place.switch(place.color + 1);
                                 }
                                 break;
+                            // Following stuff could be broken af for many non-English layouts
+                            case "KeyE":        // E
+                            case "Equal":       // = 
+                            case "NumpadAdd":   // numpad +
+                            case 69:            // E
+                            case 107:           // numpad +
+                            case 187:           // =
+                            case 171:           // +
+                            case "=":
+                            case "e":
+                            case "E":
+                                self.nudgeScale(1);
+                                break;
+                            case "KeyQ":        // Q
+                            case "Minus":       // -
+                            case "NumpadSubtact":   // numpad -
+                            case 81:            // Q
+                            case 109:           // numpad -
+                            case 173:           // -
+                            case 189:           // -
+                            case "q":
+                            case "Q":
+                            case "-":
+                                self.nudgeScale(-1);
+                                break;
                         }
                         self.pannedWithKeys = true;
                         self.update();
                     });
 
-                    self.elements.container[0].addEventListener("wheel", function(evt) {
+                    self.elements.container[0].addEventListener("wheel", function (evt) {
                         if (!self.allowDrag) return;
                         var oldScale = self.scale;
                         if (evt.deltaY > 0) {
@@ -713,7 +730,7 @@ window.App = (function () {
                             self.update();
                             place.update();
                         }
-                    }, {passive: true});
+                    }, { passive: true });
 
                     // now init the movement
                     var downX, downY, downStart;
@@ -726,8 +743,8 @@ window.App = (function () {
                         });
 
                     //Separated some of these events from jQuery to deal with chrome's complaints about passive event violations.
-                    self.elements.board_render[0].addEventListener("touchstart", handleInputDown, {passive: false});
-                    self.elements.board_render[0].addEventListener("touchmove", handleInputMove, {passive: false});
+                    self.elements.board_render[0].addEventListener("touchstart", handleInputDown, { passive: false });
+                    self.elements.board_render[0].addEventListener("touchmove", handleInputMove, { passive: false });
 
                     function handleInputDown(event) {
                         let clientX = 0,
@@ -743,7 +760,7 @@ window.App = (function () {
                         }
                         downX = clientX, downY = clientY;
                         if (prereq && self.holdTimer.id === -1) {
-                            self.holdTimer.id = setTimeout(self.holdTimer.handler, self.holdTimer.holdTimeout, {x: clientX, y: clientY});
+                            self.holdTimer.id = setTimeout(self.holdTimer.handler, self.holdTimer.holdTimeout, { x: clientX, y: clientY });
                         }
                         downStart = Date.now();
                     }
@@ -803,7 +820,7 @@ window.App = (function () {
                 },
                 init: function () {
                     $(window).on("pxls:queryUpdated", (evt, propName, oldValue, newValue) => {
-                        switch(propName.toLowerCase()) {
+                        switch (propName.toLowerCase()) {
                             case "x":
                             case "y":
                                 board.centerOn(query.get("x") >> 0, query.get("y") >> 0);
@@ -813,21 +830,21 @@ window.App = (function () {
                                 break;
 
                             case "template":
-                                template.queueUpdate({template: newValue, use: newValue !== null});
+                                template.queueUpdate({ template: newValue, use: newValue !== null });
                                 break;
                             case "ox":
-                                template.queueUpdate({ox: newValue === null ? null : newValue >> 0});
+                                template.queueUpdate({ ox: newValue === null ? null : newValue >> 0 });
                                 break;
                             case "oy":
-                                template.queueUpdate({oy: newValue === null ? null : newValue >> 0});
+                                template.queueUpdate({ oy: newValue === null ? null : newValue >> 0 });
                                 break;
                             case "tw":
-                                template.queueUpdate({tw: newValue === null ? null : newValue >> 0});
+                                template.queueUpdate({ tw: newValue === null ? null : newValue >> 0 });
                                 break;
                             case "oo":
                                 let parsed = parseFloat(newValue);
                                 if (!Number.isFinite(parsed)) parsed = null;
-                                template.queueUpdate({oo: parsed === null ? null : parsed});
+                                template.queueUpdate({ oo: parsed === null ? null : parsed });
                                 break;
                         }
                     });
@@ -849,7 +866,7 @@ window.App = (function () {
                     self.ctx = self.elements.board[0].getContext("2d");
                     self.initInteraction();
 
-                    $("#snapshotImageFormat").val(ls.get("snapshotImageFormat")  || 'image/png');
+                    $("#snapshotImageFormat").val(ls.get("snapshotImageFormat") || 'image/png');
                     $("#snapshotImageFormat").on("change input", event => {
                         ls.set("snapshotImageFormat", event.target.value);
                     });
@@ -879,7 +896,7 @@ window.App = (function () {
                         self.centerOn(cx, cy);
                         socket.init();
                         binary_ajax("/boarddata" + "?_" + (new Date()).getTime(), self.draw, socket.reconnect);
-                        
+
                         if (self.use_js_render) {
                             $(window).resize(function () {
                                 self.update();
@@ -914,7 +931,7 @@ window.App = (function () {
                                     degree += spin * delta;
                                     degree %= 360;
                                     start = timestamp;
-                                    self.elements.container.css("transform", "rotate("+degree+"deg)");
+                                    self.elements.container.css("transform", "rotate(" + degree + "deg)");
                                     window.requestAnimationFrame(spiiiiiin);
                                 };
                             window.requestAnimationFrame(spiiiiiin);
@@ -1022,7 +1039,7 @@ window.App = (function () {
                 getScale: function () {
                     return Math.abs(self.scale);
                 },
-                setScale: function(scale) {
+                setScale: function (scale) {
                     if (ls.get("increased_zoom") !== true && scale > 50) scale = 50;
                     else if (scale <= 0) scale = 0.5; //enforce the [0.5, 50] limit without blindly resetting to 0.5 when the user was trying to zoom in farther than 50x
                     self.scale = scale;
@@ -1057,10 +1074,10 @@ window.App = (function () {
                     self.scale *= sign;
                     self.update();
                 },
-                getPixel: function(x, y) {
+                getPixel: function (x, y) {
                     x = Math.floor(x);
                     y = Math.floor(y);
-                    var colorInt = self.intView[y*self.width + x];
+                    var colorInt = self.intView[y * self.width + x];
                     var index = self.rgbPalette.indexOf(colorInt);
                     return index;
                 },
@@ -1077,9 +1094,9 @@ window.App = (function () {
                         refresh = true;
                     }
                     if (c == -1 || c == 0xFF) {
-                        self.intView[y*self.width + x] = 0x00000000;
+                        self.intView[y * self.width + x] = 0x00000000;
                     } else {
-                        self.intView[y*self.width + x] = self.rgbPalette[c];
+                        self.intView[y * self.width + x] = self.rgbPalette[c];
                     }
                     if (refresh) {
                         self.ctx.putImageData(self.id, 0, 0);
@@ -1098,22 +1115,22 @@ window.App = (function () {
                         adjust_y = self.height;
                     }
                     if (self.use_js_render) {
-                       return {
-                           x: -self.pan.x + ((self.width - (window.innerWidth / self.scale)) / 2) + (screenX / self.scale) + adjust_x,
-                           y: -self.pan.y + ((self.height - (window.innerHeight / self.scale)) / 2) + (screenY / self.scale) + adjust_y
-                       };
-                   }
-                   var boardBox = self.elements.board[0].getBoundingClientRect();
-                   if (self.use_zoom) {
-                       return {
-                           x: (screenX / self.scale) - boardBox.left + adjust_x,
-                           y: (screenY / self.scale) - boardBox.top + adjust_y
-                       };
-                   }
-                   return {
-                       x: ((screenX - boardBox.left) / self.scale) + adjust_x,
-                       y: ((screenY - boardBox.top) / self.scale) + adjust_y
-                   };
+                        return {
+                            x: -self.pan.x + ((self.width - (window.innerWidth / self.scale)) / 2) + (screenX / self.scale) + adjust_x,
+                            y: -self.pan.y + ((self.height - (window.innerHeight / self.scale)) / 2) + (screenY / self.scale) + adjust_y
+                        };
+                    }
+                    var boardBox = self.elements.board[0].getBoundingClientRect();
+                    if (self.use_zoom) {
+                        return {
+                            x: (screenX / self.scale) - boardBox.left + adjust_x,
+                            y: (screenY / self.scale) - boardBox.top + adjust_y
+                        };
+                    }
+                    return {
+                        x: ((screenX - boardBox.left) / self.scale) + adjust_x,
+                        y: ((screenY - boardBox.top) / self.scale) + adjust_y
+                    };
                 },
                 toScreen: function (boardX, boardY) {
                     if (self.scale < 0) {
@@ -1143,7 +1160,7 @@ window.App = (function () {
                     const format = $("#snapshotImageFormat").val();
 
                     a.href = self.elements.board[0].toDataURL(format, 1);
-                    a.download = (new Date()).toISOString().replace(/^(\d+-\d+-\d+)T(\d+):(\d+):(\d).*$/,`pxls canvas $1 $2.$3.$4.${format.split("/")[1]}`);
+                    a.download = (new Date()).toISOString().replace(/^(\d+-\d+-\d+)T(\d+):(\d+):(\d).*$/, `pxls canvas $1 $2.$3.$4.${format.split("/")[1]}`);
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
@@ -1174,7 +1191,7 @@ window.App = (function () {
             };
         })(),
         // heatmap init stuff
-        heatmap = (function() {
+        heatmap = (function () {
             var self = {
                 elements: {
                     heatmap: $("#heatmap"),
@@ -1211,7 +1228,7 @@ window.App = (function () {
                         self.ctx = self.elements.heatmap[0].getContext("2d");
                         self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
                         self.id = createImageData(self.width, self.height);
-                        
+
                         self.intView = new Uint32Array(self.id.data.buffer);
                         for (var i = 0; i < self.width * self.height; i++) {
                             self.intView[i] = (data[i] << 24) | self.color;
@@ -1229,19 +1246,19 @@ window.App = (function () {
                         });
                     });
                 },
-                clear: function() {
+                clear: function () {
                     if (ls.get("hvm_clearable") === true) {
                         self._clear();
                     }
                 },
-                _clear: function() {
+                _clear: function () {
                     for (var i = 0; i < self.width * self.height; i++) {
                         self.intView[i] = 0;
                     }
                     self.ctx.putImageData(self.id, 0, 0);
                 },
-                setBackgroundOpacity: function(opacity) {
-                    if (typeof(opacity) === "string") {
+                setBackgroundOpacity: function (opacity) {
+                    if (typeof (opacity) === "string") {
                         opacity = parseFloat(opacity);
                         if (isNaN(opacity)) opacity = 0.5;
                     }
@@ -1256,7 +1273,7 @@ window.App = (function () {
                     self.elements.heatmapLoadingBubble.hide();
                     self.setBackgroundOpacity(ls.get("heatmap_background_opacity"));
                     $("#heatmap-opacity").val(ls.get("heatmap_background_opacity")); //heatmap_background_opacity should always be valid after a call to self.setBackgroundOpacity.
-                    $("#heatmap-opacity").on("change input", function() {
+                    $("#heatmap-opacity").on("change input", function () {
                         self.setBackgroundOpacity(parseFloat(this.value));
                     });
                     $("#hvmapClearable")[0].checked = ls.get("hvm_clearable");
@@ -1375,18 +1392,18 @@ window.App = (function () {
                         });
                     });
                 },
-                clear: function() {
+                clear: function () {
                     if (ls.get("hvm_clearable") === true) {
                         self._clear();
                     }
                 },
-                _clear: function() {
+                _clear: function () {
                     self.ctx.putImageData(self.id, 0, 0);
                     self.ctx.fillStyle = "#00FF00";
                     self.ctx.fillRect(0, 0, self.width, self.height);
                 },
-                setBackgroundOpacity: function(opacity) {
-                    if (typeof(opacity) === "string") {
+                setBackgroundOpacity: function (opacity) {
+                    if (typeof (opacity) === "string") {
                         opacity = parseFloat(opacity);
                         if (isNaN(opacity)) opacity = 0.5;
                     }
@@ -1401,7 +1418,7 @@ window.App = (function () {
                     self.elements.virginmapLoadingBubble.hide();
                     self.setBackgroundOpacity(ls.get("virginmap_background_opacity"));
                     $("#virginmap-opacity").val(ls.get("virginmap_background_opacity")); //virginmap_background_opacity should always be valid after a call to self.setBackgroundOpacity.
-                    $("#virginmap-opacity").on("change input", function() {
+                    $("#virginmap-opacity").on("change input", function () {
                         self.setBackgroundOpacity(parseFloat(this.value));
                     });
                     $("#hvmapClearable")[0].checked = ls.get("hvm_clearable");
@@ -1497,9 +1514,9 @@ window.App = (function () {
                     self.options.use = true;
 
                     var drag = {
-                            x: 0,
-                            y: 0
-                        };
+                        x: 0,
+                        y: 0
+                    };
                     self.elements.template = $("<img>").addClass("noselect pixelate").attr({
                         id: "board-template",
                         src: self.options.url,
@@ -1528,8 +1545,8 @@ window.App = (function () {
                                 dy = (px_new.y | 0) - (px_old.y | 0),
                                 newX = self.options.x + dx,
                                 newY = self.options.y + dy;
-                            self._update({x: newX, y: newY});
-                            query.set({ox: newX, oy: newY}, true);
+                            self._update({ x: newX, y: newY });
+                            query.set({ ox: newX, oy: newY }, true);
                             if (dx != 0) {
                                 drag.x = evt.clientX;
                             }
@@ -1567,19 +1584,19 @@ window.App = (function () {
 
                     return objectToNormalize;
                 },
-                queueUpdate: function(obj) {
+                queueUpdate: function (obj) {
                     obj = self.normalizeTemplateObj(obj, true);
                     self._queuedUpdates = Object.assign(self._queuedUpdates, obj);
                     if (self.queueTimer) {
                         clearTimeout(self.queueTimer);
                     }
-                    self.queueTimer = setTimeout(function() {
+                    self.queueTimer = setTimeout(function () {
                         self._update(self._queuedUpdates);
                         self._queuedUpdates = {};
                         self.queueTimer = 0;
                     }, 200);
                 },
-                _update: function(options) {
+                _update: function (options) {
                     let urlUpdated = (options.url !== self.options.url && decodeURIComponent(options.url) !== self.options.url && options.url != null && self.options.url != null);
                     if (options.url != null && options.url.length > 0) {
                         options.url = decodeURIComponent(options.url);
@@ -1624,14 +1641,14 @@ window.App = (function () {
                         });
                         self.elements.template.css("width", options.width > 0 ? options.width : "auto");
 
-                        [["url", "template"],["x", "ox"],["y", "oy"],["width", "tw"],["opacity", "oo"]].forEach(x => {
+                        [["url", "template"], ["x", "ox"], ["y", "oy"], ["width", "tw"], ["opacity", "oo"]].forEach(x => {
                             query.set(x[1], self.options[x[0]], true);
                         });
                     }
                     self.update_drawer();
                 },
-                disableTemplate: function() {
-                    self._update({url: null});
+                disableTemplate: function () {
+                    self._update({ url: null });
                 },
                 draw: function (ctx2, pxl_x, pxl_y) {
                     if (!self.options.use) {
@@ -1650,10 +1667,10 @@ window.App = (function () {
                 init: function () {
                     drawer.create("#template-control", 84, "template_open", false);
                     $("#template-use").change(function () {
-                        self._update({use: this.checked});
+                        self._update({ use: this.checked });
                     });
                     $("#template-url").change(function () {
-                        self._update({url: this.value});
+                        self._update({ url: this.value });
                     }).keydown(function (evt) {
                         if (evt.key == "Enter" || evt.which === 13) {
                             $(this).change();
@@ -1672,7 +1689,7 @@ window.App = (function () {
                         }, 100);
                     });
                     $("#template-opacity").on("change input", function () {
-                        self._update({opacity: parseFloat(this.value)});
+                        self._update({ opacity: parseFloat(this.value) });
                     });
                     $(window).keydown(function (evt) {
                         if (evt.ctrlKey && self.options.use) {
@@ -1680,20 +1697,21 @@ window.App = (function () {
                             self.elements.template.css("pointer-events", "initial");
                         }
                         let newOpacity = 0;
-                        switch(evt.key || evt.which) {
+                        switch (evt.code || evt.keyCode || evt.which || evt.key) {
                             case "PageUp":
                             case 33:
-                                newOpacity = Math.min(1, self.options.opacity+0.1);
-                                self._update({opacity: newOpacity});
+                                newOpacity = Math.min(1, self.options.opacity + 0.1);
+                                self._update({ opacity: newOpacity });
                                 break;
                             case "PageDown":
                             case 34:
-                                newOpacity = Math.max(0, self.options.opacity-0.1);
-                                self._update({opacity: newOpacity});
+                                newOpacity = Math.max(0, self.options.opacity - 0.1);
+                                self._update({ opacity: newOpacity });
                                 break;
+                            case "KeyV":
+                            case 86:
                             case "v":
                             case "V":
-                            case 86:
                                 self._update({
                                     use: !self.options.use
                                 });
@@ -1719,7 +1737,7 @@ window.App = (function () {
             };
         })(),
         // here all the grid stuff happens
-        grid = (function() {
+        grid = (function () {
             var self = {
                 elements: {
                     grid: $("#grid")
@@ -1729,10 +1747,10 @@ window.App = (function () {
                     $("#gridtoggle")[0].checked = ls.get("view_grid");
                     $("#gridtoggle").change(function () {
                         ls.set("view_grid", this.checked);
-                        self.elements.grid.fadeToggle({duration: 100});
+                        self.elements.grid.fadeToggle({ duration: 100 });
                     });
                     if (ls.get("view_grid")) {
-                        self.elements.grid.fadeToggle({duration: 100});
+                        self.elements.grid.fadeToggle({ duration: 100 });
                     }
                     $(document.body).on("keydown", function (evt) {
                         if (evt.key == "g" || evt.key == "G" || evt.keyCode === 71) {
@@ -1757,7 +1775,7 @@ window.App = (function () {
             };
         })(),
         // this takes care of placing pixels, the palette, the reticule and stuff associated with that
-        place = (function() {
+        place = (function () {
             var self = {
                 elements: {
                     palette: $("#palette"),
@@ -1851,7 +1869,7 @@ window.App = (function () {
                 setPalette: function (palette) {
                     self.palette = palette;
                     self.elements.palette.find(".palette-color").remove().end().append(
-                        $.map(self.palette, function(p, idx) {
+                        $.map(self.palette, function (p, idx) {
                             return $("<div>")
                                 .attr("data-idx", idx)
                                 .addClass("palette-color")
@@ -1869,7 +1887,7 @@ window.App = (function () {
                             .attr("data-idx", -1)
                             .addClass("palette-color no-border deselect-button")
                             .addClass("ontouchstart" in window ? "touch" : "no-touch").css("background-color", "transparent")
-                            .click(function() {
+                            .click(function () {
                                 self.switch(-1);
                             })
                     );
@@ -1877,7 +1895,7 @@ window.App = (function () {
                 can_undo: false,
                 undo: function (evt) {
                     evt.stopPropagation();
-                    socket.send({type: 'undo'});
+                    socket.send({ type: 'undo' });
                     self.can_undo = false;
                     document.body.classList.remove("undo-visible");
                     self.elements.undo.removeClass("open");
@@ -1921,8 +1939,8 @@ window.App = (function () {
                         board.refresh();
                         board.update(true);
                     });
-                    socket.on("ACK", function(data) {
-                        switch(data.ackFor) {
+                    socket.on("ACK", function (data) {
+                        switch (data.ackFor) {
                             case "PLACE":
                                 if (!ls.get("audio_muted")) {
                                     var clone = self.audio.cloneNode(false);
@@ -1976,10 +1994,10 @@ window.App = (function () {
                     self.elements.palette.on("wheel", e => {
                         if (ls.get("scrollSwitchEnabled") !== true) return;
                         let newVal = (self.color + (e.originalEvent.wheelDelta > 0 ? 1 : -1)) % self.palette.length; //if wheelDelta > 0, we're scrolling up (move forward) so add 1. otherwise subtract 1. we modulus wrap in case they're scrolling up past palette.length.
-                        self.switch(newVal <= -1 ? self.palette.length-1 : newVal);
+                        self.switch(newVal <= -1 ? self.palette.length - 1 : newVal);
                     });
                 },
-                hexToRgb: function(hex) {
+                hexToRgb: function (hex) {
                     var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
                     return result ? {
                         r: parseInt(result[1], 16),
@@ -2010,7 +2028,7 @@ window.App = (function () {
             };
         })(),
         // this is the user lookup helper
-        lookup = (function() {
+        lookup = (function () {
             var self = {
                 elements: {
                     lookup: $("#lookup"),
@@ -2082,7 +2100,7 @@ window.App = (function () {
                 /**
                  * All lookup hooks.
                  */
-                hooks: [], 
+                hooks: [],
                 /**
                  * Registers hooks.
                  * @param {Object} hooks Information about the hook.
@@ -2096,7 +2114,7 @@ window.App = (function () {
                         return {
                             id: hook.id || "hook",
                             name: hook.name || "Hook",
-                            get: hook.get || function () {},
+                            get: hook.get || function () { },
                             css: hook.css || {},
                         };
                     }));
@@ -2128,14 +2146,14 @@ window.App = (function () {
                     });
                     self.elements.lookup.fadeIn(200);
                 },
-                _makeShell: function(data) {
+                _makeShell: function (data) {
                     return self.elements.lookup.empty().append(
                         $("<div>").addClass("content"),
                         (data && user.isLoggedIn() ?
                             $("<div>").addClass("button").css("float", "left").addClass("report-button").text("Report").click(function () {
                                 self.report(data.id, data.x, data.y);
                             })
-                        : ""),
+                            : ""),
                         $("<div>").addClass("button").css("float", "right").text("Close").click(function () {
                             self.elements.lookup.fadeOut(200);
                         }),
@@ -2149,7 +2167,7 @@ window.App = (function () {
                 },
                 runLookup(clientX, clientY) {
                     const pos = board.fromScreen(clientX, clientY);
-                    $.get("/lookup", {x: Math.floor(pos.x), y: Math.floor(pos.y)}, function (data) {
+                    $.get("/lookup", { x: Math.floor(pos.x), y: Math.floor(pos.y) }, function (data) {
                         data = data || false;
                         if (self.handle) {
                             self.handle(data);
@@ -2233,7 +2251,7 @@ window.App = (function () {
             };
         })(),
         // helper object for drawers
-        drawer = (function() {
+        drawer = (function () {
             var self = {
                 elements: {
                     container: $("#drawers"),
@@ -2241,12 +2259,12 @@ window.App = (function () {
                 },
                 create: function (html_class, keycode, localstorage, open) {
                     var elem = $(html_class);
-                    $(html_class+" > .open").click(function () {
+                    $(html_class + " > .open").click(function () {
                         elem.toggleClass("open");
                         doTrigger();
                         ls.set(localstorage, elem.hasClass("open") ^ open);
                     });
-                    $(html_class+" .close").click(function () {
+                    $(html_class + " .close").click(function () {
                         elem.removeClass("open");
                         doTrigger();
                         ls.set(localstorage, false ^ open);
@@ -2264,7 +2282,7 @@ window.App = (function () {
                     });
 
                     function doTrigger() {
-                        elem.trigger("drawer-state-change", {isOpen: elem.hasClass("open")});
+                        elem.trigger("drawer-state-change", { isOpen: elem.hasClass("open") });
                     }
                 },
                 updateDropdown: function () {
@@ -2275,7 +2293,7 @@ window.App = (function () {
                                 evt.stopPropagation();
                                 _self.toggleClass("open");
                                 self.elements.opener.removeClass("open");
-                                _self.trigger("drawer-state-change", {isOpen: _self.hasClass("open")});
+                                _self.trigger("drawer-state-change", { isOpen: _self.hasClass("open") });
                             });
                         }).get()
                     );
@@ -2298,7 +2316,7 @@ window.App = (function () {
             };
         })(),
         // this takes care of the info slidedown and some settings (audio)
-        info = (function() {
+        info = (function () {
             var self = {
                 init: function () {
                     drawer.create("#info", 73, "info_closed", true);
@@ -2317,12 +2335,12 @@ window.App = (function () {
                     }
                     place.setAutoReset(auto_reset);
                     $("#stickyColorToggle")[0].checked = !auto_reset;
-                    
-                    $("#stickyColorToggle").change(function() {
+
+                    $("#stickyColorToggle").change(function () {
                         place.setAutoReset(!this.checked);
                     });
 
-                    $("#monospaceToggle").change(function() {
+                    $("#monospaceToggle").change(function () {
                         ls.set("monospace_lookup", this.checked);
                         this.checked ? $(".monoVal").addClass("useMono") : $(".monoVal").removeClass("useMono");
                     });
@@ -2333,7 +2351,7 @@ window.App = (function () {
             };
         })(),
         // this takes care of the custom alert look
-        alert = (function() {
+        alert = (function () {
             var self = {
                 elements: {
                     alert: $("#alert")
@@ -2343,7 +2361,7 @@ window.App = (function () {
                     self.elements.alert.find(".text").append(s);
                     self.elements.alert.fadeIn(200);
                 },
-                showElem: function(element) {
+                showElem: function (element) {
                     self.elements.alert.find(".text,.custWrapper").empty();
                     self.elements.alert.find(".custWrapper").append(element);
                     self.elements.alert.fadeIn(200);
@@ -2363,7 +2381,7 @@ window.App = (function () {
                 showElem: self.showElem
             };
         })(),
-        uiHelper = (function() {
+        uiHelper = (function () {
             var self = {
                 _available: -1,
                 maxStacked: -1,
@@ -2375,7 +2393,7 @@ window.App = (function () {
                     lblAlertVolume: $("#lblAlertVolume"),
                     btnForceAudioUpdate: $("#btnForceAudioUpdate")
                 },
-                init: function() {
+                init: function () {
                     self._initStack();
                     self._initAudio();
                     var useMono = ls.get("monospace_lookup")
@@ -2389,18 +2407,18 @@ window.App = (function () {
                     }
 
                     $("#increasedZoomToggle").prop("checked", ls.get("increased_zoom") === true);
-                    $("#increasedZoomToggle").change(function() {
+                    $("#increasedZoomToggle").change(function () {
                         let checked = $(this).prop("checked") === true; //coerce to bool
                         ls.set("increased_zoom", checked);
                     });
 
                     $("#scrollSwitchToggle").prop("checked", ls.get("scrollSwitchEnabled") === true);
-                    $("#scrollSwitchToggle").change(function() {
+                    $("#scrollSwitchToggle").change(function () {
                         ls.set("scrollSwitchEnabled", this.checked === true);
                     });
 
-                    $(window).keydown(function(evt) {
-                        switch(evt.key || evt.which) {
+                    $(window).keydown(function (evt) {
+                        switch (evt.key || evt.which) {
                             case "Escape":
                             case 27:
                                 place.switch(-1);
@@ -2415,7 +2433,7 @@ window.App = (function () {
                             delete elem.dataset.lazysrc;
                         });
                     } else {
-                        _info.on("drawer-state-change", function(event, data) {
+                        _info.on("drawer-state-change", function (event, data) {
                             if (data.isOpen === true) {
                                 let elems = $("#info iframe[data-lazysrc]");
                                 if (elems.length) {
@@ -2430,12 +2448,12 @@ window.App = (function () {
                         })
                     }
                 },
-                _initStack: function() {
-                    socket.on("pixels", function(data) {
+                _initStack: function () {
+                    socket.on("pixels", function (data) {
                         self.updateAvailable(data.count, data.cause);
                     });
                 },
-                _initAudio: function() {
+                _initAudio: function () {
                     let parsedVolume = parseFloat(ls.get("alert.volume"));
                     if (isNaN(parseFloat(ls.get("alert.volume")))) {
                         parsedVolume = 1;
@@ -2456,13 +2474,13 @@ window.App = (function () {
                         if (console.warn) console.warn("An error occurred on the audioElem node: %o", err);
                     });
 
-                    self.elements.txtAlertLocation.change(function() { //change should only fire on blur so we normally won't be calling updateAudio for each keystroke. just in case though, we'll lazy update.
+                    self.elements.txtAlertLocation.change(function () { //change should only fire on blur so we normally won't be calling updateAudio for each keystroke. just in case though, we'll lazy update.
                         if (self._alertUpdateTimer !== false) clearTimeout(self._alertUpdateTimer);
-                        self._alertUpdateTimer = setTimeout(function(url) {
+                        self._alertUpdateTimer = setTimeout(function (url) {
                             self.updateAudio(url);
                             self._alertUpdateTimer = false;
                         }, 250, this.value);
-                    }).keydown(function(evt) {
+                    }).keydown(function (evt) {
                         if (evt.key == "Enter" || evt.which === 13) {
                             $(this).change();
                         }
@@ -2470,7 +2488,7 @@ window.App = (function () {
                     });
                     self.elements.btnForceAudioUpdate.click(() => self.elements.txtAlertLocation.change());
 
-                    self.elements.rangeAlertVolume.change(function() {
+                    self.elements.rangeAlertVolume.change(function () {
                         const parsed = parseFloat(self.elements.rangeAlertVolume.val());
                         self.elements.lblAlertVolume.text(`${parsed * 100 >> 0}%`);
                         ls.set("alert.volume", parsed);
@@ -2485,7 +2503,7 @@ window.App = (function () {
                         self.elements.txtAlertLocation.val("");
                     });
                 },
-                updateAudio: function(url) {
+                updateAudio: function (url) {
                     try {
                         if (!url) url = "notify.wav";
                         timer.audioElem.src = url;
@@ -2496,12 +2514,12 @@ window.App = (function () {
                         ls.set("alert.src", "notify.wav");
                     }
                 },
-                updateAvailable: function(count, cause) {
+                updateAvailable: function (count, cause) {
                     if (count > 0 && cause === "stackGain") timer.playAudio();
                     self.setPlaceableText(count);
                 },
                 setMax(maxStacked) {
-                    self.maxStacked = maxStacked+1;
+                    self.maxStacked = maxStacked + 1;
                 },
                 setPlaceableText(placeable) {
                     self.elements.stackCount.text(`${placeable}/${self.maxStacked}`);
@@ -2522,7 +2540,7 @@ window.App = (function () {
             };
         })(),
         // this takes care of the countdown timer
-        timer = (function() {
+        timer = (function () {
             var self = {
                 elements: {
                     palette: $("#palette"),
@@ -2582,7 +2600,7 @@ window.App = (function () {
 
                     self.runningTimer = false;
                     if (!self.hasFiredNotification) {
-                            self.playAudio();
+                        self.playAudio();
                         if (!self.focus) {
                             notification.show("Your next pixel is available!");
                         }
@@ -2602,12 +2620,12 @@ window.App = (function () {
                     self.elements.timer_bubble.hide();
                     self.elements.timer_overlay.hide();
 
-                    $(window).focus(function() {
+                    $(window).focus(function () {
                         self.focus = true;
-                    }).blur(function() {
+                    }).blur(function () {
                         self.focus = false;
                     });
-                    setTimeout(function() {
+                    setTimeout(function () {
                         if (self.cooledDown() && uiHelper.getAvailable() === 0) {
                             uiHelper.setPlaceableText(1);
                         }
@@ -2618,7 +2636,7 @@ window.App = (function () {
                         self.update();
                     });
                 },
-                playAudio: function() {
+                playAudio: function () {
                     if (!ls.get("audio_muted")) {
                         self.audio.play();
                     }
@@ -2632,7 +2650,7 @@ window.App = (function () {
             };
         })(),
         // this takes care of displaying the coordinates the mouse is over
-        coords = (function() {
+        coords = (function () {
             var self = {
                 elements: {
                     coords: $("#coords")
@@ -2641,10 +2659,10 @@ window.App = (function () {
                 init: function () {
                     self.elements.coords.hide();
                     const _board = board.getRenderBoard()[0];
-                    _board.addEventListener("pointermove", pointerHandler, {passive: false});
-                    _board.addEventListener("mousemove", pointerHandler, {passive: false});
-                    _board.addEventListener("touchstart", touchHandler, {passive: false});
-                    _board.addEventListener("touchmove", touchHandler, {passive: false});
+                    _board.addEventListener("pointermove", pointerHandler, { passive: false });
+                    _board.addEventListener("mousemove", pointerHandler, { passive: false });
+                    _board.addEventListener("touchstart", touchHandler, { passive: false });
+                    _board.addEventListener("touchmove", touchHandler, { passive: false });
                     // board.getRenderBoard().on("pointermove mousemove", function (evt) {
                     // }).on("touchstart touchmove", function (evt) {
                     // });
@@ -2658,7 +2676,7 @@ window.App = (function () {
 
                     function touchHandler(evt) {
                         var boardPos = board.fromScreen(evt.changedTouches[0].clientX, evt.changedTouches[0].clientY);
-                        
+
                         self.mouseCoords = boardPos;
                         self.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")").fadeIn(200);
                     }
@@ -2694,7 +2712,7 @@ window.App = (function () {
             };
         })(),
         // this holds user stuff / info
-        user = (function() {
+        user = (function () {
             var self = {
                 elements: {
                     users: $("#online"),
@@ -2710,7 +2728,7 @@ window.App = (function () {
                 getRole: function () {
                     return self.role;
                 },
-                signin: function() {
+                signin: function () {
                     var data = ls.get("auth_respond");
                     if (!data) {
                         return;
@@ -2763,7 +2781,7 @@ window.App = (function () {
                         self.signin();
                     }
                 },
-                doSignup: function() {
+                doSignup: function () {
                     if (!self.pendingSignupToken) return;
 
                     $.post({
@@ -2773,14 +2791,14 @@ window.App = (function () {
                             token: self.pendingSignupToken,
                             username: self.elements.signup.find("input").val()
                         },
-                        success: function() {
+                        success: function () {
                             self.elements.signup.find("#error").text("");
                             self.elements.signup.find("input").val("");
                             self.elements.signup.fadeOut(200);
                             socket.reconnectSocket();
                             self.pendingSignupToken = null;
                         },
-                        error: function(data) {
+                        error: function (data) {
                             self.elements.signup.find("#error").text(data.responseJSON.message);
                         }
                     });
@@ -2897,7 +2915,7 @@ window.App = (function () {
             };
         })(),
         // this takes care of browser notifications
-        notification = (function() {
+        notification = (function () {
             var self = {
                 init: function () {
                     try {
@@ -2963,10 +2981,10 @@ window.App = (function () {
             updateAudio: uiHelper.updateAudio
         },
         template: {
-            update: function(t) {
+            update: function (t) {
                 template.queueUpdate(t);
             },
-            normalize: function(obj, dir=true) {
+            normalize: function (obj, dir = true) {
                 return template.normalizeTemplateObj(obj, dir);
             }
         },
@@ -2978,22 +2996,22 @@ window.App = (function () {
                 return lookup.unregisterHook(...arguments);
             },
         },
-        centerBoardOn: function(x, y) {
+        centerBoardOn: function (x, y) {
             board.centerOn(x, y);
         },
-        updateTemplate: function(t) {
+        updateTemplate: function (t) {
             template.queueUpdate(t);
         },
-        alert: function(s) {
+        alert: function (s) {
             alert.show($('<span>').text(s).html());
         },
-        doPlace: function() {
+        doPlace: function () {
             ban.me(3);
         },
-        attemptPlace: function() {
+        attemptPlace: function () {
             ban.me(3);
         },
-        banme: function() {
+        banme: function () {
             ban.me(4);
         }
     };
