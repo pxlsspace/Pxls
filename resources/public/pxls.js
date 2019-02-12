@@ -2416,6 +2416,25 @@ window.App = (function () {
                         $(".monoVal").addClass("useMono");
                     }
 
+                    $("#alertDelay").val(ls.get("alert_delay") || 0);
+                    $("#alertDelay").change(function() {
+                        if (!isNaN($(this).val())) {
+                            ls.set("alert_delay", $(this).val());
+                        }
+                    });
+                    $("#alertDelay").keydown(function (evt) {
+                        switch (evt.code || evt.keyCode || evt.which || evt.key) {
+                            case "KeyT":
+                            case 84:
+                            case "T":
+                            case "t":
+                            case "KeyEnter":
+                            case 13:
+                                $(this).blur();
+                                break;
+                        }
+                    });
+
                     $("#increasedZoomToggle").prop("checked", ls.get("increased_zoom") === true);
                     $("#increasedZoomToggle").change(function () {
                         let checked = $(this).prop("checked") === true; //coerce to bool
@@ -2583,6 +2602,18 @@ window.App = (function () {
                         self.elements.timer.text(self.status);
                     }
 
+                    var alertDelay = parseInt($("#alertDelay").val());
+                    if (alertDelay < 0 && delta < Math.abs(alertDelay) && !self.hasFiredNotification) {
+                        self.playAudio();
+                        if (!self.focus) {
+                            notification.show(`Your next pixel will be available in ${alertDelay} seconds!`);
+                        }
+                        setTimeout(() => {
+                            uiHelper.setPlaceableText(1);
+                        }, delta * 1000);
+                        self.hasFiredNotification = true;
+                    }
+
                     if (delta > 0) {
                         self.elements.timer.show();
                         if (self.isOverlay) {
@@ -2609,6 +2640,26 @@ window.App = (function () {
                     }
 
                     self.runningTimer = false;
+
+                    document.title = self.title;
+                    if (self.isOverlay) {
+                        self.elements.palette.css("overflow-x", "auto");
+                        self.elements.timer.css("left", "0");
+                    }
+                    self.elements.timer.hide();
+
+                    if (alertDelay > 0) {
+                        setTimeout(() => {
+                            self.playAudio();
+                            if (!self.focus) {
+                                notification.show(`Your next pixel has been available for ${alertDelay} seconds!`);
+                            }
+                            uiHelper.setPlaceableText(1);
+                            self.hasFiredNotification = true;
+                        }, alertDelay * 1000)
+                        return;
+                    }
+
                     if (!self.hasFiredNotification) {
                         self.playAudio();
                         if (!self.focus) {
@@ -2617,13 +2668,6 @@ window.App = (function () {
                         uiHelper.setPlaceableText(1);
                         self.hasFiredNotification = true;
                     }
-
-                    document.title = self.title;
-                    if (self.isOverlay) {
-                        self.elements.palette.css("overflow-x", "auto");
-                        self.elements.timer.css("left", "0");
-                    }
-                    self.elements.timer.hide();
                 },
                 init: function () {
                     self.title = document.title;
