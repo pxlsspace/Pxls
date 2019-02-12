@@ -661,6 +661,16 @@ window.App = (function () {
                             case "L":
                                 self.allowDrag = !self.allowDrag;
                                 break;
+                            case "KeyR":
+                            case 82:            // R
+                            case "r":
+                            case "R":
+                                var tempOpts = template.getOptions();
+                                var tempElem = $("#board-template");
+                                if (tempOpts.use) {
+                                  board.centerOn(tempOpts.x + (tempElem.width() / 2), tempOpts.y + (tempElem.height() / 2));
+                                }
+                                break;
                             case "keyJ":
                             case 74:            // J
                             case "j":
