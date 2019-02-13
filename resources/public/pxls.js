@@ -2416,7 +2416,12 @@ window.App = (function () {
                         $(".monoVal").addClass("useMono");
                     }
 
-                    $("#alertDelay").val(ls.get("alert_delay") || 0);
+                    var alertDelay = ls.get("alert_delay");
+                    if (typeof alertDelay === 'undefined') {
+                        ls.set("alert_delay", "0");
+                        alertDelay = 0;
+                    }
+                    $("#alertDelay").val(alertDelay);
                     $("#alertDelay").change(function() {
                         if (!isNaN($(this).val())) {
                             ls.set("alert_delay", $(this).val());
@@ -2602,7 +2607,7 @@ window.App = (function () {
                         self.elements.timer.text(self.status);
                     }
 
-                    var alertDelay = parseInt($("#alertDelay").val());
+                    var alertDelay = parseInt(ls.get("alert_delay"));
                     if (alertDelay < 0 && delta < Math.abs(alertDelay) && !self.hasFiredNotification) {
                         self.playAudio();
                         if (!self.focus) {
