@@ -2611,7 +2611,7 @@ window.App = (function () {
                     if (alertDelay < 0 && delta < Math.abs(alertDelay) && !self.hasFiredNotification) {
                         self.playAudio();
                         if (!self.focus) {
-                            notification.show(`Your next pixel will be available in ${alertDelay} seconds!`);
+                            notification.show(`Your next pixel will be available in ${+alertDelay} seconds!`);
                         }
                         setTimeout(() => {
                             uiHelper.setPlaceableText(1);
