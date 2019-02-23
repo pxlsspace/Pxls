@@ -154,7 +154,7 @@ public class App {
                 if (user != null) {
                     String reason = line.substring(token[0].length() + token[1].length() + 2).trim();
                     user.ban(24 * 60 * 60, reason);
-                    database.adminLogServer("ban "+user.getName());
+                    database.adminLogServer(String.format("ban %s with reason: %s", user.getName(), reason));
                     System.out.println("Banned " + user.getName() + " for 24 hours.");
                 } else {
                     System.out.println("Cannot find user " + token[1]);
@@ -164,7 +164,7 @@ public class App {
                 if (user != null) {
                     String reason = line.substring(token[0].length() + token[1].length() + 2).trim();
                     user.permaban(reason);
-                    database.adminLogServer("permaban "+user.getName());
+                    database.adminLogServer(String.format("permaban %s with reason: %s", user.getName(), reason));
                     System.out.println("Permabanned " + user.getName());
                 } else {
                     System.out.println("Cannot find user " + token[1]);
@@ -174,7 +174,7 @@ public class App {
                 if (user != null) {
                     String reason = line.substring(token[0].length() + token[1].length() + 2).trim();
                     user.shadowban(reason);
-                    database.adminLogServer("shadowban "+user.getName());
+                    database.adminLogServer(String.format("shadowban %s with reason: %s", user.getName(), reason));
                     System.out.println("Shadowbanned " + user.getName());
                 } else {
                     System.out.println("Cannot find user " + token[1]);

@@ -165,7 +165,7 @@ public class WebHandler {
                 time = time_form.getValue();
             }
             if (doLog(exchange)) {
-                App.getDatabase().adminLog("ban " + user.getName(), user_perform.getId());
+                App.getDatabase().adminLog(String.format("ban %s with reason: %s", user.getName(), getBanReason(exchange)), user_perform.getId());
             }
             user.ban(Integer.parseInt(time), getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
@@ -197,7 +197,7 @@ public class WebHandler {
             user.permaban(getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             if (doLog(exchange)) {
-                App.getDatabase().adminLog("permaban " + user.getName(), user_perform.getId());
+                App.getDatabase().adminLog(String.format("permaban %s with reason: %s", user.getName(), getBanReason(exchange)), user_perform.getId());
             }
             exchange.setStatusCode(200);
         } else {
@@ -212,7 +212,7 @@ public class WebHandler {
             user.shadowban(getBanReason(exchange), getRollbackTime(exchange));
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             if (doLog(exchange)) {
-                App.getDatabase().adminLog("shadowban " + user.getName(), user_perform.getId());
+                App.getDatabase().adminLog(String.format("shadowban %s with reason: %s", user.getName(), getBanReason(exchange)), user_perform.getId());
             }
             exchange.setStatusCode(200);
         } else {
@@ -273,10 +273,6 @@ public class WebHandler {
             respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_username", "Username taken, try another?"));
             return;
         }
-
-        System.out.println("new user");
-        System.out.println(ip);
-        System.out.println(user.getId());
 
         // do additional checks for possible multi here
         List<String> reports = new ArrayList<String>();
