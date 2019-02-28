@@ -2003,7 +2003,8 @@ window.App = (function () {
                     };
                     self.elements.palette.on("wheel", e => {
                         if (ls.get("scrollSwitchEnabled") !== true) return;
-                        let newVal = (self.color + (e.originalEvent.wheelDelta > 0 ? 1 : -1)) % self.palette.length; //if wheelDelta > 0, we're scrolling up (move forward) so add 1. otherwise subtract 1. we modulus wrap in case they're scrolling up past palette.length.
+                        let delta = e.originalEvent.deltaY * -40;
+                        let newVal = (self.color + ((delta > 0 ? 1 : -1) * (ls.get("scrollSwitchDirectionInverted") === true ? -1 : 1))) % self.palette.length;
                         self.switch(newVal <= -1 ? self.palette.length - 1 : newVal);
                     });
                 },
@@ -2449,6 +2450,11 @@ window.App = (function () {
                     $("#scrollSwitchToggle").prop("checked", ls.get("scrollSwitchEnabled") === true);
                     $("#scrollSwitchToggle").change(function () {
                         ls.set("scrollSwitchEnabled", this.checked === true);
+                    });
+
+                    $("#scrollDirectionToggle").prop("checked", ls.get("scrollSwitchDirectionInverted") === true);
+                    $("#scrollDirectionToggle").change(function() {
+                        ls.set("scrollSwitchDirectionInverted", this.checked === true);
                     });
 
                     $(window).keydown(function (evt) {
