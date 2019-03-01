@@ -2456,6 +2456,7 @@ window.App = (function () {
                             case "Escape":
                             case 27:
                                 place.switch(-1);
+                                $("#lookup, #prompt, #alert").fadeOut(200);
                                 break;
                         }
                     });
