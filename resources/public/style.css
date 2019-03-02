@@ -89,6 +89,12 @@ kbd {
     font-family: monospace;
 }
 
+.icon-lock {
+    max-height: .95em;
+    position: relative;
+    top: 2px;
+}
+
 /*//////////////////////////*\
 | Overlays
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
