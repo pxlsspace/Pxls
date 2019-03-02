@@ -2461,8 +2461,12 @@ window.App = (function () {
                         switch (evt.key || evt.which) {
                             case "Escape":
                             case 27:
-                                place.switch(-1);
-                                $("#lookup, #prompt, #alert").fadeOut(200);
+                                const selector = $("#lookup, #prompt, #alert");
+                                if (selector.is(":visible")){
+                                    selector.fadeOut(200);
+                                } else {
+                                    place.switch(-1);
+                                }
                                 break;
                         }
                     });
