@@ -660,6 +660,8 @@ window.App = (function () {
                             case "l":
                             case "L":
                                 self.allowDrag = !self.allowDrag;
+                                if (self.allowDrag) coords.lockIcon.fadeOut(200);
+                                else coords.lockIcon.fadeIn(200);
                                 break;
                             case "KeyR":
                             case 82:            // R
@@ -671,7 +673,7 @@ window.App = (function () {
                                   board.centerOn(tempOpts.x + (tempElem.width() / 2), tempOpts.y + (tempElem.height() / 2));
                                 }
                                 break;
-                            case "keyJ":
+                            case "KeyJ":
                             case 74:            // J
                             case "j":
                             case "J":
@@ -1197,7 +1199,8 @@ window.App = (function () {
                 centerOn: self.centerOn,
                 getRenderBoard: self.getRenderBoard,
                 refresh: self.refresh,
-                updateViewport: self.updateViewport
+                updateViewport: self.updateViewport,
+                allowDrag: self.allowDrag,
             };
         })(),
         // heatmap init stuff
@@ -2729,11 +2732,13 @@ window.App = (function () {
         coords = (function () {
             var self = {
                 elements: {
-                    coords: $("#coords")
+                    coordsWrapper: $("#coords"),
+                    coords: $("#coords .coords-text"),
+                    lockIcon: $("#coords .icon-lock")
                 },
                 mouseCoords: null,
                 init: function () {
-                    self.elements.coords.hide();
+                    self.elements.coordsWrapper.hide();
                     const _board = board.getRenderBoard()[0];
                     _board.addEventListener("pointermove", pointerHandler, { passive: false });
                     _board.addEventListener("mousemove", pointerHandler, { passive: false });
@@ -2747,22 +2752,24 @@ window.App = (function () {
                         var boardPos = board.fromScreen(evt.clientX, evt.clientY);
 
                         self.mouseCoords = boardPos;
-                        self.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")").fadeIn(200);
+                        self.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
+                        if (!self.elements.coordsWrapper.is(":visible")) self.elements.coordsWrapper.fadeIn(200);
                     }
 
                     function touchHandler(evt) {
                         var boardPos = board.fromScreen(evt.changedTouches[0].clientX, evt.changedTouches[0].clientY);
 
                         self.mouseCoords = boardPos;
-                        self.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")").fadeIn(200);
+                        self.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
+                        if (!self.elements.coordsWrapper.is(":visible")) self.elements.coordsWrapper.fadeIn(200);
                     }
 
                     $(window).keydown(event => {
                         if (!event.ctrlKey && (event.key === "c" || event.key === "C" || event.keyCode === 67) && navigator.clipboard && self.mouseCoords) {
                             navigator.clipboard.writeText(self.getLinkToCoords(self.mouseCoords.x, self.mouseCoords.y));
-                            self.elements.coords.addClass("copyPulse");
+                            self.elements.coordsWrapper.addClass("copyPulse");
                             setTimeout(() => {
-                                self.elements.coords.removeClass("copyPulse");
+                                self.elements.coordsWrapper.removeClass("copyPulse");
                             }, 200);
                         }
                     });
@@ -2785,6 +2792,7 @@ window.App = (function () {
             return {
                 init: self.init,
                 getLinkToCoords: self.getLinkToCoords,
+                lockIcon: self.elements.lockIcon,
             };
         })(),
         // this holds user stuff / info
