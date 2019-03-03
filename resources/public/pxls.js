@@ -616,7 +616,7 @@ window.App = (function () {
                     });
 
                     $(document.body).on("keydown", function (evt) {
-                        switch (evt.code || evt.keyCode || evt.which || evt.key) {
+                        switch (evt.originalEvent.code || evt.keyCode || evt.which || evt.key) {
                             case "KeyW":        // W
                             case "ArrowUp":
                             case 38:            // Arrow Up
