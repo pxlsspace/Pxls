@@ -79,6 +79,9 @@ An example OAuth section could look like this:
             secret: yo4DkHFDy0k1euPyxMef6m243qRgX00z
         }
     }
+
+## Configuring host
+You must update the `host` option in your `pxls.conf` otherwise session cookies will not set, making auth impossible. `host` should be your domain (or IP if testing locally) without port.
     
 ## Configuring CAPTCHA
 
