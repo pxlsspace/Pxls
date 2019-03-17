@@ -1260,9 +1260,7 @@ window.App = (function () {
                     });
                 },
                 clear: function () {
-                    if (ls.get("hvm_clearable") === true) {
-                        self._clear();
-                    }
+                    self._clear();
                 },
                 _clear: function () {
                     for (var i = 0; i < self.width * self.height; i++) {
@@ -1289,9 +1287,8 @@ window.App = (function () {
                     $("#heatmap-opacity").on("change input", function () {
                         self.setBackgroundOpacity(parseFloat(this.value));
                     });
-                    $("#hvmapClearable")[0].checked = ls.get("hvm_clearable");
-                    $("#hvmapClearable").change(function () {
-                        ls.set("hvm_clearable", this.checked);
+                    $("#hvmapClear").click(function () {
+                        self.clear();
                     });
                     $(window).keydown(function (evt) {
                         if (evt.key == "o" || evt.key == "O" || evt.which == 79) { //O key
@@ -1406,9 +1403,7 @@ window.App = (function () {
                     });
                 },
                 clear: function () {
-                    if (ls.get("hvm_clearable") === true) {
-                        self._clear();
-                    }
+                    self._clear();
                 },
                 _clear: function () {
                     self.ctx.putImageData(self.id, 0, 0);
@@ -1434,9 +1429,8 @@ window.App = (function () {
                     $("#virginmap-opacity").on("change input", function () {
                         self.setBackgroundOpacity(parseFloat(this.value));
                     });
-                    $("#hvmapClearable")[0].checked = ls.get("hvm_clearable");
-                    $("#hvmapClearable").change(function () {
-                        ls.set("hvm_clearable", this.checked);
+                    $("#hvmapClear").click(function () {
+                        self.clear();
                     });
                     $(window).keydown(function (evt) {
                         if (evt.key == "o" || evt.key == "O" || evt.which == 79) { //O key
