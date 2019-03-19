@@ -143,7 +143,8 @@ public class User {
     }
 
     public boolean isOverridingCooldown() {
-        return overrideCooldown;
+        if (role.greaterEqual(Role.MODERATOR)) return overrideCooldown;
+        return (overrideCooldown = false);
     }
 
     public void validateCaptcha() {

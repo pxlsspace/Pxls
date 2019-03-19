@@ -242,6 +242,40 @@ public class App {
                         System.out.printf("Unknown user: %s%n", token[1]);
                     }
                 }
+            } else if (token[0].equalsIgnoreCase("cd-override")) {
+                //cd-override list|USERNAME[ STATE]
+                //STATE=on|off
+                if (token.length > 1) {
+                    if (token[1].equalsIgnoreCase("list")) {
+                        StringBuilder sb = new StringBuilder();
+                        userManager.getAllUsersByToken().forEach((s, user) -> {
+                            if (user.isOverridingCooldown()) sb.append("    ").append(user.getName()).append('\n');
+                        });
+                        System.out.println(sb);
+                    } else if (token[1].equalsIgnoreCase("help")) {
+                        System.out.println("cd-override list|USERNAME[ STATE]");
+                        System.out.println("STATE=on|off");
+                    } else {
+                        User user = getUserManager().getByName(token[1]);
+                        if (user == null) {
+                            System.out.printf("Unknown user: %s%n", token[1]);
+                        } else {
+                            if (token.length >= 3) {
+                                if (token[2].equalsIgnoreCase("on") || token[2].equalsIgnoreCase("off")) {
+                                    user.setOverrideCooldown(token[2].equalsIgnoreCase("on"));
+                                    System.out.printf("Updated %s's cd-override state to %s%n", user.getName(), token[2].toLowerCase());
+                                } else {
+                                    System.out.printf("Invalid state: %s%n", token[2]);
+                                }
+                            } else {
+                                System.out.printf("User's CD Override state is: %s%n", user.isOverridingCooldown() ? "on" : "off");
+                            }
+                        }
+                    }
+                } else {
+                    System.out.println("cd-override list|USERNAME[ STATE]");
+                    System.out.println("STATE=on|off");
+                }
             }
         } catch (RuntimeException e) {
             e.printStackTrace();
