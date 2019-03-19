@@ -2956,7 +2956,8 @@ window.App = (function () {
                                     user: user,
                                     place: place,
                                     alert: alert,
-                                    lookup: lookup
+                                    lookup: lookup,
+                                    cdOverride: data.cdOverride
                                 });
                             });
                         } else if (window.deInitAdmin) {

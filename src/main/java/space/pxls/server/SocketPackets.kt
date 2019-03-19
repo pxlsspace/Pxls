@@ -38,7 +38,8 @@ data class ServerUserInfo(
         val banned: Boolean,
         val banExpiry: Long,
         val ban_reason: String,
-        val method: String) {
+        val method: String,
+        val cdOverride: Boolean) {
     val type = "userinfo"
 }
 
