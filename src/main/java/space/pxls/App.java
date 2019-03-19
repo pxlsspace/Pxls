@@ -39,6 +39,8 @@ public class App {
     private static Database database;
     private static UserManager userManager;
     private static Logger pixelLogger;
+    private static Logger shadowbannedPixelLogger;
+    private static Logger appLogger;
 
     private static int width;
     private static int height;
@@ -59,6 +61,8 @@ public class App {
         loadConfig();
 
         pixelLogger = LogManager.getLogger("Pixels");
+        shadowbannedPixelLogger = LogManager.getLogger("ShadowbannedPixels");
+        appLogger = LogManager.getLogger("App");
 
         width = config.getInt("board.width");
         height = config.getInt("board.height");
@@ -115,13 +119,13 @@ public class App {
             Path backupsDir = getStorageDir().resolve("backups/");
             if (!Files.exists(backupsDir)) {
                 if (!backupsDir.toFile().mkdirs()) {
-                    System.err.println("Failed to make backup dirs");
+                    getLogger().error("Failed to make backup dirs");
                 } else {
-                    System.out.printf("Created missing backups dir at %s%n", backupsDir.toAbsolutePath().normalize());
+                    getLogger().info("Created missing backups dir at %s%n", backupsDir.toAbsolutePath().normalize());
                 }
             }
         } catch (Exception e) {
-            System.err.println(new Error("Failed to create backup directories", e));
+            getLogger().error(new Error("Failed to create backup directories", e));
         }
         saveMap();
     }
@@ -339,17 +343,25 @@ public class App {
 
     public static boolean getRegistrationEnabled() { return getConfig().getBoolean("oauth.enableRegistration"); }
 
-    public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase) {
+    public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase, String action) {
         if (x < 0 || x >= width || y < 0 || y >= height || (color >= getPalette().size() && !(color == 0xFF || color == -1))) return;
         String userName = user != null ? user.getName() : "<server>";
+
+        if (action.trim().isEmpty()) {
+            action = mod_action ? "mod overwrite" : "user place";
+        }
 
         board[x + y * width] = (byte) color;
         heatmap[x + y * width] = (byte) 0xFF;
         virginmap[x + y * width] = (byte) 0x00;
-        pixelLogger.log(Level.INFO, String.format("%s %d %d %d %s %s", userName, x, y, color, ip, mod_action ? " (mod)" : ""));
+        pixelLogger.log(Level.INFO, String.format("%s\t%d\t%d\t%d\t%s\t%s", userName, x, y, color, ip, action));
         if (updateDatabase) {
             database.placePixel(x, y, color, user, mod_action);
         }
+    }
+
+    public static void logShadowbannedPixel(int x, int y, int color, String userName, String ip) {
+        shadowbannedPixelLogger.info(String.format("%s\t%d\t%d\t%d\t%s", userName, x, y, color, ip));
     }
 
     public static void rollbackAfterBan(User who, int seconds) {
@@ -370,13 +382,13 @@ public class App {
             //  forBroadcast.add() adds the pixel and later broadcasts it via websocket
             //  putRollbackPixel() adds rollback pixel to database (TABLE pixels) for undo and timelapse purposes
             if (rbPixel.toPixel != null) { //if previous pixel (the one we are rolling back to) exists
-                putPixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color, who, false, "(rollback)", false);
+                putPixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color, who, false, "", false, "rollback");
                 forBroadcast.add(new ServerPlace.Pixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color));
                 database.putRollbackPixel(who, rbPixel.fromId, rbPixel.toPixel.id);
             } else { //else rollback to blank canvas
                 DBPixelPlacement fromPixel = database.getPixelByID(rbPixel.fromId);
                 byte rollbackDefault = getDefaultColor(fromPixel.x, fromPixel.y);
-                putPixel(fromPixel.x, fromPixel.y, rollbackDefault, who, false, "(rollback)", false);
+                putPixel(fromPixel.x, fromPixel.y, rollbackDefault, who, false, "", false, "rollback");
                 forBroadcast.add(new ServerPlace.Pixel(fromPixel.x, fromPixel.y, rollbackDefault));
                 database.putRollbackPixelNoPrevious(fromPixel.x, fromPixel.y, who, fromPixel.id);
             }
@@ -395,7 +407,7 @@ public class App {
         List<ServerPlace.Pixel> forBroadcast = new ArrayList<>();
         for (DBPixelPlacement fromPixel : pixels) {
             //restores original pixel
-            putPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, false, "(undo)", false); //in board[]
+            putPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, false, "", false, "rollback undo"); //in board[]
             forBroadcast.add(new ServerPlace.Pixel(fromPixel.x, fromPixel.y, fromPixel.color)); //in websocket
             database.putUndoPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, fromPixel.id); //in database
         }
@@ -418,7 +430,7 @@ public class App {
                 int pixelColor = getPixel(x, y);
                 // fromColor is 0xFF or -1 if we're nuking
                 if (pixelColor != toColor) {
-                    putPixel(x, y, c, null, true, "<nuke action>", false);
+                    putPixel(x, y, c, null, true, "", false, "console nuke");
                     forBroadcast.add(new ServerPlace.Pixel(x, y, c));
                     if (fromColor == 0xFF || fromColor == -1) {
                         database.putNukePixel(x, y, c);
@@ -436,7 +448,7 @@ public class App {
             byte[] bytes = Files.readAllBytes(getStorageDir().resolve("board.dat"));
             System.arraycopy(bytes, 0, board, 0, width * height);
         } catch (NoSuchFileException e) {
-            System.out.println("Warning: Cannot find board.dat in working directory, using blank board");
+            getLogger().warn("Cannot find board.dat in working directory, using blank board");
             return false;
         } catch (IOException e) {
             e.printStackTrace();
@@ -449,7 +461,7 @@ public class App {
             byte[] bytes = Files.readAllBytes(getStorageDir().resolve("heatmap.dat"));
             System.arraycopy(bytes, 0, heatmap, 0, width * height);
         } catch (NoSuchFileException e) {
-            System.out.println("Warning: Cannot find heatmap.dat in working directory, using blank heatmap");
+            getLogger().warn("Cannot find heatmap.dat in working directory, using blank heatmap");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -461,7 +473,7 @@ public class App {
             System.arraycopy(bytes, 0, placemap, 0, width * height);
             havePlacemap = true;
         } catch (NoSuchFileException e) {
-            System.out.println("Warning: Cannot find placemap.dat in working directory, using blank placemap");
+            getLogger().warn("Cannot find placemap.dat in working directory, using blank placemap");
             havePlacemap = false;
         } catch (IOException e) {
             e.printStackTrace();
@@ -473,7 +485,7 @@ public class App {
             byte[] bytes = Files.readAllBytes(getStorageDir().resolve("virginmap.dat"));
             System.arraycopy(bytes, 0, virginmap, 0, width * height);
         } catch (NoSuchFileException e) {
-            System.out.println("Warning: Cannot find virginmap.dat in working directory, using blank virginmap");
+            getLogger().warn("Cannot find virginmap.dat in working directory, using blank virginmap");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -533,7 +545,7 @@ public class App {
     }
 
     public static Logger getLogger() {
-        return pixelLogger;
+        return appLogger;
     }
 
     public static UserManager getUserManager() {

@@ -157,14 +157,14 @@ public class PacketHandler {
         DBPixelPlacement lastPixel = App.getDatabase().getPixelByID(thisPixel.secondaryId);
         if (lastPixel != null) {
             App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
-            App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, "(user undo)", false);
+            App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, channel.getSourceAddress().getAddress().getHostAddress(), false, "user undo");
             broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
             ackUndo(user, lastPixel.x, lastPixel.y);
             sendAvailablePixels(user, "undo");
         } else {
             byte defaultColor = App.getDefaultColor(thisPixel.x, thisPixel.y);
             App.getDatabase().putUserUndoPixel(thisPixel.x, thisPixel.y, defaultColor, user, thisPixel.id);
-            App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, "(user undo)", false);
+            App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, channel.getSourceAddress().getAddress().getHostAddress(), false, "user undo");
             broadcastPixelUpdate(thisPixel.x, thisPixel.y, defaultColor);
             ackUndo(user, thisPixel.x, thisPixel.y);
             sendAvailablePixels(user, "undo");
@@ -229,7 +229,7 @@ public class PacketHandler {
                     }
                     if (user.isShadowBanned()) {
                         // ok let's just pretend to set a pixel...
-                        System.out.println("shadowban pixel!");
+                        App.logShadowbannedPixel(cp.getX(), cp.getY(), cp.getColor(), user.getName(), ip);
                         ServerPlace msg = new ServerPlace(Collections.singleton(new ServerPlace.Pixel(cp.getX(), cp.getY(), cp.getColor())));
                         for (WebSocketChannel ch : user.getConnections()) {
                             server.send(ch, msg);
@@ -239,7 +239,7 @@ public class PacketHandler {
                         }
                     } else {
                         boolean mod_action = user.isOverridingCooldown();
-                        App.putPixel(cp.getX(), cp.getY(), cp.getColor(), user, mod_action, ip, true);
+                        App.putPixel(cp.getX(), cp.getY(), cp.getColor(), user, mod_action, ip, true, "");
                         App.saveMap();
                         broadcastPixelUpdate(cp.getX(), cp.getY(), cp.getColor());
                         ackPlace(user, cp.getX(), cp.getY());

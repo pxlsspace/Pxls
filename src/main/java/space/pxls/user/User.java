@@ -300,12 +300,12 @@ public class User {
             return;
         }
         long delta = (System.currentTimeMillis()-lastPixelTime) / 1000;
-        //System.out.println("=======");
+        //App.getLogger().debug("=======");
         while(true) {
             int target = (curCD * multiplier) * (2 + getStacked() + addToN(getStacked()));
-            //System.out.print(delta);
-            //System.out.print(" : ");
-            //System.out.println(target);
+            //App.getLogger().debug(delta);
+            //App.getLogger().debug(" : ");
+            //App.getLogger().debug(target);
             if (delta >= target && getStacked() < maxStacked) {
                 setStacked(getStacked() + 1);
                 if (sendRes) {
