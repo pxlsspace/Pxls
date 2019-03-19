@@ -2073,11 +2073,14 @@ window.App = (function () {
                         }).click(function () {
                             self.elements.prompt.fadeOut(200);
                         }),
-                        $("<div>").addClass("button").text("Report").css({
+                        $("<button>").addClass("button").text("Report").css({
                             position: "fixed",
                             bottom: 20,
                             right: 30
                         }).click(function () {
+                            this.disabled = true;
+                            this.textContent = "Sending...";
+
                             var selectedRule = self.elements.prompt.find("select").val();
                             var textarea = self.elements.prompt.find("textarea").val().trim();
                             var msg = selectedRule;

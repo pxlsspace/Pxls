@@ -162,6 +162,20 @@ kbd {
     color: #fff;
 }
 
+button.button:disabled {
+    cursor: not-allowed;
+    border: 1px solid #777;
+    background-color: #aaa;
+    color: #555;
+}
+
+button.button.dark:disabled {
+    cursor: not-allowed;
+    background-color: #222;
+    border: 1px solid #000;
+    color: #444;
+}
+
 #lookup {
     top: 50px;
     right: 16px;
