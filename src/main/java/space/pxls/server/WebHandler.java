@@ -485,6 +485,13 @@ public class WebHandler {
         exchange.getResponseSender().send(ByteBuffer.wrap(App.getVirginmapData()));
     }
 
+    public void placemap(HttpServerExchange exchange) {
+        exchange.getResponseHeaders()
+                .put(Headers.CONTENT_TYPE, "application/binary")
+                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
+        exchange.getResponseSender().send(ByteBuffer.wrap(App.getPlacemapData()));
+    }
+
     public void logout(HttpServerExchange exchange) {
         Cookie tokenCookie = exchange.getRequestCookies().get("pxls-token");
 

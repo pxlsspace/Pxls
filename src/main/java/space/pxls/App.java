@@ -334,6 +334,10 @@ public class App {
         return virginmap;
     }
 
+    public static byte[] getPlacemapData() {
+        return placemap;
+    }
+
     public static byte[] getBoardData() {
         return board;
     }
