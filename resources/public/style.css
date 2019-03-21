@@ -255,7 +255,7 @@ button.button.dark:disabled {
     transform: translateZ(-1em);
     transform-style: preserve-3d;
     z-index: 11;
-    top: 100%;
+    top: 99.9%; /* I hate it, but it works. */
     background: #333;
     padding: 10px;
     margin: 0;
