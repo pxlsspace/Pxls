@@ -92,7 +92,7 @@ public class PacketHandler {
             if (obj instanceof ClientPlace) {
                 handlePlace(channel, user, ((ClientPlace) obj), ip);
             }
-            if (obj instanceof ClientUndo) handleUndo(channel, user, ((ClientUndo) obj));
+            if (obj instanceof ClientUndo) handleUndo(channel, user, ((ClientUndo) obj), ip);
             if (obj instanceof ClientCaptcha) handleCaptcha(channel, user, ((ClientCaptcha) obj));
             if (obj instanceof ClientShadowBanMe) handleShadowBanMe(channel, user, ((ClientShadowBanMe) obj));
             if (obj instanceof ClientBanMe) handleBanMe(channel, user, ((ClientBanMe) obj));
@@ -135,7 +135,7 @@ public class PacketHandler {
         sendCooldownData(user);
     }
 
-    private void handleUndo(WebSocketChannel channel, User user, ClientUndo cu){
+    private void handleUndo(WebSocketChannel channel, User user, ClientUndo cu, String ip){
         if (!user.canUndoNow()) {
             return;
         }
@@ -158,14 +158,14 @@ public class PacketHandler {
         DBPixelPlacement lastPixel = App.getDatabase().getPixelByID(thisPixel.secondaryId);
         if (lastPixel != null) {
             App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
-            App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, channel.getSourceAddress().getAddress().getHostAddress(), false, "user undo");
+            App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, ip, false, "user undo");
             broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
             ackUndo(user, lastPixel.x, lastPixel.y);
             sendAvailablePixels(user, "undo");
         } else {
             byte defaultColor = App.getDefaultColor(thisPixel.x, thisPixel.y);
             App.getDatabase().putUserUndoPixel(thisPixel.x, thisPixel.y, defaultColor, user, thisPixel.id);
-            App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, channel.getSourceAddress().getAddress().getHostAddress(), false, "user undo");
+            App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, ip, false, "user undo");
             broadcastPixelUpdate(thisPixel.x, thisPixel.y, defaultColor);
             ackUndo(user, thisPixel.x, thisPixel.y);
             sendAvailablePixels(user, "undo");
