@@ -6,7 +6,19 @@
 
         <File name="Pixels" fileName="logs/pixels.log">
             <PatternLayout>
-                <Pattern>%d %m%n</Pattern>
+                <Pattern>%d&#9;%m%n</Pattern>
+            </PatternLayout>
+        </File>
+
+        <File name="ShadowbannedPixels" fileName="logs/shadowbannedPixels.log">
+            <PatternLayout>
+                <Pattern>%d&#9;%m%n</Pattern>
+            </PatternLayout>
+        </File>
+
+        <File name="App" fileName="logs/app.log">
+            <PatternLayout>
+                <Pattern>%d&#9;%m%n</Pattern>
             </PatternLayout>
         </File>
     </Appenders>
@@ -17,6 +29,14 @@
 
         <Logger name="Pixels" level="INFO">
             <AppenderRef ref="Pixels"/>
+        </Logger>
+
+        <Logger name="App" level="INFO">
+            <AppenderRef ref="App"/>
+        </Logger>
+
+        <Logger name="ShadowbannedPixels" level="INFO">
+            <AppenderRef ref="ShadowbannedPixels"/>
         </Logger>
     </Loggers>
 </Configuration>

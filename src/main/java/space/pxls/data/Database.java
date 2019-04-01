@@ -63,8 +63,7 @@ public class Database implements Closeable {
         h = new DatabaseHandle();
         h.dao = dbi.open(DAO.class);
         h.lastUse = System.currentTimeMillis();
-        System.out.println("Creating new mariadb connection...");
-        System.out.println(h);
+        App.getLogger().debug("Created new MariDB handle", h, h, h);
         handles.put(t, h);
         return h.dao;
     }
@@ -74,8 +73,7 @@ public class Database implements Closeable {
             DatabaseHandle d = handles.get(t);
             if (d.lastUse + (1000 * 60 * 5)  < System.currentTimeMillis()) {
                 // ok destroy it
-                System.out.println("Destroying mariadb connection...");
-                System.out.println(d.dao);
+                App.getLogger().debug("Destroying MariaDB connection");
                 d.dao.close();
                 handles.remove(t);
             }

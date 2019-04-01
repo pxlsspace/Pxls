@@ -278,10 +278,10 @@ public class WebHandler {
         List<String> reports = new ArrayList<String>();
         if (App.getDatabase().haveDupeIp(ip, user.getId())) {
             reports.add("Duplicate IP");
-            System.out.println("dupe ip");
+//            App.getLogger().debug("dupe ip");
         }
         if (reports.size() > 0) {
-            System.out.println("have reports");
+//            App.getLogger().debug("have reports");
             String msg = "Potential dupe user. Reasons:\n\n";
             for (String r : reports) {
                 msg += r+"\n";
