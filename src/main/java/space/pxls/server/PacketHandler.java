@@ -55,7 +55,8 @@ public class PacketHandler {
                     user.isBanned(),
                     user.isBanned() ? user.getBanExpiryTime() : 0,
                     user.isBanned() ? user.getBanReason() : "",
-                    user.getLogin().split(":")[0]
+                    user.getLogin().split(":")[0],
+                    user.isOverridingCooldown()
             ));
             sendAvailablePixels(channel, user, "auth");
         }

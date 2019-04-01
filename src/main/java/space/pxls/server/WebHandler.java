@@ -230,7 +230,8 @@ public class WebHandler {
                             user.isBanned(),
                             user.getBanExpiryTime(),
                             user.getBanReason(),
-                            user.getLogin().split(":")[0]
+                            user.getLogin().split(":")[0],
+                            user.isOverridingCooldown()
                     )));
         } else {
             exchange.setStatusCode(400);

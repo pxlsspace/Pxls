@@ -10,6 +10,7 @@
             }).addClass("button").text(s);
         },
         sendAlert = function(username) {
+            if (admin.user.getRole() === "TRIALMOD") return "";
             return $("<input>").attr("placeholder", "Send alert...").keydown(function (evt) {
 				if (evt.which === 13) {
 					admin.socket.send({
@@ -207,11 +208,11 @@
                                     self.elements.check.fadeOut(200);
                                 });
                             }),
-                            genButton("Permaban").click(function () {
+                            (admin.user.getRole() !== "TRIALMOD" ? genButton("Permaban").click(function () {
                                 ban.perma(data.username, function () {
                                     self.elements.check.fadeOut(200);
                                 });
-                            })
+                            }) : "")
                         ),
                         $("<div>").append(
                             genButton("Unban").click(function () {
@@ -276,15 +277,31 @@
                         $("<h1>").text("MOD"),
                         $("<div>").append(
                             // first do the checkboxes
-                            $.map([["Disable hand reset", function () {
-                                admin.place.setAutoReset(!this.checked);
-                            }], ["Override cooldown", function () {
-                                admin.socket.send({type: "admin_cdoverride", override: this.checked});
-                            }]], function (o) {
-                                return $("<label>").text(o[0]).append(
-                                    $("<input>").attr("type", "checkbox").change(o[1])
-                                )
-                            }),
+                            $.map(
+                                [
+                                    {
+                                        text: "Disable hand reset",
+                                        onChange: function() {
+                                            admin.place.setAutoReset(!this.checked);
+                                        },
+                                        checkState: false,
+                                        disabled: false
+                                    },
+                                    {
+                                        text: "Override cooldown",
+                                        onChange: function() {
+                                            admin.socket.send({type: "admin_cdoverride", override: this.checked});
+                                        },
+                                        checkState: admin.cdOverride,
+                                        disabled: admin.user.getRole() === "TRIALMOD"
+                                    }
+                                ],
+                                function(cbox) {
+                                    return $("<label>").text(cbox.text).append(
+                                        $("<input>").attr("type", "checkbox").prop("checked", !!cbox.checkState).prop("disabled", !!cbox.disabled).change(cbox.onChange)
+                                    )
+                                }
+                            ),
                             // next do the text input
                             $.map([
                                 ["Ban user (24h)", ban.ban_24h],
