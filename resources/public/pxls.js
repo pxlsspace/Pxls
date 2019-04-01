@@ -1873,6 +1873,9 @@ window.App = (function () {
                     }).show();
                     self.elements.cursor.show();
                 },
+                setNumberedPaletteEnabled: function(shouldBeNumbered) {
+                    self.elements.palette[0].classList.toggle('no-pills', !shouldBeNumbered);
+                },
                 setPalette: function (palette) {
                     self.palette = palette;
                     self.elements.palette.find(".palette-color").remove().end().append(
@@ -1882,6 +1885,9 @@ window.App = (function () {
                                 .addClass("palette-color")
                                 .addClass("ontouchstart" in window ? "touch" : "no-touch")
                                 .css("background-color", self.palette[idx])
+                                .append(
+                                    $("<span>").addClass("palette-number").text(idx)
+                                )
                                 .click(function () {
                                     if (ls.get("auto_reset") === false || timer.cooledDown()) {
                                         self.switch(idx);
@@ -2030,6 +2036,7 @@ window.App = (function () {
                 setPalette: self.setPalette,
                 getPaletteRGB: self.getPaletteRGB,
                 setAutoReset: self.setAutoReset,
+                setNumberedPaletteEnabled: self.setNumberedPaletteEnabled,
                 get color() {
                     return self.color;
                 }
@@ -2461,6 +2468,13 @@ window.App = (function () {
                     $("#cbEnableMiddleMouseSelect").prop("checked", ls.get("enableMiddleMouseSelect") === true)
                         .change(function() {
                             ls.set("enableMiddleMouseSelect", this.checked === true);
+                        });
+
+                    place.setNumberedPaletteEnabled(ls.get("enableNumberedPalette") === true);
+                    $("#cbNumberedPalette").prop("checked", ls.get("enableNumberedPalette") === true)
+                        .change(function() {
+                            ls.set("enableNumberedPalette", this.checked === true);
+                            place.setNumberedPaletteEnabled(this.checked === true);
                         });
 
                     $(window).keydown(function (evt) {

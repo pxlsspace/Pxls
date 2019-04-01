@@ -211,6 +211,25 @@ button.button.dark:disabled {
     margin-bottom: 10px;
 }
 
+.palette-number {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    border-radius: 16px;
+    text-align: center;
+    background-color: #fff;
+    border: 1px solid #000;
+    width: 2em;
+    font-size: .75em;
+    user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+}
+
+#palette.no-pills .palette-number {
+    display: none !important;
+}
+
 /*//////////////////////////*\
 | Info / Template Drawer
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
@@ -442,7 +461,7 @@ button.button.dark:disabled {
 
 #palette {
     z-index: 6;
-    padding: 10px 0 7px;
+    padding: 15px 0 7px;
     margin: 0 auto;
 
     overflow-x: auto;
