@@ -125,14 +125,14 @@ public class PacketHandler {
     private void handleShadowBanMe(WebSocketChannel channel, User user, ClientShadowBanMe obj) {
         if (user.getRole().greaterEqual(Role.USER)) {
             App.getDatabase().adminLog(String.format("shadowban %s with reason: self-shadowban via script", user.getName()), user.getId());
-            user.shadowban("auto-ban via script", 999*24*3600);
+            user.shadowban("auto-ban via script", 999*24*3600, user);
         }
     }
 
     private void handleBanMe(WebSocketChannel channel, User user, ClientBanMe obj) {
         String app = obj.getApp();
         App.getDatabase().adminLog(String.format("shadowban %s with reason: auto-ban via script (ap: %s)", user.getName(), app), user.getId());
-        user.permaban(String.format("auto-ban via script(ap: %s)", app), 0);
+        user.permaban(String.format("auto-ban via script(ap: %s)", app), 0, user);
     }
 
     private void handleCooldownOverride(WebSocketChannel channel, User user, ClientAdminCooldownOverride obj) {

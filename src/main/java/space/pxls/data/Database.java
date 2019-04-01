@@ -52,6 +52,7 @@ public class Database implements Closeable {
         getHandle().createReportsTable();
         getHandle().createStatsTable();
         getHandle().createAdminNotesTable();
+        getHandle().createBanlogTable();
     }
 
     private DAO getHandle() {
@@ -243,6 +244,10 @@ public class Database implements Closeable {
         return getHandle().getUserByName(name);
     }
 
+    public DBUser getUserByID(int id) {
+        return getHandle().getUserByID(id);
+    }
+
     public DBUser getUserByToken(String token) {
         return getHandle().getUserByToken(token);
     }
@@ -334,6 +339,22 @@ public class Database implements Closeable {
 
     public void addLookup(Integer who, String ip) {
         getHandle().putLookup(who, ip);
+    }
+
+    /**
+     *
+     * @param banned_at_ms The milisecond timestamp the user was banned at
+     * @param banner_uid The UID of the person who did the actual ban. Special cases: null for console, and the `who_got_banned` for self-bans.
+     * @param banned_uid The UID of the person who's being banned.
+     * @param ban_expiry_ms The milisecond timestamp of when the ban will expire
+     * @param ban_action The type of ban (permaban/unban/etc)
+     * @param ban_reason The reason for the (un)ban
+     */
+    public void insertBanlog(long banned_at_ms, Integer banner_uid, int banned_uid, Long ban_expiry_ms, String ban_action, String ban_reason) {
+        if (ban_expiry_ms == null) ban_expiry_ms = 0L;
+        banned_at_ms /= 1000L;
+        ban_expiry_ms /= 1000L;
+        getHandle().insertBanlog(banned_at_ms, banner_uid, banned_uid, ban_expiry_ms, ban_action, ban_reason);
     }
 
     //UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0), pixel_count_alltime = IF(pixel_count_alltime, pixel_count_alltime-1, 0) WHERE id = :who

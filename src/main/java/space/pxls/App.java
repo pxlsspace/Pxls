@@ -152,39 +152,55 @@ public class App {
                 String rest = line.substring(token[0].length() + 1).trim();
                 server.broadcast(new ServerAlert(rest));
             } else if (token[0].equalsIgnoreCase("ban")) {
+                if (token.length < 3) {
+                    System.out.println("Missing reason");
+                    return;
+                }
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
                     String reason = line.substring(token[0].length() + token[1].length() + 2).trim();
-                    user.ban(24 * 60 * 60, reason);
+                    user.ban(24 * 60 * 60, reason, null);
                     database.adminLogServer(String.format("ban %s with reason: %s", user.getName(), reason));
                     System.out.println("Banned " + user.getName() + " for 24 hours.");
                 } else {
                     System.out.println("Cannot find user " + token[1]);
                 }
             } else if (token[0].equalsIgnoreCase("permaban")) {
+                if (token.length < 3) {
+                    System.out.println("Missing reason");
+                    return;
+                }
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
                     String reason = line.substring(token[0].length() + token[1].length() + 2).trim();
-                    user.permaban(reason);
+                    user.permaban(reason, null);
                     database.adminLogServer(String.format("permaban %s with reason: %s", user.getName(), reason));
                     System.out.println("Permabanned " + user.getName());
                 } else {
                     System.out.println("Cannot find user " + token[1]);
                 }
             } else if (token[0].equalsIgnoreCase("shadowban")) {
+                if (token.length < 3) {
+                    System.out.println("Missing reason");
+                    return;
+                }
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
                     String reason = line.substring(token[0].length() + token[1].length() + 2).trim();
-                    user.shadowban(reason);
+                    user.shadowban(reason, null);
                     database.adminLogServer(String.format("shadowban %s with reason: %s", user.getName(), reason));
                     System.out.println("Shadowbanned " + user.getName());
                 } else {
                     System.out.println("Cannot find user " + token[1]);
                 }
             } else if (token[0].equalsIgnoreCase("unban")) {
+                if (token.length < 3) {
+                    System.out.println("Missing reason");
+                    return;
+                }
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
-                    user.unban();
+                    user.unban(null, line.substring(token[0].length() + token[1].length() + 2).trim());
                     database.adminLogServer("unban "+user.getName());
                     System.out.println("Unbanned " + user.getName() + ".");
                 } else {

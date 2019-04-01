@@ -7,7 +7,7 @@ import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
 
 import java.io.Closeable;
 
-@RegisterMapper({DBUser.Mapper.class, DBPixelPlacement.Mapper.class, DBPixelPlacementUser.Mapper.class, DBUserBanReason.Mapper.class, DBUserPixelCount.Mapper.class, DBUserPixelCountAllTime.Mapper.class})
+@RegisterMapper({DBUser.Mapper.class, DBPixelPlacement.Mapper.class, DBPixelPlacementUser.Mapper.class, DBUserBanReason.Mapper.class, DBUserPixelCount.Mapper.class, DBUserPixelCountAllTime.Mapper.class, DBBanlog.Mapper.class})
 public interface DAO extends Closeable {
     @SqlUpdate("CREATE TABLE IF NOT EXISTS reports(" +
             "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT," +
@@ -166,6 +166,9 @@ public interface DAO extends Closeable {
     @SqlQuery("SELECT * FROM users WHERE username = :name")
     DBUser getUserByName(@Bind("name") String name);
 
+    @SqlQuery("SELECT * FROM users WHERE id = :id")
+    DBUser getUserByID(@Bind("id") int uid);
+
     @SqlQuery("SELECT ban_reason FROM users WHERE id = :id")
     DBUserBanReason getUserBanReason(@Bind("id") int userId);
 
@@ -234,6 +237,26 @@ public interface DAO extends Closeable {
                "  PRIMARY KEY (`id`) " +
                ") ")
     void createAdminNotesTable();
+
+    @SqlUpdate("CREATE TABLE IF NOT EXISTS `banlogs` ( " +
+            "  `id` int(11) NOT NULL AUTO_INCREMENT PRIMARY KEY, " +
+            "  `when` int(11) NOT NULL, " +
+            "  `banner` int(11) NOT NULL, " +
+            "  `banned` int(11) NOT NULL, " +
+            "  `ban_expiry` int(11) DEFAULT 0, " +
+            "  `action` varchar(256) NOT NULL, " +
+            "  `ban_reason` varchar(512) NOT NULL" +
+        ")")
+    void createBanlogTable();
+
+    @SqlUpdate("INSERT INTO `banlogs` VALUES (null, :when, :banner, :banned, :ban_expiry, :action, :ban_reason)")
+    void insertBanlog(@Bind("when") long when, @Bind("banner") int banner_uid, @Bind("banned") int banned_uid, @Bind("ban_expiry") long ban_expiry, @Bind("action") String action, @Bind("ban_reason") String ban_reason);
+
+    @SqlUpdate("UPDATE REPORTS SET ban_expiry = :ban_expiry WHERE id = :id")
+    void updateBanlogBanExpiry(@Bind("id") int banlog_id, @Bind("ban_expiry") long ban_expiry);
+
+    @SqlQuery("SELECT * FROM `banlogs` WHERE id=:id")
+    DBBanlog getBanlogByID(@Bind("id") int banlogID);
 
     void close();
 }

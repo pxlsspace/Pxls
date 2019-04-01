@@ -155,6 +155,9 @@ public class WebHandler {
     }
 
     public void ban(HttpServerExchange exchange) {
+        exchange.getResponseHeaders()
+                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "http://192.168.86.100:5000")
+                .put(HttpString.tryFromString("Access-Control-Allow-Credentials"), "true");
         User user = parseUserFromForm(exchange);
         User user_perform = exchange.getAttachment(AuthReader.USER);
         if (user != null && user.getRole().lessThan(user_perform.getRole())) {
@@ -167,7 +170,7 @@ public class WebHandler {
             if (doLog(exchange)) {
                 App.getDatabase().adminLog(String.format("ban %s with reason: %s", user.getName(), getBanReason(exchange)), user_perform.getId());
             }
-            user.ban(Integer.parseInt(time), getBanReason(exchange), getRollbackTime(exchange));
+            user.ban(Integer.parseInt(time), getBanReason(exchange), getRollbackTime(exchange), user_perform);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             exchange.setStatusCode(200);
         } else {
@@ -176,10 +179,13 @@ public class WebHandler {
     }
 
     public void unban(HttpServerExchange exchange) {
+        exchange.getResponseHeaders()
+                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "http://192.168.86.100:5000")
+                .put(HttpString.tryFromString("Access-Control-Allow-Credentials"), "true");
         User user = parseUserFromForm(exchange);
         User user_perform = exchange.getAttachment(AuthReader.USER);
         if (user != null) {
-            user.unban();
+            user.unban(user_perform, "");
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             if (doLog(exchange)) {
                 App.getDatabase().adminLog("unban " + user.getName(), user_perform.getId());
@@ -191,10 +197,13 @@ public class WebHandler {
     }
 
     public void permaban(HttpServerExchange exchange) {
+        exchange.getResponseHeaders()
+                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "http://192.168.86.100:5000")
+                .put(HttpString.tryFromString("Access-Control-Allow-Credentials"), "true");
         User user = parseUserFromForm(exchange);
         User user_perform = exchange.getAttachment(AuthReader.USER);
         if (user != null && user.getRole().lessThan(user_perform.getRole())) {
-            user.permaban(getBanReason(exchange), getRollbackTime(exchange));
+            user.permaban(getBanReason(exchange), getRollbackTime(exchange), user_perform);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             if (doLog(exchange)) {
                 App.getDatabase().adminLog(String.format("permaban %s with reason: %s", user.getName(), getBanReason(exchange)), user_perform.getId());
@@ -206,10 +215,13 @@ public class WebHandler {
     }
 
     public void shadowban(HttpServerExchange exchange) {
+        exchange.getResponseHeaders()
+                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "http://192.168.86.100:5000")
+                .put(HttpString.tryFromString("Access-Control-Allow-Credentials"), "true");
         User user = parseUserFromForm(exchange);
         User user_perform = exchange.getAttachment(AuthReader.USER);
         if (user != null && user.getRole().lessThan(user_perform.getRole())) {
-            user.shadowban(getBanReason(exchange), getRollbackTime(exchange));
+            user.shadowban(getBanReason(exchange), getRollbackTime(exchange), user_perform);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             if (doLog(exchange)) {
                 App.getDatabase().adminLog(String.format("shadowban %s with reason: %s", user.getName(), getBanReason(exchange)), user_perform.getId());

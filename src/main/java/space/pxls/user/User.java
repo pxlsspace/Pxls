@@ -197,57 +197,64 @@ public class User {
         return connections;
     }
 
-    public void shadowban(String reason, int rollbackTime) {
+    public void shadowban(String reason, int rollbackTime, User banner) {
         setBanReason(reason);
-        setRole(role.SHADOWBANNED, true);
+        setRole(Role.SHADOWBANNED, true);
         App.rollbackAfterBan(this, rollbackTime);
+        App.getDatabase().insertBanlog(System.currentTimeMillis(), banner == null ? 0 : banner.getId(), this.getId(), 0L, "shadowban", reason);
     }
 
-    public void shadowban(String reason) {
-        shadowban(reason, 24*3600);
+    public void shadowban(String reason, User banner) {
+        shadowban(reason, 24*3600, banner);
     }
 
-    public void shadowban() {
-        shadowban("");
+    public void shadowban(User banner) {
+        shadowban("", banner);
     }
 
-    public void ban(long timeFromNowSeconds, String reason, int rollbackTime) {
+    public void ban(long timeFromNowSeconds, String reason, int rollbackTime, User banner) {
         setBanExpiryTime(timeFromNowSeconds, true);
         setBanReason(reason);
         sendUserData();
         App.rollbackAfterBan(this, rollbackTime);
+        Long now = System.currentTimeMillis();
+        App.getDatabase().insertBanlog(now, banner == null ? 0 : banner.getId(), this.getId(), now + (timeFromNowSeconds * 1000), "ban", reason);
     }
 
-    public void ban(long timeFromNowSeconds, String reason) {
-        ban(timeFromNowSeconds, reason, 0);
+    public void ban(long timeFromNowSeconds, String reason, User banner) {
+        ban(timeFromNowSeconds, reason, 0, banner);
     }
 
-    public void ban(long timeFromNowSeconds) {
-        ban(timeFromNowSeconds, "");
+    public void ban(long timeFromNowSeconds, User banner) {
+        ban(timeFromNowSeconds, "", banner);
     }
 
-    public void permaban(String reason, int rollbackTime) {
+    public void permaban(String reason, int rollbackTime, User banner) {
         setBanReason(reason);
-        setRole(role.BANNED, true);
+        setRole(Role.BANNED, true);
         sendUserData();
         App.rollbackAfterBan(this, rollbackTime);
+        Long now = System.currentTimeMillis();
+        App.getDatabase().insertBanlog(now, banner == null ? 0 : banner.getId(), this.getId(), 0L, "permaban", reason);
     }
 
-    public void permaban(String reason) {
-        permaban(reason, 24*3600);
+    public void permaban(String reason, User banner) {
+        permaban(reason, 24*3600, banner);
     }
 
-    public void permaban() {
-        permaban("");
+    public void permaban(User banner) {
+        permaban("", banner);
     }
 
-    public void unban() {
+    public void unban(User whoUnbanned, String unbanReason) {
         setBanExpiryTime(0, true);
         if (role.lessThan(Role.USER)) {
             setRole(Role.USER, true);
         }
         sendUserData();
         App.undoRollback(this);
+        Long now = System.currentTimeMillis();
+        App.getDatabase().insertBanlog(now, whoUnbanned == null ? 0 : whoUnbanned.getId(), this.getId(), 0L, "unban", unbanReason);
     }
 
     public void setUseragent(String s) {
