@@ -121,7 +121,7 @@ public class App {
                 if (!backupsDir.toFile().mkdirs()) {
                     getLogger().error("Failed to make backup dirs");
                 } else {
-                    getLogger().info("Created missing backups dir at %s%n", backupsDir.toAbsolutePath().normalize());
+                    getLogger().info(String.format("Created missing backups dir at %s%n", backupsDir.toAbsolutePath().normalize()));
                 }
             }
         } catch (Exception e) {
