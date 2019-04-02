@@ -1826,7 +1826,7 @@ window.App = (function () {
                     self.elements.reticule.css("background-color", self.palette[newColor]);
                     if (newColor !== -1) {
                         $($(".palette-color[data-idx=" + newColor + "],.palette-color[data-idx=-1]")).addClass("active"); //Select both the new color AND the deselect button. Signifies more that it's a deselect button rather than a "delete pixel" button
-                        $(`.palette-color[data-idx="${newColor}"]`)[0].scrollIntoView();
+                        $(`.palette-color[data-idx="${newColor}"]`)[0].scrollIntoView({block:"nearest", inline:"nearest"});
                     }
                 },
                 place: function (x, y) {
