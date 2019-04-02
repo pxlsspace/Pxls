@@ -2,6 +2,7 @@ package space.pxls.data;
 
 import org.skife.jdbi.v2.StatementContext;
 import org.skife.jdbi.v2.tweak.ResultSetMapper;
+import space.pxls.App;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,9 +24,9 @@ public class DBPixelPlacementUser {
         this.y = y;
         this.color = color;
         this.time = time;
-        this.username = username;
-        this.pixel_count = pixel_count;
-        this.pixel_count_alltime = pixel_count_alltime;
+        this.username = App.getConfig().getBoolean("lookup.hideName") ? "-snip-" : username;
+        this.pixel_count = App.getConfig().getBoolean("lookup.hideCount") ? 0 : pixel_count;
+        this.pixel_count_alltime = App.getConfig().getBoolean("lookup.hideAlltimeCount") ? 0 : pixel_count_alltime;
     }
 
     public static class Mapper implements ResultSetMapper<DBPixelPlacementUser> {
