@@ -6,6 +6,7 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.async.Callback;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigException;
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
 import space.pxls.data.DBPixelPlacement;
@@ -15,6 +16,7 @@ import space.pxls.util.PxlsTimer;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
@@ -30,6 +32,9 @@ public class PacketHandler {
     public int getCooldown() {
         // TODO: make these parameters somehow configurable
 
+        if (config.getBoolean("useStaticCooldown")) {
+            return (int)config.getDuration("cooldown", TimeUnit.SECONDS);
+        }
         // exponential function of form a*exp(-b*(x - d)) + c
         double a = -8.04044740e+01;
         double b = 2.73880499e-03;
