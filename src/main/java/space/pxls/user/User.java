@@ -2,6 +2,8 @@ package space.pxls.user;
 
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
+import space.pxls.server.ClientUndo;
+import space.pxls.util.RateLimitFactory;
 
 import java.time.Instant;
 import java.util.HashSet;
@@ -51,12 +53,16 @@ public class User {
         return cooldownExpiry < System.currentTimeMillis();
     }
 
-    public boolean canUndoNow() {
-        return canUndo() && (lastPixelTime + App.getConfig().getDuration("undo.window", TimeUnit.MILLISECONDS) > System.currentTimeMillis());
+    public boolean undoWindowPassed() {
+        return lastPixelTime + App.getConfig().getDuration("undo.window", TimeUnit.MILLISECONDS) < System.currentTimeMillis();
     }
 
     public boolean canUndo() {
-        return lastUndoTime + App.getConfig().getDuration("undo.cooldown", TimeUnit.MILLISECONDS) < System.currentTimeMillis();
+        return canUndo(true);
+    }
+    public boolean canUndo(boolean hitBucket) {
+        int rem = RateLimitFactory.getTimeRemaining(ClientUndo.class, String.valueOf(this.id), hitBucket);
+        return rem == 0;
     }
 
     public void setLastPixelTime() {

@@ -10,16 +10,14 @@ import org.xnio.XnioWorker;
 import space.pxls.data.DBPixelPlacement;
 import space.pxls.data.DBRollbackPixel;
 import space.pxls.data.Database;
+import space.pxls.server.ClientUndo;
 import space.pxls.server.ServerAlert;
 import space.pxls.server.ServerPlace;
 import space.pxls.server.UndertowServer;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.user.UserManager;
-import space.pxls.util.PxlsTimer;
-import space.pxls.util.SessionTimer;
-import space.pxls.util.DatabaseTimer;
-import space.pxls.util.HeatmapTimer;
+import space.pxls.util.*;
 
 
 import java.io.File;
@@ -292,6 +290,8 @@ public class App {
     private static void loadConfig() {
         config = ConfigFactory.parseFile(new File("pxls.conf")).withFallback(ConfigFactory.load());
         config.checkValid(ConfigFactory.load());
+
+        RateLimitFactory.registerBucketHolder(ClientUndo.class, new RateLimitFactory.BucketConfig(((int) App.getConfig().getDuration("server.limits.undo.time", TimeUnit.SECONDS)), App.getConfig().getInt("server.limits.undo.count")));
 
         mapSaveTimer = new PxlsTimer(config.getDuration("board.saveInterval", TimeUnit.SECONDS));
         mapBackupTimer = new PxlsTimer(config.getDuration("board.backupInterval", TimeUnit.SECONDS));

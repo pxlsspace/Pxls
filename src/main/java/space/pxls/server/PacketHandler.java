@@ -141,7 +141,8 @@ public class PacketHandler {
     }
 
     private void handleUndo(WebSocketChannel channel, User user, ClientUndo cu, String ip){
-        if (!user.canUndoNow()) {
+        boolean _canUndo = user.canUndo(true);
+        if (!_canUndo || user.undoWindowPassed()) {
             return;
         }
         if (user.isShadowBanned()) {
@@ -240,7 +241,7 @@ public class PacketHandler {
                         for (WebSocketChannel ch : user.getConnections()) {
                             server.send(ch, msg);
                         }
-                        if (user.canUndo()) {
+                        if (user.canUndo(false)) {
                             server.send(channel, new ServerCanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
                         }
                     } else {
@@ -262,7 +263,8 @@ public class PacketHandler {
                             App.getDatabase().updateUserTime(user.getId(), seconds);
                             sendAvailablePixels(user, "consume");
                         }
-                        if (user.canUndo()) {
+
+                        if (user.canUndo(false)) {
                             server.send(channel, new ServerCanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
                         }
                     }
