@@ -708,7 +708,7 @@ window.App = (function () {
                                 break;
                             case "KeyQ":        // Q
                             case "Minus":       // -
-                            case "NumpadSubtact":   // numpad -
+                            case "NumpadSubtract":   // numpad -
                             case 81:            // Q
                             case 109:           // numpad -
                             case 173:           // -
