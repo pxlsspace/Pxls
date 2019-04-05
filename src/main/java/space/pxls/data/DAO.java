@@ -66,46 +66,39 @@ public interface DAO extends Closeable {
 
     @SqlUpdate("UPDATE pixels SET most_recent = false WHERE x = :x AND y = :y;" +
             "INSERT INTO pixels (x, y, color, who, secondary_id, mod_action)" +
-            "VALUES (:x, :y, :color, :who, :second_id, :mod);" +
-            "UPDATE users SET pixel_count = pixel_count + (1 - :mod), pixel_count_alltime = pixel_count_alltime + (1 - :mod) WHERE id = :who")
+            "VALUES (:x, :y, :color, :who, :second_id, :mod);")
     void putPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("mod") boolean mod, @Bind("second_id") int second_id);
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
             "SELECT x, y, color, :who, :from_id, true, false FROM pixels AS pp WHERE pp.id = :to_id ORDER BY id DESC LIMIT 1;" +
             "UPDATE pixels SET most_recent = true WHERE id = :to_id;" +
-            "UPDATE pixels SET most_recent = false WHERE id = :from_id;" +
-            "UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0), pixel_count_alltime = IF(pixel_count_alltime, pixel_count_alltime-1, 0) WHERE id = :who")
+            "UPDATE pixels SET most_recent = false WHERE id = :from_id;")
     void putRollbackPixel(@Bind("who") int who, @Bind("from_id") int fromId, @Bind("to_id") int toId);
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
             "VALUES (:x, :y, :default_color, :who, :from_id, true, false);" +
-            "UPDATE pixels SET most_recent = false WHERE x = :x and y = :y;" +
-            "UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0), pixel_count_alltime = IF(pixel_count_alltime, pixel_count_alltime-1, 0) WHERE id = :who")
+            "UPDATE pixels SET most_recent = false WHERE x = :x and y = :y;")
     void putRollbackPixelNoPrevious(@Bind("x") int x, @Bind("y") int y, @Bind("who") int who, @Bind("from_id") int fromId, @Bind("default_color") byte defaultColor);
 
     @SqlUpdate("UPDATE pixels SET most_recent = false WHERE x = :x AND y = :y;" +
             "INSERT INTO pixels (x, y, color, most_recent)" +
-            "VALUES (:x, :y, :color, :recent);" +
-            "UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0), pixel_count_alltime = IF(pixel_count_alltime, pixel_count_alltime-1, 0) WHERE id = :who")
+            "VALUES (:x, :y, :color, :recent);")
     void putNukePixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") int color, @Bind("who") int who, @Bind("recent") boolean recent);
 
     @SqlUpdate("UPDATE pixels SET most_recent = false WHERE x = :x AND y = :y AND color = :replace;" +
             "INSERT INTO pixels (x, y, color, most_recent)" +
-            "VALUES (:x, :y, :color, :recent);" +
-            "UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0), pixel_count_alltime = IF(pixel_count_alltime, pixel_count_alltime-1, 0) WHERE id = :who")
+            "VALUES (:x, :y, :color, :recent);")
     void putReplacePixel(@Bind("x") int x, @Bind("y") int y, @Bind("replace") int replace, @Bind("color") int color, @Bind("who") int who, @Bind("recent") boolean recent);
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, rollback_action, most_recent)" +
             "VALUES (:x, :y, :color, :who, NULL, true, false);" +
-            "UPDATE pixels SET most_recent = true WHERE id = :from_id;" +
-            "UPDATE users SET pixel_count = pixel_count + 1, pixel_count_alltime = pixel_count_alltime + 1 WHERE id = :who")
+            "UPDATE pixels SET most_recent = true WHERE id = :from_id;")
     void putUndoPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("from_id") int fromId);
 
     @SqlUpdate("INSERT INTO pixels (x, y, color, who, secondary_id, undo_action, most_recent)" +
             "VALUES (:x, :y, :color, :who, NULL, true, false);" +
             "UPDATE pixels SET most_recent = true,undone=false WHERE id = :back_id;" +
-            "UPDATE pixels SET most_recent = false,undone=true WHERE id = :from_id;" +
-            "UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0), pixel_count_alltime = IF(pixel_count_alltime, pixel_count_alltime-1, 0) WHERE id = :who")
+            "UPDATE pixels SET most_recent = false,undone=true WHERE id = :from_id;")
     void putUserUndoPixel(@Bind("x") int x, @Bind("y") int y, @Bind("color") byte color, @Bind("who") int who, @Bind("back_id") int backId, @Bind("from_id") int fromId);
 
     @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users ON pixels.who = users.id WHERE who = :who AND NOT rollback_action ORDER BY pixels.id DESC LIMIT 1")

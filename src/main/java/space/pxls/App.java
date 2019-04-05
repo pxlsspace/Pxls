@@ -582,6 +582,10 @@ public class App {
         }
     }
 
+    public static boolean shouldIncreaseSomePixelCount() {
+        return App.getConfig().getBoolean("pixelCounts.countTowardsAlltime") || App.getConfig().getBoolean("pixelCounts.countTowardsCurrent");
+    }
+
     public static Logger getLogger() {
         return appLogger;
     }
