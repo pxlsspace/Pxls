@@ -42,7 +42,7 @@ public class AuthReader implements HttpHandler {
 
                     if (user[0] == null) {
                         String signupToken = App.getUserManager().generateUserCreationToken("ip:" + ip);
-                        user[0] = App.getUserManager().signUp(ip, signupToken, ip);
+                        user[0] = App.getUserManager().signUp(MD5.compute(ip), signupToken, ip);
                     }
 
                     return App.getUserManager().logIn(user[0], ip);
