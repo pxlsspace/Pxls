@@ -17,7 +17,6 @@ public class RateLimitFactory {
         RateLimitFactory.registerBucketHolder(bucketType.getSimpleName(), bucketConfig);
     }
     public static void registerBucketHolder(String bucketType, BucketConfig bucketConfig) {
-        System.out.printf("Putting %s into bucketConfigs for %s%n", bucketConfig, bucketType);
         getInstance().bucketConfigs.put(bucketType, bucketConfig);
     }
 
