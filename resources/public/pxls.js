@@ -793,6 +793,7 @@ window.App = (function () {
                         }
                     }
                     function handleInputUp(event) {
+                        event.originalEvent.preventDefault();
                         if (self.holdTimer.id !== -1) {
                             clearTimeout(self.holdTimer.id);
                         }
