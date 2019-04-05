@@ -82,11 +82,7 @@ public class Database implements Closeable {
 
     public void placePixel(int x, int y, int color, User who, boolean mod_action) {
         int second_id = getHandle().getMostResentId(x, y);
-        if (App.getConfig().getBoolean("dontIncreasePixelCounts")) {
-            getHandle().putPixel_NoCount(x, y, (byte) color, who != null ? who.getId() : 0, mod_action, second_id);
-        } else {
-            getHandle().putPixel(x, y, (byte) color, who != null ? who.getId() : 0, mod_action, second_id);
-        }
+        getHandle().putPixel(x, y, (byte) color, who != null ? who.getId() : 0, mod_action, second_id);
     }
 
     public void updateUserTime(int uid, long seconds) {
@@ -187,45 +183,25 @@ public class Database implements Closeable {
     }
 
     public void putUndoPixel(int x, int y, int color, User who, int fromId) {
-        if (App.getConfig().getBoolean("dontIncreasePixelCounts")) {
-            getHandle().putUndoPixel_NoCount(x, y, (byte) color, who.getId(), fromId);
-        } else {
-            getHandle().putUndoPixel(x, y, (byte) color, who.getId(), fromId);
-        }
+        getHandle().putUndoPixel(x, y, (byte) color, who.getId(), fromId);
     }
 
     public void putRollbackPixel(User who, int fromId, int toId) {
-        if (App.getConfig().getBoolean("dontIncreasePixelCounts")) {
-            getHandle().putRollbackPixel_NoCount(who.getId(), fromId, toId);
-        } else {
-            getHandle().putRollbackPixel(who.getId(), fromId, toId);
-        }
+        getHandle().putRollbackPixel(who.getId(), fromId, toId);
     }
 
     public void putRollbackPixelNoPrevious(int x, int y, User who, int fromId) {
-        if (App.getConfig().getBoolean("dontIncreasePixelCounts")) {
-            getHandle().putRollbackPixelNoPrevious_NoCount(x, y, who.getId(), fromId, App.getDefaultColor(x, y));
-        } else {
-            getHandle().putRollbackPixelNoPrevious(x, y, who.getId(), fromId, App.getDefaultColor(x, y));
-        }
+        getHandle().putRollbackPixelNoPrevious(x, y, who.getId(), fromId, App.getDefaultColor(x, y));
     }
 
     public void putNukePixel(int x, int y, int color) {
         DBPixelPlacement pp = getPixelAt(x, y);
-        if (App.getConfig().getBoolean("dontIncreasePixelCounts")) {
-            getHandle().putNukePixel_NoCount(x, y, color, pp != null ? pp.userId : 0, pp != null ? (pp.secondaryId > 0) : false);
-        } else {
-            getHandle().putNukePixel(x, y, color, pp != null ? pp.userId : 0, pp != null ? (pp.secondaryId > 0) : false);
-        }
+        getHandle().putNukePixel(x, y, color, pp != null ? pp.userId : 0, pp != null ? (pp.secondaryId > 0) : false);
     }
 
     public void putNukePixel(int x, int y, int replace, int color) {
         DBPixelPlacement pp = getPixelAt(x, y);
-        if (App.getConfig().getBoolean("dontIncreasePixelCounts")) {
-            getHandle().putReplacePixel_NoCount(x, y, replace, color, pp != null ? pp.userId : 0, pp != null ? (pp.secondaryId > 0) : false);
-        } else {
-            getHandle().putReplacePixel(x, y, replace, color, pp != null ? pp.userId : 0, pp != null ? (pp.secondaryId > 0) : false);
-        }
+        getHandle().putReplacePixel(x, y, replace, color, pp != null ? pp.userId : 0, pp != null ? (pp.secondaryId > 0) : false);
     }
 
     public DBPixelPlacement getUserUndoPixel(User who){
@@ -233,19 +209,11 @@ public class Database implements Closeable {
     }
 
     public void putUserUndoPixel(DBPixelPlacement backPixel, User who, int fromId) {
-        if (App.getConfig().getBoolean("dontIncreasePixelCounts")) {
-            getHandle().putUserUndoPixel_NoCount(backPixel.x, backPixel.y, (byte) backPixel.color, who.getId(), backPixel.id, fromId);
-        } else {
-            getHandle().putUserUndoPixel(backPixel.x, backPixel.y, (byte) backPixel.color, who.getId(), backPixel.id, fromId);
-        }
+        getHandle().putUserUndoPixel(backPixel.x, backPixel.y, (byte) backPixel.color, who.getId(), backPixel.id, fromId);
     }
 
     public void putUserUndoPixel(int x, int y, int color, User who, int fromId) {
-        if (App.getConfig().getBoolean("dontIncreasePixelCounts")) {
-            getHandle().putUserUndoPixel_NoCount(x, y, (byte) color, who.getId(), 0, fromId);
-        } else {
-            getHandle().putUserUndoPixel(x, y, (byte) color, who.getId(), 0, fromId);
-        }
+        getHandle().putUserUndoPixel(x, y, (byte) color, who.getId(), 0, fromId);
     }
 
     public void close() {
