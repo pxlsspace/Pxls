@@ -155,9 +155,6 @@ public class WebHandler {
     }
 
     public void ban(HttpServerExchange exchange) {
-        exchange.getResponseHeaders()
-                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "http://192.168.86.100:5000")
-                .put(HttpString.tryFromString("Access-Control-Allow-Credentials"), "true");
         User user = parseUserFromForm(exchange);
         User user_perform = exchange.getAttachment(AuthReader.USER);
         if (user != null && user.getRole().lessThan(user_perform.getRole())) {
@@ -179,9 +176,6 @@ public class WebHandler {
     }
 
     public void unban(HttpServerExchange exchange) {
-        exchange.getResponseHeaders()
-                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "http://192.168.86.100:5000")
-                .put(HttpString.tryFromString("Access-Control-Allow-Credentials"), "true");
         User user = parseUserFromForm(exchange);
         User user_perform = exchange.getAttachment(AuthReader.USER);
         if (user != null) {
@@ -197,9 +191,6 @@ public class WebHandler {
     }
 
     public void permaban(HttpServerExchange exchange) {
-        exchange.getResponseHeaders()
-                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "http://192.168.86.100:5000")
-                .put(HttpString.tryFromString("Access-Control-Allow-Credentials"), "true");
         User user = parseUserFromForm(exchange);
         User user_perform = exchange.getAttachment(AuthReader.USER);
         if (user != null && user.getRole().lessThan(user_perform.getRole())) {
@@ -215,9 +206,6 @@ public class WebHandler {
     }
 
     public void shadowban(HttpServerExchange exchange) {
-        exchange.getResponseHeaders()
-                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "http://192.168.86.100:5000")
-                .put(HttpString.tryFromString("Access-Control-Allow-Credentials"), "true");
         User user = parseUserFromForm(exchange);
         User user_perform = exchange.getAttachment(AuthReader.USER);
         if (user != null && user.getRole().lessThan(user_perform.getRole())) {
