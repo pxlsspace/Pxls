@@ -2414,11 +2414,13 @@ window.App = (function () {
                     txtAlertLocation: $("#txtAlertLocation"),
                     rangeAlertVolume: $("#rangeAlertVolume"),
                     lblAlertVolume: $("#lblAlertVolume"),
-                    btnForceAudioUpdate: $("#btnForceAudioUpdate")
+                    btnForceAudioUpdate: $("#btnForceAudioUpdate"),
+                    rangeAlertVibrate: $("#rangeAlertVibrate"),
+                    lblAlertVibrate: $("#lblAlertVibrate")
                 },
                 init: function () {
                     self._initStack();
-                    self._initAudio();
+                    self._initAlert();
                     var useMono = ls.get("monospace_lookup")
                     if (typeof useMono === 'undefined') {
                         ls.set("monospace_lookup", true);
@@ -2523,7 +2525,7 @@ window.App = (function () {
                         self.updateAvailable(data.count, data.cause);
                     });
                 },
-                _initAudio: function () {
+                _initAlert: function () {
                     let parsedVolume = parseFloat(ls.get("alert.volume"));
                     if (isNaN(parseFloat(ls.get("alert.volume")))) {
                         parsedVolume = 1;
@@ -2534,7 +2536,7 @@ window.App = (function () {
                     }
                     self.elements.lblAlertVolume.text(`${parsedVolume * 100 >> 0}%`);
                     self.elements.rangeAlertVolume.val(parsedVolume);
-
+                    
                     if (ls.get("alert.src")) {
                         self.updateAudio(ls.get("alert.src"));
                         self.elements.txtAlertLocation.val(ls.get("alert.src"));
@@ -2565,7 +2567,26 @@ window.App = (function () {
                         timer.audioElem.volume = parsed;
                     });
 
-                    $("#btnAlertAudioTest").click(() => timer.audioElem.play());
+                    let parsedVibrate = parseInt(ls.get("alert.vibrate"),10);
+                    if (isNaN(parsedVibrate)) {
+                        parsedVibrate = 0;
+                        ls.set("alert.vibrate", 0);
+                    }
+                    self.elements.lblAlertVibrate.text(`${parsedVibrate}ms`);
+                    self.elements.rangeAlertVibrate.val(parsedVibrate);
+
+                    self.elements.rangeAlertVibrate.change(function () {
+                        const parsed = parseInt(self.elements.rangeAlertVibrate.val(),10);
+                        self.elements.lblAlertVibrate.text(`${parsed}ms`);
+                        ls.set("alert.vibrate", parsed);
+                    });
+
+                    $("#btnAlertTest").click(() => {
+                        timer.audioElem.play();
+                        if ("vibrate" in navigator && ls.get("alert.vibrate")) {
+                            navigator.vibrate(ls.get("alert.vibrate"));
+                        }
+                    });
 
                     $("#btnAlertReset").click(() => {
                         //TODO confirm with user
@@ -2585,7 +2606,7 @@ window.App = (function () {
                     }
                 },
                 updateAvailable: function (count, cause) {
-                    if (count > 0 && cause === "stackGain") timer.playAudio();
+                    if (count > 0 && cause === "stackGain") timer.playAlert();
                     self.setPlaceableText(count);
                 },
                 setMax(maxStacked) {
@@ -2645,7 +2666,7 @@ window.App = (function () {
 
                     var alertDelay = parseInt(ls.get("alert_delay"));
                     if (alertDelay < 0 && delta < Math.abs(alertDelay) && !self.hasFiredNotification) {
-                        self.playAudio();
+                        self.playAlert();
                         if (!self.focus) {
                             notification.show(`Your next pixel will be available in ${Math.abs(alertDelay)} seconds!`);
                         }
@@ -2691,7 +2712,7 @@ window.App = (function () {
 
                     if (alertDelay > 0) {
                         setTimeout(() => {
-                            self.playAudio();
+                            self.playAlert();
                             if (!self.focus) {
                                 notification.show(`Your next pixel has been available for ${alertDelay} seconds!`);
                             }
@@ -2702,7 +2723,7 @@ window.App = (function () {
                     }
 
                     if (!self.hasFiredNotification) {
-                        self.playAudio();
+                        self.playAlert();
                         if (!self.focus) {
                             notification.show("Your next pixel is available!");
                         }
@@ -2731,16 +2752,19 @@ window.App = (function () {
                         self.update();
                     });
                 },
-                playAudio: function () {
+                playAlert: function () {
                     if (!ls.get("audio_muted")) {
                         self.audio.play();
+                    }
+                    if ("vibrate" in navigator && ls.get("alert.vibrate")) {
+                        navigator.vibrate(ls.get("alert.vibrate"));
                     }
                 }
             };
             return {
                 init: self.init,
                 cooledDown: self.cooledDown,
-                playAudio: self.playAudio,
+                playAlert: self.playAlert,
                 audioElem: self.audio
             };
         })(),
