@@ -106,17 +106,22 @@
             <div>
                 <h1>Pixel Ready alert settings</h1>
                 <p class="alertLocationWrapper"><label for="txtAlertLocation">Alert URL:</label><input type="text" placeholder="notify.wav" id="txtAlertLocation"></p>
-                <div class="ButtonBar">
-                    <button id="btnForceAudioUpdate" class="button">Update</button>
-                    <button id="btnAlertAudioTest" class="button">Test</button>
-                    <button id="btnAlertReset" class="button">Reset</button>
-                </div>
                 <div>
                     <label for="rangeAlertVolume">Volume:</label>
                     <input type="range" id="rangeAlertVolume" min=0 max=1 step=".01" value=1>
                     <span id="lblAlertVolume"></span>
                 </div>
-				<label style="display: block;">Delay (Seconds): <input width="30px" value="0" id="alertDelay"></label>
+                <div>
+                    <label for="rangeAlertVibrate">Vibrate:</label>
+                    <input type="range" id="rangeAlertVibrate" min=0 max=1000 step="1" value=0>
+                    <span id="lblAlertVibrate"></span>
+                </div>
+                <div class="ButtonBar">
+                    <button id="btnForceAudioUpdate" class="button">Update</button>
+                    <button id="btnAlertTest" class="button">Test</button>
+                    <button id="btnAlertReset" class="button">Reset</button>
+                </div>
+		<label style="display: block;">Delay (Seconds): <input width="30px" value="0" id="alertDelay"></label>
             </div>
         </div>
         <div class="open">settings</div>
