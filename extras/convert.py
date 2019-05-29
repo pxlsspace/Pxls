@@ -1,14 +1,20 @@
 from PIL import Image
-import os
 import json
+import os
 import re
 import sys
-convertpath = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)),".."))
-configpath = convertpath+"\\pxls.conf"
-print(configpath)
-configfile = open(configpath,"r+")
+
+# Getting palette
+
+# /absolute/path/to/Pxls
+convertpath = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..'))
+# /absolute/path/to/Pxls/pxls.conf
+configpath = convertpath + '\\pxls.conf'
+
+configfile = open(configpath, 'r+')
 config = str(configfile.read())
 configfile.close()
+
 hexToRGB = lambda hex : tuple(int(hex.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
 lines = [line.strip() for line in config.splitlines()]
 
@@ -20,21 +26,28 @@ for line in lines:
 paletteArr = json.loads(paletteMatch.group(1))
 
 palette = [hexToRGB(hex) for hex in paletteArr]
-print(palette)
-#Getting paths
-image = sys.argv[1]
-placemap = sys.argv[2]
-output = 'default_board.dat'
-pmoutput = 'placemap.dat'
-img = Image.open(image)
+
+# Getting paths
+
+imagePath = sys.argv[1]
+placemapPath = sys.argv[2]
+
+outputPath = 'default_board.dat'
+pmoutputPath = 'placemap.dat'
+
+img = Image.open(imagePath)
 pix = img.load()
-pmimg = Image.open(placemap)
+
+pmimg = Image.open(placemapPath)
 pmpix = pmimg.load()
+
 width = img.size[0]
 height = img.size[1]
+
 print('Width:', width)
 print('Height:', height)
 
+# Convertion
 
 def color_to_palette(c):
 	for i in range(len(palette)):
@@ -51,7 +64,7 @@ def color_to_palette(c):
 
 i = 0
 
-with open(output, 'wb+') as f:
+with open(outputPath, 'wb+') as f:
 	f.truncate()
 	for y in range(height):
 		for x in range(width):
@@ -63,7 +76,7 @@ with open(output, 'wb+') as f:
 				i += 1
 			f.write(bytes([b]))
 
-with open(pmoutput, 'wb+') as f:
+with open(pmoutputPath, 'wb+') as f:
 	f.truncate()
 	for y in range(height):
 		for x in range(width):
