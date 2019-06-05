@@ -4,11 +4,12 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
-import org.skife.jdbi.v2.sqlobject.mixins.GetHandle;
 import org.skife.jdbi.v2.tweak.HandleCallback;
 import space.pxls.App;
+import space.pxls.server.ChatMessage;
 import space.pxls.user.Role;
 import space.pxls.user.User;
+import space.pxls.util.MD5;
 
 import java.io.Closeable;
 import java.time.Instant;
@@ -42,7 +43,6 @@ public class Database implements Closeable {
         config.setMaximumPoolSize(200); // this is plenty, the websocket uses 32
 
         dbi = new DBI(new HikariDataSource(config));
-        
 
         getHandle().createPixelsTable();
         getHandle().createUsersTable();
@@ -53,6 +53,7 @@ public class Database implements Closeable {
         getHandle().createStatsTable();
         getHandle().createAdminNotesTable();
         getHandle().createBanlogTable();
+        getHandle().createChatMessagesTable();
     }
 
     private DAO getHandle() {
@@ -176,7 +177,7 @@ public class Database implements Closeable {
         for (Map<String, Object> entry : output) {
             int fromId = toIntExact((long) entry.get("secondary_id"));
             DBPixelPlacement fromPixel = getHandle().getPixel(fromId); // get the original pixel, the one that we previously rolled back
-            
+
             boolean can_undo = getHandle().getCanUndo(fromPixel.x, fromPixel.y, fromPixel.id);
             if (can_undo) { // this basically checks if there are pixels that are more recent
                 pixels.add(fromPixel); // add and later return
@@ -356,6 +357,149 @@ public class Database implements Closeable {
         ban_expiry_ms /= 1000L;
         getHandle().insertBanlog(banned_at_ms, banner_uid, banned_uid, ban_expiry_ms, ban_action, ban_reason);
     }
+
+    /* CHAT */
+
+    /**
+     * @param author The {@link User} who sent the chat message
+     * @param sent_at The epoch timestamp of when the message was sent
+     * @param message The content of the message
+     * @author GlowingSocc
+     */
+    public void insertChatMessage(User author, long sent_at, String message) {
+        insertChatMessage(author == null ? -1 : author.getId(), sent_at, message);
+    }
+
+    /**
+     * @param author_uid The ID of the user who sent the chat message
+     * @param sent_at_ms The epoch MS timestamp of when the message was sent
+     * @param message The content of the message
+     * @return The nonce of the message
+     * @author GlowingSocc
+     */
+    public String insertChatMessage(int author_uid, long sent_at_ms, String message) {
+        String nonce = MD5.compute(String.valueOf(author_uid) + sent_at_ms + Math.random() + message);
+        getHandle().insertChatMessage(author_uid, sent_at_ms / 1000L, message, nonce);
+        return nonce;
+    }
+
+    /**
+     * Fetches the {@link DBChatMessage} associated with the given <pre>message_id</pre>
+     * @param message_id The ID of the {@link DBChatMessage} to fetch.
+     * @return The {@link DBChatMessage}, or <pre>null</pre> if it doesn't exist.
+     * @author GlowingSocc
+     */
+    public DBChatMessage getChatMessageByID(int message_id) {
+        return getHandle().getChatMessageByID(message_id);
+    }
+
+    /**
+     * Fetches the {@link DBChatMessage} associated with the given <pre>nonce</pre>
+     * @param nonce The nonce of the {@link DBChatMessage} to fetch.
+     * @return The {@link DBChatMessage}, or <pre>null</pre> if it doesn't exist.
+     * @author GlowingSocc
+     */
+    public DBChatMessage getChatMessageByNonce(String nonce) {
+        return getHandle().getChatMessageByNonce(nonce);
+    }
+
+    /**
+     * Fetches <em>all</em> chat messages for the specified author, sorted by date sent descending.
+     * @param author_uid The user ID of the author.
+     * @return An array of {@link DBChatMessage}s
+     * @author GlowingSocc
+     */
+    public DBChatMessage[] getChatMessagesForAuthor(int author_uid) {
+        return getHandle().getChatMessagesForAuthor(author_uid);
+    }
+
+    /**
+     * Retrieves the last <span>x</span> chat messages.<br />
+     * <b>WARNING:</b> Input is not sanitized. For internal use only.
+     * @param x The amount of chat messages to retrieve.
+     * @return An array of {@link DBChatMessage}s. Array length is bound to ResultSet size, not the `<pre>x</pre>` param.
+     * @author GlowingSocc
+     */
+    public DBChatMessage[] getLastXMessages(int x) {
+        List<Map<String,Object>> res = dbi.withHandle(handle -> handle.createQuery("SELECT * FROM chat_messages WHERE 1 ORDER BY id DESC LIMIT " + x).list());
+        DBChatMessage[] toReturn = new DBChatMessage[res.size()];
+        for (int i = 0; i < res.size(); i++) {
+            Map<String,Object> row = res.get(i);
+            Object sent = row.get("sent");
+            toReturn[i] = new DBChatMessage((int) row.get("id"), (int) row.get("author"), sent == null ? -1 : (int) sent, (String) row.get("content"));
+        }
+        return toReturn;
+    }
+
+    /**
+     * Retrieves the last <span>x</span> chat messages and parses them for easier frontend handling.<br />
+     * <b>WARNING:</b> Input is not sanitized. For internal use only.
+     * @param x The amount of chat messages to retrieve.
+     * @return An array of {@link DBChatMessage}s. Array length is bound to ResultSet size, not the `<pre>x</pre>` param.
+     * @author GlowingSocc
+     */
+    public List<ChatMessage> getlastXMessagesForSocket(int x) {
+        DBChatMessage[] fromDB = getLastXMessages(x);
+        List<ChatMessage> toReturn = new ArrayList<>();
+        for (DBChatMessage dbChatMessage : fromDB) {
+            String author = "CONSOLE";
+            String parsedMessage = dbChatMessage.message; //TODO https://github.com/atlassian/commonmark-java
+            if (dbChatMessage.author_uid > 0) {
+                User temp = App.getUserManager().getByID(dbChatMessage.author_uid);
+                author = temp != null ? temp.getName() : "$Unknown";
+            }
+            toReturn.add(new ChatMessage(author, dbChatMessage.sent_at, dbChatMessage.message/*, parsedMessage*/));
+        }
+        return toReturn;
+    }
+
+    /**
+     * Updates a user's perma chatban state/ Does not update the expiry.
+     * @param toUpdate The {@link User} to update
+     * @param isPermaChatbanned Whether or not the user should be permanently chatbanned
+     * @see #updateUserChatbanExpiry(User, long)
+     * @author GlowingSocc
+     */
+    public void updateUserChatbanPerma(User toUpdate, boolean isPermaChatbanned) {
+        if (toUpdate == null) throw new IllegalArgumentException("Cannot update a non-existant user's chatban");
+        updateUserChatbanPerma(toUpdate.getId(), isPermaChatbanned);
+    }
+
+    /**
+     * Updates a user's perma chatban state. Does not update the expiry.
+     * @param toUpdateUID The {@link User}'s ID to update.
+     * @param isPermaChatbanned Whether or not the user should be permanently chatbanned
+     * @see #updateUserChatbanExpiry(int, long)
+     * @author GlowingSocc
+     */
+    public void updateUserChatbanPerma(int toUpdateUID, boolean isPermaChatbanned) {
+        getHandle().updateUserChatbanPerma(isPermaChatbanned ? 1 : 0, toUpdateUID);
+    }
+
+    /**
+     * Updates the user's chatban expiry. Does not update the 'permaban' state.
+     * @param toUpdate The {@link User} to update
+     * @param chatBanExpiry The timestamp in milliseconds of when the chatban expires.
+     * @see #updateUserChatbanExpiry(User, long)
+     * @author GlowingSocc
+     */
+    public void updateUserChatbanExpiry(User toUpdate, long chatBanExpiry) {
+        if (toUpdate == null) throw new IllegalArgumentException("Cannot update a non-existant user's chatban");
+        updateUserChatbanExpiry(toUpdate.getId(), chatBanExpiry);
+    }
+
+    /**
+     * Updates the user's chatban expiry. Does not update the 'permaban' state.
+     * @param toUpdateUID The {@link User}'s ID to update
+     * @param chatBanExpiry The timestamp in milliseconds of when the chatban expires.
+     * @see #updateUserChatbanExpiry(int, long)
+     * @author GlowingSocc
+     */
+    public void updateUserChatbanExpiry(int toUpdateUID, long chatBanExpiry) {
+        getHandle().updateUserChatbanExpiry(chatBanExpiry, toUpdateUID);
+    }
+
+    /* END CHAT */
 
     //UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0), pixel_count_alltime = IF(pixel_count_alltime, pixel_count_alltime-1, 0) WHERE id = :who
     private void maybeIncreasePixelCount(int whoID) {

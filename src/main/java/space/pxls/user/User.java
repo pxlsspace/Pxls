@@ -23,6 +23,7 @@ public class User {
     private boolean justShowedCaptcha;
     private boolean lastPlaceWasStack = false;
     private boolean placingLock = false;
+    private boolean isPermaChatbanned = false;
     private long cooldownExpiry;
     private long lastPixelTime = 0;
     private long lastUndoTime = 0;
@@ -30,10 +31,11 @@ public class User {
 
     // 0 = not banned
     private long banExpiryTime;
+    private long chatbanExpiryTime;
 
     private Set<WebSocketChannel> connections = new HashSet<>();
 
-    public User(int id, int stacked, String name, String login, long cooldownExpiry, Role role, long banExpiryTime) {
+    public User(int id, int stacked, String name, String login, long cooldownExpiry, Role role, long banExpiryTime, boolean isPermaChatbanned, long chatbanExpiryTime) {
         this.id = id;
         this.stacked = stacked;
         this.name = name;
@@ -41,6 +43,8 @@ public class User {
         this.cooldownExpiry = cooldownExpiry;
         this.role = role;
         this.banExpiryTime = banExpiryTime;
+        this.isPermaChatbanned = isPermaChatbanned;
+        this.chatbanExpiryTime = chatbanExpiryTime;
     }
 
     public int getId() {
@@ -191,6 +195,56 @@ public class User {
     }
     private void setBanExpiryTime(long timeFromNowSeconds) {
         setBanExpiryTime(timeFromNowSeconds, false);
+    }
+
+    public boolean isChatbanned() {
+        return this.isPermaChatbanned || this.chatbanExpiryTime > System.currentTimeMillis();
+    }
+
+    /**
+     * @param chatbanExpiryTime The timestamp in milliseconds of when the chatban expires.
+     */
+    public void setChatbanExpiryTime(long chatbanExpiryTime) {
+        this.chatbanExpiryTime = chatbanExpiryTime;
+        App.getDatabase().updateUserChatbanExpiry(id, chatbanExpiryTime);
+    }
+
+    /**
+     * Permabans the user from chat
+     */
+    public void permaChatban() {
+        permaChatban(null);
+    }
+
+    /**
+     * @param reason (nullable) The reason for the chatban.
+     */
+    public void permaChatban(String reason) {
+        setPermaChatbanned(true, reason);
+    }
+
+    /**
+     * Removes the chat permaban from the user.
+     */
+    public void unpermaChatban() {
+        unpermaChatban(null);
+    }
+
+    /**
+     * @param reason (nullable) The reason for the chatban.
+     */
+    public void unpermaChatban(String reason) {
+        setPermaChatbanned(false, reason);
+    }
+
+    /**
+     * @param isPermaChatbanned Whether or not the user is perma chatbanned.
+     * @param reason The perma chat (un)ban reason, or null for blank.
+     */
+    public void setPermaChatbanned(boolean isPermaChatbanned, String reason) {
+        if (reason == null) reason = "";
+        this.isPermaChatbanned = isPermaChatbanned;
+        App.getDatabase().updateUserChatbanPerma(id, isPermaChatbanned);
     }
 
     public Set<WebSocketChannel> getConnections() {

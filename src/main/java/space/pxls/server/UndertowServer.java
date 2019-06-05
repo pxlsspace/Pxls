@@ -7,7 +7,6 @@ import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.form.EagerFormParsingHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.util.Headers;
-import io.undertow.util.HttpString;
 import io.undertow.websockets.core.AbstractReceiveListener;
 import io.undertow.websockets.core.BufferedTextMessage;
 import io.undertow.websockets.core.WebSocketChannel;
@@ -20,9 +19,6 @@ import space.pxls.util.AuthReader;
 import space.pxls.util.IPReader;
 import space.pxls.util.RateLimitingHandler;
 import space.pxls.util.RoleGate;
-import space.pxls.user.UserManager;
-import space.pxls.user.User;
-import space.pxls.user.Role;
 
 import java.io.IOException;
 import java.util.*;
@@ -125,8 +121,9 @@ public class UndertowServer {
                     obj = App.getGson().fromJson(jsonObj, ClientAdminMessage.class);
                 if (type.equals("shadowbanme")) obj = App.getGson().fromJson(jsonObj, ClientShadowBanMe.class);
                 if (type.equals("banme")) obj = App.getGson().fromJson(jsonObj, ClientBanMe.class);
-                
-                
+                if (type.equalsIgnoreCase("ChatHistory")) obj = App.getGson().fromJson(jsonObj, ClientChatHistory.class);
+                if (type.equalsIgnoreCase("ChatMessage")) obj = App.getGson().fromJson(jsonObj, ClientChatMessage.class);
+
                 // old thing, will auto-shadowban
                 if (type.equals("place")) obj = App.getGson().fromJson(jsonObj, ClientPlace.class);
                 

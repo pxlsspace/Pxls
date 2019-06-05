@@ -9,14 +9,19 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigException;
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
+import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBPixelPlacement;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.util.PxlsTimer;
+import space.pxls.util.RateLimitFactory;
+
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 
 import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
@@ -73,7 +78,7 @@ public class PacketHandler {
             sendCooldownData(channel, user);
             user.flagForCaptcha();
             server.addAuthedUser(user);
-            
+
             user.setInitialAuthTime(System.currentTimeMillis());
             user.tickStack(false); // pop the whole pixel stack
             sendAvailablePixels(channel, user, "connect");
@@ -101,7 +106,9 @@ public class PacketHandler {
             if (obj instanceof ClientCaptcha) handleCaptcha(channel, user, ((ClientCaptcha) obj));
             if (obj instanceof ClientShadowBanMe) handleShadowBanMe(channel, user, ((ClientShadowBanMe) obj));
             if (obj instanceof ClientBanMe) handleBanMe(channel, user, ((ClientBanMe) obj));
-            
+            if (obj instanceof ClientChatHistory) handleChatHistory(channel, user, ((ClientChatHistory) obj));
+            if (obj instanceof ClientChatMessage) handleChatMessage(channel, user, ((ClientChatMessage) obj));
+
             if (user.getRole().greaterEqual(Role.MODERATOR)) {
                 if (obj instanceof ClientAdminCooldownOverride)
                     handleCooldownOverride(channel, user, ((ClientAdminCooldownOverride) obj));
@@ -313,6 +320,19 @@ public class PacketHandler {
 
                     }
                 });
+    }
+
+    private void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
+        //if (user.isChatBanned()) return;
+        server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100)));
+    }
+
+    private void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
+        //if (user.isChatBanned()) return;
+        //if (checkFlood(user)) {sendChatCooldownPacket(user, channel); return;}
+        Long nowMS = System.currentTimeMillis();
+        App.getDatabase().insertChatMessage(user == null ? 0 : user.getId(), nowMS, clientChatMessage.getMessage());
+        server.broadcast(new ServerChatMessage(new ChatMessage(user == null ? "CONSOLE" : user.getName(), nowMS, clientChatMessage.getMessage()))); //TODO need a way to get last message ID, OR do parsing here.
     }
 
     private void updateUserData() {
