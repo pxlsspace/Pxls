@@ -281,7 +281,7 @@ public interface DAO extends Closeable {
     @SqlQuery("SELECT * FROM chat_messages WHERE nonce = :nonce LIMIT 1")
     DBChatMessage getChatMessageByNonce(@Bind("nonce") String nonce);
 
-    @SqlQuery("SELECT * FROM chat_messages WHERE author = :author ORDER BY sent DESC")
+    @SqlQuery("SELECT * FROM chat_messages WHERE author = :author ORDER BY sent ASC")
     DBChatMessage[] getChatMessagesForAuthor(@Bind("author") int author_uid);
 
     @SqlUpdate("UPDATE USERS SET perma_chat_banned=:banned WHERE id=:id")

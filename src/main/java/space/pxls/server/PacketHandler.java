@@ -331,8 +331,8 @@ public class PacketHandler {
         //if (user.isChatBanned()) return;
         //if (checkFlood(user)) {sendChatCooldownPacket(user, channel); return;}
         Long nowMS = System.currentTimeMillis();
-        App.getDatabase().insertChatMessage(user == null ? 0 : user.getId(), nowMS, clientChatMessage.getMessage());
-        server.broadcast(new ServerChatMessage(new ChatMessage(user == null ? "CONSOLE" : user.getName(), nowMS, clientChatMessage.getMessage()))); //TODO need a way to get last message ID, OR do parsing here.
+        String nonce = App.getDatabase().insertChatMessage(user == null ? 0 : user.getId(), nowMS, clientChatMessage.getMessage());
+        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user == null ? "CONSOLE" : user.getName(), nowMS, clientChatMessage.getMessage(), user != null ? user.getChatBadges() : null))); //TODO need a way to get last message ID, OR do parsing here.
     }
 
     private void updateUserData() {

@@ -871,6 +871,10 @@ aside.panel {
     cursor: initial !important;
 }
 
+.panel.half-width {
+    width: 50% !important;
+}
+
 .panel header {
     border-bottom: 1px solid #000;
 }
@@ -923,8 +927,6 @@ aside.panel {
 article .body {
     padding: .5rem;
 }
-
-/* INFO-SPECIFIC */
 
 .panel-body article:not(:last-of-type) {
     margin-bottom: 1rem;
@@ -1115,7 +1117,7 @@ li.chat-line .user {
         max-width: 100%;
     }
 
-    .panel {
+    .panel, .panel.half-width {
         max-width: 100% !important;
         width: 100% !important;
     }

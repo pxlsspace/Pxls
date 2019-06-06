@@ -6,6 +6,7 @@ import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
 import org.skife.jdbi.v2.tweak.HandleCallback;
 import space.pxls.App;
+import space.pxls.server.Badge;
 import space.pxls.server.ChatMessage;
 import space.pxls.user.Role;
 import space.pxls.user.User;
@@ -421,12 +422,12 @@ public class Database implements Closeable {
      * @author GlowingSocc
      */
     public DBChatMessage[] getLastXMessages(int x) {
-        List<Map<String,Object>> res = dbi.withHandle(handle -> handle.createQuery("SELECT * FROM chat_messages WHERE 1 ORDER BY id DESC LIMIT " + x).list());
+        List<Map<String,Object>> res = dbi.withHandle(handle -> handle.createQuery("SELECT * FROM chat_messages WHERE 1 ORDER BY sent ASC LIMIT " + x).list());
         DBChatMessage[] toReturn = new DBChatMessage[res.size()];
         for (int i = 0; i < res.size(); i++) {
             Map<String,Object> row = res.get(i);
             Object sent = row.get("sent");
-            toReturn[i] = new DBChatMessage((int) row.get("id"), (int) row.get("author"), sent == null ? -1 : (int) sent, (String) row.get("content"));
+            toReturn[i] = new DBChatMessage((int) row.get("id"), (int) row.get("author"), sent == null ? -1 : (int) sent, (String) row.get("content"), (String) row.get("nonce"));
         }
         return toReturn;
     }
@@ -442,13 +443,18 @@ public class Database implements Closeable {
         DBChatMessage[] fromDB = getLastXMessages(x);
         List<ChatMessage> toReturn = new ArrayList<>();
         for (DBChatMessage dbChatMessage : fromDB) {
+            List<Badge> badges = new ArrayList<>();
             String author = "CONSOLE";
             String parsedMessage = dbChatMessage.message; //TODO https://github.com/atlassian/commonmark-java
             if (dbChatMessage.author_uid > 0) {
+                author = "$Unknown";
                 User temp = App.getUserManager().getByID(dbChatMessage.author_uid);
-                author = temp != null ? temp.getName() : "$Unknown";
+                if (temp != null) {
+                    author = temp.getName();
+                    badges = temp.getChatBadges();
+                }
             }
-            toReturn.add(new ChatMessage(author, dbChatMessage.sent_at, dbChatMessage.message/*, parsedMessage*/));
+            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, dbChatMessage.sent_at, dbChatMessage.message, badges));
         }
         return toReturn;
     }

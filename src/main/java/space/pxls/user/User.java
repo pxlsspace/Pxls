@@ -2,11 +2,14 @@ package space.pxls.user;
 
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
+import space.pxls.server.Badge;
 import space.pxls.server.ClientUndo;
 import space.pxls.util.RateLimitFactory;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -172,6 +175,37 @@ public class User {
 
     public String getName() {
         return name;
+    }
+
+    public List<Badge> getChatBadges() {
+        List<Badge> toReturn = new ArrayList<>();
+
+        if (getRole() != null && getRole().greaterEqual(Role.TRIALMOD)) {
+            if (getRole().equals(Role.DEVELOPER)) {
+                toReturn.add(new Badge("Developer", "Developer", "icon", "fas fa-wrench"));
+            } else if (getRole().greaterEqual(Role.TRIALMOD)) {
+                toReturn.add(new Badge(getRole().name(), getRole().name(), "icon", "fas fa-shield-alt"));
+            }
+        }
+
+        int _count = getPixelsAllTime();
+        if (_count >= 600000) {
+            toReturn.add(new Badge("600k+", "600k+ Pixels Placed", "text", null));
+        } else if (_count >= 500000) {
+            toReturn.add(new Badge("500k+", "500k+ Pixels Placed", "text", null));
+        } else if (_count >= 400000) {
+            toReturn.add(new Badge("400k+", "400k+ Pixels Placed", "text", null));
+        } else if (_count >= 300000) {
+            toReturn.add(new Badge("300k+", "300k+ Pixels Placed", "text", null));
+        } else if (_count >= 200000) {
+            toReturn.add(new Badge("200k+", "200k+ Pixels Placed", "text", null));
+        } else if (_count >= 100000) {
+            toReturn.add(new Badge("100k+", "100k+ Pixels Placed", "text", null));
+        } else if (_count >= 50000) {
+            toReturn.add(new Badge("50k+", "50k+ Pixels Placed", "text", null));
+        }
+
+        return toReturn;
     }
 
     public boolean isShadowBanned() {

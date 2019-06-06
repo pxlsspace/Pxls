@@ -447,8 +447,10 @@ window.App = (function () {
                 ws: null,
                 ws_constructor: WebSocket,
                 hooks: [],
+                sendQueue: [],
                 wps: WebSocket.prototype.send, // make sure we have backups of those....
                 wpc: WebSocket.prototype.close,
+                ws_open_state: WebSocket.OPEN,
                 reconnect: function () {
                     $("#reconnecting").show();
                     setTimeout(function () {
@@ -468,6 +470,14 @@ window.App = (function () {
                     var l = window.location,
                         url = ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname + "ws";
                     self.ws = new self.ws_constructor(url);
+                    self.ws.onopen = evt => {
+                        setTimeout(() => {
+                            while (self.sendQueue.length > 0) {
+                                let toSend = self.sendQueue.shift();
+                                self.send(toSend);
+                            }
+                        }, 0);
+                    };
                     self.ws.onmessage = function (msg) {
                         var data = JSON.parse(msg.data);
                         $.map(self.hooks, function (h) {
@@ -507,11 +517,12 @@ window.App = (function () {
                     self.ws.close();
                 },
                 send: function (s) {
-                    self.ws.send = self.wps;
-                    if (typeof s == "string") {
-                        self.ws.send(s);
+                    let toSend = typeof s === "string" ? s : JSON.stringify(s);
+                    if (self.ws == null || self.ws.readyState !== self.ws_open_state) {
+                        self.sendQueue.push(toSend);
                     } else {
-                        self.ws.send(JSON.stringify(s));
+                        self.ws.send = self.wps;
+                        self.ws.send(toSend);
                     }
                 }
             };
@@ -2526,9 +2537,6 @@ window.App = (function () {
                             }
                         })
                     }
-
-                    socket.on('chat_history', e => console.log('[chat_history] %o', e));
-                    socket.on('chat_message', e => console.log('[chat_message] %o', e));
                 },
                 _initThemes: function () {
                     for (let i = 0; i < self.themes.length; i++) {
@@ -2687,6 +2695,74 @@ window.App = (function () {
             return {
                 init: self.init
             };
+        })(),
+        chat = (function() {
+            let self = {
+                seenHistory: false,
+                elements: {
+                    message_icon: $("#message-icon"),
+                    input: $("#txtChatContent"),
+                    body: $("#chat-body")
+                },
+                init: () => {
+                    socket.on('chat_history', e => {
+                        if (self.seenHistory) return;
+                        console.log('[chat_history] %o', e);
+                        for (let packet of e.messages) {
+                            self._process(packet);
+                        }
+                    });
+                    socket.on('chat_message', e => {
+                        console.log('[chat_message] %o', e);
+                        self._process(e.message);
+                    });
+                    socket.send({"type": "ChatHistory"});
+
+                    self.elements.input.on('keydown', e => {
+                        e.stopPropagation();
+                        if ((e.key == "Enter" || e.which === 13) && !e.shiftKey) {
+                            e.preventDefault();
+                            self._send(self.elements.input[0].value);
+                            self.elements.input.val("");
+                        }
+                    });
+                },
+                _send: msg => {
+                    socket.send({type: "ChatMessage", message: msg});
+                },
+                _process: packet => {
+                    console.log('parsing', packet);
+                    let when = moment.unix(packet.date);
+                    let badges = crel('span', {'class': 'badges'});
+                    if (Array.isArray(packet.badges)) {
+                        packet.badges.forEach(badge => {
+                            switch(badge.type) {
+                                case 'text':
+                                    crel(badges, crel('span', {'class': 'text-badge', 'title': badge.tooltip || ''}, badge.displayName || ''), document.createTextNode(' '));
+                                    break;
+                                case 'icon':
+                                    crel(badges, crel('i', {'class': badge.cssIcon || '', 'title': badge.tooltip || ''}, document.createTextNode(' ')), document.createTextNode(' '));
+                                    break;
+                            }
+                        });
+                    }
+                    self.elements.body.append(
+                        crel('li', {'data-nonce': packet.nonce, 'data-author': packet.author, 'data-date': packet.date, 'class': 'chat-line'},
+                            crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format('hh:mm:ss A')),
+                            document.createTextNode(' '),
+                            badges,
+                            document.createTextNode(' '),
+                            crel('span', {'class': 'user'}, packet.author),
+                            document.createTextNode(' '),
+                            crel('span', {'class': 'content'}, packet.message_raw),
+                            document.createTextNode(' ')
+                        )
+                    );
+                }
+            };
+            return {
+                init: self.init
+            }
         })(),
         // this takes care of the countdown timer
         timer = (function () {
@@ -3144,6 +3220,7 @@ window.App = (function () {
     coords.init();
     user.init();
     notification.init();
+    chat.init();
     // and here we finally go...
     board.start();
 
