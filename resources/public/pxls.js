@@ -2352,10 +2352,6 @@ window.App = (function () {
                     $("#audiotoggle").change(function () {
                         ls.set("audio_muted", this.checked);
                     });
-                    $("#rules-button").click(function (evt) {
-                        evt.stopPropagation();
-                        alert.show($("#rules-content").html());
-                    });
                     //stickyColorToggle ("Keep color selected"). Checked = don't auto reset.
                     var auto_reset = ls.get("auto_reset");
                     if (auto_reset === null) {
@@ -2530,6 +2526,9 @@ window.App = (function () {
                             }
                         })
                     }
+
+                    socket.on('chat_history', e => console.log('[chat_history] %o', e));
+                    socket.on('chat_message', e => console.log('[chat_message] %o', e));
                 },
                 _initThemes: function () {
                     for (let i = 0; i < self.themes.length; i++) {
@@ -2653,6 +2652,40 @@ window.App = (function () {
                 setPlaceableText: self.setPlaceableText,
                 setMax: self.setMax,
                 updateAudio: self.updateAudio
+            };
+        })(),
+        panels = (function() {
+            let self = {
+                init: () => {
+                    Array.from(document.querySelectorAll(".panel-trigger")).forEach(panelTrigger => {
+                        panelTrigger.addEventListener("click", e => {
+                            if (!e.target) return console.debug('[PANELS:TRIGGER] No target?');
+                            let closestTrigger = e.target.closest('.panel-trigger');
+                            if (closestTrigger) {
+                                let _panelDescriptor = closestTrigger.dataset['panel'];
+                                if (_panelDescriptor && _panelDescriptor.trim()) {
+                                    let targetPanel = document.querySelector(`.panel[data-panel="${_panelDescriptor.trim()}"]`);
+                                    if (targetPanel) {
+                                        Array.from(document.querySelectorAll('.panel')).forEach(x => x.classList.remove('open')); //Close other open panels
+                                        targetPanel.classList.add('open');
+                                    } else console.debug('[PANELS:TRIGGER] Bad descriptor? Got: %o', _panelDescriptor);
+                                } else console.debug('[PANELS:TRIGGER] No descriptor? Elem: %o', closestTrigger);
+                            } else console.debug('[PANELS:TRIGGER] No trigger?');
+                        });
+                    });
+                    Array.from(document.querySelectorAll('.panel-closer')).forEach(panelClose => {
+                        panelClose.addEventListener('click', e => {
+                            if (!e.target) return console.debug('[PANELS:CLOSER] No target?');
+                            let closestPanel = e.target.closest('.panel');
+                            if (closestPanel) {
+                                closestPanel.classList.toggle('open');
+                            } else console.debug('[PANELS:CLOSER] No panel?');
+                        });
+                    });
+                }
+            };
+            return {
+                init: self.init
             };
         })(),
         // this takes care of the countdown timer
@@ -3107,6 +3140,7 @@ window.App = (function () {
     alert.init();
     timer.init();
     uiHelper.init();
+    panels.init();
     coords.init();
     user.init();
     notification.init();
@@ -3118,6 +3152,7 @@ window.App = (function () {
         ls: ls,
         ss: ss,
         query: query,
+        socket: socket,
         heatmap: {
             clear: heatmap.clear
         },
