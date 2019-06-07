@@ -13,6 +13,7 @@ import space.pxls.user.User;
 import space.pxls.util.MD5;
 
 import java.io.Closeable;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -418,11 +419,12 @@ public class Database implements Closeable {
      * Retrieves the last <span>x</span> chat messages.<br />
      * <b>WARNING:</b> Input is not sanitized. For internal use only.
      * @param x The amount of chat messages to retrieve.
+     * @param includePurged Whether or not to include purged messages.
      * @return An array of {@link DBChatMessage}s. Array length is bound to ResultSet size, not the `<pre>x</pre>` param.
      * @author GlowingSocc
      */
-    public DBChatMessage[] getLastXMessages(int x) {
-        List<Map<String,Object>> res = dbi.withHandle(handle -> handle.createQuery("SELECT * FROM chat_messages WHERE 1 ORDER BY sent ASC LIMIT " + x).list());
+    public DBChatMessage[] getLastXMessages(int x, boolean includePurged) {
+        List<Map<String,Object>> res = dbi.withHandle(handle -> handle.createQuery("SELECT * FROM chat_messages WHERE " + (includePurged ? "1" : "purged=0") + " ORDER BY sent ASC LIMIT :lim").bind("lim", x).list());
         DBChatMessage[] toReturn = new DBChatMessage[res.size()];
         for (int i = 0; i < res.size(); i++) {
             Map<String,Object> row = res.get(i);
@@ -436,11 +438,12 @@ public class Database implements Closeable {
      * Retrieves the last <span>x</span> chat messages and parses them for easier frontend handling.<br />
      * <b>WARNING:</b> Input is not sanitized. For internal use only.
      * @param x The amount of chat messages to retrieve.
+     * @param includePurged Whether or not to include purged messages.
      * @return An array of {@link DBChatMessage}s. Array length is bound to ResultSet size, not the `<pre>x</pre>` param.
      * @author GlowingSocc
      */
-    public List<ChatMessage> getlastXMessagesForSocket(int x) {
-        DBChatMessage[] fromDB = getLastXMessages(x);
+    public List<ChatMessage> getlastXMessagesForSocket(int x, boolean includePurged) {
+        DBChatMessage[] fromDB = getLastXMessages(x, includePurged);
         List<ChatMessage> toReturn = new ArrayList<>();
         for (DBChatMessage dbChatMessage : fromDB) {
             List<Badge> badges = new ArrayList<>();
@@ -502,7 +505,14 @@ public class Database implements Closeable {
      * @author GlowingSocc
      */
     public void updateUserChatbanExpiry(int toUpdateUID, long chatBanExpiry) {
-        getHandle().updateUserChatbanExpiry(chatBanExpiry, toUpdateUID);
+        getHandle().updateUserChatbanExpiry(new Timestamp(chatBanExpiry), toUpdateUID);
+    }
+
+    public void handlePurge(User who, int amount) {
+        String partLimit = amount == Integer.MAX_VALUE ? "" : " LIMIT 0, " + amount + " ";
+        dbi.withHandle(handle -> handle.createStatement("UPDATE chat_messages SET purged=1 WHERE id IN (  SELECT id FROM (  SELECT id FROM chat_messages WHERE author = :author ORDER BY id DESC" + partLimit + " ) temp  );")
+                .bind("author", who.getId())
+                .execute());
     }
 
     /* END CHAT */

@@ -319,16 +319,16 @@ public class PacketHandler {
                 });
     }
 
-    private void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
+    public void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
         if (user.isChatbanned()) return;
-        server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100)));
+        server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, false)));
     }
 
-    private void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
+    public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
         Long nowMS = System.currentTimeMillis();
         if (user == null) { //console
             String nonce = App.getDatabase().insertChatMessage(0, nowMS, clientChatMessage.getMessage());
-            server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS, clientChatMessage.getMessage(), null)));
+            server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS / 1000L, clientChatMessage.getMessage(), null)));
         } else {
             if (user.isChatbanned()) return;
             if (clientChatMessage.getMessage().trim().length() == 0) return;
@@ -337,9 +337,17 @@ public class PacketHandler {
                 server.send(user, new ServerChatCooldown(remaining, clientChatMessage.getMessage()));
             } else {
                 String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, clientChatMessage.getMessage());
-                server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS, clientChatMessage.getMessage(), user.getChatBadges())));
+                server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, clientChatMessage.getMessage(), user.getChatBadges())));
             }
         }
+    }
+
+    public void sendChatbanExpiry(User user, Long expiry) {
+        server.send(user, new ServerChatBan(expiry - System.currentTimeMillis()));
+    }
+
+    public void sendChatPurge(User whosPurged, int amount) {
+        server.broadcast(new ServerChatPurge(whosPurged.getName(), amount));
     }
 
     private void updateUserData() {

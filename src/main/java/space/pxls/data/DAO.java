@@ -6,6 +6,7 @@ import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
 
 import java.io.Closeable;
+import java.sql.Timestamp;
 
 @RegisterMapper({DBUser.Mapper.class, DBPixelPlacement.Mapper.class, DBPixelPlacementUser.Mapper.class, DBUserBanReason.Mapper.class, DBUserPixelCount.Mapper.class, DBUserPixelCountAllTime.Mapper.class, DBBanlog.Mapper.class, DBChatMessage.Mapper.class})
 public interface DAO extends Closeable {
@@ -268,11 +269,12 @@ public interface DAO extends Closeable {
             "  `author` int," +
             "  `sent` int(11) NOT NULL," +
             "  `content` varchar(2048) NOT NULL," +
-            "  `nonce` varchar(32) NOT NULL UNIQUE" +
+            "  `nonce` varchar(32) NOT NULL UNIQUE," +
+            "  `purged` tinyint NOT NULL DEFAULT 0" +
             " );")
     void createChatMessagesTable(); //TODO
 
-    @SqlUpdate("INSERT INTO chat_messages VALUES (null, :author, :sent, :content, :nonce)")
+    @SqlUpdate("INSERT INTO chat_messages VALUES (null, :author, :sent, :content, :nonce, 0)")
     void insertChatMessage(@Bind("author") int author_uid, @Bind("sent") long sent_at_ms, @Bind("content") String message, @Bind("nonce") String nonce);
 
     @SqlQuery("SELECT * FROM chat_messages WHERE id = :id LIMIT 1")
@@ -288,7 +290,7 @@ public interface DAO extends Closeable {
     void updateUserChatbanPerma(@Bind("banned") int isBanned, @Bind("id") int to_update_uid);
 
     @SqlUpdate("UPDATE USERS SET chat_ban_expiry=:expiry WHERE id=:id")
-    void updateUserChatbanExpiry(@Bind("expiry") long chat_ban_expiry, @Bind("id") int to_update_uid);
+    void updateUserChatbanExpiry(@Bind("expiry") Timestamp chat_ban_expiry, @Bind("id") int to_update_uid);
 
     void close();
 }

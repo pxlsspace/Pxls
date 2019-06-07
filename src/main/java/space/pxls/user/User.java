@@ -241,6 +241,7 @@ public class User {
     public void setChatbanExpiryTime(long chatbanExpiryTime) {
         this.chatbanExpiryTime = chatbanExpiryTime;
         App.getDatabase().updateUserChatbanExpiry(id, chatbanExpiryTime);
+        App.getServer().getPacketHandler().sendChatbanExpiry(this, chatbanExpiryTime);
     }
 
     /**

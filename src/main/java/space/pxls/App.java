@@ -11,24 +11,20 @@ import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBPixelPlacement;
 import space.pxls.data.DBRollbackPixel;
 import space.pxls.data.Database;
-import space.pxls.server.ClientUndo;
-import space.pxls.server.ServerAlert;
-import space.pxls.server.ServerPlace;
-import space.pxls.server.UndertowServer;
+import space.pxls.server.*;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.user.UserManager;
 import space.pxls.util.*;
 
-
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.lang.Error;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -294,6 +290,89 @@ public class App {
                 } else {
                     System.out.println("cd-override list|USERNAME[ STATE]");
                     System.out.println("STATE=on|off");
+                }
+            } else if (token[0].equalsIgnoreCase("broadcast")) {
+                //broadcast MESSAGE
+                if (token.length > 1) {
+                    App.getServer().getPacketHandler().handleChatMessage(null, null, new ClientChatMessage(line.substring(token[0].length() + 1)));
+                }
+            } else if (token[0].equalsIgnoreCase("ChatBan")) {
+                if (token.length > 4) {
+                    User user = getUserManager().getByName(token[1]);
+                    if (user == null) System.out.printf("Unknown user: %s%n", token[1]);
+                    else {
+                        Integer banLength = 600;
+                        try {
+                            banLength = Integer.valueOf(token[2]);
+                        } catch (Exception e) {
+                            System.out.printf("Failed to parse BAN_LENGTH '%s'. Defaulting to 600", token[2]);
+                        }
+                        Boolean messageRemoval = token[3].equals("1") || token[3].equalsIgnoreCase("yes") || token[3].equalsIgnoreCase("true");
+                        String reason = line.substring(token[0].length() + token[1].length() + token[2].length() + token[3].length() + 4);
+                        user.setChatbanExpiryTime(System.currentTimeMillis() + (banLength * 1000L));
+                        if (messageRemoval) {
+                            App.getDatabase().handlePurge(user, Integer.MAX_VALUE);
+                            App.getServer().getPacketHandler().sendChatPurge(user, Integer.MAX_VALUE);
+                        }
+                    }
+                } else {
+                    System.out.println("chatban USER BAN_LENGTH MESSAGE_REMOVAL REASON\n    USER: The name of the user\n    BAN_LENGTH: The length in seconds of the chatban. For permas, see 'PermaChatBan' command.\n    MESSAGE_REMOVAL: Boolean (1|0) of whether or not to purge the user from chat.\n    REASON: The reason for the chatban. Will be displayed to the user");
+                }
+            } else if (token[0].equalsIgnoreCase("PermaChatBan")) {
+                if (token.length > 3) {
+                    User user = userManager.getByName(token[1]);
+                    if (user == null) System.out.printf("Unknown user: %s%n", token[1]);
+                    else {
+                        Boolean messageRemoval = token[2].equals("1") || token[2].equalsIgnoreCase("yes") || token[2].equalsIgnoreCase("true");
+                        String reason = line.substring(token[0].length() + token[1].length() + token[2].length() + 3);
+                        System.out.printf("[PermaChatBan] perma chatbanning %s (message removal: %s) because: %s%n", user.getName(), messageRemoval, reason);
+                        user.setPermaChatbanned(true, reason);
+                        if (messageRemoval) {
+                            App.getDatabase().handlePurge(user, Integer.MAX_VALUE);
+                            App.getServer().getPacketHandler().sendChatPurge(user, Integer.MAX_VALUE);
+                        }
+                    }
+                } else {
+                    System.out.println("PermaChatBan USER MESSAGE_REMOVAL REASON\n    USER: The name of the user\n    MESSAGE_REMOVAL: Boolean (1|0) of whether or not to purge the user from chat.\n    REASON: The reason for the chatban. Will be displayed to the user");
+                }
+            } else if (token[0].equalsIgnoreCase("UnChatBan")) {
+                if (token.length > 2) {
+                    User user = userManager.getByName(token[1]);
+                    if (user == null) System.out.printf("Unknown user: %s%n", token[1]);
+                    else {
+                        user.setChatbanExpiryTime(System.currentTimeMillis());
+                        user.setPermaChatbanned(false, line.substring(token[0].length() + token[1].length() + 1));
+                    }
+                } else {
+                    System.out.println("UnChatBan USER REASON");
+                }
+            } else if (token[0].equalsIgnoreCase("ChatPurge")) {
+                if (token.length > 2) {
+                    User user = userManager.getByName(token[1]);
+                    if (user == null) System.out.printf("Unknown user: %s%n", token[1]);
+                    else {
+                        Integer toPurge = Integer.MAX_VALUE;
+                        String reason = "";
+                        if (token.length >= 4) {
+                            try {
+                                toPurge = Integer.valueOf(token[2]);
+                            } catch (Exception e) {
+                                System.out.printf("Failed to parse '%s' as a number, defaulting to %s%n", token[2], toPurge);
+                            }
+                            reason = line.substring(token[0].length() + token[1].length() + token[2].length() + 3);
+                        } else {
+                            reason = line.substring(token[0].length() + token[1].length() + 2);
+                        }
+                        if (toPurge > 0) {
+                            App.getDatabase().handlePurge(user, toPurge);
+                            App.getServer().getPacketHandler().sendChatPurge(user, toPurge);
+                        } else {
+                            System.out.printf("Invalid toPurge. Should be >0, got %s%n", toPurge);
+                        }
+
+                    }
+                } else {
+                    System.out.println("ChatPurge USER [AMOUNT ]REASON");
                 }
             }
         } catch (RuntimeException e) {
