@@ -149,6 +149,12 @@ public class UndertowServer {
         sendRaw(channel, App.getGson().toJson(obj));
     }
 
+    public void send(User user, Object obj) {
+        for (WebSocketChannel connection : user.getConnections()) {
+            send(connection, obj);
+        }
+    }
+
     public Set<WebSocketChannel> getConnections() {
         return connections;
     }

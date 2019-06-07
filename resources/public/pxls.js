@@ -2699,10 +2699,16 @@ window.App = (function () {
         chat = (function() {
             let self = {
                 seenHistory: false,
+                timeout: {
+                    ends: 0,
+                    timer: 0
+                },
                 elements: {
                     message_icon: $("#message-icon"),
                     input: $("#txtChatContent"),
-                    body: $("#chat-body")
+                    body: $("#chat-body"),
+                    rate_limit_overlay: $(".chat-ratelimit-overlay"),
+                    rate_limit_counter: $("#chat-ratelimit")
                 },
                 init: () => {
                     socket.on('chat_history', e => {
@@ -2716,7 +2722,35 @@ window.App = (function () {
                         console.log('[chat_message] %o', e);
                         self._process(e.message);
                     });
+                    socket.on('message_cooldown', e => {
+                        console.log('[message_cooldown] %o', e);
+                        self.timeout.ends = (new Date >> 0) + ((e.diff >> 0) * 1e3) + 1e3; //add 1 second so that we're 1-based instead of 0-based
+                        self.elements.input.val(e.message);
+                        self.elements.input.blur();
+                        if ((new Date >> 0) > self.timeout.ends) {
+                            self.elements.rate_limit_overlay.fadeOut();
+                        } else {
+                            self.elements.rate_limit_overlay.fadeIn();
+                        }
+                        if (self.timeout.timer > 0) clearInterval(self.timeout.timer);
+                        self.timeout.timer = setInterval(() => {
+                            let delta = (self.timeout.ends - (new Date >> 0)) / 1e3 >> 0;
+                            self.elements.rate_limit_counter.text(`${delta}s`);
+                            if (delta <= 0) {
+                                self.elements.rate_limit_overlay.fadeOut();
+                                self.elements.rate_limit_counter.text('');
+                                clearInterval(self.timeout.timer);
+                                self.timeout.timer = 0;
+                            }
+                        }, 100);
+                    });
+                    socket.on('message_delete', e => console.log('[message_delete] %o', e));
+                    socket.on('chat_ban', e => console.log('[chat_ban] %o', e));
+                    socket.on('chat_purge', e => console.log('[chat_purge] %o', e));
+
                     socket.send({"type": "ChatHistory"});
+
+                    self.elements.rate_limit_overlay.hide();
 
                     self.elements.input.on('keydown', e => {
                         e.stopPropagation();

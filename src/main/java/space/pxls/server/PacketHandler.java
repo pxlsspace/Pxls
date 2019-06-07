@@ -20,10 +20,7 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.lang.Math;
 import java.time.Instant;
@@ -323,16 +320,26 @@ public class PacketHandler {
     }
 
     private void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
-        //if (user.isChatBanned()) return;
+        if (user.isChatbanned()) return;
         server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100)));
     }
 
     private void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
-        //if (user.isChatBanned()) return;
-        //if (checkFlood(user)) {sendChatCooldownPacket(user, channel); return;}
         Long nowMS = System.currentTimeMillis();
-        String nonce = App.getDatabase().insertChatMessage(user == null ? 0 : user.getId(), nowMS, clientChatMessage.getMessage());
-        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user == null ? "CONSOLE" : user.getName(), nowMS, clientChatMessage.getMessage(), user != null ? user.getChatBadges() : null))); //TODO need a way to get last message ID, OR do parsing here.
+        if (user == null) { //console
+            String nonce = App.getDatabase().insertChatMessage(0, nowMS, clientChatMessage.getMessage());
+            server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS, clientChatMessage.getMessage(), null)));
+        } else {
+            if (user.isChatbanned()) return;
+            if (clientChatMessage.getMessage().trim().length() == 0) return;
+            int remaining = RateLimitFactory.getTimeRemaining(DBChatMessage.class, String.valueOf(user.getId()));
+            if (remaining > 0) {
+                server.send(user, new ServerChatCooldown(remaining, clientChatMessage.getMessage()));
+            } else {
+                String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, clientChatMessage.getMessage());
+                server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS, clientChatMessage.getMessage(), user.getChatBadges())));
+            }
+        }
     }
 
     private void updateUserData() {

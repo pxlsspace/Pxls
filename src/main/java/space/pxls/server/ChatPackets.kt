@@ -21,8 +21,14 @@ data class ServerChatMessageDelete(val id: Int) {
     val type = "message_delete";
 }
 
-data class ServerChatCooldown(val diff: Int) {
+data class ServerChatCooldown(val diff: Int, val message: String) {
     val type = "message_cooldown";
 }
 
-data class ServerChatBan(val length: Long)
+data class ServerChatBan(val length: Long) {
+    val type = "chat_ban"
+}
+
+data class ServerChatPurge(val who: Int, val amount: Int) {
+    val type = "chat_purge"
+}

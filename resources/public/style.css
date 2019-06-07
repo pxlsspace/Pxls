@@ -1035,6 +1035,7 @@ li.chat-line .user {
 
 .chat-wrapper .chat-controls {
     flex: 0;
+    position: relative;
 }
 
 .chat-wrapper .chat-controls textarea {
@@ -1047,6 +1048,26 @@ li.chat-line .user {
 
 #message-icon.has-notification {
     color: #b20;
+}
+
+.chat-ratelimit-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #0006;
+    color: #FFF;
+    text-shadow: #000 0 0 2px;
+    font-size: 1.5rem;
+    display: inline-flex;
+    text-align: center;
+    vertical-align: middle;
+    align-items: center;
+    justify-content: center;
+    align-content: center;
+    flex-flow: column;
+    user-select: none;
 }
 
 /*//////////////////////////*\
