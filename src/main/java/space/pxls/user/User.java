@@ -4,9 +4,9 @@ import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
 import space.pxls.server.Badge;
 import space.pxls.server.ClientUndo;
+import space.pxls.server.ServerChatBan;
 import space.pxls.util.RateLimitFactory;
 
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -235,51 +235,46 @@ public class User {
         return this.isPermaChatbanned || this.chatbanExpiryTime > System.currentTimeMillis();
     }
 
-    /**
-     * @param chatbanExpiryTime The timestamp in milliseconds of when the chatban expires.
-     */
-    public void setChatbanExpiryTime(long chatbanExpiryTime) {
-        this.chatbanExpiryTime = chatbanExpiryTime;
-        App.getDatabase().updateUserChatbanExpiry(id, chatbanExpiryTime);
-        App.getServer().getPacketHandler().sendChatbanExpiry(this, chatbanExpiryTime);
+    public void chatban(Chatban chatban, boolean doLog) {
+        System.out.printf("Initiating %s%n", chatban);
+        switch (chatban.type) {
+            case TEMP: {
+                this.isPermaChatbanned = false;
+                this.chatbanExpiryTime = chatban.expiryTime;
+                App.getServer().getPacketHandler().sendChatban(this, new ServerChatBan(false, chatban.expiryTime));
+                break;
+            }
+            case PERMA: {
+                this.isPermaChatbanned = true;
+                App.getServer().getPacketHandler().sendChatban(this, new ServerChatBan(true, null));
+                break;
+            }
+            case UNBAN: {
+                this.isPermaChatbanned = false;
+                this.chatbanExpiryTime = chatban.expiryTime;
+                App.getServer().getPacketHandler().sendChatban(this, new ServerChatBan(false, 0L));
+                break;
+            }
+        }
+
+        App.getDatabase().updateUserChatbanPerma(getId(), isPermaChatbanned);
+        App.getDatabase().updateUserChatbanExpiry(getId(), chatbanExpiryTime);
+
+        if (chatban.purge && chatban.purgeAmount > 0) {
+            App.getDatabase().handlePurge(chatban.target, chatban.initiator, chatban.purgeAmount, "$automated chatban purge$", true);
+        }
+
+        if (doLog) {
+            if (chatban.initiator == null) {
+                App.getDatabase().adminLogServer(chatban.toString());
+            } else {
+                App.getDatabase().adminLog(chatban.toString(), chatban.initiator.getId());
+            }
+        }
     }
 
-    /**
-     * Permabans the user from chat
-     */
-    public void permaChatban() {
-        permaChatban(null);
-    }
-
-    /**
-     * @param reason (nullable) The reason for the chatban.
-     */
-    public void permaChatban(String reason) {
-        setPermaChatbanned(true, reason);
-    }
-
-    /**
-     * Removes the chat permaban from the user.
-     */
-    public void unpermaChatban() {
-        unpermaChatban(null);
-    }
-
-    /**
-     * @param reason (nullable) The reason for the chatban.
-     */
-    public void unpermaChatban(String reason) {
-        setPermaChatbanned(false, reason);
-    }
-
-    /**
-     * @param isPermaChatbanned Whether or not the user is perma chatbanned.
-     * @param reason The perma chat (un)ban reason, or null for blank.
-     */
-    public void setPermaChatbanned(boolean isPermaChatbanned, String reason) {
-        if (reason == null) reason = "";
-        this.isPermaChatbanned = isPermaChatbanned;
-        App.getDatabase().updateUserChatbanPerma(id, isPermaChatbanned);
+    public void chatban(Chatban chatban) {
+        chatban(chatban, true);
     }
 
     public Set<WebSocketChannel> getConnections() {
@@ -455,5 +450,13 @@ public class User {
      */
     public void releasePlacingLock() {
         placingLock = false;
+    }
+
+    public boolean isPermaChatbanned() {
+        return isPermaChatbanned;
+    }
+
+    public long getChatbanExpiryTime() {
+        return chatbanExpiryTime;
     }
 }

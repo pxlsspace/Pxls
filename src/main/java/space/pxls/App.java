@@ -12,6 +12,7 @@ import space.pxls.data.DBPixelPlacement;
 import space.pxls.data.DBRollbackPixel;
 import space.pxls.data.Database;
 import space.pxls.server.*;
+import space.pxls.user.Chatban;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.user.UserManager;
@@ -309,11 +310,7 @@ public class App {
                         }
                         Boolean messageRemoval = token[3].equals("1") || token[3].equalsIgnoreCase("yes") || token[3].equalsIgnoreCase("true");
                         String reason = line.substring(token[0].length() + token[1].length() + token[2].length() + token[3].length() + 4);
-                        user.setChatbanExpiryTime(System.currentTimeMillis() + (banLength * 1000L));
-                        if (messageRemoval) {
-                            App.getDatabase().handlePurge(user, Integer.MAX_VALUE);
-                            App.getServer().getPacketHandler().sendChatPurge(user, null, Integer.MAX_VALUE);
-                        }
+                        Chatban.TEMP(user, null, System.currentTimeMillis() + banLength * 1000L, reason, messageRemoval, Integer.MAX_VALUE).commit();
                     }
                 } else {
                     System.out.println("chatban USER BAN_LENGTH MESSAGE_REMOVAL REASON\n    USER: The name of the user\n    BAN_LENGTH: The length in seconds of the chatban. For permas, see 'PermaChatBan' command.\n    MESSAGE_REMOVAL: Boolean (1|0) of whether or not to purge the user from chat.\n    REASON: The reason for the chatban. Will be displayed to the user");
@@ -325,11 +322,7 @@ public class App {
                     else {
                         Boolean messageRemoval = token[2].equals("1") || token[2].equalsIgnoreCase("yes") || token[2].equalsIgnoreCase("true");
                         String reason = line.substring(token[0].length() + token[1].length() + token[2].length() + 3);
-                        user.setPermaChatbanned(true, reason);
-                        if (messageRemoval) {
-                            App.getDatabase().handlePurge(user, Integer.MAX_VALUE);
-                            App.getServer().getPacketHandler().sendChatPurge(user, null, Integer.MAX_VALUE);
-                        }
+                        Chatban.PERMA(user, null, reason, messageRemoval, Integer.MAX_VALUE).commit();
                     }
                 } else {
                     System.out.println("PermaChatBan USER MESSAGE_REMOVAL REASON\n    USER: The name of the user\n    MESSAGE_REMOVAL: Boolean (1|0) of whether or not to purge the user from chat.\n    REASON: The reason for the chatban. Will be displayed to the user");
@@ -339,8 +332,7 @@ public class App {
                     User user = userManager.getByName(token[1]);
                     if (user == null) System.out.printf("Unknown user: %s%n", token[1]);
                     else {
-                        user.setChatbanExpiryTime(System.currentTimeMillis());
-                        user.setPermaChatbanned(false, line.substring(token[0].length() + token[1].length() + 1));
+                        Chatban.UNBAN(user, null, line.substring(token[0].length() + token[1].length() + 2)).commit();
                     }
                 } else {
                     System.out.println("UnChatBan USER REASON");
@@ -352,19 +344,20 @@ public class App {
                     else {
                         Integer toPurge = Integer.MAX_VALUE;
                         String reason = "";
+                        try {
+                            toPurge = Integer.valueOf(token[2]);
+                        } catch (Exception e) {
+                            System.out.printf("Failed to parse '%s' as a number, defaulting to %s%n", token[2], toPurge);
+                        }
+
                         if (token.length >= 4) {
-                            try {
-                                toPurge = Integer.valueOf(token[2]);
-                            } catch (Exception e) {
-                                System.out.printf("Failed to parse '%s' as a number, defaulting to %s%n", token[2], toPurge);
-                            }
                             reason = line.substring(token[0].length() + token[1].length() + token[2].length() + 3);
                         } else {
-                            reason = line.substring(token[0].length() + token[1].length() + 2);
+                            reason = "";
                         }
+
                         if (toPurge > 0) {
-                            App.getDatabase().handlePurge(user, toPurge);
-                            App.getServer().getPacketHandler().sendChatPurge(user, null, toPurge);
+                            App.getDatabase().handlePurge(user, null, toPurge, reason, true);
                         } else {
                             System.out.printf("Invalid toPurge. Should be >0, got %s%n", toPurge);
                         }

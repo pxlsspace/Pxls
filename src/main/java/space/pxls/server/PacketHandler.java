@@ -6,7 +6,6 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.async.Callback;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigException;
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
 import space.pxls.data.DBChatMessage;
@@ -16,14 +15,10 @@ import space.pxls.user.User;
 import space.pxls.util.PxlsTimer;
 import space.pxls.util.RateLimitFactory;
 
-import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
-
-
-import java.time.Duration;
-import java.util.*;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
-import java.lang.Math;
-import java.time.Instant;
+
+import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 public class PacketHandler {
     private UndertowServer server;
@@ -320,8 +315,11 @@ public class PacketHandler {
     }
 
     public void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
-        if (user.isChatbanned()) return;
-        server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, false)));
+        if (user.isChatbanned()) {
+            server.send(channel, new ServerChatBan(user.isPermaChatbanned(), user.getBanExpiryTime()));
+        } else {
+            server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, false)));
+        }
     }
 
     public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
@@ -342,12 +340,12 @@ public class PacketHandler {
         }
     }
 
-    public void sendChatbanExpiry(User user, Long expiry) {
-        server.send(user, new ServerChatBan(expiry - System.currentTimeMillis()));
+    public void sendChatban(User user, ServerChatBan chatban) {
+        server.send(user, chatban);
     }
 
-    public void sendChatPurge(User whoGotPurged, User whoDidPurge, int amount) {
-        server.broadcast(new ServerChatPurge(whoGotPurged.getName(), whoDidPurge == null ? "CONSOLE" : whoDidPurge.getName(), amount));
+    public void sendChatPurge(User target, User initiator, int amount, String reason) {
+        server.broadcast(new ServerChatPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), amount, reason));
     }
 
     private void updateUserData() {

@@ -10,7 +10,6 @@ import space.pxls.server.Badge;
 import space.pxls.server.ChatMessage;
 import space.pxls.user.Role;
 import space.pxls.user.User;
-import space.pxls.util.MD5;
 
 import java.io.Closeable;
 import java.sql.Timestamp;
@@ -499,11 +498,16 @@ public class Database implements Closeable {
         getHandle().updateUserChatbanExpiry(new Timestamp(chatBanExpiry), toUpdateUID);
     }
 
-    public void handlePurge(User who, int amount) {
+    public void handlePurge(User target, User initiator, int amount, String reason, boolean broadcast) {
         String partLimit = amount == Integer.MAX_VALUE ? "" : " LIMIT 0, " + amount + " ";
-        dbi.withHandle(handle -> handle.createStatement("UPDATE chat_messages SET purged=1 WHERE nonce IN (  SELECT nonce FROM (  SELECT nonce FROM chat_messages WHERE author = :author ORDER BY sent DESC" + partLimit + " ) temp  );")
-                .bind("author", who.getId())
+        dbi.withHandle(handle -> handle.createStatement("UPDATE chat_messages SET purged=1,purged_by=:initiator WHERE nonce IN (  SELECT nonce FROM (  SELECT nonce FROM chat_messages WHERE author = :author ORDER BY sent DESC" + partLimit + " ) temp  );")
+                .bind("initiator", initiator != null ? initiator.getId() : 0)
+                .bind("author", target.getId())
                 .execute());
+        adminLogServer(String.format("<%s, %s> purged %s messages from <%s, %s>%s.", (initiator == null) ? "CONSOLE" : initiator.getName(), (initiator == null) ? 0 : initiator.getId(), amount, target.getName(), target.getId(), ((reason != null) && (reason.length() > 0)) ? (" because: " + reason) : ""));
+        if (broadcast) {
+            App.getServer().getPacketHandler().sendChatPurge(target, initiator, amount, reason);
+        }
     }
 
     /* END CHAT */
