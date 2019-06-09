@@ -265,20 +265,17 @@ public interface DAO extends Closeable {
     /* CHAT */
     @SqlUpdate("CREATE TABLE IF NOT EXISTS `chat_messages`" +
             " (" +
-            "  `id` int PRIMARY KEY AUTO_INCREMENT," +
+            "  `nonce` varchar(36) PRIMARY KEY," +
             "  `author` int," +
             "  `sent` int(11) NOT NULL," +
             "  `content` varchar(2048) NOT NULL," +
-            "  `nonce` varchar(32) NOT NULL UNIQUE," +
-            "  `purged` tinyint NOT NULL DEFAULT 0" +
+            "  `purged` tinyint NOT NULL DEFAULT 0," +
+            "  `purged_by` int" +
             " );")
     void createChatMessagesTable(); //TODO
 
-    @SqlUpdate("INSERT INTO chat_messages VALUES (null, :author, :sent, :content, :nonce, 0)")
+    @SqlUpdate("INSERT INTO chat_messages (`author`, `sent`, `content`, `nonce`) VALUES (:author, :sent, :content, :nonce)")
     void insertChatMessage(@Bind("author") int author_uid, @Bind("sent") long sent_at_ms, @Bind("content") String message, @Bind("nonce") String nonce);
-
-    @SqlQuery("SELECT * FROM chat_messages WHERE id = :id LIMIT 1")
-    DBChatMessage getChatMessageByID(@Bind("id") int message_id);
 
     @SqlQuery("SELECT * FROM chat_messages WHERE nonce = :nonce LIMIT 1")
     DBChatMessage getChatMessageByNonce(@Bind("nonce") String nonce);

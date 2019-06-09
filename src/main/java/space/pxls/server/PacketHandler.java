@@ -346,8 +346,8 @@ public class PacketHandler {
         server.send(user, new ServerChatBan(expiry - System.currentTimeMillis()));
     }
 
-    public void sendChatPurge(User whosPurged, int amount) {
-        server.broadcast(new ServerChatPurge(whosPurged.getName(), amount));
+    public void sendChatPurge(User whoGotPurged, User whoDidPurge, int amount) {
+        server.broadcast(new ServerChatPurge(whoGotPurged.getName(), whoDidPurge == null ? "CONSOLE" : whoDidPurge.getName(), amount));
     }
 
     private void updateUserData() {

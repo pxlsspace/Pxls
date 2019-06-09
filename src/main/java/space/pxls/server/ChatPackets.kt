@@ -29,6 +29,6 @@ data class ServerChatBan(val length: Long) {
     val type = "chat_ban"
 }
 
-data class ServerChatPurge(val who: String, val amount: Int) {
+data class ServerChatPurge(val whoGotPurged: String, val whoDidPurge: String, val amount: Int) {
     val type = "chat_purge"
 }

@@ -312,7 +312,7 @@ public class App {
                         user.setChatbanExpiryTime(System.currentTimeMillis() + (banLength * 1000L));
                         if (messageRemoval) {
                             App.getDatabase().handlePurge(user, Integer.MAX_VALUE);
-                            App.getServer().getPacketHandler().sendChatPurge(user, Integer.MAX_VALUE);
+                            App.getServer().getPacketHandler().sendChatPurge(user, null, Integer.MAX_VALUE);
                         }
                     }
                 } else {
@@ -325,11 +325,10 @@ public class App {
                     else {
                         Boolean messageRemoval = token[2].equals("1") || token[2].equalsIgnoreCase("yes") || token[2].equalsIgnoreCase("true");
                         String reason = line.substring(token[0].length() + token[1].length() + token[2].length() + 3);
-                        System.out.printf("[PermaChatBan] perma chatbanning %s (message removal: %s) because: %s%n", user.getName(), messageRemoval, reason);
                         user.setPermaChatbanned(true, reason);
                         if (messageRemoval) {
                             App.getDatabase().handlePurge(user, Integer.MAX_VALUE);
-                            App.getServer().getPacketHandler().sendChatPurge(user, Integer.MAX_VALUE);
+                            App.getServer().getPacketHandler().sendChatPurge(user, null, Integer.MAX_VALUE);
                         }
                     }
                 } else {
@@ -365,7 +364,7 @@ public class App {
                         }
                         if (toPurge > 0) {
                             App.getDatabase().handlePurge(user, toPurge);
-                            App.getServer().getPacketHandler().sendChatPurge(user, toPurge);
+                            App.getServer().getPacketHandler().sendChatPurge(user, null, toPurge);
                         } else {
                             System.out.printf("Invalid toPurge. Should be >0, got %s%n", toPurge);
                         }

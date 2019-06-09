@@ -380,19 +380,10 @@ public class Database implements Closeable {
      * @author GlowingSocc
      */
     public String insertChatMessage(int author_uid, long sent_at_ms, String message) {
-        String nonce = MD5.compute(String.valueOf(author_uid) + sent_at_ms + Math.random() + message);
+//        String nonce = MD5.compute(String.valueOf(author_uid) + sent_at_ms + Math.random() + message);
+        String nonce = java.util.UUID.randomUUID().toString();
         getHandle().insertChatMessage(author_uid, sent_at_ms / 1000L, message, nonce);
         return nonce;
-    }
-
-    /**
-     * Fetches the {@link DBChatMessage} associated with the given <pre>message_id</pre>
-     * @param message_id The ID of the {@link DBChatMessage} to fetch.
-     * @return The {@link DBChatMessage}, or <pre>null</pre> if it doesn't exist.
-     * @author GlowingSocc
-     */
-    public DBChatMessage getChatMessageByID(int message_id) {
-        return getHandle().getChatMessageByID(message_id);
     }
 
     /**
@@ -429,7 +420,7 @@ public class Database implements Closeable {
         for (int i = 0; i < res.size(); i++) {
             Map<String,Object> row = res.get(i);
             Object sent = row.get("sent");
-            toReturn[i] = new DBChatMessage((int) row.get("id"), (int) row.get("author"), sent == null ? -1 : (int) sent, (String) row.get("content"), (String) row.get("nonce"));
+            toReturn[i] = new DBChatMessage((String) row.get("nonce"), (int) row.get("author"), sent == null ? -1 : (int) sent, (String) row.get("content"));
         }
         return toReturn;
     }
@@ -510,7 +501,7 @@ public class Database implements Closeable {
 
     public void handlePurge(User who, int amount) {
         String partLimit = amount == Integer.MAX_VALUE ? "" : " LIMIT 0, " + amount + " ";
-        dbi.withHandle(handle -> handle.createStatement("UPDATE chat_messages SET purged=1 WHERE id IN (  SELECT id FROM (  SELECT id FROM chat_messages WHERE author = :author ORDER BY id DESC" + partLimit + " ) temp  );")
+        dbi.withHandle(handle -> handle.createStatement("UPDATE chat_messages SET purged=1 WHERE nonce IN (  SELECT nonce FROM (  SELECT nonce FROM chat_messages WHERE author = :author ORDER BY sent DESC" + partLimit + " ) temp  );")
                 .bind("author", who.getId())
                 .execute());
     }
