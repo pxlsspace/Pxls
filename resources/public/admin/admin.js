@@ -273,7 +273,7 @@
                     panel: $("<div>")
                 },
                 init: function () {
-                    self.elements.panel.hide().addClass("admin panel").append(
+                    self.elements.panel.hide().addClass("admin").append(
                         $("<h1>").text("MOD"),
                         $("<div>").append(
                             // first do the checkboxes

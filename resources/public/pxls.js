@@ -2674,8 +2674,12 @@ window.App = (function () {
                                 if (_panelDescriptor && _panelDescriptor.trim()) {
                                     let targetPanel = document.querySelector(`.panel[data-panel="${_panelDescriptor.trim()}"]`);
                                     if (targetPanel) {
-                                        Array.from(document.querySelectorAll('.panel')).forEach(x => x.classList.remove('open')); //Close other open panels
+                                        Array.from(document.querySelectorAll('.panel.open')).forEach(x => {
+                                            x.classList.remove('open');
+                                            $(window).trigger("pxls:panel:closed", x.dataset['panel']);
+                                        }); //Close other open panels
                                         targetPanel.classList.add('open');
+                                        $(window).trigger("pxls:panel:opened", _panelDescriptor);
                                     } else console.debug('[PANELS:TRIGGER] Bad descriptor? Got: %o', _panelDescriptor);
                                 } else console.debug('[PANELS:TRIGGER] No descriptor? Elem: %o', closestTrigger);
                             } else console.debug('[PANELS:TRIGGER] No trigger?');
@@ -2686,7 +2690,8 @@ window.App = (function () {
                             if (!e.target) return console.debug('[PANELS:CLOSER] No target?');
                             let closestPanel = e.target.closest('.panel');
                             if (closestPanel) {
-                                closestPanel.classList.toggle('open');
+                                closestPanel.classList.toggle('open', false);
+                                $(window).trigger("pxls:panel:closed", [closestPanel.dataset['panel']]);
                             } else console.debug('[PANELS:CLOSER] No panel?');
                         });
                     });
@@ -2699,6 +2704,14 @@ window.App = (function () {
         chat = (function() {
             let self = {
                 seenHistory: false,
+                stickToBottom: true,
+                chatban: {
+                    banStart: 0,
+                    banEnd: 0,
+                    banEndFormatted: '',
+                    timeLeft: 0,
+                    timer: 0
+                },
                 timeout: {
                     ends: 0,
                     timer: 0
@@ -2708,22 +2721,49 @@ window.App = (function () {
                     input: $("#txtChatContent"),
                     body: $("#chat-body"),
                     rate_limit_overlay: $(".chat-ratelimit-overlay"),
-                    rate_limit_counter: $("#chat-ratelimit")
+                    rate_limit_counter: $("#chat-ratelimit"),
+                    chat_panel: $(".panel[data-panel=chat]")
                 },
                 init: () => {
                     socket.on('chat_history', e => {
                         if (self.seenHistory) return;
-                        console.log('[chat_history] %o', e);
                         for (let packet of e.messages) {
                             self._process(packet);
                         }
+                        let last = self.elements.body.find("li[data-nonce]").last()[0];
+                        if (last) {
+                            try { //Fixes iframes scrolling their parent. For context see https://github.com/pxlsspace/Pxls/pull/192's commit messages.
+                                last.scrollIntoView({block: "nearest", inline: "nearest"});
+                            } catch (ignored) {
+                                last.scrollIntoView(false);
+                            }
+                            if (last.dataset.nonce && last.dataset.nonce !== ls.get("chat-last_seen_nonce")) {
+                                self.elements.message_icon.addClass('has-notification');
+                            }
+                        }
+                        self.seenHistory = true;
+                        self.addServerAction('History loaded at ' + moment().format('MMM Do YYYY, hh:mm:ss A'));
                     });
                     socket.on('chat_message', e => {
-                        console.log('[chat_message] %o', e);
                         self._process(e.message);
+                        if (!self.elements.chat_panel.hasClass('open')) {
+                            self.elements.message_icon.addClass('has-notification');
+                        }
+                        if (self.stickToBottom) {
+                            let chatLine = self.elements.body.find(`[data-nonce="${e.message.nonce}"]`)[0];
+                            if (chatLine) {
+                                if (self.elements.chat_panel.hasClass('open')) {
+                                    ls.set('chat-last_seen_nonce', e.message.nonce);
+                                }
+                                try { //Fixes iframes scrolling their parent. For context see https://github.com/pxlsspace/Pxls/pull/192's commit messages.
+                                    chatLine.scrollIntoView({block: "nearest", inline: "nearest"});
+                                } catch (ignored) {
+                                    chatLine.scrollIntoView(false);
+                                }
+                            }
+                        }
                     });
                     socket.on('message_cooldown', e => {
-                        console.log('[message_cooldown] %o', e);
                         self.timeout.ends = (new Date >> 0) + ((e.diff >> 0) * 1e3) + 1e3; //add 1 second so that we're 1-based instead of 0-based
                         self.elements.input.val(e.message);
                         self.elements.input.blur();
@@ -2745,8 +2785,58 @@ window.App = (function () {
                         }, 100);
                     });
                     socket.on('message_delete', e => console.log('[message_delete] %o', e));
-                    socket.on('chat_ban', e => console.log('[chat_ban] %o', e));
-                    socket.on('chat_purge', e => console.log('[chat_purge] %o', e));
+                    socket.on('chat_ban', e => {
+                        clearInterval(self.timeout.timer);
+                        self.chatban.banStart = moment.now();
+                        self.chatban.banEnd = moment(e.expiry);
+                        self.chatban.banEndFormatted = self.chatban.banEnd.format('MMM Do YYYY, hh:mm:ss A');
+                        setTimeout(() => {
+                            clearInterval(self.chatban.timer);
+                            if (e.expiry - self.chatban.banStart > 0 && !e.permanent) {
+                                self.elements.rate_limit_overlay.show();
+                                self.elements.rate_limit_counter.text('You have been banned from chat.');
+                                self.addServerAction(`You are banned ${e.permanent ? 'permanently from chat.' : ' until ' + self.chatban.banEndFormatted}`);
+                                self.chatban.timer = setInterval(() => {
+                                    let timeLeft = self.chatban.banEnd - moment();
+                                    if (timeLeft > 0) {
+                                        self.elements.rate_limit_overlay.show();
+                                        self.elements.rate_limit_counter.text(`Chatban expires in ${timeLeft / 1e3 >> 0}s, at ${self.chatban.banEndFormatted}`);
+                                    } else {
+                                        self.elements.rate_limit_overlay.hide();
+                                        self.elements.rate_limit_counter.text('');
+                                    }
+                                }, 150);
+                            } else if (e.permanent) {
+                                self.elements.rate_limit_overlay.show();
+                                self.elements.rate_limit_counter.text('You have been banned from chat.');
+                                self.addServerAction(`You are banned from chat${e.permanent ? ' permanently.' : ' until ' + self.chatban.banEndFormatted}`);
+                            } else {
+                                self.elements.rate_limit_overlay.hide();
+                                self.elements.rate_limit_counter.text('');
+                                self.addServerAction(`You have been unbanned from chat.`);
+                            }
+                        }, 0);
+                    });
+                    socket.on('chat_purge', e => {
+                        let lines = Array.from(self.elements.body[0].querySelectorAll(`.chat-line[data-author="${e.target}"]`));
+                        if (Array.isArray(lines) && lines.length) {
+                            lines.sort((a,b) => (a.dataset.date >> 0)-(b.dataset.date >> 0));
+                            for (let i = 0; i < e.amount; i++) {
+                                let line = lines.pop();
+                                if (line) {
+                                    //TODO if (self.isStaff()) {line.addClass('purged'); line.dataset.purgedBy = e.initiator;} else {line.remove();}
+                                    line.remove();
+                                } else {
+                                    break;
+                                }
+                            }
+                        } else console.log(lines, 'was not an array-like, or was empty.');
+                        if (e.amount >= 2147483647) {
+                            self.addServerAction(`${e.initiator} purged all messages from ${e.target}.`);
+                        } else {
+                            self.addServerAction(`${e.amount} messages from ${e.target} were purged by ${e.initiator}.`);
+                        }
+                    });
 
                     socket.send({"type": "ChatHistory"});
 
@@ -2760,6 +2850,31 @@ window.App = (function () {
                             self.elements.input.val("");
                         }
                     });
+
+                    $(window).on("pxls:panel:opened", (e, which) => {
+                        if (which === "chat") {
+                            self.elements.message_icon.removeClass('has-notification');
+                            let lastN = self.elements.body.find("[data-nonce]").last()[0];
+                            if (lastN) {
+                                ls.set("chat-last_seen_nonce", lastN.dataset.nonce);
+                            }
+                        }
+                    });
+
+                    self.elements.body.on("scroll", e => {
+                        let obj = self.elements.body[0];
+                        self.stickToBottom = obj.scrollTop === (obj.scrollHeight - obj.offsetHeight);
+                    });
+                },
+                addServerAction: msg => {
+                    let when = moment();
+                    self.elements.body.append(
+                        crel('li', {'class': 'chat-line server-action'},
+                            crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format('hh:mm:ss A')),
+                            document.createTextNode(' - '),
+                            crel('span', {'class': 'content'}, msg)
+                        )
+                    );
                 },
                 _send: msg => {
                     socket.send({type: "ChatMessage", message: msg});

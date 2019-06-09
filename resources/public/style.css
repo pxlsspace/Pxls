@@ -1021,6 +1021,13 @@ li.chat-line .text-badge {
     user-select: none;
 }
 
+li.chat-line.server-action {
+    text-align: center;
+    font-weight: bold;
+    color: #555;
+    cursor: default;
+}
+
 li.chat-line .text-badge:not(:last-child):not(:only-of-type) {
     margin-right: .25rem;
 }
