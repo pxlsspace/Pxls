@@ -5,30 +5,34 @@ import org.skife.jdbi.v2.tweak.ResultSetMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 
 public class DBChatMessage {
-    public final int author_uid;
-    public final long sent_at;
-    public final String message;
     public final String nonce;
+    public final int author_uid;
+    public final Long sent;
+    public final String content;
+    public final int purged;
+    public final int purged_by_uid;
 
-    public DBChatMessage(String nonce, int author_uid, long sent_at, String message) {
-        this.author_uid = author_uid;
-        this.sent_at = sent_at;
-        this.message = message;
+    public DBChatMessage(String nonce, int author_uid, Long sent, String content, int purged, int purged_by_uid) {
         this.nonce = nonce;
+        this.author_uid = author_uid;
+        this.sent = sent;
+        this.content = content;
+        this.purged = purged;
+        this.purged_by_uid = purged_by_uid;
     }
 
     public static class Mapper implements ResultSetMapper<DBChatMessage> {
         @Override
         public DBChatMessage map(int index, ResultSet r, StatementContext ctx) throws SQLException {
-            Timestamp sentAt = r.getTimestamp("sent");
             return new DBChatMessage(
                     r.getString("nonce"),
                     r.getInt("author"),
-                    sentAt == null ? 0 : sentAt.getTime(),
-                    r.getString("message")
+                    r.getLong("sent"),
+                    r.getString("content"),
+                    r.getInt("purged"),
+                    r.getInt("purged_by")
             );
         }
     }

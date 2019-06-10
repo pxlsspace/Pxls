@@ -53,6 +53,7 @@ public class UndertowServer {
                 .addPrefixPath("/logout", webHandler::logout)
                 .addPrefixPath("/lookup", new RateLimitingHandler(webHandler::lookup, "http:lookup", (int) App.getConfig().getDuration("server.limits.lookup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.lookup.count")))
                 .addPrefixPath("/report", new RoleGate(Role.USER, webHandler::report))
+                .addPrefixPath("/reportChat", new RoleGate(Role.USER, webHandler::chatReport))
                 .addPrefixPath("/signin", webHandler::signIn)
                 .addPrefixPath("/users", webHandler::users)
                 .addPrefixPath("/auth", new RateLimitingHandler(webHandler::auth, "http:auth", (int) App.getConfig().getDuration("server.limits.auth.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.auth.count")))

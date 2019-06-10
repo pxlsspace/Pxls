@@ -15,6 +15,7 @@ import java.io.Closeable;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,6 +56,7 @@ public class Database implements Closeable {
         getHandle().createAdminNotesTable();
         getHandle().createBanlogTable();
         getHandle().createChatMessagesTable();
+        getHandle().createChatReportsTable();
     }
 
     private DAO getHandle() {
@@ -407,26 +409,19 @@ public class Database implements Closeable {
 
     /**
      * Retrieves the last <span>x</span> chat messages.<br />
-     * <b>WARNING:</b> Input is not sanitized. For internal use only.
      * @param x The amount of chat messages to retrieve.
      * @param includePurged Whether or not to include purged messages.
      * @return An array of {@link DBChatMessage}s. Array length is bound to ResultSet size, not the `<pre>x</pre>` param.
      * @author GlowingSocc
      */
     public DBChatMessage[] getLastXMessages(int x, boolean includePurged) {
-        List<Map<String,Object>> res = dbi.withHandle(handle -> handle.createQuery("SELECT * FROM chat_messages WHERE " + (includePurged ? "1" : "purged=0") + " ORDER BY sent ASC LIMIT :lim").bind("lim", x).list());
-        DBChatMessage[] toReturn = new DBChatMessage[res.size()];
-        for (int i = 0; i < res.size(); i++) {
-            Map<String,Object> row = res.get(i);
-            Object sent = row.get("sent");
-            toReturn[i] = new DBChatMessage((String) row.get("nonce"), (int) row.get("author"), sent == null ? -1 : (int) sent, (String) row.get("content"));
-        }
-        return toReturn;
+        return dbi
+                .withHandle(handle -> handle.createQuery("SELECT * FROM chat_messages WHERE " + (includePurged ? "1" : "purged=0") + " ORDER BY sent ASC LIMIT :lim").bind("lim", x).map(new DBChatMessage.Mapper()).list())
+                .toArray(new DBChatMessage[0]);
     }
 
     /**
      * Retrieves the last <span>x</span> chat messages and parses them for easier frontend handling.<br />
-     * <b>WARNING:</b> Input is not sanitized. For internal use only.
      * @param x The amount of chat messages to retrieve.
      * @param includePurged Whether or not to include purged messages.
      * @return An array of {@link DBChatMessage}s. Array length is bound to ResultSet size, not the `<pre>x</pre>` param.
@@ -438,7 +433,7 @@ public class Database implements Closeable {
         for (DBChatMessage dbChatMessage : fromDB) {
             List<Badge> badges = new ArrayList<>();
             String author = "CONSOLE";
-            String parsedMessage = dbChatMessage.message; //TODO https://github.com/atlassian/commonmark-java
+            String parsedMessage = dbChatMessage.content; //TODO https://github.com/atlassian/commonmark-java
             if (dbChatMessage.author_uid > 0) {
                 author = "$Unknown";
                 User temp = App.getUserManager().getByID(dbChatMessage.author_uid);
@@ -447,7 +442,7 @@ public class Database implements Closeable {
                     badges = temp.getChatBadges();
                 }
             }
-            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, dbChatMessage.sent_at, dbChatMessage.message, badges));
+            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, dbChatMessage.sent, dbChatMessage.content, badges));
         }
         return toReturn;
     }
@@ -508,6 +503,28 @@ public class Database implements Closeable {
         if (broadcast) {
             App.getServer().getPacketHandler().sendChatPurge(target, initiator, amount, reason);
         }
+    }
+
+    /**
+     * Adds a chat report
+     * @param messageNonce The {@link ChatMessage}'s nonce
+     * @param target The {@link User} who is being reported
+     * @param initiator The {@link User} who is doing the reporting
+     * @param reportMessage The body of the report from the user
+     */
+    public void addChatReport(String messageNonce, User target, User initiator, String reportMessage) {
+        addChatReport(messageNonce, target.getId(), initiator == null ? 0 : initiator.getId(), reportMessage);
+    }
+
+    /**
+     * Adds a chat report
+     * @param messageNonce The {@link ChatMessage}'s nonce
+     * @param target The {@link User}'s ID who is being reported
+     * @param initiator The {@link User}'s ID who is doing the reporting
+     * @param reportMessage The body of the report from the user
+     */
+    public void addChatReport(String messageNonce, int target, int initiator, String reportMessage) {
+        getHandle().addChatReport(messageNonce, target, initiator, reportMessage);
     }
 
     /* END CHAT */

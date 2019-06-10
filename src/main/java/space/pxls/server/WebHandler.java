@@ -12,6 +12,7 @@ import io.undertow.util.HttpString;
 import io.undertow.util.StatusCodes;
 import space.pxls.App;
 import space.pxls.auth.*;
+import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBPixelPlacement;
 import space.pxls.data.DBPixelPlacementUser;
 import space.pxls.user.Role;
@@ -209,6 +210,58 @@ public class WebHandler {
         } else {
             exchange.setStatusCode(400);
         }
+    }
+
+    public void chatReport(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        if (user.isBanned()) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+        FormData.FormValue chatNonce = null;
+        FormData.FormValue reportMessage = null;
+
+        try {
+            chatNonce = data.getFirst("nonce");
+            reportMessage = data.getFirst("report_message");
+        } catch (NullPointerException npe) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        if (chatNonce == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        DBChatMessage chatMessage = App.getDatabase().getChatMessageByNonce(chatNonce.getValue());
+        if (chatMessage == null || reportMessage == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        String _reportMessage = reportMessage.getValue().trim();
+        if (_reportMessage.length() > 2048) _reportMessage = _reportMessage.substring(0, 2048);
+        App.getDatabase().addChatReport(chatMessage.nonce, chatMessage.author_uid, user.getId(), _reportMessage);
+
+        exchange.setStatusCode(200);
+        exchange.getResponseSender().send("{\"success\": true, \"message\": \"Successfully reported nonce " + chatMessage.nonce + "\"}");
+        exchange.endExchange();
+    }
+
+    private void sendBadRequest(HttpServerExchange exchange) {
+        exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+        exchange.getResponseSender().send("{\"success\": false, \"message\": \"ERR_BAD_REQUEST\"}");
+        exchange.endExchange();
     }
 
     public void check(HttpServerExchange exchange) {

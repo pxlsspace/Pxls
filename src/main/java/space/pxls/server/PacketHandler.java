@@ -324,18 +324,22 @@ public class PacketHandler {
 
     public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
         Long nowMS = System.currentTimeMillis();
+        String message = clientChatMessage.getMessage();
+        if (message.contains("\r")) message = message.replaceAll("\r", "");
+        if (message.endsWith("\n")) message = message.replaceFirst("\n$", "");
+        if (message.length() > 2048) message = message.substring(0, 2048);
         if (user == null) { //console
-            String nonce = App.getDatabase().insertChatMessage(0, nowMS, clientChatMessage.getMessage());
-            server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS / 1000L, clientChatMessage.getMessage(), null)));
+            String nonce = App.getDatabase().insertChatMessage(0, nowMS, message);
+            server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS / 1000L, message, null)));
         } else {
             if (user.isChatbanned()) return;
-            if (clientChatMessage.getMessage().trim().length() == 0) return;
+            if (message.trim().length() == 0) return;
             int remaining = RateLimitFactory.getTimeRemaining(DBChatMessage.class, String.valueOf(user.getId()));
             if (remaining > 0) {
-                server.send(user, new ServerChatCooldown(remaining, clientChatMessage.getMessage()));
+                server.send(user, new ServerChatCooldown(remaining, message));
             } else {
-                String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, clientChatMessage.getMessage());
-                server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, clientChatMessage.getMessage(), user.getChatBadges())));
+                String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, message);
+                server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, message, user.getChatBadges())));
             }
         }
     }
