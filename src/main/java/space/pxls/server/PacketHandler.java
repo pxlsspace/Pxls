@@ -15,7 +15,9 @@ import space.pxls.user.User;
 import space.pxls.util.PxlsTimer;
 import space.pxls.util.RateLimitFactory;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
@@ -350,6 +352,14 @@ public class PacketHandler {
 
     public void sendChatPurge(User target, User initiator, int amount, String reason) {
         server.broadcast(new ServerChatPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), amount, reason));
+    }
+
+    public void sendSpecificPurge(User target, User initiator, String nonce, String reason) {
+        sendSpecificPurge(target, initiator, Collections.singletonList(nonce), reason);
+    }
+
+    public void sendSpecificPurge(User target, User initiator, List<String> nonces, String reason) {
+        server.broadcast(new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), nonces, reason));
     }
 
     private void updateUserData() {

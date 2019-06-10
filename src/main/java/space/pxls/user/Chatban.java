@@ -64,7 +64,7 @@ public class Chatban {
 
     @Override
     public String toString() {
-        return String.format("(chatban) %s: {Target: %s} {Initiator: %s} {Purge: %s} {PurgeAmount: %s} {Reason: %s}", type.toString().toUpperCase(), target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), purge, purgeAmount, reason);
+        return String.format("(chatban) %s: {Target: %s} {Initiator: %s} {Length: %s} {Purge: %s} {PurgeAmount: %s} {Reason: %s}", type.toString().toUpperCase(), target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), type == Type.PERMA ? "Perma" : expiryTime - System.currentTimeMillis(), purge, purgeAmount, reason);
     }
 
     public enum Type {

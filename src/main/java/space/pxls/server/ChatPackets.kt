@@ -32,3 +32,7 @@ data class ServerChatBan(val permanent: Boolean, val expiry: Long?) {
 data class ServerChatPurge(val target: String, val initiator: String, val amount: Int, val reason: String?) {
     val type = "chat_purge"
 }
+
+data class ServerChatSpecificPurge(val target: String, val initiator: String, val nonces: List<String>, val reason: String?) {
+    val type = "chat_purge_specific"
+}

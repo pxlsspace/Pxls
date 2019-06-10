@@ -2391,15 +2391,28 @@ window.App = (function () {
                 elements: {
                     alert: $("#alert")
                 },
-                show: function (s) {
+                show: function(s, hideControls = false) {
                     self.elements.alert.find(".text,.custWrapper").empty();
                     self.elements.alert.find(".text").append(s);
                     self.elements.alert.fadeIn(200);
+                    if (hideControls === true) {
+                        self.elements.alert.find('.default-control').hide();
+                    } else {
+                        self.elements.alert.find('.default-control').show();
+                    }
                 },
-                showElem: function (element) {
+                showElem: function(element, hideControls = false) {
                     self.elements.alert.find(".text,.custWrapper").empty();
                     self.elements.alert.find(".custWrapper").append(element);
                     self.elements.alert.fadeIn(200);
+                    if (hideControls === true) {
+                        self.elements.alert.find('.default-control').hide();
+                    } else {
+                        self.elements.alert.find('.default-control').show();
+                    }
+                },
+                hide: function() {
+                    self.elements.alert.fadeOut(200);
                 },
                 init: function () {
                     self.elements.alert.hide().find(".button").click(function () {
@@ -2413,6 +2426,7 @@ window.App = (function () {
             return {
                 init: self.init,
                 show: self.show,
+                hide: self.hide,
                 showElem: self.showElem
             };
         })(),
@@ -2732,11 +2746,7 @@ window.App = (function () {
                         }
                         let last = self.elements.body.find("li[data-nonce]").last()[0];
                         if (last) {
-                            try { //Fixes iframes scrolling their parent. For context see https://github.com/pxlsspace/Pxls/pull/192's commit messages.
-                                last.scrollIntoView({block: "nearest", inline: "nearest"});
-                            } catch (ignored) {
-                                last.scrollIntoView(false);
-                            }
+                            self._doScroll(last);
                             if (last.dataset.nonce && last.dataset.nonce !== ls.get("chat-last_seen_nonce")) {
                                 self.elements.message_icon.addClass('has-notification');
                             }
@@ -2755,11 +2765,7 @@ window.App = (function () {
                                 if (self.elements.chat_panel.hasClass('open')) {
                                     ls.set('chat-last_seen_nonce', e.message.nonce);
                                 }
-                                try { //Fixes iframes scrolling their parent. For context see https://github.com/pxlsspace/Pxls/pull/192's commit messages.
-                                    chatLine.scrollIntoView({block: "nearest", inline: "nearest"});
-                                } catch (ignored) {
-                                    chatLine.scrollIntoView(false);
-                                }
+                                self._doScroll(chatLine);
                             }
                         }
                     });
@@ -2834,7 +2840,22 @@ window.App = (function () {
                         if (e.amount >= 2147483647) {
                             self.addServerAction(`${e.initiator} purged all messages from ${e.target}.`);
                         } else {
-                            self.addServerAction(`${e.amount} messages from ${e.target} were purged by ${e.initiator}.`);
+                            self.addServerAction(`${e.amount} message${e.amount !== 1 ? 's' : ''} from ${e.target} were purged by ${e.initiator}.`);
+                        }
+                    });
+                    socket.on('chat_purge_specific', e => {
+                        let lines = [];
+                        if (e.nonces && e.nonces.length) {
+                            e.nonces.forEach(x => {
+                                let line = self.elements.body.find(`.chat-line[data-nonce="${x}"]`)[0];
+                                if (line) lines.push(line);
+                            });
+                        }
+                        if (lines.length) {
+                            lines.forEach(x => x.remove());
+                            if (user.getUsername().toLowerCase().trim() === e.target.toLowerCase().trim()) {
+                                self.addServerAction(`${e.nonces.length} message${e.nonces.length !== 1 ? 's were' : ' was'} purged by ${e.initiator}`);
+                            }
                         }
                     });
 
@@ -2861,6 +2882,19 @@ window.App = (function () {
                         }
                     });
 
+                    $(window).on("mouseup", e => {
+                        let popup = document.querySelector('.popup');
+                        if (!popup) return;
+                        let target = e.target;
+                        if (e.originalEvent && e.originalEvent.target)
+                            target = e.originalEvent.target;
+
+                        if (target) {
+                            let closestPopup = target.closest('.popup');
+                            closestPopup || popup.remove();
+                        }
+                    });
+
                     self.elements.body.on("scroll", e => {
                         let obj = self.elements.body[0];
                         self.stickToBottom = obj.scrollTop === (obj.scrollHeight - obj.offsetHeight);
@@ -2868,13 +2902,17 @@ window.App = (function () {
                 },
                 addServerAction: msg => {
                     let when = moment();
-                    self.elements.body.append(
+                    let toAppend =
                         crel('li', {'class': 'chat-line server-action'},
                             crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format('hh:mm:ss A')),
                             document.createTextNode(' - '),
                             crel('span', {'class': 'content'}, msg)
-                        )
-                    );
+                        );
+
+                    self.elements.body.append(toAppend);
+                    if (self.stickToBottom) {
+                        self._doScroll(toAppend);
+                    }
                 },
                 _send: msg => {
                     socket.send({type: "ChatMessage", message: msg});
@@ -2897,16 +2935,345 @@ window.App = (function () {
                     }
                     self.elements.body.append(
                         crel('li', {'data-nonce': packet.nonce, 'data-author': packet.author, 'data-date': packet.date, 'class': 'chat-line'},
+                            crel('span', {'class': 'actions'},
+                                crel('i', {'class': 'fas fa-cog', 'data-action': 'actions-panel', 'title': 'Actions', onclick: self._popActionsPanel})
+                            ),
                             crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format('hh:mm:ss A')),
                             document.createTextNode(' '),
                             badges,
                             document.createTextNode(' '),
                             crel('span', {'class': 'user'}, packet.author),
-                            document.createTextNode(' '),
+                            document.createTextNode(': '),
                             crel('span', {'class': 'content'}, packet.message_raw),
                             document.createTextNode(' ')
                         )
                     );
+                },
+                _popActionsPanel: function(e) { //must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
+                    if (this && this.closest) {
+                        let closest = this.closest('.chat-line[data-nonce]');
+                        if (!closest) return console.log('no closest chat-line?', this);
+
+                        let nonce = closest.dataset.nonce;
+                        let thisRect = this.getBoundingClientRect(); //this: i.fas.fa-cog
+                        let bodyRect = document.body.getBoundingClientRect();
+
+                        let popupActions = crel('ul', {'class': 'popup-actions'});
+                        let actionReport = crel('li', {'class': 'text-red', 'data-action': 'report', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Report');
+                        let actionChatban = crel('li', {'data-action': 'chatban', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Chatban');
+                        let actionPurgeUser = crel('li', {'data-action': 'purge', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Purge User');
+                        let actionDeleteMessage = crel('li', {'data-action': 'delete', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Delete');
+
+                        if (user.getRole() === "USER") {
+                            crel(popupActions, actionReport);
+                        } else {
+                            crel(popupActions, actionChatban);
+                            crel(popupActions, actionPurgeUser);
+                            crel(popupActions, actionDeleteMessage);
+                            crel(popupActions, crel('li', {'class': 'separator'}));
+                            crel(popupActions, actionReport);
+                        }
+
+                        let popup = crel('div', {'class': 'popup', 'data-popup-for': nonce},
+                            popupActions
+                        );
+                        document.body.appendChild(popup);
+
+                        let popupRect = popup.getBoundingClientRect();
+                        let left = bodyRect.width < 768 ? thisRect.left : thisRect.left - (popupRect.width / 2) - 2;
+                        let top = thisRect.top + thisRect.height + 2;
+
+                        popup.style.left = `${left}px`;
+                        if (popupRect.height + top > bodyRect.bottom) {
+                            popup.style.bottom = '2px';
+                        } else {
+                            popup.style.top = `${top}px`;
+                        }
+                    }
+                },
+                _handleActionClick: function(e) { //must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
+                    console.log('[_handleActionClick:%s] %o', this.dataset.action, e);
+                    console.log('    %s', this.dataset.nonce);
+
+                    let chatLine = self.elements.body.find(`.chat-line[data-nonce="${this.dataset.nonce}"]`)[0];
+                    if (!chatLine) return console.warn('no chatLine? searched for nonce %o', this.dataset.nonce);
+                    let reportingMessage = chatLine.querySelector('.content').textContent;
+                    let reportingAuthor = chatLine.dataset.author;
+
+                    $(".popup").remove();
+                    switch (this.dataset.action.toLowerCase().trim()) {
+                        case 'report': {
+                            let reportButton = crel('button', {'class': 'button', 'style': 'position: initial;', 'type': 'submit'}, 'Report');
+                            let textArea = crel('textarea', {'placeholder': 'Enter a reason for your report', 'style': 'width: 100%; border: 1px solid #999;', 'required': 'true', onkeydown: e => e.stopPropagation()});
+
+                            let chatReport =
+                                crel('form', {'class': 'report chat-report', 'data-chat-nonce': this.dataset.nonce},
+                                    crel('h3', 'Chat Report'),
+                                    crel('p', 'Use this form to report chat offenses.'),
+                                    crel('p', {'style': 'font-size: 1rem !important;'},
+                                        `You are reporting a chat message from `,
+                                        crel('span', {'style': 'font-weight: bold'}, reportingAuthor),
+                                        crel('span', {'title': reportingMessage}, ` with the content "${reportingMessage.substr(0, 60)}${reportingMessage.length > 60 ? '...' : ''}"`)
+                                    ),
+                                    textArea,
+                                    crel('div', {'style': 'text-align: right'},
+                                        crel('button', {'class': 'button', 'style': 'position: initial; margin-right: .25rem', 'type': 'button', onclick: () => {alert.hide(); chatReport.remove();}}, 'Cancel'),
+                                        reportButton
+                                    )
+                                );
+                            chatReport.onsubmit = e => {
+                                e.preventDefault();
+                                reportButton.disabled = true;
+                                if (!this.dataset.nonce) return console.error('!! No nonce to report? !!', this);
+                                $.post("/reportChat", {
+                                    nonce: this.dataset.nonce,
+                                    report_message: textArea.value
+                                }, function () {
+                                    chatReport.remove();
+                                    alert.show("Sent report!");
+                                }).fail(function () {
+                                    alert.show("Error sending report.");
+                                    reportButton.disabled = false;
+                                });
+                            };
+                            alert.showElem(chatReport, true);
+                            break;
+                        }
+                        case 'chatban': {
+                            let txtBanReason = crel('textarea', {'placeholder': 'Enter a reason for the ban.', 'required': 'true', onkeydown: e => e.stopPropagation()});
+
+                            let txtMessageRemoval = crel('input', {'type': 'text', 'required': 'true', 'placeholder': '-1 for all', onkeydown: e => e.stopPropagation()});
+                            let txtMessageRemovalError = crel('label', {'class': 'error-label'});
+
+                            let txtBanlength = crel('input', {'type': 'text', 'value': '600', onkeydown: e => e.stopPropagation()});
+                            let txtBanlengthError = crel('label', {'class': 'error-label'});
+
+                            let rbTemp = crel('input', {'type': 'radio', 'name': 'rbBanType', 'data-type': 'temp'});
+                            let rbPerma = crel('input', {'type': 'radio', 'name': 'rbBanType', 'data-type': 'perma'});
+                            let rbBantypeError = crel('label', {'class': 'error-label'});
+
+                            let banlengthWrapper = crel('div', {'class': 'hidden'},
+                                crel('h5', 'Ban Length:'),
+                                crel('label', 'Banlength (seconds): ', txtBanlength),
+                                crel('br'),
+                                txtBanlengthError
+                            );
+
+
+                            rbPerma.onchange = rbTemp.onchange = e => banlengthWrapper.classList.toggle('hidden', rbPerma.checked);
+
+                            let chatbanContainer = crel('form', {'class': 'chatmod-container', 'data-chat-nonce': this.dataset.nonce},
+                                crel('h3', 'Chatban'),
+                                crel('h5', 'Message:'),
+                                crel('table', {'class': 'chatmod-table'},
+                                    crel('tr',
+                                        crel('th', 'Nonce: '),
+                                        crel('td', this.dataset.nonce)
+                                    ),
+                                    crel('tr',
+                                        crel('th', 'User: '),
+                                        crel('td', reportingAuthor)
+                                    ),
+                                    crel('tr',
+                                        crel('th', 'Message: '),
+                                        crel('td', {'title': reportingMessage}, `${reportingMessage.substr(0, 120)}${reportingMessage.length > 120 ? '...' : ''}`)
+                                    )
+                                ),
+                                crel('h5', 'Ban Type'),
+                                crel('div', {'class': 'rbgroup'},
+                                    crel('label', rbTemp, 'Temporary Ban'),
+                                    crel('label', rbPerma, 'Permanent Ban')
+                                ),
+                                rbBantypeError,
+                                banlengthWrapper,
+                                crel('h5', {'style': 'margin-left: -1rem'}, 'Ban Reason'),
+                                crel('div',
+                                    txtBanReason
+                                ),
+                                crel('h5', 'Message Removal'),
+                                crel('div',
+                                    crel('label', {'required': 'true'}, 'Removal Ammount: ', txtMessageRemoval),
+                                    crel('br'),
+                                    txtMessageRemovalError
+                                ),
+                                crel('div', {'class': 'buttons'},
+                                    crel('button', {'class': 'button', 'type': 'button', onclick: () => {alert.hide(); chatbanContainer.remove();}}, 'Cancel'),
+                                    crel('button', {'class': 'button'}, 'Ban')
+                                )
+                            );
+                            chatbanContainer.onsubmit = e => {
+                                e.preventDefault();
+                                let selectedBanType = chatbanContainer.querySelector('[name=rbBanType]:checked');
+                                let type = selectedBanType ? selectedBanType.dataset.type : false;
+                                if (type === false) {
+                                    rbBantypeError.innerHTML = `Ban Type is required`;
+                                    return;
+                                } else {
+                                    rbBantypeError.innerHTML = ``;
+                                }
+
+                                if (/^-?[0-9]+$/.test(txtMessageRemoval.value)) {
+                                    txtMessageRemovalError.innerHTML = ``;
+                                } else {
+                                    txtMessageRemovalError.innerHTML = `Invalid removal amount`;
+                                    return;
+                                }
+
+                                if (type.toLowerCase().trim() === "temp") {
+                                    if (/^-?[0-9]+$/.test(txtBanlength.value)) {
+                                        txtBanlengthError.innerHTML = ``;
+                                    } else {
+                                        txtBanlengthError.innerHTML = `Invalid banlength`;
+                                        return;
+                                    }
+                                }
+
+                                $.post("/admin/chatban", {
+                                    nonce: this.dataset.nonce,
+                                    type,
+                                    reason: txtBanReason.value,
+                                    removalAmount: txtMessageRemoval.value,
+                                    banLength: txtBanlength.value || 0
+                                }, () => {
+                                    chatbanContainer.remove();
+                                    alert.show("Chatban initiated");
+                                }).fail(() => {
+                                    alert.show("Error occurred while chatbanning");
+                                });
+                            };
+                            alert.showElem(chatbanContainer, true);
+                            break;
+                        }
+                        case 'delete': {
+                            let btnDelete = crel('button', {'class': 'button'}, 'Delete');
+                            btnDelete.onclick = () => {
+                                $.post('/admin/delete', {
+                                    nonce: this.dataset.nonce
+                                }, () => {
+                                    deleteWrapper.remove();
+                                    alert.hide();
+                                }).fail(() => {
+                                    alert.show('Failed to delete');
+                                });
+                            };
+                            let deleteWrapper = crel('div', {'class': 'chatmod-container'},
+                                crel('h3', 'Delete Message'),
+                                crel('h5', 'Message:'),
+                                crel('table',
+                                    crel('tr',
+                                        crel('th', 'Nonce: '),
+                                        crel('td', this.dataset.nonce)
+                                    ),
+                                    crel('tr',
+                                        crel('th', 'User: '),
+                                        crel('td', reportingAuthor)
+                                    ),
+                                    crel('tr',
+                                        crel('th', 'Message: '),
+                                        crel('td', {'title': reportingMessage}, `${reportingMessage.substr(0, 120)}${reportingMessage.length > 120 ? '...' : ''}`)
+                                    )
+                                ),
+                                crel('div', {'class': 'buttons'},
+                                    crel('button', { 'class': 'button', 'type': 'button', onclick: () => {deleteWrapper.remove(); alert.hide();} }, 'Cancel'),
+                                    btnDelete
+                                )
+                            );
+                            alert.showElem(deleteWrapper, true);
+                            break;
+                        }
+                        case 'purge': {
+                            let txtPurgeAmount = crel('input', {'type': 'text', 'required': 'true', 'placeholder': '-1 for all', onkeydown: e => e.stopPropagation()});
+                            let lblPurgeAmountError = crel('label', {'class': 'hidden error-label'});
+
+                            let txtPurgeReason = crel('input', {'type': 'text', 'required': 'true', onkeydown: e => e.stopPropagation()});
+                            let lblPurgeReasonError = crel('label', {'class': 'hidden error-label'});
+
+                            let btnPurge = crel('button', {'class': 'button', 'type': 'submit'}, 'Purge');
+
+                            let purgeWrapper = crel('form', {'class': 'chatmod-container'},
+                                crel('h3', 'Purge User'),
+                                crel('h5', 'Selected Message'),
+                                crel('table',
+                                    crel('tr',
+                                        crel('th', 'Nonce: '),
+                                        crel('td', this.dataset.nonce)
+                                    ),
+                                    crel('tr',
+                                        crel('th', 'User: '),
+                                        crel('td', reportingAuthor)
+                                    ),
+                                    crel('tr',
+                                        crel('th', 'Message: '),
+                                        crel('td', {'title': reportingMessage}, `${reportingMessage.substr(0, 120)}${reportingMessage.length > 120 ? '...' : ''}`)
+                                    )
+                                ),
+                                crel('div',
+                                    crel('h5', 'Number of messages to purge'),
+                                    txtPurgeAmount,
+                                    crel('br'),
+                                    lblPurgeAmountError
+                                ),
+                                crel('div',
+                                    crel('h5', 'Purge Reason'),
+                                    txtPurgeReason,
+                                    crel('br'),
+                                    lblPurgeReasonError
+                                ),
+                                crel('div', {'class': 'buttons'},
+                                    crel('button', { 'class': 'button', 'type': 'button', onclick: () => {purgeWrapper.remove(); alert.hide();} }, 'Cancel'),
+                                    btnPurge
+                                )
+                            );
+                            purgeWrapper.onsubmit = e => {
+                                e.preventDefault();
+                                if (!this.dataset.nonce) return console.error('!! No nonce to report? !!', this);
+
+                                if (!/^-?[0-9]+$/.test(txtPurgeAmount.value)) {
+                                    lblPurgeAmountError.innerHTML = 'Invalid purge amount';
+                                    return;
+                                } else {
+                                    lblPurgeAmountError.innerHTML = '';
+                                }
+
+                                if (txtPurgeAmount.value.trim().length === 0) {
+                                    lblPurgeReasonError.innerHTML = 'Invalid reason';
+                                    return;
+                                } else {
+                                    lblPurgeReasonError.innerHTML = '';
+                                }
+
+                                let amount = txtPurgeAmount.value >> 0;
+                                if (!amount) {
+                                    lblPurgeAmountError.innerHTML = 'Value must be -1 or >0';
+                                    return;
+                                } else {
+                                    lblPurgeAmountError.innerHTML = '';
+                                }
+
+                                $.post("/admin/chatPurge", {
+                                    who: chatLine.dataset.author,
+                                    amount: txtPurgeAmount.value,
+                                    reason: txtPurgeReason.value
+                                }, function () {
+                                    purgeWrapper.remove();
+                                    alert.show("User purged");
+                                }).fail(function () {
+                                    alert.show("Error sending purge.");
+                                });
+                            };
+
+
+                            alert.show(purgeWrapper, true);
+                            break;
+                        }
+                    }
+                },
+                _doScroll: elem => {
+                    try { //Fixes iframes scrolling their parent. For context see https://github.com/pxlsspace/Pxls/pull/192's commit messages.
+                        elem.scrollIntoView({block: "nearest", inline: "nearest"});
+                    } catch (ignored) {
+                        elem.scrollIntoView(false);
+                    }
                 }
             };
             return {
@@ -3129,9 +3496,11 @@ window.App = (function () {
                 role: "USER",
                 pendingSignupToken: null,
                 loggedIn: false,
+                username: '',
                 getRole: function () {
                     return self.role;
                 },
+                getUsername: () => self.username,
                 signin: function () {
                     var data = ls.get("auth_respond");
                     if (!data) {
@@ -3249,6 +3618,7 @@ window.App = (function () {
                     socket.on("userinfo", function (data) {
                         let isBanned = false,
                             banelem = $("<div>").addClass("ban-alert-content");
+                        self.username = data.username;
                         self.loggedIn = true;
                         self.elements.loginOverlay.fadeOut(200);
                         self.elements.userInfo.find("span.name").text(data.username);
@@ -3314,6 +3684,7 @@ window.App = (function () {
             return {
                 init: self.init,
                 getRole: self.getRole,
+                getUsername: self.getUsername,
                 webinit: self.webinit,
                 wsinit: self.wsinit,
                 isLoggedIn: self.isLoggedIn

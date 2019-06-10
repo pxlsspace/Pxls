@@ -527,6 +527,15 @@ public class Database implements Closeable {
         getHandle().addChatReport(messageNonce, target, initiator, reportMessage);
     }
 
+    /**
+     * Purges the specified chat message
+     * @param messageNonce The {@link ChatMessage}'s nonce to purge
+     * @param purger_uid The {@link User}'s ID who purged the chat message
+     */
+    public void purgeChatMessageByNonce(String messageNonce, int purger_uid) {
+        getHandle().purgeChatMessageByNonce(messageNonce, purger_uid);
+    }
+
     /* END CHAT */
 
     //UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0), pixel_count_alltime = IF(pixel_count_alltime, pixel_count_alltime-1, 0) WHERE id = :who

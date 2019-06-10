@@ -38,6 +38,10 @@ html, body {
     box-sizing: border-box;
 }
 
+.hidden {
+    display: none !important;
+}
+
 a, a:hover, a:visited, a:active {
     color: inherit;
 }
@@ -214,6 +218,7 @@ button.button.dark:disabled {
 
 .content {
     margin-bottom: 10px;
+    white-space: pre-wrap;
 }
 
 .palette-number {
@@ -233,6 +238,53 @@ button.button.dark:disabled {
 
 #palette.no-pills .palette-number {
     display: none !important;
+}
+
+/* moderator action popup styles */
+.chatmod-container th {
+    text-align: right;
+    margin-right: .25rem;
+}
+
+.chatmod-container th[title] {
+    border-bottom: 1px dashed #666;
+}
+
+.chatmod-container .error-label {
+    font-size: .8rem;
+    color: #e00;
+    font-weight: bold;
+    text-indent: 1rem;
+}
+
+.chatmod-container h3 {
+    text-align: center;
+}
+
+.chatmod-container h5 {
+    margin-left: -1.25rem;
+}
+
+.chatmod-container .buttons {
+    text-align: right;
+}
+
+.chatmod-container .buttons button {
+    position: initial;
+    margin-right: .25rem;
+}
+
+.chatmod-container textarea {
+    width: 100%;
+    border: 1px solid #999;
+}
+
+.chatmod-container input[type=text] {
+    width: 100%;
+}
+
+.chatmod-container label {
+    display: block;
 }
 
 /*//////////////////////////*\
@@ -1040,6 +1092,18 @@ li.chat-line .user {
     font-weight: bold;
 }
 
+li.chat-line [data-action] {
+    cursor: pointer !important;
+}
+
+li.chat-line .actions {
+    margin: 0 .2em;
+}
+
+li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
+    margin-right: .2em;
+}
+
 .chat-wrapper .chat-controls {
     flex: 0;
     position: relative;
@@ -1075,6 +1139,68 @@ li.chat-line .user {
     align-content: center;
     flex-flow: column;
     user-select: none;
+}
+
+/* CHAT ACTIONS POPUP */
+
+.popup {
+    position: absolute;
+    z-index: 22;
+    width: 100px;
+    max-width: 200px;
+    height: auto;
+    background-color: #eee;
+    border-radius: 5px;
+    border: 1px solid #000;
+    text-align: center;
+    font-size: 1rem !important;
+    line-height: 1rem !important;
+}
+
+.popup ul.popup-actions {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.popup ul.popup-actions li:not(.separator) {
+    cursor: pointer;
+    padding: 3px 0;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.popup ul.popup-actions li.separator {
+    border-radius: 0 !important;
+    height: 1px;
+    background-color: #fff0;
+    background-image: linear-gradient(to right, #000, #333, #000);
+}
+
+.popup ul.popup-actions li:not(:only-of-type) {
+    border-radius: 0;
+}
+
+.popup ul.popup-actions li:first-of-type {
+    border-radius: 5px 5px 0 0;
+}
+
+.popup ul.popup-actions li:last-of-type {
+    border-radius: 0 0 5px 5px;
+}
+
+.popup ul.popup-actions li:only-of-type {
+    border-radius: 5px;
+}
+
+.popup ul.popup-actions li:not(.separator):hover {
+    background-color: #fff;
+}
+
+.popup ul.popup-actions li:not(.separator):active {
+    background-color: #f8f8f8;
 }
 
 /*//////////////////////////*\
