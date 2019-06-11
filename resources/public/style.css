@@ -1104,9 +1104,16 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     margin-right: .2em;
 }
 
-.chat-wrapper .chat-controls {
+.chat-wrapper .chat-controls, .chat-wrapper .chat-hints {
     flex: 0;
     position: relative;
+}
+
+.chat-wrapper .chat-hints {
+    padding: .5rem;
+    font-family: monospace;
+    font-size: 1.2rem;
+    font-weight: bold;
 }
 
 .chat-wrapper .chat-controls textarea {

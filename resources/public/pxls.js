@@ -2736,7 +2736,8 @@ window.App = (function () {
                     body: $("#chat-body"),
                     rate_limit_overlay: $(".chat-ratelimit-overlay"),
                     rate_limit_counter: $("#chat-ratelimit"),
-                    chat_panel: $(".panel[data-panel=chat]")
+                    chat_panel: $(".panel[data-panel=chat]"),
+                    chat_hint: $("#chat-hint")
                 },
                 init: () => {
                     socket.on('chat_history', e => {
@@ -2863,12 +2864,176 @@ window.App = (function () {
 
                     self.elements.rate_limit_overlay.hide();
 
+                    // let tempbanUsage = crel('span', {'style': 'font-weight: bold; font-size: 1.1rem;'}, )
+
+                    let commandsCache = [['tempban', '/tempban  USER  BAN_LENGTH  SHOULD_PURGE  BAN_REASON'], ['permaban', '/permaban  USER  SHOULD_PURGE  BAN_REASON'], ['purge', '/purge  USER  PURGE_AMOUNT  PURGE_REASON']];
                     self.elements.input.on('keydown', e => {
                         e.stopPropagation();
-                        if ((e.key == "Enter" || e.which === 13) && !e.shiftKey) {
+                        let toSend = self.elements.input[0].value;
+                        let trimmed = toSend.trim();
+                        if ((e.originalEvent.key == "Enter" || e.originalEvent.which === 13) && !e.shiftKey) {
                             e.preventDefault();
-                            self._send(self.elements.input[0].value);
-                            self.elements.input.val("");
+                            if (trimmed.startsWith('/')) {
+                                let args = trimmed.substr(1).split(' '),
+                                    command = args.shift();
+                                switch (command.toLowerCase().trim()) {
+                                    case 'permaban': {
+                                        let usage = `/permaban USER SHOULD_PURGE BAN_REASON\n/permaban help`;
+                                        let help = [
+                                            usage,
+                                            `    USER:         The username`,
+                                            `    SHOULD_PURGE: (1|0) Whether or not to remove all chat messages from the user`,
+                                            `    BAN_REASON:   The reason for the ban`,
+                                            ``,
+                                            `    /permaban GlowingSocc 1 just generally don't like 'em`,
+                                            `    /permaban GlowingSocc 0 time for you to go.`
+                                        ].join('\n');
+                                        if (args.length < 3) {
+                                            if (args[0] && args[0].toLowerCase() === 'help') {
+                                                self.showHint(help);
+                                            } else {
+                                                self.showHint(`Missing arguments.\n${usage}`, true);
+                                            }
+                                        } else {
+                                            let user = args.shift(),
+                                                shouldPurge = args.shift(),
+                                                banReason = args.join(' ');
+                                            if (!isNaN(shouldPurge)) {
+                                                shouldPurge = !!(shouldPurge >> 0);
+                                            } else {
+                                                return self.showHint(`Invalid shouldPurge. Expected 1 or 0, got ${shouldPurge}`, true);
+                                            }
+                                            self.elements.input[0].disabled = true;
+                                            $.post('/admin/chatban', {
+                                                who: user,
+                                                type: 'perma',
+                                                reason: banReason,
+                                                removalAmount: shouldPurge ? -1 : 0,
+                                                banLength: 0
+                                            }, () => {
+                                                alert.show('Chatban initiated');
+                                                self.elements.input[0].value = '';
+                                                self.elements.input[0].disabled = false;
+                                            }).fail(() => {
+                                                alert.show('Failed to chatban');
+                                                self.elements.input[0].disabled = false;
+                                            });
+                                        }
+                                        break;
+                                    }
+                                    case 'tempban': {
+                                        let usage = `/tempban USER BAN_LENGTH SHOULD_PURGE BAN_REASON\n/tempban help`;
+                                        let help = [
+                                            usage,
+                                            `    USER:         The username`,
+                                            `    BAN_LENGTH:   The banlength in seconds`,
+                                            `    SHOULD_PURGE: (1|0) Whether or not to remove all chat messages from the user`,
+                                            `    BAN_REASON:   The reason for the ban`,
+                                            ``,
+                                            `    /tempban GlowingSocc 600 1 just generally don't like 'em`,
+                                            `    /tempban GlowingSocc 60 0 take a time out.`
+                                        ].join('\n');
+                                        if (args.length < 4) {
+                                            if (args[0] && args[0].toLowerCase() === 'help') {
+                                                self.showHint(help);
+                                            } else {
+                                                self.showHint(`Missing arguments.\n${usage}`, true);
+                                            }
+                                        } else {
+                                            let user = args.shift(),
+                                                banLength = args.shift() >> 0,
+                                                shouldPurge = args.shift(),
+                                                banReason = args.join(' ');
+                                            if (!isNaN(shouldPurge)) {
+                                                shouldPurge = !!(shouldPurge >> 0);
+                                            } else {
+                                                return self.showHint(`Invalid shouldPurge. Expected 1 or 0, got ${shouldPurge}`, true);
+                                            }
+                                            if (banLength <= 0) {
+                                                return self.showHint(`Invalid banLength. Should be >0`, true);
+                                            } else {
+                                                $.post('/admin/chatban', {
+                                                    who: user,
+                                                    type: 'temp',
+                                                    reason: banReason,
+                                                    removalAmount: shouldPurge ? -1 : 0,
+                                                    banLength: banLength
+                                                }, () => {
+                                                    alert.show('Chatban initiated');
+                                                    self.elements.input[0].value = '';
+                                                    self.elements.input[0].disabled = false;
+                                                }).fail(() => {
+                                                    alert.show('Failed to chatban');
+                                                    self.elements.input[0].disabled = false;
+                                                });
+                                            }
+                                        }
+                                        break;
+                                    }
+                                    case 'purge': {
+                                        let usage = `/purge USER PURGE_AMOUNT PURGE_REASON\n/purge help`;
+                                        let help = [
+                                            usage,
+                                            `    USER:         The username`,
+                                            `    PURGE_AMOUNT: The amount of messages to purge`,
+                                            `    PURGE_REASON: The reason for the purge`,
+                                            ``,
+                                            `    /purge GlowingSocc 10 spam`
+                                        ].join('\n');
+                                        if (args.length < 3) {
+                                            if (args[0] && args[0].toLowerCase() === 'help') {
+                                                self.showHint(help);
+                                            } else {
+                                                self.showHint(`Missing arguments.\n${usage}`, true);
+                                            }
+                                        } else {
+                                            let user = args.shift(),
+                                                purgeAmount = args.shift(),
+                                                purgeReason = args.join(' ');
+                                            if (!isNaN(purgeAmount)) {
+                                                purgeAmount = purgeAmount >> 0;
+                                            } else {
+                                                return self.showHint(`Invalid purgeAmount. Expected a number, got ${purgeAmount}`, true);
+                                            }
+                                            $.post("/admin/chatPurge", {
+                                                who: user,
+                                                amount: purgeAmount,
+                                                reason: purgeReason
+                                            }, function () {
+                                                alert.show('Chatpurge initiated');
+                                                self.elements.input[0].value = '';
+                                                self.elements.input[0].disabled = false;
+                                            }).fail(() => {
+                                                alert.show('Failed to chatpurge');
+                                                self.elements.input[0].disabled = false;
+                                            });
+                                        }
+                                        break;
+                                    }
+                                }
+                            } else {
+                                self._send(self.elements.input[0].value);
+                                self.elements.input.val("");
+                            }
+                        } else if (e.originalEvent.key == "Tab" || e.originalEvent.which == 9) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                        }
+                    }).on('keyup', e => {
+                        let toSend = self.elements.input[0].value;
+                        let trimmed = toSend.trim();
+                        if (trimmed.length == 0) return self.showHint('');
+                        if (!((e.originalEvent.key == "Enter" || e.originalEvent.which === 13) && !e.originalEvent.shiftKey) && trimmed.startsWith('/')) {
+                            let searchAgainst = trimmed.substr(1).split(' ').shift();
+                            let matches = [];
+                            commandsCache.forEach(x => {
+                                if (x[0].startsWith(searchAgainst)) {
+                                    matches.push(x[1]);
+                                }
+                            });
+                            if (matches.length) {
+                                self.showHint(matches.join('\n'));
+                            }
                         }
                     });
 
@@ -2899,6 +3064,9 @@ window.App = (function () {
                         let obj = self.elements.body[0];
                         self.stickToBottom = obj.scrollTop === (obj.scrollHeight - obj.offsetHeight);
                     });
+                },
+                showHint: (msg, isError = false) => {
+                    self.elements.chat_hint.toggleClass('text-red', isError === true).text(msg);
                 },
                 addServerAction: msg => {
                     let when = moment();
