@@ -272,12 +272,14 @@ public class WebHandler {
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
 
         FormData.FormValue nonceData;
+        FormData.FormValue whoData;
         FormData.FormValue typeData;
         FormData.FormValue reasonData;
         FormData.FormValue removalData;
         FormData.FormValue banlengthData;
 
         String nonce = "";
+        String who = "";
         String type = "";
         String reason = "";
         Integer removal = 0;
@@ -287,6 +289,7 @@ public class WebHandler {
 
         try {
             nonceData = data.getFirst("nonce");
+            whoData = data.getFirst("who");
             typeData = data.getFirst("type");
             reasonData = data.getFirst("reason");
             removalData = data.getFirst("removalAmount");
@@ -296,8 +299,19 @@ public class WebHandler {
             return;
         }
 
+        if (nonceData == null && whoData == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        if (typeData == null || reasonData == null || removalData == null || banlengthData == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
         try {
-            nonce = nonceData.getValue();
+            nonce = nonceData == null ? null : nonceData.getValue();
+            who = whoData == null ? null : whoData.getValue();
             type = typeData.getValue();
             reason = reasonData.getValue();
             removal = Integer.parseInt(removalData.getValue());
@@ -308,14 +322,20 @@ public class WebHandler {
         }
 
         isPerma = type.trim().equalsIgnoreCase("perma");
+        User target = null;
 
-        DBChatMessage chatMessage = App.getDatabase().getChatMessageByNonce(nonce);
-        if (chatMessage == null) {
-            sendBadRequest(exchange);
-            return;
+        if (nonce != null) {
+            DBChatMessage chatMessage = App.getDatabase().getChatMessageByNonce(nonce);
+            if (chatMessage == null) {
+                sendBadRequest(exchange);
+                return;
+            }
+
+            target = App.getUserManager().getByID(chatMessage.author_uid);
+        } else if (who != null) {
+            target = App.getUserManager().getByName(who);
         }
 
-        User target = App.getUserManager().getByID(chatMessage.author_uid);
         if (target == null) {
             sendBadRequest(exchange);
             return;
