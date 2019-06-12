@@ -1153,6 +1153,13 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     word-break:break-all;
 }
 
+.chat-line.purged {
+    font-style: italic;
+    font-size: .9em;
+    color: #888;
+    text-decoration: line-through;
+}
+
 /* CHAT ACTIONS POPUP */
 
 .popup {

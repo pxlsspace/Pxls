@@ -2826,6 +2826,16 @@ window.App = (function () {
                     };
                     socket.on('chat_ban', handleChatban);
                     socket.on('chat_ban_state', handleChatban);
+
+                    const _doPurge = (elem, e) => {
+                        if (user.getRole() !== "USER") {
+                            elem.classList.add('purged');
+                            elem.setAttribute('title', `Purged by ${e.initiator} with reason: ${e.reason || 'none provided'}`);
+                            elem.dataset.purgedBy = e.initiator;
+                        } else {
+                            elem.remove();
+                        }
+                    };
                     socket.on('chat_purge', e => {
                         let lines = Array.from(self.elements.body[0].querySelectorAll(`.chat-line[data-author="${e.target}"]`));
                         if (Array.isArray(lines) && lines.length) {
@@ -2833,8 +2843,7 @@ window.App = (function () {
                             for (let i = 0; i < e.amount; i++) {
                                 let line = lines.pop();
                                 if (line) {
-                                    //TODO if (self.isStaff()) {line.addClass('purged'); line.dataset.purgedBy = e.initiator;} else {line.remove();}
-                                    line.remove();
+                                    _doPurge(line, e);
                                 } else {
                                     break;
                                 }
@@ -2855,7 +2864,7 @@ window.App = (function () {
                             });
                         }
                         if (lines.length) {
-                            lines.forEach(x => x.remove());
+                            lines.forEach(x => _doPurge(x, e));
                             if (user.getUsername().toLowerCase().trim() === e.target.toLowerCase().trim()) {
                                 self.addServerAction(`${e.nonces.length} message${e.nonces.length !== 1 ? 's were' : ' was'} purged by ${e.initiator}`);
                             }

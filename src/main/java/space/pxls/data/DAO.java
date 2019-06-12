@@ -272,7 +272,7 @@ public interface DAO extends Closeable {
             "  `purged` tinyint NOT NULL DEFAULT 0," +
             "  `purged_by` int" +
             " );")
-    void createChatMessagesTable(); //TODO
+    void createChatMessagesTable();
 
     @SqlUpdate("CREATE TABLE IF NOT EXISTS `chat_reports` (" +
             "  `id` int NOT NULL PRIMARY KEY AUTO_INCREMENT," +
