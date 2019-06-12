@@ -2817,7 +2817,7 @@ window.App = (function () {
                                 self.elements.rate_limit_overlay.show();
                                 self.elements.rate_limit_counter.text('You have been banned from chat.');
                                 self.addServerAction(`You are banned from chat${e.permanent ? ' permanently.' : ' until ' + self.chatban.banEndFormatted}`);
-                            } else {
+                            } else if (e.type !== "chat_ban_state") { //chat_ban_state is a query result, not an action notice.
                                 self.elements.rate_limit_overlay.hide();
                                 self.elements.rate_limit_counter.text('');
                                 self.addServerAction(`You have been unbanned from chat.`);
