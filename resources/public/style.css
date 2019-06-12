@@ -1134,7 +1134,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #0006;
+    background-color: #0009;
     color: #FFF;
     text-shadow: #000 0 0 2px;
     font-size: 1.5rem;
@@ -1146,6 +1146,11 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     align-content: center;
     flex-flow: column;
     user-select: none;
+}
+
+#chat-hint {
+    white-space: pre-wrap;
+    word-break:break-all;
 }
 
 /* CHAT ACTIONS POPUP */
@@ -1276,6 +1281,8 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 
     .message {
         max-width: 100%;
+        max-height: 100%;
+        overflow: auto;
     }
 
     .panel, .panel.half-width {
@@ -1289,5 +1296,13 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 
     .panel.right {
         right: -105%;
+    }
+
+    #chat-hint {
+        font-size: .7rem;
+    }
+
+    #chat-ratelimit {
+        font-size: 1rem;
     }
 }

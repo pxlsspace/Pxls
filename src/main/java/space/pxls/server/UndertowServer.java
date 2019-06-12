@@ -126,6 +126,7 @@ public class UndertowServer {
                 if (type.equals("shadowbanme")) obj = App.getGson().fromJson(jsonObj, ClientShadowBanMe.class);
                 if (type.equals("banme")) obj = App.getGson().fromJson(jsonObj, ClientBanMe.class);
                 if (type.equalsIgnoreCase("ChatHistory")) obj = App.getGson().fromJson(jsonObj, ClientChatHistory.class);
+                if (type.equalsIgnoreCase("ChatbanState")) obj = App.getGson().fromJson(jsonObj, ClientChatbanState.class);
                 if (type.equalsIgnoreCase("ChatMessage")) obj = App.getGson().fromJson(jsonObj, ClientChatMessage.class);
 
                 // old thing, will auto-shadowban

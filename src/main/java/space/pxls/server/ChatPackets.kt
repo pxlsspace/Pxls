@@ -7,6 +7,7 @@ data class ChatMessage(val nonce: String, val author: String, val date: Long, va
 /* Sent by the client to the server */
 data class ClientChatMessage(val message: String)
 class ClientChatHistory()
+class ClientChatbanState()
 
 /* Sent by the server to the client(s) */
 data class ServerChatMessage(val message: ChatMessage) {
@@ -27,6 +28,10 @@ data class ServerChatCooldown(val diff: Int, val message: String) {
 
 data class ServerChatBan(val permanent: Boolean, val expiry: Long?) {
     val type = "chat_ban"
+}
+
+data class ServerChatbanState(val permanent: Boolean, val expiry: Long?) {
+    val type = "chat_ban_state"
 }
 
 data class ServerChatPurge(val target: String, val initiator: String, val amount: Int, val reason: String?) {

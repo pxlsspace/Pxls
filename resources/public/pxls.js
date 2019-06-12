@@ -2792,7 +2792,7 @@ window.App = (function () {
                         }, 100);
                     });
                     socket.on('message_delete', e => console.log('[message_delete] %o', e));
-                    socket.on('chat_ban', e => {
+                    const handleChatban = e => {
                         clearInterval(self.timeout.timer);
                         self.chatban.banStart = moment.now();
                         self.chatban.banEnd = moment(e.expiry);
@@ -2823,7 +2823,9 @@ window.App = (function () {
                                 self.addServerAction(`You have been unbanned from chat.`);
                             }
                         }, 0);
-                    });
+                    };
+                    socket.on('chat_ban', handleChatban);
+                    socket.on('chat_ban_state', handleChatban);
                     socket.on('chat_purge', e => {
                         let lines = Array.from(self.elements.body[0].querySelectorAll(`.chat-line[data-author="${e.target}"]`));
                         if (Array.isArray(lines) && lines.length) {
@@ -2860,6 +2862,7 @@ window.App = (function () {
                         }
                     });
 
+                    socket.send({"type": "ChatbanState"});
                     socket.send({"type": "ChatHistory"});
 
                     self.elements.rate_limit_overlay.hide();
@@ -2873,7 +2876,7 @@ window.App = (function () {
                         let trimmed = toSend.trim();
                         if ((e.originalEvent.key == "Enter" || e.originalEvent.which === 13) && !e.shiftKey) {
                             e.preventDefault();
-                            if (trimmed.startsWith('/')) {
+                            if (trimmed.startsWith('/') && user.getRole() !== "USER") {
                                 let args = trimmed.substr(1).split(' '),
                                     command = args.shift();
                                 switch (command.toLowerCase().trim()) {
@@ -3023,7 +3026,7 @@ window.App = (function () {
                         let toSend = self.elements.input[0].value;
                         let trimmed = toSend.trim();
                         if (trimmed.length == 0) return self.showHint('');
-                        if (!((e.originalEvent.key == "Enter" || e.originalEvent.which === 13) && !e.originalEvent.shiftKey) && trimmed.startsWith('/')) {
+                        if (!((e.originalEvent.key == "Enter" || e.originalEvent.which === 13) && !e.originalEvent.shiftKey) && trimmed.startsWith('/') && user.getRole() !== "USER") {
                             let searchAgainst = trimmed.substr(1).split(' ').shift();
                             let matches = [];
                             commandsCache.forEach(x => {
@@ -3062,8 +3065,11 @@ window.App = (function () {
 
                     self.elements.body.on("scroll", e => {
                         let obj = self.elements.body[0];
-                        self.stickToBottom = obj.scrollTop === (obj.scrollHeight - obj.offsetHeight);
+                        self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
                     });
+                },
+                _numWithinDrift(needle, haystack, drift) {
+                    return needle >= (haystack - drift) && needle <= (haystack + drift);
                 },
                 showHint: (msg, isError = false) => {
                     self.elements.chat_hint.toggleClass('text-red', isError === true).text(msg);
@@ -3148,7 +3154,7 @@ window.App = (function () {
                         document.body.appendChild(popup);
 
                         let popupRect = popup.getBoundingClientRect();
-                        let left = bodyRect.width < 768 ? thisRect.left : thisRect.left - (popupRect.width / 2) - 2;
+                        let left = bodyRect.width < 768 ? thisRect.left : thisRect.left - (popupRect.width / 2) + 4;
                         let top = thisRect.top + thisRect.height + 2;
 
                         popup.style.left = `${left}px`;

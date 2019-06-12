@@ -101,6 +101,7 @@ public class PacketHandler {
             if (obj instanceof ClientShadowBanMe) handleShadowBanMe(channel, user, ((ClientShadowBanMe) obj));
             if (obj instanceof ClientBanMe) handleBanMe(channel, user, ((ClientBanMe) obj));
             if (obj instanceof ClientChatHistory) handleChatHistory(channel, user, ((ClientChatHistory) obj));
+            if (obj instanceof ClientChatbanState) handleChatbanState(channel, user, ((ClientChatbanState) obj));
             if (obj instanceof ClientChatMessage) handleChatMessage(channel, user, ((ClientChatMessage) obj));
 
             if (user.getRole().greaterEqual(Role.MODERATOR)) {
@@ -316,12 +317,12 @@ public class PacketHandler {
                 });
     }
 
+    public void handleChatbanState(WebSocketChannel channel, User user, ClientChatbanState clientChatbanState) {
+        server.send(channel, new ServerChatbanState(user.isPermaChatbanned(), user.getChatbanExpiryTime()));
+    }
+
     public void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
-        if (user.isChatbanned()) {
-            server.send(channel, new ServerChatBan(user.isPermaChatbanned(), user.getBanExpiryTime()));
-        } else {
-            server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, false)));
-        }
+        server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, false)));
     }
 
     public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
