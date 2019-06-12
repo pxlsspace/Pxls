@@ -536,6 +536,24 @@ public class Database implements Closeable {
         getHandle().purgeChatMessageByNonce(messageNonce, purger_uid);
     }
 
+    /**
+     * Gets the chatban reason for the specified {@link User}'s ID.
+     * @param id The {@link User}'s ID to target
+     * @return The chatban reason.
+     */
+    public String getChatbanReasonForUser(int id) {
+        return getHandle().getChatbanReasonForUser(id);
+    }
+
+    /**
+     * Updates the chatban for the {@link User}'s ID.
+     * @param id The {@link User}'s ID to target
+     * @param reason The chatban reason.
+     */
+    public void updateUserChatbanReason(int id, String reason) {
+        getHandle().updateUserChatbanReason(id, reason);
+    }
+
     /* END CHAT */
 
     //UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0), pixel_count_alltime = IF(pixel_count_alltime, pixel_count_alltime-1, 0) WHERE id = :who

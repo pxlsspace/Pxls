@@ -3134,7 +3134,7 @@ window.App = (function () {
 
                         let popupActions = crel('ul', {'class': 'popup-actions'});
                         let actionReport = crel('li', {'class': 'text-red', 'data-action': 'report', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Report');
-                        let actionChatban = crel('li', {'data-action': 'chatban', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Chatban');
+                        let actionChatban = crel('li', {'data-action': 'chatban', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Chat (un)ban');
                         let actionPurgeUser = crel('li', {'data-action': 'purge', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Purge User');
                         let actionDeleteMessage = crel('li', {'data-action': 'delete', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Delete');
 
@@ -3166,13 +3166,14 @@ window.App = (function () {
                     }
                 },
                 _handleActionClick: function(e) { //must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
-                    console.log('[_handleActionClick:%s] %o', this.dataset.action, e);
-                    console.log('    %s', this.dataset.nonce);
+                    if (!this.dataset) return console.trace('onClick attached to invalid object');
 
                     let chatLine = self.elements.body.find(`.chat-line[data-nonce="${this.dataset.nonce}"]`)[0];
-                    if (!chatLine) return console.warn('no chatLine? searched for nonce %o', this.dataset.nonce);
-                    let reportingMessage = chatLine.querySelector('.content').textContent;
-                    let reportingAuthor = chatLine.dataset.author;
+                    if (!chatLine && !this.dataset.target) return console.warn('no chatLine/target? searched for nonce %o', this.dataset.nonce);
+                    let mode = !!chatLine;
+
+                    let reportingMessage = mode ? chatLine.querySelector('.content').textContent : '';
+                    let reportingTarget = mode ? chatLine.dataset.author : this.dataset.target;
 
                     $(".popup").remove();
                     switch (this.dataset.action.toLowerCase().trim()) {
@@ -3186,7 +3187,7 @@ window.App = (function () {
                                     crel('p', 'Use this form to report chat offenses.'),
                                     crel('p', {'style': 'font-size: 1rem !important;'},
                                         `You are reporting a chat message from `,
-                                        crel('span', {'style': 'font-weight: bold'}, reportingAuthor),
+                                        crel('span', {'style': 'font-weight: bold'}, reportingTarget),
                                         crel('span', {'title': reportingMessage}, ` with the content "${reportingMessage.substr(0, 60)}${reportingMessage.length > 60 ? '...' : ''}"`)
                                     ),
                                     textArea,
@@ -3214,7 +3215,7 @@ window.App = (function () {
                             break;
                         }
                         case 'chatban': {
-                            let txtBanReason = crel('textarea', {'placeholder': 'Enter a reason for the ban.', 'required': 'true', onkeydown: e => e.stopPropagation()});
+                            let txtBanReason = crel('textarea', {'placeholder': 'Enter a reason for the (un)ban.', 'required': 'true', onkeydown: e => e.stopPropagation()});
 
                             let txtMessageRemoval = crel('input', {'type': 'text', 'required': 'true', 'placeholder': '-1 for all', onkeydown: e => e.stopPropagation()});
                             let txtMessageRemovalError = crel('label', {'class': 'error-label'});
@@ -3224,6 +3225,7 @@ window.App = (function () {
 
                             let rbTemp = crel('input', {'type': 'radio', 'name': 'rbBanType', 'data-type': 'temp'});
                             let rbPerma = crel('input', {'type': 'radio', 'name': 'rbBanType', 'data-type': 'perma'});
+                            let rbUnban = crel('input', {'type': 'radio', 'name': 'rbBanType', 'data-type': 'unban'});
                             let rbBantypeError = crel('label', {'class': 'error-label'});
 
                             let banlengthWrapper = crel('div', {'class': 'hidden'},
@@ -3233,34 +3235,39 @@ window.App = (function () {
                                 txtBanlengthError
                             );
 
+                            rbPerma.onchange = rbTemp.onchange = rbUnban.onchange = e => banlengthWrapper.classList.toggle('hidden', !rbTemp.checked);
 
-                            rbPerma.onchange = rbTemp.onchange = e => banlengthWrapper.classList.toggle('hidden', rbPerma.checked);
-
-                            let chatbanContainer = crel('form', {'class': 'chatmod-container', 'data-chat-nonce': this.dataset.nonce},
-                                crel('h3', 'Chatban'),
-                                crel('h5', 'Message:'),
-                                crel('table', {'class': 'chatmod-table'},
+                            let messageTable = mode
+                                ? crel('table', {'class': 'chatmod-table'},
                                     crel('tr',
                                         crel('th', 'Nonce: '),
                                         crel('td', this.dataset.nonce)
                                     ),
                                     crel('tr',
-                                        crel('th', 'User: '),
-                                        crel('td', reportingAuthor)
-                                    ),
-                                    crel('tr',
                                         crel('th', 'Message: '),
                                         crel('td', {'title': reportingMessage}, `${reportingMessage.substr(0, 120)}${reportingMessage.length > 120 ? '...' : ''}`)
                                     )
-                                ),
+                                )
+                                : crel('table', {'class': 'chatmod-table'},
+                                    crel('tr',
+                                        crel('th', 'User: '),
+                                        crel('td', reportingTarget)
+                                    )
+                                );
+
+                            let chatbanContainer = crel('form', {'class': 'chatmod-container', 'data-chat-nonce': this.dataset.nonce},
+                                crel('h3', 'Chatban'),
+                                crel('h5', mode ? 'Message:': 'Banning:'),
+                                messageTable,
                                 crel('h5', 'Ban Type'),
                                 crel('div', {'class': 'rbgroup'},
                                     crel('label', rbTemp, 'Temporary Ban'),
-                                    crel('label', rbPerma, 'Permanent Ban')
+                                    crel('label', rbPerma, 'Permanent Ban'),
+                                    crel('label', rbUnban, 'Unban')
                                 ),
                                 rbBantypeError,
                                 banlengthWrapper,
-                                crel('h5', {'style': 'margin-left: -1rem'}, 'Ban Reason'),
+                                crel('h5', {'style': 'margin-left: -1rem'}, '(Un)ban Reason'),
                                 crel('div',
                                     txtBanReason
                                 ),
@@ -3302,13 +3309,19 @@ window.App = (function () {
                                     }
                                 }
 
-                                $.post("/admin/chatban", {
-                                    nonce: this.dataset.nonce,
+                                let postArgs = {
                                     type,
                                     reason: txtBanReason.value,
                                     removalAmount: txtMessageRemoval.value,
                                     banLength: txtBanlength.value || 0
-                                }, () => {
+                                };
+
+                                if (mode)
+                                    postArgs.nonce = this.dataset.nonce;
+                                else
+                                    postArgs.who = reportingTarget;
+
+                                $.post("/admin/chatban", postArgs, () => {
                                     chatbanContainer.remove();
                                     alert.show("Chatban initiated");
                                 }).fail(() => {
@@ -3340,7 +3353,7 @@ window.App = (function () {
                                     ),
                                     crel('tr',
                                         crel('th', 'User: '),
-                                        crel('td', reportingAuthor)
+                                        crel('td', reportingTarget)
                                     ),
                                     crel('tr',
                                         crel('th', 'Message: '),
@@ -3364,23 +3377,28 @@ window.App = (function () {
 
                             let btnPurge = crel('button', {'class': 'button', 'type': 'submit'}, 'Purge');
 
-                            let purgeWrapper = crel('form', {'class': 'chatmod-container'},
-                                crel('h3', 'Purge User'),
-                                crel('h5', 'Selected Message'),
-                                crel('table',
+                            let messageTable = mode
+                                ? crel('table',
                                     crel('tr',
                                         crel('th', 'Nonce: '),
                                         crel('td', this.dataset.nonce)
                                     ),
                                     crel('tr',
-                                        crel('th', 'User: '),
-                                        crel('td', reportingAuthor)
-                                    ),
-                                    crel('tr',
                                         crel('th', 'Message: '),
                                         crel('td', {'title': reportingMessage}, `${reportingMessage.substr(0, 120)}${reportingMessage.length > 120 ? '...' : ''}`)
                                     )
-                                ),
+                                )
+                                : crel('table', {'class': 'chatmod-table'},
+                                    crel('tr',
+                                        crel('th', 'User: '),
+                                        crel('td', reportingTarget)
+                                    )
+                                );
+
+                            let purgeWrapper = crel('form', {'class': 'chatmod-container'},
+                                crel('h3', 'Purge User'),
+                                crel('h5', 'Selected Message'),
+                                messageTable,
                                 crel('div',
                                     crel('h5', 'Number of messages to purge'),
                                     txtPurgeAmount,
@@ -3400,7 +3418,6 @@ window.App = (function () {
                             );
                             purgeWrapper.onsubmit = e => {
                                 e.preventDefault();
-                                if (!this.dataset.nonce) return console.error('!! No nonce to report? !!', this);
 
                                 if (!/^-?[0-9]+$/.test(txtPurgeAmount.value)) {
                                     lblPurgeAmountError.innerHTML = 'Invalid purge amount';
@@ -3425,7 +3442,7 @@ window.App = (function () {
                                 }
 
                                 $.post("/admin/chatPurge", {
-                                    who: chatLine.dataset.author,
+                                    who: reportingTarget,
                                     amount: txtPurgeAmount.value,
                                     reason: txtPurgeReason.value
                                 }, function () {
@@ -3451,7 +3468,8 @@ window.App = (function () {
                 }
             };
             return {
-                init: self.init
+                init: self.init,
+                _handleActionClick: self._handleActionClick
             }
         })(),
         // this takes care of the countdown timer
@@ -3824,6 +3842,7 @@ window.App = (function () {
                                     place: place,
                                     alert: alert,
                                     lookup: lookup,
+                                    chat: chat,
                                     cdOverride: data.cdOverride
                                 });
                             });

@@ -60,7 +60,11 @@ public class PacketHandler {
                     user.isBanned() ? user.getBanExpiryTime() : 0,
                     user.isBanned() ? user.getBanReason() : "",
                     user.getLogin().split(":")[0],
-                    user.isOverridingCooldown()
+                    user.isOverridingCooldown(),
+                    user.isChatbanned(),
+                    App.getDatabase().getChatbanReasonForUser(user.getId()),
+                    user.isPermaChatbanned(),
+                    user.getChatbanExpiryTime()
             ));
             sendAvailablePixels(channel, user, "auth");
         }

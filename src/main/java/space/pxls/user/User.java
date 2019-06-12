@@ -242,11 +242,13 @@ public class User {
                 this.isPermaChatbanned = false;
                 this.chatbanExpiryTime = chatban.expiryTime;
                 App.getServer().getPacketHandler().sendChatban(this, new ServerChatBan(false, chatban.expiryTime));
+                App.getDatabase().updateUserChatbanReason(getId(), chatban.reason);
                 break;
             }
             case PERMA: {
                 this.isPermaChatbanned = true;
                 App.getServer().getPacketHandler().sendChatban(this, new ServerChatBan(true, null));
+                App.getDatabase().updateUserChatbanReason(getId(), chatban.reason);
                 break;
             }
             case UNBAN: {

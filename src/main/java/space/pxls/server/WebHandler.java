@@ -25,13 +25,9 @@ import java.io.*;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
-import java.util.Calendar;
-import java.util.Deque;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.List;
-import java.util.ArrayList;
 
 public class WebHandler {
     private String fileToString (File f) {
@@ -285,7 +281,8 @@ public class WebHandler {
         Integer removal = 0;
         Integer banLength = 0;
 
-        boolean isPerma = false;
+        boolean isPerma = false,
+                isUnban = false;
 
         try {
             nonceData = data.getFirst("nonce");
@@ -322,6 +319,7 @@ public class WebHandler {
         }
 
         isPerma = type.trim().equalsIgnoreCase("perma");
+        isUnban = type.trim().equalsIgnoreCase("unban");
         User target = null;
 
         if (nonce != null) {
@@ -343,9 +341,14 @@ public class WebHandler {
 
         boolean _removal = removal == -1 || removal > 0;
 
-        Chatban chatban = isPerma ?
-                Chatban.PERMA(target, user, reason, _removal, removal == -1 ? Integer.MAX_VALUE : removal) :
-                Chatban.TEMP(target, user, System.currentTimeMillis() + (banLength * 1000L), reason, _removal, removal == -1 ? Integer.MAX_VALUE : removal);
+        Chatban chatban;
+        if (isUnban) {
+            chatban = Chatban.UNBAN(target, user, reason);
+        } else {
+            chatban = isPerma ?
+                    Chatban.PERMA(target, user, reason, _removal, removal == -1 ? Integer.MAX_VALUE : removal) :
+                    Chatban.TEMP(target, user, System.currentTimeMillis() + (banLength * 1000L), reason, _removal, removal == -1 ? Integer.MAX_VALUE : removal);
+        }
 
         chatban.commit();
 
@@ -481,7 +484,11 @@ public class WebHandler {
                             user.getBanExpiryTime(),
                             user.getBanReason(),
                             user.getLogin().split(":")[0],
-                            user.isOverridingCooldown()
+                            user.isOverridingCooldown(),
+                            user.isChatbanned(),
+                            App.getDatabase().getChatbanReasonForUser(user.getId()),
+                            user.isPermaChatbanned(),
+                            user.getChatbanExpiryTime()
                     )));
         } else {
             exchange.setStatusCode(400);
