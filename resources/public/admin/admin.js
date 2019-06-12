@@ -163,7 +163,6 @@
                     check: $("<div>").addClass("admin-check")
                 },
                 callback: function (data) {
-                    console.log('checkUser callback: %o', data);
                     var delta = (data.banExpiry - (new Date()).getTime()) / 1000,
                         chatbanDelta = (data.chatbanExpiry - (new Date()).getTime()) / 1000,
                         secs = Math.floor(delta % 60),

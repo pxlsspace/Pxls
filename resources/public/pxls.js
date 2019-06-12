@@ -3101,7 +3101,6 @@ window.App = (function () {
                     socket.send({type: "ChatMessage", message: msg});
                 },
                 _process: packet => {
-                    console.log('parsing', packet);
                     let when = moment.unix(packet.date);
                     let badges = crel('span', {'class': 'badges'});
                     if (Array.isArray(packet.badges)) {

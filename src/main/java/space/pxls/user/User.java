@@ -236,7 +236,6 @@ public class User {
     }
 
     public void chatban(Chatban chatban, boolean doLog) {
-        System.out.printf("Initiating %s%n", chatban);
         switch (chatban.type) {
             case TEMP: {
                 this.isPermaChatbanned = false;
