@@ -19,19 +19,10 @@ import space.pxls.user.User;
 import space.pxls.util.AuthReader;
 import space.pxls.util.IPReader;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.BufferedReader;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import java.io.*;
+import java.net.URI;
+import java.net.URLEncoder;
 import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Calendar;
 import java.util.Deque;
 import java.util.Map;
@@ -386,7 +377,7 @@ public class WebHandler {
                 if (user == null) {
                     String signUpToken = App.getUserManager().generateUserCreationToken(login);
                     if (redirect) {
-                        redirect(exchange, "/auth_done.html?token=" + signUpToken + "&signup=true");
+                        redirect(exchange, String.format("/auth_done.html?token=%s&signup=true", encodedURIComponent(signUpToken)));
                     } else {
                         respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
                     }
@@ -397,7 +388,7 @@ public class WebHandler {
                     String loginToken = App.getUserManager().logIn(user, ip);
                     setAuthCookie(exchange, loginToken, 24);
                     if (redirect) {
-                        redirect(exchange, "/auth_done.html?token=" + loginToken + "&signup=false");
+                        redirect(exchange, String.format("/auth_done.html?token=%s&signup=false", encodedURIComponent(loginToken)));
                     } else {
                         respond(exchange, StatusCodes.OK, new AuthResponse(loginToken, false));
                     }
@@ -646,5 +637,22 @@ public class WebHandler {
         exchange.setStatusCode(StatusCodes.FOUND);
         exchange.getResponseHeaders().put(Headers.LOCATION, url);
         exchange.getResponseSender().send("");
+    }
+
+    private String encodedURIComponent(String toEncode) {
+        //https://stackoverflow.com/a/611117
+        String result = "";
+        try {
+            result = URLEncoder.encode(toEncode, "UTF-8")
+                    .replaceAll("\\+", "%20")
+                    .replaceAll("\\%21", "!")
+                    .replaceAll("\\%27", "'")
+                    .replaceAll("\\%28", "(")
+                    .replaceAll("\\%29", ")")
+                    .replaceAll("\\%7E", "~");
+        } catch (UnsupportedEncodingException e) {
+            result = toEncode;
+        }
+        return result;
     }
 }
