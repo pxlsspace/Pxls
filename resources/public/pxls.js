@@ -2414,9 +2414,17 @@ window.App = (function () {
                     txtAlertLocation: $("#txtAlertLocation"),
                     rangeAlertVolume: $("#rangeAlertVolume"),
                     lblAlertVolume: $("#lblAlertVolume"),
-                    btnForceAudioUpdate: $("#btnForceAudioUpdate")
+                    btnForceAudioUpdate: $("#btnForceAudioUpdate"),
+                    themeSelect: $("#themeSelect")
                 },
+                themes: [
+                    {
+                        name: "Dark",
+                        location: '/themes/dark.css'
+                    }
+                ],
                 init: function () {
+                    self._initThemes();
                     self._initStack();
                     self._initAudio();
                     var useMono = ls.get("monospace_lookup")
@@ -2517,6 +2525,39 @@ window.App = (function () {
                             }
                         })
                     }
+                },
+                _initThemes: function () {
+                    for (let i = 0; i < self.themes.length; i++) {
+                        self.themes[i].element = $('<link data-theme="' + i + '" rel="stylesheet" href="' + self.themes[i].location + '">');
+                        self.elements.themeSelect.append($("<option>", {
+                            value: i,
+                            text: self.themes[i].name
+                        }));
+                    }
+                    let currentTheme = ls.get('currentTheme');
+                    if (currentTheme == null || (currentTheme > self.themes.length || currentTheme < -1)) {
+                        // If currentTheme hasn't been set, or it's out of bounds, reset it to default (-1)
+                        ls.set('currentTheme', -1);
+                    } else {
+                        currentTheme = parseInt(currentTheme);
+                        if (currentTheme !== -1) {
+                            self.themes[currentTheme].element.appendTo(document.head);
+                            self.elements.themeSelect.val(currentTheme);
+                        }
+                    }
+                    self.elements.themeSelect.on("change", function() {
+                        let theme = parseInt(this.value);
+                        // If theme is -1, the user selected the default theme, so we should remove all other themes
+                        if (theme === -1) {
+                            console.log('Default theme - should reset!')
+                            // Default theme
+                            $('*[data-theme]').remove();
+                            ls.set('currentTheme', -1);
+                            return;
+                        }
+                        self.themes[theme].element.appendTo(document.head);
+                        ls.set('currentTheme', theme);
+                    })
                 },
                 _initStack: function () {
                     socket.on("pixels", function (data) {

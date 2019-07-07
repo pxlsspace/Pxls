@@ -1,0 +1,111 @@
+/* TODO: Add sections, like in style.css */
+
+html, body {
+    background-color: #222;
+}
+
+kbd {
+    border: 1px solid #333;
+    background-color: #444;
+    color: #fff;
+}
+
+.message {
+    background-color: #333;
+    color: #eee;
+}
+
+.message select, .message textarea, .message input {
+    border: 2px solid #333;
+    background-color: #222;
+    color: #eee;
+}
+
+.button {
+    background-color: #bbb;
+}
+
+.button:hover {
+    border: 1px solid #844;
+}
+
+#lookup {
+    border: 1px solid #222;
+    background-color: #333;
+}
+
+#lookup .content {
+    color: #eee;
+}
+
+#lookup .content input {
+    border: 1px solid #333;
+    background-color: #222;
+    color: #eee;
+}
+
+#lookup .report-button {
+    border: 1px solid #333;
+}
+
+.drawer button {
+    border: 2px solid #333;
+    background-color: #555;
+    color: #eee;
+}
+
+.drawer select {
+    border: 2px solid #333;
+    background-color: #222;
+    color: #eee;
+}
+
+.palette-overlay {
+    background-color: rgba(0, 0, 0, 0.9);
+    color: #eee;
+}
+
+#palette {
+    background-color: rgba(0, 0, 0, 0.2);
+}
+
+#undo {
+    background-image: linear-gradient(to top, #0003, #0000);
+    color: #fff;
+}
+
+input[type="text"] {
+    border: 1px solid #333;
+    background-color: #222;
+    color: #eee;
+}
+
+/* Admin */
+
+.admin input {
+    border: 1px solid #333;
+    background-color: #222;
+}
+
+.admin-check {
+    border: 1px solid #222 !important;
+    background-color: #333 !important;
+}
+
+.admin-check div:not(.button) {
+    color: #eee;
+}
+
+.admin-check input {
+    border: 1px solid #333;
+    background-color: #222;
+    color: #eee;
+}
+
+/* Mobile */
+
+@media (max-width: 768px) {
+    .drawer-content > div:not(.close) {
+        border: 1px solid #444;
+    }
+}
