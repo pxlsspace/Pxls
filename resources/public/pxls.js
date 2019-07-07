@@ -1263,6 +1263,10 @@ window.App = (function () {
                     self._clear();
                 },
                 _clear: function () {
+                    // If the user hasn't opened the heatmap yet, we can't clear it!
+                    if (self.intView == null) {
+                        return;
+                    }
                     for (var i = 0; i < self.width * self.height; i++) {
                         self.intView[i] = 0;
                     }
@@ -1397,6 +1401,7 @@ window.App = (function () {
                         self.elements.virginmapLoadingBubble.hide();
                         socket.on("pixel", function (data) {
                             $.map(data.pixels, function (px) {
+                                self.ctx.fillStyle = "#000000";
                                 self.ctx.fillRect(px.x, px.y, 1, 1);
                             });
                         });
