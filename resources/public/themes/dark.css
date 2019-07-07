@@ -66,11 +66,11 @@ kbd {
 }
 
 #palette {
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: rgba(0, 0, 0, 0.5);
 }
 
 #undo {
-    background-image: linear-gradient(to top, #0003, #0000);
+    background-image: linear-gradient(to top, #0000007F, #000);
     color: #fff;
 }
 
