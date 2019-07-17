@@ -2,6 +2,8 @@
 
 Pxls is a collaborative image editor where you can place up to six pixels at a time, inspired by Reddit's [r/Place][place] experiment.
 
+**Note:** A Docker image is available at [aneurinprice/docker-pxls.space][docker] and on [Docker Hub][dockerhub].
+
 ## Prerequisites
 
 - [Maven][maven]
@@ -129,6 +131,8 @@ A full list of contributors is available [here](https://github.com/xSke/Pxls/gra
 
 
 [place]: https://reddit.com/r/place/
+[docker]: https://github.com/aneurinprice/docker-pxls.space
+[dockerhub]: https://hub.docker.com/r/m08y/docker-pxls.space
 [maven]: https://maven.apache.org/
 [java]: https://www.java.com/en/download/linux_manual.jsp
 [jdk8]: http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
