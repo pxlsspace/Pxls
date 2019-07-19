@@ -80,6 +80,29 @@ input[type="text"] {
     color: #eee;
 }
 
+/* Panels */
+
+header {
+    background-image: linear-gradient(to bottom, #838383, #404040);
+}
+
+aside.panel {
+    background-color: #6a6a6a;
+    color: #dadada;
+}
+
+/* Chat */
+
+li.chat-line.server-action {
+    color: #9f9f9f;
+}
+
+.chat-wrapper .chat-controls textarea {
+    border: 1px solid #333;
+    background-color: #222;
+    color: #fff;
+}
+
 /* Admin */
 
 .admin input {
