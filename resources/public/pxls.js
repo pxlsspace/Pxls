@@ -2719,6 +2719,7 @@ window.App = (function () {
             let self = {
                 seenHistory: false,
                 stickToBottom: true,
+                nonceLog: [],
                 chatban: {
                     banStart: 0,
                     banEnd: 0,
@@ -3101,6 +3102,16 @@ window.App = (function () {
                     socket.send({type: "ChatMessage", message: msg});
                 },
                 _process: packet => {
+                    if (packet.nonce) {
+                        if (self.nonceLog.includes(packet.nonce)) {
+                            return;
+                        } else {
+                            self.nonceLog.unshift(packet.nonce); //sit this nonce in front so we short circuit sooner
+                            if (self.nonceLog.length > 50) {
+                                self.nonceLog.pop(); //ensure we pop off back instead of shift off front
+                            }
+                        }
+                    }
                     let when = moment.unix(packet.date);
                     let badges = crel('span', {'class': 'badges'});
                     if (Array.isArray(packet.badges)) {
