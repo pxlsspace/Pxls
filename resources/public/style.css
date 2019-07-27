@@ -1109,6 +1109,10 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     position: relative;
 }
 
+.chat-wrapper .chat-controls {
+    flex-basis: 3rem;
+}
+
 .chat-wrapper .chat-hints {
     padding: .5rem;
     font-family: monospace;
