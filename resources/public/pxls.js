@@ -3057,6 +3057,14 @@ window.App = (function () {
                             if (lastN) {
                                 ls.set("chat-last_seen_nonce", lastN.dataset.nonce);
                             }
+
+                            if (user.isLoggedIn()) {
+                                self.elements.rate_limit_overlay.hide();
+                                self.elements.rate_limit_counter.text('');
+                            } else {
+                                self.elements.rate_limit_overlay.show();
+                                self.elements.rate_limit_counter.text('You must be logged in to chat.');
+                            }
                         }
                     });
 
