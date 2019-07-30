@@ -129,6 +129,10 @@ Commands are entered directly into the running instance (stdin):
 
 A full list of contributors is available [here](https://github.com/xSke/Pxls/graphs/contributors).
 
+## Licenses
+- This project includes icons from Font Awesome Free 5.9.0 by fontawesome - https://fontawesome.com
+    - License: https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
+
 
 [place]: https://reddit.com/r/place/
 [docker]: https://github.com/aneurinprice/docker-pxls.space

@@ -4,15 +4,18 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.skife.jdbi.v2.DBI;
 import org.skife.jdbi.v2.Handle;
-import org.skife.jdbi.v2.sqlobject.mixins.GetHandle;
 import org.skife.jdbi.v2.tweak.HandleCallback;
 import space.pxls.App;
+import space.pxls.server.Badge;
+import space.pxls.server.ChatMessage;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 
 import java.io.Closeable;
+import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -42,7 +45,6 @@ public class Database implements Closeable {
         config.setMaximumPoolSize(200); // this is plenty, the websocket uses 32
 
         dbi = new DBI(new HikariDataSource(config));
-        
 
         getHandle().createPixelsTable();
         getHandle().createUsersTable();
@@ -53,6 +55,8 @@ public class Database implements Closeable {
         getHandle().createStatsTable();
         getHandle().createAdminNotesTable();
         getHandle().createBanlogTable();
+        getHandle().createChatMessagesTable();
+        getHandle().createChatReportsTable();
     }
 
     private DAO getHandle() {
@@ -176,7 +180,7 @@ public class Database implements Closeable {
         for (Map<String, Object> entry : output) {
             int fromId = toIntExact((long) entry.get("secondary_id"));
             DBPixelPlacement fromPixel = getHandle().getPixel(fromId); // get the original pixel, the one that we previously rolled back
-            
+
             boolean can_undo = getHandle().getCanUndo(fromPixel.x, fromPixel.y, fromPixel.id);
             if (can_undo) { // this basically checks if there are pixels that are more recent
                 pixels.add(fromPixel); // add and later return
@@ -356,6 +360,201 @@ public class Database implements Closeable {
         ban_expiry_ms /= 1000L;
         getHandle().insertBanlog(banned_at_ms, banner_uid, banned_uid, ban_expiry_ms, ban_action, ban_reason);
     }
+
+    /* CHAT */
+
+    /**
+     * @param author The {@link User} who sent the chat message
+     * @param sent_at The epoch timestamp of when the message was sent
+     * @param message The content of the message
+     * @author GlowingSocc
+     */
+    public void insertChatMessage(User author, long sent_at, String message) {
+        insertChatMessage(author == null ? -1 : author.getId(), sent_at, message);
+    }
+
+    /**
+     * @param author_uid The ID of the user who sent the chat message
+     * @param sent_at_ms The epoch MS timestamp of when the message was sent
+     * @param message The content of the message
+     * @return The nonce of the message
+     * @author GlowingSocc
+     */
+    public String insertChatMessage(int author_uid, long sent_at_ms, String message) {
+//        String nonce = MD5.compute(String.valueOf(author_uid) + sent_at_ms + Math.random() + message);
+        String nonce = java.util.UUID.randomUUID().toString();
+        getHandle().insertChatMessage(author_uid, sent_at_ms / 1000L, message, nonce);
+        return nonce;
+    }
+
+    /**
+     * Fetches the {@link DBChatMessage} associated with the given <pre>nonce</pre>
+     * @param nonce The nonce of the {@link DBChatMessage} to fetch.
+     * @return The {@link DBChatMessage}, or <pre>null</pre> if it doesn't exist.
+     * @author GlowingSocc
+     */
+    public DBChatMessage getChatMessageByNonce(String nonce) {
+        return getHandle().getChatMessageByNonce(nonce);
+    }
+
+    /**
+     * Fetches <em>all</em> chat messages for the specified author, sorted by date sent descending.
+     * @param author_uid The user ID of the author.
+     * @return An array of {@link DBChatMessage}s
+     * @author GlowingSocc
+     */
+    public DBChatMessage[] getChatMessagesForAuthor(int author_uid) {
+        return getHandle().getChatMessagesForAuthor(author_uid);
+    }
+
+    /**
+     * Retrieves the last <span>x</span> chat messages.<br />
+     * @param x The amount of chat messages to retrieve.
+     * @param includePurged Whether or not to include purged messages.
+     * @return An array of {@link DBChatMessage}s. Array length is bound to ResultSet size, not the `<pre>x</pre>` param.
+     * @author GlowingSocc
+     */
+    public DBChatMessage[] getLastXMessages(int x, boolean includePurged) {
+        return dbi
+                .withHandle(handle -> handle.createQuery("SELECT * FROM chat_messages WHERE " + (includePurged ? "1" : "purged=0") + " ORDER BY sent ASC LIMIT :lim").bind("lim", x).map(new DBChatMessage.Mapper()).list())
+                .toArray(new DBChatMessage[0]);
+    }
+
+    /**
+     * Retrieves the last <span>x</span> chat messages and parses them for easier frontend handling.<br />
+     * @param x The amount of chat messages to retrieve.
+     * @param includePurged Whether or not to include purged messages.
+     * @return An array of {@link DBChatMessage}s. Array length is bound to ResultSet size, not the `<pre>x</pre>` param.
+     * @author GlowingSocc
+     */
+    public List<ChatMessage> getlastXMessagesForSocket(int x, boolean includePurged) {
+        DBChatMessage[] fromDB = getLastXMessages(x, includePurged);
+        List<ChatMessage> toReturn = new ArrayList<>();
+        for (DBChatMessage dbChatMessage : fromDB) {
+            List<Badge> badges = new ArrayList<>();
+            String author = "CONSOLE";
+            String parsedMessage = dbChatMessage.content; //TODO https://github.com/atlassian/commonmark-java
+            if (dbChatMessage.author_uid > 0) {
+                author = "$Unknown";
+                User temp = App.getUserManager().getByID(dbChatMessage.author_uid);
+                if (temp != null) {
+                    author = temp.getName();
+                    badges = temp.getChatBadges();
+                }
+            }
+            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, dbChatMessage.sent, dbChatMessage.content, badges));
+        }
+        return toReturn;
+    }
+
+    /**
+     * Updates a user's perma chatban state/ Does not update the expiry.
+     * @param toUpdate The {@link User} to update
+     * @param isPermaChatbanned Whether or not the user should be permanently chatbanned
+     * @see #updateUserChatbanExpiry(User, long)
+     * @author GlowingSocc
+     */
+    public void updateUserChatbanPerma(User toUpdate, boolean isPermaChatbanned) {
+        if (toUpdate == null) throw new IllegalArgumentException("Cannot update a non-existant user's chatban");
+        updateUserChatbanPerma(toUpdate.getId(), isPermaChatbanned);
+    }
+
+    /**
+     * Updates a user's perma chatban state. Does not update the expiry.
+     * @param toUpdateUID The {@link User}'s ID to update.
+     * @param isPermaChatbanned Whether or not the user should be permanently chatbanned
+     * @see #updateUserChatbanExpiry(int, long)
+     * @author GlowingSocc
+     */
+    public void updateUserChatbanPerma(int toUpdateUID, boolean isPermaChatbanned) {
+        getHandle().updateUserChatbanPerma(isPermaChatbanned ? 1 : 0, toUpdateUID);
+    }
+
+    /**
+     * Updates the user's chatban expiry. Does not update the 'permaban' state.
+     * @param toUpdate The {@link User} to update
+     * @param chatBanExpiry The timestamp in milliseconds of when the chatban expires.
+     * @see #updateUserChatbanExpiry(User, long)
+     * @author GlowingSocc
+     */
+    public void updateUserChatbanExpiry(User toUpdate, long chatBanExpiry) {
+        if (toUpdate == null) throw new IllegalArgumentException("Cannot update a non-existant user's chatban");
+        updateUserChatbanExpiry(toUpdate.getId(), chatBanExpiry);
+    }
+
+    /**
+     * Updates the user's chatban expiry. Does not update the 'permaban' state.
+     * @param toUpdateUID The {@link User}'s ID to update
+     * @param chatBanExpiry The timestamp in milliseconds of when the chatban expires.
+     * @see #updateUserChatbanExpiry(int, long)
+     * @author GlowingSocc
+     */
+    public void updateUserChatbanExpiry(int toUpdateUID, long chatBanExpiry) {
+        getHandle().updateUserChatbanExpiry(new Timestamp(chatBanExpiry), toUpdateUID);
+    }
+
+    public void handlePurge(User target, User initiator, int amount, String reason, boolean broadcast) {
+        String partLimit = amount == Integer.MAX_VALUE ? "" : " LIMIT 0, " + amount + " ";
+        dbi.withHandle(handle -> handle.createStatement("UPDATE chat_messages SET purged=1,purged_by=:initiator WHERE nonce IN (  SELECT nonce FROM (  SELECT nonce FROM chat_messages WHERE author = :author ORDER BY sent DESC" + partLimit + " ) temp  );")
+                .bind("initiator", initiator != null ? initiator.getId() : 0)
+                .bind("author", target.getId())
+                .execute());
+        adminLogServer(String.format("<%s, %s> purged %s messages from <%s, %s>%s.", (initiator == null) ? "CONSOLE" : initiator.getName(), (initiator == null) ? 0 : initiator.getId(), amount, target.getName(), target.getId(), ((reason != null) && (reason.length() > 0)) ? (" because: " + reason) : ""));
+        if (broadcast) {
+            App.getServer().getPacketHandler().sendChatPurge(target, initiator, amount, reason);
+        }
+    }
+
+    /**
+     * Adds a chat report
+     * @param messageNonce The {@link ChatMessage}'s nonce
+     * @param target The {@link User} who is being reported
+     * @param initiator The {@link User} who is doing the reporting
+     * @param reportMessage The body of the report from the user
+     */
+    public void addChatReport(String messageNonce, User target, User initiator, String reportMessage) {
+        addChatReport(messageNonce, target.getId(), initiator == null ? 0 : initiator.getId(), reportMessage);
+    }
+
+    /**
+     * Adds a chat report
+     * @param messageNonce The {@link ChatMessage}'s nonce
+     * @param target The {@link User}'s ID who is being reported
+     * @param initiator The {@link User}'s ID who is doing the reporting
+     * @param reportMessage The body of the report from the user
+     */
+    public void addChatReport(String messageNonce, int target, int initiator, String reportMessage) {
+        getHandle().addChatReport(messageNonce, target, initiator, reportMessage);
+    }
+
+    /**
+     * Purges the specified chat message
+     * @param messageNonce The {@link ChatMessage}'s nonce to purge
+     * @param purger_uid The {@link User}'s ID who purged the chat message
+     */
+    public void purgeChatMessageByNonce(String messageNonce, int purger_uid) {
+        getHandle().purgeChatMessageByNonce(messageNonce, purger_uid);
+    }
+
+    /**
+     * Gets the chatban reason for the specified {@link User}'s ID.
+     * @param id The {@link User}'s ID to target
+     * @return The chatban reason.
+     */
+    public String getChatbanReasonForUser(int id) {
+        return getHandle().getChatbanReasonForUser(id);
+    }
+
+    /**
+     * Updates the chatban for the {@link User}'s ID.
+     * @param id The {@link User}'s ID to target
+     * @param reason The chatban reason.
+     */
+    public void updateUserChatbanReason(int id, String reason) {
+        getHandle().updateUserChatbanReason(id, reason);
+    }
+
+    /* END CHAT */
 
     //UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0), pixel_count_alltime = IF(pixel_count_alltime, pixel_count_alltime-1, 0) WHERE id = :who
     private void maybeIncreasePixelCount(int whoID) {

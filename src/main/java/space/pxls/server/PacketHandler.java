@@ -6,22 +6,21 @@ import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.async.Callback;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.typesafe.config.Config;
-import com.typesafe.config.ConfigException;
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
+import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBPixelPlacement;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.util.PxlsTimer;
-import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
+import space.pxls.util.RateLimitFactory;
 
-
-import java.time.Duration;
+import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
-import java.lang.Math;
-import java.time.Instant;
+
+import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 public class PacketHandler {
     private UndertowServer server;
@@ -61,7 +60,11 @@ public class PacketHandler {
                     user.isBanned() ? user.getBanExpiryTime() : 0,
                     user.isBanned() ? user.getBanReason() : "",
                     user.getLogin().split(":")[0],
-                    user.isOverridingCooldown()
+                    user.isOverridingCooldown(),
+                    user.isChatbanned(),
+                    App.getDatabase().getChatbanReasonForUser(user.getId()),
+                    user.isPermaChatbanned(),
+                    user.getChatbanExpiryTime()
             ));
             sendAvailablePixels(channel, user, "auth");
         }
@@ -73,7 +76,7 @@ public class PacketHandler {
             sendCooldownData(channel, user);
             user.flagForCaptcha();
             server.addAuthedUser(user);
-            
+
             user.setInitialAuthTime(System.currentTimeMillis());
             user.tickStack(false); // pop the whole pixel stack
             sendAvailablePixels(channel, user, "connect");
@@ -101,7 +104,10 @@ public class PacketHandler {
             if (obj instanceof ClientCaptcha) handleCaptcha(channel, user, ((ClientCaptcha) obj));
             if (obj instanceof ClientShadowBanMe) handleShadowBanMe(channel, user, ((ClientShadowBanMe) obj));
             if (obj instanceof ClientBanMe) handleBanMe(channel, user, ((ClientBanMe) obj));
-            
+            if (obj instanceof ClientChatHistory) handleChatHistory(channel, user, ((ClientChatHistory) obj));
+            if (obj instanceof ClientChatbanState) handleChatbanState(channel, user, ((ClientChatbanState) obj));
+            if (obj instanceof ClientChatMessage) handleChatMessage(channel, user, ((ClientChatMessage) obj));
+
             if (user.getRole().greaterEqual(Role.MODERATOR)) {
                 if (obj instanceof ClientAdminCooldownOverride)
                     handleCooldownOverride(channel, user, ((ClientAdminCooldownOverride) obj));
@@ -313,6 +319,52 @@ public class PacketHandler {
 
                     }
                 });
+    }
+
+    public void handleChatbanState(WebSocketChannel channel, User user, ClientChatbanState clientChatbanState) {
+        server.send(channel, new ServerChatbanState(user.isPermaChatbanned(), user.getChatbanExpiryTime()));
+    }
+
+    public void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
+        server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, false)));
+    }
+
+    public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
+        Long nowMS = System.currentTimeMillis();
+        String message = clientChatMessage.getMessage();
+        if (message.contains("\r")) message = message.replaceAll("\r", "");
+        if (message.endsWith("\n")) message = message.replaceFirst("\n$", "");
+        if (message.length() > 2048) message = message.substring(0, 2048);
+        if (user == null) { //console
+            String nonce = App.getDatabase().insertChatMessage(0, nowMS, message);
+            server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS / 1000L, message, null)));
+        } else {
+            if (user.isChatbanned()) return;
+            if (message.trim().length() == 0) return;
+            int remaining = RateLimitFactory.getTimeRemaining(DBChatMessage.class, String.valueOf(user.getId()));
+            if (remaining > 0) {
+                server.send(user, new ServerChatCooldown(remaining, message));
+            } else {
+                String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, message);
+                server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, message, user.getChatBadges())));
+            }
+        }
+    }
+
+    public void sendChatban(User user, ServerChatBan chatban) {
+        server.send(user, chatban);
+    }
+
+    public void sendChatPurge(User target, User initiator, int amount, String reason) {
+        server.broadcast(new ServerChatPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), amount, reason));
+    }
+
+    public void sendSpecificPurge(User target, User initiator, String nonce, String reason) {
+        sendSpecificPurge(target, initiator, Collections.singletonList(nonce), reason);
+    }
+
+    public void sendSpecificPurge(User target, User initiator, List<String> nonces, String reason) {
+        server.broadcast(new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), nonces, reason));
     }
 
     private void updateUserData() {

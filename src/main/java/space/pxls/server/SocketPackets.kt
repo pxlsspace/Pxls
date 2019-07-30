@@ -39,7 +39,11 @@ data class ServerUserInfo(
         val banExpiry: Long,
         val ban_reason: String,
         val method: String,
-        val cdOverride: Boolean) {
+        val cdOverride: Boolean,
+        val chatBanned: Boolean,
+        val chatbanReason: String? = "",
+        val chatbanIsPerma: Boolean,
+        val chatbanExpiry: Long) {
     val type = "userinfo"
 }
 

@@ -2,11 +2,14 @@ package space.pxls.user;
 
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
+import space.pxls.server.Badge;
 import space.pxls.server.ClientUndo;
+import space.pxls.server.ServerChatBan;
 import space.pxls.util.RateLimitFactory;
 
-import java.time.Instant;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -23,6 +26,7 @@ public class User {
     private boolean justShowedCaptcha;
     private boolean lastPlaceWasStack = false;
     private boolean placingLock = false;
+    private boolean isPermaChatbanned = false;
     private long cooldownExpiry;
     private long lastPixelTime = 0;
     private long lastUndoTime = 0;
@@ -30,10 +34,11 @@ public class User {
 
     // 0 = not banned
     private long banExpiryTime;
+    private long chatbanExpiryTime;
 
     private Set<WebSocketChannel> connections = new HashSet<>();
 
-    public User(int id, int stacked, String name, String login, long cooldownExpiry, Role role, long banExpiryTime) {
+    public User(int id, int stacked, String name, String login, long cooldownExpiry, Role role, long banExpiryTime, boolean isPermaChatbanned, long chatbanExpiryTime) {
         this.id = id;
         this.stacked = stacked;
         this.name = name;
@@ -41,6 +46,8 @@ public class User {
         this.cooldownExpiry = cooldownExpiry;
         this.role = role;
         this.banExpiryTime = banExpiryTime;
+        this.isPermaChatbanned = isPermaChatbanned;
+        this.chatbanExpiryTime = chatbanExpiryTime;
     }
 
     public int getId() {
@@ -170,6 +177,37 @@ public class User {
         return name;
     }
 
+    public List<Badge> getChatBadges() {
+        List<Badge> toReturn = new ArrayList<>();
+
+        if (getRole() != null && getRole().greaterEqual(Role.TRIALMOD)) {
+            if (getRole().equals(Role.DEVELOPER)) {
+                toReturn.add(new Badge("Developer", "Developer", "icon", "fas fa-wrench"));
+            } else if (getRole().greaterEqual(Role.TRIALMOD)) {
+                toReturn.add(new Badge(getRole().name(), getRole().name(), "icon", "fas fa-shield-alt"));
+            }
+        }
+
+        int _count = getPixelsAllTime();
+        if (_count >= 600000) {
+            toReturn.add(new Badge("600k+", "600k+ Pixels Placed", "text", null));
+        } else if (_count >= 500000) {
+            toReturn.add(new Badge("500k+", "500k+ Pixels Placed", "text", null));
+        } else if (_count >= 400000) {
+            toReturn.add(new Badge("400k+", "400k+ Pixels Placed", "text", null));
+        } else if (_count >= 300000) {
+            toReturn.add(new Badge("300k+", "300k+ Pixels Placed", "text", null));
+        } else if (_count >= 200000) {
+            toReturn.add(new Badge("200k+", "200k+ Pixels Placed", "text", null));
+        } else if (_count >= 100000) {
+            toReturn.add(new Badge("100k+", "100k+ Pixels Placed", "text", null));
+        } else if (_count >= 50000) {
+            toReturn.add(new Badge("50k+", "50k+ Pixels Placed", "text", null));
+        }
+
+        return toReturn;
+    }
+
     public boolean isShadowBanned() {
         return this.role == Role.SHADOWBANNED;
     }
@@ -191,6 +229,53 @@ public class User {
     }
     private void setBanExpiryTime(long timeFromNowSeconds) {
         setBanExpiryTime(timeFromNowSeconds, false);
+    }
+
+    public boolean isChatbanned() {
+        return this.isPermaChatbanned || this.chatbanExpiryTime > System.currentTimeMillis();
+    }
+
+    public void chatban(Chatban chatban, boolean doLog) {
+        switch (chatban.type) {
+            case TEMP: {
+                this.isPermaChatbanned = false;
+                this.chatbanExpiryTime = chatban.expiryTime;
+                App.getServer().getPacketHandler().sendChatban(this, new ServerChatBan(false, chatban.expiryTime));
+                App.getDatabase().updateUserChatbanReason(getId(), chatban.reason);
+                break;
+            }
+            case PERMA: {
+                this.isPermaChatbanned = true;
+                App.getServer().getPacketHandler().sendChatban(this, new ServerChatBan(true, null));
+                App.getDatabase().updateUserChatbanReason(getId(), chatban.reason);
+                break;
+            }
+            case UNBAN: {
+                this.isPermaChatbanned = false;
+                this.chatbanExpiryTime = chatban.expiryTime;
+                App.getServer().getPacketHandler().sendChatban(this, new ServerChatBan(false, 0L));
+                break;
+            }
+        }
+
+        App.getDatabase().updateUserChatbanPerma(getId(), isPermaChatbanned);
+        App.getDatabase().updateUserChatbanExpiry(getId(), chatbanExpiryTime);
+
+        if (chatban.purge && chatban.purgeAmount > 0) {
+            App.getDatabase().handlePurge(chatban.target, chatban.initiator, chatban.purgeAmount, "$automated chatban purge$", true);
+        }
+
+        if (doLog) {
+            if (chatban.initiator == null) {
+                App.getDatabase().adminLogServer(chatban.toString());
+            } else {
+                App.getDatabase().adminLog(chatban.toString(), chatban.initiator.getId());
+            }
+        }
+    }
+
+    public void chatban(Chatban chatban) {
+        chatban(chatban, true);
     }
 
     public Set<WebSocketChannel> getConnections() {
@@ -366,5 +451,13 @@ public class User {
      */
     public void releasePlacingLock() {
         placingLock = false;
+    }
+
+    public boolean isPermaChatbanned() {
+        return isPermaChatbanned;
+    }
+
+    public long getChatbanExpiryTime() {
+        return chatbanExpiryTime;
     }
 }

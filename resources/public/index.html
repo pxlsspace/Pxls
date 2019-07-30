@@ -7,14 +7,33 @@
     <meta name="description" content="Place pixels with people to create art">
     <meta name="google-play-app" content="app-id=space.pxls.android">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="fontawesome-all.min.css">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/interact.js/1.2.8/interact.min.js"></script>
+    <script src="moment.min.js"></script>
+    <script src="crel.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
 
     {{head}}
 </head>
 <body class="show-placeable-bubble">
+<header class="transparent" style="margin-top: 5px;">
+    <div class="left">
+        <div class="panel-trigger" data-panel="info">
+            <i class="fas fa-info-circle"></i>
+        </div>
+    </div>
+    <div class="mid"></div>
+    <div class="right">
+        <div class="panel-trigger" data-panel="settings">
+            <i class="fas fa-cog"></i>
+        </div>
+        <div class="panel-trigger" data-panel="chat">
+            <i class="fas fa-comment-alt" id="message-icon"></i>
+        </div>
+    </div>
+</header>
 
 <div id="reconnecting">Lost connection to server, reconnecting...</div>
 
@@ -29,20 +48,137 @@
     </div>
 </div>
 
-<div id="drawers">
-    <div id="info" class="drawer">
-        <div class="drawer-content">
-            <div class="close">Close</div>
-            {{info}}
+<div id="ui">
+    <div class="ui-bar">
+        <div id="undo"><span>Undo</span></div>
+        <div id="login-overlay" class="palette-overlay">
+            You are not signed in. <a href="#">Sign in with...</a>
         </div>
-        <div class="open">info</div>
+        <div id="user-message" class="palette-overlay"></div>
+        <div id="palette">
+            <div id="cd-timer-overlay" class="palette-overlay"></div>
+        </div>
     </div>
 
-    <div id="template-control" class="drawer">
-        <div class="drawer-content">
-            <div class="close">Close</div>
-            <div>
-                <h1>General settings</h1>
+    <div class="left">
+        <div id="coords" class="bubble"><img src="lock.png" class="icon-lock" style="display: none;"> <span class="coords-text"></span></div>
+        <div id="heatmapLoadingBubble" class="bubble orange-bubble fat-bubble">Loading heatmap...</div>
+        <div id="virginmapLoadingBubble" class="bubble orange-bubble fat-bubble">Loading virginmap...</div>
+        <div id="cd-timer-bubble" class="bubble"></div>
+        <div id="placeableInfoBubble" class="bubble">Pixels available: <span id="placeableCount-bubble">0/0</span></div>
+    </div>
+    <div class="right">
+        <div id="userinfo" class="bubble"><span class="name"></span> <a href="/logout" class="logout">logout</a></div>
+        <div id="online" class="bubble"></div>
+    </div>
+</div>
+
+
+<div id="lookup"></div>
+<div id="loading"><span>Loading...</span></div>
+<div id="cursor">
+    <div id="placeableCount-cursor">0/0</div>
+</div>
+<div id="reticule"></div>
+<div id="prompt" class="message"></div>
+<div id="signup" class="message">
+    <h1>Sign up</h1>
+    <h4>Pick a username</h4>
+
+    <input class="" type="text" maxlength="32">
+    <div class="error" id="error"></div>
+    <span class="button" id="signup-button">Sign up</span>
+</div>
+<div id="alert" class="message" ><span class="text"></span><div class="custWrapper"></div> <span class="button default-control">OK</span></div>
+
+
+<div class="g-recaptcha"
+     data-callback="recaptchaCallback"
+     data-size="invisible"></div>
+
+<aside class="panel left" data-panel="info">
+    <header class="panel-header darker">
+        <div class="left"></div>
+        <div class="mid">
+            <h2><i class="fas fa-info-circle fa-is-left fa-1_5x"></i>Info</h2>
+        </div>
+        <div class="right">
+            <i class="fas fa-times panel-closer text-red"></i>
+        </div>
+    </header>
+    <div class="panel-body">
+        {{info}}
+    </div>
+</aside>
+
+<aside id="chat" data-panel="chat" class="panel right half-width">
+    <header class="panel-header">
+        <div class="left"></div>
+        <h2><i class="fas fa-comment-alt fa-is-left fa-1_5x"></i>Chat</h2>
+        <div class="right"><i class="fas fa-times text-red panel-closer"></i></div>
+    </header>
+    <div class="panel-body">
+        <div class="chat-wrapper">
+            <ul id="chat-body" class="chat-body"></ul>
+            <div class="chat-hints">
+                <span id="chat-hint"></span>
+            </div>
+            <div class="chat-controls">
+                <div class="chat-ratelimit-overlay"><span id="chat-ratelimit">3s</span></div>
+                <label><textarea name="txtChatContent" id="txtChatContent" placeholder="Press ENTER to send..."></textarea></label>
+            </div>
+        </div>
+    </div>
+</aside>
+
+<aside id="settings" data-panel="settings" class="panel right">
+    <header class="panel-header">
+        <div class="left"></div>
+        <div class="mid">
+            <h2><i class="fas fa-cogs fa-is-left fa-1_5x"></i>Settings</h2>
+        </div>
+        <div class="right">
+            <i class="fas fa-times panel-closer text-red"></i>
+        </div>
+    </header>
+    <div class="panel-body">
+        <article class="no-p-margin">
+            <header class="slim darker">
+                <h2>Keybinds</h2>
+            </header>
+            <div class="padme-daddy">
+                <h3>General</h3>
+                <div class="indent-1">
+                    <p>Mouse/arrows/wasd to pan</p>
+                    <p>Scroll/pinch to zoom</p>
+                    <p><kbd>+</kbd>/<kbd>-</kbd> or <kbd>Q</kbd>/<kbd>E</kbd> to zoom</p>
+                    <p><kbd>Shift</kbd> + Click/Hold touch to lookup pixel</p>
+                    <p><kbd>G</kbd> to toggle grid</p>
+                    <p><kbd>I</kbd> to toggle info</p>
+                    <p><kbd>T</kbd> to open/close settings</p>
+                    <p><kbd>L</kbd> to toggle locking panning of the canvas</p>
+                    <p><kbd>P</kbd> to take a snapshot</p>
+                    <p><kbd>H</kbd> to toggle heatmap</p>
+                    <p><kbd>X</kbd> to toggle virginmap</p>
+                    <p><kbd>O</kbd> to clear heatmap and virginmap (if either is enabled)</p>
+                    <p><kbd>J</kbd>/<kbd>K</kbd> to cycle through palette colors</p>
+                    <p><kbd>C</kbd> to copy link of moused-over coordinates</p>
+                    <p><kbd>ESC</kbd> to deselect current pixel</p>
+                    <p><kbd>R</kbd> to center the board on the current template</p>
+                </div>
+                <h3>Template</h3>
+                <div class="indent-1">
+                    <p><kbd>Page Up</kbd> to increase opacity</p>
+                    <p><kbd>Page Down</kbd> to decrease opacity</p>
+                    <p><kbd>V</kbd> to toggle visibility</p>
+                </div>
+            </div>
+        </article>
+        <article>
+            <header class="slim darker">
+                <h2>General Settings</h2>
+            </header>
+            <div class="padme-daddy">
                 <div class="settingToggles">
                     <label>Theme:
                         <select id="themeSelect">
@@ -73,43 +209,23 @@
                     </label>
                 </div>
             </div>
-            <div>
-                <h1>Keyboard controls</h1>
-                <h3>General</h3>
-                <div class="indent-1">
-                    <p>Mouse/arrows/wasd to pan</p>
-                    <p>Scroll/pinch to zoom</p>
-                    <p><kbd>+</kbd>/<kbd>-</kbd> or <kbd>Q</kbd>/<kbd>E</kbd> to zoom</p>
-                    <p><kbd>Shift</kbd> + Click/Hold touch to lookup pixel</p>
-                    <p><kbd>G</kbd> to toggle grid</p>
-                    <p><kbd>I</kbd> to toggle info</p>
-                    <p><kbd>T</kbd> to open/close settings</p>
-                    <p><kbd>L</kbd> to toggle locking panning of the canvas</p>
-                    <p><kbd>P</kbd> to take a snapshot</p>
-                    <p><kbd>H</kbd> to toggle heatmap</p>
-                    <p><kbd>X</kbd> to toggle virginmap</p>
-                    <p><kbd>O</kbd> to clear heatmap and virginmap (if either is enabled)</p>
-                    <p><kbd>J</kbd>/<kbd>K</kbd> to cycle through palette colors</p>
-                    <p><kbd>C</kbd> to copy link of moused-over coordinates</p>
-                    <p><kbd>ESC</kbd> to deselect current pixel</p>
-					<p><kbd>R</kbd> to center the board on the current template</p>
-                </div>
-                <h3>Template</h3>
-                <div class="indent-1">
-                    <p><kbd>Page Up</kbd> to increase opacity</p>
-                    <p><kbd>Page Down</kbd> to decrease opacity</p>
-                    <p><kbd>V</kbd> to toggle visibility</p>
-                </div>
-            </div>
-            <div>
-                <h1>Template control</h1>
+        </article>
+        <article>
+            <header class="slim darker">
+                <h2>Template</h2>
+            </header>
+            <div class="padme-daddy">
                 <p>Hold down <kbd>Ctrl</kbd> to drag the template around</p>
                 <p><label>Use template: <input type="checkbox" id="template-use"></label></p>
                 <p><label>URL: <input type="text" id="template-url"></label></p>
                 <p><label>Opacity: <input type="range" min="0" max="1" step="0.01" id="template-opacity"></label></p>
             </div>
-            <div>
-                <h1>Pixel Ready alert settings</h1>
+        </article>
+        <article>
+            <header class="slim darker">
+                <h2>Pixel Ready Alert Settings</h2>
+            </header>
+            <div class="padme-daddy">
                 <p class="alertLocationWrapper"><label for="txtAlertLocation">Alert URL:</label><input type="text" placeholder="notify.wav" id="txtAlertLocation"></p>
                 <div class="ButtonBar">
                     <button id="btnForceAudioUpdate" class="button">Update</button>
@@ -121,66 +237,11 @@
                     <input type="range" id="rangeAlertVolume" min=0 max=1 step=".01" value=1>
                     <span id="lblAlertVolume"></span>
                 </div>
-				<label style="display: block;">Delay (Seconds): <input width="30px" value="0" id="alertDelay"></label>
+                <label style="display: block;">Delay (Seconds): <input type="text" width="30px" value="0" id="alertDelay"></label>
             </div>
-        </div>
-        <div class="open">settings</div>
+        </article>
     </div>
-
-    <div id="drawers-opener">
-        <div id="drawers-opener-content">
-            
-        </div>
-        <div class="open"></div>
-    </div>
-</div>
-
-<div id="ui">
-    <div class="ui-bar">
-        <div id="undo"><span>Undo</span></div>
-        <div id="login-overlay" class="palette-overlay">
-            You are not signed in. <a href="#">Sign in with...</a>
-        </div>
-        <div id="user-message" class="palette-overlay"></div>
-        <div id="palette">
-            <div id="cd-timer-overlay" class="palette-overlay"></div>
-        </div>
-    </div>
-
-    <div class="left">
-        <div id="coords" class="bubble"><img src="lock.png" class="icon-lock" style="display: none;"> <span class="coords-text"></span></div>
-        <div id="heatmapLoadingBubble" class="bubble orange-bubble fat-bubble">Loading heatmap...</div>
-        <div id="virginmapLoadingBubble" class="bubble orange-bubble fat-bubble">Loading virginmap...</div>
-        <div id="cd-timer-bubble" class="bubble"></div>
-        <div id="placeableInfoBubble" class="bubble">Pixels available: <span id="placeableCount-bubble">0/0</span></div>
-    </div>
-    <div class="right">
-        <div id="userinfo" class="bubble"><span class="name"></span> <a href="/logout" class="logout">logout</a></div>
-        <div id="online" class="bubble"></div>
-    </div>
-</div>
-
-<div id="lookup"></div>
-<div id="loading"><span>Loading...</span></div>
-<div id="cursor">
-    <div id="placeableCount-cursor">0/0</div>
-</div>
-<div id="reticule"></div>
-<div id="prompt" class="message"></div>
-<div id="signup" class="message">
-    <h1>Sign up</h1>
-    <h4>Pick a username</h4>
-
-    <input class="" type="text" maxlength="32">
-    <div class="error" id="error"></div>
-    <span class="button" id="signup-button">Sign up</span>
-</div>
-<div id="alert" class="message" ><span class="text"></span><div class="custWrapper"></div> <span class="button">OK</span></div>
-
-
-<div class="g-recaptcha"
-     data-callback="recaptchaCallback"
-     data-size="invisible"></div>
+</aside>
 
 <script src="pxls.js"></script>
 
