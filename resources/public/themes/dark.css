@@ -83,12 +83,12 @@ input[type="text"], textarea {
 /* Panels */
 
 header {
-    background-image: linear-gradient(to bottom, #838383, #404040);
+    background-image: linear-gradient(to bottom, #444, #333);
 }
 
 aside.panel {
-    background-color: #6a6a6a;
-    color: #dadada;
+    background-color: #333;
+    color: #eee;
 }
 
 /* Chat */

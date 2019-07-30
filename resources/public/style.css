@@ -824,7 +824,7 @@ header {
     line-height: 2.5rem;
     border-bottom: 1px solid #000;
     padding: 0 1rem;
-    background-image: linear-gradient(to bottom, #e6e6e6, #b3b3b3);
+    background-image: linear-gradient(to bottom, #ccc, #bbb);
     user-select: none;
     z-index: 18;
 }
@@ -963,7 +963,8 @@ aside.panel {
 
 .panel-trigger {
     color: #000;
-    text-shadow: 0 0 5px #fffb;
+    /* AAAAAAAAAAAAAAAAAAAAAAAAAAA */
+    text-shadow: 1px 1px 0 #AAA, -1px 1px 0 #AAA, 1px -1px 0 #AAA, -1px -1px 0 #AAA, 0px 1px 0 #AAA, 0px -1px 0 #AAA, -1px 0px 0 #AAA, 1px 0px 0 #AAA;
     display: inline-block;
     cursor: pointer;
 }
@@ -1124,7 +1125,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     width: 100%;
     height: 100%;
     margin: 0;
-    padding: 0;
+    padding: 5px;
     resize: none;
 }
 
