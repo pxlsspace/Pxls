@@ -366,24 +366,25 @@ public class Database implements Closeable {
     /**
      * @param author The {@link User} who sent the chat message
      * @param sent_at The epoch timestamp of when the message was sent
-     * @param message The content of the message
+     * @param message The raw content of the message
+     * @param filtered The filtered content of the message
      * @author GlowingSocc
      */
-    public void insertChatMessage(User author, long sent_at, String message) {
-        insertChatMessage(author == null ? -1 : author.getId(), sent_at, message);
+    public String insertChatMessage(User author, long sent_at, String message, String filtered) {
+        return insertChatMessage(author == null ? -1 : author.getId(), sent_at, message, filtered);
     }
 
     /**
      * @param author_uid The ID of the user who sent the chat message
      * @param sent_at_ms The epoch MS timestamp of when the message was sent
-     * @param message The content of the message
+     * @param content The raw content of the message
+     * @param filtered The filtered content of the message
      * @return The nonce of the message
      * @author GlowingSocc
      */
-    public String insertChatMessage(int author_uid, long sent_at_ms, String message) {
-//        String nonce = MD5.compute(String.valueOf(author_uid) + sent_at_ms + Math.random() + message);
+    public String insertChatMessage(int author_uid, long sent_at_ms, String content, String filtered) {
         String nonce = java.util.UUID.randomUUID().toString();
-        getHandle().insertChatMessage(author_uid, sent_at_ms / 1000L, message, nonce);
+        getHandle().insertChatMessage(author_uid, sent_at_ms / 1000L, content, filtered, nonce);
         return nonce;
     }
 
@@ -424,10 +425,11 @@ public class Database implements Closeable {
      * Retrieves the last <span>x</span> chat messages and parses them for easier frontend handling.<br />
      * @param x The amount of chat messages to retrieve.
      * @param includePurged Whether or not to include purged messages.
+     * @param ignoreFilter If true, filtered messages will return their original content.
      * @return An array of {@link DBChatMessage}s. Array length is bound to ResultSet size, not the `<pre>x</pre>` param.
      * @author GlowingSocc
      */
-    public List<ChatMessage> getlastXMessagesForSocket(int x, boolean includePurged) {
+    public List<ChatMessage> getlastXMessagesForSocket(int x, boolean includePurged, boolean ignoreFilter) {
         DBChatMessage[] fromDB = getLastXMessages(x, includePurged);
         List<ChatMessage> toReturn = new ArrayList<>();
         for (DBChatMessage dbChatMessage : fromDB) {
@@ -442,7 +444,7 @@ public class Database implements Closeable {
                     badges = temp.getChatBadges();
                 }
             }
-            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, dbChatMessage.sent, dbChatMessage.content, badges));
+            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, dbChatMessage.sent, App.getConfig().getBoolean("chat.filter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges));
         }
         return toReturn;
     }

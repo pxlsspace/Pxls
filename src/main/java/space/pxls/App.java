@@ -366,6 +366,9 @@ public class App {
                 } else {
                     System.out.println("ChatPurge USER [AMOUNT ]REASON");
                 }
+            } else if (token[0].equalsIgnoreCase("cf")) {
+                String z = line.substring(token[0].length() + 1);
+                System.out.printf("running chat filter against '%s'%nResult: %s%n", z, ChatFilter.getInstance().filter(z, true));
             }
         } catch (RuntimeException e) {
             e.printStackTrace();
@@ -386,7 +389,9 @@ public class App {
         mapBackupTimer = new PxlsTimer(config.getDuration("board.backupInterval", TimeUnit.SECONDS));
         stackMultiplier = App.getConfig().getInt("stacking.cooldownMultiplier");
         stackMaxStacked = App.getConfig().getInt("stacking.maxStacked");
-        
+
+        ChatFilter.getInstance().reload();
+
         try {
             Files.deleteIfExists(getStorageDir().resolve("index_cache.html"));
         } catch (IOException e) {

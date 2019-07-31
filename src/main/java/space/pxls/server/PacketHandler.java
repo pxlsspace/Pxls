@@ -12,9 +12,11 @@ import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBPixelPlacement;
 import space.pxls.user.Role;
 import space.pxls.user.User;
+import space.pxls.util.ChatFilter;
 import space.pxls.util.PxlsTimer;
 import space.pxls.util.RateLimitFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -326,7 +328,7 @@ public class PacketHandler {
     }
 
     public void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
-        server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, false)));
+        server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, false, false)));
     }
 
     public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
@@ -336,7 +338,7 @@ public class PacketHandler {
         if (message.endsWith("\n")) message = message.replaceFirst("\n$", "");
         if (message.length() > 2048) message = message.substring(0, 2048);
         if (user == null) { //console
-            String nonce = App.getDatabase().insertChatMessage(0, nowMS, message);
+            String nonce = App.getDatabase().insertChatMessage(0, nowMS, message, "");
             server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS / 1000L, message, null)));
         } else {
             if (user.isChatbanned()) return;
@@ -345,8 +347,14 @@ public class PacketHandler {
             if (remaining > 0) {
                 server.send(user, new ServerChatCooldown(remaining, message));
             } else {
-                String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, message);
-                server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, message, user.getChatBadges())));
+                if (App.getConfig().getBoolean("chat.filter.enabled")) {
+                    ChatFilter.FilterResult result = ChatFilter.getInstance().filter(message);
+                    String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, message, result.filterHit ? result.filtered : "");
+                    server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, result.filterHit ? result.filtered : result.original, user.getChatBadges())));
+                } else {
+                    String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, message, "");
+                    server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, message, user.getChatBadges())));
+                }
             }
         }
     }

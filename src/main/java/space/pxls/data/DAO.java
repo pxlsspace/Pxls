@@ -269,6 +269,7 @@ public interface DAO extends Closeable {
             "  `author` int," +
             "  `sent` int(11) NOT NULL," +
             "  `content` varchar(2048) character set utf8 NOT NULL," +
+            "  `filtered` varchar(2048) character set utf8 NOT NULL DEFAULT ''," +
             "  `purged` tinyint NOT NULL DEFAULT 0," +
             "  `purged_by` int" +
             " );")
@@ -288,8 +289,8 @@ public interface DAO extends Closeable {
     @SqlUpdate("INSERT INTO chat_reports (`chat_message`, `target`, `initiator`, `report_message`) VALUES (:chat_message, :target, :initiator, :report_message)")
     void addChatReport(@Bind("chat_message") String nonce, @Bind("target") int target_uid, @Bind("initiator") int initiator_uid, @Bind("report_message") String report_message);
 
-    @SqlUpdate("INSERT INTO chat_messages (`author`, `sent`, `content`, `nonce`) VALUES (:author, :sent, :content, :nonce)")
-    void insertChatMessage(@Bind("author") int author_uid, @Bind("sent") long sent_at_ms, @Bind("content") String message, @Bind("nonce") String nonce);
+    @SqlUpdate("INSERT INTO chat_messages (`author`, `sent`, `content`, `filtered`, `nonce`) VALUES (:author, :sent, :content, :filtered, :nonce)")
+    void insertChatMessage(@Bind("author") int author_uid, @Bind("sent") long sent_at_ms, @Bind("content") String message, @Bind("filtered") String filtered, @Bind("nonce") String nonce);
 
     @SqlQuery("SELECT * FROM chat_messages WHERE nonce = :nonce LIMIT 1")
     DBChatMessage getChatMessageByNonce(@Bind("nonce") String nonce);
