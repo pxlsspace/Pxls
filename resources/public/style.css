@@ -978,6 +978,10 @@ aside.panel {
     color: #555;
 }
 
+.panel-trigger .fas, .panel-trigger .far, .panel-trigger .fal {
+    font-size: 2.5rem;
+}
+
 article .body {
     padding: .5rem;
 }
