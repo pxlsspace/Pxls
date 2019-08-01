@@ -417,7 +417,7 @@ public class Database implements Closeable {
      */
     public DBChatMessage[] getLastXMessages(int x, boolean includePurged) {
         return dbi
-                .withHandle(handle -> handle.createQuery("SELECT * FROM chat_messages WHERE " + (includePurged ? "1" : "purged=0") + " ORDER BY sent ASC LIMIT :lim").bind("lim", x).map(new DBChatMessage.Mapper()).list())
+                .withHandle(handle -> handle.createQuery("SELECT * FROM chat_messages WHERE " + (includePurged ? "1" : "purged=0") + " ORDER BY sent DESC LIMIT :lim").bind("lim", x).map(new DBChatMessage.Mapper()).list())
                 .toArray(new DBChatMessage[0]);
     }
 
