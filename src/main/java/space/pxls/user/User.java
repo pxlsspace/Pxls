@@ -184,12 +184,22 @@ public class User {
             if (getRole().equals(Role.DEVELOPER)) {
                 toReturn.add(new Badge("Developer", "Developer", "icon", "fas fa-wrench"));
             } else if (getRole().greaterEqual(Role.TRIALMOD)) {
-                toReturn.add(new Badge(getRole().name(), getRole().name(), "icon", "fas fa-shield-alt"));
+                String roleName = getRole().name().toLowerCase();
+                roleName = Character.toUpperCase(roleName.charAt(0)) + roleName.substring(1);
+                toReturn.add(new Badge(roleName, roleName, "icon", "fas fa-shield-alt"));
             }
         }
 
         int _count = getPixelsAllTime();
-        if (_count >= 600000) {
+        if (_count >= 1000000) {
+            toReturn.add(new Badge("1m+", "1m+ Pixels Placed", "text", null));
+        } else if (_count >= 900000) {
+            toReturn.add(new Badge("900k+", "900k+ Pixels Placed", "text", null));
+        } else if (_count >= 800000) {
+            toReturn.add(new Badge("800k+", "800k+ Pixels Placed", "text", null));
+        } else if (_count >= 700000) {
+            toReturn.add(new Badge("700k+", "700k+ Pixels Placed", "text", null));
+        } else if (_count >= 600000) {
             toReturn.add(new Badge("600k+", "600k+ Pixels Placed", "text", null));
         } else if (_count >= 500000) {
             toReturn.add(new Badge("500k+", "500k+ Pixels Placed", "text", null));
@@ -203,6 +213,16 @@ public class User {
             toReturn.add(new Badge("100k+", "100k+ Pixels Placed", "text", null));
         } else if (_count >= 50000) {
             toReturn.add(new Badge("50k+", "50k+ Pixels Placed", "text", null));
+        } else if (_count >= 25000) {
+            toReturn.add(new Badge("25k+", "25k+ Pixels Placed", "text", null));
+        } else if (_count >= 10000) {
+            toReturn.add(new Badge("10k+", "10k+ Pixels Placed", "text", null));
+        } else if (_count >= 5000) {
+            toReturn.add(new Badge("5k+", "5k+ Pixels Placed", "text", null));
+        } else if (_count >= 1000) {
+            toReturn.add(new Badge("1k+", "1k+ Pixels Placed", "text", null));
+        } else {
+            toReturn.add(new Badge("<1k", "<1k Pixels Placed", "text", null));
         }
 
         return toReturn;
