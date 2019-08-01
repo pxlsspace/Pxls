@@ -1042,6 +1042,7 @@ article .body {
     margin: 0;
     padding: 0;
     list-style: none;
+    overflow-x: hidden;
 }
 
 ul.chat-body li.chat-line {

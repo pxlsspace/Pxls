@@ -347,13 +347,19 @@ public class PacketHandler {
             if (remaining > 0) {
                 server.send(user, new ServerChatCooldown(remaining, message));
             } else {
-                if (App.getConfig().getBoolean("chat.filter.enabled")) {
-                    ChatFilter.FilterResult result = ChatFilter.getInstance().filter(message);
-                    String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, message, result.filterHit ? result.filtered : "");
-                    server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, result.filterHit ? result.filtered : result.original, user.getChatBadges())));
-                } else {
-                    String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, message, "");
-                    server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, message, user.getChatBadges())));
+                try {
+                    if (App.getConfig().getBoolean("chat.trimInput"))
+                        message = message.trim();
+                    if (App.getConfig().getBoolean("chat.filter.enabled")) {
+                        ChatFilter.FilterResult result = ChatFilter.getInstance().filter(message);
+                        String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, message, result.filterHit ? result.filtered : "");
+                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, result.filterHit ? result.filtered : result.original, user.getChatBadges())));
+                    } else {
+                        String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, message, "");
+                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, message, user.getChatBadges())));
+                    }
+                } catch (org.skife.jdbi.v2.exceptions.UnableToExecuteStatementException utese) {
+                    //ignore for now. TODO
                 }
             }
         }

@@ -2743,7 +2743,7 @@ window.App = (function () {
                 init: () => {
                     socket.on('chat_history', e => {
                         if (self.seenHistory) return;
-                        for (let packet of e.messages) {
+                        for (let packet of e.messages.reverse()) {
                             self._process(packet);
                         }
                         let last = self.elements.body.find("li[data-nonce]").last()[0];
@@ -3069,9 +3069,12 @@ window.App = (function () {
                     });
 
                     $(window).on("mouseup", e => {
+                        let target = e.target;
+                        if (target && !target.closest('.panel')) {
+                            self.elements.input.blur();
+                        }
                         let popup = document.querySelector('.popup');
                         if (!popup) return;
-                        let target = e.target;
                         if (e.originalEvent && e.originalEvent.target)
                             target = e.originalEvent.target;
 
