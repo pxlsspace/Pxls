@@ -12,8 +12,10 @@ import io.undertow.util.HttpString;
 import io.undertow.util.StatusCodes;
 import space.pxls.App;
 import space.pxls.auth.*;
+import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBPixelPlacement;
 import space.pxls.data.DBPixelPlacementUser;
+import space.pxls.user.Chatban;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.util.AuthReader;
@@ -23,13 +25,9 @@ import java.io.*;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
-import java.util.Calendar;
-import java.util.Deque;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
-import java.util.List;
-import java.util.ArrayList;
 
 public class WebHandler {
     private String fileToString (File f) {
@@ -211,6 +209,270 @@ public class WebHandler {
         }
     }
 
+    public void chatReport(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        if (user.isBanned()) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+        FormData.FormValue chatNonce = null;
+        FormData.FormValue reportMessage = null;
+
+        try {
+            chatNonce = data.getFirst("nonce");
+            reportMessage = data.getFirst("report_message");
+        } catch (NullPointerException npe) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        if (chatNonce == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        DBChatMessage chatMessage = App.getDatabase().getChatMessageByNonce(chatNonce.getValue());
+        if (chatMessage == null || reportMessage == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        String _reportMessage = reportMessage.getValue().trim();
+        if (_reportMessage.length() > 2048) _reportMessage = _reportMessage.substring(0, 2048);
+        App.getDatabase().addChatReport(chatMessage.nonce, chatMessage.author_uid, user.getId(), _reportMessage);
+
+        exchange.setStatusCode(200);
+        exchange.getResponseSender().send("{}");
+        exchange.endExchange();
+    }
+
+    public void chatban(HttpServerExchange exchange) {
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+        if (user.isBanned() || user.getRole().lessEqual(Role.USER)) {
+            sendBadRequest(exchange);
+            return;
+        }
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+
+        FormData.FormValue nonceData;
+        FormData.FormValue whoData;
+        FormData.FormValue typeData;
+        FormData.FormValue reasonData;
+        FormData.FormValue removalData;
+        FormData.FormValue banlengthData;
+
+        String nonce = "";
+        String who = "";
+        String type = "";
+        String reason = "";
+        Integer removal = 0;
+        Integer banLength = 0;
+
+        boolean isPerma = false,
+                isUnban = false;
+
+        try {
+            nonceData = data.getFirst("nonce");
+            whoData = data.getFirst("who");
+            typeData = data.getFirst("type");
+            reasonData = data.getFirst("reason");
+            removalData = data.getFirst("removalAmount");
+            banlengthData = data.getFirst("banLength");
+        } catch (NullPointerException npe) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        if (nonceData == null && whoData == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        if (typeData == null || reasonData == null || removalData == null || banlengthData == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        try {
+            nonce = nonceData == null ? null : nonceData.getValue();
+            who = whoData == null ? null : whoData.getValue();
+            type = typeData.getValue();
+            reason = reasonData.getValue();
+            removal = Integer.parseInt(removalData.getValue());
+            banLength = Integer.parseInt(banlengthData.getValue());
+        } catch (Exception e) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        isPerma = type.trim().equalsIgnoreCase("perma");
+        isUnban = type.trim().equalsIgnoreCase("unban");
+        User target = null;
+
+        if (nonce != null) {
+            DBChatMessage chatMessage = App.getDatabase().getChatMessageByNonce(nonce);
+            if (chatMessage == null) {
+                sendBadRequest(exchange);
+                return;
+            }
+
+            target = App.getUserManager().getByID(chatMessage.author_uid);
+        } else if (who != null) {
+            target = App.getUserManager().getByName(who);
+        }
+
+        if (target == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        boolean _removal = removal == -1 || removal > 0;
+
+        Chatban chatban;
+        if (isUnban) {
+            chatban = Chatban.UNBAN(target, user, reason);
+        } else {
+            chatban = isPerma ?
+                    Chatban.PERMA(target, user, reason, _removal, removal == -1 ? Integer.MAX_VALUE : removal) :
+                    Chatban.TEMP(target, user, System.currentTimeMillis() + (banLength * 1000L), reason, _removal, removal == -1 ? Integer.MAX_VALUE : removal);
+        }
+
+        chatban.commit();
+
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+        exchange.setStatusCode(200);
+        exchange.getResponseSender().send("{}");
+        exchange.endExchange();
+    }
+
+    public void deleteChatMessage(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        if (user.isBanned()) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+        FormData.FormValue chatNonce = null;
+
+        try {
+            chatNonce = data.getFirst("nonce");
+        } catch (NullPointerException npe) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        if (chatNonce == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        DBChatMessage chatMessage = App.getDatabase().getChatMessageByNonce(chatNonce.getValue());
+        if (chatMessage == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        User author = App.getUserManager().getByID(chatMessage.author_uid);
+        if (author == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        App.getDatabase().purgeChatMessageByNonce(chatMessage.nonce, user.getId());
+        App.getServer().getPacketHandler().sendSpecificPurge(author, user, chatMessage.nonce, "");
+
+        exchange.setStatusCode(200);
+        exchange.getResponseSender().send("{}");
+        exchange.endExchange();
+    }
+
+    public void chatPurge(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        if (user.isBanned()) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+        FormData.FormValue targetData = null;
+        FormData.FormValue amountData = null;
+        FormData.FormValue reasonData = null;
+
+        try {
+            targetData = data.getFirst("who");
+            amountData = data.getFirst("amount");
+            reasonData = data.getFirst("reason");
+        } catch (NullPointerException npe) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        if (targetData == null || amountData == null || reasonData == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        User target = App.getUserManager().getByName(targetData.getValue());
+        if (target == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        Integer toPurge;
+        try {
+            toPurge = Integer.parseInt(amountData.getValue());
+        } catch (Exception e) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        if (toPurge == 0) {
+            sendBadRequest(exchange);
+            return;
+        }
+        if (toPurge == -1) toPurge = Integer.MAX_VALUE;
+
+        App.getDatabase().handlePurge(target, user, toPurge, reasonData.getValue(), true);
+
+        exchange.setStatusCode(200);
+        exchange.getResponseSender().send("{}");
+        exchange.endExchange();
+    }
+
+    private void sendBadRequest(HttpServerExchange exchange) {
+        exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+        exchange.getResponseSender().send("{\"success\": false, \"message\": \"ERR_BAD_REQUEST\"}");
+        exchange.endExchange();
+    }
+
     public void check(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
         if (user != null) {
@@ -222,7 +484,11 @@ public class WebHandler {
                             user.getBanExpiryTime(),
                             user.getBanReason(),
                             user.getLogin().split(":")[0],
-                            user.isOverridingCooldown()
+                            user.isOverridingCooldown(),
+                            user.isChatbanned(),
+                            App.getDatabase().getChatbanReasonForUser(user.getId()),
+                            user.isPermaChatbanned(),
+                            user.getChatbanExpiryTime()
                     )));
         } else {
             exchange.setStatusCode(400);

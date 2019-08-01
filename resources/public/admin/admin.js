@@ -164,6 +164,7 @@
                 },
                 callback: function (data) {
                     var delta = (data.banExpiry - (new Date()).getTime()) / 1000,
+                        chatbanDelta = (data.chatbanExpiry - (new Date()).getTime()) / 1000,
                         secs = Math.floor(delta % 60),
                         secsStr = secs < 10 ? "0" + secs : secs,
                         minutes = Math.floor((delta / 60)) % 60,
@@ -172,7 +173,10 @@
                         hoursStr = hours < 10 ? "0" + hours : hours,
                         banned = data.banned,
                         bannedStr = "",
-                        expiracyStr = hoursStr+":"+minuteStr+":"+secsStr;
+                        expiracyStr = hoursStr+":"+minuteStr+":"+secsStr,
+                        chatbannedStr = "",
+                        chabannedExpiracyStr = `${chatbanDelta >> 0}s`;
+                        // chabannedExpiracyStr = `${(chatbanDelta/3600) >> 0}h ${((chatbanDelta/60) >> 0) % 60}m ${(delta % 60) >> 0}s`;
                     if (data.role == "SHADOWBANNED") {
                         bannedStr = "shadow";
                         banned = true;
@@ -184,15 +188,23 @@
                     } else {
                         bannedStr = banned ? "yes" : "no";
                     }
+                    chatbannedStr = data.chatbanIsPerma ? `Yes (permanent)` : (data.chatBanned ? `Yes` : `No`);
                     var items = [
                         ["Username", data.username],
                         ["Login", data.login],
                         ["Role", data.role],
-                        ["Banned", bannedStr]
+                        ["Banned", bannedStr],
+                        ["Chatbanned", chatbannedStr]
                     ];
                     if (banned) {
                         items.push(["Ban Reason", data.ban_reason]);
                         items.push(["Ban Expiracy", expiracyStr]);
+                    }
+                    if (data.chatBanned) {
+                        items.push(["Chatban Reason", data.chatbanReason]);
+                        if (!data.isChatbanPerma) {
+                            items.push(["Chatban Expires", chabannedExpiracyStr])
+                        }
                     }
                     self.elements.check.empty().append(
                         $.map(items, function (o) {
@@ -227,6 +239,10 @@
                                     });
                                 })
                             : "")
+                        ),
+                        crel('div',
+                            crel('button', {'data-action': 'chatban', 'data-target': data.username, 'class': 'button', 'style': 'position: initial; right: auto; left: auto; bottom: auto;', onclick: admin.chat._handleActionClick}, 'Chat (un)ban'),
+                            crel('button', {'data-action': 'purge', 'data-target': data.username, 'class': 'button', 'style': 'position: initial; right: auto; left: auto; bottom: auto;', onclick: admin.chat._handleActionClick}, 'Chat purge')
                         ),
                         $("<div>").append(
                             $("<b>").text("Custom ban length: "), "<br>",
@@ -273,7 +289,7 @@
                     panel: $("<div>")
                 },
                 init: function () {
-                    self.elements.panel.hide().addClass("admin panel").append(
+                    self.elements.panel.hide().addClass("admin").append(
                         $("<h1>").text("MOD"),
                         $("<div>").append(
                             // first do the checkboxes

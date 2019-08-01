@@ -6,8 +6,9 @@ import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
 
 import java.io.Closeable;
+import java.sql.Timestamp;
 
-@RegisterMapper({DBUser.Mapper.class, DBPixelPlacement.Mapper.class, DBPixelPlacementUser.Mapper.class, DBUserBanReason.Mapper.class, DBUserPixelCount.Mapper.class, DBUserPixelCountAllTime.Mapper.class, DBBanlog.Mapper.class})
+@RegisterMapper({DBUser.Mapper.class, DBPixelPlacement.Mapper.class, DBPixelPlacementUser.Mapper.class, DBUserBanReason.Mapper.class, DBUserPixelCount.Mapper.class, DBUserPixelCountAllTime.Mapper.class, DBBanlog.Mapper.class, DBChatMessage.Mapper.class})
 public interface DAO extends Closeable {
     @SqlUpdate("CREATE TABLE IF NOT EXISTS reports(" +
             "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT," +
@@ -127,6 +128,9 @@ public interface DAO extends Closeable {
             "ban_expiry TIMESTAMP," +
             "signup_ip VARBINARY(16)," +
             "last_ip VARBINARY(16)," +
+            "perma_chat_banned TINYINT(1) DEFAULT 0," +
+            "chat_ban_expiry TIMESTAMP DEFAULT NOW()," +
+            "chat_ban_reason TEXT," +
             "ban_reason VARCHAR(512) NOT NULL DEFAULT ''," +
             "user_agent VARCHAR(512) NOT NULL DEFAULT ''," +
             "pixel_count INT UNSIGNED NOT NULL DEFAULT 0," +
@@ -257,6 +261,57 @@ public interface DAO extends Closeable {
 
     @SqlQuery("SELECT * FROM `banlogs` WHERE id=:id")
     DBBanlog getBanlogByID(@Bind("id") int banlogID);
+
+    /* CHAT */
+    @SqlUpdate("CREATE TABLE IF NOT EXISTS `chat_messages`" +
+            " (" +
+            "  `nonce` varchar(36) PRIMARY KEY," +
+            "  `author` int," +
+            "  `sent` int(11) NOT NULL," +
+            "  `content` varchar(2048) character set utf8 NOT NULL," +
+            "  `filtered` varchar(2048) character set utf8 NOT NULL DEFAULT ''," +
+            "  `purged` tinyint NOT NULL DEFAULT 0," +
+            "  `purged_by` int" +
+            " );")
+    void createChatMessagesTable();
+
+    @SqlUpdate("CREATE TABLE IF NOT EXISTS `chat_reports` (" +
+            "  `id` int NOT NULL PRIMARY KEY AUTO_INCREMENT," +
+            "  `chat_message` varchar(36) not null," +
+            "  `report_message` longtext character set utf8 not null," +
+            "  `target` int not null," +
+            "  `initiator` int not null," +
+            "  `claimed_by` int not null default 0," +
+            "  `closed` tinyint not null default 0" +
+            ")")
+    void createChatReportsTable();
+
+    @SqlUpdate("INSERT INTO chat_reports (`chat_message`, `target`, `initiator`, `report_message`) VALUES (:chat_message, :target, :initiator, :report_message)")
+    void addChatReport(@Bind("chat_message") String nonce, @Bind("target") int target_uid, @Bind("initiator") int initiator_uid, @Bind("report_message") String report_message);
+
+    @SqlUpdate("INSERT INTO chat_messages (`author`, `sent`, `content`, `filtered`, `nonce`) VALUES (:author, :sent, :content, :filtered, :nonce)")
+    void insertChatMessage(@Bind("author") int author_uid, @Bind("sent") long sent_at_ms, @Bind("content") String message, @Bind("filtered") String filtered, @Bind("nonce") String nonce);
+
+    @SqlQuery("SELECT * FROM chat_messages WHERE nonce = :nonce LIMIT 1")
+    DBChatMessage getChatMessageByNonce(@Bind("nonce") String nonce);
+
+    @SqlQuery("SELECT * FROM chat_messages WHERE author = :author ORDER BY sent ASC")
+    DBChatMessage[] getChatMessagesForAuthor(@Bind("author") int author_uid);
+
+    @SqlUpdate("UPDATE USERS SET perma_chat_banned=:banned WHERE id=:id")
+    void updateUserChatbanPerma(@Bind("banned") int isBanned, @Bind("id") int to_update_uid);
+
+    @SqlUpdate("UPDATE USERS SET chat_ban_expiry=:expiry WHERE id=:id")
+    void updateUserChatbanExpiry(@Bind("expiry") Timestamp chat_ban_expiry, @Bind("id") int to_update_uid);
+
+    @SqlUpdate("UPDATE chat_messages SET purged=1,purged_by=:who WHERE nonce=:nonce")
+    void purgeChatMessageByNonce(@Bind("nonce") String nonce, @Bind("who") int purged_by_uid);
+
+    @SqlQuery("SELECT chat_ban_reason FROM users WHERE id=:who;")
+    String getChatbanReasonForUser(@Bind("who") int uid);
+
+    @SqlUpdate("UPDATE users SET chat_ban_reason=:reason WHERE id=:who")
+    void updateUserChatbanReason(@Bind("who") int who, @Bind("reason") String reason);
 
     void close();
 }

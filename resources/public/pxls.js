@@ -447,8 +447,10 @@ window.App = (function () {
                 ws: null,
                 ws_constructor: WebSocket,
                 hooks: [],
+                sendQueue: [],
                 wps: WebSocket.prototype.send, // make sure we have backups of those....
                 wpc: WebSocket.prototype.close,
+                ws_open_state: WebSocket.OPEN,
                 reconnect: function () {
                     $("#reconnecting").show();
                     setTimeout(function () {
@@ -468,6 +470,14 @@ window.App = (function () {
                     var l = window.location,
                         url = ((l.protocol === "https:") ? "wss://" : "ws://") + l.host + l.pathname + "ws";
                     self.ws = new self.ws_constructor(url);
+                    self.ws.onopen = evt => {
+                        setTimeout(() => {
+                            while (self.sendQueue.length > 0) {
+                                let toSend = self.sendQueue.shift();
+                                self.send(toSend);
+                            }
+                        }, 0);
+                    };
                     self.ws.onmessage = function (msg) {
                         var data = JSON.parse(msg.data);
                         $.map(self.hooks, function (h) {
@@ -507,11 +517,12 @@ window.App = (function () {
                     self.ws.close();
                 },
                 send: function (s) {
-                    self.ws.send = self.wps;
-                    if (typeof s == "string") {
-                        self.ws.send(s);
+                    let toSend = typeof s === "string" ? s : JSON.stringify(s);
+                    if (self.ws == null || self.ws.readyState !== self.ws_open_state) {
+                        self.sendQueue.push(toSend);
                     } else {
-                        self.ws.send(JSON.stringify(s));
+                        self.ws.send = self.wps;
+                        self.ws.send(toSend);
                     }
                 }
             };
@@ -2352,10 +2363,6 @@ window.App = (function () {
                     $("#audiotoggle").change(function () {
                         ls.set("audio_muted", this.checked);
                     });
-                    $("#rules-button").click(function (evt) {
-                        evt.stopPropagation();
-                        alert.show($("#rules-content").html());
-                    });
                     //stickyColorToggle ("Keep color selected"). Checked = don't auto reset.
                     var auto_reset = ls.get("auto_reset");
                     if (auto_reset === null) {
@@ -2384,15 +2391,28 @@ window.App = (function () {
                 elements: {
                     alert: $("#alert")
                 },
-                show: function (s) {
+                show: function(s, hideControls = false) {
                     self.elements.alert.find(".text,.custWrapper").empty();
                     self.elements.alert.find(".text").append(s);
                     self.elements.alert.fadeIn(200);
+                    if (hideControls === true) {
+                        self.elements.alert.find('.default-control').hide();
+                    } else {
+                        self.elements.alert.find('.default-control').show();
+                    }
                 },
-                showElem: function (element) {
+                showElem: function(element, hideControls = false) {
                     self.elements.alert.find(".text,.custWrapper").empty();
                     self.elements.alert.find(".custWrapper").append(element);
                     self.elements.alert.fadeIn(200);
+                    if (hideControls === true) {
+                        self.elements.alert.find('.default-control').hide();
+                    } else {
+                        self.elements.alert.find('.default-control').show();
+                    }
+                },
+                hide: function() {
+                    self.elements.alert.fadeOut(200);
                 },
                 init: function () {
                     self.elements.alert.hide().find(".button").click(function () {
@@ -2406,6 +2426,7 @@ window.App = (function () {
             return {
                 init: self.init,
                 show: self.show,
+                hide: self.hide,
                 showElem: self.showElem
             };
         })(),
@@ -2655,6 +2676,829 @@ window.App = (function () {
                 updateAudio: self.updateAudio
             };
         })(),
+        panels = (function() {
+            let self = {
+                init: () => {
+                    Array.from(document.querySelectorAll(".panel-trigger")).forEach(panelTrigger => {
+                        panelTrigger.addEventListener("click", e => {
+                            if (!e.target) return console.debug('[PANELS:TRIGGER] No target?');
+                            let closestTrigger = e.target.closest('.panel-trigger');
+                            if (closestTrigger) {
+                                let _panelDescriptor = closestTrigger.dataset['panel'];
+                                if (_panelDescriptor && _panelDescriptor.trim()) {
+                                    let targetPanel = document.querySelector(`.panel[data-panel="${_panelDescriptor.trim()}"]`);
+                                    if (targetPanel) {
+                                        Array.from(document.querySelectorAll('.panel.open')).forEach(x => {
+                                            x.classList.remove('open');
+                                            $(window).trigger("pxls:panel:closed", x.dataset['panel']);
+                                        }); //Close other open panels
+                                        targetPanel.classList.add('open');
+                                        $(window).trigger("pxls:panel:opened", _panelDescriptor);
+                                    } else console.debug('[PANELS:TRIGGER] Bad descriptor? Got: %o', _panelDescriptor);
+                                } else console.debug('[PANELS:TRIGGER] No descriptor? Elem: %o', closestTrigger);
+                            } else console.debug('[PANELS:TRIGGER] No trigger?');
+                        });
+                    });
+                    Array.from(document.querySelectorAll('.panel-closer')).forEach(panelClose => {
+                        panelClose.addEventListener('click', e => {
+                            if (!e.target) return console.debug('[PANELS:CLOSER] No target?');
+                            let closestPanel = e.target.closest('.panel');
+                            if (closestPanel) {
+                                closestPanel.classList.toggle('open', false);
+                                $(window).trigger("pxls:panel:closed", [closestPanel.dataset['panel']]);
+                            } else console.debug('[PANELS:CLOSER] No panel?');
+                        });
+                    });
+                }
+            };
+            return {
+                init: self.init
+            };
+        })(),
+        chat = (function() {
+            let self = {
+                seenHistory: false,
+                stickToBottom: true,
+                nonceLog: [],
+                chatban: {
+                    banStart: 0,
+                    banEnd: 0,
+                    banEndFormatted: '',
+                    timeLeft: 0,
+                    timer: 0
+                },
+                timeout: {
+                    ends: 0,
+                    timer: 0
+                },
+                elements: {
+                    message_icon: $("#message-icon"),
+                    input: $("#txtChatContent"),
+                    body: $("#chat-body"),
+                    rate_limit_overlay: $(".chat-ratelimit-overlay"),
+                    rate_limit_counter: $("#chat-ratelimit"),
+                    chat_panel: $(".panel[data-panel=chat]"),
+                    chat_hint: $("#chat-hint")
+                },
+                init: () => {
+                    socket.on('chat_history', e => {
+                        if (self.seenHistory) return;
+                        for (let packet of e.messages) {
+                            self._process(packet);
+                        }
+                        let last = self.elements.body.find("li[data-nonce]").last()[0];
+                        if (last) {
+                            self._doScroll(last);
+                            if (last.dataset.nonce && last.dataset.nonce !== ls.get("chat-last_seen_nonce")) {
+                                self.elements.message_icon.addClass('has-notification');
+                            }
+                        }
+                        self.seenHistory = true;
+                        self.addServerAction('History loaded at ' + moment().format('MMM Do YYYY, hh:mm:ss A'));
+                    });
+                    socket.on('chat_message', e => {
+                        self._process(e.message);
+                        if (!self.elements.chat_panel.hasClass('open')) {
+                            self.elements.message_icon.addClass('has-notification');
+                        }
+                        if (self.stickToBottom) {
+                            let chatLine = self.elements.body.find(`[data-nonce="${e.message.nonce}"]`)[0];
+                            if (chatLine) {
+                                if (self.elements.chat_panel.hasClass('open')) {
+                                    ls.set('chat-last_seen_nonce', e.message.nonce);
+                                }
+                                self._doScroll(chatLine);
+                            }
+                        }
+                    });
+                    socket.on('message_cooldown', e => {
+                        self.timeout.ends = (new Date >> 0) + ((e.diff >> 0) * 1e3) + 1e3; //add 1 second so that we're 1-based instead of 0-based
+                        self.elements.input.val(e.message);
+                        self.elements.input.blur();
+                        if ((new Date >> 0) > self.timeout.ends) {
+                            self.elements.rate_limit_overlay.fadeOut();
+                        } else {
+                            self.elements.rate_limit_overlay.fadeIn();
+                        }
+                        if (self.timeout.timer > 0) clearInterval(self.timeout.timer);
+                        self.timeout.timer = setInterval(() => {
+                            let delta = (self.timeout.ends - (new Date >> 0)) / 1e3 >> 0;
+                            self.elements.rate_limit_counter.text(`${delta}s`);
+                            if (delta <= 0) {
+                                self.elements.rate_limit_overlay.fadeOut();
+                                self.elements.rate_limit_counter.text('');
+                                clearInterval(self.timeout.timer);
+                                self.timeout.timer = 0;
+                            }
+                        }, 100);
+                    });
+                    socket.on('message_delete', e => console.log('[message_delete] %o', e));
+                    const handleChatban = e => {
+                        clearInterval(self.timeout.timer);
+                        self.chatban.banStart = moment.now();
+                        self.chatban.banEnd = moment(e.expiry);
+                        self.chatban.banEndFormatted = self.chatban.banEnd.format('MMM Do YYYY, hh:mm:ss A');
+                        setTimeout(() => {
+                            clearInterval(self.chatban.timer);
+                            if (e.expiry - self.chatban.banStart > 0 && !e.permanent) {
+                                self.elements.rate_limit_overlay.show();
+                                self.elements.rate_limit_counter.text('You have been banned from chat.');
+                                self.addServerAction(`You are banned ${e.permanent ? 'permanently from chat.' : ' until ' + self.chatban.banEndFormatted}`);
+                                self.chatban.timer = setInterval(() => {
+                                    let timeLeft = self.chatban.banEnd - moment();
+                                    if (timeLeft > 0) {
+                                        self.elements.rate_limit_overlay.show();
+                                        self.elements.rate_limit_counter.text(`Chatban expires in ${timeLeft / 1e3 >> 0}s, at ${self.chatban.banEndFormatted}`);
+                                    } else {
+                                        self.elements.rate_limit_overlay.hide();
+                                        self.elements.rate_limit_counter.text('');
+                                    }
+                                }, 150);
+                            } else if (e.permanent) {
+                                self.elements.rate_limit_overlay.show();
+                                self.elements.rate_limit_counter.text('You have been banned from chat.');
+                                self.addServerAction(`You are banned from chat${e.permanent ? ' permanently.' : ' until ' + self.chatban.banEndFormatted}`);
+                            } else if (e.type !== "chat_ban_state") { //chat_ban_state is a query result, not an action notice.
+                                self.elements.rate_limit_overlay.hide();
+                                self.elements.rate_limit_counter.text('');
+                                self.addServerAction(`You have been unbanned from chat.`);
+                            }
+                        }, 0);
+                    };
+                    socket.on('chat_ban', handleChatban);
+                    socket.on('chat_ban_state', handleChatban);
+
+                    const _doPurge = (elem, e) => {
+                        if (user.getRole() !== "USER") {
+                            elem.classList.add('purged');
+                            elem.setAttribute('title', `Purged by ${e.initiator} with reason: ${e.reason || 'none provided'}`);
+                            elem.dataset.purgedBy = e.initiator;
+                        } else {
+                            elem.remove();
+                        }
+                    };
+                    socket.on('chat_purge', e => {
+                        let lines = Array.from(self.elements.body[0].querySelectorAll(`.chat-line[data-author="${e.target}"]`));
+                        if (Array.isArray(lines) && lines.length) {
+                            lines.sort((a,b) => (a.dataset.date >> 0)-(b.dataset.date >> 0));
+                            for (let i = 0; i < e.amount; i++) {
+                                let line = lines.pop();
+                                if (line) {
+                                    _doPurge(line, e);
+                                } else {
+                                    break;
+                                }
+                            }
+                        } else console.log(lines, 'was not an array-like, or was empty.');
+                        if (e.amount >= 2147483647) {
+                            self.addServerAction(`${e.initiator} purged all messages from ${e.target}.`);
+                        } else {
+                            self.addServerAction(`${e.amount} message${e.amount !== 1 ? 's' : ''} from ${e.target} were purged by ${e.initiator}.`);
+                        }
+                    });
+                    socket.on('chat_purge_specific', e => {
+                        let lines = [];
+                        if (e.nonces && e.nonces.length) {
+                            e.nonces.forEach(x => {
+                                let line = self.elements.body.find(`.chat-line[data-nonce="${x}"]`)[0];
+                                if (line) lines.push(line);
+                            });
+                        }
+                        if (lines.length) {
+                            lines.forEach(x => _doPurge(x, e));
+                            if (user.getUsername().toLowerCase().trim() === e.target.toLowerCase().trim()) {
+                                self.addServerAction(`${e.nonces.length} message${e.nonces.length !== 1 ? 's were' : ' was'} purged by ${e.initiator}`);
+                            }
+                        }
+                    });
+
+                    socket.send({"type": "ChatbanState"});
+                    socket.send({"type": "ChatHistory"});
+
+                    self.elements.rate_limit_overlay.hide();
+
+                    // let tempbanUsage = crel('span', {'style': 'font-weight: bold; font-size: 1.1rem;'}, )
+
+                    let commandsCache = [['tempban', '/tempban  USER  BAN_LENGTH  SHOULD_PURGE  BAN_REASON'], ['permaban', '/permaban  USER  SHOULD_PURGE  BAN_REASON'], ['purge', '/purge  USER  PURGE_AMOUNT  PURGE_REASON']];
+                    self.elements.input.on('keydown', e => {
+                        e.stopPropagation();
+                        let toSend = self.elements.input[0].value;
+                        let trimmed = toSend.trim();
+                        if ((e.originalEvent.key == "Enter" || e.originalEvent.which === 13) && !e.shiftKey) {
+                            e.preventDefault();
+                            if (trimmed.startsWith('/') && user.getRole() !== "USER") {
+                                let args = trimmed.substr(1).split(' '),
+                                    command = args.shift();
+                                switch (command.toLowerCase().trim()) {
+                                    case 'permaban': {
+                                        let usage = `/permaban USER SHOULD_PURGE BAN_REASON\n/permaban help`;
+                                        let help = [
+                                            usage,
+                                            `    USER:         The username`,
+                                            `    SHOULD_PURGE: (1|0) Whether or not to remove all chat messages from the user`,
+                                            `    BAN_REASON:   The reason for the ban`,
+                                            ``,
+                                            `    /permaban GlowingSocc 1 just generally don't like 'em`,
+                                            `    /permaban GlowingSocc 0 time for you to go.`
+                                        ].join('\n');
+                                        if (args.length < 3) {
+                                            if (args[0] && args[0].toLowerCase() === 'help') {
+                                                self.showHint(help);
+                                            } else {
+                                                self.showHint(`Missing arguments.\n${usage}`, true);
+                                            }
+                                        } else {
+                                            let user = args.shift(),
+                                                shouldPurge = args.shift(),
+                                                banReason = args.join(' ');
+                                            if (!isNaN(shouldPurge)) {
+                                                shouldPurge = !!(shouldPurge >> 0);
+                                            } else {
+                                                return self.showHint(`Invalid shouldPurge. Expected 1 or 0, got ${shouldPurge}`, true);
+                                            }
+                                            self.elements.input[0].disabled = true;
+                                            $.post('/admin/chatban', {
+                                                who: user,
+                                                type: 'perma',
+                                                reason: banReason,
+                                                removalAmount: shouldPurge ? -1 : 0,
+                                                banLength: 0
+                                            }, () => {
+                                                alert.show('Chatban initiated');
+                                                self.elements.input[0].value = '';
+                                                self.elements.input[0].disabled = false;
+                                            }).fail(() => {
+                                                alert.show('Failed to chatban');
+                                                self.elements.input[0].disabled = false;
+                                            });
+                                        }
+                                        break;
+                                    }
+                                    case 'tempban': {
+                                        let usage = `/tempban USER BAN_LENGTH SHOULD_PURGE BAN_REASON\n/tempban help`;
+                                        let help = [
+                                            usage,
+                                            `    USER:         The username`,
+                                            `    BAN_LENGTH:   The banlength in seconds`,
+                                            `    SHOULD_PURGE: (1|0) Whether or not to remove all chat messages from the user`,
+                                            `    BAN_REASON:   The reason for the ban`,
+                                            ``,
+                                            `    /tempban GlowingSocc 600 1 just generally don't like 'em`,
+                                            `    /tempban GlowingSocc 60 0 take a time out.`
+                                        ].join('\n');
+                                        if (args.length < 4) {
+                                            if (args[0] && args[0].toLowerCase() === 'help') {
+                                                self.showHint(help);
+                                            } else {
+                                                self.showHint(`Missing arguments.\n${usage}`, true);
+                                            }
+                                        } else {
+                                            let user = args.shift(),
+                                                banLength = args.shift() >> 0,
+                                                shouldPurge = args.shift(),
+                                                banReason = args.join(' ');
+                                            if (!isNaN(shouldPurge)) {
+                                                shouldPurge = !!(shouldPurge >> 0);
+                                            } else {
+                                                return self.showHint(`Invalid shouldPurge. Expected 1 or 0, got ${shouldPurge}`, true);
+                                            }
+                                            if (banLength <= 0) {
+                                                return self.showHint(`Invalid banLength. Should be >0`, true);
+                                            } else {
+                                                $.post('/admin/chatban', {
+                                                    who: user,
+                                                    type: 'temp',
+                                                    reason: banReason,
+                                                    removalAmount: shouldPurge ? -1 : 0,
+                                                    banLength: banLength
+                                                }, () => {
+                                                    alert.show('Chatban initiated');
+                                                    self.elements.input[0].value = '';
+                                                    self.elements.input[0].disabled = false;
+                                                }).fail(() => {
+                                                    alert.show('Failed to chatban');
+                                                    self.elements.input[0].disabled = false;
+                                                });
+                                            }
+                                        }
+                                        break;
+                                    }
+                                    case 'purge': {
+                                        let usage = `/purge USER PURGE_AMOUNT PURGE_REASON\n/purge help`;
+                                        let help = [
+                                            usage,
+                                            `    USER:         The username`,
+                                            `    PURGE_AMOUNT: The amount of messages to purge`,
+                                            `    PURGE_REASON: The reason for the purge`,
+                                            ``,
+                                            `    /purge GlowingSocc 10 spam`
+                                        ].join('\n');
+                                        if (args.length < 3) {
+                                            if (args[0] && args[0].toLowerCase() === 'help') {
+                                                self.showHint(help);
+                                            } else {
+                                                self.showHint(`Missing arguments.\n${usage}`, true);
+                                            }
+                                        } else {
+                                            let user = args.shift(),
+                                                purgeAmount = args.shift(),
+                                                purgeReason = args.join(' ');
+                                            if (!isNaN(purgeAmount)) {
+                                                purgeAmount = purgeAmount >> 0;
+                                            } else {
+                                                return self.showHint(`Invalid purgeAmount. Expected a number, got ${purgeAmount}`, true);
+                                            }
+                                            $.post("/admin/chatPurge", {
+                                                who: user,
+                                                amount: purgeAmount,
+                                                reason: purgeReason
+                                            }, function () {
+                                                alert.show('Chatpurge initiated');
+                                                self.elements.input[0].value = '';
+                                                self.elements.input[0].disabled = false;
+                                            }).fail(() => {
+                                                alert.show('Failed to chatpurge');
+                                                self.elements.input[0].disabled = false;
+                                            });
+                                        }
+                                        break;
+                                    }
+                                }
+                            } else {
+                                self._send(self.elements.input[0].value);
+                                self.elements.input.val("");
+                            }
+                        } else if (e.originalEvent.key == "Tab" || e.originalEvent.which == 9) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                        }
+                    }).on('keyup', e => {
+                        let toSend = self.elements.input[0].value;
+                        let trimmed = toSend.trim();
+                        if (trimmed.length == 0) return self.showHint('');
+                        if (!((e.originalEvent.key == "Enter" || e.originalEvent.which === 13) && !e.originalEvent.shiftKey) && trimmed.startsWith('/') && user.getRole() !== "USER") {
+                            let searchAgainst = trimmed.substr(1).split(' ').shift();
+                            let matches = [];
+                            commandsCache.forEach(x => {
+                                if (x[0].startsWith(searchAgainst)) {
+                                    matches.push(x[1]);
+                                }
+                            });
+                            if (matches.length) {
+                                self.showHint(matches.join('\n'));
+                            }
+                        }
+                    });
+
+                    $(window).on("pxls:panel:opened", (e, which) => {
+                        if (which === "chat") {
+                            self.elements.message_icon.removeClass('has-notification');
+                            let lastN = self.elements.body.find("[data-nonce]").last()[0];
+                            if (lastN) {
+                                ls.set("chat-last_seen_nonce", lastN.dataset.nonce);
+                            }
+
+                            if (user.isLoggedIn()) {
+                                self.elements.rate_limit_overlay.hide();
+                                self.elements.rate_limit_counter.text('');
+                            } else {
+                                self.elements.rate_limit_overlay.show();
+                                self.elements.rate_limit_counter.text('You must be logged in to chat.');
+                            }
+                        }
+                    });
+
+                    $(window).on("mouseup", e => {
+                        let popup = document.querySelector('.popup');
+                        if (!popup) return;
+                        let target = e.target;
+                        if (e.originalEvent && e.originalEvent.target)
+                            target = e.originalEvent.target;
+
+                        if (target) {
+                            let closestPopup = target.closest('.popup');
+                            closestPopup || popup.remove();
+                        }
+                    });
+
+                    self.elements.body.on("scroll", e => {
+                        let obj = self.elements.body[0];
+                        self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
+                    });
+                },
+                _numWithinDrift(needle, haystack, drift) {
+                    return needle >= (haystack - drift) && needle <= (haystack + drift);
+                },
+                showHint: (msg, isError = false) => {
+                    self.elements.chat_hint.toggleClass('text-red', isError === true).text(msg);
+                },
+                addServerAction: msg => {
+                    let when = moment();
+                    let toAppend =
+                        crel('li', {'class': 'chat-line server-action'},
+                            crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format('hh:mm:ss A')),
+                            document.createTextNode(' - '),
+                            crel('span', {'class': 'content'}, msg)
+                        );
+
+                    self.elements.body.append(toAppend);
+                    if (self.stickToBottom) {
+                        self._doScroll(toAppend);
+                    }
+                },
+                _send: msg => {
+                    socket.send({type: "ChatMessage", message: msg});
+                },
+                _process: packet => {
+                    if (packet.nonce) {
+                        if (self.nonceLog.includes(packet.nonce)) {
+                            return;
+                        } else {
+                            self.nonceLog.unshift(packet.nonce); //sit this nonce in front so we short circuit sooner
+                            if (self.nonceLog.length > 50) {
+                                self.nonceLog.pop(); //ensure we pop off back instead of shift off front
+                            }
+                        }
+                    }
+                    let when = moment.unix(packet.date);
+                    let badges = crel('span', {'class': 'badges'});
+                    if (Array.isArray(packet.badges)) {
+                        packet.badges.forEach(badge => {
+                            switch(badge.type) {
+                                case 'text':
+                                    crel(badges, crel('span', {'class': 'text-badge', 'title': badge.tooltip || ''}, badge.displayName || ''), document.createTextNode(' '));
+                                    break;
+                                case 'icon':
+                                    crel(badges, crel('i', {'class': badge.cssIcon || '', 'title': badge.tooltip || ''}, document.createTextNode(' ')), document.createTextNode(' '));
+                                    break;
+                            }
+                        });
+                    }
+                    self.elements.body.append(
+                        crel('li', {'data-nonce': packet.nonce, 'data-author': packet.author, 'data-date': packet.date, 'class': 'chat-line'},
+                            crel('span', {'class': 'actions'},
+                                crel('i', {'class': 'fas fa-cog', 'data-action': 'actions-panel', 'title': 'Actions', onclick: self._popActionsPanel})
+                            ),
+                            crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format('hh:mm:ss A')),
+                            document.createTextNode(' '),
+                            badges,
+                            document.createTextNode(' '),
+                            crel('span', {'class': 'user'}, packet.author),
+                            document.createTextNode(': '),
+                            crel('span', {'class': 'content'}, packet.message_raw),
+                            document.createTextNode(' ')
+                        )
+                    );
+                },
+                _popActionsPanel: function(e) { //must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
+                    if (this && this.closest) {
+                        let closest = this.closest('.chat-line[data-nonce]');
+                        if (!closest) return console.log('no closest chat-line?', this);
+
+                        let nonce = closest.dataset.nonce;
+                        let thisRect = this.getBoundingClientRect(); //this: i.fas.fa-cog
+                        let bodyRect = document.body.getBoundingClientRect();
+
+                        let popupActions = crel('ul', {'class': 'popup-actions'});
+                        let actionReport = crel('li', {'class': 'text-red', 'data-action': 'report', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Report');
+                        let actionChatban = crel('li', {'data-action': 'chatban', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Chat (un)ban');
+                        let actionPurgeUser = crel('li', {'data-action': 'purge', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Purge User');
+                        let actionDeleteMessage = crel('li', {'data-action': 'delete', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Delete');
+
+                        if (user.getRole() === "USER") {
+                            crel(popupActions, actionReport);
+                        } else {
+                            crel(popupActions, actionChatban);
+                            crel(popupActions, actionPurgeUser);
+                            crel(popupActions, actionDeleteMessage);
+                            crel(popupActions, crel('li', {'class': 'separator'}));
+                            crel(popupActions, actionReport);
+                        }
+
+                        let popup = crel('div', {'class': 'popup', 'data-popup-for': nonce},
+                            popupActions
+                        );
+                        document.body.appendChild(popup);
+
+                        let popupRect = popup.getBoundingClientRect();
+                        let left = bodyRect.width < 768 ? thisRect.left : thisRect.left - (popupRect.width / 2) + 4;
+                        let top = thisRect.top + thisRect.height + 2;
+
+                        popup.style.left = `${left}px`;
+                        if (popupRect.height + top > bodyRect.bottom) {
+                            popup.style.bottom = '2px';
+                        } else {
+                            popup.style.top = `${top}px`;
+                        }
+                    }
+                },
+                _handleActionClick: function(e) { //must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
+                    if (!this.dataset) return console.trace('onClick attached to invalid object');
+
+                    let chatLine = self.elements.body.find(`.chat-line[data-nonce="${this.dataset.nonce}"]`)[0];
+                    if (!chatLine && !this.dataset.target) return console.warn('no chatLine/target? searched for nonce %o', this.dataset.nonce);
+                    let mode = !!chatLine;
+
+                    let reportingMessage = mode ? chatLine.querySelector('.content').textContent : '';
+                    let reportingTarget = mode ? chatLine.dataset.author : this.dataset.target;
+
+                    $(".popup").remove();
+                    switch (this.dataset.action.toLowerCase().trim()) {
+                        case 'report': {
+                            let reportButton = crel('button', {'class': 'button', 'style': 'position: initial;', 'type': 'submit'}, 'Report');
+                            let textArea = crel('textarea', {'placeholder': 'Enter a reason for your report', 'style': 'width: 100%; border: 1px solid #999;', 'required': 'true', onkeydown: e => e.stopPropagation()});
+
+                            let chatReport =
+                                crel('form', {'class': 'report chat-report', 'data-chat-nonce': this.dataset.nonce},
+                                    crel('h3', 'Chat Report'),
+                                    crel('p', 'Use this form to report chat offenses.'),
+                                    crel('p', {'style': 'font-size: 1rem !important;'},
+                                        `You are reporting a chat message from `,
+                                        crel('span', {'style': 'font-weight: bold'}, reportingTarget),
+                                        crel('span', {'title': reportingMessage}, ` with the content "${reportingMessage.substr(0, 60)}${reportingMessage.length > 60 ? '...' : ''}"`)
+                                    ),
+                                    textArea,
+                                    crel('div', {'style': 'text-align: right'},
+                                        crel('button', {'class': 'button', 'style': 'position: initial; margin-right: .25rem', 'type': 'button', onclick: () => {alert.hide(); chatReport.remove();}}, 'Cancel'),
+                                        reportButton
+                                    )
+                                );
+                            chatReport.onsubmit = e => {
+                                e.preventDefault();
+                                reportButton.disabled = true;
+                                if (!this.dataset.nonce) return console.error('!! No nonce to report? !!', this);
+                                $.post("/reportChat", {
+                                    nonce: this.dataset.nonce,
+                                    report_message: textArea.value
+                                }, function () {
+                                    chatReport.remove();
+                                    alert.show("Sent report!");
+                                }).fail(function () {
+                                    alert.show("Error sending report.");
+                                    reportButton.disabled = false;
+                                });
+                            };
+                            alert.showElem(chatReport, true);
+                            break;
+                        }
+                        case 'chatban': {
+                            let txtBanReason = crel('textarea', {'placeholder': 'Enter a reason for the (un)ban.', 'required': 'true', onkeydown: e => e.stopPropagation()});
+
+                            let txtMessageRemoval = crel('input', {'type': 'text', 'required': 'true', 'placeholder': '-1 for all', onkeydown: e => e.stopPropagation()});
+                            let txtMessageRemovalError = crel('label', {'class': 'error-label'});
+
+                            let txtBanlength = crel('input', {'type': 'text', 'value': '600', onkeydown: e => e.stopPropagation()});
+                            let txtBanlengthError = crel('label', {'class': 'error-label'});
+
+                            let rbTemp = crel('input', {'type': 'radio', 'name': 'rbBanType', 'data-type': 'temp'});
+                            let rbPerma = crel('input', {'type': 'radio', 'name': 'rbBanType', 'data-type': 'perma'});
+                            let rbUnban = crel('input', {'type': 'radio', 'name': 'rbBanType', 'data-type': 'unban'});
+                            let rbBantypeError = crel('label', {'class': 'error-label'});
+
+                            let banlengthWrapper = crel('div', {'class': 'hidden'},
+                                crel('h5', 'Ban Length:'),
+                                crel('label', 'Banlength (seconds): ', txtBanlength),
+                                crel('br'),
+                                txtBanlengthError
+                            );
+
+                            rbPerma.onchange = rbTemp.onchange = rbUnban.onchange = e => banlengthWrapper.classList.toggle('hidden', !rbTemp.checked);
+
+                            let messageTable = mode
+                                ? crel('table', {'class': 'chatmod-table'},
+                                    crel('tr',
+                                        crel('th', 'Nonce: '),
+                                        crel('td', this.dataset.nonce)
+                                    ),
+                                    crel('tr',
+                                        crel('th', 'Message: '),
+                                        crel('td', {'title': reportingMessage}, `${reportingMessage.substr(0, 120)}${reportingMessage.length > 120 ? '...' : ''}`)
+                                    )
+                                )
+                                : crel('table', {'class': 'chatmod-table'},
+                                    crel('tr',
+                                        crel('th', 'User: '),
+                                        crel('td', reportingTarget)
+                                    )
+                                );
+
+                            let chatbanContainer = crel('form', {'class': 'chatmod-container', 'data-chat-nonce': this.dataset.nonce},
+                                crel('h3', 'Chatban'),
+                                crel('h5', mode ? 'Message:': 'Banning:'),
+                                messageTable,
+                                crel('h5', 'Ban Type'),
+                                crel('div', {'class': 'rbgroup'},
+                                    crel('label', rbTemp, 'Temporary Ban'),
+                                    crel('label', rbPerma, 'Permanent Ban'),
+                                    crel('label', rbUnban, 'Unban')
+                                ),
+                                rbBantypeError,
+                                banlengthWrapper,
+                                crel('h5', {'style': 'margin-left: -1rem'}, '(Un)ban Reason'),
+                                crel('div',
+                                    txtBanReason
+                                ),
+                                crel('h5', 'Message Removal'),
+                                crel('div',
+                                    crel('label', {'required': 'true'}, 'Removal Ammount: ', txtMessageRemoval),
+                                    crel('br'),
+                                    txtMessageRemovalError
+                                ),
+                                crel('div', {'class': 'buttons'},
+                                    crel('button', {'class': 'button', 'type': 'button', onclick: () => {alert.hide(); chatbanContainer.remove();}}, 'Cancel'),
+                                    crel('button', {'class': 'button'}, 'Ban')
+                                )
+                            );
+                            chatbanContainer.onsubmit = e => {
+                                e.preventDefault();
+                                let selectedBanType = chatbanContainer.querySelector('[name=rbBanType]:checked');
+                                let type = selectedBanType ? selectedBanType.dataset.type : false;
+                                if (type === false) {
+                                    rbBantypeError.innerHTML = `Ban Type is required`;
+                                    return;
+                                } else {
+                                    rbBantypeError.innerHTML = ``;
+                                }
+
+                                if (/^-?[0-9]+$/.test(txtMessageRemoval.value)) {
+                                    txtMessageRemovalError.innerHTML = ``;
+                                } else {
+                                    txtMessageRemovalError.innerHTML = `Invalid removal amount`;
+                                    return;
+                                }
+
+                                if (type.toLowerCase().trim() === "temp") {
+                                    if (/^-?[0-9]+$/.test(txtBanlength.value)) {
+                                        txtBanlengthError.innerHTML = ``;
+                                    } else {
+                                        txtBanlengthError.innerHTML = `Invalid banlength`;
+                                        return;
+                                    }
+                                }
+
+                                let postArgs = {
+                                    type,
+                                    reason: txtBanReason.value,
+                                    removalAmount: txtMessageRemoval.value,
+                                    banLength: txtBanlength.value || 0
+                                };
+
+                                if (mode)
+                                    postArgs.nonce = this.dataset.nonce;
+                                else
+                                    postArgs.who = reportingTarget;
+
+                                $.post("/admin/chatban", postArgs, () => {
+                                    chatbanContainer.remove();
+                                    alert.show("Chatban initiated");
+                                }).fail(() => {
+                                    alert.show("Error occurred while chatbanning");
+                                });
+                            };
+                            alert.showElem(chatbanContainer, true);
+                            break;
+                        }
+                        case 'delete': {
+                            let btnDelete = crel('button', {'class': 'button'}, 'Delete');
+                            btnDelete.onclick = () => {
+                                $.post('/admin/delete', {
+                                    nonce: this.dataset.nonce
+                                }, () => {
+                                    deleteWrapper.remove();
+                                    alert.hide();
+                                }).fail(() => {
+                                    alert.show('Failed to delete');
+                                });
+                            };
+                            let deleteWrapper = crel('div', {'class': 'chatmod-container'},
+                                crel('h3', 'Delete Message'),
+                                crel('h5', 'Message:'),
+                                crel('table',
+                                    crel('tr',
+                                        crel('th', 'Nonce: '),
+                                        crel('td', this.dataset.nonce)
+                                    ),
+                                    crel('tr',
+                                        crel('th', 'User: '),
+                                        crel('td', reportingTarget)
+                                    ),
+                                    crel('tr',
+                                        crel('th', 'Message: '),
+                                        crel('td', {'title': reportingMessage}, `${reportingMessage.substr(0, 120)}${reportingMessage.length > 120 ? '...' : ''}`)
+                                    )
+                                ),
+                                crel('div', {'class': 'buttons'},
+                                    crel('button', { 'class': 'button', 'type': 'button', onclick: () => {deleteWrapper.remove(); alert.hide();} }, 'Cancel'),
+                                    btnDelete
+                                )
+                            );
+                            alert.showElem(deleteWrapper, true);
+                            break;
+                        }
+                        case 'purge': {
+                            let txtPurgeAmount = crel('input', {'type': 'text', 'required': 'true', 'placeholder': '-1 for all', onkeydown: e => e.stopPropagation()});
+                            let lblPurgeAmountError = crel('label', {'class': 'hidden error-label'});
+
+                            let txtPurgeReason = crel('input', {'type': 'text', 'required': 'true', onkeydown: e => e.stopPropagation()});
+                            let lblPurgeReasonError = crel('label', {'class': 'hidden error-label'});
+
+                            let btnPurge = crel('button', {'class': 'button', 'type': 'submit'}, 'Purge');
+
+                            let messageTable = mode
+                                ? crel('table',
+                                    crel('tr',
+                                        crel('th', 'Nonce: '),
+                                        crel('td', this.dataset.nonce)
+                                    ),
+                                    crel('tr',
+                                        crel('th', 'Message: '),
+                                        crel('td', {'title': reportingMessage}, `${reportingMessage.substr(0, 120)}${reportingMessage.length > 120 ? '...' : ''}`)
+                                    )
+                                )
+                                : crel('table', {'class': 'chatmod-table'},
+                                    crel('tr',
+                                        crel('th', 'User: '),
+                                        crel('td', reportingTarget)
+                                    )
+                                );
+
+                            let purgeWrapper = crel('form', {'class': 'chatmod-container'},
+                                crel('h3', 'Purge User'),
+                                crel('h5', 'Selected Message'),
+                                messageTable,
+                                crel('div',
+                                    crel('h5', 'Number of messages to purge'),
+                                    txtPurgeAmount,
+                                    crel('br'),
+                                    lblPurgeAmountError
+                                ),
+                                crel('div',
+                                    crel('h5', 'Purge Reason'),
+                                    txtPurgeReason,
+                                    crel('br'),
+                                    lblPurgeReasonError
+                                ),
+                                crel('div', {'class': 'buttons'},
+                                    crel('button', { 'class': 'button', 'type': 'button', onclick: () => {purgeWrapper.remove(); alert.hide();} }, 'Cancel'),
+                                    btnPurge
+                                )
+                            );
+                            purgeWrapper.onsubmit = e => {
+                                e.preventDefault();
+
+                                if (!/^-?[0-9]+$/.test(txtPurgeAmount.value)) {
+                                    lblPurgeAmountError.innerHTML = 'Invalid purge amount';
+                                    return;
+                                } else {
+                                    lblPurgeAmountError.innerHTML = '';
+                                }
+
+                                if (txtPurgeAmount.value.trim().length === 0) {
+                                    lblPurgeReasonError.innerHTML = 'Invalid reason';
+                                    return;
+                                } else {
+                                    lblPurgeReasonError.innerHTML = '';
+                                }
+
+                                let amount = txtPurgeAmount.value >> 0;
+                                if (!amount) {
+                                    lblPurgeAmountError.innerHTML = 'Value must be -1 or >0';
+                                    return;
+                                } else {
+                                    lblPurgeAmountError.innerHTML = '';
+                                }
+
+                                $.post("/admin/chatPurge", {
+                                    who: reportingTarget,
+                                    amount: txtPurgeAmount.value,
+                                    reason: txtPurgeReason.value
+                                }, function () {
+                                    purgeWrapper.remove();
+                                    alert.show("User purged");
+                                }).fail(function () {
+                                    alert.show("Error sending purge.");
+                                });
+                            };
+
+
+                            alert.show(purgeWrapper, true);
+                            break;
+                        }
+                    }
+                },
+                _doScroll: elem => {
+                    try { //Fixes iframes scrolling their parent. For context see https://github.com/pxlsspace/Pxls/pull/192's commit messages.
+                        elem.scrollIntoView({block: "nearest", inline: "nearest"});
+                    } catch (ignored) {
+                        elem.scrollIntoView(false);
+                    }
+                }
+            };
+            return {
+                init: self.init,
+                _handleActionClick: self._handleActionClick
+            }
+        })(),
         // this takes care of the countdown timer
         timer = (function () {
             var self = {
@@ -2871,9 +3715,11 @@ window.App = (function () {
                 role: "USER",
                 pendingSignupToken: null,
                 loggedIn: false,
+                username: '',
                 getRole: function () {
                     return self.role;
                 },
+                getUsername: () => self.username,
                 signin: function () {
                     var data = ls.get("auth_respond");
                     if (!data) {
@@ -2991,6 +3837,7 @@ window.App = (function () {
                     socket.on("userinfo", function (data) {
                         let isBanned = false,
                             banelem = $("<div>").addClass("ban-alert-content");
+                        self.username = data.username;
                         self.loggedIn = true;
                         self.elements.loginOverlay.fadeOut(200);
                         self.elements.userInfo.find("span.name").text(data.username);
@@ -3022,6 +3869,7 @@ window.App = (function () {
                                     place: place,
                                     alert: alert,
                                     lookup: lookup,
+                                    chat: chat,
                                     cdOverride: data.cdOverride
                                 });
                             });
@@ -3056,6 +3904,7 @@ window.App = (function () {
             return {
                 init: self.init,
                 getRole: self.getRole,
+                getUsername: self.getUsername,
                 webinit: self.webinit,
                 wsinit: self.wsinit,
                 isLoggedIn: self.isLoggedIn
@@ -3107,9 +3956,11 @@ window.App = (function () {
     alert.init();
     timer.init();
     uiHelper.init();
+    panels.init();
     coords.init();
     user.init();
     notification.init();
+    chat.init();
     // and here we finally go...
     board.start();
 
@@ -3118,6 +3969,7 @@ window.App = (function () {
         ls: ls,
         ss: ss,
         query: query,
+        socket: socket,
         heatmap: {
             clear: heatmap.clear
         },

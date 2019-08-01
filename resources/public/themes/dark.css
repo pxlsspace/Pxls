@@ -80,6 +80,34 @@ input[type="text"], textarea {
     color: #eee;
 }
 
+/* Text Colors */
+
+.text-red {
+    color: #f44;
+}
+
+/* Panels */
+
+header {
+    background-image: linear-gradient(to bottom, #444, #333);
+}
+
+aside.panel {
+    background-color: #333;
+    color: #eee;
+}
+
+/* Chat */
+
+li.chat-line.server-action {
+    color: #9f9f9f;
+}
+
+.popup {
+    background: #333;
+    color: #ccc;
+}
+
 /* Admin */
 
 .admin input {

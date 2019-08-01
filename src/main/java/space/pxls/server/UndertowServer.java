@@ -7,7 +7,6 @@ import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.form.EagerFormParsingHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.util.Headers;
-import io.undertow.util.HttpString;
 import io.undertow.websockets.core.AbstractReceiveListener;
 import io.undertow.websockets.core.BufferedTextMessage;
 import io.undertow.websockets.core.WebSocketChannel;
@@ -20,9 +19,6 @@ import space.pxls.util.AuthReader;
 import space.pxls.util.IPReader;
 import space.pxls.util.RateLimitingHandler;
 import space.pxls.util.RoleGate;
-import space.pxls.user.UserManager;
-import space.pxls.user.User;
-import space.pxls.user.Role;
 
 import java.io.IOException;
 import java.util.*;
@@ -57,6 +53,7 @@ public class UndertowServer {
                 .addPrefixPath("/logout", webHandler::logout)
                 .addPrefixPath("/lookup", new RateLimitingHandler(webHandler::lookup, "http:lookup", (int) App.getConfig().getDuration("server.limits.lookup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.lookup.count")))
                 .addPrefixPath("/report", new RoleGate(Role.USER, webHandler::report))
+                .addPrefixPath("/reportChat", new RoleGate(Role.USER, webHandler::chatReport))
                 .addPrefixPath("/signin", webHandler::signIn)
                 .addPrefixPath("/users", webHandler::users)
                 .addPrefixPath("/auth", new RateLimitingHandler(webHandler::auth, "http:auth", (int) App.getConfig().getDuration("server.limits.auth.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.auth.count")))
@@ -66,6 +63,9 @@ public class UndertowServer {
                 .addPrefixPath("/admin/permaban", new RoleGate(Role.MODERATOR, webHandler::permaban))
                 .addPrefixPath("/admin/shadowban", new RoleGate(Role.ADMIN, webHandler::shadowban))
                 .addPrefixPath("/admin/check", new RoleGate(Role.TRIALMOD, webHandler::check))
+                .addPrefixPath("/admin/chatban", new RoleGate(Role.TRIALMOD, webHandler::chatban))
+                .addPrefixPath("/admin/delete", new RoleGate(Role.TRIALMOD, webHandler::deleteChatMessage))
+                .addPrefixPath("/admin/chatPurge", new RoleGate(Role.TRIALMOD, webHandler::chatPurge))
                 .addPrefixPath("/admin", new RoleGate(Role.TRIALMOD, Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/"))
                         .setCacheTime(10)))
                 .addPrefixPath("/whoami", webHandler::whoami)
@@ -125,8 +125,10 @@ public class UndertowServer {
                     obj = App.getGson().fromJson(jsonObj, ClientAdminMessage.class);
                 if (type.equals("shadowbanme")) obj = App.getGson().fromJson(jsonObj, ClientShadowBanMe.class);
                 if (type.equals("banme")) obj = App.getGson().fromJson(jsonObj, ClientBanMe.class);
-                
-                
+                if (type.equalsIgnoreCase("ChatHistory")) obj = App.getGson().fromJson(jsonObj, ClientChatHistory.class);
+                if (type.equalsIgnoreCase("ChatbanState")) obj = App.getGson().fromJson(jsonObj, ClientChatbanState.class);
+                if (type.equalsIgnoreCase("ChatMessage")) obj = App.getGson().fromJson(jsonObj, ClientChatMessage.class);
+
                 // old thing, will auto-shadowban
                 if (type.equals("place")) obj = App.getGson().fromJson(jsonObj, ClientPlace.class);
                 
@@ -150,6 +152,12 @@ public class UndertowServer {
 
     public void send(WebSocketChannel channel, Object obj) {
         sendRaw(channel, App.getGson().toJson(obj));
+    }
+
+    public void send(User user, Object obj) {
+        for (WebSocketChannel connection : user.getConnections()) {
+            send(connection, obj);
+        }
     }
 
     public Set<WebSocketChannel> getConnections() {
