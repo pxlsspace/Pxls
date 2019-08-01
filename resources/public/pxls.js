@@ -3972,7 +3972,6 @@ window.App = (function () {
         ls: ls,
         ss: ss,
         query: query,
-        socket: socket,
         heatmap: {
             clear: heatmap.clear
         },
