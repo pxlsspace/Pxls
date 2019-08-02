@@ -915,6 +915,7 @@ aside.panel {
     top: 0;
     max-width: 50%;
     min-width: 30%;
+    width: 30%;
     height: 100%;
     max-height: 100%;
     min-height: 100%;
@@ -1030,6 +1031,18 @@ article .body {
 
 .no-p-margin p {
     margin: 0 !important;
+}
+
+body.panel-right-open .ui-bar {
+    left: 0;
+    width: 70%;
+    transition: width ease-out .25s;
+}
+
+body.panel-left-open .ui-bar {
+    right: 0;
+    width: 70%;
+    transition: width ease-out .25s;
 }
 
 /* CHAT */
@@ -1314,6 +1327,18 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 
     .panel.right {
         right: -105%;
+    }
+
+    body.panel-right-open .ui-bar {
+        right: initial;
+        width: initial;
+        transition: none;
+    }
+
+    body.panel-left-open .ui-bar {
+        right: initial;
+        width: initial;
+        transition: none;
     }
 
     #chat-hint {

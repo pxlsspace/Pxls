@@ -6,6 +6,20 @@
     <meta name="keywords" content="pxls, pixels, place, art">
     <meta name="description" content="Place pixels with people to create art">
     <meta name="google-play-app" content="app-id=space.pxls.android">
+    <style type="text/css">
+        /** These MUST be here because the YUI compressor breaks calc() and is abandoned */
+        body.panel-right-open #ui .right {
+            right: calc(30% + 10px);
+        }
+
+        body.panel-left-open #ui .left {
+            left: calc(30% + 10px);
+        }
+
+        body.panel-left-open #ui .left, body.panel-left-open #ui .right, body.panel-right-open #ui .left, body.panel-right-open #ui .right {
+            bottom: 70px;
+        }
+    </style>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="fontawesome-all.min.css">
     <link rel="icon" href="/favicon.ico" type="image/x-icon">

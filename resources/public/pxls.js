@@ -2693,6 +2693,8 @@ window.App = (function () {
                                             $(window).trigger("pxls:panel:closed", x.dataset['panel']);
                                         }); //Close other open panels
                                         targetPanel.classList.add('open');
+                                        document.body.classList.toggle('panel-left-open', targetPanel.classList.contains('left'));
+                                        document.body.classList.toggle('panel-right-open', targetPanel.classList.contains('right'));
                                         $(window).trigger("pxls:panel:opened", _panelDescriptor);
                                     } else console.debug('[PANELS:TRIGGER] Bad descriptor? Got: %o', _panelDescriptor);
                                 } else console.debug('[PANELS:TRIGGER] No descriptor? Elem: %o', closestTrigger);
@@ -2706,6 +2708,11 @@ window.App = (function () {
                             if (closestPanel) {
                                 closestPanel.classList.toggle('open', false);
                                 $(window).trigger("pxls:panel:closed", [closestPanel.dataset['panel']]);
+                                if (closestPanel.classList.contains('right')) {
+                                    document.body.classList.remove('panel-right-open');
+                                } else {
+                                    document.body.classList.remove('panel-left-open');
+                                }
                             } else console.debug('[PANELS:CLOSER] No panel?');
                         });
                     });
