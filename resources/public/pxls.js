@@ -1921,6 +1921,9 @@ window.App = (function () {
                             .attr("data-idx", -1)
                             .addClass("palette-color no-border deselect-button")
                             .addClass("ontouchstart" in window ? "touch" : "no-touch").css("background-color", "transparent")
+                            .append(
+                                crel('i', {class: 'fas fa-times'})
+                            )
                             .click(function () {
                                 self.switch(-1);
                             })

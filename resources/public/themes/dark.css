@@ -69,6 +69,10 @@ kbd {
     background-color: rgba(0, 0, 0, 0.5);
 }
 
+.palette-color.deselect-button {
+    color: #DDD;
+}
+
 #undo {
     background-image: linear-gradient(to top, #0000007F, #000);
     color: #fff;

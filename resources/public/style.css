@@ -544,8 +544,14 @@ button.button.dark:disabled {
 }
 
 .palette-color.deselect-button {
-    background-image: url("./times.svg");
-    background-size: 100% 100%;
+    font-size: 1.75rem;
+    position: relative;
+    bottom: 4px;
+    left: 4px;
+}
+
+.palette-color.deselect-button.active {
+    bottom: 11px;
 }
 
 .palette-color.no-border {
