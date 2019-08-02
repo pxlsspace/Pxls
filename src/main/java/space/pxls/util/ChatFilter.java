@@ -4,6 +4,7 @@ import space.pxls.App;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ChatFilter {
@@ -75,8 +76,11 @@ public class ChatFilter {
             }
         }
         for (Pattern p : regexNeedle) {
-            toReturn = p.matcher(toReturn).replaceAll("***");
-            if (p.matcher(toReturn).find()) anyHits = true;
+            Matcher m = p.matcher(toReturn);
+            if (m.find()) {
+                anyHits = true;
+                toReturn = m.replaceAll("***");
+            }
         }
 
         return new FilterResult(anyHits, haystack, toReturn);
