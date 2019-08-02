@@ -3077,9 +3077,6 @@ window.App = (function () {
 
                     $(window).on("mouseup", e => {
                         let target = e.target;
-                        if (target && !target.closest('.panel')) {
-                            self.elements.input.blur();
-                        }
                         let popup = document.querySelector('.popup');
                         if (!popup) return;
                         if (e.originalEvent && e.originalEvent.target)
@@ -3088,6 +3085,12 @@ window.App = (function () {
                         if (target) {
                             let closestPopup = target.closest('.popup');
                             closestPopup || popup.remove();
+                        }
+                    });
+                    $(window).on("mousedown", e => {
+                        let target = e.target;
+                        if (target && !target.closest('.panel')) {
+                            self.elements.input.blur();
                         }
                     });
 
