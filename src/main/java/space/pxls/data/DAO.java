@@ -277,6 +277,7 @@ public interface DAO extends Closeable {
 
     @SqlUpdate("CREATE TABLE IF NOT EXISTS `chat_reports` (" +
             "  `id` int NOT NULL PRIMARY KEY AUTO_INCREMENT," +
+            "  `time` int(10) unsigned DEFAULT NULL," +
             "  `chat_message` varchar(36) not null," +
             "  `report_message` longtext character set utf8 not null," +
             "  `target` int not null," +
@@ -286,7 +287,7 @@ public interface DAO extends Closeable {
             ")")
     void createChatReportsTable();
 
-    @SqlUpdate("INSERT INTO chat_reports (`chat_message`, `target`, `initiator`, `report_message`) VALUES (:chat_message, :target, :initiator, :report_message)")
+    @SqlUpdate("INSERT INTO chat_reports (`chat_message`, `target`, `initiator`, `report_message`, `time`) VALUES (:chat_message, :target, :initiator, :report_message, UNIX_TIMESTAMP())")
     void addChatReport(@Bind("chat_message") String nonce, @Bind("target") int target_uid, @Bind("initiator") int initiator_uid, @Bind("report_message") String report_message);
 
     @SqlUpdate("INSERT INTO chat_messages (`author`, `sent`, `content`, `filtered`, `nonce`) VALUES (:author, :sent, :content, :filtered, :nonce)")
