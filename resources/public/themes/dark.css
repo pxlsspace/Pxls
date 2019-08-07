@@ -103,7 +103,15 @@ aside.panel {
 
 /* Chat */
 
-li.chat-line.server-action {
+ul.chat-body li.chat-line {
+    border-bottom: 1px solid #4f4f4f;
+}
+
+ul.chat-body li.chat-line:nth-child(odd) {
+    background: #3f3f3f;
+}
+
+ul.chat-body li.chat-line.server-action {
     color: #9f9f9f;
 }
 

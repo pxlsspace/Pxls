@@ -1071,10 +1071,15 @@ body.panel-left-open .ui-bar {
 ul.chat-body li.chat-line {
     /*border:1px solid #000;*/
     line-height: 1.5rem;
+    border-bottom: 1px solid #bfbfbf;
+}
+
+ul.chat-body li.chat-line:nth-child(odd) {
+    background: #d5d5d5;
 }
 
 ul.chat-body li.chat-line:not(:last-child):not(:only-of-type) {
-    margin: 10px 0;
+    padding: 5px 0;
 }
 
 ul.chat-body li.chat-line:nth-child(odd) {
