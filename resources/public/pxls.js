@@ -770,6 +770,12 @@ window.App = (function () {
                     self.elements.board_render[0].addEventListener("touchmove", handleInputMove, { passive: false });
 
                     function handleInputDown(event) {
+                        // Lord forgive me for what I must do...
+                        // UNRELATED
+                        if (event.target && !event.target.closest('.panel')) {
+                            $("#txtChatContent").blur();
+                        }
+                        // RELATED
                         let clientX = 0,
                             clientY = 0,
                             prereq = true;
@@ -3116,12 +3122,6 @@ window.App = (function () {
                         if (target) {
                             let closestPopup = target.closest('.popup');
                             closestPopup || popup.remove();
-                        }
-                    });
-                    $(window).on("mousedown", e => {
-                        let target = e.target;
-                        if (target && !target.closest('.panel')) {
-                            self.elements.input.blur();
                         }
                     });
 
