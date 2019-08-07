@@ -2156,6 +2156,7 @@ window.App = (function () {
                         return {
                             id: hook.id || "hook",
                             name: hook.name || "Hook",
+                            sensitive: hook.sensitive || false,
                             get: hook.get || function () { },
                             css: hook.css || {},
                         };
@@ -2171,20 +2172,47 @@ window.App = (function () {
                     });
                 },
                 create: function (data) {
+                    const sensitive = localStorage.getItem("hide_sensitive") === "true";
+                    let sensitiveElems = [];
                     self._makeShell(data).find(".content").first().append(function () {
                         if (data) {
                             return $.map(self.hooks, function (hook) {
                                 const get = hook.get(data);
                                 const value = typeof get === "object" ? get : $("<span>").text(get);
 
-                                return $("<div>").append(
+                                let _retVal = $("<div data-sensitive=\"" + hook.sensitive + "\">").append(
                                     $("<b>").text(hook.name + ": "),
                                     value.css(hook.css)
                                 ).attr("id", "lookuphook_" + hook.id);
+                                if (hook.sensitive) {
+                                    sensitiveElems.push(_retVal);
+                                    if (sensitive) {
+                                        _retVal.css("display", "none");
+                                    }
+                                }
+                                return _retVal;
                             });
                         } else {
                             return $("<p>").text("This pixel is background (was not placed by a user).");
                         }
+                    }).append(function () {
+                        if (!data) {
+                            return "";
+                        }
+                        if (sensitiveElems.length >= 1) {
+                            let label = $("<label>").text("Hide sensitive information");
+                            let checkbox = $("<input type=\"checkbox\">").css("margin-top", "10px");
+                            label.prepend(checkbox);
+                            checkbox.prop("checked", sensitive);
+                            checkbox.change(function() {
+                                ls.set("hide_sensitive", this.checked);
+                                sensitiveElems.forEach(v => {
+                                    v.css("display", this.checked ? "none" : "");
+                                })
+                            });
+                            return label;
+                        }
+                        return "";
                     });
                     self.elements.lookup.fadeIn(200);
                 },

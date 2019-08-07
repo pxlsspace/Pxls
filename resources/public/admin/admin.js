@@ -359,6 +359,7 @@
                     App.lookup.registerHook({
                         id: "login",
 						name: "Login",
+						sensitive: true,
 						get: data => {
                             var addMonoClass = localStorage.getItem("monospace_lookup") === "true" ? " useMono" : ""
                             return $("<div class=\"monoVal" + addMonoClass + "\">").text(data.login)
@@ -366,6 +367,7 @@
                     }, {
                         id: "user_agent",
 						name: "User Agent",
+						sensitive: true,
 						get: data => {
                             var addMonoClass = localStorage.getItem("monospace_lookup") === "true" ? " useMono" : ""
                             return $("<div class=\"monoVal" + addMonoClass + "\">").text(data.userAgent)
@@ -373,10 +375,12 @@
                     }, {
 						id: "alert",
 						name: "Send Alert",
+						sensitive: true,
 						get: data => sendAlert(data.username),
 					}, {
                         id: "admin_actions",
                         name: "Mod Actions",
+                        sensitive: true,
                         get: data => $("<span>").append(
 							genButton("Ban (24h)").click(() => {
 								ban.ban_24h(data.username, function () {
