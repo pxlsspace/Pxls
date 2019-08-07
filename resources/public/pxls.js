@@ -729,6 +729,24 @@ window.App = (function () {
                             case "-":
                                 self.nudgeScale(-1);
                                 break;
+                            case "t":
+                            case "T":
+                            case "KeyT":
+                            case 84: //t
+                                panels.open("settings");
+                                break;
+                            case "i":
+                            case "I":
+                            case "KeyI":
+                            case 73: //i
+                                panels.open("info");
+                                break;
+                            case "b":
+                            case "B":
+                            case "KeyB":
+                            case 66: //b
+                                panels.open("chat");
+                                break;
                         }
                         self.pannedWithKeys = true;
                         self.update();
@@ -2753,10 +2771,34 @@ window.App = (function () {
                             } else console.debug('[PANELS:CLOSER] No panel?');
                         });
                     });
+                },
+                isOpen: panel => {
+                    if (!(panel instanceof HTMLElement)) panel = document.querySelector(`.panel[data-panel="${panel}"]`);
+                    return panel && panel.classList.contains('open');
+                },
+                _toggleOpenState: (panel, exclusive = true) => {
+                    if (!(panel instanceof HTMLElement)) panel = document.querySelector(`.panel[data-panel="${panel}"]`);
+                    if (panel) {
+                        this._setOpenState(panel, !panel.classList.contains('open'), exclusive);
+                    }
+                },
+                _setOpenState: (panel, state, exclusive = true) => {
+                    state = !!state;
+                    if (!(panel instanceof HTMLElement)) panel = document.querySelector(`.panel[data-panel="${panel}"]`);
+                    if (panel) {
+                        if (state && exclusive) {
+                            document.querySelectorAll(`.panel[data-panel].${panel.classList.contains('right') ? 'right' : 'left'}.open`).forEach(x => x.classList.remove('open'));
+                        }
+                        panel.classList.toggle('open', state);
+                    }
                 }
             };
             return {
-                init: self.init
+                init: self.init,
+                open: panel => self._setOpenState(panel, true),
+                close: panel => self._setOpenState(panel, false),
+                toggle: panel => self._toggleOpenState(panel),
+                isOpen: self.isOpen
             };
         })(),
         chat = (function() {
