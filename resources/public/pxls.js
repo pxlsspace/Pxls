@@ -3262,11 +3262,18 @@ window.App = (function () {
                             }
                         });
 
+                        const closeHandler = function() {
+                            if (this && this.closest) {
+                                let toClose = this.closest('.popup.panels');
+                                if (toClose) toClose.remove();
+                            }
+                        };
+
                         let popupWrapper = crel('div', {'class': 'popup panels', 'data-popup-for': nonce});
                         let panelWrapper = crel('div', {'class': 'panels-wrapper'});
                         let panelHeader = crel('header',
                             {'style': 'text-align: center;'},
-                            crel('div', {'class': 'left'}, crel('i', {'class': 'fas fa-times text-red'})),
+                            crel('div', {'class': 'left'}, crel('i', {'class': 'fas fa-times text-red', onclick: closeHandler})),
                             crel('span', closest.dataset.author, badges),
                             crel('div', {'class': 'right'})
                         );
