@@ -3210,67 +3210,113 @@ window.App = (function () {
                     let badges = crel('span', {'class': 'badges'});
                     if (Array.isArray(packet.badges)) {
                         packet.badges.forEach(badge => {
-                            switch(badge.type) {
-                                case 'text':
-                                    crel(badges, crel('span', {'class': 'text-badge', 'title': badge.tooltip || ''}, badge.displayName || ''), document.createTextNode(' '));
-                                    break;
-                                case 'icon':
-                                    crel(badges, crel('i', {'class': badge.cssIcon || '', 'title': badge.tooltip || ''}, document.createTextNode(' ')), document.createTextNode(' '));
-                                    break;
+                            if (badge.type === 'icon') {
+                                crel(badges, crel('i', {'class': (badge.cssIcon || '') + ' icon-badge', 'title': badge.tooltip || ''}, document.createTextNode(' ')), document.createTextNode(' '));
                             }
                         });
                     }
                     self.elements.body.append(
-                        crel('li', {'data-nonce': packet.nonce, 'data-author': packet.author, 'data-date': packet.date, 'class': 'chat-line'},
-                            crel('span', {'class': 'actions'},
-                                crel('i', {'class': 'fas fa-cog', 'data-action': 'actions-panel', 'title': 'Actions', onclick: self._popActionsPanel})
-                            ),
-                            crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format('hh:mm:ss A')),
+                        crel('li', {'data-nonce': packet.nonce, 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': 'chat-line'},
+                            // crel('span', {'class': 'actions'},
+                            //     crel('i', {'class': 'fas fa-cog', 'data-action': 'actions-panel', 'title': 'Actions', onclick: self._popActionsPanel})
+                            // ),
+                            crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format(ls.get('chat.24h') === true ? 'HH:mm' : 'hh:mm A')),
                             document.createTextNode(' '),
                             badges,
                             document.createTextNode(' '),
-                            crel('span', {'class': 'user'}, packet.author),
+                            crel('span', {'class': 'user', onclick: self._popUserPanel}, packet.author),
                             document.createTextNode(': '),
                             crel('span', {'class': 'content'}, packet.message_raw),
                             document.createTextNode(' ')
                         )
                     );
                 },
-                _popActionsPanel: function(e) { //must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
+                _popUserPanel: function(e) { //must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
                     if (this && this.closest) {
                         let closest = this.closest('.chat-line[data-nonce]');
-                        if (!closest) return console.log('no closest chat-line?', this);
+                        if (!closest) return console.warn('no closets chat-line on self: %o', this);
 
                         let nonce = closest.dataset.nonce;
-                        let thisRect = this.getBoundingClientRect(); //this: i.fas.fa-cog
+                        let thisRect = this.getBoundingClientRect(); //this: span.user
                         let bodyRect = document.body.getBoundingClientRect();
+
+                        let badgesArray = [];
+                        try {
+                            badgesArray = JSON.parse(closest.dataset.badges);
+                        } catch (ignored) {}
+                        let badges = crel('span', {'class': 'badges'});
+                        badgesArray.forEach(badge => {
+                            switch(badge.type) {
+                                case 'text':
+                                    crel(badges, crel('span', {'class': 'text-badge', 'title': badge.tooltip || ''}, badge.displayName || ''), document.createTextNode(' '));
+                                    break;
+                                case 'icon':
+                                    crel(badges, crel('i', {'class': (badge.cssIcon || '') + ' icon-badge', 'title': badge.tooltip || ''}, document.createTextNode(' ')), document.createTextNode(' '));
+                                    break;
+                            }
+                        });
+
+                        let popupWrapper = crel('div', {'class': 'popup panels', 'data-popup-for': nonce});
+                        let panelWrapper = crel('div', {'class': 'panels-wrapper'});
+                        let panelHeader = crel('header',
+                            {'style': 'text-align: center;'},
+                            crel('div', {'class': 'left'}, crel('i', {'class': 'fas fa-times text-red'})),
+                            crel('span', closest.dataset.author, badges),
+                            crel('div', {'class': 'right'})
+                        );
+                        let leftPanel = crel('div', {'class': 'panel-grow left-pane'});
+                        let rightPanel = crel('div', {'class': 'panel-shrink right-pane'});
+                        let actionsList = crel('ul', {'class': 'actions-list'});
 
                         let popupActions = crel('ul', {'class': 'popup-actions'});
                         let actionReport = crel('li', {'class': 'text-red', 'data-action': 'report', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Report');
                         let actionChatban = crel('li', {'data-action': 'chatban', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Chat (un)ban');
                         let actionPurgeUser = crel('li', {'data-action': 'purge', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Purge User');
                         let actionDeleteMessage = crel('li', {'data-action': 'delete', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Delete');
+                        let actionModLookup = crel('li', {'data-action': 'lookup', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Mod Lookup');
 
-                        if (user.getRole() === "USER") {
-                            crel(popupActions, actionReport);
-                        } else {
-                            crel(popupActions, actionChatban);
-                            crel(popupActions, actionPurgeUser);
-                            crel(popupActions, actionDeleteMessage);
-                            crel(popupActions, crel('li', {'class': 'separator'}));
-                            crel(popupActions, actionReport);
+                        // crel(leftPanel,
+                        //     crel('dl',
+                        //         crel('dt', 'Time'),
+                        //         crel('dd', moment.unix(closest.dataset.date >> 0).format('MMM Do YYYY, hh:mm:ss A')),
+                        //
+                        //         crel('dt', 'Message'),
+                        //         crel('dd', closest.querySelector('.content').textContent)
+                        //     )
+                        // );
+                        crel(leftPanel, crel('p', {'style': 'margin: 8px 0; text-align: center; color: #aaa;'}, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(ls.get('chat.24h') === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
+                        crel(leftPanel, crel('hr'));
+                        crel(leftPanel, crel('p', {'style': 'margin-top: 3px; margin-left: 3px; text-align: left;'}, closest.querySelector('.content').textContent));
+
+                        crel(actionsList, actionReport);
+                        if (["MODERATOR", "DEVELOPER", "ADMIN", "TRIALMOD"].includes(user.getRole())) {
+                            crel(actionsList, actionDeleteMessage);
+                            crel(actionsList, actionPurgeUser);
+                            crel(actionsList, actionChatban);
+                            crel(actionsList, actionModLookup);
                         }
+                        crel(rightPanel, actionsList);
 
-                        let popup = crel('div', {'class': 'popup', 'data-popup-for': nonce},
-                            popupActions
-                        );
+                        let popup = crel(popupWrapper, panelHeader, crel(panelWrapper, leftPanel, rightPanel));
                         document.body.appendChild(popup);
 
                         let popupRect = popup.getBoundingClientRect();
                         let left = bodyRect.width < 768 ? thisRect.left : thisRect.left - (popupRect.width / 2) + 4;
+                        let right = false;
                         let top = thisRect.top + thisRect.height + 2;
 
-                        popup.style.left = `${left}px`;
+                        if (popupRect.width > bodyRect.width || popupRect.width + left > bodyRect.width) {
+                            right = 1;
+                        }
+
+                        if (right !== false) {
+                            popup.style.left = `2px`;
+                            popup.style.right = `2px`;
+                            popup.style.width = `initial`;
+                        } else {
+                            popup.style.left = `${left}px`;
+                        }
+
                         if (popupRect.height + top > bodyRect.bottom) {
                             popup.style.bottom = '2px';
                         } else {
@@ -3568,6 +3614,12 @@ window.App = (function () {
 
 
                             alert.show(purgeWrapper, true);
+                            break;
+                        }
+                        case 'lookup': {
+                            if (user.admin && user.admin.checkUser && user.admin.checkUser.check) {
+                                user.admin.checkUser.check(reportingTarget);
+                            }
                             break;
                         }
                     }
@@ -3957,7 +4009,7 @@ window.App = (function () {
                                     lookup: lookup,
                                     chat: chat,
                                     cdOverride: data.cdOverride
-                                });
+                                }, admin => self.admin = admin);
                             });
                         } else if (window.deInitAdmin) {
                             window.deInitAdmin();
@@ -3993,7 +4045,10 @@ window.App = (function () {
                 getUsername: self.getUsername,
                 webinit: self.webinit,
                 wsinit: self.wsinit,
-                isLoggedIn: self.isLoggedIn
+                isLoggedIn: self.isLoggedIn,
+                get admin() {
+                    return self.admin || false;
+                }
             };
         })(),
         // this takes care of browser notifications

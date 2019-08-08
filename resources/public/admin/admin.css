@@ -37,6 +37,8 @@
     padding: 16px;
 
     position: fixed;
+
+    z-index: 22;
 }
 .admin-check {
     top: 45vh;

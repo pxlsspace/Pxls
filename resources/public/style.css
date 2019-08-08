@@ -16,6 +16,7 @@ z-index:
 20 - drawer in mobile mode
 21 - panels
 22 - lookup
+22 - admin-check popup
 
 98 - lost connection
 99 - alert box
@@ -1091,7 +1092,7 @@ li.chat-line span[title]:not(.text-badge), li.chat-line i[title] {
     cursor: default;
 }
 
-li.chat-line .text-badge {
+li.chat-line .text-badge, header .text-badge {
     line-height: 1rem;
     background-color: #ccc;
     padding: .15rem .5rem;
@@ -1102,6 +1103,23 @@ li.chat-line .text-badge {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+}
+
+header .text-badge {
+    background-color: #eee;
+}
+
+header .icon-badge {
+    font-size:1rem;
+}
+
+header .icon-badge:only-of-type, header.text-badge:only-of-type, header .icon-badge:only-child, header .text-badge:only-child {
+    margin-left: .15rem;
+}
+
+header .icon-badge[title] {
+    border-bottom: 1px dashed #444;
+    padding-bottom: 1px;
 }
 
 li.chat-line.server-action {
@@ -1121,6 +1139,9 @@ li.chat-line .badges {
 
 li.chat-line .user {
     font-weight: bold;
+    border-bottom: 1px dashed #aaa;
+    padding-bottom: 1px;
+    cursor: pointer;
 }
 
 li.chat-line [data-action] {
@@ -1206,9 +1227,70 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     background-color: #eee;
     border-radius: 5px;
     border: 1px solid #000;
-    text-align: center;
     font-size: 1rem !important;
     line-height: 1rem !important;
+}
+
+.popup.panels {
+    width: 400px;
+    max-width: 400px;
+    min-height: 200px;
+}
+
+.popup.panels .panels-wrapper {
+    display: flex;
+}
+
+.popup.panels .panel-grow {
+    flex: 1 1 auto;
+}
+
+.popup.panels .panel-shrink {
+    flex: 0 1 auto;
+}
+
+.popup.panels header:first-of-type {
+    border-top-left-radius: 5px;
+    border-top-right-radius: 5px;
+}
+
+.panels-wrapper ul.actions-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-flow: column;
+    max-height: 100%;
+    max-width: 100%;
+}
+
+.panels-wrapper ul.actions-list li[data-action] {
+    border-bottom: 1px solid #000;
+    border-left: 1px solid #000;
+    flex: 1 0 2em;
+    line-height: 2em;
+    text-align: center;
+    background-image: linear-gradient(0deg, #eee, #ccc, #eee);
+    padding: 0 1em;
+}
+
+.panels-wrapper .chat-timestamp-header {
+    margin: 8px 0;
+    text-align: center;
+    color: #aaa;
+ }
+
+.panels-wrapper ul.actions-list li[data-action]:hover {
+    background-image: linear-gradient(0deg, #ddd, #bbb, #ddd);
+}
+
+.panels-wrapper ul.actions-list li[data-action]:not(:only-of-type):last-child {
+    border-bottom: none;
+    border-bottom-right-radius: 5px;
+}
+
+.panels-wrapper ul.actions-list li[data-action]:hover {
+    cursor: pointer;
 }
 
 .popup ul.popup-actions {

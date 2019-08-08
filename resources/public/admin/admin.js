@@ -409,13 +409,16 @@
                 deinit: self.deinit
             };
         })();
-    window.initAdmin = function (_admin) {
+    window.initAdmin = function (_admin, cb) {
         admin = _admin;
         ban.init();
         style.init();
         checkUser.init();
         panel.init();
         lookup.init();
+        if (cb && (typeof cb === "function")) {
+            cb({ban, style, checkUser, panel, lookup});
+        }
     };
     window.deInitAdmin = function () {
         ban.deinit();
