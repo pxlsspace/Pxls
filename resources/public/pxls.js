@@ -2963,8 +2963,6 @@ window.App = (function () {
 
                     self.elements.rate_limit_overlay.hide();
 
-                    // let tempbanUsage = crel('span', {'style': 'font-weight: bold; font-size: 1.1rem;'}, )
-
                     let commandsCache = [['tempban', '/tempban  USER  BAN_LENGTH  SHOULD_PURGE  BAN_REASON'], ['permaban', '/permaban  USER  SHOULD_PURGE  BAN_REASON'], ['purge', '/purge  USER  PURGE_AMOUNT  PURGE_REASON']];
                     self.elements.input.on('keydown', e => {
                         e.stopPropagation();
@@ -3167,6 +3165,15 @@ window.App = (function () {
                         }
                     });
 
+                    $("#cbChatSettings24h").prop("checked", ls.get('chat.24h') === true)
+                        .on('change', function(e) {
+                            ls.set('chat.24h', !!this.checked);
+                        });
+                    $("#cbChatSettingsBadgesToggle").prop("checked", ls.get('chat.text-icons-enabled') === true)
+                        .on('change', function(e) {
+                            ls.set('chat.text-icons-enabled', !!this.checked);
+                        });
+
                     self.elements.body.on("scroll", e => {
                         let obj = self.elements.body[0];
                         self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
@@ -3288,15 +3295,6 @@ window.App = (function () {
                         let actionDeleteMessage = crel('li', {'data-action': 'delete', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Delete');
                         let actionModLookup = crel('li', {'data-action': 'lookup', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Mod Lookup');
 
-                        // crel(leftPanel,
-                        //     crel('dl',
-                        //         crel('dt', 'Time'),
-                        //         crel('dd', moment.unix(closest.dataset.date >> 0).format('MMM Do YYYY, hh:mm:ss A')),
-                        //
-                        //         crel('dt', 'Message'),
-                        //         crel('dd', closest.querySelector('.content').textContent)
-                        //     )
-                        // );
                         crel(leftPanel, crel('p', {'style': 'margin: 8px 0; text-align: center; color: #aaa;'}, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(ls.get('chat.24h') === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
                         crel(leftPanel, crel('hr'));
                         crel(leftPanel, crel('p', {'style': 'margin-top: 3px; margin-left: 3px; text-align: left;'}, closest.querySelector('.content').textContent));

@@ -1028,7 +1028,7 @@ article .body {
     background-image: linear-gradient(to right, #000, #888, #000);
 }
 
-.panel-body article .padme-daddy {
+.panel-body article .pad-wrapper {
     padding: .5rem;
 }
 

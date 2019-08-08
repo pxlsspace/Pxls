@@ -125,7 +125,7 @@
     </div>
 </aside>
 
-<aside id="chat" data-panel="chat" class="panel right open">
+<aside id="chat" data-panel="chat" class="panel right">
     <header class="panel-header">
         <div class="left"><i class="fas fa-times text-red panel-closer"></i></div>
         <h2><i class="fas fa-comment-alt fa-is-left fa-1_5x"></i>Chat</h2>
@@ -158,7 +158,7 @@
             <header class="slim darker">
                 <h2>Keybinds</h2>
             </header>
-            <div class="padme-daddy">
+            <div class="pad-wrapper">
                 <h3>General</h3>
                 <div class="indent-1">
                     <p>Mouse/arrows/wasd to pan</p>
@@ -190,7 +190,7 @@
             <header class="slim darker">
                 <h2>General Settings</h2>
             </header>
-            <div class="padme-daddy">
+            <div class="pad-wrapper">
                 <div class="settingToggles">
                     <label>Theme:
                         <select id="themeSelect">
@@ -226,7 +226,7 @@
             <header class="slim darker">
                 <h2>Template</h2>
             </header>
-            <div class="padme-daddy">
+            <div class="pad-wrapper">
                 <p>Hold down <kbd>Ctrl</kbd> to drag the template around</p>
                 <p><label>Use template: <input type="checkbox" id="template-use"></label></p>
                 <p><label>URL: <input type="text" id="template-url"></label></p>
@@ -237,7 +237,7 @@
             <header class="slim darker">
                 <h2>Pixel Ready Alert Settings</h2>
             </header>
-            <div class="padme-daddy">
+            <div class="pad-wrapper">
                 <p class="alertLocationWrapper"><label for="txtAlertLocation">Alert URL:</label><input type="text" placeholder="notify.wav" id="txtAlertLocation"></p>
                 <div class="ButtonBar">
                     <button id="btnForceAudioUpdate" class="button">Update</button>
@@ -250,6 +250,17 @@
                     <span id="lblAlertVolume"></span>
                 </div>
                 <label style="display: block;">Delay (Seconds): <input type="text" width="30px" value="0" id="alertDelay"></label>
+            </div>
+        </article>
+        <article>
+            <header class="slim darker">
+                <h2>Chat Settings</h2>
+            </header>
+            <div class="pad-wrapper">
+                <div class="settingToggles">
+                    <label><input id="cbChatSettings24h" type="checkbox" />24 Hour Timestamps</label>
+                    <label><input id="cbChatSettingsBadgesToggle" type="checkbox" />Show pixel-placed badges</label>
+                </div>
             </div>
         </article>
     </div>
