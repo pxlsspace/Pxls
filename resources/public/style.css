@@ -1139,8 +1139,6 @@ li.chat-line .badges {
 
 li.chat-line .user {
     font-weight: bold;
-    border-bottom: 1px dashed #aaa;
-    padding-bottom: 1px;
     cursor: pointer;
 }
 

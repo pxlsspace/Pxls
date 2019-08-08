@@ -3210,16 +3210,22 @@ window.App = (function () {
                     let badges = crel('span', {'class': 'badges'});
                     if (Array.isArray(packet.badges)) {
                         packet.badges.forEach(badge => {
-                            if (badge.type === 'icon') {
-                                crel(badges, crel('i', {'class': (badge.cssIcon || '') + ' icon-badge', 'title': badge.tooltip || ''}, document.createTextNode(' ')), document.createTextNode(' '));
+                            switch(badge.type) {
+                                case 'text':
+                                    if (ls.get('chat.text-icons-enabled') !== true) return;
+                                    crel(badges, crel('span', {'class': 'text-badge', 'title': badge.tooltip || ''}, badge.displayName || ''), document.createTextNode(' '));
+                                    break;
+                                case 'icon':
+                                    crel(badges, crel('i', {'class': (badge.cssIcon || '') + ' icon-badge', 'title': badge.tooltip || ''}, document.createTextNode(' ')), document.createTextNode(' '));
+                                    break;
                             }
                         });
                     }
                     self.elements.body.append(
                         crel('li', {'data-nonce': packet.nonce, 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': 'chat-line'},
-                            // crel('span', {'class': 'actions'},
-                            //     crel('i', {'class': 'fas fa-cog', 'data-action': 'actions-panel', 'title': 'Actions', onclick: self._popActionsPanel})
-                            // ),
+                            crel('span', {'class': 'actions'},
+                                crel('i', {'class': 'fas fa-cog', 'data-action': 'actions-panel', 'title': 'Actions', onclick: self._popUserPanel})
+                            ),
                             crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format(ls.get('chat.24h') === true ? 'HH:mm' : 'hh:mm A')),
                             document.createTextNode(' '),
                             badges,
@@ -3237,7 +3243,7 @@ window.App = (function () {
                         if (!closest) return console.warn('no closets chat-line on self: %o', this);
 
                         let nonce = closest.dataset.nonce;
-                        let thisRect = this.getBoundingClientRect(); //this: span.user
+                        let thisRect = this.getBoundingClientRect(); //this: span.user or i.fas.fa-cog
                         let bodyRect = document.body.getBoundingClientRect();
 
                         let badgesArray = [];
