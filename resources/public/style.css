@@ -1092,6 +1092,10 @@ li.chat-line span[title]:not(.text-badge), li.chat-line i[title] {
     cursor: default;
 }
 
+li.chat-line i[title] {
+    padding-bottom: 1px;
+}
+
 li.chat-line .text-badge, header .text-badge {
     line-height: 1rem;
     background-color: #ccc;
