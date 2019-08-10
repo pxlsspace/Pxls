@@ -3,6 +3,7 @@ package space.pxls.server
 import space.pxls.auth.AuthService
 
 data class CanvasInfo (
+        val canvasCode: String,
         val width: Int,
         val height: Int,
         val palette: List<String>,

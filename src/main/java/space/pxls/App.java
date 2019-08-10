@@ -38,6 +38,8 @@ public class App {
     private static Logger shadowbannedPixelLogger;
     private static Logger appLogger;
 
+    private static String canvasCode;
+
     private static int width;
     private static int height;
     private static byte[] board;
@@ -59,6 +61,8 @@ public class App {
         pixelLogger = LogManager.getLogger("Pixels");
         shadowbannedPixelLogger = LogManager.getLogger("ShadowbannedPixels");
         appLogger = LogManager.getLogger("App");
+
+	canvasCode = config.getString("canvascode");
 
         width = config.getInt("board.width");
         height = config.getInt("board.height");
@@ -414,6 +418,10 @@ public class App {
 
     public static Config getConfig() {
         return config;
+    }
+
+    public static String getCanvasCode() {
+        return canvasCode;
     }
 
     public static int getWidth() {

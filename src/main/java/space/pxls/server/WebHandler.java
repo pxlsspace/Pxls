@@ -704,6 +704,7 @@ public class WebHandler {
                 .add(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
         exchange.getResponseSender().send(App.getGson().toJson(
                 new CanvasInfo(
+			App.getCanvasCode(),
                         App.getWidth(),
                         App.getHeight(),
                         App.getConfig().getStringList("board.palette"),
