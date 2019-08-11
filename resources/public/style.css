@@ -1087,7 +1087,7 @@ ul.chat-body li.chat-line:nth-child(odd) {
     /*background-image: linear-gradient(to bottom, #0000, #0005, #0000);*/
 }
 
-li.chat-line span[title]:not(.text-badge), li.chat-line i[title] {
+li.chat-line span[title]:not(.text-badge) {
     border-bottom: 1px dashed #aaa;
     cursor: default;
 }
@@ -1119,11 +1119,6 @@ header .icon-badge {
 
 header .icon-badge:only-of-type, header.text-badge:only-of-type, header .icon-badge:only-child, header .text-badge:only-child {
     margin-left: .15rem;
-}
-
-header .icon-badge[title] {
-    border-bottom: 1px dashed #444;
-    padding-bottom: 1px;
 }
 
 li.chat-line.server-action {

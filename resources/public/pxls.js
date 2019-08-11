@@ -2805,6 +2805,7 @@ window.App = (function () {
             let self = {
                 seenHistory: false,
                 stickToBottom: true,
+                repositionTimer: false,
                 nonceLog: [],
                 chatban: {
                     banStart: 0,
@@ -3165,6 +3166,21 @@ window.App = (function () {
                         }
                     });
 
+                    $(window).on("resize", e => {
+                        let popup = document.querySelector('.popup.panels[data-popup-for]');
+                        if (!popup) return;
+                        let cog = document.querySelector(`.chat-line[data-nonce="${popup.dataset.popupFor}"] [data-action="actions-panel"]`);
+                        if (!cog) return console.warn('no cog');
+
+                        if (self.repositionTimer) clearTimeout(self.repositionTimer);
+                        self.repositionTimer = setTimeout(() => {self._positionPopupRelativeToX(popup, cog); self.repositionTimer = false}, 25);
+                    });
+
+                    self.elements.body[0].addEventListener('wheel', e => {
+                        let popup = document.querySelector('.popup.panels');
+                        if (popup) popup.remove();
+                    });
+
                     $("#cbChatSettings24h").prop("checked", ls.get('chat.24h') === true)
                         .on('change', function(e) {
                             ls.set('chat.24h', !!this.checked);
@@ -3250,8 +3266,6 @@ window.App = (function () {
                         if (!closest) return console.warn('no closets chat-line on self: %o', this);
 
                         let nonce = closest.dataset.nonce;
-                        let thisRect = this.getBoundingClientRect(); //this: span.user or i.fas.fa-cog
-                        let bodyRect = document.body.getBoundingClientRect();
 
                         let badgesArray = [];
                         try {
@@ -3310,29 +3324,39 @@ window.App = (function () {
 
                         let popup = crel(popupWrapper, panelHeader, crel(panelWrapper, leftPanel, rightPanel));
                         document.body.appendChild(popup);
+                        self._positionPopupRelativeToX(popup, this);
+                    }
+                },
+                _positionPopupRelativeToX(popup, x) {
+                    let bodyRect = document.body.getBoundingClientRect();
+                    let thisRect = x.getBoundingClientRect(); //this: span.user or i.fas.fa-cog
+                    let popupRect = popup.getBoundingClientRect();
 
-                        let popupRect = popup.getBoundingClientRect();
-                        let left = bodyRect.width < 768 ? thisRect.left : thisRect.left - (popupRect.width / 2) + 4;
-                        let right = false;
-                        let top = thisRect.top + thisRect.height + 2;
+                    if (thisRect.left < (popupRect.width / 2)) {
+                        popup.style.left = `${thisRect.left >> 0}px`;
+                    } else {
+                        popup.style.left = `${((thisRect.left + (thisRect.width / 2 >> 0)) - (popupRect.width / 2 >> 0)) >> 0}px`;
+                    }
 
-                        if (popupRect.width > bodyRect.width || popupRect.width + left > bodyRect.width) {
-                            right = 1;
-                        }
+                    popup.style.top = `${thisRect.top + thisRect.height + 2}px`;
 
-                        if (right !== false) {
-                            popup.style.left = `2px`;
-                            popup.style.right = `2px`;
-                            popup.style.width = `initial`;
-                        } else {
-                            popup.style.left = `${left}px`;
-                        }
+                    popupRect = popup.getBoundingClientRect(); //have to re-calculate after moving before fixing positioning. forces relayout though
 
-                        if (popupRect.height + top > bodyRect.bottom) {
-                            popup.style.bottom = '2px';
-                        } else {
-                            popup.style.top = `${top}px`;
-                        }
+                    if (popupRect.bottom > bodyRect.bottom) {
+                        popup.style.bottom = `2px`;
+                        popup.style.top = null;
+                    }
+                    if (popupRect.top < bodyRect.top) {
+                        popup.style.top = `2px`;
+                        popup.style.bottom = null;
+                    }
+                    if (popupRect.right > bodyRect.right) {
+                        popup.style.right = `2px`;
+                        popup.style.left = null;
+                    }
+                    if (popupRect.left < bodyRect.left) {
+                        popup.style.left = `2px`;
+                        popup.style.right = null;
                     }
                 },
                 _handleActionClick: function(e) { //must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
