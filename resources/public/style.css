@@ -1251,6 +1251,12 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     border-top-right-radius: 5px;
 }
 
+.panels-wrapper p {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
 .panels-wrapper ul.actions-list {
     margin: 0;
     padding: 0;
@@ -1334,6 +1340,14 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 
 .popup ul.popup-actions li:not(.separator):active {
     background-color: #f8f8f8;
+}
+
+.popup-timestamp-header {
+    margin: 0;
+    padding: 8px 0;
+    border-bottom: 1px solid #000;
+    text-align: center;
+    color: #aaa;
 }
 
 /*//////////////////////////*\

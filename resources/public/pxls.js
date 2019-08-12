@@ -3309,8 +3309,7 @@ window.App = (function () {
                         let actionDeleteMessage = crel('li', {'data-action': 'delete', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Delete');
                         let actionModLookup = crel('li', {'data-action': 'lookup', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Mod Lookup');
 
-                        crel(leftPanel, crel('p', {'style': 'margin: 8px 0; text-align: center; color: #aaa;'}, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(ls.get('chat.24h') === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
-                        crel(leftPanel, crel('hr'));
+                        crel(leftPanel, crel('p', {'class': 'popup-timestamp-header'}, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(ls.get('chat.24h') === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
                         crel(leftPanel, crel('p', {'style': 'margin-top: 3px; margin-left: 3px; text-align: left;'}, closest.querySelector('.content').textContent));
 
                         crel(actionsList, actionReport);
