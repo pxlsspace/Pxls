@@ -17,6 +17,15 @@ public class UserManager {
 
     }
 
+    public void reload() {
+        for (User u : userCache.values()) {
+            u.reloadFromDatabase();
+        }
+        for (User u : App.getServer().getAuthedUsers().values()) {
+            u.reloadFromDatabase();
+        }
+    }
+
     private void addUserToken(String token, User user) {
         usersByToken.put(token, user);
         App.getDatabase().createSession(user.getId(), token);

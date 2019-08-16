@@ -373,6 +373,10 @@ public class App {
             } else if (token[0].equalsIgnoreCase("cf")) {
                 String z = line.substring(token[0].length() + 1);
                 System.out.printf("running chat filter against '%s'%nResult: %s%n", z, ChatFilter.getInstance().filter(z, true));
+            } else if (token[0].equalsIgnoreCase("reloadUsers")) {
+                System.out.println("Working... (may cause some lag)");
+                userManager.reload();
+                System.out.println("Done.");
             }
         } catch (RuntimeException e) {
             e.printStackTrace();

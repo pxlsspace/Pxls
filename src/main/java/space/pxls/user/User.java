@@ -2,6 +2,7 @@ package space.pxls.user;
 
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
+import space.pxls.data.DBUser;
 import space.pxls.server.Badge;
 import space.pxls.server.ClientUndo;
 import space.pxls.server.ServerChatBan;
@@ -48,6 +49,19 @@ public class User {
         this.banExpiryTime = banExpiryTime;
         this.isPermaChatbanned = isPermaChatbanned;
         this.chatbanExpiryTime = chatbanExpiryTime;
+    }
+
+    public void reloadFromDatabase() {
+        DBUser user = App.getDatabase().getUserByID(id);
+        this.id = user.id;
+        this.stacked = user.stacked;
+        this.name = user.username;
+        this.login = user.login;
+        this.cooldownExpiry = user.cooldownExpiry;
+        this.role = user.role;
+        this.banExpiryTime = user.banExpiry;
+        this.isPermaChatbanned = user.isPermaChatbanned;
+        this.chatbanExpiryTime = user.chatbanExpiry;
     }
 
     public int getId() {
