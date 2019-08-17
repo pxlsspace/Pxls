@@ -193,6 +193,7 @@
                         ["Username", data.username],
                         ["Login", data.login],
                         ["Role", data.role],
+                        ["Rename Requested", data.renameRequested ? "Yes" : "No"],
                         ["Banned", bannedStr],
                         ["Chatbanned", chatbannedStr]
                     ];
@@ -243,6 +244,13 @@
                         crel('div',
                             crel('button', {'data-action': 'chatban', 'data-target': data.username, 'class': 'button', 'style': 'position: initial; right: auto; left: auto; bottom: auto;', onclick: admin.chat._handleActionClick}, 'Chat (un)ban'),
                             crel('button', {'data-action': 'purge', 'data-target': data.username, 'class': 'button', 'style': 'position: initial; right: auto; left: auto; bottom: auto;', onclick: admin.chat._handleActionClick}, 'Chat purge')
+                        ),
+                        (admin.user.getRole() !== "TRIALMOD"
+                                ? crel('div',
+                                    crel('button', {'data-action': 'request-rename', 'data-target': data.username, 'class': 'button', 'style': 'position: initial; right: auto; left: auto; bottom: auto;', onclick: admin.chat._handleActionClick}, 'Request Rename'),
+                                    (admin.user.getRole() == "ADMIN" || admin.user.getRole() == "DEVELOPER" ? crel('button', {'data-action': 'force-rename', 'data-target': data.username, 'class': 'button', 'style': 'position: initial; right: auto; left: auto; bottom: auto;', onclick: admin.chat._handleActionClick}, 'Force Rename') : '')
+                                )
+                                : ''
                         ),
                         $("<div>").append(
                             $("<b>").text("Custom ban length: "), "<br>",

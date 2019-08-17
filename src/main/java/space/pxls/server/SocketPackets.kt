@@ -43,7 +43,8 @@ data class ServerUserInfo(
         val chatBanned: Boolean,
         val chatbanReason: String? = "",
         val chatbanIsPerma: Boolean,
-        val chatbanExpiry: Long) {
+        val chatbanExpiry: Long,
+        val renameRequested: Boolean) {
     val type = "userinfo"
 }
 
@@ -61,4 +62,12 @@ data class ServerACK(val ackFor: String, val x: Int, val y: Int) {
 
 data class ServerPixels(val count: Int, val cause: String) {
     val type="pixels"
+}
+
+data class ServerRename(val requested: Boolean) {
+    val type = "rename"
+}
+
+data class ServerRenameSuccess(val newName: String) {
+    val type = "rename_success"
 }
