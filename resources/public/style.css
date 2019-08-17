@@ -1230,6 +1230,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 
 .popup.panels {
     width: 400px;
+    max-height:99vh;
     max-width: 400px;
     min-height: 200px;
 }
