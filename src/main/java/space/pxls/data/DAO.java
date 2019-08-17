@@ -134,7 +134,8 @@ public interface DAO extends Closeable {
             "ban_reason VARCHAR(512) NOT NULL DEFAULT ''," +
             "user_agent VARCHAR(512) NOT NULL DEFAULT ''," +
             "pixel_count INT UNSIGNED NOT NULL DEFAULT 0," +
-            "pixel_count_alltime INT UNSIGNED NOT NULL DEFAULT 0)")
+            "pixel_count_alltime INT UNSIGNED NOT NULL DEFAULT 0," +
+            "is_rename_requested TINYINT NOT NULL DEFAULT 0)")
     void createUsersTable();
 
     @SqlQuery("SELECT EXISTS(SELECT 1 FROM users WHERE (last_ip = INET6_ATON(:ip) OR signup_ip = INET6_ATON(:ip)) AND id <> :uid)")
@@ -187,6 +188,15 @@ public interface DAO extends Closeable {
 
     @SqlQuery("SELECT EXISTS(SELECT 1 FROM pixels WHERE x = :x AND y = :y AND who <> :who AND most_recent)")
     boolean shouldPixelTimeIncrease(@Bind("x") int x, @Bind("y") int y, @Bind("who") int who);
+
+    @SqlQuery("SELECT is_rename_requested FROM users WHERE id = :uid")
+    boolean isRenameRequested(@Bind("uid") int who);
+
+    @SqlUpdate("UPDATE users SET is_rename_requested = :is_requested WHERE id = :uid")
+    void setRenameRequested(@Bind("uid") int who, @Bind("is_requested") boolean is_requested);
+
+    @SqlUpdate("UPDATE users SET username = :name WHERE id = :uid")
+    void updateUsername(@Bind("uid") int who, @Bind("name") String new_username);
 
     @SqlUpdate("CREATE TABLE IF NOT EXISTS sessions ("+
             "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,"+

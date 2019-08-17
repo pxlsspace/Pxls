@@ -3677,6 +3677,95 @@ window.App = (function () {
                             }
                             break;
                         }
+                        case 'request-rename': {
+                            let rbStateOn = crel('input', {'type': 'radio', 'name': 'rbState'});
+                            let rbStateOff = crel('input', {'type': 'radio', 'name': 'rbState'});
+
+                            let stateOn = crel('label', {'style': 'display: inline-block'}, rbStateOn, ' On');
+                            let stateOff = crel('label', {'style': 'display: inline-block'}, rbStateOff, ' Off');
+
+                            let btnSetState = crel('button', {'class': 'button', 'type': 'submit'}, 'Set');
+
+                            let renameError = crel('p', {'style': 'display: none; color: #f00; font-weight: bold; font-size: .9rem', 'class': 'rename-error'}, '');
+
+                            rbStateOff.checked = true;
+
+                            let renameWrapper = crel('form', {'class': 'chatmod-container'},
+                                crel('h3', 'Toggle Rename Request'),
+                                crel('p', 'Select one of the options below to set the current rename request state.'),
+                                crel('div', stateOn, stateOff),
+                                renameError,
+                                crel('div', {'class': 'buttons'},
+                                    crel('button', {'class': 'button', 'type': 'button', onclick: () => {renameWrapper.remove(); alert.hide();}}, 'Cancel'),
+                                    btnSetState
+                                )
+                            );
+
+                            renameWrapper.onsubmit = e => {
+                                e.preventDefault();
+                                $.post('/admin/flagNameChange', {user: reportingTarget, flagState: rbStateOn.checked === true ? '1' : '0'}, function() {
+                                    renameWrapper.remove();
+                                    alert.show("Rename request updated");
+                                }).fail(function(xhrObj) {
+                                    let resp = "An unknown error occurred. Please contact a developer";
+                                    if (xhrObj.responseJSON) {
+                                        resp = xhrObj.responseJSON.details || resp;
+                                    } else if (xhrObj.responseText) {
+                                        try {
+                                            resp = JSON.parse(xhrObj.responseText).details;
+                                        } catch (ignored) {}
+                                    }
+
+                                    renameError.style.display = null;
+                                    renameError.innerHTML = resp;
+                                });
+                            };
+
+                            alert.show(renameWrapper, true);
+                            break;
+                        }
+                        case 'force-rename': {
+                            let newNameInput = crel('input', {'type': 'text', 'required': 'true', onkeydown: e => e.stopPropagation()});
+                            let newNameWrapper = crel('label', 'New Name: ', newNameInput);
+
+                            let btnSetState = crel('button', {'class': 'button', 'type': 'submit'}, 'Set');
+
+                            let renameError = crel('p', {'style': 'display: none; color: #f00; font-weight: bold; font-size: .9rem', 'class': 'rename-error'}, '');
+
+                            let renameWrapper = crel('form', {'class': 'chatmod-container'},
+                                crel('h3', 'Toggle Rename Request'),
+                                crel('p', 'Select one of the options below to set the current rename request state.'),
+                                newNameWrapper,
+                                renameError,
+                                crel('div', {'class': 'buttons'},
+                                    crel('button', {'class': 'button', 'type': 'button', onclick: () => {renameWrapper.remove(); alert.hide();}}, 'Cancel'),
+                                    btnSetState
+                                )
+                            );
+
+                            renameWrapper.onsubmit = e => {
+                                e.preventDefault();
+                                $.post('/admin/forceNameChange', {user: reportingTarget, newName: newNameInput.value.trim()}, function() {
+                                    renameWrapper.remove();
+                                    alert.show("User renamed");
+                                }).fail(function(xhrObj) {
+                                    let resp = "An unknown error occurred. Please contact a developer";
+                                    if (xhrObj.responseJSON) {
+                                        resp = xhrObj.responseJSON.details || resp;
+                                    } else if (xhrObj.responseText) {
+                                        try {
+                                            resp = JSON.parse(xhrObj.responseText).details;
+                                        } catch (ignored) {}
+                                    }
+
+                                    renameError.style.display = null;
+                                    renameError.innerHTML = resp;
+                                });
+                            };
+
+                            alert.show(renameWrapper, true);
+                            break;
+                        }
                     }
                 },
                 _doScroll: elem => {
@@ -4032,6 +4121,7 @@ window.App = (function () {
                             banelem = $("<div>").addClass("ban-alert-content");
                         self.username = data.username;
                         self.loggedIn = true;
+                        self.renameRequested = data.renameRequested;
                         self.elements.loginOverlay.fadeOut(200);
                         self.elements.userInfo.find("span.name").text(data.username);
                         if (data.method == 'ip') {
@@ -4070,7 +4160,7 @@ window.App = (function () {
                             window.deInitAdmin();
                         }
                         if (isBanned) {
-                            self.elements.userMessage.show().text("You can contact us using one of the links in the info menu.").fadeIn(200);
+                            self.elements.userMessage.empty().show().text("You can contact us using one of the links in the info menu.").fadeIn(200);
                             banelem.append(
                                 $("<p>").text("If you think this was an error, please contact us using one of the links in the info tab.")
                             ).append(
@@ -4082,6 +4172,8 @@ window.App = (function () {
                             if (window.deInitAdmin) {
                                 window.deInitAdmin();
                             }
+                        } else if (data.renameRequested) {
+                            self.showRenameRequest();
                         } else {
                             self.elements.userMessage.hide();
                         }
@@ -4092,6 +4184,71 @@ window.App = (function () {
 
                         analytics("send", "event", "Auth", "Login", data.method);
                     });
+                    socket.on('rename', function(e) {
+                        if (e.requested === true) {
+                            self.showRenameRequest();
+                        } else {
+                            self.hideRenameRequest();
+                        }
+                    });
+                    socket.on('rename_success', e => {
+                        self.username = e.newName;
+                        self.elements.userInfo.find("span.name").text(e.newName);
+                    })
+                },
+                _handleSubmit: function(event) {
+                    event.preventDefault();
+                    const input = this.querySelector('.rename-input');
+                    const btn = this.querySelector('.rename-submit');
+                    const err = this.querySelector('.rename-error');
+                    if (!input || !input.value || !btn || !err) return console.error('Missing one or more variables from querySelector. input: %o, btn: %o, err: %o', input, btn, err);
+                    input.disabled = btn.disabled = true;
+                    $.post("/execNameChange", {newName: input.value.trim()}, function() {
+                        self.renameRequested = false;
+                        self.hideRenameRequest();
+                        alert.show(''); //clear out the DOM
+                        alert.hide();
+                    }).fail(function(xhrObj) {
+                        let resp = "An unknown error occurred. Please contact staff on discord";
+                        if (xhrObj.responseJSON) {
+                            resp = xhrObj.responseJSON.details || resp;
+                        } else if (xhrObj.responseText) {
+                            try {
+                                resp = JSON.parse(xhrObj.responseText).details;
+                            } catch (ignored) {}
+                        }
+                        err.style.display = null;
+                        err.innerHTML = resp;
+                    }).always(function() {
+                        input.disabled = btn.disabled = false;
+                    });
+                },
+                _handleRenameClick: function(event) {
+                    let toPop = crel('form', {onsubmit: self._handleSubmit},
+                        crel('h3', 'Change Username'),
+                        crel('hr'),
+                        crel('p', 'Staff have required you to change your username, this usually means your name breaks one of our rules.'),
+                        crel('p', 'If you disagree, please contact us on Discord (link in the info panel).'),
+                        crel('label', 'New Username: ',
+                            crel('input', {'type': 'text', 'class': 'rename-input', 'required': 'true', onkeydown: e => e.stopPropagation()})
+                        ),
+                        crel('p', {'style': 'display: none; font-weight: bold; color: #f00; font-size: .9rem;', 'class': 'rename-error'}, ''),
+                        crel('div', {'style': 'text-align: right'},
+                            crel('button', {'class': 'button rename-submit', 'type': 'submit'}, 'Change')
+                        )
+                    );
+                    alert.showElem(toPop, true);
+                },
+                showRenameRequest: () => {
+                    self.elements.userMessage.empty().show().append(
+                        crel('span', 'You must change your username. Click ',
+                            crel('span', {style: 'cursor: pointer; text-decoration: underline;', onclick: self._handleRenameClick}, 'here'),
+                            document.createTextNode(' to continue.')
+                        )
+                    ).fadeIn(200);
+                },
+                hideRenameRequest: () => {
+                    self.elements.userMessage.fadeOut(200);
                 }
             };
             return {
@@ -4101,6 +4258,9 @@ window.App = (function () {
                 webinit: self.webinit,
                 wsinit: self.wsinit,
                 isLoggedIn: self.isLoggedIn,
+                renameRequested: self.renameRequested,
+                showRenameRequest: self.showRenameRequest,
+                hideRenameRequest: self.hideRenameRequest,
                 get admin() {
                     return self.admin || false;
                 }

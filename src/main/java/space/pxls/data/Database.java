@@ -297,6 +297,33 @@ public class Database implements Closeable {
         getHandle().updateUserStacked(user.getId(), stacked);
     }
 
+    /**
+     * Gets whether or not the user has been requested to change their username.
+     * @param who_id The ID of the user to check.
+     * @return Whether or not the user has been requested to change their username.
+     */
+    public boolean isRenameRequested(int who_id) {
+        return getHandle().isRenameRequested(who_id);
+    }
+
+    /**
+     * Sets whether or not the user has been requested to change their username.
+     * @param who_id The ID of the user to update.
+     * @param is_requested Whether or not a updateUsername is being requested.
+     */
+    public void setRenameRequested(int who_id, boolean is_requested) {
+        getHandle().setRenameRequested(who_id, is_requested);
+    }
+
+    /**
+     * Updates the requested user's username. <strong>Does not do any collision checks</strong>.
+     * @param who_id The ID of the user to update.
+     * @param new_username The new username.
+     */
+    public void updateUsername(int who_id, String new_username) {
+        getHandle().updateUsername(who_id, new_username);
+    }
+
     public String getUserBanReason(int id) {
         return getHandle().getUserBanReason(id).ban_reason;
     }

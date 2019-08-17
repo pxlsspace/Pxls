@@ -6,6 +6,7 @@ import space.pxls.data.DBUser;
 import space.pxls.server.Badge;
 import space.pxls.server.ClientUndo;
 import space.pxls.server.ServerChatBan;
+import space.pxls.server.ServerRename;
 import space.pxls.util.RateLimitFactory;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class User {
     private boolean lastPlaceWasStack = false;
     private boolean placingLock = false;
     private boolean isPermaChatbanned = false;
+    private boolean isRenameRequested = false;
     private long cooldownExpiry;
     private long lastPixelTime = 0;
     private long lastUndoTime = 0;
@@ -62,6 +64,7 @@ public class User {
         this.banExpiryTime = user.banExpiry;
         this.isPermaChatbanned = user.isPermaChatbanned;
         this.chatbanExpiryTime = user.chatbanExpiry;
+        this.isRenameRequested = user.isRenameRequested;
     }
 
     public int getId() {
@@ -69,6 +72,7 @@ public class User {
     }
 
     public boolean canPlace() {
+        if (isRenameRequested) return false;
         if (role.greaterEqual(Role.MODERATOR) && overrideCooldown) return true;
         if (!role.greaterEqual(Role.USER) && role != Role.SHADOWBANNED) return false; // shadowbanned seems to be able to place
         return cooldownExpiry < System.currentTimeMillis();
@@ -463,6 +467,37 @@ public class User {
         if (!canPlace) return 0;
 
         return (canPlace ? 1 : 0) + this.stacked;
+    }
+
+    public void setRenameRequested(boolean isRequested) {
+        this.isRenameRequested = isRequested;
+        App.getDatabase().setRenameRequested(id, isRequested);
+        App.getServer().send(this, new ServerRename(isRequested));
+    }
+
+    public boolean isRenameRequested(boolean reloadFromDatabase) {
+        if (reloadFromDatabase) this.isRenameRequested = App.getDatabase().isRenameRequested(id);
+        return isRenameRequested;
+    }
+
+    public boolean updateUsername(String newName) {
+        return updateUsername(newName, false);
+    }
+
+    public boolean updateUsername(String newName, boolean ignoreRequestedStatus) {
+        if (!ignoreRequestedStatus && !isRenameRequested) return false;
+        if (App.getDatabase().getUserByName(newName) != null) {
+            return false;
+        }
+        try {
+            App.getDatabase().updateUsername(id, newName);
+            App.getDatabase().adminLog(String.format("User %s (%d) has just changed their name to %s", name, id, newName), id);
+            App.getUserManager().reload();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+        return true;
     }
 
     /**

@@ -66,7 +66,8 @@ public class PacketHandler {
                     user.isChatbanned(),
                     App.getDatabase().getChatbanReasonForUser(user.getId()),
                     user.isPermaChatbanned(),
-                    user.getChatbanExpiryTime()
+                    user.getChatbanExpiryTime(),
+                    user.isRenameRequested(true)
             ));
             sendAvailablePixels(channel, user, "auth");
         }
@@ -343,6 +344,7 @@ public class PacketHandler {
         } else {
             if (user.isChatbanned()) return;
             if (message.trim().length() == 0) return;
+            if (user.isRenameRequested(false)) return;
             int remaining = RateLimitFactory.getTimeRemaining(DBChatMessage.class, String.valueOf(user.getId()));
             if (remaining > 0) {
                 server.send(user, new ServerChatCooldown(remaining, message));
@@ -359,7 +361,7 @@ public class PacketHandler {
                         server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, message, user.getChatBadges())));
                     }
                 } catch (org.skife.jdbi.v2.exceptions.UnableToExecuteStatementException utese) {
-                    //ignore for now. TODO
+                    //ignore for now. caused by emojis TODO add emoji support
                 }
             }
         }
