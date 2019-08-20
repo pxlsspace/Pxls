@@ -397,7 +397,12 @@ public class App {
                     User toRename = userManager.getByName(token[1]);
                     if (toRename != null) {
                         toRename.setRenameRequested(false);
-                        toRename.updateUsername(token[3]);
+                        if (toRename.updateUsername(token[2], true)) {
+                            App.getServer().send(toRename, new ServerRenameSuccess(toRename.getName()));
+                            System.out.println("Name udpated");
+                        } else {
+                            System.out.println("Failed to update name (function returned false. name taken or an error occurred)");
+                        }
                     } else {
                         System.out.println("User doesn't exist");
                     }
