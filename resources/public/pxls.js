@@ -3190,6 +3190,27 @@ window.App = (function () {
                             ls.set('chat.text-icons-enabled', !!this.checked);
                         });
 
+                    if (ls.get("chat.font-size") == null) {
+                        ls.set("chat.font-size", 16);
+                    }
+
+                    let cbChatSettingsFontSize = $("#cbChatSettingsFontSize");
+                    cbChatSettingsFontSize.val(ls.get("chat.font-size") || 16);
+                    self.elements.body.css("font-size", `${ls.get("chat.font-size") >> 0 || 16}px`);
+                    $("#cbChatSettingsFontSizeConfirm").click(e => {
+                        if (isNaN(cbChatSettingsFontSize[0].value)) {
+                            alert.show("Invalid value. Expected a number between 1 and 72");
+                        } else {
+                            let val = cbChatSettingsFontSize[0].value >> 0;
+                            if (val < 1 || val > 72) {
+                                alert.show("Invalid value. Expected a number between 1 and 72");
+                            } else {
+                                ls.set("chat.font-size", val);
+                                self.elements.body.css("font-size", `${val}px`);
+                            }
+                        }
+                    });
+
                     self.elements.body.on("scroll", e => {
                         let obj = self.elements.body[0];
                         self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
