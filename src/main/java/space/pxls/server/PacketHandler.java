@@ -7,6 +7,9 @@ import com.mashape.unirest.http.async.Callback;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.typesafe.config.Config;
 import io.undertow.websockets.core.WebSocketChannel;
+import org.apache.commons.lang3.text.translate.AggregateTranslator;
+import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
+import org.apache.commons.lang3.text.translate.LookupTranslator;
 import space.pxls.App;
 import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBPixelPlacement;
@@ -16,8 +19,6 @@ import space.pxls.util.ChatFilter;
 import space.pxls.util.PxlsTimer;
 import space.pxls.util.RateLimitFactory;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -332,6 +333,11 @@ public class PacketHandler {
         server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, false, false)));
     }
 
+    private CharSequenceTranslator bracketTranslator = new LookupTranslator(new String[][] {
+            {"<", "&lt;"},
+            {">", "&gt;"}
+    });
+
     public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
         Long nowMS = System.currentTimeMillis();
         String message = clientChatMessage.getMessage();
@@ -350,15 +356,17 @@ public class PacketHandler {
                 server.send(user, new ServerChatCooldown(remaining, message));
             } else {
                 try {
+                    String toSend = bracketTranslator.translate(message); //filter out brackets before we do anything else so it's filtered in db
                     if (App.getConfig().getBoolean("chat.trimInput"))
-                        message = message.trim();
+                        toSend = toSend.trim();
                     if (App.getConfig().getBoolean("chat.filter.enabled")) {
-                        ChatFilter.FilterResult result = ChatFilter.getInstance().filter(message);
-                        String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, message, result.filterHit ? result.filtered : "");
-                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, result.filterHit ? result.filtered : result.original, user.getChatBadges())));
+                        ChatFilter.FilterResult result = ChatFilter.getInstance().filter(toSend);
+                        toSend = result.filterHit ? result.filtered : result.original;
+                        String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, message, toSend);
+                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges())));
                     } else {
                         String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, message, "");
-                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, message, user.getChatBadges())));
+                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges())));
                     }
                 } catch (org.skife.jdbi.v2.exceptions.UnableToExecuteStatementException utese) {
                     //ignore for now. caused by emojis TODO add emoji support

@@ -1217,6 +1217,9 @@ window.App = (function () {
                 },
                 getRenderBoard: function () {
                     return self.elements.board_render;
+                },
+                validateCoordinates: (x, y) => {
+                    return (x >= 0 && x <= self.width) && (y >= 0 && y <= self.height);
                 }
             };
             return {
@@ -1236,6 +1239,7 @@ window.App = (function () {
                 refresh: self.refresh,
                 updateViewport: self.updateViewport,
                 allowDrag: self.allowDrag,
+                validateCoordinates: self.validateCoordinates
             };
         })(),
         // heatmap init stuff
@@ -2831,6 +2835,10 @@ window.App = (function () {
                     chat_panel: $(".panel[data-panel=chat]"),
                     chat_hint: $("#chat-hint")
                 },
+                _anchorme: {
+                    fnAttributes: urlObj => {},
+                    fnExclude: urlObj => {}
+                },
                 init: () => {
                     socket.on('chat_history', e => {
                         if (self.seenHistory) return;
@@ -3243,6 +3251,22 @@ window.App = (function () {
                 _send: msg => {
                     socket.send({type: "ChatMessage", message: msg});
                 },
+                jump: (x, y, zoom) => {
+                    if (typeof x !== 'number')
+                        x = parseFloat(x);
+                    if (typeof y !== 'number')
+                        y = parseFloat(y);
+                    if (zoom == null)
+                        zoom = false;
+                    else if (typeof zoom !== 'number')
+                        zoom = parseFloat(zoom);
+
+                    board.centerOn(x, y);
+
+                    if (zoom) {
+                        board.setScale(zoom);
+                    }
+                },
                 _process: packet => {
                     if (packet.nonce) {
                         if (self.nonceLog.includes(packet.nonce)) {
@@ -3269,6 +3293,9 @@ window.App = (function () {
                             }
                         });
                     }
+
+                    let contentSpan = self._processMessage(packet.message_raw);
+
                     self.elements.body.append(
                         crel('li', {'data-nonce': packet.nonce, 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': 'chat-line'},
                             crel('span', {'class': 'actions'},
@@ -3280,10 +3307,103 @@ window.App = (function () {
                             document.createTextNode(' '),
                             crel('span', {'class': 'user', onclick: self._popUserPanel}, packet.author),
                             document.createTextNode(': '),
-                            crel('span', {'class': 'content'}, packet.message_raw),
+                            contentSpan,
                             document.createTextNode(' ')
                         )
                     );
+                },
+                _processMessage: str => {
+                    let toReturn = crel('span', {'class': 'content'}, str);
+
+                    try {
+                        let list = anchorme(str, {emails: false, files: false, exclude: self._anchorme.fnExclude, attributes: [self._anchorme.fnAttributes], list: true});
+
+                        //handle jump links (e.g. (500, 500[, 20[x]]))
+                        str = str.replace(/\(([0-9]+)[., ]{1,2}([0-9]+)[., ]{0,2}([0-9]+)?x?\)/ig, function(match, group1, group2, group3) {
+                            if (isNaN(group1) || isNaN(group2)) return match;
+                            if (!board.validateCoordinates(parseFloat(group1), parseFloat(group2))) return match;
+                            let group3Str = !(parseFloat(group3)) ? '' : `, ${group3}x`;
+                            return `<span class="link -internal-jump" data-x="${group1}" data-y="${group2}" data-zoom="${group3}">(${group1}, ${group2}${group3Str})</span>`;
+                        });
+
+                        //insert <a>'s
+                        let _re = /^[?#]/;
+                        for (let x of list) {
+                            let url = false;
+
+                            let anchorText = x.raw.substr(0, 78);
+                            if (x.raw.length > 78) anchorText += '...';
+                            let anchorTarget = null;
+
+                            try {
+                                url = new URL(x.raw.indexOf(x.protocol) !== 0 ? `${x.protocol}${x.raw}` : x.raw);
+                            } catch (ignored) {}
+                            if (!url) {
+                                console.warn('no url with %o!', x);
+                            } else {
+                                //process URL params for future use/manipulation
+                                let params = {};
+                                let toSplit = url.hash.substring(1);
+                                if (url.search.length > 0)
+                                    toSplit += ("&" + url.search.substring(1));
+
+                                let _varsTemp = toSplit.split("&"),
+                                    vars = {};
+                                _varsTemp.forEach(val => {
+                                    let split = val.split("="),
+                                        key = split.shift().toLowerCase();
+                                    if (!key.length) return;
+                                    vars[key] = split.shift();
+                                });
+
+                                let varKeys = Object.keys(vars);
+                                for (let i = 0; i < varKeys.length; i++) {
+                                    let key = varKeys[i],
+                                        value = vars[key];
+                                    if (!params.hasOwnProperty(key)) {
+                                        params[key] = vars[key];
+                                    }
+                                }
+
+                                //check for any special URL needs and store the proper anchor `target`
+                                if ((document.location.origin && url.origin) && document.location.origin === url.origin) { //URL is for this origin, run some checks for game features
+                                    if (params.x != null && params.y != null) { //url has x/y so it's probably in the game window
+                                        if (board.validateCoordinates(params.x, params.y)) {
+                                            anchorText = `(${params.x}, ${params.y}, ${params.scale}x)`;
+                                            if (params.template != null && params.template.length >= 11) { //we have a template, should probably make that known
+                                                let truncatedTemplate = decodeURIComponent(params.template);
+                                                anchorText += ` (template: ${(truncatedTemplate > 50) ? `${truncatedTemplate.substr(0, 50)}...` : truncatedTemplate})`;
+                                            }
+                                        }
+                                    } else {
+                                        anchorTarget = '_blank'; //probably `/stats` or something
+                                    }
+                                } else {
+                                    anchorTarget = '_blank';
+                                }
+                            }
+
+                            let anchor = crel('a', {'href': x.raw, 'title': x.raw}, anchorText);
+                            if (anchorTarget) anchor.target = anchorTarget;
+
+                            str = str.replace(x.raw, anchor.outerHTML);
+                        }
+
+                        //any other text manipulation after anchor insertion
+                        //TODO markdown, it might be better to do it on the back-end so that burden of parsing+rendering is shifted
+
+                        //parse HTML into DOM
+                        toReturn.innerHTML = str;
+
+                        //hook up any necessary event listeners
+                        toReturn.querySelectorAll('.-internal-jump[data-x]').forEach(x => {
+                            x.onclick = () => self.jump(parseFloat(x.dataset.x), parseFloat(x.dataset.y), parseFloat(x.dataset.zoom));
+                        });
+                    } catch (e) {
+                        console.error('Failed to process a line, defaulting to raw', e);
+                    }
+
+                    return toReturn;
                 },
                 _popUserPanel: function(e) { //must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
                     if (this && this.closest) {

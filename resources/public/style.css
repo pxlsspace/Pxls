@@ -44,8 +44,10 @@ html, body {
     display: none !important;
 }
 
-a, a:hover, a:visited, a:active {
+a, a:hover, a:visited, a:active, .link, .link:hover, .link:active {
     color: inherit;
+    cursor: pointer;
+    text-decoration: underline;
 }
 
 kbd {
