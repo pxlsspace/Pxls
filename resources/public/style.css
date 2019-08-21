@@ -91,6 +91,7 @@ kbd {
 .alertLocationWrapper {
     max-width: 100% !important;
 }
+
 .alertLocationWrapper > input[type='text'] {
     width: 100% !important;
     margin-bottom: 2px;
