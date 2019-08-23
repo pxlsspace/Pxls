@@ -491,7 +491,7 @@ public class User {
         }
         try {
             App.getDatabase().updateUsername(id, newName);
-            App.getDatabase().adminLog(String.format("User %s (%d) has just changed their name updated to %s", name, id, newName), id);
+            App.getDatabase().adminLog(String.format("User %s (%d) has just changed their name to %s", name, id, newName), id);
             App.getUserManager().reload();
         } catch (Exception e) {
             e.printStackTrace();

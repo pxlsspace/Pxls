@@ -533,7 +533,7 @@ public class WebHandler {
 
         String oldName = user.getName();
         if (user.updateUsername(newName)) {
-            App.getDatabase().addServerReport(String.format("User %s just changed their name from %s.", user.getName(), oldName), user.getId());
+            App.getDatabase().addServerReport(String.format("User %s just changed their name to %s.", oldName, user.getName()), user.getId());
             user.setRenameRequested(false);
             App.getServer().send(user, new ServerRenameSuccess(user.getName()));
             exchange.setStatusCode(200);
