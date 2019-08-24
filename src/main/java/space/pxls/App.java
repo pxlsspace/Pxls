@@ -662,6 +662,11 @@ public class App {
             System.arraycopy(bytes, 0, virginmap, 0, width * height);
         } catch (NoSuchFileException e) {
             getLogger().warn("Cannot find virginmap.dat in working directory, using blank virginmap");
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    virginmap[x + width * y] = 1;
+                }
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
