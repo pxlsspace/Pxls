@@ -1053,6 +1053,11 @@ body.panel-left-open .ui-bar {
     transition: width ease-out .25s;
 }
 
+body.panel-left-open.panel-right-open .ui-bar {
+    left: 30%;
+    width: 40%;
+}
+
 /* CHAT */
 
 .chat-wrapper {

@@ -733,19 +733,19 @@ window.App = (function () {
                             case "T":
                             case "KeyT":
                             case 84: //t
-                                panels.open("settings");
+                                panels.toggle("settings");
                                 break;
                             case "i":
                             case "I":
                             case "KeyI":
                             case 73: //i
-                                panels.open("info");
+                                panels.toggle("info");
                                 break;
                             case "b":
                             case "B":
                             case "KeyB":
                             case 66: //b
-                                panels.open("chat");
+                                panels.toggle("chat");
                                 break;
                         }
                         self.pannedWithKeys = true;
@@ -2576,8 +2576,12 @@ window.App = (function () {
                             case "Escape":
                             case 27:
                                 const selector = $("#lookup, #prompt, #alert");
-                                if (selector.is(":visible")){
+                                const openPanels = $(".panel.open");
+                                if (selector.is(":visible")) {
                                     selector.fadeOut(200);
+                                } else if (openPanels.length) {
+                                    openPanels.removeClass('open');
+                                    document.body.classList.remove('panel-left-open', 'panel-right-open');
                                 } else {
                                     place.switch(-1);
                                 }
@@ -2743,13 +2747,12 @@ window.App = (function () {
                                 if (_panelDescriptor && _panelDescriptor.trim()) {
                                     let targetPanel = document.querySelector(`.panel[data-panel="${_panelDescriptor.trim()}"]`);
                                     if (targetPanel) {
-                                        Array.from(document.querySelectorAll('.panel.open')).forEach(x => {
+                                        Array.from(document.querySelectorAll(`.panel.${targetPanel.classList.contains('right') ? 'right' : 'left'}.open`)).forEach(x => {
                                             x.classList.remove('open');
                                             $(window).trigger("pxls:panel:closed", x.dataset['panel']);
                                         }); //Close other open panels
                                         targetPanel.classList.add('open');
-                                        document.body.classList.toggle('panel-left-open', targetPanel.classList.contains('left'));
-                                        document.body.classList.toggle('panel-right-open', targetPanel.classList.contains('right'));
+                                        self._handleBodyClasses();
                                         $(window).trigger("pxls:panel:opened", _panelDescriptor);
                                     } else console.debug('[PANELS:TRIGGER] Bad descriptor? Got: %o', _panelDescriptor);
                                 } else console.debug('[PANELS:TRIGGER] No descriptor? Elem: %o', closestTrigger);
@@ -2763,11 +2766,7 @@ window.App = (function () {
                             if (closestPanel) {
                                 closestPanel.classList.toggle('open', false);
                                 $(window).trigger("pxls:panel:closed", [closestPanel.dataset['panel']]);
-                                if (closestPanel.classList.contains('right')) {
-                                    document.body.classList.remove('panel-right-open');
-                                } else {
-                                    document.body.classList.remove('panel-left-open');
-                                }
+                                self._handleBodyClasses();
                             } else console.debug('[PANELS:CLOSER] No panel?');
                         });
                     });
@@ -2779,7 +2778,7 @@ window.App = (function () {
                 _toggleOpenState: (panel, exclusive = true) => {
                     if (!(panel instanceof HTMLElement)) panel = document.querySelector(`.panel[data-panel="${panel}"]`);
                     if (panel) {
-                        this._setOpenState(panel, !panel.classList.contains('open'), exclusive);
+                        self._setOpenState(panel, !panel.classList.contains('open'), exclusive);
                     }
                 },
                 _setOpenState: (panel, state, exclusive = true) => {
@@ -2790,14 +2789,19 @@ window.App = (function () {
                             document.querySelectorAll(`.panel[data-panel].${panel.classList.contains('right') ? 'right' : 'left'}.open`).forEach(x => x.classList.remove('open'));
                         }
                         panel.classList.toggle('open', state);
+                        self._handleBodyClasses();
                     }
+                },
+                _handleBodyClasses: () => {
+                    document.body.classList.toggle('panel-left-open', !!document.querySelector('.panel.left.open')); // duno bout this one for the long run chief
+                    document.body.classList.toggle('panel-right-open', !!document.querySelector('.panel.right.open'));
                 }
             };
             return {
                 init: self.init,
                 open: panel => self._setOpenState(panel, true),
                 close: panel => self._setOpenState(panel, false),
-                toggle: panel => self._toggleOpenState(panel),
+                toggle: (panel, exclusive = true) => self._toggleOpenState(panel, exclusive),
                 isOpen: self.isOpen
             };
         })(),
