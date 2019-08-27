@@ -1227,6 +1227,36 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     text-decoration: line-through;
 }
 
+/* PINGS */
+
+.chat-line.has-ping {
+    background-color: #feedd1 !important;
+}
+
+.panel-trigger[data-panel=chat] {
+    position: relative;
+}
+
+.panel-trigger[data-panel=chat] .ping-counter {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    transform: translateY(-55%) translateX(-45%);
+    padding: 1px 5px;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #ffa500;
+}
+
+.panel-trigger[data-panel=chat]:not(.has-ping) .ping-counter {
+    display: none;
+}
+
+.panel-trigger[data-panel=chat].has-ping {
+    margin-left: 6px;
+}
+
 /* CHAT ACTIONS POPUP */
 
 .popup {

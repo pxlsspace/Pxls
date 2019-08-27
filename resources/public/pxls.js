@@ -2866,6 +2866,8 @@ window.App = (function () {
                 seenHistory: false,
                 stickToBottom: true,
                 repositionTimer: false,
+                pings: 0,
+                last_opened_panel: ls.get('chat.last_opened_panel') >> 0,
                 nonceLog: [],
                 chatban: {
                     banStart: 0,
@@ -2880,6 +2882,8 @@ window.App = (function () {
                 },
                 elements: {
                     message_icon: $("#message-icon"),
+                    panel_trigger: $(".panel-trigger[data-panel=chat]"),
+                    ping_counter: $("#ping-counter"),
                     input: $("#txtChatContent"),
                     body: $("#chat-body"),
                     rate_limit_overlay: $(".chat-ratelimit-overlay"),
@@ -3201,7 +3205,8 @@ window.App = (function () {
 
                     $(window).on("pxls:panel:opened", (e, which) => {
                         if (which === "chat") {
-                            self.elements.message_icon.removeClass('has-notification');
+                            ls.set('chat.last_opened_panel', new Date/1e3 >> 0);
+                            self.clearPings();
                             let lastN = self.elements.body.find("[data-nonce]").last()[0];
                             if (lastN) {
                                 ls.set("chat-last_seen_nonce", lastN.dataset.nonce);
@@ -3245,6 +3250,10 @@ window.App = (function () {
                         if (popup) popup.remove();
                     });
 
+                    if (ls.get('chat.pings-enabled') == null) {
+                        ls.set('chat.pings-enabled', true);
+                    }
+
                     $("#cbChatSettings24h").prop("checked", ls.get('chat.24h') === true)
                         .on('change', function(e) {
                             ls.set('chat.24h', !!this.checked);
@@ -3252,6 +3261,14 @@ window.App = (function () {
                     $("#cbChatSettingsBadgesToggle").prop("checked", ls.get('chat.text-icons-enabled') === true)
                         .on('change', function(e) {
                             ls.set('chat.text-icons-enabled', !!this.checked);
+                        });
+                    $("#cbChatSettingsPings").prop("checked", ls.get('chat.pings-enabled') === true)
+                        .on('change', function(e) {
+                            let isChecked = !!this.checked;
+                            ls.set('chat.pings-enabled', isChecked);
+                            if (!isChecked) {
+                                self.clearPings();
+                            }
                         });
 
                     if (ls.get("chat.font-size") == null) {
@@ -3279,6 +3296,11 @@ window.App = (function () {
                         let obj = self.elements.body[0];
                         self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
                     });
+                },
+                clearPings: () => {
+                    self.elements.message_icon.removeClass('has-notification');
+                    self.elements.panel_trigger.removeClass('has-ping');
+                    self.pings = 0;
                 },
                 _numWithinDrift(needle, haystack, drift) {
                     return needle >= (haystack - drift) && needle <= (haystack + drift);
@@ -3330,6 +3352,7 @@ window.App = (function () {
                             }
                         }
                     }
+                    let hasPing = ls.get('chat.pings-enabled') === true && user.getUsername().toLowerCase() !== packet.author.toLowerCase() && packet.message_raw.toLowerCase().includes(`@${user.getUsername().toLowerCase()}`);
                     let when = moment.unix(packet.date);
                     let badges = crel('span', {'class': 'badges'});
                     if (Array.isArray(packet.badges)) {
@@ -3349,7 +3372,7 @@ window.App = (function () {
                     let contentSpan = self._processMessage(packet.message_raw);
 
                     self.elements.body.append(
-                        crel('li', {'data-nonce': packet.nonce, 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': 'chat-line'},
+                        crel('li', {'data-nonce': packet.nonce, 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': `chat-line${hasPing ? ' has-ping' : ''}`},
                             crel('span', {'class': 'actions'},
                                 crel('i', {'class': 'fas fa-cog', 'data-action': 'actions-panel', 'title': 'Actions', onclick: self._popUserPanel})
                             ),
@@ -3363,6 +3386,14 @@ window.App = (function () {
                             document.createTextNode(' ')
                         )
                     );
+
+                    if (hasPing) {
+                        if (!(panels.isOpen('chat') && self.stickToBottom || packet.date < self.last_opened_panel)) {
+                            ++self.pings;
+                            self.elements.panel_trigger.addClass('has-ping');
+                            // self.elements.ping_counter.text(self.pings);
+                        }
+                    }
                 },
                 _processMessage: str => {
                     let toReturn = crel('span', {'class': 'content'}, str);
@@ -3955,7 +3986,8 @@ window.App = (function () {
             };
             return {
                 init: self.init,
-                _handleActionClick: self._handleActionClick
+                _handleActionClick: self._handleActionClick,
+                clearPings: self.clearPings,
             }
         })(),
         // this takes care of the countdown timer
