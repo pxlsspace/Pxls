@@ -53,8 +53,8 @@ The relevant config options are `database.url`, `database.user`, and `database.p
     database {
       driver: org.mariadb.jdbc.driver
       url: "jdbc:mariadb://localhost:3306/pxls"
-      user: AzureDiamond
-      pass: hunter2
+      user: "AzureDiamond"
+      pass: "hunter2"
     }
 
 ## Configuring OAuth
@@ -69,16 +69,16 @@ An example OAuth section could look like this:
     oauth {
         callbackBase: "http://example.com/auth"
         reddit {
-            key: AsPxXweEomQjUD
-            secret: tYJlz_xbH-qjxw8xvKVj0qLXRCw
+            key: "AsPxXweEomQjUD"
+            secret: "tYJlz_xbH-qjxw8xvKVj0qLXRCw"
         }
         google {
-            key: pxls-
-            secret: AIzaSzAS9wxgdXw6G3Q2lGMlyxG03F3hmXEMnce
+            key: "pxls-"
+            secret: "AIzaSzAS9wxgdXw6G3Q2lGMlyxG03F3hmXEMnce"
         }
         discord {
-            key: 112233445566778899
-            secret: yo4DkHFDy0k1euPyxMef6m243qRgX00z
+            key: "112233445566778899"
+            secret: "yo4DkHFDy0k1euPyxMef6m243qRgX00z"
         }
     }
 
@@ -95,9 +95,9 @@ The `captcha.host` key needs to be one of the approved domains on the reCAPTCHA 
 An example CAPTCHA section could look like this:
 
     captcha {
-        key: 6LcedG4UAAAAAKA6l9BbRPvZ2vt3lTrCQwz8rfPe
-        secret: 6LcedG4UAAAAAIXZcNFhnLKvTQwG1E8BzQQt_-MR
-        host: example.com
+        key: "6LcedG4UAAAAAKA6l9BbRPvZ2vt3lTrCQwz8rfPe"
+        secret: "6LcedG4UAAAAAIXZcNFhnLKvTQwG1E8BzQQt_-MR"
+        host: "example.com"
     }
 
 
@@ -123,7 +123,7 @@ Commands are entered directly into the running instance (stdin):
 * [xSke](https://github.com/xSke) - Main code
 * [jasperandrew](https://github.com/jasperandrew) - Client UI/UX
 * [Sorunome](https://github.com/Sorunome) - Loads of client improvements
-* [TheRebelG0d](https://github.com/TheRebelG0d) - Loads of client improvements
+* [GlowingSocc](https://github.com/GlowingSocc) - Loads of client improvements
 * [haykam821](https://github.com/haykam821) - Copy link and color-switching keybinds
 * [FlyingSixtySix](https://github.com/FlyingSixtySix) - Miscellaneous contributions
 
