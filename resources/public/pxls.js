@@ -2285,9 +2285,9 @@ window.App = (function () {
                     // Register default hooks
                     self.registerHook(
                         {
-														id: "coords",
-														name: "Coords",
-														get: data => $("<a>").text("(" + data.x + ", " + data.y + ")").attr("href", coords.getLinkToCoords(data.x, data.y)),
+                            id: "coords",
+                            name: "Coords",
+                            get: data => $("<a>").text("(" + data.x + ", " + data.y + ")").attr("href", coords.getLinkToCoords(data.x, data.y)),
                         }, {
                             id: "username",
                             name: "Username",
@@ -2321,14 +2321,14 @@ window.App = (function () {
                             name: "Pixels",
                             get: data => data.pixel_count,
                         }, {
-														id: "pixels_alltime",
-														name: "Alltime Pixels",
-														get: data => data.pixel_count_alltime,
+                            id: "pixels_alltime",
+                            name: "Alltime Pixels",
+                            get: data => data.pixel_count_alltime,
                         }, {
-													id: "discord_name",
-													name: "Discord",
-													get: data => data.discordName,
-											 }
+                            id: "discord_name",
+                            name: "Discord",
+                            get: data => data.discordName,
+                        }
                     );
 
                     self.elements.lookup.hide();
@@ -2768,7 +2768,7 @@ window.App = (function () {
                     self.elements.stackCount.text(`${placeable}/${self.maxStacked}`);
                 },
                 setDiscordName(name) {
-                		self.elements.txtDiscordName.val(name);
+                    self.elements.txtDiscordName.val(name);
                 },
                 getAvailable() {
                     return self._available;
