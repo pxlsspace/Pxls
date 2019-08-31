@@ -19,8 +19,9 @@ public class DBUser {
     public boolean isPermaChatbanned;
     public long chatbanExpiry;
     public boolean isRenameRequested;
+    public String discordName;
 
-    public DBUser(int id, int stacked, String username, String login, long cooldownExpiry, Role role, long banExpiry, boolean isPermaChatbanned, long chatbanExpiry, boolean isRenameRequested) {
+    public DBUser(int id, int stacked, String username, String login, long cooldownExpiry, Role role, long banExpiry, boolean isPermaChatbanned, long chatbanExpiry, boolean isRenameRequested, String discordName) {
         this.id = id;
         this.stacked = stacked;
         this.username = username;
@@ -31,6 +32,7 @@ public class DBUser {
         this.isPermaChatbanned = isPermaChatbanned;
         this.chatbanExpiry = chatbanExpiry;
         this.isRenameRequested = isRenameRequested;
+        this.discordName = discordName;
     }
 
     public static class Mapper implements ResultSetMapper<DBUser> {
@@ -49,7 +51,8 @@ public class DBUser {
                     ban == null ? 0 : ban.getTime(),
                     r.getBoolean("perma_chat_banned"),
                     chatban == null ? 0 : chatban.getTime(),
-                    r.getBoolean("is_rename_requested")
+                    r.getBoolean("is_rename_requested"),
+                    r.getString("discord_name")
             );
         }
     }

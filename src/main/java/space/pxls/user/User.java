@@ -30,6 +30,7 @@ public class User {
     private boolean placingLock = false;
     private boolean isPermaChatbanned = false;
     private boolean isRenameRequested = false;
+    private String discordName;
     private long cooldownExpiry;
     private long lastPixelTime = 0;
     private long lastUndoTime = 0;
@@ -65,6 +66,7 @@ public class User {
         this.isPermaChatbanned = user.isPermaChatbanned;
         this.chatbanExpiryTime = user.chatbanExpiry;
         this.isRenameRequested = user.isRenameRequested;
+        this.discordName = user.discordName;
     }
 
     public int getId() {
@@ -498,6 +500,15 @@ public class User {
             return false;
         }
         return true;
+    }
+
+    public String getDiscordName() {
+        return discordName;
+    }
+
+    public void setDiscordName(String discordName) {
+        this.discordName = discordName;
+        App.getDatabase().setDiscordName(id, discordName);
     }
 
     /**

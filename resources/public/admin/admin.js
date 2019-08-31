@@ -194,6 +194,7 @@
                         ["Login", data.login],
                         ["Role", data.role],
                         ["Rename Requested", data.renameRequested ? "Yes" : "No"],
+                        ["Discord Name", data.discordName || "(not set)"],
                         ["Banned", bannedStr],
                         ["Chatbanned", chatbannedStr]
                     ];

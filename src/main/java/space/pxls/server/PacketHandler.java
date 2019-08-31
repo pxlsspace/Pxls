@@ -68,7 +68,8 @@ public class PacketHandler {
                     App.getDatabase().getChatbanReasonForUser(user.getId()),
                     user.isPermaChatbanned(),
                     user.getChatbanExpiryTime(),
-                    user.isRenameRequested(true)
+                    user.isRenameRequested(true),
+                    user.getDiscordName()
             ));
             sendAvailablePixels(channel, user, "auth");
         }

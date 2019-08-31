@@ -582,6 +582,39 @@ public class WebHandler {
         exchange.endExchange();
     }
 
+    public void discordNameChange(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null) {
+            sendBadRequest(exchange, "No authenticated user could be found");
+            return;
+        }
+
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+        String discordName = null;
+        try {
+            discordName = data.getFirst("discordName").getValue();
+            if (discordName.equalsIgnoreCase("")) {
+                discordName = null;
+            }
+        } catch (Exception npe) {
+            npe.printStackTrace();
+            sendBadRequest(exchange, "Missing 'discordName' field");
+            return;
+        }
+
+        if (discordName != null && !discordName.matches("^.{2,32}#\\d{4}$")) {
+            sendBadRequest(exchange, "name isn't in the format '{name}#{discriminator}'");
+            return;
+        }
+
+        user.setDiscordName(discordName);
+
+        exchange.setStatusCode(200);
+        exchange.getResponseSender().send("{}");
+        exchange.endExchange();
+    }
+
     private void sendBadRequest(HttpServerExchange exchange) {
         sendBadRequest(exchange, "");
     }
@@ -608,7 +641,8 @@ public class WebHandler {
                             App.getDatabase().getChatbanReasonForUser(user.getId()),
                             user.isPermaChatbanned(),
                             user.getChatbanExpiryTime(),
-                            user.isRenameRequested(true)
+                            user.isRenameRequested(true),
+                            user.getDiscordName()
                     )));
         } else {
             exchange.setStatusCode(400);

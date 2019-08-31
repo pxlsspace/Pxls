@@ -108,7 +108,7 @@ public interface DAO extends Closeable {
     @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users ON pixels.who = users.id WHERE x = :x AND y = :y ORDER BY time DESC LIMIT 1")
     DBPixelPlacement getPixel(@Bind("x") int x, @Bind("y") int y);
 
-    @SqlQuery("SELECT pixels.id, pixels.x, pixels.y, pixels.color, pixels.time, users.username, users.pixel_count, users.pixel_count_alltime, users.login FROM pixels LEFT JOIN users ON pixels.who = users.id WHERE x = :x AND y = :y AND most_recent ORDER BY time DESC LIMIT 1")
+    @SqlQuery("SELECT pixels.id, pixels.x, pixels.y, pixels.color, pixels.time, users.username, users.pixel_count, users.pixel_count_alltime, users.login, users.discord_name FROM pixels LEFT JOIN users ON pixels.who = users.id WHERE x = :x AND y = :y AND most_recent ORDER BY time DESC LIMIT 1")
     DBPixelPlacementUser getPixelUser(@Bind("x") int x, @Bind("y") int y);
 
     @SqlQuery("SELECT *, users.* FROM pixels LEFT JOIN users on pixels.who = users.id WHERE pixels.id = :id")
@@ -135,7 +135,8 @@ public interface DAO extends Closeable {
             "user_agent VARCHAR(512) NOT NULL DEFAULT ''," +
             "pixel_count INT UNSIGNED NOT NULL DEFAULT 0," +
             "pixel_count_alltime INT UNSIGNED NOT NULL DEFAULT 0," +
-            "is_rename_requested TINYINT NOT NULL DEFAULT 0)")
+            "is_rename_requested TINYINT NOT NULL DEFAULT 0," +
+            "discord_name VARCHAR(37))")
     void createUsersTable();
 
     @SqlQuery("SELECT EXISTS(SELECT 1 FROM users WHERE (last_ip = INET6_ATON(:ip) OR signup_ip = INET6_ATON(:ip)) AND id <> :uid)")
@@ -197,6 +198,9 @@ public interface DAO extends Closeable {
 
     @SqlUpdate("UPDATE users SET username = :name WHERE id = :uid")
     void updateUsername(@Bind("uid") int who, @Bind("name") String new_username);
+
+    @SqlUpdate("UPDATE users SET discord_name = :name WHERE id = :uid")
+    void setDiscordName(@Bind("uid") int who, @Bind("name") String discordName);
 
     @SqlUpdate("CREATE TABLE IF NOT EXISTS sessions ("+
             "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,"+

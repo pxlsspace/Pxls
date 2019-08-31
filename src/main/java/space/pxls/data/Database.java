@@ -324,6 +324,13 @@ public class Database implements Closeable {
         getHandle().updateUsername(who_id, new_username);
     }
 
+    /**
+     * Sets the public Discord username of the user.
+     * @param who_id The ID of the user to update.
+     * @param discordName The new discord username.
+     */
+    public void setDiscordName(int who_id, String discordName) { getHandle().setDiscordName(who_id, discordName); }
+
     public String getUserBanReason(int id) {
         return getHandle().getUserBanReason(id).ban_reason;
     }
