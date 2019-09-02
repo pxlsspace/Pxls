@@ -356,6 +356,22 @@ public class Database implements Closeable {
         return App.getConfig().getBoolean("selfPixelTimeIncrease") ? didPixelChange(x, y) : getHandle().shouldPixelTimeIncrease(x, y, who);
     }
 
+    public boolean hasUserFlaggedLastIPAlert(int who) {
+        return getHandle().hasUserFlaggedLastIPAlert(who);
+    }
+
+    public void setLastIPAlertFlag(boolean isFlagged, int user_id) {
+        getHandle().setLastIPAlertFlag(isFlagged, user_id);
+    }
+
+    public void flagLastIPAlert(int user_id) {
+        setLastIPAlertFlag(true, user_id);
+    }
+
+    public void unflagLastIPAlert(int user_id) {
+        setLastIPAlertFlag(false, user_id);
+    }
+
     public void adminLog(String message, int uid) {
         getHandle().adminLog(message, uid);
     }
@@ -374,6 +390,14 @@ public class Database implements Closeable {
 
     public boolean haveDupeIp(String ip, int uid) {
         return getHandle().haveDupeIp(ip, uid);
+    }
+
+    public int getDupedCount(String ip, int uid) {
+        return getHandle().getDupedCount(ip, uid);
+    }
+
+    public List<Integer> getDupedUsers(String ip, int uid) {
+        return getHandle().getDupedUsers(ip, uid);
     }
 
     public void addLookup(Integer who, String ip) {

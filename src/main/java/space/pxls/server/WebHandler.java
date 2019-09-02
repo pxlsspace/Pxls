@@ -687,13 +687,8 @@ public class WebHandler {
         }
 
         // do additional checks for possible multi here
-        List<String> reports = new ArrayList<String>();
-        if (App.getDatabase().haveDupeIp(ip, user.getId())) {
-            reports.add("Duplicate IP");
-//            App.getLogger().debug("dupe ip");
-        }
+        List<String> reports = new ArrayList<String>(); //left in `reports` here for future use, however signup IP checks have been moved to dupe IP checks on auth.
         if (reports.size() > 0) {
-//            App.getLogger().debug("have reports");
             String msg = "Potential dupe user. Reasons:\n\n";
             for (String r : reports) {
                 msg += r+"\n";
