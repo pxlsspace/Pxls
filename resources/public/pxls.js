@@ -2206,7 +2206,7 @@ window.App = (function () {
                         if (data) {
                             return $.map(self.hooks, function (hook) {
                                 const get = hook.get(data);
-                                if (!get) {
+                                if (get == null) {
                                 	return null;
                                 }
 
