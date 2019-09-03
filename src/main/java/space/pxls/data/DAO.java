@@ -282,8 +282,8 @@ public interface DAO extends Closeable {
             "  `nonce` varchar(36) PRIMARY KEY," +
             "  `author` int," +
             "  `sent` int(11) NOT NULL," +
-            "  `content` varchar(2048) character set utf8 NOT NULL," +
-            "  `filtered` varchar(2048) character set utf8 NOT NULL DEFAULT ''," +
+            "  `content` varchar(2048) character set utf8mb4 NOT NULL," +
+            "  `filtered` varchar(2048) character set utf8mb4 NOT NULL DEFAULT ''," +
             "  `purged` tinyint NOT NULL DEFAULT 0," +
             "  `purged_by` int" +
             " );")

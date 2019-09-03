@@ -43,6 +43,7 @@ public class Database implements Closeable {
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
         config.addDataSourceProperty("allowMultiQueries", "true");
         config.setMaximumPoolSize(200); // this is plenty, the websocket uses 32
+        config.setConnectionInitSql("SET NAMES utf8mb4"); //needed for emoji's in chat
 
         dbi = new DBI(new HikariDataSource(config));
 

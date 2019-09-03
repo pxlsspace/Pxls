@@ -7,7 +7,6 @@ import com.mashape.unirest.http.async.Callback;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.typesafe.config.Config;
 import io.undertow.websockets.core.WebSocketChannel;
-import org.apache.commons.lang3.text.translate.AggregateTranslator;
 import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
 import org.apache.commons.lang3.text.translate.LookupTranslator;
 import space.pxls.App;
@@ -370,7 +369,8 @@ public class PacketHandler {
                         server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges())));
                     }
                 } catch (org.skife.jdbi.v2.exceptions.UnableToExecuteStatementException utese) {
-                    //ignore for now. caused by emojis TODO add emoji support
+                    utese.printStackTrace();
+                    System.err.println("Failed to execute the ChatMessage insert statement.");
                 }
             }
         }
