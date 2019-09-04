@@ -46,7 +46,7 @@
         </Logger>
 
         <Logger name="Debug" level="DEBUG">
-            <AppenderRef ref="DebugLogger" />
+            <AppenderRef ref="Debug" />
         </Logger>
     </Loggers>
 </Configuration>

@@ -15,14 +15,13 @@ import io.undertow.websockets.spi.WebSocketHttpExchange;
 import space.pxls.App;
 import space.pxls.user.Role;
 import space.pxls.user.User;
-import space.pxls.util.AuthReader;
-import space.pxls.util.IPReader;
-import space.pxls.util.RateLimitingHandler;
-import space.pxls.util.RoleGate;
+import space.pxls.util.*;
 
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class UndertowServer {
@@ -33,6 +32,8 @@ public class UndertowServer {
 
     private Set<WebSocketChannel> connections;
     private Undertow server;
+
+    private ExecutorService userDupeIPExecutor = Executors.newFixedThreadPool(4);
 
     public UndertowServer(int port) {
         this.port = port;
@@ -108,6 +109,8 @@ public class UndertowServer {
                 agent = "";
             }
             user.setUseragent(agent);
+
+            userDupeIPExecutor.submit(new UserDupeIPTask(channel, user, ip)); //ip at this point should have gone through all the checks to extract an actual IP from behind a reverse proxy
         }
 
         channel.getReceiveSetter().set(new AbstractReceiveListener() {

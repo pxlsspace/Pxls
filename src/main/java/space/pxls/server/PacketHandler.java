@@ -32,7 +32,6 @@ public class PacketHandler {
     private PxlsTimer userData = new PxlsTimer(5);
     private int numAllCons = 0;
     private Config config = App.getConfig();
-    private ExecutorService userDupeIPExecutor = Executors.newFixedThreadPool(4);
 
     public int getCooldown() {
         // TODO: make these parameters somehow configurable
@@ -88,8 +87,6 @@ public class PacketHandler {
             user.setInitialAuthTime(System.currentTimeMillis());
             user.tickStack(false); // pop the whole pixel stack
             sendAvailablePixels(channel, user, "connect");
-
-            userDupeIPExecutor.submit(new UserDupeIPTask(channel, user));
         }
         numAllCons++;
 
