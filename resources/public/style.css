@@ -90,11 +90,11 @@ kbd {
     text-indent: 0.75em;
 }
 
-.alertLocationWrapper {
+.longTextInputWrapper {
     max-width: 100% !important;
 }
 
-.alertLocationWrapper > input[type='text'] {
+.longTextInputWrapper > input[type='text'] {
     width: 100% !important;
     margin-bottom: 2px;
 }

@@ -16,8 +16,9 @@ public class DBPixelPlacementUser {
     public final String username;
     public final int pixel_count;
     public final int pixel_count_alltime;
+    public final String discord_name;
 
-    public DBPixelPlacementUser(int id, int x, int y, int color, long time, String username, int pixel_count, int pixel_count_alltime) {
+    public DBPixelPlacementUser(int id, int x, int y, int color, long time, String username, int pixel_count, int pixel_count_alltime, String discord_name) {
         this.id = id;
         this.x = x;
         this.y = y;
@@ -26,6 +27,7 @@ public class DBPixelPlacementUser {
         this.username = username;
         this.pixel_count = pixel_count;
         this.pixel_count_alltime = pixel_count_alltime;
+        this.discord_name = discord_name;
     }
 
     public static class Mapper implements ResultSetMapper<DBPixelPlacementUser> {
@@ -41,7 +43,8 @@ public class DBPixelPlacementUser {
                     time == null ? 0 : time.getTime(),
                     r.getString("users.login").startsWith("ip:") ? "-snip-" : r.getString("users.username"),
                     r.getInt("pixel_count"),
-                    r.getInt("pixel_count_alltime")
+                    r.getInt("pixel_count_alltime"),
+                    r.getString("users.discord_name")
             );
         }
     }

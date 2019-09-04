@@ -240,7 +240,7 @@
                 <h2>Pixel Ready Alert Settings</h2>
             </header>
             <div class="pad-wrapper">
-                <p class="alertLocationWrapper"><label for="txtAlertLocation">Alert URL:</label><input type="text" placeholder="notify.wav" id="txtAlertLocation"></p>
+                <p class="longTextInputWrapper"><label for="txtAlertLocation">Alert URL:</label><input type="text" placeholder="notify.wav" id="txtAlertLocation"></p>
                 <div class="ButtonBar">
                     <button id="btnForceAudioUpdate" class="button">Update</button>
                     <button id="btnAlertAudioTest" class="button">Test</button>
@@ -263,6 +263,18 @@
                     <label><input id="cbChatSettings24h" type="checkbox" />24 Hour Timestamps</label>
                     <label><input id="cbChatSettingsBadgesToggle" type="checkbox" />Show pixel-placed badges</label>
                     <label>Font Size: <input type="number" min="1" max="72" id="cbChatSettingsFontSize"> <button id="cbChatSettingsFontSizeConfirm" class="button"><i class="fas fa-check"></i></button></label>
+                </div>
+            </div>
+        </article>
+        <article>
+            <header class="slim darker">
+                <h2>Account Settings</h2>
+            </header>
+            <div class="pad-wrapper">
+                <p class="longTextInputWrapper"><label for="txtDiscordName">Public Discord Name:</label><input type="text" placeholder="pxlslover#1337" id="txtDiscordName"></p>
+                <div class="ButtonBar">
+                    <button id="btnDiscordNameSet" class="button">Set</button>
+                    <button id="btnDiscordNameRemove" class="button">Remove</button>
                 </div>
             </div>
         </article>

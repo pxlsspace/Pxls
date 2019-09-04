@@ -2206,6 +2206,10 @@ window.App = (function () {
                         if (data) {
                             return $.map(self.hooks, function (hook) {
                                 const get = hook.get(data);
+                                if (get == null) {
+                                	return null;
+                                }
+
                                 const value = typeof get === "object" ? get : $("<span>").text(get);
 
                                 let _retVal = $("<div data-sensitive=\"" + hook.sensitive + "\">").append(
@@ -2320,6 +2324,10 @@ window.App = (function () {
                             id: "pixels_alltime",
                             name: "Alltime Pixels",
                             get: data => data.pixel_count_alltime,
+                        }, {
+                            id: "discord_name",
+                            name: "Discord",
+                            get: data => data.discordName,
                         }
                     );
 
@@ -2500,7 +2508,8 @@ window.App = (function () {
                     rangeAlertVolume: $("#rangeAlertVolume"),
                     lblAlertVolume: $("#lblAlertVolume"),
                     btnForceAudioUpdate: $("#btnForceAudioUpdate"),
-                    themeSelect: $("#themeSelect")
+                    themeSelect: $("#themeSelect"),
+                    txtDiscordName: $("#txtDiscordName"),
                 },
                 themes: [
                     {
@@ -2512,6 +2521,7 @@ window.App = (function () {
                     self._initThemes();
                     self._initStack();
                     self._initAudio();
+                    self._initAccount();
                     var useMono = ls.get("monospace_lookup")
                     if (typeof useMono === 'undefined') {
                         ls.set("monospace_lookup", true);
@@ -2703,6 +2713,39 @@ window.App = (function () {
                         self.elements.txtAlertLocation.val("");
                     });
                 },
+                _initAccount: function() {
+										self.elements.txtDiscordName.keydown(function (evt) {
+												if (evt.key == "Enter" || evt.which === 13) {
+														self.handleDiscordNameSet();
+												}
+												evt.stopPropagation();
+										});
+										$("#btnDiscordNameSet").click(() => {
+												self.handleDiscordNameSet()
+										});
+										$("#btnDiscordNameRemove").click(() => {
+												self.setDiscordName("")
+												self.handleDiscordNameSet()
+										});
+                },
+                handleDiscordNameSet() {
+                		const name = self.elements.txtDiscordName.val();
+
+                		//TODO confirm with user
+										$.post({
+												type: "POST",
+												url: "/setDiscordName",
+												data: {
+														discordName: name
+												},
+												success: function () {
+														alert.show("Discord name updated successfully");
+												},
+												error: function (data) {
+														alert.show("Couldn't change discord name: " + data.responseJSON.details);
+												}
+										});
+                },
                 updateAudio: function (url) {
                     try {
                         if (!url) url = "notify.wav";
@@ -2724,6 +2767,9 @@ window.App = (function () {
                 setPlaceableText(placeable) {
                     self.elements.stackCount.text(`${placeable}/${self.maxStacked}`);
                 },
+                setDiscordName(name) {
+                    self.elements.txtDiscordName.val(name);
+                },
                 getAvailable() {
                     return self._available;
                 }
@@ -2736,6 +2782,7 @@ window.App = (function () {
                 getAvailable: self.getAvailable,
                 setPlaceableText: self.setPlaceableText,
                 setMax: self.setMax,
+                setDiscordName: self.setDiscordName,
                 updateAudio: self.updateAudio
             };
         })(),
@@ -4246,6 +4293,7 @@ window.App = (function () {
                         self.username = data.username;
                         self.loggedIn = true;
                         self.renameRequested = data.renameRequested;
+                        uiHelper.setDiscordName(data.discordName || "")
                         self.elements.loginOverlay.fadeOut(200);
                         self.elements.userInfo.find("span.name").text(data.username);
                         if (data.method == 'ip') {
