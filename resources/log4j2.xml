@@ -21,6 +21,12 @@
                 <Pattern>%d&#9;%m%n</Pattern>
             </PatternLayout>
         </File>
+
+        <File name="Debug" fileName="logs/debug.log">
+            <PatternLayout>
+                <Pattern>%d&#9;%m%n</Pattern>
+            </PatternLayout>
+        </File>
     </Appenders>
     <Loggers>
         <Root level="info">
@@ -37,6 +43,10 @@
 
         <Logger name="ShadowbannedPixels" level="INFO">
             <AppenderRef ref="ShadowbannedPixels"/>
+        </Logger>
+
+        <Logger name="Debug" level="DEBUG">
+            <AppenderRef ref="DebugLogger" />
         </Logger>
     </Loggers>
 </Configuration>
