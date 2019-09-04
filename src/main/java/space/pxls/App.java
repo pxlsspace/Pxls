@@ -424,6 +424,7 @@ public class App {
 
         RateLimitFactory.registerBucketHolder(ClientUndo.class, new RateLimitFactory.BucketConfig(((int) App.getConfig().getDuration("server.limits.undo.time", TimeUnit.SECONDS)), App.getConfig().getInt("server.limits.undo.count")));
         RateLimitFactory.registerBucketHolder(DBChatMessage.class, new RateLimitFactory.BucketConfig(((int) App.getConfig().getDuration("server.limits.chat.time", TimeUnit.SECONDS)), App.getConfig().getInt("server.limits.chat.count")));
+        RateLimitFactory.registerBucketHolder("http:discordName", new RateLimitFactory.BucketConfig((int) App.getConfig().getDuration("server.limits.discordNameChange.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.discordNameChange.count")));
 
         mapSaveTimer = new PxlsTimer(config.getDuration("board.saveInterval", TimeUnit.SECONDS));
         mapBackupTimer = new PxlsTimer(config.getDuration("board.backupInterval", TimeUnit.SECONDS));

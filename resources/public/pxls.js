@@ -2743,7 +2743,11 @@ window.App = (function () {
 												},
 												error: function (data) {
 												        let err = data.responseJSON && data.responseJSON.details ? data.responseJSON.details : data.responseText;
-														alert.show("Couldn't change discord name: " + err);
+                                                        if (data.status === 200) { // seems to be caused when response body isn't json? just show whatever we can and trust server sent good enough details.
+                                                            alert.show(err);
+                                                        } else {
+                                                            alert.show("Couldn't change discord name: " + err);
+                                                        }
 												}
 										});
                 },

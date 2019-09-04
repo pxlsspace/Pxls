@@ -59,6 +59,7 @@ public class UndertowServer {
                 .addPrefixPath("/auth", new RateLimitingHandler(webHandler::auth, "http:auth", (int) App.getConfig().getDuration("server.limits.auth.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.auth.count")))
                 .addPrefixPath("/signup", new RateLimitingHandler(webHandler::signUp, "http:signUp", (int) App.getConfig().getDuration("server.limits.signup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.signup.count")))
                 .addPrefixPath("/setDiscordName", new RateLimitingHandler(webHandler::discordNameChange, "http:discordName", (int) App.getConfig().getDuration("server.limits.discordNameChange.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.discordNameChange.count")))
+                .addPrefixPath("/setDiscordName", webHandler::discordNameChange)
                 .addPrefixPath("/admin/ban", new RoleGate(Role.TRIALMOD, webHandler::ban))
                 .addPrefixPath("/admin/unban", new RoleGate(Role.TRIALMOD, webHandler::unban))
                 .addPrefixPath("/admin/permaban", new RoleGate(Role.MODERATOR, webHandler::permaban))

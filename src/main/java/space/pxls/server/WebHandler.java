@@ -1,5 +1,6 @@
 package space.pxls.server;
 
+import com.google.gson.JsonObject;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
@@ -20,9 +21,9 @@ import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.util.AuthReader;
 import space.pxls.util.IPReader;
+import space.pxls.util.RateLimitFactory;
 
 import java.io.*;
-import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -602,26 +603,54 @@ public class WebHandler {
             sendBadRequest(exchange, "Missing 'discordName' field");
             return;
         }
+        boolean isDeleteRequest = discordName == null;
+
+        if (isDeleteRequest && user.getDiscordName() == null) {
+            send(StatusCodes.CONFLICT, exchange, "Discord name is already unset.");
+            return;
+        }
+
+        if (!isDeleteRequest && user.getDiscordName() != null && user.getDiscordName().equals(discordName)) {
+            send(StatusCodes.CONFLICT, exchange, "Discord name is already set to the requested name.");
+            return;
+        }
 
         if (discordName != null && !discordName.matches("^.{2,32}#\\d{4}$")) {
             sendBadRequest(exchange, "name isn't in the format '{name}#{discriminator}'");
             return;
         }
 
-        user.setDiscordName(discordName);
-
-        exchange.setStatusCode(200);
-        exchange.getResponseSender().send("{}");
-        exchange.endExchange();
+        if (discordName == null) { //user is deleting name, bypass ratelimit check
+            user.setDiscordName(null);
+            send(StatusCodes.OK, exchange, "Name removed");
+        } else {
+            int remaining = RateLimitFactory.getTimeRemaining("http:discordName", exchange.getAttachment(IPReader.IP));
+            if (remaining == 0) {
+                user.setDiscordName(discordName);
+                send(StatusCodes.OK, exchange, "Name updated");
+            } else {
+                send(StatusCodes.TOO_MANY_REQUESTS, exchange, "Hit max attempts. Try again in " + remaining + "s");
+            }
+        }
     }
 
     private void sendBadRequest(HttpServerExchange exchange) {
         sendBadRequest(exchange, "");
     }
     private void sendBadRequest(HttpServerExchange exchange, String details) {
-        exchange.setStatusCode(StatusCodes.BAD_REQUEST);
-        String _details = details.isEmpty() ? "" : ", \"details\": \"" + details + "\"";
-        exchange.getResponseSender().send("{\"success\": false, \"message\": \"ERR_BAD_REQUEST\"" + _details + "}");
+        send(StatusCodes.BAD_REQUEST, exchange, details);
+    }
+
+    private void send(int statusCode, HttpServerExchange exchange, String details) {
+        boolean isSuccess = statusCode >= 200 && statusCode < 300;
+
+        JsonObject toSend = new JsonObject();
+        toSend.addProperty("success", isSuccess);
+        toSend.addProperty("message", StatusCodes.getReason(statusCode));
+        toSend.addProperty("details", details);
+
+        exchange.setStatusCode(statusCode);
+        exchange.getResponseSender().send(App.getGson().toJson(toSend));
         exchange.endExchange();
     }
 
