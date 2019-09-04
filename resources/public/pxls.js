@@ -2714,42 +2714,42 @@ window.App = (function () {
                     });
                 },
                 _initAccount: function() {
-										self.elements.txtDiscordName.keydown(function (evt) {
-												if (evt.key == "Enter" || evt.which === 13) {
-														self.handleDiscordNameSet();
-												}
-												evt.stopPropagation();
-										});
-										$("#btnDiscordNameSet").click(() => {
-												self.handleDiscordNameSet()
-										});
-										$("#btnDiscordNameRemove").click(() => {
-												self.setDiscordName("")
-												self.handleDiscordNameSet()
-										});
+                    self.elements.txtDiscordName.keydown(function (evt) {
+                        if (evt.key == "Enter" || evt.which === 13) {
+                                self.handleDiscordNameSet();
+                        }
+                        evt.stopPropagation();
+                    });
+                    $("#btnDiscordNameSet").click(() => {
+                        self.handleDiscordNameSet()
+                    });
+                    $("#btnDiscordNameRemove").click(() => {
+                        self.setDiscordName("")
+                        self.handleDiscordNameSet()
+                    });
                 },
                 handleDiscordNameSet() {
-                		const name = self.elements.txtDiscordName.val();
+                    const name = self.elements.txtDiscordName.val();
 
-                		//TODO confirm with user
-										$.post({
-												type: "POST",
-												url: "/setDiscordName",
-												data: {
-														discordName: name
-												},
-												success: function () {
-														alert.show("Discord name updated successfully");
-												},
-												error: function (data) {
-												        let err = data.responseJSON && data.responseJSON.details ? data.responseJSON.details : data.responseText;
-                                                        if (data.status === 200) { // seems to be caused when response body isn't json? just show whatever we can and trust server sent good enough details.
-                                                            alert.show(err);
-                                                        } else {
-                                                            alert.show("Couldn't change discord name: " + err);
-                                                        }
-												}
-										});
+                    //TODO confirm with user
+                    $.post({
+                        type: "POST",
+                        url: "/setDiscordName",
+                        data: {
+                            discordName: name
+                        },
+                        success: function () {
+                            alert.show("Discord name updated successfully");
+                        },
+                        error: function (data) {
+                            let err = data.responseJSON && data.responseJSON.details ? data.responseJSON.details : data.responseText;
+                            if (data.status === 200) { // seems to be caused when response body isn't json? just show whatever we can and trust server sent good enough details.
+                                alert.show(err);
+                            } else {
+                                alert.show("Couldn't change discord name: " + err);
+                            }
+                        }
+                    });
                 },
                 updateAudio: function (url) {
                     try {
