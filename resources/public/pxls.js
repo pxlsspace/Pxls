@@ -2742,7 +2742,8 @@ window.App = (function () {
 														alert.show("Discord name updated successfully");
 												},
 												error: function (data) {
-														alert.show("Couldn't change discord name: " + data.responseJSON.details);
+												        let err = data.responseJSON && data.responseJSON.details ? data.responseJSON.details : data.responseText;
+														alert.show("Couldn't change discord name: " + err);
 												}
 										});
                 },
