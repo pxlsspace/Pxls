@@ -3400,7 +3400,6 @@ window.App = (function () {
 
                     try {
                         let list = anchorme(str, {emails: false, files: false, exclude: self._anchorme.fnExclude, attributes: [self._anchorme.fnAttributes], list: true});
-                        console.log(list);
 
                         //handle jump links (e.g. (500, 500[, 20[x]]))
                         str = str.replace(/\(([0-9]+)[., ]{1,2}([0-9]+)[., ]{0,2}([0-9]+)?x?\)/ig, function(match, group1, group2, group3) {
