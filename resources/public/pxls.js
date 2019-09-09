@@ -2730,16 +2730,16 @@ window.App = (function () {
                 _initAccount: function() {
                     self.elements.txtDiscordName.keydown(function (evt) {
                         if (evt.key == "Enter" || evt.which === 13) {
-                                self.handleDiscordNameSet();
+                            self.handleDiscordNameSet();
                         }
                         evt.stopPropagation();
                     });
                     $("#btnDiscordNameSet").click(() => {
-                        self.handleDiscordNameSet()
+                        self.handleDiscordNameSet();
                     });
                     $("#btnDiscordNameRemove").click(() => {
-                        self.setDiscordName("")
-                        self.handleDiscordNameSet()
+                        self.setDiscordName("");
+                        self.handleDiscordNameSet();
                     });
                 },
                 handleDiscordNameSet() {
@@ -3334,7 +3334,7 @@ window.App = (function () {
                     let when = moment();
                     let toAppend =
                         crel('li', {'class': 'chat-line server-action'},
-                            crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format('hh:mm:ss A')),
+                            crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format(ls.get('chat.24h') === true ? 'HH:mm' : 'hh:mm A')),
                             document.createTextNode(' - '),
                             crel('span', {'class': 'content'}, msg)
                         );
