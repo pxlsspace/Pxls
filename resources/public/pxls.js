@@ -2585,6 +2585,16 @@ window.App = (function () {
                             place.setNumberedPaletteEnabled(this.checked === true);
                         });
 
+                    const numOrDefault = (n, def) => isNaN(n) ? def : n
+                    const colorBrightnessLevel = numOrDefault(parseFloat(ls.get("colorBrightness")), 1)
+                    $("#color-brightness").val(colorBrightnessLevel)
+                    self.adjustColorBrightness(colorBrightnessLevel)
+                    $("#color-brightness").change((e) => {
+                        const level = parseFloat(e.target.value);
+                        ls.set("colorBrightness", level);
+                        self.adjustColorBrightness(level)
+                    });
+
                     $(window).keydown(function (evt) {
                         switch (evt.key || evt.which) {
                             case "Escape":
@@ -2774,6 +2784,14 @@ window.App = (function () {
                 },
                 setDiscordName(name) {
                     self.elements.txtDiscordName.val(name);
+                },
+                adjustColorBrightness(level) {
+                    $([
+                        "#board-container",
+                        "#cursor",
+                        "#reticule",
+                        "#palette .palette-color"
+                    ].join(", ")).css("filter", `brightness(${level})`);
                 },
                 getAvailable() {
                     return self._available;
