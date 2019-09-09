@@ -2007,16 +2007,20 @@ window.App = (function () {
                     socket.on("ACK", function (data) {
                         switch (data.ackFor) {
                             case "PLACE":
+                                $(window).trigger('pxls:ack:place', [data.x, data.y]);
                                 if (!ls.get("audio_muted")) {
                                     var clone = self.audio.cloneNode(false);
                                     clone.volume = parseFloat(ls.get("alert.volume"));
                                     clone.play();
                                 }
+                                break;
                             case "UNDO":
-                                if (uiHelper.getAvailable() === 0)
-                                    uiHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
+                                $(window).trigger('pxls:ack:undo', [data.x, data.y]);
                                 break;
                         }
+
+                        if (uiHelper.getAvailable() === 0)
+                            uiHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
                     });
                     socket.on("captcha_required", function (data) {
                         grecaptcha.reset();
