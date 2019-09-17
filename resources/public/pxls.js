@@ -2007,16 +2007,20 @@ window.App = (function () {
                     socket.on("ACK", function (data) {
                         switch (data.ackFor) {
                             case "PLACE":
+                                $(window).trigger('pxls:ack:place', [data.x, data.y]);
                                 if (!ls.get("audio_muted")) {
                                     var clone = self.audio.cloneNode(false);
                                     clone.volume = parseFloat(ls.get("alert.volume"));
                                     clone.play();
                                 }
+                                break;
                             case "UNDO":
-                                if (uiHelper.getAvailable() === 0)
-                                    uiHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
+                                $(window).trigger('pxls:ack:undo', [data.x, data.y]);
                                 break;
                         }
+
+                        if (uiHelper.getAvailable() === 0)
+                            uiHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
                     });
                     socket.on("captcha_required", function (data) {
                         grecaptcha.reset();
@@ -2732,16 +2736,16 @@ window.App = (function () {
                 _initAccount: function() {
                     self.elements.txtDiscordName.keydown(function (evt) {
                         if (evt.key == "Enter" || evt.which === 13) {
-                                self.handleDiscordNameSet();
+                            self.handleDiscordNameSet();
                         }
                         evt.stopPropagation();
                     });
                     $("#btnDiscordNameSet").click(() => {
-                        self.handleDiscordNameSet()
+                        self.handleDiscordNameSet();
                     });
                     $("#btnDiscordNameRemove").click(() => {
-                        self.setDiscordName("")
-                        self.handleDiscordNameSet()
+                        self.setDiscordName("");
+                        self.handleDiscordNameSet();
                     });
                 },
                 handleDiscordNameSet() {
@@ -3336,7 +3340,7 @@ window.App = (function () {
                     let when = moment();
                     let toAppend =
                         crel('li', {'class': 'chat-line server-action'},
-                            crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format('hh:mm:ss A')),
+                            crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format(ls.get('chat.24h') === true ? 'HH:mm' : 'hh:mm A')),
                             document.createTextNode(' - '),
                             crel('span', {'class': 'content'}, msg)
                         );

@@ -77,4 +77,35 @@ App.lookup.registerHook({
 });
 ```
 
-Your function's return value can either be a jQuery object or a string (later wrapped in a `span`).
+Your function's return value can either be a jQuery object, a string (later wrapped in a `span`), or null (signaling the hook shouldn't be included).
+
+## Global Events
+
+You can listen for various custom $(window) events triggered with the `pxls:` prefix. Note that these are only listen-able with jQuery.
+
+Examples:
+```js
+$(window).on('pxls:ack:place', (event, x, y) => {
+    console.log("Pixel succesfully placed at (" + x + ", " + y + ")");
+});
+
+$(window).on('pxls:ack:undo', (event, x, y) => {
+    console.log("Pixel succesfully undoed at (" + x + ", " + y + ")");
+});
+
+
+/** Events used internally but still available to anyone **/
+$(window).on('pxls:panel:opened', (event, panelDescriptor) => {
+    console.log("Opened panel " + panelDescriptor);
+});
+
+$(window).on('pxls:panel:closed', (event, panelDescriptor) => {
+    console.log("Opened panel " + panelDescriptor);
+});
+
+$(window).on('pxls:queryUpdated', (event, propName, oldValue, newValue) => {
+    if (oldValue !== newValue) {
+        console.log("Query property " + propName + " changed from " + oldValue + " to " + newValue);
+    }
+});
+```
