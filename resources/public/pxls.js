@@ -847,10 +847,10 @@ window.App = (function () {
                         if ((event.button === 0 || touch) && downDelta < 500) {
                             if (!self.allowDrag && dx < 25 && dy < 25) {
                                 var pos = self.fromScreen(downX, downY);
-                                place.place(pos.x | 0, pos.y | 0);
+                                place.place(pos.x, pos.y);
                             } else if (dx < 5 && dy < 5) {
                                 var pos = self.fromScreen(clientX, clientY);
-                                place.place(pos.x | 0, pos.y | 0);
+                                place.place(pos.x, pos.y);
                             }
                         }
                         downDelta = 0;
@@ -1154,7 +1154,7 @@ window.App = (function () {
                         self.ctx.putImageData(self.id, 0, 0);
                     }
                 },
-                fromScreen: function (screenX, screenY) {
+                fromScreen: function (screenX, screenY, floored = true) {
                     var adjust_x = 0,
                         adjust_y = 0;
                     if (self.scale < 0) {
@@ -1174,10 +1174,10 @@ window.App = (function () {
                             y: (screenY / self.scale) - boardBox.top + adjust_y
                         };
                     }
-                    return {
-                        x: ((screenX - boardBox.left) / self.scale) + adjust_x,
-                        y: ((screenY - boardBox.top) / self.scale) + adjust_y
-                    };
+
+                    const x = ((screenX - boardBox.left) / self.scale) + adjust_x;
+                    const y = ((screenY - boardBox.top) / self.scale) + adjust_y;
+                    return floored ? { x: Math.floor(x), y: Math.floor(y) } : { x, y }
                 },
                 toScreen: function (boardX, boardY) {
                     if (self.scale < 0) {
@@ -1592,8 +1592,8 @@ window.App = (function () {
                         if ($(this).data("dragging")) {
                             var px_old = board.fromScreen(drag.x, drag.y),
                                 px_new = board.fromScreen(evt.clientX, evt.clientY),
-                                dx = (px_new.x | 0) - (px_old.x | 0),
-                                dy = (px_new.y | 0) - (px_old.y | 0),
+                                dx = (px_new.x) - (px_old.x),
+                                dy = (px_new.y) - (px_old.y),
                                 newX = self.options.x + dx,
                                 newY = self.options.y + dy;
                             self._update({ x: newX, y: newY });
@@ -1903,8 +1903,8 @@ window.App = (function () {
                     if (clientX !== undefined) {
                         var boardPos = board.fromScreen(clientX, clientY);
                         self.reticule = {
-                            x: boardPos.x |= 0,
-                            y: boardPos.y |= 0
+                            x: boardPos.x,
+                            y: boardPos.y
                         };
                     }
                     if (self.color === -1) {
@@ -2185,6 +2185,7 @@ window.App = (function () {
                             id: hook.id || "hook",
                             name: hook.name || "Hook",
                             sensitive: hook.sensitive || false,
+                            backgroundCompatible: hook.backgroundCompatible || false,
                             get: hook.get || function () { },
                             css: hook.css || {},
                         };
@@ -2202,56 +2203,60 @@ window.App = (function () {
                 create: function (data) {
                     const sensitive = localStorage.getItem("hide_sensitive") === "true";
                     let sensitiveElems = [];
-                    self._makeShell(data).find(".content").first().append(function () {
-                        if (data) {
-                            return $.map(self.hooks, function (hook) {
-                                const get = hook.get(data);
-                                if (get == null) {
-                                	return null;
-                                }
-
-                                const value = typeof get === "object" ? get : $("<span>").text(get);
-
-                                let _retVal = $("<div data-sensitive=\"" + hook.sensitive + "\">").append(
-                                    $("<b>").text(hook.name + ": "),
-                                    value.css(hook.css)
-                                ).attr("id", "lookuphook_" + hook.id);
-                                if (hook.sensitive) {
-                                    sensitiveElems.push(_retVal);
-                                    if (sensitive) {
-                                        _retVal.css("display", "none");
-                                    }
-                                }
-                                return _retVal;
-                            });
-                        } else {
-                            return $("<p>").text("This pixel is background (was not placed by a user).");
-                        }
-                    }).append(function () {
-                        if (!data) {
+                    self._makeShell(data).find(".content").first().append(() => {
+                        if (!data.bg) {
                             return "";
                         }
-                        if (sensitiveElems.length >= 1) {
-                            let label = $("<label>").text("Hide sensitive information");
-                            let checkbox = $("<input type=\"checkbox\">").css("margin-top", "10px");
-                            label.prepend(checkbox);
-                            checkbox.prop("checked", sensitive);
-                            checkbox.change(function() {
-                                ls.set("hide_sensitive", this.checked);
-                                sensitiveElems.forEach(v => {
-                                    v.css("display", this.checked ? "none" : "");
-                                })
-                            });
-                            return label;
+
+                        return $("<p>").text("This pixel is background (was not placed by a user).")
+                    }).append(() => {
+                        let hooks = data.bg
+                            ? self.hooks.filter((hook) => hook.backgroundCompatible)
+                            : self.hooks;
+
+                        return $.map(hooks, (hook) => {
+                            const get = hook.get(data);
+                            if (get == null) {
+                                return null;
+                            }
+
+                            const value = typeof get === "object" ? get : $("<span>").text(get);
+
+                            let _retVal = $("<div data-sensitive=\"" + hook.sensitive + "\">").append(
+                                $("<b>").text(hook.name + ": "),
+                                value.css(hook.css)
+                            ).attr("id", "lookuphook_" + hook.id);
+                            if (hook.sensitive) {
+                                sensitiveElems.push(_retVal);
+                                if (sensitive) {
+                                    _retVal.css("display", "none");
+                                }
+                            }
+                            return _retVal;
+                        });
+                    }).append(() => {
+                        if (data.bg || sensitiveElems.length < 1) {
+                            return "";
                         }
-                        return "";
+
+                        let label = $("<label>").text("Hide sensitive information");
+                        let checkbox = $("<input type=\"checkbox\">").css("margin-top", "10px");
+                        label.prepend(checkbox);
+                        checkbox.prop("checked", sensitive);
+                        checkbox.change(function() {
+                            ls.set("hide_sensitive", this.checked);
+                            sensitiveElems.forEach(v => {
+                                v.css("display", this.checked ? "none" : "");
+                            })
+                        });
+                        return label;
                     });
                     self.elements.lookup.fadeIn(200);
                 },
                 _makeShell: function (data) {
                     return self.elements.lookup.empty().append(
                         $("<div>").addClass("content"),
-                        (data && user.isLoggedIn() ?
+                        (!data.bg && user.isLoggedIn() ?
                             $("<div>").addClass("button").css("float", "left").addClass("report-button").text("Report").click(function () {
                                 self.report(data.id, data.x, data.y);
                             })
@@ -2259,7 +2264,7 @@ window.App = (function () {
                         $("<div>").addClass("button").css("float", "right").text("Close").click(function () {
                             self.elements.lookup.fadeOut(200);
                         }),
-                        (data && template.getOptions().use ? $("<div>").addClass("button").css("float", "right").text("Move Template Here").click(function () {
+                        (template.getOptions().use ? $("<div>").addClass("button").css("float", "right").text("Move Template Here").click(function () {
                             template.queueUpdate({
                                 ox: data.x,
                                 oy: data.y,
@@ -2269,8 +2274,8 @@ window.App = (function () {
                 },
                 runLookup(clientX, clientY) {
                     const pos = board.fromScreen(clientX, clientY);
-                    $.get("/lookup", { x: Math.floor(pos.x), y: Math.floor(pos.y) }, function (data) {
-                        data = data || false;
+                    $.get("/lookup", pos, function (data) {
+                        data = data || { x: pos.x, y: pos.y, bg: true };
                         if (self.handle) {
                             self.handle(data);
                         } else {
@@ -2288,6 +2293,7 @@ window.App = (function () {
                             id: "coords",
                             name: "Coords",
                             get: data => $("<a>").text("(" + data.x + ", " + data.y + ")").attr("href", coords.getLinkToCoords(data.x, data.y)),
+                            backgroundCompatible: true,
                         }, {
                             id: "username",
                             name: "Username",
@@ -4166,7 +4172,7 @@ window.App = (function () {
                         var boardPos = board.fromScreen(evt.clientX, evt.clientY);
 
                         self.mouseCoords = boardPos;
-                        self.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
+                        self.elements.coords.text("(" + (boardPos.x) + ", " + (boardPos.y) + ")");
                         if (!self.elements.coordsWrapper.is(":visible")) self.elements.coordsWrapper.fadeIn(200);
                     }
 
@@ -4174,7 +4180,7 @@ window.App = (function () {
                         var boardPos = board.fromScreen(evt.changedTouches[0].clientX, evt.changedTouches[0].clientY);
 
                         self.mouseCoords = boardPos;
-                        self.elements.coords.text("(" + (boardPos.x | 0) + ", " + (boardPos.y | 0) + ")");
+                        self.elements.coords.text("(" + (boardPos.x) + ", " + (boardPos.y) + ")");
                         if (!self.elements.coordsWrapper.is(":visible")) self.elements.coordsWrapper.fadeIn(200);
                     }
 
