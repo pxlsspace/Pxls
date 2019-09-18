@@ -7,8 +7,8 @@ import com.mashape.unirest.http.async.Callback;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.typesafe.config.Config;
 import io.undertow.websockets.core.WebSocketChannel;
-import org.apache.commons.lang3.text.translate.CharSequenceTranslator;
-import org.apache.commons.lang3.text.translate.LookupTranslator;
+import org.apache.commons.text.translate.CharSequenceTranslator;
+import org.apache.commons.text.translate.LookupTranslator;
 import space.pxls.App;
 import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBPixelPlacement;
@@ -20,6 +20,7 @@ import space.pxls.util.RateLimitFactory;
 import space.pxls.util.UserDupeIPTask;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -336,10 +337,10 @@ public class PacketHandler {
         server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, false, false)));
     }
 
-    private CharSequenceTranslator bracketTranslator = new LookupTranslator(new String[][] {
-            {"<", "&lt;"},
-            {">", "&gt;"}
-    });
+    private CharSequenceTranslator bracketTranslator = new LookupTranslator(new HashMap<CharSequence, CharSequence>() {{
+        put("<", "&lt;");
+        put(">", "&gt;");
+    }});
 
     public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
         Long nowMS = System.currentTimeMillis();
