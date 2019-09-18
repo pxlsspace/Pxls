@@ -1176,10 +1176,6 @@ window.App = (function () {
                                 x: (screenX / self.scale) - boardBox.left + adjust_x,
                                 y: (screenY / self.scale) - boardBox.top + adjust_y
                             };
-                            if (floored) {
-                                toRet.x >>= 0;
-                                toRet.y >>= 0;
-                            }
                         } else {
                             toRet = {
                                 x: ((screenX - boardBox.left) / self.scale) + adjust_x,
@@ -2916,6 +2912,7 @@ window.App = (function () {
                 chatban: {
                     banStart: 0,
                     banEnd: 0,
+                    permanent: false,
                     banEndFormatted: '',
                     timeLeft: 0,
                     timer: 0
@@ -2954,6 +2951,7 @@ window.App = (function () {
                         }
                         self.seenHistory = true;
                         self.addServerAction('History loaded at ' + moment().format('MMM Do YYYY, hh:mm:ss A'));
+                        setTimeout(() => socket.send({"type": "ChatbanState"}), 0);
                     });
                     socket.on('chat_message', e => {
                         self._process(e.message);
@@ -2996,18 +2994,22 @@ window.App = (function () {
                         clearInterval(self.timeout.timer);
                         self.chatban.banStart = moment.now();
                         self.chatban.banEnd = moment(e.expiry);
+                        self.chatban.permanent = e.permanent;
                         self.chatban.banEndFormatted = self.chatban.banEnd.format('MMM Do YYYY, hh:mm:ss A');
                         setTimeout(() => {
                             clearInterval(self.chatban.timer);
                             if (e.expiry - self.chatban.banStart > 0 && !e.permanent) {
                                 self.elements.rate_limit_overlay.show();
                                 self.elements.rate_limit_counter.text('You have been banned from chat.');
-                                self.addServerAction(`You are banned ${e.permanent ? 'permanently from chat.' : ' until ' + self.chatban.banEndFormatted}`);
+                                self.addServerAction(`You are banned ${e.permanent ? 'permanently from chat.' : 'until ' + self.chatban.banEndFormatted}`);
+                                if (e.reason) {
+                                    self.addServerAction(`Ban reason: ${e.reason}`);
+                                }
                                 self.chatban.timer = setInterval(() => {
                                     let timeLeft = self.chatban.banEnd - moment();
                                     if (timeLeft > 0) {
                                         self.elements.rate_limit_overlay.show();
-                                        self.elements.rate_limit_counter.text(`Chatban expires in ${timeLeft / 1e3 >> 0}s, at ${self.chatban.banEndFormatted}`);
+                                        self.elements.rate_limit_counter.text(`Chatban expires in ${Math.ceil(timeLeft / 1e3)}s, at ${self.chatban.banEndFormatted}`);
                                     } else {
                                         self.elements.rate_limit_overlay.hide();
                                         self.elements.rate_limit_counter.text('');
@@ -3016,7 +3018,10 @@ window.App = (function () {
                             } else if (e.permanent) {
                                 self.elements.rate_limit_overlay.show();
                                 self.elements.rate_limit_counter.text('You have been banned from chat.');
-                                self.addServerAction(`You are banned from chat${e.permanent ? ' permanently.' : ' until ' + self.chatban.banEndFormatted}`);
+                                self.addServerAction(`You are banned from chat${e.permanent ? ' permanently.' : 'until ' + self.chatban.banEndFormatted}`);
+                                if (e.reason) {
+                                    self.addServerAction(`Ban reason: ${e.reason}`);
+                                }
                             } else if (e.type !== "chat_ban_state") { //chat_ban_state is a query result, not an action notice.
                                 self.elements.rate_limit_overlay.hide();
                                 self.elements.rate_limit_counter.text('');
@@ -3071,7 +3076,6 @@ window.App = (function () {
                         }
                     });
 
-                    socket.send({"type": "ChatbanState"});
                     socket.send({"type": "ChatHistory"});
 
                     self.elements.rate_limit_overlay.hide();
@@ -3256,7 +3260,9 @@ window.App = (function () {
                                 ls.set("chat-last_seen_nonce", lastN.dataset.nonce);
                             }
 
-                            if (user.isLoggedIn()) {
+                            if (self.isChatBanned()) {
+                                self.elements.rate_limit_overlay.show();
+                            } else if (user.isLoggedIn()) {
                                 self.elements.rate_limit_overlay.hide();
                                 self.elements.rate_limit_counter.text('');
                             } else {
@@ -3340,6 +3346,9 @@ window.App = (function () {
                         let obj = self.elements.body[0];
                         self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
                     });
+                },
+                isChatBanned: () => {
+                    return self.chatban.permanent || (self.chatban.banEnd - moment.now() > 0);
                 },
                 clearPings: () => {
                     self.elements.message_icon.removeClass('has-notification');
@@ -4374,7 +4383,7 @@ window.App = (function () {
                         self.username = data.username;
                         self.loggedIn = true;
                         self.renameRequested = data.renameRequested;
-                        uiHelper.setDiscordName(data.discordName || "")
+                        uiHelper.setDiscordName(data.discordName || "");
                         self.elements.loginOverlay.fadeOut(200);
                         self.elements.userInfo.find("span.name").text(data.username);
                         if (data.method == 'ip') {

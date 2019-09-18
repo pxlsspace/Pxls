@@ -26,11 +26,11 @@ data class ServerChatCooldown(val diff: Int, val message: String) {
     val type = "message_cooldown";
 }
 
-data class ServerChatBan(val permanent: Boolean, val expiry: Long?) {
+data class ServerChatBan(val permanent: Boolean, val reason: String, val expiry: Long?) {
     val type = "chat_ban"
 }
 
-data class ServerChatbanState(val permanent: Boolean, val expiry: Long?) {
+data class ServerChatbanState(val permanent: Boolean, val reason: String, val expiry: Long?) {
     val type = "chat_ban_state"
 }
 

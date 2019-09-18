@@ -329,7 +329,7 @@ public class PacketHandler {
     }
 
     public void handleChatbanState(WebSocketChannel channel, User user, ClientChatbanState clientChatbanState) {
-        server.send(channel, new ServerChatbanState(user.isPermaChatbanned(), user.getChatbanExpiryTime()));
+        server.send(channel, new ServerChatbanState(user.isPermaChatbanned(), user.getChatbanReason(), user.getChatbanExpiryTime()));
     }
 
     public void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
