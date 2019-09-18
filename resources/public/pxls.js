@@ -1155,29 +1155,45 @@ window.App = (function () {
                     }
                 },
                 fromScreen: function (screenX, screenY, floored = true) {
-                    var adjust_x = 0,
+                    let toRet = {x: 0, y: 0};
+                    let adjust_x = 0,
                         adjust_y = 0;
                     if (self.scale < 0) {
                         adjust_x = self.width;
                         adjust_y = self.height;
                     }
+
                     if (self.use_js_render) {
-                        return {
+                        toRet = {
                             x: -self.pan.x + ((self.width - (window.innerWidth / self.scale)) / 2) + (screenX / self.scale) + adjust_x,
                             y: -self.pan.y + ((self.height - (window.innerHeight / self.scale)) / 2) + (screenY / self.scale) + adjust_y
                         };
-                    }
-                    var boardBox = self.elements.board[0].getBoundingClientRect();
-                    if (self.use_zoom) {
-                        return {
-                            x: (screenX / self.scale) - boardBox.left + adjust_x,
-                            y: (screenY / self.scale) - boardBox.top + adjust_y
-                        };
+                    } else {
+                        //we scope these into the `else` so that we don't have to redefine `boardBox` twice. getBoundingClientRect() forces a redraw so we don't want to do it every call either if we can help it.
+                        let boardBox = self.elements.board[0].getBoundingClientRect();
+                        if (self.use_zoom) {
+                            toRet =  {
+                                x: (screenX / self.scale) - boardBox.left + adjust_x,
+                                y: (screenY / self.scale) - boardBox.top + adjust_y
+                            };
+                            if (floored) {
+                                toRet.x >>= 0;
+                                toRet.y >>= 0;
+                            }
+                        } else {
+                            toRet = {
+                                x: ((screenX - boardBox.left) / self.scale) + adjust_x,
+                                y: ((screenY - boardBox.top) / self.scale) + adjust_y
+                            };
+                        }
                     }
 
-                    const x = ((screenX - boardBox.left) / self.scale) + adjust_x;
-                    const y = ((screenY - boardBox.top) / self.scale) + adjust_y;
-                    return floored ? { x: Math.floor(x), y: Math.floor(y) } : { x, y }
+                    if (floored) {
+                        toRet.x >>= 0;
+                        toRet.y >>= 0;
+                    }
+
+                    return toRet;
                 },
                 toScreen: function (boardX, boardY) {
                     if (self.scale < 0) {
