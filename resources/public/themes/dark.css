@@ -90,6 +90,10 @@ input[type="text"], textarea {
     color: #f44;
 }
 
+.text-yellow {
+    color: #cc0;
+}
+
 /* Panels */
 
 header {

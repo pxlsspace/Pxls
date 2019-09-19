@@ -90,6 +90,19 @@ kbd {
     text-indent: 0.75em;
 }
 
+.vertical-spacing {
+    margin-top: .5em;
+    margin-bottom: .5em;
+}
+
+.fake-indent {
+    margin-left:1.2rem;
+}
+
+input:disabled {
+    cursor: not-allowed;
+}
+
 .longTextInputWrapper {
     max-width: 100% !important;
 }
@@ -918,6 +931,14 @@ header h1, header h2, header h3, header h4, header h5, header h6 {
 
 .text-muted {
     color: #8c8c8c;
+}
+
+.text-yellow {
+    color: #f0ff27;
+}
+
+.text-orange {
+    color: #e67700;
 }
 
 aside.panel {

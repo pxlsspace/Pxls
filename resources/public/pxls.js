@@ -2607,15 +2607,32 @@ window.App = (function () {
                             place.setNumberedPaletteEnabled(this.checked === true);
                         });
 
-                    const numOrDefault = (n, def) => isNaN(n) ? def : n
-                    const colorBrightnessLevel = numOrDefault(parseFloat(ls.get("colorBrightness")), 1)
-                    $("#color-brightness").val(colorBrightnessLevel)
-                    self.adjustColorBrightness(colorBrightnessLevel)
-                    $("#color-brightness").change((e) => {
-                        const level = parseFloat(e.target.value);
-                        ls.set("colorBrightness", level);
-                        self.adjustColorBrightness(level)
-                    });
+
+                    const numOrDefault = (n, def) => isNaN(n) ? def : n;
+                    const colorBrightnessLevel = numOrDefault(parseFloat(ls.get("colorBrightness")), 1);
+                    const colorBrightnessSlider = $("#color-brightness");
+                    const colorBrightnessToggle = $("#color-brightness-toggle");
+
+                    colorBrightnessToggle
+                        .prop('checked', ls.get('brightness.enabled') === true)
+                        .change(function(e) {
+                            let isEnabled = !!this.checked;
+                            ls.set('brightness.enabled', isEnabled);
+                            colorBrightnessSlider.prop('disabled', !isEnabled);
+                            self.adjustColorBrightness(isEnabled ? numOrDefault(parseFloat(ls.get("colorBrightness")), 1) : null);
+                        });
+
+                    colorBrightnessSlider
+                        .val(colorBrightnessLevel)
+                        .prop('disabled', ls.get('brightness.enabled') !== true)
+                        .change((e) => {
+                            if (ls.get('brightness.enabled') === true) {
+                                const level = parseFloat(e.target.value);
+                                ls.set("colorBrightness", level);
+                                self.adjustColorBrightness(level);
+                            }
+                        });
+                    self.adjustColorBrightness(ls.get('brightness.enabled') === true ? colorBrightnessLevel : null); //ensure we clear if it's disabled on init
 
                     $(window).keydown(function (evt) {
                         switch (evt.key || evt.which) {
@@ -2813,7 +2830,7 @@ window.App = (function () {
                         "#cursor",
                         "#reticule",
                         "#palette .palette-color"
-                    ].join(", ")).css("filter", `brightness(${level})`);
+                    ].join(", ")).css("filter", level != null ? `brightness(${level})` : '');
                 },
                 getAvailable() {
                     return self._available;
