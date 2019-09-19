@@ -3085,13 +3085,14 @@ window.App = (function () {
                         e.stopPropagation();
                         let toSend = self.elements.input[0].value;
                         let trimmed = toSend.trim();
+                        let handling = false;
                         if ((e.originalEvent.key == "Enter" || e.originalEvent.which === 13) && !e.shiftKey) {
-                            e.preventDefault();
                             if (trimmed.startsWith('/') && user.getRole() !== "USER") {
                                 let args = trimmed.substr(1).split(' '),
                                     command = args.shift();
                                 switch (command.toLowerCase().trim()) {
                                     case 'permaban': {
+                                        handling = true;
                                         let usage = `/permaban USER SHOULD_PURGE BAN_REASON\n/permaban help`;
                                         let help = [
                                             usage,
@@ -3136,6 +3137,7 @@ window.App = (function () {
                                         break;
                                     }
                                     case 'tempban': {
+                                        handling = true;
                                         let usage = `/tempban USER BAN_LENGTH SHOULD_PURGE BAN_REASON\n/tempban help`;
                                         let help = [
                                             usage,
@@ -3185,6 +3187,7 @@ window.App = (function () {
                                         break;
                                     }
                                     case 'purge': {
+                                        handling = true;
                                         let usage = `/purge USER PURGE_AMOUNT PURGE_REASON\n/purge help`;
                                         let help = [
                                             usage,
@@ -3225,6 +3228,9 @@ window.App = (function () {
                                         break;
                                     }
                                 }
+                            }
+                            if (handling) {
+                                e.preventDefault();
                             } else {
                                 self._send(self.elements.input[0].value);
                                 self.elements.input.val("");
