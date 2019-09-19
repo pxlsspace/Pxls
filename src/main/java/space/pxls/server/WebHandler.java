@@ -364,12 +364,12 @@ public class WebHandler {
 
         User user = exchange.getAttachment(AuthReader.USER);
         if (user == null) {
-            sendBadRequest(exchange);
+            send(StatusCodes.FORBIDDEN, exchange, "");
             return;
         }
 
         if (user.isBanned()) {
-            sendBadRequest(exchange);
+            send(StatusCodes.FORBIDDEN, exchange, "");
             return;
         }
 
@@ -379,33 +379,31 @@ public class WebHandler {
         try {
             chatNonce = data.getFirst("nonce");
         } catch (NullPointerException npe) {
-            sendBadRequest(exchange);
+            sendBadRequest(exchange, "Message nonce invalid/missing");
             return;
         }
 
         if (chatNonce == null) {
-            sendBadRequest(exchange);
+            sendBadRequest(exchange, "Message nonce missing");
             return;
         }
 
         DBChatMessage chatMessage = App.getDatabase().getChatMessageByNonce(chatNonce.getValue());
         if (chatMessage == null) {
-            sendBadRequest(exchange);
+            sendBadRequest(exchange, "Message didn't exist");
             return;
         }
 
         User author = App.getUserManager().getByID(chatMessage.author_uid);
         if (author == null) {
-            sendBadRequest(exchange);
+            sendBadRequest(exchange, "Author was null");
             return;
         }
 
         App.getDatabase().purgeChatMessageByNonce(chatMessage.nonce, user.getId());
         App.getServer().getPacketHandler().sendSpecificPurge(author, user, chatMessage.nonce, "");
 
-        exchange.setStatusCode(200);
-        exchange.getResponseSender().send("{}");
-        exchange.endExchange();
+        send(StatusCodes.OK, exchange, "");
     }
 
     public void chatPurge(HttpServerExchange exchange) {

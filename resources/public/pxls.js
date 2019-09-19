@@ -3057,7 +3057,7 @@ window.App = (function () {
                         if (e.amount >= 2147483647) {
                             self.addServerAction(`${e.initiator} purged all messages from ${e.target}.`);
                         } else {
-                            self.addServerAction(`${e.amount} message${e.amount !== 1 ? 's' : ''} from ${e.target} were purged by ${e.initiator}.`);
+                            self.addServerAction(`${e.amount} message${e.amount !== 1 ? 's' : ''} from ${e.target} ${e.amount !== 1 ? 'were' : 'was'} purged by ${e.initiator}.`);
                         }
                     });
                     socket.on('chat_purge_specific', e => {
