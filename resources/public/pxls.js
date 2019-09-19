@@ -3278,6 +3278,12 @@ window.App = (function () {
                         }
                     });
 
+                    $(window).on('pxls:user:loginState', (e, state) => {
+                        if (!self.isChatBanned()) {
+                            self.elements.rate_limit_overlay.hide();
+                        }
+                    });
+
                     $(window).on("mouseup", e => {
                         let target = e.target;
                         let popup = document.querySelector('.popup');
@@ -4367,6 +4373,7 @@ window.App = (function () {
                                 window.deInitAdmin();
                             }
                             self.loggedIn = false;
+                            $(window).trigger('pxls:user:loginState', [false]);
                             socket.reconnectSocket();
                         });
                     });
@@ -4388,6 +4395,7 @@ window.App = (function () {
                             banelem = $("<div>").addClass("ban-alert-content");
                         self.username = data.username;
                         self.loggedIn = true;
+                        $(window).trigger('pxls:user:loginState', [true]);
                         self.renameRequested = data.renameRequested;
                         uiHelper.setDiscordName(data.discordName || "");
                         self.elements.loginOverlay.fadeOut(200);
