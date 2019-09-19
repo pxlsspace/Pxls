@@ -1823,7 +1823,7 @@ window.App = (function () {
                     });
                 },
                 update: function () {
-                    var a = board.fromScreen(0, 0),
+                    var a = board.fromScreen(0, 0, false),
                         scale = board.getScale();
                     self.elements.grid.css({
                         backgroundSize: scale + "px " + scale + "px",
