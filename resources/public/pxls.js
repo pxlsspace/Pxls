@@ -3433,7 +3433,7 @@ window.App = (function () {
                             }
                         }
                     }
-                    let hasPing = ls.get('chat.pings-enabled') === true && user.isLoggedIn() && user.getUsername().toLowerCase() !== packet.author.toLowerCase() && packet.message_raw.toLowerCase().split(' ').includes(`@${user.getUsername().toLowerCase()}`);
+                    let hasPing = ls.get('chat.pings-enabled') === true && user.isLoggedIn() && packet.message_raw.toLowerCase().split(' ').includes(`@${user.getUsername().toLowerCase()}`);
                     let when = moment.unix(packet.date);
                     let badges = crel('span', {'class': 'badges'});
                     if (Array.isArray(packet.badges)) {
