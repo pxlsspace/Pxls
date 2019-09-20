@@ -2544,7 +2544,7 @@ window.App = (function () {
                     self._initStack();
                     self._initAudio();
                     self._initAccount();
-                    var useMono = ls.get("monospace_lookup")
+                    var useMono = ls.get("monospace_lookup");
                     if (typeof useMono === 'undefined') {
                         ls.set("monospace_lookup", true);
                         useMono = true;
@@ -2633,6 +2633,12 @@ window.App = (function () {
                             }
                         });
                     self.adjustColorBrightness(ls.get('brightness.enabled') === true ? colorBrightnessLevel : null); //ensure we clear if it's disabled on init
+
+                    $("#selInternalLinkAction")
+                        .val(String(ls.get('chat.internalClickDefault') >> 0))
+                        .change(function() {
+                            ls.set('chat.internalClickDefault', this.value >> 0);
+                        });
 
                     $(window).keydown(function (evt) {
                         switch (evt.key || evt.which) {
@@ -2952,6 +2958,20 @@ window.App = (function () {
                 _anchorme: {
                     fnAttributes: urlObj => {},
                     fnExclude: urlObj => {}
+                },
+                TEMPLATE_ACTIONS: {
+                    NEW_TAB: {
+                        id: 1,
+                        pretty: "Open in a new tab"
+                    },
+                    CURRENT_TAB: {
+                        id: 2,
+                        pretty: "Open in current tab (replacing template)"
+                    },
+                    JUMP_ONLY: {
+                        id: 3,
+                        pretty: "Jump to coordinates without replacing template"
+                    }
                 },
                 init: () => {
                     socket.on('chat_history', e => {
@@ -3487,7 +3507,7 @@ window.App = (function () {
                             if (isNaN(group1) || isNaN(group2)) return match;
                             if (!board.validateCoordinates(parseFloat(group1), parseFloat(group2))) return match;
                             let group3Str = !(parseFloat(group3)) ? '' : `, ${group3}x`;
-                            return `<span class="link -internal-jump" data-x="${group1}" data-y="${group2}" data-zoom="${group3}">(${group1}, ${group2}${group3Str})</span>`;
+                            return `<span class="link -internal-jump" data-x="${group1}" data-y="${group2}" data-scale="${group3}">(${group1}, ${group2}${group3Str})</span>`;
                         });
 
                         //insert <a>'s
@@ -3498,6 +3518,7 @@ window.App = (function () {
                             let anchorText = x.raw.substr(0, 78);
                             if (x.raw.length > 78) anchorText += '...';
                             let anchorTarget = null;
+                            let jumpTarget = false;
 
                             try {
                                 url = new URL(x.raw.indexOf(x.protocol) !== 0 ? `${x.protocol}${x.raw}` : x.raw);
@@ -3533,10 +3554,10 @@ window.App = (function () {
                                 if ((document.location.origin && url.origin) && document.location.origin === url.origin) { //URL is for this origin, run some checks for game features
                                     if (params.x != null && params.y != null) { //url has x/y so it's probably in the game window
                                         if (board.validateCoordinates(params.x, params.y)) {
-                                            anchorText = `(${params.x}, ${params.y}, ${params.scale}x)`;
+                                            jumpTarget = Object.assign({displayText: `(${params.x}, ${params.y}, ${params.scale}x)`, raw: url.toString()}, params);
                                             if (params.template != null && params.template.length >= 11) { //we have a template, should probably make that known
                                                 let truncatedTemplate = decodeURIComponent(params.template);
-                                                anchorText += ` (template: ${(truncatedTemplate > 50) ? `${truncatedTemplate.substr(0, 50)}...` : truncatedTemplate})`;
+                                                jumpTarget.displayText += ` (template: ${(truncatedTemplate > 50) ? `${truncatedTemplate.substr(0, 50)}...` : truncatedTemplate})`;
                                             }
                                         }
                                     } else {
@@ -3547,10 +3568,20 @@ window.App = (function () {
                                 }
                             }
 
-                            let anchor = crel('a', {'href': x.raw.indexOf(x.protocol) !== 0 ? `${x.protocol}${x.raw}` : x.raw, 'title': x.raw}, anchorText);
-                            if (anchorTarget) anchor.target = anchorTarget;
+                            let elem = crel('a', {'href': x.raw.indexOf(x.protocol) !== 0 ? `${x.protocol}${x.raw}` : x.raw, 'title': x.raw}, anchorText);
+                            if (jumpTarget !== false) {
+                                elem.innerHTML = jumpTarget.displayText || elem.innerHTML;
+                                elem.className = `link -internal-jump`;
+                                for (let key in jumpTarget) {
+                                    if (jumpTarget.hasOwnProperty(key)) {
+                                        elem.dataset[key] = jumpTarget[key];
+                                    }
+                                }
+                            } else {
+                                if (anchorTarget) elem.target = anchorTarget;
+                            }
 
-                            str = str.replace(x.raw, anchor.outerHTML);
+                            str = str.replace(x.raw, elem.outerHTML);
                         }
 
                         //any other text manipulation after anchor insertion
@@ -3561,13 +3592,85 @@ window.App = (function () {
 
                         //hook up any necessary event listeners
                         toReturn.querySelectorAll('.-internal-jump[data-x]').forEach(x => {
-                            x.onclick = () => self.jump(parseFloat(x.dataset.x), parseFloat(x.dataset.y), parseFloat(x.dataset.zoom));
+                            x.onclick = e => {
+                                e.preventDefault();
+                                if (x.dataset.template) {
+                                    let internalClickDefault = ls.get('chat.internalClickDefault') >> 0;
+                                    if (internalClickDefault === 0) {
+                                        self._popTemplateOverwriteConfirm(x).then(action => {
+                                            alert.hide();
+                                            self._handleTemplateOverwriteAction(action, x);
+                                        });
+                                    } else {
+                                        self._handleTemplateOverwriteAction(internalClickDefault, x);
+                                    }
+                                } else {
+                                    self.jump(parseFloat(x.dataset.x), parseFloat(x.dataset.y), parseFloat(x.dataset.scale));
+                                }
+                            };
                         });
                     } catch (e) {
                         console.error('Failed to process a line, defaulting to raw', e);
                     }
 
                     return toReturn;
+                },
+                _handleTemplateOverwriteAction: (action, linkElem) => {
+                    switch(action) {
+                        case false: break;
+                        case self.TEMPLATE_ACTIONS.CURRENT_TAB.id: {
+                            self._pushStateMaybe(); //ensure people can back button if available
+                            document.location.href = linkElem.dataset.raw; //overwrite href since that will trigger hash-based update of template. no need to re-write that logic
+                            break;
+                        }
+                        case self.TEMPLATE_ACTIONS.JUMP_ONLY.id: {
+                            self._pushStateMaybe(); //ensure people can back button if available
+                            self.jump(parseFloat(linkElem.dataset.x), parseFloat(linkElem.dataset.y), parseFloat(linkElem.dataset.scale));
+                            break;
+                        }
+                        case self.TEMPLATE_ACTIONS.NEW_TAB.id: {
+                            if (!window.open(linkElem.dataset.raw, '_blank')) { //what popup blocker still blocks _blank redirects? idk but i'm sure they exist.
+                                alert.showElem(
+                                    crel('div',
+                                        crel('h3', 'Failed to automatically open in a new tab'),
+                                        crel('a', {href: linkElem.dataset.raw, target: '_blank'}, 'Click here to open in a new tab instead')
+                                    )
+                                );
+                            }
+                            break;
+                        }
+                    }
+                },
+                _popTemplateOverwriteConfirm: (internalJumpElem) => {
+                    return new Promise((resolve, reject) => {
+                        let bodyWrapper = crel('div');
+                        let buttons = crel('div', {'style': 'text-align: right; display: block; width: 100%;'});
+
+                        alert.showElem(crel(bodyWrapper,
+                            crel('h3', {'class': 'text-orange'}, 'This link will overwrite your current template. What would you like to do?'),
+                            Object.values(self.TEMPLATE_ACTIONS).map(action =>
+                                crel('label', {'style': 'display: block; margin: 3px 3px 3px 1rem; margin-left: 1rem;'},
+                                    crel('input', {'type': 'radio', 'name': 'link-action-rb', 'data-action-id': action.id}),
+                                    action.pretty
+                                )
+                            ),
+                            crel('span', {'class': 'text-muted'}, 'Note: You can set a default action in the settings menu which bypasses this popup completely'),
+                            crel('div', {'style': 'text-align: right; display: block; width: 100%'},
+                                [
+                                    ["Cancel", () => resolve(false)],
+                                    ["OK", () => resolve(bodyWrapper.querySelector('input[type=radio]:checked').dataset.actionId >> 0)]
+                                ].map(x =>
+                                    crel('button', {'class': 'button', 'style': 'margin-left: 3px; position: initial !important; bottom: initial !important; right: initial !important;', onclick: x[1]}, x[0])
+                                )
+                            )
+                        ), true);
+                        bodyWrapper.querySelector(`input[type="radio"][data-action-id="${self.TEMPLATE_ACTIONS.NEW_TAB.id}"]`).checked = true;
+                    });
+                },
+                _pushStateMaybe(url) {
+                    if ((typeof history.pushState) === "function") {
+                        history.pushState(null, document.title, url == null ? document.location.href : url); //ensure people can back button if available
+                    }
                 },
                 _popUserPanel: function(e) { //must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
                     if (this && this.closest) {

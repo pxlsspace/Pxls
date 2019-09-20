@@ -269,6 +269,14 @@
                     <label><input id="cbChatSettingsBadgesToggle" type="checkbox" />Show pixel-placed badges</label>
                     <label>Font Size: <input type="number" min="1" max="72" id="cbChatSettingsFontSize"> <button id="cbChatSettingsFontSizeConfirm" class="button"><i class="fas fa-check"></i></button></label>
                     <label><input type="checkbox" id="cbChatSettingsPings" checked />Enable pings</label>
+                    <label>Default internal link click action:
+                        <select name="selInternalLinkAction" id="selInternalLinkAction">
+                            <option value="0">Ask</option>
+                            <option value="1">Open in new tab</option>
+                            <option value="2">Open in current tab</option>
+                            <option value="3">Only jump, don't replace template</option>
+                        </select>
+                    </label>
                 </div>
             </div>
         </article>
