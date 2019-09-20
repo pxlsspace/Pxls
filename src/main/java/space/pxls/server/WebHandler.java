@@ -956,8 +956,8 @@ public class WebHandler {
             return;
         }
 
-        int x = Integer.parseInt(xq.element());
-        int y = Integer.parseInt(yq.element());
+        int x = (int) Math.floor(Float.parseFloat(xq.element()));
+        int y = (int) Math.floor(Float.parseFloat(yq.element()));
         if (x < 0 || x >= App.getWidth() || y < 0 || y >= App.getHeight()) {
             exchange.setStatusCode(StatusCodes.BAD_REQUEST);
             exchange.endExchange();
@@ -1020,8 +1020,8 @@ public class WebHandler {
             exchange.endExchange();
             return;
         }
-        int x = Integer.parseInt(xq.getValue());
-        int y = Integer.parseInt(yq.getValue());
+        int x = (int) Math.floor(Float.parseFloat(xq.getValue()));
+        int y = (int) Math.floor(Float.parseFloat(yq.getValue()));
         int id = Integer.parseInt(idq.getValue());
         if (x < 0 || x >= App.getWidth() || y < 0 || y >= App.getHeight()) {
             exchange.setStatusCode(StatusCodes.BAD_REQUEST);
