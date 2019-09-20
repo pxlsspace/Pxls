@@ -3246,9 +3246,8 @@ window.App = (function () {
                                     }
                                 }
                             }
-                            if (handling) {
-                                e.preventDefault();
-                            } else {
+                            e.preventDefault();
+                            if (!handling) {
                                 self._send(self.elements.input[0].value);
                                 self.elements.input.val("");
                             }
