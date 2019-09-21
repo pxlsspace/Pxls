@@ -58,33 +58,27 @@
                         $("<div>").addClass("text").append(
                             "Revert pixels of the last ", time_input, " hours"
                         ),
-                        genButton("Cancel").css({
-                            position: "fixed",
-                            bottom: 20,
-                            left: 30,
-                        }).click(function () {
-                            self.elements.prompt.fadeOut(200);
-                        }),
-                        genButton("OK").css({
-                            position: "fixed",
-                            bottom: 20,
-                            right: 30
-                        }).click(function () {
-                            var selectedRule = self.elements.prompt.find("select").val();
-                            var textarea = self.elements.prompt.find("textarea").val().trim();
-                            var msg = selectedRule;
-                            if (selectedRule === "other") {
-                                if (textarea === "") {
-                                    alert.show("You must specify the details.");
-                                    return;
+                        $("<div>").addClass("buttons").append(
+                            genButton("Cancel").click(function () {
+                                self.elements.prompt.fadeOut(200);
+                            }),
+                            genButton("OK").click(function () {
+                                var selectedRule = self.elements.prompt.find("select").val();
+                                var textarea = self.elements.prompt.find("textarea").val().trim();
+                                var msg = selectedRule;
+                                if (selectedRule === "other") {
+                                    if (textarea === "") {
+                                        alert.show("You must specify the details.");
+                                        return;
+                                    }
+                                    msg = textarea;
+                                } else if (textarea !== "") {
+                                    msg += "; additional information: " + textarea;
                                 }
-                                msg = textarea;
-                            } else if (textarea !== "") {
-                                msg += "; additional information: " + textarea;
-                            }
-                            fn(msg, parseFloat(time_input.val()));
-                            self.elements.prompt.fadeOut(200);
-                        })
+                                fn(msg, parseFloat(time_input.val()));
+                                self.elements.prompt.fadeOut(200);
+                            })
+                        )
                     ).fadeIn(200);
                 },
                 ban_internal: function (username, fn, msg, done_msg, path, time) {
@@ -263,13 +257,11 @@
                                 });
                             })
                         ),
-                        genButton("Close").css({
-                            position: "fixed",
-                            bottom: 20,
-                            right: 30
-                        }).click(function () {
-                            self.elements.check.fadeOut(200);
-                        })
+                        $("<div>").addClass("buttons").append(
+                            genButton("Close").click(function () {
+                                self.elements.check.fadeOut(200);
+                            })
+                        )
                     ).fadeIn(200);
                 },
                 init: function () {

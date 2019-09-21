@@ -31,20 +31,21 @@
 }
 
 .admin-check {
-    border-radius: 0 8px 8px 8px;
+    border-radius: 5px;
     border: 1px solid #ccc;
     background-color: #eee;
-    padding: 16px;
-
+    padding: 10px 10px 5px;
     position: fixed;
 
     z-index: 22;
-}
-.admin-check {
     top: 45vh;
     left: 50%;
     transform: translateX(-50%) translateY(-50%);
-    padding-bottom: 60px;
+}
+
+.admin-check .buttons {
+    margin-top: 1rem;
+    text-align: right;
 }
 
 .admin input[type=text] {

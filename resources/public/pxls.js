@@ -2140,47 +2140,42 @@ window.App = (function () {
                         }).keydown(function (evt) {
                             evt.stopPropagation();
                         }),
-                        $("<div>").addClass("button").text("Cancel").css({
-                            position: "fixed",
-                            bottom: 20,
-                            left: 30,
-                            width: 66
-                        }).click(function () {
-                            self.elements.prompt.fadeOut(200);
-                        }),
-                        $("<button>").addClass("button").text("Report").css({
-                            position: "fixed",
-                            bottom: 20,
-                            right: 30
-                        }).click(function () {
-                            this.disabled = true;
-                            this.textContent = "Sending...";
+                        $("<div>").addClass("buttons").append(
+                            $("<div>").addClass("button").text("Cancel")
+                                .click(function () {
+                                    self.elements.prompt.fadeOut(200);
+                                }),
+                            $("<button>").addClass("button").text("Report")
+                                .click(function () {
+                                    this.disabled = true;
+                                    this.textContent = "Sending...";
 
-                            var selectedRule = self.elements.prompt.find("select").val();
-                            var textarea = self.elements.prompt.find("textarea").val().trim();
-                            var msg = selectedRule;
-                            if (selectedRule === "other") {
-                                if (textarea === "") {
-                                    alert.show("You must specify the details.");
-                                    return;
-                                }
-                                msg = textarea;
-                            } else if (textarea !== "") {
-                                msg += "; additional information: " + textarea;
-                            }
-                            $.post("/report", {
-                                id: id,
-                                x: x,
-                                y: y,
-                                message: msg
-                            }, function () {
-                                alert.show("Sent report!");
-                                self.elements.prompt.hide();
-                                self.elements.lookup.hide();
-                            }).fail(function () {
-                                alert.show("Error sending report.");
-                            })
-                        })
+                                    var selectedRule = self.elements.prompt.find("select").val();
+                                    var textarea = self.elements.prompt.find("textarea").val().trim();
+                                    var msg = selectedRule;
+                                    if (selectedRule === "other") {
+                                        if (textarea === "") {
+                                            alert.show("You must specify the details.");
+                                            return;
+                                        }
+                                        msg = textarea;
+                                    } else if (textarea !== "") {
+                                        msg += "; additional information: " + textarea;
+                                    }
+                                    $.post("/report", {
+                                        id: id,
+                                        x: x,
+                                        y: y,
+                                        message: msg
+                                    }, function () {
+                                        alert.show("Sent report!");
+                                        self.elements.prompt.hide();
+                                        self.elements.lookup.hide();
+                                    }).fail(function () {
+                                        alert.show("Error sending report.");
+                                    })
+                                })
+                        )
                     ).fadeIn(200);
                 },
                 /**
@@ -4429,14 +4424,11 @@ window.App = (function () {
                                     );
                                 })
                             ),
-                            $("<div>").addClass("button").text("Close").css({
-                                position: "fixed",
-                                bottom: 20,
-                                right: 30,
-                                width: 55
-                            }).click(function () {
-                                self.elements.prompt.fadeOut(200);
-                            })
+                            $("<div>").addClass("buttons").append(
+                                $("<div>").addClass("button").text("Cancel").click(function () {
+                                    self.elements.prompt.fadeOut(200);
+                                })
+                            )
                         ).fadeIn(200);
                     });
                 },

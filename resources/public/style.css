@@ -147,7 +147,7 @@ input:disabled {
 }
 
 .message {
-    padding: 30px 30px 60px;
+    padding: 30px 30px 10px;
     border-radius: 7px;
     background-color: #fff;
     color: #333;
@@ -164,10 +164,9 @@ input:disabled {
     overflow-wrap: break-word;
 }
 
-.message .button {
-    position: fixed;
-    bottom: 20px;
-    right: 30px;
+.message .buttons {
+    margin-top: 1em;
+    text-align: right;
 }
 
 .button {
@@ -1486,6 +1485,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
         max-width: 100%;
         max-height: 100%;
         overflow: auto;
+        width: 95%;
     }
 
     .panel, .panel.half-width {
