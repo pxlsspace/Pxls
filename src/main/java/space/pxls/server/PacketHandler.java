@@ -17,13 +17,10 @@ import space.pxls.user.User;
 import space.pxls.util.ChatFilter;
 import space.pxls.util.PxlsTimer;
 import space.pxls.util.RateLimitFactory;
-import space.pxls.util.UserDupeIPTask;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;

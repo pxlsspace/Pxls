@@ -342,5 +342,22 @@ public interface DAO extends Closeable {
     @SqlUpdate("UPDATE users SET chat_ban_reason=:reason WHERE id=:who")
     void updateUserChatbanReason(@Bind("who") int who, @Bind("reason") String reason);
 
+    @SqlUpdate("CREATE TABLE IF NOT EXISTS `ip_log` (" +
+            "  `id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT," +
+            "  `user` INT UNSIGNED NOT NULL," +
+            "  `ip` VARBINARY(16) NOT NULL," +
+            "  `last_used` TIMESTAMP NOT NULL DEFAULT NOW()" +
+            ");")
+    void createIPLogTable();
+
+    @SqlQuery("SELECT EXISTS(SELECT last_used FROM `ip_log` WHERE user=:user AND ip=INET6_ATON(:ip))")
+    boolean iplogPairExists(@Bind("user") int user, @Bind("ip") String ip);
+
+    @SqlUpdate("UPDATE `ip_log` SET last_used=NOW() WHERE user=:user AND ip=INET6_ATON(:ip)")
+    void touchLastUsedForPair(@Bind("user") int user, @Bind("ip") String ip);
+
+    @SqlUpdate("INSERT INTO `ip_log` (`user`, `ip`, `last_used`) VALUES (:user, INET6_ATON(:ip), null)")
+    void insertIPLog(@Bind("user") int user, @Bind("ip") String ip);
+
     void close();
 }

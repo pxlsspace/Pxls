@@ -1,30 +1,36 @@
-package space.pxls.util;
+package space.pxls.tasks;
 
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
 import space.pxls.user.User;
 
-import java.net.Inet4Address;
-import java.net.Inet6Address;
 import java.util.List;
 
-public class UserDupeIPTask implements Runnable {
+public class UserAuthedTask implements Runnable {
     private final User user;
     private final WebSocketChannel channel;
-    private final String ip;
+    private final String authIP;
 
-    public UserDupeIPTask(WebSocketChannel channel, User user, String ip) {
+    public UserAuthedTask(WebSocketChannel channel, User user, String authIP) {
         this.user = user;
         this.channel = channel;
-        this.ip = ip;
+        this.authIP = authIP;
+
+        if (authIP == null) throw new IllegalArgumentException("The 'authIP' parameter was null!");
     }
 
     @Override
     public void run() {
+        lastIPAlert();
+        updateLastIP();
+        maybeLogLastIP();
+    }
+
+    private void lastIPAlert() {
         if (!App.getDatabase().hasUserFlaggedLastIPAlert(user.getId())) {
-            List<Integer> uids = App.getDatabase().getDupedUsers(ip, user.getId());
+            List<Integer> uids = App.getDatabase().getDupedUsers(authIP, user.getId());
             if (uids != null && uids.size() > 0) {
-                StringBuilder toReport = new StringBuilder(String.format("User has %d IP matches in the database. Matched accounts:", uids.size()));
+                StringBuilder toReport = new StringBuilder(String.format("User has %d IP matches (AuthIP: %s) in the database. Matched accounts:", uids.size(), authIP));
                 for (int i = 0; i < uids.size(); i++) {
                     User fetched = App.getUserManager().getByID(uids.get(i));
                     if (fetched != null) {
@@ -37,5 +43,13 @@ public class UserDupeIPTask implements Runnable {
                 App.getDatabase().flagLastIPAlert(user.getId());
             }
         }
+    }
+
+    private void updateLastIP() {
+        App.getDatabase().updateUserIP(this.user, this.authIP);
+    }
+
+    private void maybeLogLastIP() {
+        App.getDatabase().insertOrUpdateIPLog(this.user.getId(), this.authIP);
     }
 }

@@ -15,7 +15,6 @@ import java.io.Closeable;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -58,6 +57,7 @@ public class Database implements Closeable {
         getHandle().createBanlogTable();
         getHandle().createChatMessagesTable();
         getHandle().createChatReportsTable();
+        getHandle().createIPLogTable();
     }
 
     private DAO getHandle() {
@@ -616,6 +616,19 @@ public class Database implements Closeable {
     }
 
     /* END CHAT */
+
+    /**
+     * Inserts the IP log pair. If the pair exists, `last_used` will be updated instead.
+     * @param id The ID of the {@link User} being logged.
+     * @param ip The IP being logged.
+     */
+    public void insertOrUpdateIPLog(int id, String ip) {
+        if (getHandle().iplogPairExists(id, ip)) {
+            getHandle().touchLastUsedForPair(id, ip);
+        } else {
+            getHandle().insertIPLog(id, ip);
+        }
+    }
 
     //UPDATE users SET pixel_count = IF(pixel_count, pixel_count-1, 0), pixel_count_alltime = IF(pixel_count_alltime, pixel_count_alltime-1, 0) WHERE id = :who
     private void maybeIncreasePixelCount(int whoID) {

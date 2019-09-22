@@ -13,6 +13,7 @@ import io.undertow.websockets.core.WebSocketChannel;
 import io.undertow.websockets.core.WebSockets;
 import io.undertow.websockets.spi.WebSocketHttpExchange;
 import space.pxls.App;
+import space.pxls.tasks.UserAuthedTask;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.util.*;
@@ -33,7 +34,7 @@ public class UndertowServer {
     private Set<WebSocketChannel> connections;
     private Undertow server;
 
-    private ExecutorService userDupeIPExecutor = Executors.newFixedThreadPool(4);
+    private ExecutorService userTaskExecutor = Executors.newFixedThreadPool(4);
 
     public UndertowServer(int port) {
         this.port = port;
@@ -110,7 +111,7 @@ public class UndertowServer {
             }
             user.setUseragent(agent);
 
-            userDupeIPExecutor.submit(new UserDupeIPTask(channel, user, ip)); //ip at this point should have gone through all the checks to extract an actual IP from behind a reverse proxy
+            userTaskExecutor.submit(new UserAuthedTask(channel, user, ip)); //ip at this point should have gone through all the checks to extract an actual IP from behind a reverse proxy
         }
 
         channel.getReceiveSetter().set(new AbstractReceiveListener() {
