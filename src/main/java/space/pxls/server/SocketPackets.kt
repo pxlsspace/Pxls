@@ -45,7 +45,8 @@ data class ServerUserInfo(
         val chatbanIsPerma: Boolean,
         val chatbanExpiry: Long,
         val renameRequested: Boolean,
-        val discordName: String?) {
+        val discordName: String?,
+        val chatNameColor: Number) {
     val type = "userinfo"
 }
 

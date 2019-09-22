@@ -138,7 +138,8 @@ public interface DAO extends Closeable {
             "pixel_count INT UNSIGNED NOT NULL DEFAULT 0," +
             "pixel_count_alltime INT UNSIGNED NOT NULL DEFAULT 0," +
             "is_rename_requested TINYINT NOT NULL DEFAULT 0," +
-            "discord_name VARCHAR(37) CHARACTER SET utf8mb4)")
+            "discord_name VARCHAR(37) CHARACTER SET utf8mb4," +
+            "chat_name_color INT UNSIGNED NOT NULL DEFAULT 0)")
     void createUsersTable();
 
     @SqlQuery("SELECT EXISTS(SELECT 1 FROM users WHERE (last_ip = INET6_ATON(:ip) OR signup_ip = INET6_ATON(:ip)) AND id <> :uid)")
@@ -215,6 +216,9 @@ public interface DAO extends Closeable {
 
     @SqlUpdate("UPDATE users SET discord_name = :name WHERE id = :uid")
     void setDiscordName(@Bind("uid") int who, @Bind("name") String discordName);
+
+    @SqlUpdate("UPDATE users SET chat_name_color=:color WHERE id=:uid")
+    void setUserChatNameColor(@Bind("uid") int who, @Bind("color") int color);
 
     @SqlUpdate("CREATE TABLE IF NOT EXISTS sessions ("+
             "id INT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,"+

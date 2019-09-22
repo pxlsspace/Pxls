@@ -1167,6 +1167,7 @@ li.chat-line .badges {
 li.chat-line .user {
     font-weight: bold;
     cursor: pointer;
+    text-shadow: #555 1px 1px 0;
 }
 
 li.chat-line [data-action] {

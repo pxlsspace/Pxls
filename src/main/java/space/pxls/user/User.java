@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 public class User {
     private int id;
     private int stacked = 0;
+    private int chatNameColor = 0;
     private String name;
     private String login;
     private String useragent;
@@ -43,7 +44,7 @@ public class User {
 
     private Set<WebSocketChannel> connections = new HashSet<>();
 
-    public User(int id, int stacked, String name, String login, long cooldownExpiry, Role role, long banExpiryTime, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason) {
+    public User(int id, int stacked, String name, String login, long cooldownExpiry, Role role, long banExpiryTime, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor) {
         this.id = id;
         this.stacked = stacked;
         this.name = name;
@@ -54,6 +55,7 @@ public class User {
         this.isPermaChatbanned = isPermaChatbanned;
         this.chatbanExpiryTime = chatbanExpiryTime;
         this.chatbanReason = chatbanReason;
+        this.chatNameColor = chatNameColor;
     }
 
     public void reloadFromDatabase() {
@@ -70,6 +72,7 @@ public class User {
         this.isRenameRequested = user.isRenameRequested;
         this.discordName = user.discordName;
         this.chatbanReason = user.chatbanReason;
+        this.chatNameColor = user.chatNameColor;
     }
 
     public int getId() {
@@ -515,6 +518,17 @@ public class User {
     public void setDiscordName(String discordName) {
         this.discordName = discordName;
         App.getDatabase().setDiscordName(id, discordName);
+    }
+
+    public int getChatNameColor() {
+        return this.chatNameColor;
+    }
+
+    public void setChatNameColor(int colorIndex, boolean callDB) {
+        this.chatNameColor = colorIndex;
+        if (callDB) {
+            App.getDatabase().setUserChatNameColor(id, colorIndex);
+        }
     }
 
     /**

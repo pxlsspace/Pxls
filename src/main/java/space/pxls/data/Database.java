@@ -404,6 +404,10 @@ public class Database implements Closeable {
         getHandle().putLookup(who, ip);
     }
 
+    public void setUserChatNameColor(int who, int color) {
+        getHandle().setUserChatNameColor(who, color);
+    }
+
     /**
      *
      * @param banned_at_ms The milisecond timestamp the user was banned at
@@ -494,6 +498,7 @@ public class Database implements Closeable {
         for (DBChatMessage dbChatMessage : fromDB) {
             List<Badge> badges = new ArrayList<>();
             String author = "CONSOLE";
+            int nameColor = 0;
             String parsedMessage = dbChatMessage.content; //TODO https://github.com/atlassian/commonmark-java
             if (dbChatMessage.author_uid > 0) {
                 author = "$Unknown";
@@ -501,9 +506,10 @@ public class Database implements Closeable {
                 if (temp != null) {
                     author = temp.getName();
                     badges = temp.getChatBadges();
+                    nameColor = temp.getChatNameColor();
                 }
             }
-            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, dbChatMessage.sent, App.getConfig().getBoolean("chat.filter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges));
+            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, dbChatMessage.sent, App.getConfig().getBoolean("chat.filter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameColor));
         }
         return toReturn;
     }

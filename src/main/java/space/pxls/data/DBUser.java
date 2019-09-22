@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 public class DBUser {
     public int id;
     public int stacked;
+    public int chatNameColor;
     public String username;
     public String login;
     public long cooldownExpiry;
@@ -22,7 +23,7 @@ public class DBUser {
     public String discordName;
     public String chatbanReason;
 
-    public DBUser(int id, int stacked, String username, String login, long cooldownExpiry, Role role, long banExpiry, boolean isPermaChatbanned, long chatbanExpiry, boolean isRenameRequested, String discordName, String chatbanReason) {
+    public DBUser(int id, int stacked, String username, String login, long cooldownExpiry, Role role, long banExpiry, boolean isPermaChatbanned, long chatbanExpiry, boolean isRenameRequested, String discordName, String chatbanReason, int chatNameColor) {
         this.id = id;
         this.stacked = stacked;
         this.username = username;
@@ -35,6 +36,7 @@ public class DBUser {
         this.isRenameRequested = isRenameRequested;
         this.discordName = discordName;
         this.chatbanReason = chatbanReason;
+        this.chatNameColor = chatNameColor;
     }
 
     public static class Mapper implements ResultSetMapper<DBUser> {
@@ -55,7 +57,8 @@ public class DBUser {
                     chatban == null ? 0 : chatban.getTime(),
                     r.getBoolean("is_rename_requested"),
                     r.getString("discord_name"),
-                    r.getString("chat_ban_reason")
+                    r.getString("chat_ban_reason"),
+                    r.getInt("chat_name_color")
             );
         }
     }

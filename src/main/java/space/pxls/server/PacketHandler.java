@@ -21,6 +21,7 @@ import space.pxls.util.RateLimitFactory;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
@@ -69,7 +70,8 @@ public class PacketHandler {
                     user.isPermaChatbanned(),
                     user.getChatbanExpiryTime(),
                     user.isRenameRequested(true),
-                    user.getDiscordName()
+                    user.getDiscordName(),
+                    user.getChatNameColor()
             ));
             sendAvailablePixels(channel, user, "auth");
         }
@@ -112,6 +114,7 @@ public class PacketHandler {
             if (obj instanceof ClientChatHistory) handleChatHistory(channel, user, ((ClientChatHistory) obj));
             if (obj instanceof ClientChatbanState) handleChatbanState(channel, user, ((ClientChatbanState) obj));
             if (obj instanceof ClientChatMessage) handleChatMessage(channel, user, ((ClientChatMessage) obj));
+            if (obj instanceof ClientUserUpdate) handleClientUserUpdate(channel, user, ((ClientUserUpdate) obj));
 
             if (user.getRole().greaterEqual(Role.MODERATOR)) {
                 if (obj instanceof ClientAdminCooldownOverride)
@@ -330,6 +333,31 @@ public class PacketHandler {
         server.send(channel, new ServerChatbanState(user.isPermaChatbanned(), user.getChatbanReason(), user.getChatbanExpiryTime()));
     }
 
+    public void handleClientUserUpdate(WebSocketChannel channel, User user, ClientUserUpdate clientUserUpdate) {
+        Map<String,String> map = clientUserUpdate.component1();
+        Map<String,String> toBroadcast = new HashMap<>();
+
+        String nameColor = map.get("NameColor");
+        if (nameColor != null && !nameColor.trim().isEmpty()) {
+            try {
+                int t = Integer.parseInt(nameColor);
+                if (t >= 0 && t < App.getConfig().getStringList("board.palette").size()) {
+                    user.setChatNameColor(t, true);
+                    server.send(channel, new ServerACKClientUpdate(true, null, "NameColor", String.valueOf(t)));
+                    toBroadcast.put("NameColor", String.valueOf(t));
+                } else {
+                    server.send(channel, new ServerACKClientUpdate(false, "Color index out of bounds", "NameColor", null));
+                }
+            } catch (NumberFormatException nfe) {
+                server.send(channel, new ServerACKClientUpdate(false, "Invalid color index", "NameColor", null));
+            }
+        }
+
+        if (toBroadcast.size() > 0) {
+            server.broadcast(new ServerChatUserUpdate(user.getName(), toBroadcast));
+        }
+    }
+
     public void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
         server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, false, false)));
     }
@@ -347,7 +375,7 @@ public class PacketHandler {
         if (message.length() > 2048) message = message.substring(0, 2048);
         if (user == null) { //console
             String nonce = App.getDatabase().insertChatMessage(0, nowMS, message, "");
-            server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS / 1000L, message, null)));
+            server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS / 1000L, message, null, 0)));
         } else {
             if (user.isChatbanned()) return;
             if (message.trim().length() == 0) return;
@@ -364,10 +392,10 @@ public class PacketHandler {
                         ChatFilter.FilterResult result = ChatFilter.getInstance().filter(toSend);
                         toSend = result.filterHit ? result.filtered : result.original;
                         String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, message, toSend);
-                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges())));
+                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameColor())));
                     } else {
                         String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, message, "");
-                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges())));
+                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameColor())));
                     }
                 } catch (org.skife.jdbi.v2.exceptions.UnableToExecuteStatementException utese) {
                     utese.printStackTrace();

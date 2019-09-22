@@ -1968,6 +1968,7 @@ window.App = (function () {
                                 self.switch(-1);
                             })
                     );
+                    uiHelper.updateUsernameColorDropdown(palette);
                 },
                 can_undo: false,
                 undo: function (evt) {
@@ -2102,6 +2103,8 @@ window.App = (function () {
                 place: self.place,
                 switch: self.switch,
                 setPalette: self.setPalette,
+                getPalette: () => self.palette,
+                getPaletteColor: (n, def = "#000000") => self.palette[n] || def,
                 getPaletteRGB: self.getPaletteRGB,
                 setAutoReset: self.setAutoReset,
                 setNumberedPaletteEnabled: self.setNumberedPaletteEnabled,
@@ -2529,6 +2532,7 @@ window.App = (function () {
                     btnForceAudioUpdate: $("#btnForceAudioUpdate"),
                     themeSelect: $("#themeSelect"),
                     txtDiscordName: $("#txtDiscordName"),
+                    selUsernameColor: $("#selUsernameColor"),
                 },
                 themes: [
                     {
@@ -2635,6 +2639,11 @@ window.App = (function () {
                         .val(String(ls.get('chat.internalClickDefault') >> 0))
                         .change(function() {
                             ls.set('chat.internalClickDefault', this.value >> 0);
+                        });
+
+                    self.elements.selUsernameColor
+                        .change(function() {
+                            socket.send({"type": "UserUpdate", updates: {NameColor: String(this.value >> 0)}});
                         });
 
                     $(window).keydown(function (evt) {
@@ -2837,6 +2846,16 @@ window.App = (function () {
                 },
                 getAvailable() {
                     return self._available;
+                },
+                updateUsernameColorDropdown: palette => {
+                    self.elements.selUsernameColor.empty().append(
+                        palette.map((x,i) => crel('option', {value: i, 'data-idx': i, style: `background-color: ${x}`}, x))
+                    )[0].selectedIndex = user.getChatNameColor();
+                },
+                updateSelectedNameColor: idx => {
+
+                    self.elements.selUsernameColor[0].selectedIndex = idx >> 0;
+                    self.elements.selUsernameColor[0].style.backgroundColor = place.getPaletteColor(idx >> 0);
                 }
             };
 
@@ -2848,7 +2867,9 @@ window.App = (function () {
                 setPlaceableText: self.setPlaceableText,
                 setMax: self.setMax,
                 setDiscordName: self.setDiscordName,
-                updateAudio: self.updateAudio
+                updateAudio: self.updateAudio,
+                updateUsernameColorDropdown: self.updateUsernameColorDropdown,
+                updateSelectedNameColor: self.updateSelectedNameColor,
             };
         })(),
         panels = (function() {
@@ -2971,6 +2992,37 @@ window.App = (function () {
                     }
                 },
                 init: () => {
+                    socket.on('ack_client_update', e => {
+                        if (e.updateType && e.updateValue) {
+                            switch(e.updateType) {
+                                case 'NameColor': {
+                                    user.setChatNameColor(e.updateValue >> 0);
+                                    uiHelper.updateSelectedNameColor(e.updateValue >> 0);
+                                    break;
+                                }
+                                default: {
+                                    console.warn('got unknown updateType on ack_client_update: %o', e);
+                                    break;
+                                }
+                            }
+                        }
+                    });
+                    socket.on('chat_user_update', e => {
+                        if (e.who && e.updates && typeof (e.updates) === "object") {
+                            for (let update of Object.entries(e.updates)) {
+                                switch(update[0]) {
+                                    case 'NameColor': {
+                                        self._updateAuthorNameColor(e.who, place.getPaletteColor(update[1] >> 0));
+                                        break;
+                                    }
+                                    default: {
+                                        console.warn('Got an unknown chat_user_update from %o: %o (%o)', e.who, update, e);
+                                        break;
+                                    }
+                                }
+                            }
+                        } else console.warn('Malformed chat_user_update: %o', e);
+                    });
                     socket.on('chat_history', e => {
                         if (self.seenHistory) return;
                         for (let packet of e.messages.reverse()) {
@@ -3439,6 +3491,9 @@ window.App = (function () {
                         board.setScale(zoom);
                     }
                 },
+                _updateAuthorNameColor: (author, colorString) => {
+                    self.elements.body.find(`.chat-line[data-author="${author}"] .user`).css('color', colorString);
+                },
                 _process: packet => {
                     if (packet.nonce) {
                         if (self.nonceLog.includes(packet.nonce)) {
@@ -3470,7 +3525,7 @@ window.App = (function () {
                     let contentSpan = self._processMessage(packet.message_raw);
 
                     self.elements.body.append(
-                        crel('li', {'data-nonce': packet.nonce, 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': `chat-line${hasPing ? ' has-ping' : ''}`},
+                        crel('li', {'data-nonce': packet.nonce, 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`},
                             crel('span', {'class': 'actions'},
                                 crel('i', {'class': 'fas fa-cog', 'data-action': 'actions-panel', 'title': 'Actions', onclick: self._popUserPanel})
                             ),
@@ -3478,7 +3533,7 @@ window.App = (function () {
                             document.createTextNode(' '),
                             badges,
                             document.createTextNode(' '),
-                            crel('span', {'class': 'user', onclick: self._popUserPanel}, packet.author),
+                            crel('span', {'class': 'user', style: `color: ${place.getPaletteColor(packet.authorNameColor)}`, onclick: self._popUserPanel}, packet.author),
                             document.createTextNode(': '),
                             contentSpan,
                             document.createTextNode(' ')
@@ -4387,6 +4442,7 @@ window.App = (function () {
                 pendingSignupToken: null,
                 loggedIn: false,
                 username: '',
+                chatNameColor: 0,
                 getRole: function () {
                     return self.role;
                 },
@@ -4508,6 +4564,8 @@ window.App = (function () {
                             banelem = $("<div>").addClass("ban-alert-content");
                         self.username = data.username;
                         self.loggedIn = true;
+                        self.chatNameColor = data.chatNameColor;
+                        uiHelper.updateSelectedNameColor(data.chatNameColor);
                         $(window).trigger('pxls:user:loginState', [true]);
                         self.renameRequested = data.renameRequested;
                         uiHelper.setDiscordName(data.discordName || "");
@@ -4650,6 +4708,8 @@ window.App = (function () {
                 renameRequested: self.renameRequested,
                 showRenameRequest: self.showRenameRequest,
                 hideRenameRequest: self.hideRenameRequest,
+                getChatNameColor: () => self.chatNameColor,
+                setChatNameColor: c => self.chatNameColor = c,
                 get admin() {
                     return self.admin || false;
                 }
