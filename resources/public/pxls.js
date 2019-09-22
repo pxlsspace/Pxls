@@ -1861,7 +1861,7 @@ window.App = (function () {
                 },
                 autoreset: true,
                 setAutoReset: function (v) {
-                    self.autoreset = v ? true : false;
+                    self.autoreset = !!v;
                     ls.set("auto_reset", self.autoreset);
                 },
                 switch: function (newColor) {
@@ -2443,25 +2443,27 @@ window.App = (function () {
             var self = {
                 init: function () {
                     drawer.create("#info", 73, "info_closed", true);
-                    $("#audiotoggle")[0].checked = ls.get("audio_muted");
-                    $("#audiotoggle").change(function () {
-                        ls.set("audio_muted", this.checked);
-                    });
+                    $("#audiotoggle")
+                        .prop("checked", ls.get("audio_muted"))
+                        .change(function() {
+                            ls.set("audio_muted", this.checked);
+                        });
+
                     //stickyColorToggle ("Keep color selected"). Checked = don't auto reset.
                     var auto_reset = ls.get("auto_reset");
                     if (auto_reset === null) {
-                        auto_reset = true;
+                        auto_reset = false;
                     }
                     place.setAutoReset(auto_reset);
-                    $("#stickyColorToggle")[0].checked = !auto_reset;
-
-                    $("#stickyColorToggle").change(function () {
-                        place.setAutoReset(!this.checked);
-                    });
+                    $("#stickyColorToggle")
+                        .prop("checked", !auto_reset)
+                        .change(function() {
+                            place.setAutoReset(!this.checked);
+                        });
 
                     $("#monospaceToggle").change(function () {
                         ls.set("monospace_lookup", this.checked);
-                        this.checked ? $(".monoVal").addClass("useMono") : $(".monoVal").removeClass("useMono");
+                        $(".monoVal").toggleClass("useMono", this.checked);
                     });
                 }
             };
