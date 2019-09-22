@@ -2655,26 +2655,26 @@ window.App = (function () {
                         }
                     });
 
-                    let _info = $("#info");
-                    if (_info.hasClass("open")) {
-                        _info.find("iframe[data-lazysrc]").each((index, elem) => {
+                    let _info = document.querySelector('.panel[data-panel="info"]');
+                    if (_info.classList.contains("open")) {
+                        _info.querySelectorAll("iframe[data-lazysrc]").forEach(elem => {
                             elem.src = elem.dataset.lazysrc;
                             delete elem.dataset.lazysrc;
                         });
                     } else {
-                        _info.on("drawer-state-change", function (event, data) {
-                            if (data.isOpen === true) {
-                                let elems = $("#info iframe[data-lazysrc]");
-                                if (elems.length) {
-                                    elems.each((index, elem) => {
+                        function toAttach(e, which) {
+                            if (which === "info") {
+                                let elems = document.querySelectorAll('iframe[data-lazysrc]');
+                                if (elems && elems.length) {
+                                    elems.forEach(elem => {
                                         elem.src = elem.dataset.lazysrc;
                                         delete elem.dataset.lazysrc;
                                     });
-                                } else {
-                                    _info.off("drawer-state-change");
                                 }
+                                $(window).off('pxls:panel:opened', toAttach);
                             }
-                        })
+                        }
+                        $(window).on("pxls:panel:opened", toAttach);
                     }
                 },
                 _initThemes: function () {

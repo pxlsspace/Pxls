@@ -1027,7 +1027,7 @@ article .body {
     margin-bottom: .5rem;
 }
 
-.panel-body article {
+.panel-body article:not(.naked) {
     border: 1px solid #000;
     background-color: #0002;
 }
