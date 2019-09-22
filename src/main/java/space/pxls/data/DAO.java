@@ -139,7 +139,7 @@ public interface DAO extends Closeable {
             "pixel_count_alltime INT UNSIGNED NOT NULL DEFAULT 0," +
             "is_rename_requested TINYINT NOT NULL DEFAULT 0," +
             "discord_name VARCHAR(37) CHARACTER SET utf8mb4," +
-            "chat_name_color INT UNSIGNED NOT NULL DEFAULT 0)")
+            "chat_name_color INT UNSIGNED NOT NULL DEFAULT 5)")
     void createUsersTable();
 
     @SqlQuery("SELECT EXISTS(SELECT 1 FROM users WHERE (last_ip = INET6_ATON(:ip) OR signup_ip = INET6_ATON(:ip)) AND id <> :uid)")
