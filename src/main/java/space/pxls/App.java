@@ -665,7 +665,7 @@ public class App {
             getLogger().warn("Cannot find virginmap.dat in working directory, using blank virginmap");
             for (int x = 0; x < width; x++) {
                 for (int y = 0; y < height; y++) {
-                    virginmap[x + width * y] = 0xFF;
+                    virginmap[x + width * y] = (byte) 0xFF;
                 }
             }
         } catch (IOException e) {
