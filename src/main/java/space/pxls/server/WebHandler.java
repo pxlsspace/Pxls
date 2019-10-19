@@ -14,6 +14,7 @@ import io.undertow.util.StatusCodes;
 import space.pxls.App;
 import space.pxls.auth.*;
 import space.pxls.data.DBChatMessage;
+import space.pxls.data.DBNotification;
 import space.pxls.data.DBPixelPlacement;
 import space.pxls.data.DBPixelPlacementUser;
 import space.pxls.user.Chatban;
@@ -22,10 +23,15 @@ import space.pxls.user.User;
 import space.pxls.util.AuthReader;
 import space.pxls.util.IPReader;
 import space.pxls.util.RateLimitFactory;
+import space.pxls.util.SimpleDiscordWebhook;
 
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.Year;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -630,6 +636,154 @@ public class WebHandler {
                 send(StatusCodes.TOO_MANY_REQUESTS, exchange, "Hit max attempts. Try again in " + remaining + "s");
             }
         }
+    }
+
+    public void createNotification(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null) {
+            sendBadRequest(exchange, "No authenticated users found");
+            return;
+        }
+        if (user.getRole().lessThan(Role.DEVELOPER)) {
+            send(StatusCodes.FORBIDDEN, exchange, "Invalid permissions");
+            return;
+        }
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+        String title = null;
+        String body = null;
+        Long expiry = 0L;
+        boolean discord = false;
+        try {
+            title = data.getFirst("txtTitle").getValue();
+            body = data.getFirst("txtBody").getValue();
+            expiry = 0L;
+        } catch (Exception npe) {
+            sendBadRequest(exchange, "Missing either 'txtTitle' or 'txtBody' fields");
+            return;
+        }
+        if (data.contains("discord")) {
+            try {
+                discord = data.getFirst("discord").getValue().trim().equalsIgnoreCase("true");
+            } catch (Exception e) {
+                sendBadRequest(exchange, "Invalid discord value");
+                return;
+            }
+        }
+        if (data.contains("expiry")) {
+            try {
+                expiry = Long.parseLong(data.getFirst("expiry").getValue().trim());
+            } catch (Exception e) {
+                sendBadRequest(exchange, "Invalid expiry value");
+                return;
+            }
+        }
+        try {
+            int notifID = App.getDatabase().createNotification(user.getId(), title, body, Instant.ofEpochMilli(expiry).getEpochSecond());
+            App.getServer().broadcast(new ServerNotification(App.getDatabase().getNotificationByID(notifID))); //re-fetch to ensure we're returning exact time and expiry 'n whatnot from the database.
+        } catch (Exception e) {
+            e.printStackTrace();
+            send(StatusCodes.INTERNAL_SERVER_ERROR, exchange, "Failed to create notification");
+            return;
+        }
+        if (discord) {
+            handleNotificationWebhook(exchange, title, body);
+        } else {
+            send(StatusCodes.OK, exchange, "");
+        }
+    }
+
+    public void sendNotificationToDiscord(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null) {
+            sendBadRequest(exchange, "No authenticated users found");
+            return;
+        }
+        if (user.getRole().lessThan(Role.DEVELOPER)) {
+            send(StatusCodes.FORBIDDEN, exchange, "Invalid permissions");
+            return;
+        }
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+        int notificationID = -1;
+        if (!data.contains("id")) {
+            sendBadRequest(exchange, "Missing notification id");
+            return;
+        }
+        try {
+            notificationID = Integer.parseInt(data.getFirst("id").getValue().trim());
+        } catch (Exception e) {
+            sendBadRequest(exchange, "Invalid notification id");
+        }
+        DBNotification notif = App.getDatabase().getNotificationByID(notificationID);
+        if (notif == null) {
+            send(StatusCodes.NOT_FOUND, exchange, "Notification doesn't exist");
+        } else {
+            handleNotificationWebhook(exchange, notif.title, notif.content);
+        }
+    }
+
+    public void setNotificationExpired(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null) {
+            sendBadRequest(exchange, "No authenticated users found");
+            return;
+        }
+        if (user.getRole().lessThan(Role.DEVELOPER)) {
+            send(StatusCodes.FORBIDDEN, exchange, "Invalid permissions");
+            return;
+        }
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+        int notificationID = -1;
+        boolean shouldBeExpired = false;
+        if (!data.contains("id")) {
+            sendBadRequest(exchange, "Missing notification id");
+            return;
+        }
+        try {
+            notificationID = Integer.parseInt(data.getFirst("id").getValue().trim());
+        } catch (Exception e) {
+            sendBadRequest(exchange, "Invalid notification id");
+        }
+        try {
+            notificationID = Integer.parseInt(data.getFirst("id").getValue().trim());
+        } catch (Exception e) {
+            sendBadRequest(exchange, "Invalid notification id");
+        }
+        if (App.getDatabase().getNotificationByID(notificationID) == null) {
+            send(StatusCodes.NOT_FOUND, exchange, "Notification doesn't exist");
+            return;
+        }
+        try {
+            shouldBeExpired = data.getFirst("expired").getValue().trim().equalsIgnoreCase("true");
+        } catch (Exception e) {
+            sendBadRequest(exchange, "Invalid 'expired'");
+            return;
+        }
+        App.getDatabase().setNotificationExpiry(notificationID, shouldBeExpired ? 1L : 0L);
+        send(StatusCodes.OK, exchange, "");
+    }
+
+    private void handleNotificationWebhook(HttpServerExchange exchange, String title, String body) {
+        String webhookURL = App.getConfig().getString("webhooks.announcements");
+        if (webhookURL.isEmpty()) {
+            send(StatusCodes.INTERNAL_SERVER_ERROR, exchange, "No announcement webhook is configured");
+        } else {
+            if (SimpleDiscordWebhook.forWebhookURL(webhookURL).content(String.format("**%s**\n\n%s", title, body)).execute()) {
+                send(StatusCodes.OK, exchange, "");
+            } else {
+                send(StatusCodes.INTERNAL_SERVER_ERROR, exchange, "Failed to execute discord webhook");
+            }
+        }
+    }
+
+    public void notificationsList(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+        exchange.setStatusCode(200);
+        exchange.getResponseSender().send(App.getGson().toJson(App.getDatabase().getNonExpiredNotifications()));
+        exchange.endExchange();
     }
 
     private void sendBadRequest(HttpServerExchange exchange) {

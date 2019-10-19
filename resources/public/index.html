@@ -41,6 +41,10 @@
         <div class="panel-trigger" data-panel="faq">
             <i class="fas fa-question-circle"></i>
         </div>
+        <div class="panel-trigger" data-panel="notifications">
+            <i class="fas fa-bell" id="notifications-icon"></i>
+            <i class="fas fa-circle ping-counter" id="notifications-ping-counter"></i>
+        </div>
     </div>
     <div class="mid"></div>
     <div class="right">
@@ -319,6 +323,15 @@
     <div class="panel-body">
         {{faq}}
     </div>
+</aside>
+
+<aside id="notifications" data-panel="notifications" class="panel left">
+    <header class="panel-header">
+        <div class="left"></div>
+        <h2><i class="fas fa-bell fa-is-left fa-1_5x"></i>Notifications</h2>
+        <div class="right"><i class="fas fa-times text-red panel-closer"></i></div>
+    </header>
+    <div class="panel-body"></div>
 </aside>
 
 <script src="pxls.js"></script>

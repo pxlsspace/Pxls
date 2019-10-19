@@ -12,6 +12,7 @@ board.dat
 default_board.dat
 heatmap.dat
 virginmap.dat
+placemap.dat
 pxls.conf
 index_cache.html
 TODO

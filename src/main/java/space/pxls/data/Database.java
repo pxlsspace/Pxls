@@ -2,8 +2,7 @@ package space.pxls.data;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.skife.jdbi.v2.DBI;
-import org.skife.jdbi.v2.Handle;
+import org.skife.jdbi.v2.*;
 import org.skife.jdbi.v2.tweak.HandleCallback;
 import space.pxls.App;
 import space.pxls.server.Badge;
@@ -12,6 +11,7 @@ import space.pxls.user.Role;
 import space.pxls.user.User;
 
 import java.io.Closeable;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -58,6 +58,7 @@ public class Database implements Closeable {
         getHandle().createChatMessagesTable();
         getHandle().createChatReportsTable();
         getHandle().createIPLogTable();
+        getHandle().createNotificationsTable();
     }
 
     private DAO getHandle() {
@@ -622,6 +623,30 @@ public class Database implements Closeable {
     }
 
     /* END CHAT */
+
+    /* NOTIFICATIONS */
+
+    public List<DBNotification> getAllNotifications() {
+        return getHandle().getAllNotifications();
+    }
+
+    public List<DBNotification> getNonExpiredNotifications() {
+        return getHandle().getNonExpiredNotifications();
+    }
+
+    public DBNotification getNotificationByID(int notification_id) {
+        return getHandle().getNotificationByID(notification_id);
+    }
+
+    public void setNotificationExpiry(int notification_id, long expiry) {
+        getHandle().setNotificationExpiry(notification_id, expiry);
+    }
+
+    public int createNotification(int creator_uid, String title, String content, long expiry) {
+        return getHandle().createNotification(creator_uid, title, content, expiry);
+    }
+
+    /* END NOTIFICATIONS */
 
     /**
      * Inserts the IP log pair. If the pair exists, `last_used` will be updated instead.
