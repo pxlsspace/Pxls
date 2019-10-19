@@ -3606,7 +3606,7 @@ window.App = (function () {
                                 if ((document.location.origin && url.origin) && document.location.origin === url.origin) { //URL is for this origin, run some checks for game features
                                     if (params.x != null && params.y != null) { //url has x/y so it's probably in the game window
                                         if (board.validateCoordinates(params.x, params.y)) {
-                                            jumpTarget = Object.assign({displayText: `(${params.x}, ${params.y}, ${params.scale}x)`, raw: url.toString()}, params);
+                                            jumpTarget = Object.assign({displayText: `(${params.x}, ${params.y}${params.scale != null ? `, ${params.scale}x` : ''})`, raw: url.toString()}, params);
                                             if (params.template != null && params.template.length >= 11) { //we have a template, should probably make that known
                                                 let truncatedTemplate = decodeURIComponent(params.template);
                                                 jumpTarget.displayText += ` (template: ${(truncatedTemplate > 50) ? `${truncatedTemplate.substr(0, 50)}...` : truncatedTemplate})`;
