@@ -71,7 +71,7 @@ public class WebHandler {
         }
         ClassPathResourceManager cprm = new ClassPathResourceManager(App.class.getClassLoader(), "public/");
         String s = resourceToString("/public/index.html");
-        String[] replacements = {"title", "head", "info"};
+        String[] replacements = {"title", "head", "info", "faq"};
         for (String p : replacements) {
             String r = App.getConfig().getString("html." + p);
             if (r == null) {

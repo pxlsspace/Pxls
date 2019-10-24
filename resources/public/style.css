@@ -122,6 +122,19 @@ input:disabled {
     top: 2px;
 }
 
+dt:not(:first-of-type) {
+    margin-top: 1rem;
+}
+
+dt {
+    font-weight: bold;
+    font-size: 1.15rem;
+}
+
+dd a {
+    display: inline !important;
+}
+
 /*//////////////////////////*\
 | Overlays
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
