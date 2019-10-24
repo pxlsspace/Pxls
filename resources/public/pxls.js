@@ -2907,6 +2907,10 @@ window.App = (function () {
                             } else console.debug('[PANELS:CLOSER] No panel?');
                         });
                     });
+                    if (ls.get('seen_initial_info') !== true) {
+                        ls.set('seen_initial_info', true);
+                        self._setOpenState('info', true);
+                    }
                 },
                 isOpen: panel => {
                     if (!(panel instanceof HTMLElement)) panel = document.querySelector(`.panel[data-panel="${panel}"]`);
