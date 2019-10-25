@@ -1755,9 +1755,21 @@ window.App = (function () {
                         self._update({ opacity: parseFloat(this.value) });
                     });
                     $(window).keydown(function (evt) {
-                        if (evt.ctrlKey && self.options.use) {
-                            evt.preventDefault();
-                            self.elements.template.css("pointer-events", "initial");
+                        console.log(evt);
+                        if (self.options.use) {
+                            switch(evt.originalEvent.code || evt.originalEvent.keyCode || evt.originalEvent.which || evt.originalEvent.key) {
+                                case "ControlLeft":
+                                case "ControlRight":
+                                case "Control":
+                                case 17:
+                                case "AltLeft":
+                                case "AltRight":
+                                case "Alt":
+                                case 18:
+                                    evt.preventDefault();
+                                    self.elements.template.css("pointer-events", "initial");
+                                    break;
+                            }
                         }
                         let newOpacity = 0;
                         switch (evt.code || evt.keyCode || evt.which || evt.key) {
