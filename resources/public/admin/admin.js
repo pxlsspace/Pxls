@@ -23,6 +23,10 @@
 				evt.stopPropagation();
 			});
         },
+        genUserInfoLink = function(username) {
+            const userInfoURL = "https://admin." + location.host + "/userinfo/" + username;
+            return $("<a>").text(username).attr("href", userInfoURL).attr("target", "_blank");
+        },
         ban = (function() {
             var self = {
                 elements: {
@@ -184,7 +188,7 @@
                     }
                     chatbannedStr = data.chatbanIsPerma ? `Yes (permanent)` : (data.chatBanned ? `Yes` : `No`);
                     var items = [
-                        ["Username", data.username],
+                        ["Username", genUserInfoLink(data.username)],
                         ["Login", data.login],
                         ["Role", data.role],
                         ["Rename Requested", data.renameRequested ? "Yes" : "No"],
@@ -206,7 +210,7 @@
                         $.map(items, function (o) {
                             return $("<div>").append(
                                 $("<b>").text(o[0]+": "),
-                                $("<span>").text(o[1])
+                                typeof o[1] === "string" ? $("<span>").text(o[1]) : o[1]
                             );
                         }),
                         $("<div>").append(sendAlert(data.username)),
@@ -357,6 +361,9 @@
                  * Register hooks for admin-specific lookups.
                  */
                 init: function () {
+                    App.lookup.replaceHook("username", {
+                        get: data => genUserInfoLink(data.username)
+                    });
                     App.lookup.registerHook({
                         id: "login",
 						name: "Login",
