@@ -717,13 +717,13 @@ window.App = (function () {
                             case "E":
                                 self.nudgeScale(1);
                                 break;
-                            case "KeyQ":        // Q
-                            case "Minus":       // -
-                            case "NumpadSubtact":   // numpad -
-                            case 81:            // Q
-                            case 109:           // numpad -
-                            case 173:           // -
-                            case 189:           // -
+                            case "KeyQ":             // Q
+                            case "Minus":            // -
+                            case "NumpadSubtract":   // numpad -
+                            case 81:                 // Q
+                            case 109:                // numpad -
+                            case 173:                // -
+                            case 189:                // -
                             case "q":
                             case "Q":
                             case "-":
@@ -2202,6 +2202,8 @@ window.App = (function () {
                  * @param {Object} hooks Information about the hook.
                  * @param {String} hooks.id An ID for the hook.
                  * @param {String} hooks.name A user-facing name for the hook.
+                 * @param {Boolean} hooks.sensitive Whenever the hook contains sensitive information.
+                 * @param {Boolean} hooks.backgroundCompatible Whenever the hook should appear even if the pixel is background.
                  * @param {Function} hooks.get A function that returns the text information shown in the lookup.
                  * @param {Object} hooks.css An object mapping CSS rules to values for the hook value.
                  */
@@ -2216,6 +2218,26 @@ window.App = (function () {
                             css: hook.css || {},
                         };
                     }));
+                },
+                /**
+                 * Replace a hook by its ID.
+                 * @param {String} hookId The ID of the hook to replace.
+                 * @param {Object} newHook Information about the hook.
+                 * @param {String} newHook.name New user-facing name for the hook.
+                 * @param {Boolean} newHook.sensitive Whenever the new hook contains sensitive information.
+                 * @param {Boolean} newHook.backgroundCompatible Whenever the new hook should appear even if the pixel is background.
+                 * @param {Function} newHook.get A function that returns the text information shown in the lookup.
+                 * @param {Object} newHook.css An object mapping CSS rules to values for the new hook value.
+                 */
+                replaceHook: function(hookId, newHook) {
+                    delete newHook.id;
+                    for (let idx in self.hooks) {
+                        const hook = self.hooks[idx];
+                        if (hook.id === hookId) {
+                            self.hooks[idx] = Object.assign(hook, newHook);
+                            return;
+                        }
+                    }
                 },
                 /**
                  * Unregisters a hook by its ID.
@@ -2246,7 +2268,9 @@ window.App = (function () {
                                 return null;
                             }
 
-                            const value = typeof get === "object" ? get : $("<span>").text(get);
+                            const value = typeof get === "object"
+                                ? (get instanceof Node ? $(get) : get)
+                                : $("<span>").text(get);
 
                             let _retVal = $("<div data-sensitive=\"" + hook.sensitive + "\">").append(
                                 $("<b>").text(hook.name + ": "),
@@ -2383,6 +2407,7 @@ window.App = (function () {
                 init: self.init,
                 registerHandle: self.registerHandle,
                 registerHook: self.registerHook,
+                replaceHook: self.replaceHook,
                 unregisterHook: self.unregisterHook,
                 runLookup: self.runLookup,
                 clearHandle: self.clearHandle
@@ -4810,6 +4835,9 @@ window.App = (function () {
         lookup: {
             registerHook: function () {
                 return lookup.registerHook(...arguments);
+            },
+            replaceHook: function () {
+                return lookup.replaceHook(...arguments);
             },
             unregisterHook: function () {
                 return lookup.unregisterHook(...arguments);
