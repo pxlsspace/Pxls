@@ -39,17 +39,18 @@ public class PacketHandler {
         if (config.getBoolean("useStaticCooldown")) {
             return (int)config.getDuration("cooldown", TimeUnit.SECONDS);
         }
-        // exponential function of form a*exp(-b*(x - d)) + c
-        double a = -8.04044740e+01;
-        double b = 2.73880499e-03;
-        double c = 9.63956320e+01;
-        double d = -2.14065886e+00;
-        double multiplier = config.getDouble("activityCooldown.multiplier");
+
+        // Formula by Atomic10 and c4rt
+        // https://www.desmos.com/calculator/fickubayim
+        // 2.5 sqrt(x + 12) + 6.5
+
         double x = 1;
-        if (config.getBoolean("activityCooldown.enabled")) {
-            x = (double)server.getAuthedUsers().size();
-        }
-        return (int)(Math.ceil(a*Math.exp(-b*(x - d)) + c) * multiplier);
+        if (config.getBoolean("activityCooldown.enabled"))
+            x = server.getAuthedUsers().size();
+        double cooldown = 2.5 * Math.sqrt(x + 12) + 6.5;
+        double multiplier = config.getDouble("activityCooldown.multiplier");
+        cooldown *= multiplier;
+        return (int)cooldown;
     }
 
     public PacketHandler(UndertowServer server) {
