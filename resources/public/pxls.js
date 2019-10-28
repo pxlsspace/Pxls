@@ -1,4 +1,12 @@
 "use strict";
+crel.attrMap['onmousemiddledown'] = function(element, value) {
+    element.addEventListener('mousedown', function (e) {
+        if (e.button == 1) {
+            value.call(this, e);
+        }
+    });
+};
+
 var instaban = false;
 if (window.App !== undefined) {
     instaban = true;
@@ -3574,7 +3582,7 @@ window.App = (function () {
                             document.createTextNode(' '),
                             badges,
                             document.createTextNode(' '),
-                            crel('span', {'class': 'user', style: `color: ${place.getPaletteColor(packet.authorNameColor)}`, onclick: self._popUserPanel}, packet.author),
+                            crel('span', {'class': 'user', style: `color: ${place.getPaletteColor(packet.authorNameColor)}`, onclick: self._popUserPanel, onmousemiddledown: self._addAuthorMentionToChatbox}, packet.author),
                             document.createTextNode(': '),
                             contentSpan,
                             document.createTextNode(' ')
@@ -3765,7 +3773,18 @@ window.App = (function () {
                         history.pushState(null, document.title, url == null ? document.location.href : url); //ensure people can back button if available
                     }
                 },
-                _popUserPanel: function(e) { //must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
+                // The following functions must use es5 syntax for expected behavior.
+                // Don't upgrade syntax, `this` is attached to a DOM Event and we need `this` to be bound by DOM Bubbles.
+                _addAuthorMentionToChatbox: function(e) {
+                    if (this && this.closest) {
+                        const chatLineEl = this.closest('.chat-line[data-nonce]');
+                        if (!chatLineEl) return console.warn('no closets chat-line on self: %o', this);
+
+                        self.elements.input.val(self.elements.input.val() + '@' + chatLineEl.dataset.author + ' ');
+                        self.elements.input.focus((e) => console.log(e));
+                    }
+                },
+                _popUserPanel: function(e) {
                     if (this && this.closest) {
                         let closest = this.closest('.chat-line[data-nonce]');
                         if (!closest) return console.warn('no closets chat-line on self: %o', this);
