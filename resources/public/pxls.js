@@ -2667,8 +2667,7 @@ window.App = (function () {
                                 if (selector.is(":visible")) {
                                     selector.fadeOut(200);
                                 } else if (openPanels.length) {
-                                    openPanels.removeClass('open');
-                                    document.body.classList.remove('panel-left-open', 'panel-right-open');
+                                    openPanels.each((i, elem) => panels.close(elem));
                                 } else {
                                     place.switch(-1);
                                 }
@@ -2942,7 +2941,7 @@ window.App = (function () {
                 _setOpenState: (panel, state, exclusive = true) => {
                     state = !!state;
 
-                    let panelDescriptor = panel
+                    let panelDescriptor = panel;
                     if (panel instanceof HTMLElement) {
                         panelDescriptor = panel.dataset['panel'];
                     } else {
@@ -2950,7 +2949,7 @@ window.App = (function () {
                     }
 
                     if (panel) {
-                        const panelPosition = panel.classList.contains('right') ? 'right' : 'left'
+                        const panelPosition = panel.classList.contains('right') ? 'right' : 'left';
 
                         if (state) {
                             if (exclusive) {
