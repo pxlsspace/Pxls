@@ -1076,21 +1076,33 @@ article .body {
     margin: 0 !important;
 }
 
-body.panel-right-open .ui-bar {
-    left: 0;
+body.panel-open .ui-bar {
     width: 70%;
     transition: width ease-out .25s;
 }
 
-body.panel-left-open .ui-bar {
+body.panel-open.panel-left .ui-bar {
     right: 0;
-    width: 70%;
-    transition: width ease-out .25s;
 }
 
-body.panel-left-open.panel-right-open .ui-bar {
+body.panel-open.panel-left.panel-left-halfwidth .ui-bar,
+body.panel-open.panel-right.panel-right-halfwidth .ui-bar {
+    width: 50%;
+}
+
+body.panel-left.panel-right .ui-bar {
     left: 30%;
     width: 40%;
+}
+
+body.panel-left.panel-left-halfwidth.panel-right .ui-bar {
+    left: 50%;
+    width: 20%;
+}
+
+body.panel-left.panel-right.panel-right-halfwidth .ui-bar {
+    right: 50%;
+    width: 20%;
 }
 
 /* CHAT */
