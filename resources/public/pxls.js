@@ -2889,34 +2889,39 @@ window.App = (function () {
                 init: () => {
                     Array.from(document.querySelectorAll(".panel-trigger")).forEach(panelTrigger => {
                         panelTrigger.addEventListener("click", e => {
-                            if (!e.target) return console.debug('[PANELS:TRIGGER] No target?');
+                            if (!e.target) {
+                                return console.debug('[PANELS:TRIGGER] No target?');
+                            }
+
                             let closestTrigger = e.target.closest('.panel-trigger');
                             if (closestTrigger) {
                                 let _panelDescriptor = closestTrigger.dataset['panel'];
                                 if (_panelDescriptor && _panelDescriptor.trim()) {
                                     let targetPanel = document.querySelector(`.panel[data-panel="${_panelDescriptor.trim()}"]`);
                                     if (targetPanel) {
-                                        Array.from(document.querySelectorAll(`.panel.${targetPanel.classList.contains('right') ? 'right' : 'left'}.open`)).forEach(x => {
-                                            x.classList.remove('open');
-                                            $(window).trigger("pxls:panel:closed", x.dataset['panel']);
-                                        }); //Close other open panels
-                                        targetPanel.classList.add('open');
-                                        self._handleBodyClasses();
-                                        $(window).trigger("pxls:panel:opened", _panelDescriptor);
-                                    } else console.debug('[PANELS:TRIGGER] Bad descriptor? Got: %o', _panelDescriptor);
-                                } else console.debug('[PANELS:TRIGGER] No descriptor? Elem: %o', closestTrigger);
-                            } else console.debug('[PANELS:TRIGGER] No trigger?');
+                                        self._setOpenState(targetPanel, true, true);
+                                    } else {
+                                        console.debug('[PANELS:TRIGGER] Bad descriptor? Got: %o', _panelDescriptor);
+                                    }
+                                } else {
+                                    console.debug('[PANELS:TRIGGER] No descriptor? Elem: %o', closestTrigger);
+                                }
+                            } else {
+                                console.debug('[PANELS:TRIGGER] No trigger?');
+                            }
                         });
                     });
                     Array.from(document.querySelectorAll('.panel-closer')).forEach(panelClose => {
                         panelClose.addEventListener('click', e => {
-                            if (!e.target) return console.debug('[PANELS:CLOSER] No target?');
+                            if (!e.target) {
+                                return console.debug('[PANELS:CLOSER] No target?');
+                            }
                             let closestPanel = e.target.closest('.panel');
                             if (closestPanel) {
-                                closestPanel.classList.toggle('open', false);
-                                $(window).trigger("pxls:panel:closed", [closestPanel.dataset['panel']]);
-                                self._handleBodyClasses();
-                            } else console.debug('[PANELS:CLOSER] No panel?');
+                                self._setOpenState(closestPanel, false, false);
+                            } else {
+                                console.debug('[PANELS:CLOSER] No panel?');
+                            }
                         });
                     });
                     if (ls.get('seen_initial_info') !== true) {
@@ -2936,18 +2941,38 @@ window.App = (function () {
                 },
                 _setOpenState: (panel, state, exclusive = true) => {
                     state = !!state;
-                    if (!(panel instanceof HTMLElement)) panel = document.querySelector(`.panel[data-panel="${panel}"]`);
+
+                    let panelDescriptor = panel
+                    if (panel instanceof HTMLElement) {
+                        panelDescriptor = panel.dataset['panel'];
+                    } else {
+                        panel = document.querySelector(`.panel[data-panel="${panel}"]`);
+                    }
+
                     if (panel) {
-                        if (state && exclusive) {
-                            document.querySelectorAll(`.panel[data-panel].${panel.classList.contains('right') ? 'right' : 'left'}.open`).forEach(x => x.classList.remove('open'));
+                        const panelPosition = panel.classList.contains('right') ? 'right' : 'left'
+
+                        if (state) {
+                            if (exclusive) {
+                                document.querySelectorAll(`.panel[data-panel].${panelPosition}.open`).forEach(x => {
+                                    x.classList.remove('open');
+                                    $(window).trigger("pxls:panel:closed", x.dataset['panel']);
+                                });
+                            }
+                            $(window).trigger("pxls:panel:opened", panelDescriptor);
+                            document.body.classList.toggle("panel-open", true);
+                            document.body.classList.toggle(`panel-${panelPosition}`, true);
+                            if (panel.classList.contains('half-width')) {
+                                document.body.classList.toggle(`panel-${panelPosition}-halfwidth`, true);
+                            }
+                        } else {
+                            $(window).trigger("pxls:panel:closed", panelDescriptor);
+                            document.body.classList.toggle("panel-open", document.querySelectorAll('.panel.open').length - 1 > 0);
+                            document.body.classList.toggle(`panel-${panelPosition}`, false);
+                            document.body.classList.toggle(`panel-${panelPosition}-halfwidth`, false);
                         }
                         panel.classList.toggle('open', state);
-                        self._handleBodyClasses();
                     }
-                },
-                _handleBodyClasses: () => {
-                    document.body.classList.toggle('panel-left-open', !!document.querySelector('.panel.left.open')); // duno bout this one for the long run chief
-                    document.body.classList.toggle('panel-right-open', !!document.querySelector('.panel.right.open'));
                 }
             };
             return {
