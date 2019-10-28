@@ -3776,12 +3776,13 @@ window.App = (function () {
                 // The following functions must use es5 syntax for expected behavior.
                 // Don't upgrade syntax, `this` is attached to a DOM Event and we need `this` to be bound by DOM Bubbles.
                 _addAuthorMentionToChatbox: function(e) {
+                    e.preventDefault();
                     if (this && this.closest) {
                         const chatLineEl = this.closest('.chat-line[data-nonce]');
                         if (!chatLineEl) return console.warn('no closets chat-line on self: %o', this);
 
                         self.elements.input.val(self.elements.input.val() + '@' + chatLineEl.dataset.author + ' ');
-                        self.elements.input.focus((e) => console.log(e));
+                        self.elements.input.focus();
                     }
                 },
                 _popUserPanel: function(e) {
