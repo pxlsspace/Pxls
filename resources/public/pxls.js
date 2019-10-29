@@ -1763,7 +1763,6 @@ window.App = (function () {
                         self._update({ opacity: parseFloat(this.value) });
                     });
                     $(window).keydown(function (evt) {
-                        console.log(evt);
                         if (self.options.use) {
                             switch(evt.originalEvent.code || evt.originalEvent.keyCode || evt.originalEvent.which || evt.originalEvent.key) {
                                 case "ControlLeft":
