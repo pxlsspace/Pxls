@@ -3004,8 +3004,6 @@ window.App = (function () {
                             document.body.classList.toggle(`panel-${panelPosition}-halfwidth`, false);
                         }
                         panel.classList.toggle('open', state);
-                        document.body.classList.toggle('panel-left-open', !!document.querySelector('.panel.left.open')); // duno bout this one for the long run chief
-                        document.body.classList.toggle('panel-right-open', !!document.querySelector('.panel.right.open'));
                     }
                 }
             };

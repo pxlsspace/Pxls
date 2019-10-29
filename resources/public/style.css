@@ -1527,13 +1527,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
         right: -105%;
     }
 
-    body.panel-right-open .ui-bar {
-        right: initial;
-        width: initial;
-        transition: none;
-    }
-
-    body.panel-left-open .ui-bar {
+    body.panel-open .ui-bar {
         right: initial;
         width: initial;
         transition: none;
