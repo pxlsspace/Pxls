@@ -26,6 +26,21 @@ z-index:
 | General Styles
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
+/* SPOOKY */
+
+@font-face {
+    font-family: Hellvetica;
+    src: url(Hellvetica.ttf);
+}
+
+/* Because people still need to be able to see the rules */
+
+article[id="canvas-rules"], article[id="chat-rules"] {
+    font-family: sans-serif;
+}
+
+/* SPOOKY */
+
 html, body {
     margin: 0;
     width: 100%;
@@ -33,7 +48,7 @@ html, body {
     background-color: #CDCDCD;
     overflow: hidden;
     position: relative;
-    font-family: sans-serif;
+    font-family: Hellvetica, sans-serif;
     -webkit-text-size-adjust: 100%;
     -moz-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
@@ -917,11 +932,11 @@ header h1, header h2, header h3, header h4, header h5, header h6 {
     padding: 0;
 }
 
-.fas.fa-is-left, .far.fa-is-left {
+.fas.fa-is-left {
     margin-right: .25rem;
 }
 
-.fas.fa-is-right, .far.fa-is-right {
+.fas.fa-is-right {
     margin-left: .25rem;
 }
 
@@ -1012,7 +1027,6 @@ aside.panel {
 
 .panel-trigger {
     color: #000;
-    position: relative;
     /* AAAAAAAAAAAAAAAAAAAAAAAAAAA */
     text-shadow: 1px 1px 0 #AAA, -1px 1px 0 #AAA, 1px -1px 0 #AAA, -1px -1px 0 #AAA, 0px 1px 0 #AAA, 0px -1px 0 #AAA, -1px 0px 0 #AAA, 1px 0px 0 #AAA;
     display: inline-block;
@@ -1081,33 +1095,21 @@ article .body {
     margin: 0 !important;
 }
 
-body.panel-open .ui-bar {
+body.panel-right-open .ui-bar {
+    left: 0;
     width: 70%;
     transition: width ease-out .25s;
 }
 
-body.panel-open.panel-left .ui-bar {
+body.panel-left-open .ui-bar {
     right: 0;
+    width: 70%;
+    transition: width ease-out .25s;
 }
 
-body.panel-open.panel-left.panel-left-halfwidth .ui-bar,
-body.panel-open.panel-right.panel-right-halfwidth .ui-bar {
-    width: 50%;
-}
-
-body.panel-left.panel-right .ui-bar {
+body.panel-left-open.panel-right-open .ui-bar {
     left: 30%;
     width: 40%;
-}
-
-body.panel-left.panel-left-halfwidth.panel-right .ui-bar {
-    left: 50%;
-    width: 20%;
-}
-
-body.panel-left.panel-right.panel-right-halfwidth .ui-bar {
-    right: 50%;
-    width: 20%;
 }
 
 /* CHAT */
@@ -1244,7 +1246,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-.panel-trigger .has-notification {
+#message-icon.has-notification {
     color: #b20;
 }
 
@@ -1286,7 +1288,11 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     background-color: #feedd1 !important;
 }
 
-.panel-trigger .ping-counter {
+.panel-trigger[data-panel=chat] {
+    position: relative;
+}
+
+.panel-trigger[data-panel=chat] .ping-counter {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -1298,11 +1304,11 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     color: #ffa500;
 }
 
-.panel-trigger:not(.has-ping) .ping-counter {
+.panel-trigger[data-panel=chat]:not(.has-ping) .ping-counter {
     display: none;
 }
 
-.panel-trigger.has-ping {
+.panel-trigger[data-panel=chat].has-ping {
     margin-left: 6px;
 }
 
@@ -1444,56 +1450,6 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     color: #aaa;
 }
 
-/* Notifications */
-.notification {
-    margin: 15px 10px;
-    border-radius: 5px;
-    background-color: #f5f5f5;
-    border: 1px solid #8f8f8f;
-}
-
-.notification .notification-title {
-    height: 2rem;
-    line-height: 2rem;
-    font-size: 1.25rem;
-    font-weight: bold;
-    text-align: center;
-    white-space: pre;
-    overflow: hidden;
-    border-radius: 4px 4px 0 0;
-    background-color: #b8b8b8;
-    border-bottom: 1px solid #8f8f8f;
-}
-
-.notification .notification-footer {
-    height: 2rem;
-    line-height: 2rem;
-    font-size: .75rem;
-    font-weight: bold;
-    font-style: italic;
-    text-align: right;
-    color: #666;
-    white-space: pre;
-    overflow: hidden;
-    border-radius: 0 0 4px 4px;
-    background-color: #d6d6d6;
-    border-top: 1px solid #8f8f8f;
-    padding-right: .5rem;
-}
-
-.notification .notification-body {
-    padding: 10px 5px;
-    word-break: break-word;
-    white-space: pre-wrap;
-}
-
-.notification-footer .notification-expiry {
-    cursor: default;
-    color: #b66;
-    float: left;
-    margin-left: .5rem;
-}
-
 /*//////////////////////////*\
 | Mobile Styles
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
@@ -1578,7 +1534,13 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
         right: -105%;
     }
 
-    body.panel-open .ui-bar {
+    body.panel-right-open .ui-bar {
+        right: initial;
+        width: initial;
+        transition: none;
+    }
+
+    body.panel-left-open .ui-bar {
         right: initial;
         width: initial;
         transition: none;
