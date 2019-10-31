@@ -3495,8 +3495,10 @@ window.App = (function () {
                     }
 
                     let cbChatSettingsFontSize = $("#cbChatSettingsFontSize");
+                    let notifBody = document.querySelector('.panel[data-panel="notifications"] .panel-body');
                     cbChatSettingsFontSize.val(ls.get("chat.font-size") || 16);
                     self.elements.body.css("font-size", `${ls.get("chat.font-size") >> 0 || 16}px`);
+                    notifBody.style.fontSize = `${ls.get("chat.font-size") >> 0 || 16}px`;
                     $("#cbChatSettingsFontSizeConfirm").click(e => {
                         if (isNaN(cbChatSettingsFontSize[0].value)) {
                             alert.show("Invalid value. Expected a number between 1 and 72");
@@ -3507,6 +3509,7 @@ window.App = (function () {
                             } else {
                                 ls.set("chat.font-size", val);
                                 self.elements.body.css("font-size", `${val}px`);
+                                notifBody.style.fontSize = `${val}px`;
                             }
                         }
                     });
