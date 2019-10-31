@@ -132,7 +132,6 @@ A full list of contributors is available [here](https://github.com/xSke/Pxls/gra
 ## Licenses
 - This project includes icons from Font Awesome Free 5.9.0 by fontawesome - https://fontawesome.com
     - License: https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
-- For Halloween (October 31st), the Hellvetica font was used: https://hellveticafont.com/
 
 
 [place]: https://reddit.com/r/place/
