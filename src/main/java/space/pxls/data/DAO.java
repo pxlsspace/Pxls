@@ -1,6 +1,7 @@
 package space.pxls.data;
 
 import org.skife.jdbi.v2.sqlobject.Bind;
+import org.skife.jdbi.v2.sqlobject.GetGeneratedKeys;
 import org.skife.jdbi.v2.sqlobject.SqlQuery;
 import org.skife.jdbi.v2.sqlobject.SqlUpdate;
 import org.skife.jdbi.v2.sqlobject.customizers.RegisterMapper;
@@ -9,7 +10,7 @@ import java.io.Closeable;
 import java.sql.Timestamp;
 import java.util.List;
 
-@RegisterMapper({DBUser.Mapper.class, DBPixelPlacement.Mapper.class, DBPixelPlacementUser.Mapper.class, DBUserBanReason.Mapper.class, DBUserPixelCount.Mapper.class, DBUserPixelCountAllTime.Mapper.class, DBBanlog.Mapper.class, DBChatMessage.Mapper.class})
+@RegisterMapper({DBUser.Mapper.class, DBPixelPlacement.Mapper.class, DBPixelPlacementUser.Mapper.class, DBUserBanReason.Mapper.class, DBUserPixelCount.Mapper.class, DBUserPixelCountAllTime.Mapper.class, DBBanlog.Mapper.class, DBChatMessage.Mapper.class, DBNotification.Mapper.class})
 public interface DAO extends Closeable {
     @SqlUpdate("CREATE TABLE IF NOT EXISTS reports(" +
             "id INT NOT NULL PRIMARY KEY AUTO_INCREMENT," +
@@ -362,6 +363,32 @@ public interface DAO extends Closeable {
 
     @SqlUpdate("INSERT INTO `ip_log` (`user`, `ip`, `last_used`) VALUES (:user, INET6_ATON(:ip), null)")
     void insertIPLog(@Bind("user") int user, @Bind("ip") String ip);
+
+    @SqlUpdate("CREATE TABLE IF NOT EXISTS `notifications` (" +
+            "  `id`       INT NOT NULL PRIMARY KEY AUTO_INCREMENT," +
+            "  `time`     int UNSIGNED NOT NULL," +
+            "  `expiry`   int UNSIGNED DEFAULT NULL," +
+            "  `title`    TEXT CHARACTER SET utf8 NOT NULL," +
+            "  `content`  LONGTEXT CHARACTER SET utf8 NOT NULL," +
+            "  `who`      INT NOT NULL" +
+            ");")
+    void createNotificationsTable();
+
+    @SqlQuery("SELECT n.*,u.username AS who_name FROM `notifications` n LEFT OUTER JOIN `users` u ON u.id = n.who WHERE 1 ORDER BY n.time DESC;")
+    List<DBNotification> getAllNotifications();
+
+    @SqlQuery("SELECT n.*,u.username AS who_name FROM `notifications` n LEFT OUTER JOIN `users` u ON u.id = n.who WHERE UNIX_TIMESTAMP() < n.expiry OR n.expiry = 0 ORDER BY n.time DESC;")
+    List<DBNotification> getNonExpiredNotifications();
+
+    @SqlQuery("SELECT n.*,u.username AS who_name FROM `notifications` n LEFT OUTER JOIN `users` u ON u.id = n.who WHERE n.id=:id")
+    DBNotification getNotificationByID(@Bind("id") int notification_id);
+
+    @SqlUpdate("UPDATE `notifications` SET expiry=:expiry WHERE id=:id")
+    void setNotificationExpiry(@Bind("id") int notification_id, @Bind("expiry") long expiry);
+
+    @SqlUpdate("INSERT INTO `notifications` (`time`, `expiry`, `title`, `content`, `who`) VALUES (unix_timestamp(), :expiry, :title, :content, :who)")
+    @GetGeneratedKeys
+    int createNotification(@Bind("who") int creator_uid, @Bind("title") String title, @Bind("content") String content, @Bind("expiry") long expiry);
 
     void close();
 }

@@ -171,6 +171,27 @@ li.chat-line .user {
     color: #eee;
 }
 
+/* Notifications */
+.notification {
+    background-color: #3d3d3d;
+    border: 1px solid #111111;
+}
+
+.notification .notification-title {
+    background-color: #292929;
+    border-bottom: 1px solid #111111;
+}
+
+.notification .notification-footer {
+    color: #666;
+    background-color: #2e2e2e;
+    border-top: 1px solid #111111;
+}
+
+.notification-footer .notification-expiry {
+    color: #995050;
+}
+
 /* Mobile */
 
 @media (max-width: 768px) {

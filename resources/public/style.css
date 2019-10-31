@@ -913,11 +913,11 @@ header h1, header h2, header h3, header h4, header h5, header h6 {
     padding: 0;
 }
 
-.fas.fa-is-left {
+.fas.fa-is-left, .far.fa-is-left {
     margin-right: .25rem;
 }
 
-.fas.fa-is-right {
+.fas.fa-is-right, .far.fa-is-right {
     margin-left: .25rem;
 }
 
@@ -1008,6 +1008,7 @@ aside.panel {
 
 .panel-trigger {
     color: #000;
+    position: relative;
     /* AAAAAAAAAAAAAAAAAAAAAAAAAAA */
     text-shadow: 1px 1px 0 #AAA, -1px 1px 0 #AAA, 1px -1px 0 #AAA, -1px -1px 0 #AAA, 0px 1px 0 #AAA, 0px -1px 0 #AAA, -1px 0px 0 #AAA, 1px 0px 0 #AAA;
     display: inline-block;
@@ -1239,7 +1240,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-#message-icon.has-notification {
+.panel-trigger .has-notification {
     color: #b20;
 }
 
@@ -1281,11 +1282,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     background-color: #feedd1 !important;
 }
 
-.panel-trigger[data-panel=chat] {
-    position: relative;
-}
-
-.panel-trigger[data-panel=chat] .ping-counter {
+.panel-trigger .ping-counter {
     position: absolute;
     bottom: 0;
     left: 0;
@@ -1297,11 +1294,11 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     color: #ffa500;
 }
 
-.panel-trigger[data-panel=chat]:not(.has-ping) .ping-counter {
+.panel-trigger:not(.has-ping) .ping-counter {
     display: none;
 }
 
-.panel-trigger[data-panel=chat].has-ping {
+.panel-trigger.has-ping {
     margin-left: 6px;
 }
 
@@ -1441,6 +1438,56 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     border-bottom: 1px solid #000;
     text-align: center;
     color: #aaa;
+}
+
+/* Notifications */
+.notification {
+    margin: 15px 10px;
+    border-radius: 5px;
+    background-color: #f5f5f5;
+    border: 1px solid #8f8f8f;
+}
+
+.notification .notification-title {
+    height: 2rem;
+    line-height: 2rem;
+    font-size: 1.25rem;
+    font-weight: bold;
+    text-align: center;
+    white-space: pre;
+    overflow: hidden;
+    border-radius: 4px 4px 0 0;
+    background-color: #b8b8b8;
+    border-bottom: 1px solid #8f8f8f;
+}
+
+.notification .notification-footer {
+    height: 2rem;
+    line-height: 2rem;
+    font-size: .75rem;
+    font-weight: bold;
+    font-style: italic;
+    text-align: right;
+    color: #666;
+    white-space: pre;
+    overflow: hidden;
+    border-radius: 0 0 4px 4px;
+    background-color: #d6d6d6;
+    border-top: 1px solid #8f8f8f;
+    padding-right: .5rem;
+}
+
+.notification .notification-body {
+    padding: 10px 5px;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+.notification-footer .notification-expiry {
+    cursor: default;
+    color: #b66;
+    float: left;
+    margin-left: .5rem;
 }
 
 /*//////////////////////////*\

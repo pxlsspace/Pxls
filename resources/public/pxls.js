@@ -3594,7 +3594,7 @@ window.App = (function () {
                         });
                     }
 
-                    let contentSpan = self._processMessage(packet.message_raw);
+                    let contentSpan = self.processMessage('span', 'content', packet.message_raw);
 
                     self.elements.body.append(
                         crel('li', {'data-nonce': packet.nonce, 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`},
@@ -3620,8 +3620,8 @@ window.App = (function () {
                         }
                     }
                 },
-                _processMessage: str => {
-                    let toReturn = crel('span', {'class': 'content'}, str);
+                processMessage: (elem, elemClass, str) => {
+                    let toReturn = crel(elem, {'class': elemClass}, str);
 
                     try {
                         let list = anchorme(str, {emails: false, files: false, exclude: self._anchorme.fnExclude, attributes: [self._anchorme.fnAttributes], list: true});
@@ -4307,6 +4307,7 @@ window.App = (function () {
                 init: self.init,
                 _handleActionClick: self._handleActionClick,
                 clearPings: self.clearPings,
+                processMessage: self.processMessage,
             }
         })(),
         // this takes care of the countdown timer
@@ -4347,7 +4348,7 @@ window.App = (function () {
                     if (alertDelay < 0 && delta < Math.abs(alertDelay) && !self.hasFiredNotification) {
                         self.playAudio();
                         if (!self.focus) {
-                            notification.show(`Your next pixel will be available in ${Math.abs(alertDelay)} seconds!`);
+                            nativeNotifications.show(`Your next pixel will be available in ${Math.abs(alertDelay)} seconds!`);
                         }
                         setTimeout(() => {
                             uiHelper.setPlaceableText(1);
@@ -4393,7 +4394,7 @@ window.App = (function () {
                         setTimeout(() => {
                             self.playAudio();
                             if (!self.focus) {
-                                notification.show(`Your next pixel has been available for ${alertDelay} seconds!`);
+                                nativeNotifications.show(`Your next pixel has been available for ${alertDelay} seconds!`);
                             }
                             uiHelper.setPlaceableText(1);
                             self.hasFiredNotification = true;
@@ -4404,7 +4405,7 @@ window.App = (function () {
                     if (!self.hasFiredNotification) {
                         self.playAudio();
                         if (!self.focus) {
-                            notification.show("Your next pixel is available!");
+                            nativeNotifications.show("Your next pixel is available!");
                         }
                         uiHelper.setPlaceableText(1);
                         self.hasFiredNotification = true;
@@ -4800,7 +4801,7 @@ window.App = (function () {
             };
         })(),
         // this takes care of browser notifications
-        notification = (function () {
+        nativeNotifications = (function () {
             var self = {
                 init: function () {
                     try {
@@ -4829,6 +4830,72 @@ window.App = (function () {
                 init: self.init,
                 show: self.show
             }
+        })(),
+        notifications = (function() {
+            let self = {
+                elems: {
+                    body: document.querySelector('.panel[data-panel="notifications"] .panel-body'),
+                    bell: document.getElementById('notifications-icon'),
+                    pingCounter: document.getElementById('notifications-ping-counter')
+                },
+                init() {
+                    $.get("/notifications", function(data) {
+                        if (Array.isArray(data) && data.length) {
+                            data.forEach((elem) => self._handleNotif(elem));
+                            self._checkLatest(data[0].id);
+                        }
+                    }).fail(function() {
+                        console.error('Failed to get initial notifications from server');
+                    });
+                    socket.on("notification", (data) => {
+                        let notif = data && data.notification ? data.notification : false;
+                        if (notif) {
+                            self._handleNotif(notif, true);
+                            self._checkLatest(notif.id);
+                        }
+                    });
+                    $(window).on("pxls:panel:opened", (e, which) => {
+                        if (which === "notifications" && self.elems.body && self.elems.body.firstChild) {
+                            self.elems.bell.closest('.panel-trigger[data-panel]').classList.remove('has-ping');
+                            self.elems.bell.classList.remove('has-notification');
+                            ls.set('notifications.lastSeen', self.elems.body.firstChild.dataset.notificationId >> 0);
+                        }
+                    });
+                },
+                _checkLatest(id) {
+                    if (ls.get("notifications.lastSeen") >= id) return;
+                    if (self.elems.body.closest('.panel[data-panel]').classList.contains('open')) {
+                        ls.set("notifications.lastSeen", id);
+                    } else {
+                        self.elems.bell.closest('.panel-trigger[data-panel]').classList.add('has-ping');
+                        self.elems.bell.classList.add('has-notification');
+                    }
+                },
+                _handleNotif(notif, prepend=false) {
+                    if (notif === false) return;
+                    if (prepend && self.elems.body.firstChild) {
+                        self.elems.body.insertBefore(self.makeDomForNotification(notif), self.elems.body.firstChild);
+                    } else {
+                        crel(self.elems.body, self.makeDomForNotification(notif));
+                    }
+                },
+                makeDomForNotification(notification) {
+                    return crel('div', {'class': 'notification', 'data-notification-id': notification.id},
+                        crel('div', {'class': 'notification-title'}, notification.title),
+                        chat.processMessage('div', 'notification-body', notification.content),
+                        crel('div', {'class': 'notification-footer'},
+                            document.createTextNode(`Posted by ${notification.who}`),
+                            notification.expiry !== 0 ? crel('span', {'class': 'notification-expiry'},
+                                crel('i', {'class': 'far fa-clock fa-is-left'}),
+                                crel('span', {'title': moment.unix(notification.expiry).format('MMMM DD, YYYY, hh:mm:ss A')}, `Expires ${moment.unix(notification.expiry).format('MMM DD YYYY')}`)
+                            ) : null
+                        )
+                    );
+                }
+            };
+            return {
+                init: self.init
+            };
         })();
     // init progress
     query.init();
@@ -4848,7 +4915,8 @@ window.App = (function () {
     panels.init();
     coords.init();
     user.init();
-    notification.init();
+    nativeNotifications.init();
+    notifications.init();
     chat.init();
     // and here we finally go...
     board.start();
