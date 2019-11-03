@@ -4348,17 +4348,20 @@ window.App = (function () {
                             break;
                         }
                         case 'delete': {
+                            const doDelete = () => $.post('/admin/delete', {
+                                nonce: this.dataset.nonce
+                            }, () => {
+                                deleteWrapper.remove();
+                                alert.hide();
+                            }).fail(() => {
+                                alert.show('Failed to delete');
+                            });
+
+                            if (e.shiftKey === true) {
+                                return doDelete();
+                            }
                             let btnDelete = crel('button', {'class': 'button'}, 'Delete');
-                            btnDelete.onclick = () => {
-                                $.post('/admin/delete', {
-                                    nonce: this.dataset.nonce
-                                }, () => {
-                                    deleteWrapper.remove();
-                                    alert.hide();
-                                }).fail(() => {
-                                    alert.show('Failed to delete');
-                                });
-                            };
+                            btnDelete.onclick = () => doDelete();
                             let deleteWrapper = crel('div', {'class': 'chatmod-container'},
                                 crel('h3', 'Delete Message'),
                                 crel('h5', 'Message:'),
