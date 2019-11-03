@@ -149,6 +149,15 @@ li.chat-line .user {
     text-shadow: 1px 1px 0 #333, -1px 1px 0 #333, 1px -1px 0 #333, -1px -1px 0 #333, 0 1px 0 #333, 0 -1px 0 #333, -1px 0 0 #333, 1px 0 0 #333;
 }
 
+@keyframes -scrolled-flash {
+    from {
+        background-color: #5b5345;
+    }
+    to {
+        background-color: #58a78a;
+    }
+}
+
 /* Admin */
 
 .admin input {

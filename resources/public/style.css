@@ -877,7 +877,7 @@ header.transparent {
 
 header .fas {
     font-size: 2rem;
-    margin-top: .1rem;
+    margin-top: .2rem;
     cursor: pointer;
 }
 
@@ -1134,7 +1134,7 @@ ul.chat-body li.chat-line {
 }
 
 ul.chat-body li.chat-line:nth-child(odd) {
-    background: #d5d5d5;
+    background-color: #d5d5d5;
 }
 
 ul.chat-body li.chat-line:not(:last-child):not(:only-of-type) {
@@ -1244,7 +1244,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     font-family: Arial, Helvetica, sans-serif;
 }
 
-.panel-trigger .has-notification {
+.panel-trigger .has-notification, i.fas.has-notification, i.far.has-notification {
     color: #b20;
 }
 
@@ -1282,8 +1282,21 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 
 /* PINGS */
 
+@keyframes -scrolled-flash {
+    from {
+        background-color: #feedd1;
+    }
+    to {
+        background-color: #8ef7d1;
+    }
+}
+
 .chat-line.has-ping {
     background-color: #feedd1 !important;
+}
+
+.chat-line.has-ping.-scrolled-to {
+    animation: -scrolled-flash 150ms linear 1ms 4 alternate;
 }
 
 .panel-trigger .ping-counter {
@@ -1306,6 +1319,17 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     margin-left: 6px;
 }
 
+.popup ul.pings-list {
+    list-style: none;
+    margin-left: .5rem;
+    padding: 0;
+}
+
+.popup .pings-list li {
+    font-family: monospace;
+    white-space: pre;
+}
+
 /* CHAT ACTIONS POPUP */
 
 .popup {
@@ -1319,6 +1343,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     border: 1px solid #000;
     font-size: 1rem !important;
     line-height: 1rem !important;
+    overflow: hidden;
 }
 
 .popup.panels {
@@ -1326,18 +1351,21 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     max-height:99vh;
     max-width: 400px;
     min-height: 200px;
+    padding-bottom: .5rem;
 }
 
-.popup.panels .panels-wrapper {
-    display: flex;
+.popup.panels .details-wrapper {
+    width: 65%;
 }
 
-.popup.panels .panel-grow {
-    flex: 1 1 auto;
+.popup.panels .actions-wrapper {
+    width: 35%;
 }
 
-.popup.panels .panel-shrink {
-    flex: 0 1 auto;
+.popup.panels .pane {
+    display: inline-block;
+    height: 100%;
+    vertical-align: top;
 }
 
 .popup.panels header:first-of-type {
@@ -1345,13 +1373,13 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     border-top-right-radius: 5px;
 }
 
-.panels-wrapper p {
+.pane p {
     overflow-wrap: break-word;
     word-wrap: break-word;
     word-break: break-word;
 }
 
-.panels-wrapper ul.actions-list {
+.pane ul.actions-list {
     margin: 0;
     padding: 0;
     list-style: none;
@@ -1361,7 +1389,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     max-width: 100%;
 }
 
-.panels-wrapper ul.actions-list li[data-action] {
+.pane ul.actions-list li[data-action] {
     border-bottom: 1px solid #000;
     border-left: 1px solid #000;
     flex: 1 0 2em;
@@ -1371,22 +1399,21 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     padding: 0 1em;
 }
 
-.panels-wrapper .chat-timestamp-header {
+.pane .chat-timestamp-header {
     margin: 8px 0;
     text-align: center;
     color: #aaa;
  }
 
-.panels-wrapper ul.actions-list li[data-action]:hover {
+.pane ul.actions-list li[data-action]:hover {
     background-image: linear-gradient(0deg, #ddd, #bbb, #ddd);
 }
 
-.panels-wrapper ul.actions-list li[data-action]:not(:only-of-type):last-child {
-    border-bottom: none;
-    border-bottom-right-radius: 5px;
+.pane ul.actions-list li[data-action]:not(:only-of-type):last-child {
+    border-radius: 0 0 0 5px;
 }
 
-.panels-wrapper ul.actions-list li[data-action]:hover {
+.pane ul.actions-list li[data-action]:hover {
     cursor: pointer;
 }
 
@@ -1442,6 +1469,18 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     border-bottom: 1px solid #000;
     text-align: center;
     color: #aaa;
+}
+
+/* Chat settings tweaks */
+.chat-settings-wrapper label {
+    display: block;
+    cursor: pointer;
+    user-select: none;
+    margin: 6px 0;
+}
+
+.chat-settings-wrapper input:not([type=checkbox]) {
+    border: 1px solid #888;
 }
 
 /* Notifications */

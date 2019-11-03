@@ -1987,7 +1987,6 @@ window.App = (function () {
                                 self.switch(-1);
                             })
                     );
-                    uiHelper.updateUsernameColorDropdown(palette);
                 },
                 can_undo: false,
                 undo: function (evt) {
@@ -2568,6 +2567,7 @@ window.App = (function () {
                 _available: -1,
                 maxStacked: -1,
                 _alertUpdateTimer: false,
+                usernameColor: 0,
                 elements: {
                     stackCount: $("#placeableCount-bubble, #placeableCount-cursor"),
                     txtAlertLocation: $("#txtAlertLocation"),
@@ -2679,22 +2679,11 @@ window.App = (function () {
                         });
                     self.adjustColorBrightness(ls.get('brightness.enabled') === true ? colorBrightnessLevel : null); //ensure we clear if it's disabled on init
 
-                    $("#selInternalLinkAction")
-                        .val(String(ls.get('chat.internalClickDefault') >> 0))
-                        .change(function() {
-                            ls.set('chat.internalClickDefault', this.value >> 0);
-                        });
-
-                    self.elements.selUsernameColor
-                        .change(function() {
-                            socket.send({"type": "UserUpdate", updates: {NameColor: String(this.value >> 0)}});
-                        });
-
                     $(window).keydown(function (evt) {
                         switch (evt.key || evt.which) {
                             case "Escape":
                             case 27:
-                                const selector = $("#lookup, #prompt, #alert");
+                                const selector = $("#lookup, #prompt, #alert, .popup.panels");
                                 const openPanels = $(".panel.open");
                                 if (selector.is(":visible")) {
                                     selector.fadeOut(200);
@@ -2890,15 +2879,13 @@ window.App = (function () {
                 getAvailable() {
                     return self._available;
                 },
-                updateUsernameColorDropdown: palette => {
-                    self.elements.selUsernameColor.empty().append(
-                        palette.map((x,i) => crel('option', {value: i, 'data-idx': i, style: `background-color: ${x}`}, x))
-                    )[0].selectedIndex = user.getChatNameColor();
-                },
                 updateSelectedNameColor: idx => {
-
-                    self.elements.selUsernameColor[0].selectedIndex = idx >> 0;
-                    self.elements.selUsernameColor[0].style.backgroundColor = place.getPaletteColor(idx >> 0);
+                    self.usernameColor = idx >> 0;
+                    let selUsernameColor = document.querySelector('.username-color-picker');
+                    if (selUsernameColor) {
+                        selUsernameColor.selectedIndex = self.usernameColor;
+                        selUsernameColor.style.backgroundColor = place.getPaletteColor(self.usernameColor);
+                    }
                 }
             };
 
@@ -2911,8 +2898,8 @@ window.App = (function () {
                 setMax: self.setMax,
                 setDiscordName: self.setDiscordName,
                 updateAudio: self.updateAudio,
-                updateUsernameColorDropdown: self.updateUsernameColorDropdown,
                 updateSelectedNameColor: self.updateSelectedNameColor,
+                getUsernameColor: () => self.usernameColor >> 0,
             };
         })(),
         panels = (function() {
@@ -3020,8 +3007,13 @@ window.App = (function () {
                 stickToBottom: true,
                 repositionTimer: false,
                 pings: 0,
+                pingsList: [],
                 last_opened_panel: ls.get('chat.last_opened_panel') >> 0,
                 nonceLog: [],
+                typeahead: {
+                    confirmedSeen: []
+                },
+                ignored: [],
                 chatban: {
                     banStart: 0,
                     banEnd: 0,
@@ -3043,13 +3035,19 @@ window.App = (function () {
                     rate_limit_overlay: $(".chat-ratelimit-overlay"),
                     rate_limit_counter: $("#chat-ratelimit"),
                     chat_panel: $(".panel[data-panel=chat]"),
-                    chat_hint: $("#chat-hint")
+                    chat_hint: $("#chat-hint"),
+                    chat_settings_button: $("#btnChatSettings"),
+                    pings_button: $("#btnPings")
                 },
                 _anchorme: {
                     fnAttributes: urlObj => {},
                     fnExclude: urlObj => {}
                 },
                 TEMPLATE_ACTIONS: {
+                    ASK: {
+                        id: 0,
+                        pretty: "Ask"
+                    },
                     NEW_TAB: {
                         id: 1,
                         pretty: "Open in a new tab"
@@ -3064,6 +3062,7 @@ window.App = (function () {
                     }
                 },
                 init: () => {
+                    self.reloadIgnores();
                     socket.on('ack_client_update', e => {
                         if (e.updateType && e.updateValue) {
                             switch(e.updateType) {
@@ -3414,6 +3413,10 @@ window.App = (function () {
                         }
                     });
 
+                    $(window).on("pxls:chat:userIgnored", (e, who) => {
+                        Array.from(document.querySelectorAll(`.chat-line[data-author="${who}"]`)).forEach(x => x.remove());
+                    });
+
                     $(window).on("pxls:panel:opened", (e, which) => {
                         if (which === "chat") {
                             ls.set('chat.last_opened_panel', new Date/1e3 >> 0);
@@ -3473,22 +3476,45 @@ window.App = (function () {
                         ls.set('chat.pings-enabled', true);
                     }
 
-                    $("#cbChatSettings24h").prop("checked", ls.get('chat.24h') === true)
-                        .on('change', function(e) {
-                            ls.set('chat.24h', !!this.checked);
-                        });
-                    $("#cbChatSettingsBadgesToggle").prop("checked", ls.get('chat.text-icons-enabled') === true)
-                        .on('change', function(e) {
-                            ls.set('chat.text-icons-enabled', !!this.checked);
-                        });
-                    $("#cbChatSettingsPings").prop("checked", ls.get('chat.pings-enabled') === true)
-                        .on('change', function(e) {
-                            let isChecked = !!this.checked;
-                            ls.set('chat.pings-enabled', isChecked);
-                            if (!isChecked) {
-                                self.clearPings();
+                    self.elements.chat_settings_button[0].addEventListener('click', () => self.popChatSettings());
+
+                    self.elements.pings_button[0].addEventListener('click', function() {
+                        const closeHandler = function() {
+                            if (this && this.closest) {
+                                let toClose = this.closest('.popup.panels');
+                                if (toClose) toClose.remove();
                             }
-                        });
+                        };
+
+                        let popupWrapper = crel('div', {'class': 'popup panels'});
+                        let panelHeader = crel('header', {'style': 'text-align: center'},
+                            crel('div', {'class': 'left'}, crel('i', {'class': 'fas fa-times text-red', onclick: closeHandler})),
+                            crel('h2', 'Pings'),
+                            crel('div', {'class': 'right'})
+                        );
+                        let mainPanel = crel('div', {'class': 'pane'});
+                        let pingsList = crel('ul', {'class': 'pings-list'});
+
+                        crel(pingsList, self.pingsList.map(packet =>
+                            crel('li', packet.nonce)
+                        ));
+
+                        crel('div', {'class': 'pane'},
+                            crel('ul', {'class': 'pings-list'}, self.pingsList.map(packet =>
+                                crel('li', packet.nonce)
+                            ))
+                        );
+
+                        let popup = crel(popupWrapper, panelHeader, crel('div', {'class': 'pane'},
+                            crel('ul', {'class': 'pings-list'}, self.pingsList.map(packet => {
+                                    let _processed = self.processMessage('span', '', packet.message_raw);
+                                    return crel('li', {'title': _processed.textContent}, crel('i', {'class': 'fas fa-external-link-alt fa-is-left', 'style': 'font-size: .65rem; cursor: pointer;', 'data-nonce': packet.nonce, onclick: self._handlePingJumpClick}), `${packet.author}: `, _processed);
+                                })
+                            )
+                        ));
+                        document.body.appendChild(popup);
+                        self._positionPopupRelativeToX(popup, this);
+                    });
 
                     if (ls.get("chat.font-size") == null) {
                         ls.set("chat.font-size", 16);
@@ -3499,11 +3525,92 @@ window.App = (function () {
                     cbChatSettingsFontSize.val(ls.get("chat.font-size") || 16);
                     self.elements.body.css("font-size", `${ls.get("chat.font-size") >> 0 || 16}px`);
                     notifBody.style.fontSize = `${ls.get("chat.font-size") >> 0 || 16}px`;
-                    $("#cbChatSettingsFontSizeConfirm").click(e => {
-                        if (isNaN(cbChatSettingsFontSize[0].value)) {
+
+                    self.elements.body.on("scroll", e => {
+                        let obj = self.elements.body[0];
+                        self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
+                        if (self.stickToBottom) self.clearPings();
+                    });
+                },
+                reloadIgnores: () => self.ignored = (ls.get('chat.ignored') || '').split(','),
+                saveIgnores: () => ls.set('chat.ignored', (self.ignored || []).join(',')),
+                addIgnore: name => {
+                    if (name.toLowerCase().trim() !== user.getUsername().toLowerCase().trim() && !self.ignored.includes(name)) {
+                        self.ignored.push(name);
+                        self.saveIgnores();
+                        $(window).trigger('pxls:chat:userIgnored', name);
+                        return true;
+                    }
+                    return false;
+                },
+                removeIgnore: name => {
+                    let index = self.ignored.indexOf(name);
+                    if (index >= 0) {
+                        let spliced = self.ignored.splice(index, 1);
+                        self.saveIgnores();
+                        $(window).trigger('pxls:chat:userUnignored', spliced && spliced[0] ? spliced[0] : false);
+                        return spliced && spliced[0];
+                    }
+                    return false;
+                },
+                getIgnores: () => [].concat(self.ignored || []),
+                popChatSettings() {
+                    //dom generation
+                    let body = crel('div', {'class': 'chat-settings-wrapper'});
+
+                    let _cb24hTimestamps = crel('input', {'type': 'checkbox'});
+                    let lbl24hTimestamps = crel('label', {'style': 'display: block;'}, _cb24hTimestamps, '24 Hour Timestamps');
+
+                    let _cbPixelPlaceBadges = crel('input', {'type': 'checkbox'});
+                    let lblPixelPlaceBadges = crel('label', {'style': 'display: block;'}, _cbPixelPlaceBadges, 'Show pixel-placed badges');
+
+                    let _cbPings = crel('input', {'type': 'checkbox'});
+                    let lblPings = crel('label', {'style': 'display: block;'}, _cbPings, 'Enable pings');
+
+                    let _txtFontSize = crel('input', {'type': 'number', 'min': '1', 'max': '72'});
+                    let _btnFontSizeConfirm = crel('button', {'class': 'buton'}, crel('i', {'class': 'fas fa-check'}));
+                    let lblFontSize = crel('label', {'style': 'display: block;'}, 'Font Size: ', _txtFontSize, _btnFontSizeConfirm);
+
+                    let _selInternalClick = crel('select',
+                        Object.values(self.TEMPLATE_ACTIONS).map(action =>
+                            crel('option', {'value': action.id}, action.pretty)
+                        )
+                    );
+                    let lblInternalAction = crel('label', {'style': 'display: block;'}, 'Default internal link action click: ', _selInternalClick);
+
+                    let _selUsernameColor = crel('select', {'class': 'username-color-picker', 'style': 'font-family: monospace; font-size: 1.25rem; color: #FFFFFF; padding: 5px; border-radius: 5px;'},
+                        place.getPalette().map((x, i) =>
+                            place.getPalette().map((x,i) => crel('option', {value: i, 'data-idx': i, style: `background-color: ${x}`}, x))
+                        )
+                    );
+                    let lblUsernameColor = crel('label', {'style': 'display: block;'}, 'Username Color: ', _selUsernameColor);
+
+                    let _selIgnores = crel('select', {'class': 'user-ignores', 'style': 'font-family: monospace; padding: 5px; border-radius: 5px;'},
+                        self.getIgnores().sort((a, b) => a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase())).map(x =>
+                            crel('option', {'value': x}, x)
+                        )
+                    );
+                    let _btnUnignore = crel('button', {'class': 'button', 'style': 'margin-left: .5rem'}, 'Unignore');
+                    let lblIgnores = crel('label', 'Ignores: ', _selIgnores, _btnUnignore);
+                    let lblIgnoresFeedback = crel('label', {'style': 'display: none; margin-left: 1rem;'}, '');
+
+
+
+                    //events/scaffolding
+                    _selUsernameColor.selectedIndex = uiHelper.getUsernameColor() >> 0;
+                    _selUsernameColor.style.backgroundColor = place.getPaletteColor(_selUsernameColor.selectedIndex);
+                    _selUsernameColor.style.color = _selUsernameColor.selectedIndex === 0 ? `#000000` : `#FFFFFF`;
+                    _selUsernameColor.addEventListener('change', function() {
+                        socket.send({type: "UserUpdate", updates: {NameColor: String(this.value >> 0)}});
+                    });
+
+                    _txtFontSize.value = ls.get('chat.font-size') >> 0 || 16;
+                    _txtFontSize.addEventListener('change', function() {});
+                    _btnFontSizeConfirm.addEventListener('click', function() {
+                        if (isNaN(_txtFontSize.value)) {
                             alert.show("Invalid value. Expected a number between 1 and 72");
                         } else {
-                            let val = cbChatSettingsFontSize[0].value >> 0;
+                            let val = _txtFontSize.value >> 0;
                             if (val < 1 || val > 72) {
                                 alert.show("Invalid value. Expected a number between 1 and 72");
                             } else {
@@ -3514,10 +3621,70 @@ window.App = (function () {
                         }
                     });
 
-                    self.elements.body.on("scroll", e => {
-                        let obj = self.elements.body[0];
-                        self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
+                    _selInternalClick.selectedIndex = ls.get('chat.internalClickDefault') >> 0;
+                    _selInternalClick.addEventListener('change', function() {
+                        ls.set('chat.internalClickDefault', this.value >> 0);
                     });
+
+                    _cb24hTimestamps.checked = ls.get('chat.24h') === true;
+                    _cb24hTimestamps.addEventListener('change', function() {
+                        ls.set('chat.24h', this.checked === true);
+                    });
+
+                    _cbPixelPlaceBadges.checked = ls.get('chat.text-icons-enabled');
+                    _cbPixelPlaceBadges.addEventListener('change', function() {
+                        ls.set('chat.text-icons-enabled', this.checked === true);
+                    });
+
+                    _cbPings.checked = ls.get('chat.pings-enabled') === true;
+                    _cbPings.addEventListener('change', function() {
+                        ls.set('chat.pings-enabled', this.checked === true);
+                    });
+
+                    _btnUnignore.addEventListener('click', function() {
+                        if (self.removeIgnore(_selIgnores.value)) {
+                            _selIgnores.querySelector(`option[value="${_selIgnores.value}"]`).remove();
+                            lblIgnoresFeedback.innerHTML = 'User unignored.';
+                            lblIgnoresFeedback.style.color = '#0d0';
+                            lblIgnoresFeedback.style.display = 'block';
+                            setTimeout(() => lblIgnoresFeedback.style.display = 'none', 1500);
+                        } else {
+                            lblIgnoresFeedback.innerHTML = 'Failed to unignore user. Either they weren\'t actually ignored, or an error occurred. Contact a developer if the problem persists.';
+                            lblIgnoresFeedback.style.color = '#d00';
+                            lblIgnoresFeedback.style.display = 'block';
+                            setTimeout(() => lblIgnoresFeedback.style.display = 'none', 1500);
+                        }
+                    });
+
+                    //show everything
+                    alert.showElem(crel(body,
+                        crel('h3', 'Chat Settings'),
+                        lbl24hTimestamps,
+                        lblPixelPlaceBadges,
+                        lblPings,
+                        lblFontSize,
+                        lblInternalAction,
+                        lblUsernameColor,
+                        lblIgnores,
+                        lblIgnoresFeedback
+                    ));
+                },
+                _handlePingJumpClick: function() { //must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
+                    if (this && this.dataset && this.dataset.nonce) {
+                        self.scrollToNonce(this.dataset.nonce);
+                    }
+                },
+                scrollToNonce(nonce) {
+                    let elem = self.elements.body[0].querySelector(`.chat-line[data-nonce="${nonce}"]`);
+                    if (elem) {
+                        self._doScroll(elem);
+                        const ripAnim = function() {
+                            elem.removeEventListener('animationend', ripAnim);
+                            elem.classList.remove('-scrolled-to');
+                        };
+                        elem.addEventListener('animationend', ripAnim);
+                        elem.classList.add('-scrolled-to');
+                    }
                 },
                 isChatBanned: () => {
                     return self.chatban.permanent || (self.chatban.banEnd - moment.now() > 0);
@@ -3525,6 +3692,7 @@ window.App = (function () {
                 clearPings: () => {
                     self.elements.message_icon.removeClass('has-notification');
                     self.elements.panel_trigger.removeClass('has-ping');
+                    self.elements.pings_button.removeClass('has-notification');
                     self.pings = 0;
                 },
                 _numWithinDrift(needle, haystack, drift) {
@@ -3580,6 +3748,7 @@ window.App = (function () {
                             }
                         }
                     }
+                    if (self.ignored.indexOf(packet.author) >= 0) return;
                     let hasPing = ls.get('chat.pings-enabled') === true && user.isLoggedIn() && packet.message_raw.toLowerCase().split(' ').includes(`@${user.getUsername().toLowerCase()}`);
                     let when = moment.unix(packet.date);
                     let badges = crel('span', {'class': 'badges'});
@@ -3616,9 +3785,11 @@ window.App = (function () {
                     );
 
                     if (hasPing) {
+                        self.pingsList.push(packet);
                         if (!(panels.isOpen('chat') && self.stickToBottom || packet.date < self.last_opened_panel)) {
                             ++self.pings;
                             self.elements.panel_trigger.addClass('has-ping');
+                            self.elements.pings_button.addClass('has-notification');
                             // self.elements.ping_counter.text(self.pings);
                         }
                     }
@@ -3775,7 +3946,7 @@ window.App = (function () {
 
                         alert.showElem(crel(bodyWrapper,
                             crel('h3', {'class': 'text-orange'}, 'This link will overwrite your current template. What would you like to do?'),
-                            Object.values(self.TEMPLATE_ACTIONS).map(action =>
+                            Object.values(self.TEMPLATE_ACTIONS).map(action => action.id === 0 ? null :
                                 crel('label', {'style': 'display: block; margin: 3px 3px 3px 1rem; margin-left: 1rem;'},
                                     crel('input', {'type': 'radio', 'name': 'link-action-rb', 'data-action-id': action.id}),
                                     action.pretty
@@ -3842,19 +4013,20 @@ window.App = (function () {
                         };
 
                         let popupWrapper = crel('div', {'class': 'popup panels', 'data-popup-for': nonce});
-                        let panelWrapper = crel('div', {'class': 'panels-wrapper'});
                         let panelHeader = crel('header',
                             {'style': 'text-align: center;'},
                             crel('div', {'class': 'left'}, crel('i', {'class': 'fas fa-times text-red', onclick: closeHandler})),
                             crel('span', closest.dataset.author, badges),
                             crel('div', {'class': 'right'})
                         );
-                        let leftPanel = crel('div', {'class': 'panel-grow left-pane'});
-                        let rightPanel = crel('div', {'class': 'panel-shrink right-pane'});
+                        let leftPanel = crel('div', {'class': 'pane details-wrapper'});
+                        let rightPanel = crel('div', {'class': 'pane actions-wrapper'});
                         let actionsList = crel('ul', {'class': 'actions-list'});
 
                         let popupActions = crel('ul', {'class': 'popup-actions'});
                         let actionReport = crel('li', {'class': 'text-red', 'data-action': 'report', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Report');
+                        let actionMention = crel('li', {'data-action': 'mention', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Mention');
+                        let actionIgnore = crel('li', {'data-action': 'ignore', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Ignore');
                         let actionChatban = crel('li', {'data-action': 'chatban', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Chat (un)ban');
                         let actionPurgeUser = crel('li', {'data-action': 'purge', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Purge User');
                         let actionDeleteMessage = crel('li', {'data-action': 'delete', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Delete');
@@ -3864,6 +4036,8 @@ window.App = (function () {
                         crel(leftPanel, crel('p', {'style': 'margin-top: 3px; margin-left: 3px; text-align: left;'}, closest.querySelector('.content').textContent));
 
                         crel(actionsList, actionReport);
+                        crel(actionsList, actionMention);
+                        crel(actionsList, actionIgnore);
                         if (["MODERATOR", "DEVELOPER", "ADMIN", "TRIALMOD"].includes(user.getRole())) {
                             crel(actionsList, actionDeleteMessage);
                             crel(actionsList, actionPurgeUser);
@@ -3872,7 +4046,7 @@ window.App = (function () {
                         }
                         crel(rightPanel, actionsList);
 
-                        let popup = crel(popupWrapper, panelHeader, crel(panelWrapper, leftPanel, rightPanel));
+                        let popup = crel(popupWrapper, panelHeader, leftPanel, rightPanel);
                         document.body.appendChild(popup);
                         self._positionPopupRelativeToX(popup, this);
                     }
@@ -3956,6 +4130,22 @@ window.App = (function () {
                                 });
                             };
                             alert.showElem(chatReport, true);
+                            break;
+                        }
+                        case 'mention': {
+                            if (reportingTarget) {
+                                self.elements.input.val(self.elements.input.val() + `@${reportingTarget} `);
+                            } else console.warn('no reportingTarget');
+                            break;
+                        }
+                        case 'ignore': {
+                            if (reportingTarget) {
+                                if (chat.addIgnore(reportingTarget)) {
+                                    alert.show('User ignored. You can unignore from chat settings.');
+                                } else {
+                                    alert.show('Failed to ignore user. Either they\'re already ignored, or an error occurred. If the problem persists, contact a developer.');
+                                }
+                            } else console.warn('no reportingTarget');
                             break;
                         }
                         case 'chatban': {
@@ -4311,6 +4501,12 @@ window.App = (function () {
                 _handleActionClick: self._handleActionClick,
                 clearPings: self.clearPings,
                 processMessage: self.processMessage,
+                popChatSettings: self.popChatSettings,
+                saveIgnores: self.saveIgnores,
+                reloadIgnores: self.reloadIgnores,
+                addIgnore: self.addIgnore,
+                removeIgnore: self.removeIgnore,
+                getIgnores: self.getIgnores,
             }
         })(),
         // this takes care of the countdown timer
@@ -4974,6 +5170,7 @@ window.App = (function () {
         },
         banme: function () {
             ban.me(4);
-        }
+        },
+        chat,
     };
 })();

@@ -146,7 +146,10 @@
     <header class="panel-header">
         <div class="left"><i class="fas fa-times text-red panel-closer"></i></div>
         <h2><i class="fas fa-comment-alt fa-is-left fa-1_5x"></i>Chat</h2>
-        <div class="right"></div>
+        <div class="right">
+            <i class="fas fa-at" id="btnPings" title="Pings"></i>
+            <i class="fas fa-cogs" id="btnChatSettings" title="Settings"></i>
+        </div>
     </header>
     <div class="panel-body">
         <div class="chat-wrapper">
@@ -161,6 +164,7 @@
         </div>
     </div>
 </aside>
+
 
 <aside id="settings" data-panel="settings" class="panel right">
     <header class="panel-header">
@@ -280,23 +284,7 @@
             </header>
             <div class="pad-wrapper">
                 <div class="settingToggles">
-                    <label><input id="cbChatSettings24h" type="checkbox" />24 Hour Timestamps</label>
-                    <label><input id="cbChatSettingsBadgesToggle" type="checkbox" />Show pixel-placed badges</label>
-                    <label>Font Size: <input type="number" min="1" max="72" id="cbChatSettingsFontSize"> <button id="cbChatSettingsFontSizeConfirm" class="button"><i class="fas fa-check"></i></button></label>
-                    <label><input type="checkbox" id="cbChatSettingsPings" checked />Enable pings</label>
-                    <label>Default internal link click action:
-                        <select name="selInternalLinkAction" id="selInternalLinkAction">
-                            <option value="0">Ask</option>
-                            <option value="1">Open in new tab</option>
-                            <option value="2">Open in current tab</option>
-                            <option value="3">Only jump, don't replace template</option>
-                        </select>
-                    </label>
-                    <label>Username color
-                        <select name="selUsernameColor" id="selUsernameColor" style="font-family: monospace; font-size: 1.25rem; color: #FFFFFF; padding: 5px; border-radius: 5px;">
-                            <option value="-1" selected>Loading...</option>
-                        </select>
-                    </label>
+                    <p class="text-red">Moved to the top right of the chat panel. Click the cogs</p>
                 </div>
             </div>
         </article>
