@@ -4080,9 +4080,9 @@ window.App = (function () {
                         crel(actionsList, actionMention);
                         crel(actionsList, actionIgnore);
                         if (["MODERATOR", "DEVELOPER", "ADMIN", "TRIALMOD"].includes(user.getRole())) {
+                            crel(actionsList, actionChatban);
                             crel(actionsList, actionDeleteMessage);
                             crel(actionsList, actionPurgeUser);
-                            crel(actionsList, actionChatban);
                             crel(actionsList, actionModLookup);
                         }
                         crel(rightPanel, actionsList);
@@ -4190,28 +4190,6 @@ window.App = (function () {
                             break;
                         }
                         case 'chatban': {
-                            let txtBanReason = crel('textarea', {'placeholder': 'Enter a reason for the (un)ban.', 'required': 'true', onkeydown: e => e.stopPropagation()});
-
-                            let txtMessageRemoval = crel('input', {'type': 'text', 'required': 'true', 'placeholder': '-1 for all', onkeydown: e => e.stopPropagation()});
-                            let txtMessageRemovalError = crel('label', {'class': 'error-label'});
-
-                            let txtBanlength = crel('input', {'type': 'text', 'value': '600', onkeydown: e => e.stopPropagation()});
-                            let txtBanlengthError = crel('label', {'class': 'error-label'});
-
-                            let rbTemp = crel('input', {'type': 'radio', 'name': 'rbBanType', 'data-type': 'temp'});
-                            let rbPerma = crel('input', {'type': 'radio', 'name': 'rbBanType', 'data-type': 'perma'});
-                            let rbUnban = crel('input', {'type': 'radio', 'name': 'rbBanType', 'data-type': 'unban'});
-                            let rbBantypeError = crel('label', {'class': 'error-label'});
-
-                            let banlengthWrapper = crel('div', {'class': 'hidden'},
-                                crel('h5', 'Ban Length:'),
-                                crel('label', 'Banlength (seconds): ', txtBanlength),
-                                crel('br'),
-                                txtBanlengthError
-                            );
-
-                            rbPerma.onchange = rbTemp.onchange = rbUnban.onchange = e => banlengthWrapper.classList.toggle('hidden', !rbTemp.checked);
-
                             let messageTable = mode
                                 ? crel('table', {'class': 'chatmod-table'},
                                     crel('tr',
@@ -4221,6 +4199,10 @@ window.App = (function () {
                                     crel('tr',
                                         crel('th', 'Message: '),
                                         crel('td', {'title': reportingMessage}, `${reportingMessage.substr(0, 120)}${reportingMessage.length > 120 ? '...' : ''}`)
+                                    ),
+                                    crel('tr',
+                                        crel('th', 'User: '),
+                                        crel('td', reportingTarget)
                                     )
                                 )
                                 : crel('table', {'class': 'chatmod-table'},
@@ -4230,73 +4212,126 @@ window.App = (function () {
                                     )
                                 );
 
-                            let chatbanContainer = crel('form', {'class': 'chatmod-container', 'data-chat-nonce': this.dataset.nonce},
-                                crel('h3', 'Chatban'),
-                                crel('h5', mode ? 'Message:': 'Banning:'),
-                                messageTable,
-                                crel('h5', 'Ban Type'),
-                                crel('div', {'class': 'rbgroup'},
-                                    crel('label', rbTemp, 'Temporary Ban'),
-                                    crel('label', rbPerma, 'Permanent Ban'),
-                                    crel('label', rbUnban, 'Unban')
-                                ),
-                                rbBantypeError,
-                                banlengthWrapper,
-                                crel('h5', {'style': 'margin-left: -1rem'}, '(Un)ban Reason'),
-                                crel('div',
-                                    txtBanReason
-                                ),
-                                crel('h5', 'Message Removal'),
-                                crel('div',
-                                    crel('label', {'required': 'true'}, 'Removal Ammount: ', txtMessageRemoval),
-                                    crel('br'),
-                                    txtMessageRemovalError
-                                ),
-                                crel('div', {'class': 'buttons'},
-                                    crel('button', {'class': 'button', 'type': 'button', onclick: () => {alert.hide(); chatbanContainer.remove();}}, 'Cancel'),
-                                    crel('button', {'class': 'button'}, 'Ban')
+                            let banLengths = [['Unban', -3], ['Permanent', -1], ['Temporary', -2]];
+                            let _selBanLength = crel('select', {'name': 'selBanLength'},
+                                banLengths.map(lenPart =>
+                                    crel('option', {'value': lenPart[1]}, lenPart[0])
                                 )
                             );
+
+                            let _customLenWrap = crel('div', {'style': 'display: block; margin-top: .5rem'});
+                            let _selCustomLength = crel('select', {'name': 'selCustomLength', 'style': 'display: inline-block; width: auto;'},
+                                crel('option', {'value': '1'}, 'Seconds'),
+                                crel('option', {'value': '60'}, 'Minutes'),
+                                crel('option', {'value': '3600'}, 'Hours'),
+                                crel('option', {'value': '86400'}, 'Days')
+                            );
+                            let _txtCustomLength = crel('input', {'type': 'number', 'name': 'txtCustomLength', 'style': 'display: inline-block; width: auto;', 'min': '1', 'step': '1', 'value': '10'});
+
+                            let _selBanReason = crel('select',
+                                crel('option', 'Rule 3: Spam'),
+                                crel('option', 'Rule 1: Chat civility'),
+                                crel('option', 'Rule 5/6: NSFW'),
+                                crel('option', 'Rule 4: Copy/pastas'),
+                                crel('option', {'value': '0'}, 'Custom')
+                            );
+
+                            let _customReasonWrap = crel('div', {'style': 'display: none; margin-top: .5rem;'});
+                            let _txtCustomBanReason = crel('input', {'type': 'text', 'name': 'txtCustomReason', 'style': 'display: inline-block; width: auto;'});
+
+                            let _purgeWrap = crel('div', {'style': 'display: block;'});
+                            let _rbPurgeYes = crel('input', {'type': 'radio', 'name': 'rbPurge', 'checked': 'true'});
+                            let _rbPurgeNo = crel('input', {'type': 'radio', 'name': 'rbPurge'});
+
+                            let _reasonWrap = crel('div', {'style': 'display: block;'});
+
+                            let _btnCancel = crel('button', {'class': 'button', 'type': 'button', onclick: () => {chatbanContainer.remove(); alert.hide();}}, 'Cancel');
+                            let _btnOK = crel('button', {'class': 'button', 'type': 'submit'}, 'Ban');
+
+                            let chatbanContainer = crel('form', {'class': 'chatmod-container', 'data-chat-nonce': this.dataset.nonce},
+                                crel('h3', 'Chatban'),
+                                crel('h5', mode ? 'Banning:' : 'Message:'),
+                                messageTable,
+                                crel('h5', 'Ban Length'),
+                                _selBanLength,
+                                crel(_customLenWrap,
+                                    _txtCustomLength,
+                                    _selCustomLength
+                                ),
+                                crel(_reasonWrap,
+                                    crel('h5', 'Reason'),
+                                    _selBanReason,
+                                    crel(_customReasonWrap,
+                                        crel('label', 'Reason: ', _txtCustomBanReason)
+                                    )
+                                ),
+                                crel(_purgeWrap,
+                                    crel('h5', 'Purge Messages'),
+                                    crel('label', {'style': 'display: inline;'}, _rbPurgeYes, 'Yes'),
+                                    crel('label', {'style': 'display: inline;'}, _rbPurgeNo, 'No')
+                                ),
+                                crel('div', {'class': 'buttons'},
+                                    _btnCancel,
+                                    _btnOK
+                                )
+                            );
+
+                            _selBanLength.value = banLengths[2][1]; //10 minutes
+                            _selBanLength.addEventListener('change', function() {
+                                let isCustom = this.value === '-2';
+                                _customLenWrap.style.display = isCustom ? 'block' : 'none';
+                                _txtCustomLength.required = isCustom;
+
+                                let isUnban = _selBanLength.value === '-3';
+                                _reasonWrap.style.display = isUnban ? 'none' : 'block';
+                                _purgeWrap.style.display = isUnban ? 'none' : 'block';
+                                _btnOK.innerHTML = isUnban ? 'Unban' : 'Ban';
+                            });
+                            _selCustomLength.selectedIndex = 1; //minutes
+
+                            _selBanReason.addEventListener('change', function() {
+                                let isCustom = this.value === '0';
+                                _customReasonWrap.style.display = isCustom ? 'block' : 'none';
+                                _txtCustomBanReason.required = isCustom;
+                            });
+
+                            _txtCustomBanReason.onkeydown = e => e.stopPropagation();
+                            _txtCustomLength.onkeydown = e => e.stopPropagation();
+
                             chatbanContainer.onsubmit = e => {
                                 e.preventDefault();
-                                let selectedBanType = chatbanContainer.querySelector('[name=rbBanType]:checked');
-                                let type = selectedBanType ? selectedBanType.dataset.type : false;
-                                if (type === false) {
-                                    rbBantypeError.innerHTML = `Ban Type is required`;
-                                    return;
-                                } else {
-                                    rbBantypeError.innerHTML = ``;
-                                }
-
-                                if (/^-?[0-9]+$/.test(txtMessageRemoval.value)) {
-                                    txtMessageRemovalError.innerHTML = ``;
-                                } else {
-                                    txtMessageRemovalError.innerHTML = `Invalid removal amount`;
-                                    return;
-                                }
-
-                                if (type.toLowerCase().trim() === "temp") {
-                                    if (/^-?[0-9]+$/.test(txtBanlength.value)) {
-                                        txtBanlengthError.innerHTML = ``;
-                                    } else {
-                                        txtBanlengthError.innerHTML = `Invalid banlength`;
-                                        return;
-                                    }
-                                }
-
-                                let postArgs = {
-                                    type,
-                                    reason: txtBanReason.value,
-                                    removalAmount: txtMessageRemoval.value,
-                                    banLength: txtBanlength.value || 0
+                                let postData = {
+                                    type: 'temp',
+                                    reason: 'none provided',
+                                    removalAmount: _rbPurgeYes.checked ? -1 : 0,
+                                    banLength: 0
                                 };
 
-                                if (mode)
-                                    postArgs.nonce = this.dataset.nonce;
-                                else
-                                    postArgs.who = reportingTarget;
+                                if (_selBanReason.value === '0') { //custom
+                                    postData.reason = _txtCustomBanReason.value;
+                                } else {
+                                    postData.reason = _selBanReason.value;
+                                }
 
-                                $.post("/admin/chatban", postArgs, () => {
+                                if (_selBanLength.value === '-3') { //unban
+                                    postData.type = 'unban';
+                                    postData.reason = '(web shell unban)';
+                                    postData.banLength = -1;
+                                } else if (_selBanLength.value === '-2') { //custom
+                                    postData.banLength = (_txtCustomLength.value >> 0) * (_selCustomLength.value >> 0);
+                                } else if (_selBanLength.value === '-1') { //perma
+                                    postData.type = 'perma';
+                                    postData.banLength = 0;
+                                } else {
+                                    postData.banLength = _selBanLength.value >> 0;
+                                }
+
+                                if (mode)
+                                    postData.nonce = this.dataset.nonce;
+                                else
+                                    postData.who = reportingTarget;
+
+                                $.post("/admin/chatban", postData, () => {
                                     chatbanContainer.remove();
                                     alert.show("Chatban initiated");
                                 }).fail(() => {

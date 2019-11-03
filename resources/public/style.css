@@ -317,8 +317,18 @@ button.button.dark:disabled {
     width: 100%;
 }
 
-.chatmod-container label {
+.chatmod-container label:not(.inline) {
     display: block;
+}
+
+.chatmod-container select, .chatmod-container input:not([type=check]):not([type=radio]) {
+    display: block;
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #999;
+    font-family: monospace;
+    font-size: 1.5rem;
+    border-radius: 3px;
 }
 
 /*//////////////////////////*\
