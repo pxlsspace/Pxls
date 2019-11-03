@@ -1123,7 +1123,7 @@ body.panel-left.panel-right.panel-right-halfwidth .ui-bar {
     margin: 0;
     padding: 0;
     list-style: none;
-    height: calc(100% - 3rem);
+    height: calc(100% - 4.25rem);
     font-family: Arial, Helvetica, sans-serif;
 }
 
@@ -1220,8 +1220,41 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 .chat-wrapper .chat-controls {
     height: 3rem;
     position: absolute;
-    bottom: 5px;
+    bottom: calc(5px + 1.25rem);
     width: calc(100% - 16px);
+}
+
+@keyframes banner-fade {
+    from {
+        opacity: 100%;
+    }
+
+    to {
+        opacity: 0%;
+    }
+}
+
+.chat-wrapper .bottom-banner {
+    height: 1.25rem;
+    line-height: 1.25rem;
+    font-size: 1rem;
+    text-align: right;
+    font-style: italic;
+    opacity: 100%;
+}
+
+.chat-wrapper .bottom-banner.transparent {
+    opacity: 0%;
+}
+
+.chat-wrapper .bottom-banner.fade {
+    /* have to set animation-delay to 1ms here because our minifer is stripping 0 completely */
+    animation: banner-fade 1s ease-out 1ms 1 normal none running;
+}
+
+.chat-wrapper .bottom-banner.fade-rev {
+    /* have to set animation-delay to 1ms here because our minifer is stripping 0 completely */
+    animation: banner-fade 1s ease-in 1ms 1 reverse none running;
 }
 
 .chat-wrapper .chat-hints {

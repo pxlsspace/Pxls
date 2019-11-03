@@ -2567,6 +2567,16 @@ window.App = (function () {
                 _available: -1,
                 maxStacked: -1,
                 _alertUpdateTimer: false,
+                banner: {
+                    HTMLs: [
+                        crel('span', crel('i', {'class': 'fab fa-discord fa-is-left'}), ' We have a discord! Join here: ', crel('a', {'href': 'https://pxls.space/discord', 'target': '_blank'}, 'Discord Invite')).outerHTML,
+                        crel('span', {'style': 'font-size: .75rem'}, crel('i', {'class': 'fas fa-gavel fa-is-left'}), 'Chat is moderated, ensure you read the rules in the info panel.').outerHTML,
+                        crel('span', {'style': 'font-size: .8rem'}, crel('i', {'class': 'fas fa-question-circle fa-is-left'}), 'If you haven\'t already, make sure you read the FAQ top left!').outerHTML
+                    ],
+                    curElem: 0,
+                    intervalID: 0,
+                    timeout: 10000,
+                },
                 usernameColor: 0,
                 elements: {
                     stackCount: $("#placeableCount-bubble, #placeableCount-cursor"),
@@ -2577,6 +2587,7 @@ window.App = (function () {
                     themeSelect: $("#themeSelect"),
                     txtDiscordName: $("#txtDiscordName"),
                     selUsernameColor: $("#selUsernameColor"),
+                    bottomBanner: $("#bottom-banner"),
                 },
                 themes: [
                     {
@@ -2589,6 +2600,8 @@ window.App = (function () {
                     self._initStack();
                     self._initAudio();
                     self._initAccount();
+                    self._initBanner();
+
                     var useMono = ls.get("monospace_lookup");
                     if (typeof useMono === 'undefined') {
                         ls.set("monospace_lookup", true);
@@ -2819,6 +2832,34 @@ window.App = (function () {
                     $("#btnDiscordNameRemove").click(() => {
                         self.setDiscordName("");
                         self.handleDiscordNameSet();
+                    });
+                },
+                _initBanner() {
+                    self._bannerIntervalTick();
+                },
+                _bannerIntervalTick() {
+                    let nextElem = self.banner.HTMLs[self.banner.curElem++ % self.banner.HTMLs.length >> 0];
+                    let banner = self.elements.bottomBanner[0];
+                    const fadeEnd = function() {
+                        banner.classList.add('transparent');
+                        banner.removeEventListener('animationend', fadeEnd);
+                        requestAnimationFrame(() => {
+                            banner.classList.remove('fade');
+                            self.elements.bottomBanner[0].innerHTML = nextElem;
+                            requestAnimationFrame(() => {
+                                banner.classList.add('fade-rev');
+                                banner.addEventListener('animationend', fadeRevEnd);
+                            });
+                        });
+                    };
+                    const fadeRevEnd = function() {
+                        banner.removeEventListener('animationend', fadeRevEnd);
+                        banner.classList.remove('transparent', 'fade-rev');
+                        setTimeout(() => self._bannerIntervalTick(), self.banner.timeout);
+                    };
+                    requestAnimationFrame(() => {
+                        banner.addEventListener('animationend', fadeEnd);
+                        banner.classList.add('fade');
                     });
                 },
                 handleDiscordNameSet() {
