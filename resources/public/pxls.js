@@ -3078,7 +3078,8 @@ window.App = (function () {
                     chat_panel: $(".panel[data-panel=chat]"),
                     chat_hint: $("#chat-hint"),
                     chat_settings_button: $("#btnChatSettings"),
-                    pings_button: $("#btnPings")
+                    pings_button: $("#btnPings"),
+                    jump_button: $('#jump-to-bottom'),
                 },
                 _anchorme: {
                     fnAttributes: urlObj => {},
@@ -3557,6 +3558,10 @@ window.App = (function () {
                         self._positionPopupRelativeToX(popup, this);
                     });
 
+                    self.elements.jump_button[0].addEventListener('click', function() {
+                        self.elements.body[0].scrollTop = self.elements.body[0].scrollHeight;
+                    });
+
                     if (ls.get("chat.font-size") == null) {
                         ls.set("chat.font-size", 16);
                     }
@@ -3571,6 +3576,7 @@ window.App = (function () {
                         let obj = self.elements.body[0];
                         self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
                         if (self.stickToBottom) self.clearPings();
+                        self.elements.jump_button[0].style.display = self.stickToBottom ? 'none' : 'block';
                     });
                 },
                 reloadIgnores: () => self.ignored = (ls.get('chat.ignored') || '').split(','),

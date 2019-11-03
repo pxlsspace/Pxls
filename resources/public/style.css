@@ -44,6 +44,18 @@ html, body {
     box-sizing: border-box;
 }
 
+.float-left {
+    float: left !important;
+}
+
+.float-right {
+    float: right !important;
+}
+
+.float-clear {
+    clear: both !important;
+}
+
 .hidden {
     display: none !important;
 }
@@ -1323,6 +1335,25 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     text-decoration: line-through;
 }
 
+#jump-to-bottom {
+    text-align: center;
+    color: #fff;
+    line-height: 1.25rem;
+    font-size: .8rem;
+    font-weight: bold;
+    border-radius: 5px 5px 0 0;
+    background-color: #66a;
+    cursor: pointer;
+    position: absolute;
+    top: -1.25rem;
+    left: 0;
+    right: 0;
+}
+
+#jump-to-bottom:hover {
+    background-color: #5c5ca0;
+}
+
 /* PINGS */
 
 @keyframes -scrolled-flash {
@@ -1672,5 +1703,11 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 
     #chat-ratelimit {
         font-size: 1rem;
+    }
+
+    #jump-to-bottom {
+        line-height: 2rem;
+        font-size: 1.25rem;
+        top: -2rem;
     }
 }
