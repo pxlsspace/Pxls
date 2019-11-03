@@ -112,7 +112,7 @@ ul.chat-body li.chat-line {
 }
 
 ul.chat-body li.chat-line:nth-child(odd) {
-    background: #3f3f3f;
+    background-color: #3f3f3f;
 }
 
 ul.chat-body li.chat-line.server-action {
@@ -120,7 +120,7 @@ ul.chat-body li.chat-line.server-action {
 }
 
 .popup {
-    background: #333;
+    background-color: #333;
     color: #ccc;
 }
 
@@ -141,8 +141,8 @@ hr {
     background-image: linear-gradient(0,#2a2a2a,#3a3a3a,#2a2a2a);
 }
 
-.chat-line.has-ping {
-    background-color: #5b5345 !important;
+ul.chat-body .chat-line[data-nonce].has-ping {
+    background-color: #5b5345;
 }
 
 li.chat-line .user {
