@@ -45,7 +45,7 @@ public class PacketHandler {
 
         double x = 1;
         if (config.getBoolean("activityCooldown.enabled"))
-            x = server.getAuthedUsers().size();
+            x = server.getNonIdledUsersCount();
         double cooldown = 2.5 * Math.sqrt(x + 12) + 6.5;
         double multiplier = config.getDouble("activityCooldown.multiplier");
         cooldown *= multiplier;
@@ -267,6 +267,10 @@ public class PacketHandler {
                         ackPlace(user, cp.getX(), cp.getY());
                     }
                     if (!user.isOverridingCooldown()) {
+                        if (user.isIdled()) {
+                            user.setIdled(false);
+                            updateUserData();
+                        }
                         user.setLastPixelTime();
                         if (user.getStacked() > 0) {
                             user.setLastPlaceWasStack(true);
@@ -422,10 +426,8 @@ public class PacketHandler {
         server.broadcast(new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), nonces, reason));
     }
 
-    private void updateUserData() {
-        userData.run(() -> {
-            server.broadcast(new ServerUsers(server.getAuthedUsers().size()));
-        });
+    public void updateUserData() {
+        server.broadcast(new ServerUsers(App.getServer().getNonIdledUsersCount()));
     }
 
     private void sendCooldownData(WebSocketChannel channel, User user) {

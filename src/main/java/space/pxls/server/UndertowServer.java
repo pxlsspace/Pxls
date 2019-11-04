@@ -180,8 +180,10 @@ public class UndertowServer {
 
     public void broadcast(Object obj) {
         String json = App.getGson().toJson(obj);
-        for (WebSocketChannel channel : connections) {
-            sendRaw(channel, json);
+        if (connections != null) {
+            for (WebSocketChannel channel : connections) {
+                sendRaw(channel, json);
+            }
         }
     }
 
@@ -194,9 +196,11 @@ public class UndertowServer {
                 shadowbannedConnection.addAll(u.getConnections());
             }
         }
-        for (WebSocketChannel channel : connections){
-            if (!shadowbannedConnection.contains(channel)){
-                sendRaw(channel, json);
+        if (connections != null) {
+            for (WebSocketChannel channel : connections){
+                if (!shadowbannedConnection.contains(channel)){
+                    sendRaw(channel, json);
+                }
             }
         }
     }
@@ -221,6 +225,14 @@ public class UndertowServer {
 
     public ConcurrentHashMap<Integer, User> getAuthedUsers() {
         return this.authedUsers;
+    }
+
+    public int getNonIdledUsersCount() {
+        int nonIdles = 0;
+        for (User value : App.getServer().getAuthedUsers().values()) {
+            if (!value.isIdled()) ++nonIdles;
+        }
+        return nonIdles;
     }
 
     public Undertow getServer() {

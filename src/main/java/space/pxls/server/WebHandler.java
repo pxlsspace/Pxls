@@ -1197,7 +1197,7 @@ public class WebHandler {
         exchange.getResponseHeaders()
                 .put(Headers.CONTENT_TYPE, "application/json")
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
-        exchange.getResponseSender().send(App.getGson().toJson(new ServerUsers(App.getServer().getAuthedUsers().size())));
+        exchange.getResponseSender().send(App.getGson().toJson(new ServerUsers(App.getServer().getNonIdledUsersCount())));
     }
 
     public void whoami(HttpServerExchange exchange) {

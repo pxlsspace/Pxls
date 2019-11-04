@@ -31,6 +31,7 @@ public class User {
     private boolean placingLock = false;
     private boolean isPermaChatbanned = false;
     private boolean isRenameRequested = false;
+    private boolean isIdled = false;
     private String discordName;
     private String chatbanReason;
     private long cooldownExpiry;
@@ -98,8 +99,12 @@ public class User {
         return rem == 0;
     }
 
-    public void setLastPixelTime() {
+    public void setLastPixelTime(boolean flagNotIdle) {
         lastPixelTime = System.currentTimeMillis();
+        if (flagNotIdle) setIdled(false);
+    }
+    public void setLastPixelTime() {
+        setLastPixelTime(false);
     }
 
     public long getLastPixelTime() {
@@ -563,5 +568,13 @@ public class User {
 
     public String getChatbanReason() {
         return chatbanReason;
+    }
+
+    public boolean isIdled() {
+        return isIdled;
+    }
+
+    public void setIdled(boolean idled) {
+        isIdled = idled;
     }
 }

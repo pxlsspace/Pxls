@@ -112,8 +112,15 @@ public class App {
             @Override
             public void run() {
                 tickStackedPixels();
+                checkUserTimeout();
             }
         }, 0, 5000);
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                getServer().getPacketHandler().updateUserData();
+            }
+        }, 0, 600000); //10 minutes
 
         try {
             Path backupsDir = getStorageDir().resolve("backups/");
@@ -409,6 +416,14 @@ public class App {
                 } else {
                     System.out.printf("%s USERNAME NEW_USERNAME%n", token[0]);
                 }
+            } else if (token[0].equalsIgnoreCase("idleCheck")) {
+                try {
+                    checkUserTimeout();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            } else if (token[0].equalsIgnoreCase("sendUserData")) {
+                App.getServer().getPacketHandler().updateUserData();
             }
         } catch (RuntimeException e) {
             e.printStackTrace();
@@ -417,6 +432,7 @@ public class App {
 
     private static int stackMultiplier;
     private static int stackMaxStacked;
+    private static long userIdleTimeout;
 
     private static void loadConfig() {
         config = ConfigFactory.parseFile(new File("pxls.conf")).withFallback(ConfigFactory.load());
@@ -430,6 +446,7 @@ public class App {
         mapBackupTimer = new PxlsTimer(config.getDuration("board.backupInterval", TimeUnit.SECONDS));
         stackMultiplier = App.getConfig().getInt("stacking.cooldownMultiplier");
         stackMaxStacked = App.getConfig().getInt("stacking.maxStacked");
+        userIdleTimeout = App.getConfig().getDuration("userIdleTimeout", TimeUnit.MILLISECONDS);
 
         ChatFilter.getInstance().reload();
 
@@ -687,6 +704,26 @@ public class App {
         }
     }
 
+    public static void checkUserTimeout() {
+        Long loopStart = System.currentTimeMillis();
+        boolean anyIdled = false;
+        for (User user : server.getAuthedUsers().values()) {
+            if (user.isIdled()) continue;
+
+            Long toUse = user.getLastPixelTime() == 0L ? user.getInitialAuthTime() : user.getLastPixelTime();
+            Long delta = loopStart-toUse;
+            boolean isIdled = userIdleTimeout-delta <= 0;
+
+            if (isIdled) {
+                anyIdled = true;
+                user.setIdled(true);
+            }
+        }
+        if (anyIdled) {
+            App.getServer().getPacketHandler().updateUserData();
+        }
+    }
+
     public static void saveMap() {
         mapSaveTimer.run(App::saveMapForce);
         mapBackupTimer.run(App::saveMapBackup);
@@ -757,5 +794,9 @@ public class App {
 
     public static UndertowServer getServer() {
         return server;
+    }
+
+    public static long getUserIdleTimeout() {
+        return userIdleTimeout;
     }
 }
