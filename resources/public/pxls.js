@@ -3575,7 +3575,7 @@ window.App = (function () {
                     self.elements.body.on("scroll", e => {
                         let obj = self.elements.body[0];
                         self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
-                        if (self.stickToBottom) self.clearPings();
+                        if (self.stickToBottom && self.elements.chat_panel[0].classList.contains('open')) self.clearPings();
                         self.elements.jump_button[0].style.display = self.stickToBottom ? 'none' : 'block';
                     });
                 },
