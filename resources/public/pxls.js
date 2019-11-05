@@ -3480,6 +3480,15 @@ window.App = (function () {
                         }
                     });
 
+                    $(window).on("pxls:panel:closed", (e, which) => {
+                        if (which === "chat") {
+                            if (document.querySelector('.chat-settings-title')) {
+                                alert.showElem(crel('div'));
+                                alert.hide();
+                            }
+                        }
+                    });
+
                     $(window).on('pxls:user:loginState', (e, state) => {
                         if (!self.isChatBanned()) {
                             self.elements.rate_limit_overlay.hide();
@@ -3708,7 +3717,7 @@ window.App = (function () {
 
                     //show everything
                     alert.showElem(crel(body,
-                        crel('h3', 'Chat Settings'),
+                        crel('h3', {'class': 'chat-settings-title'}, 'Chat Settings'),
                         lbl24hTimestamps,
                         lblPixelPlaceBadges,
                         lblPings,
