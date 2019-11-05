@@ -3694,12 +3694,17 @@ window.App = (function () {
                             lblIgnoresFeedback.innerHTML = 'User unignored.';
                             lblIgnoresFeedback.style.color = '#0d0';
                             lblIgnoresFeedback.style.display = 'block';
-                            setTimeout(() => lblIgnoresFeedback.style.display = 'none', 1500);
+                            setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 3000);
+                        } else if (self.ignored.length === 0) {
+                            lblIgnoresFeedback.innerHTML = 'You haven\'t ignored any users. Congratulations!';
+                            lblIgnoresFeedback.style.color = '#d00';
+                            lblIgnoresFeedback.style.display = 'block';
+                            setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 3000);
                         } else {
                             lblIgnoresFeedback.innerHTML = 'Failed to unignore user. Either they weren\'t actually ignored, or an error occurred. Contact a developer if the problem persists.';
                             lblIgnoresFeedback.style.color = '#d00';
                             lblIgnoresFeedback.style.display = 'block';
-                            setTimeout(() => lblIgnoresFeedback.style.display = 'none', 1500);
+                            setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 5000);
                         }
                     });
 
