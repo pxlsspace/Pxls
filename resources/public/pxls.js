@@ -3626,9 +3626,7 @@ window.App = (function () {
                     let lblInternalAction = crel('label', {'style': 'display: block;'}, 'Default internal link action click: ', _selInternalClick);
 
                     let _selUsernameColor = crel('select', {'class': 'username-color-picker', 'style': 'font-family: monospace; font-size: 1.25rem; color: #FFFFFF; padding: 5px; border-radius: 5px;'},
-                        place.getPalette().map((x, i) =>
-                            place.getPalette().map((x,i) => crel('option', {value: i, 'data-idx': i, style: `background-color: ${x}`}, x))
-                        )
+                        place.getPalette().map((x, i) => crel('option', {value: i, 'data-idx': i, style: `background-color: ${x}`}, x))
                     );
                     let lblUsernameColor = crel('label', {'style': 'display: block;'}, 'Username Color: ', _selUsernameColor);
 
