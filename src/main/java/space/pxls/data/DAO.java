@@ -390,5 +390,21 @@ public interface DAO extends Closeable {
     @GetGeneratedKeys
     int createNotification(@Bind("who") int creator_uid, @Bind("title") String title, @Bind("content") String content, @Bind("expiry") long expiry);
 
+    @SqlUpdate("CREATE TABLE IF NOT EXISTS `chatbans` (" +
+            "    `id`        INT NOT NULL PRIMARY KEY AUTO_INCREMENT," +
+            "    `target`    INT NOT NULL," +
+            "    `initiator` INT NOT NULL," +
+            "    `when`      INT NOT NULL," +
+            "    `type`      VARCHAR(256) NOT NULL," +
+            "    `expiry`    INT," +
+            "    `reason`    TEXT NOT NULL," +
+            "    `purged`    TINYINT NOT NULL" +
+            ");")
+    void createChatbansTable();
+
+    @SqlUpdate("INSERT INTO `chatbans` VALUES (null, :target, :initiator, :when, :type, :expiry, :reason, :purged)")
+    @GetGeneratedKeys
+    int insertChatban(@Bind("target") int target_uid, @Bind("initiator") int initiator_uid, @Bind("when") long when_epoch_seconds, @Bind("type") String ban_type, @Bind("expiry") long expiry_epoch_seconds, @Bind("reason") String ban_reason, @Bind("purged") boolean had_purge);
+
     void close();
 }

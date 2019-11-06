@@ -4,16 +4,18 @@ public class Chatban {
     public final User target;
     public final User initiator;
     public final Type type;
-    public final long expiryTime;
+    public final long expiryTimeMS;
     public final String reason;
     public final boolean purge;
     public final int purgeAmount;
-    private Chatban(User target, User initiator, Type type, long expiryTime, String reason, boolean purge, int purgeAmount) {
+    public final long instantiatedMS;
+    private Chatban(User target, User initiator, Type type, long expiryTimeMS, String reason, boolean purge, int purgeAmount) {
         //assert target != null
+        instantiatedMS = System.currentTimeMillis();
         this.target = target;
         this.initiator = initiator;
         this.type = type;
-        this.expiryTime = expiryTime;
+        this.expiryTimeMS = expiryTimeMS;
         this.reason = reason;
         this.purge = purge;
         this.purgeAmount = purgeAmount;
@@ -59,12 +61,12 @@ public class Chatban {
     }
 
     public void commit(boolean doLog) {
-        target.chatban(this);
+        target.chatban(this, doLog);
     }
 
     @Override
     public String toString() {
-        return String.format("(chatban) %s: {Target: %s} {Initiator: %s} {Length: %s} {Purge: %s} {PurgeAmount: %s} {Reason: %s}", type.toString().toUpperCase(), target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), type == Type.PERMA ? "Perma" : expiryTime - System.currentTimeMillis(), purge, purgeAmount, reason);
+        return String.format("(chatban) %s: {Target: %s} {Initiator: %s} {Length: %s} {Purge: %s} {PurgeAmount: %s} {Reason: %s}", type.toString().toUpperCase(), target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), type == Type.PERMA ? "Perma" : expiryTimeMS - System.currentTimeMillis(), purge, purgeAmount, reason);
     }
 
     public enum Type {

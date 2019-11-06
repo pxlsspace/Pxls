@@ -290,9 +290,9 @@ public class User {
         switch (chatban.type) {
             case TEMP: {
                 this.isPermaChatbanned = false;
-                this.chatbanExpiryTime = chatban.expiryTime;
+                this.chatbanExpiryTime = chatban.expiryTimeMS;
                 this.chatbanReason = chatban.reason;
-                App.getServer().getPacketHandler().sendChatban(this, new ServerChatBan(false, chatban.reason, chatban.expiryTime));
+                App.getServer().getPacketHandler().sendChatban(this, new ServerChatBan(false, chatban.reason, chatban.expiryTimeMS));
                 App.getDatabase().updateUserChatbanReason(getId(), chatban.reason);
                 break;
             }
@@ -305,7 +305,7 @@ public class User {
             }
             case UNBAN: {
                 this.isPermaChatbanned = false;
-                this.chatbanExpiryTime = chatban.expiryTime;
+                this.chatbanExpiryTime = chatban.expiryTimeMS;
                 this.chatbanReason = chatban.reason;
                 App.getServer().getPacketHandler().sendChatban(this, new ServerChatBan(false, chatban.reason, 0L));
                 break;
@@ -325,6 +325,7 @@ public class User {
             } else {
                 App.getDatabase().adminLog(chatban.toString(), chatban.initiator.getId());
             }
+            App.getDatabase().insertChatban(chatban);
         }
     }
 

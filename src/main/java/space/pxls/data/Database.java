@@ -7,11 +7,11 @@ import org.skife.jdbi.v2.tweak.HandleCallback;
 import space.pxls.App;
 import space.pxls.server.Badge;
 import space.pxls.server.ChatMessage;
+import space.pxls.user.Chatban;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 
 import java.io.Closeable;
-import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -59,6 +59,7 @@ public class Database implements Closeable {
         getHandle().createChatReportsTable();
         getHandle().createIPLogTable();
         getHandle().createNotificationsTable();
+        getHandle().createChatbansTable();
     }
 
     private DAO getHandle() {
@@ -647,6 +648,16 @@ public class Database implements Closeable {
     }
 
     /* END NOTIFICATIONS */
+
+    /* CHATBAN LOGS */
+    public int insertChatban(int target_uid, int initiator_uid, long when_epoch_seconds, String ban_type, long expiry_epoch_seconds, String ban_reason, boolean had_purge) {
+        return getHandle().insertChatban(target_uid, initiator_uid, when_epoch_seconds, ban_type, expiry_epoch_seconds, ban_reason, had_purge);
+    }
+
+    public int insertChatban(Chatban chatban) {
+        return insertChatban(chatban.target != null ? chatban.target.getId() : 0, chatban.initiator != null ? chatban.initiator.getId() : 0, chatban.instantiatedMS / 1000L, chatban.type.toString(), chatban.expiryTimeMS / 1000L, chatban.reason, chatban.purge);
+    }
+    /* END CHATBAN LOGS */
 
     /**
      * Inserts the IP log pair. If the pair exists, `last_used` will be updated instead.
