@@ -15,7 +15,7 @@ z-index:
 19 - drawer opener in mobile
 20 - drawer in mobile mode
 21 - panels
-22 - lookup
+22 - lookup, emoji-picker
 22 - admin-check popup
 
 98 - lost connection
@@ -1354,6 +1354,17 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     background-color: #5c5ca0;
 }
 
+#emojiPanelTrigger {
+    position: absolute;
+    right: .5rem;
+    top: .5rem;
+    cursor: pointer;
+    color: #aaa;
+}
+#emojiPanelTrigger:hover {
+    color: #ccc;
+}
+
 /* PINGS */
 
 @keyframes -scrolled-flash {
@@ -1402,6 +1413,10 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
 .popup .pings-list li {
     font-family: monospace;
     white-space: pre;
+}
+
+.emoji-picker {
+    z-index: 22;
 }
 
 /* CHAT ACTIONS POPUP */

@@ -3080,7 +3080,9 @@ window.App = (function () {
                     chat_settings_button: $("#btnChatSettings"),
                     pings_button: $("#btnPings"),
                     jump_button: $('#jump-to-bottom'),
+                    emoji_button: $('#emojiPanelTrigger'),
                 },
+                picker: null,
                 _anchorme: {
                     fnAttributes: urlObj => {},
                     fnExclude: urlObj => {}
@@ -3587,6 +3589,15 @@ window.App = (function () {
                         if (self.stickToBottom && self.elements.chat_panel[0].classList.contains('open')) self.clearPings();
                         self.elements.jump_button[0].style.display = self.stickToBottom ? 'none' : 'block';
                     });
+
+                    self.picker = new EmojiButton();
+                    self.picker.on('emoji', emojiStr => self.elements.input[0].value += emojiStr);
+                    self.elements.emoji_button.on('click', function() {
+                        self.picker.pickerVisible ? self.picker.hidePicker() : self.picker.showPicker(this);
+                        let searchEl = self.picker.pickerEl.querySelector('.emoji-picker__search'); //searchEl is destroyed every time the picker closes. have to re-attach
+                        if (searchEl)
+                            searchEl.addEventListener('keydown', e => e.stopPropagation());
+                    })
                 },
                 reloadIgnores: () => self.ignored = (ls.get('chat.ignored') || '').split(','),
                 saveIgnores: () => ls.set('chat.ignored', (self.ignored || []).join(',')),
