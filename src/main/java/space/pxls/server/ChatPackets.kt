@@ -2,7 +2,7 @@ package space.pxls.server
 
 /* Structs */
 data class Badge(val displayName: String, val tooltip: String, val type: String, val cssIcon: String? = null)
-data class ChatMessage(val nonce: String, val author: String, val date: Long, val message_raw: String, val badges: List<Badge>? = null, val authorNameColor: Number/*, val message_parsed: String*/)
+data class ChatMessage(val nonce: String, val author: String, val date: Long, val message_raw: String, val badges: List<Badge>? = null, val authorNameClass: List<String>? = null, val authorNameColor: Number/*, val message_parsed: String*/)
 
 /* Sent by the client to the server */
 data class ClientChatMessage(val message: String)
