@@ -223,6 +223,21 @@ li.chat-line .user {
     background: transparent;
 }
 
+#typeahead {
+    background-color: #1d1d1d;
+}
+#typeahead ul li {
+    background-color: #2c2c2c;
+}
+
+#typeahead ul li:hover {
+    background-color: #3b3b3b;
+}
+
+#typeahead ul li.active {
+    background-color: #595959;
+}
+
 /* Admin */
 
 .admin input {
