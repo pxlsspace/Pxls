@@ -3826,6 +3826,8 @@ window.App = (function () {
                     }
 
                     let contentSpan = self.processMessage('span', 'content', packet.message_raw);
+                    let nameClasses = `user`;
+                    if (Array.isArray(packet.authorNameClass)) nameClasses += ` ${packet.authorNameClass.join(' ')}`;
 
                     self.elements.body.append(
                         crel('li', {'data-nonce': packet.nonce, 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`},
@@ -3836,7 +3838,7 @@ window.App = (function () {
                             document.createTextNode(' '),
                             badges,
                             document.createTextNode(' '),
-                            crel('span', {'class': 'user', style: `color: ${place.getPaletteColor(packet.authorNameColor)}`, onclick: self._popUserPanel, onmousemiddledown: self._addAuthorMentionToChatbox}, packet.author),
+                            crel('span', {'class': nameClasses, style: `color: ${place.getPaletteColor(packet.authorNameColor)}`, onclick: self._popUserPanel, onmousemiddledown: self._addAuthorMentionToChatbox}, packet.author),
                             document.createTextNode(': '),
                             contentSpan,
                             document.createTextNode(' ')

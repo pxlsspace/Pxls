@@ -1404,6 +1404,26 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
     white-space: pre;
 }
 
+@keyframes rainbow-name {
+    0% {
+        background-position: 5px 0%;
+    }
+    100% {
+        background-position: -500px 0%;
+    }
+}
+.user.rainbow-name {
+    display: inline-block;
+    background-image: linear-gradient(45deg, violet, #308dff, cyan, green, yellow, orange, red, orange, yellow, green, cyan, #308dff, violet, violet);
+    background-size: 500px 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+    animation: rainbow-name 4s linear 1ms infinite;
+    text-shadow: none !important;
+    transform: rotateZ(360deg); /* force rainbow rendering onto GPU if available */
+}
+
 /* CHAT ACTIONS POPUP */
 
 .popup {

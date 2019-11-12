@@ -527,7 +527,15 @@ public class User {
     }
 
     public int getChatNameColor() {
-        return this.chatNameColor;
+        return (App.getConfig().getBoolean("chat.devRainbow") && role.equals(Role.DEVELOPER)) ? 0xffffff : this.chatNameColor;
+    }
+
+    public List<String> getChatNameClasses() {
+        List<String> toReturn = new ArrayList<>();
+        if (App.getConfig().getBoolean("chat.devRainbow") && role.equals(Role.DEVELOPER)) {
+            toReturn.add("rainbow-name");
+        }
+        return toReturn.size() != 0 ? toReturn : null;
     }
 
     public void setChatNameColor(int colorIndex, boolean callDB) {

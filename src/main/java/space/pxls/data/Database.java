@@ -502,6 +502,7 @@ public class Database implements Closeable {
             String author = "CONSOLE";
             int nameColor = 0;
             String parsedMessage = dbChatMessage.content; //TODO https://github.com/atlassian/commonmark-java
+            List<String> nameClass = null;
             if (dbChatMessage.author_uid > 0) {
                 author = "$Unknown";
                 User temp = App.getUserManager().getByID(dbChatMessage.author_uid);
@@ -509,9 +510,10 @@ public class Database implements Closeable {
                     author = temp.getName();
                     badges = temp.getChatBadges();
                     nameColor = temp.getChatNameColor();
+                    nameClass = temp.getChatNameClasses();
                 }
             }
-            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, dbChatMessage.sent, App.getConfig().getBoolean("chat.filter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameColor));
+            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, dbChatMessage.sent, App.getConfig().getBoolean("chat.filter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameClass, nameColor));
         }
         return toReturn;
     }
