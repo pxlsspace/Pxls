@@ -3800,7 +3800,10 @@ window.App = (function () {
                         }
                     }
                     if (self.ignored.indexOf(packet.author) >= 0) return;
-                    let hasPing = ls.get('chat.pings-enabled') === true && user.isLoggedIn() && packet.message_raw.toLowerCase().split(' ').includes(`@${user.getUsername().toLowerCase()}`);
+                    let hasPing = ls.get('chat.pings-enabled') === true && user.isLoggedIn() && packet.message_raw
+                        .toLowerCase()
+                        .split(' ')
+                        .some((s) => s.search(new RegExp(`@${user.getUsername().toLowerCase()}(?![a-zA-Z0-9_\-])`)) == 0);
                     let when = moment.unix(packet.date);
                     let badges = crel('span', {'class': 'badges'});
                     if (Array.isArray(packet.badges)) {
