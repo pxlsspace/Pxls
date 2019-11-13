@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class User {
     private int id;
@@ -28,7 +29,7 @@ public class User {
     private boolean flaggedForCaptcha = true;
     private boolean justShowedCaptcha;
     private boolean lastPlaceWasStack = false;
-    private boolean placingLock = false;
+    private AtomicBoolean placingLock = new AtomicBoolean(false);
     private boolean isPermaChatbanned = false;
     private boolean isRenameRequested = false;
     private boolean isIdled = false;
@@ -552,19 +553,21 @@ public class User {
      * @return True if a lock was acquired, false otherwise.
      */
     public boolean tryGetPlacingLock() {
-        if (placingLock == true) return false;
-        return placingLock = true;
+        if (placingLock.compareAndSet(false, true)) {
+            return true;
+        }
+        return false;
     }
 
     public boolean isPlacingLocked() {
-        return placingLock;
+        return placingLock.get();
     }
 
     /**
      * Releases the placingLock.
      */
     public void releasePlacingLock() {
-        placingLock = false;
+        placingLock.set(false);
     }
 
     public boolean isPermaChatbanned() {
