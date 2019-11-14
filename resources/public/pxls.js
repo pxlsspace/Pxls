@@ -3387,16 +3387,15 @@ window.App = (function () {
                                     }
                                     case 'purge': {
                                         handling = true;
-                                        let usage = `/purge USER PURGE_AMOUNT PURGE_REASON\n/purge help`;
+                                        let usage = `/purge USER PURGE_REASON\n/purge help`;
                                         let help = [
                                             usage,
                                             `    USER:         The username`,
-                                            `    PURGE_AMOUNT: The amount of messages to purge`,
                                             `    PURGE_REASON: The reason for the purge`,
                                             ``,
                                             `    /purge GlowingSocc 10 spam`
                                         ].join('\n');
-                                        if (args.length < 3) {
+                                        if (args.length < 2) {
                                             if (args[0] && args[0].toLowerCase() === 'help') {
                                                 self.showHint(help);
                                             } else {
@@ -3404,16 +3403,9 @@ window.App = (function () {
                                             }
                                         } else {
                                             let user = args.shift(),
-                                                purgeAmount = args.shift(),
                                                 purgeReason = args.join(' ');
-                                            if (!isNaN(purgeAmount)) {
-                                                purgeAmount = purgeAmount >> 0;
-                                            } else {
-                                                return self.showHint(`Invalid purgeAmount. Expected a number, got ${purgeAmount}`, true);
-                                            }
                                             $.post("/admin/chatPurge", {
                                                 who: user,
-                                                amount: purgeAmount,
                                                 reason: purgeReason
                                             }, function () {
                                                 alert.show('Chatpurge initiated');
@@ -4402,10 +4394,9 @@ window.App = (function () {
                             break;
                         }
                         case 'purge': {
-                            let txtPurgeAmount = crel('input', {'type': 'text', 'required': 'true', 'placeholder': '-1 for all', onkeydown: e => e.stopPropagation()});
                             let lblPurgeAmountError = crel('label', {'class': 'hidden error-label'});
 
-                            let txtPurgeReason = crel('input', {'type': 'text', 'required': 'true', onkeydown: e => e.stopPropagation()});
+                            let txtPurgeReason = crel('input', {'type': 'text', onkeydown: e => e.stopPropagation()});
                             let lblPurgeReasonError = crel('label', {'class': 'hidden error-label'});
 
                             let btnPurge = crel('button', {'class': 'button', 'type': 'submit'}, 'Purge');
@@ -4433,12 +4424,6 @@ window.App = (function () {
                                 crel('h5', 'Selected Message'),
                                 messageTable,
                                 crel('div',
-                                    crel('h5', 'Number of messages to purge'),
-                                    txtPurgeAmount,
-                                    crel('br'),
-                                    lblPurgeAmountError
-                                ),
-                                crel('div',
                                     crel('h5', 'Purge Reason'),
                                     txtPurgeReason,
                                     crel('br'),
@@ -4452,31 +4437,8 @@ window.App = (function () {
                             purgeWrapper.onsubmit = e => {
                                 e.preventDefault();
 
-                                if (!/^-?[0-9]+$/.test(txtPurgeAmount.value)) {
-                                    lblPurgeAmountError.innerHTML = 'Invalid purge amount';
-                                    return;
-                                } else {
-                                    lblPurgeAmountError.innerHTML = '';
-                                }
-
-                                if (txtPurgeAmount.value.trim().length === 0) {
-                                    lblPurgeReasonError.innerHTML = 'Invalid reason';
-                                    return;
-                                } else {
-                                    lblPurgeReasonError.innerHTML = '';
-                                }
-
-                                let amount = txtPurgeAmount.value >> 0;
-                                if (!amount) {
-                                    lblPurgeAmountError.innerHTML = 'Value must be -1 or >0';
-                                    return;
-                                } else {
-                                    lblPurgeAmountError.innerHTML = '';
-                                }
-
                                 $.post("/admin/chatPurge", {
                                     who: reportingTarget,
-                                    amount: txtPurgeAmount.value,
                                     reason: txtPurgeReason.value
                                 }, function () {
                                     purgeWrapper.remove();
@@ -4485,7 +4447,6 @@ window.App = (function () {
                                     alert.show("Error sending purge.");
                                 });
                             };
-
 
                             alert.show(purgeWrapper, true);
                             break;

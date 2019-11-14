@@ -341,6 +341,9 @@ public interface DAO extends Closeable {
     @SqlUpdate("UPDATE chat_messages SET purged=1,purged_by=:who WHERE nonce=:nonce")
     void purgeChatMessageByNonce(@Bind("nonce") String nonce, @Bind("who") int purged_by_uid);
 
+    @SqlUpdate("UPDATE chat_messages SET purged=1,purged_by=:initiator WHERE author=:who")
+    void purgeChatUser(@Bind("who") int target_uid, @Bind("initiator") int initiator_uid);
+
     @SqlQuery("SELECT chat_ban_reason FROM users WHERE id=:who;")
     String getChatbanReasonForUser(@Bind("who") int uid);
 

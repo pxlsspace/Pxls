@@ -565,11 +565,7 @@ public class Database implements Closeable {
     }
 
     public void handlePurge(User target, User initiator, int amount, String reason, boolean broadcast) {
-        String partLimit = amount == Integer.MAX_VALUE ? "" : " LIMIT 0, " + amount + " ";
-        dbi.withHandle(handle -> handle.createStatement("UPDATE chat_messages SET purged=1,purged_by=:initiator WHERE nonce IN (  SELECT nonce FROM (  SELECT nonce FROM chat_messages WHERE author = :author ORDER BY sent DESC" + partLimit + " ) temp  );")
-                .bind("initiator", initiator != null ? initiator.getId() : 0)
-                .bind("author", target.getId())
-                .execute());
+        getHandle().purgeChatUser(target.getId(), initiator != null ? initiator.getId() : 0);
         adminLogServer(String.format("<%s, %s> purged %s messages from <%s, %s>%s.", (initiator == null) ? "CONSOLE" : initiator.getName(), (initiator == null) ? 0 : initiator.getId(), amount, target.getName(), target.getId(), ((reason != null) && (reason.length() > 0)) ? (" because: " + reason) : ""));
         if (broadcast) {
             App.getServer().getPacketHandler().sendChatPurge(target, initiator, amount, reason);

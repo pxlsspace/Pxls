@@ -428,19 +428,17 @@ public class WebHandler {
 
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         FormData.FormValue targetData = null;
-        FormData.FormValue amountData = null;
         FormData.FormValue reasonData = null;
 
         try {
             targetData = data.getFirst("who");
-            amountData = data.getFirst("amount");
             reasonData = data.getFirst("reason");
         } catch (NullPointerException npe) {
             sendBadRequest(exchange);
             return;
         }
 
-        if (targetData == null || amountData == null || reasonData == null) {
+        if (targetData == null) {
             sendBadRequest(exchange);
             return;
         }
@@ -451,21 +449,12 @@ public class WebHandler {
             return;
         }
 
-        Integer toPurge;
-        try {
-            toPurge = Integer.parseInt(amountData.getValue());
-        } catch (Exception e) {
-            sendBadRequest(exchange);
-            return;
+        String purgeReason = "$No reason provided.";
+        if (data.contains("reason")) {
+            purgeReason = data.getFirst("reason").getValue();
         }
 
-        if (toPurge == 0) {
-            sendBadRequest(exchange);
-            return;
-        }
-        if (toPurge == -1) toPurge = Integer.MAX_VALUE;
-
-        App.getDatabase().handlePurge(target, user, toPurge, reasonData.getValue(), true);
+        App.getDatabase().handlePurge(target, user, Integer.MAX_VALUE, purgeReason, true);
 
         exchange.setStatusCode(200);
         exchange.getResponseSender().send("{}");
