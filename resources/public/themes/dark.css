@@ -158,6 +158,86 @@ li.chat-line .user {
     }
 }
 
+.emoji-picker {
+    border: 1px solid #515151;
+    box-shadow: 0px 0px 3px 1px #1f1f1f;
+    background: #333333;
+}
+
+.emoji-picker__preview {
+    border-top: 1px solid #515151;
+}
+
+.emoji-picker__preview-name {
+    color: #ccc;
+}
+
+.emoji-picker__tab {
+    color: #ccc;
+}
+
+.emoji-picker__tab.active {
+    border-bottom: 3px solid #6fd1ff;
+    color: #6fd1ff;
+}
+
+.emoji-picker__tab-body h2 {
+    color: #ccc;
+}
+
+.emoji-picker__emojis.search-results {
+    height: 21rem;
+}
+
+.emoji-picker__emoji {
+    background: transparent;
+}
+
+.emoji-picker__emoji:hover {
+    background: #656565;
+}
+
+.emoji-picker__search-container input {
+    border: 1px solid #333;
+    background-color: #222;
+    color: #ddd;
+}
+
+.emoji-picker__search-icon {
+    color: #aaa;
+}
+
+.emoji-picker__search-not-found {
+    color: #666666;
+}
+
+.emoji-picker__variant-overlay {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+.emoji-picker__variant-popup {
+    background: #FFFFFF;
+}
+
+.emoji-picker__variant-popup-close-button {
+    background: transparent;
+}
+
+#typeahead {
+    background-color: #1d1d1d;
+}
+#typeahead ul li {
+    background-color: #2c2c2c;
+}
+
+#typeahead ul li:hover {
+    background-color: #3b3b3b;
+}
+
+#typeahead ul li.active {
+    background-color: #595959;
+}
+
 /* Admin */
 
 .admin input {

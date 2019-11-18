@@ -15,7 +15,7 @@ z-index:
 19 - drawer opener in mobile
 20 - drawer in mobile mode
 21 - panels
-22 - lookup
+22 - lookup, emoji-picker
 22 - admin-check popup
 
 98 - lost connection
@@ -1354,6 +1354,61 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     background-color: #5c5ca0;
 }
 
+#emojiPanelTrigger {
+    position: absolute;
+    right: .5rem;
+    top: .5rem;
+    cursor: pointer;
+    color: #aaa;
+}
+#emojiPanelTrigger:hover {
+    color: #ccc;
+}
+
+.chat-line img.emoji {
+    height: 1em;
+    width: 1em;
+    margin: 0 .05em 0 .1em;
+    vertical-align: -0.1em;
+}
+
+#typeahead {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 3rem;
+    margin-bottom: -1px;
+    padding: 5px;
+    background-color: #b9b9b9;
+    border-radius: 5px 5px 0 0;
+}
+
+#typeahead ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+#typeahead ul li {
+    font-size: 1rem;
+    line-height: 1.5rem;
+    cursor: pointer;
+    user-select: none;
+    text-indent: .75rem;
+    background-color: #a3a3a3;
+    border-radius: 4px;
+    padding: 3px;
+    margin: 4px 0;
+}
+
+#typeahead ul li:hover {
+    background-color: #949494;
+}
+
+#typeahead ul li.active {
+    background-color: #828282;
+}
+
 /* PINGS */
 
 @keyframes -scrolled-flash {
@@ -1422,6 +1477,10 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
     animation: rainbow-name 4s linear 1ms infinite;
     text-shadow: none !important;
     transform: rotateZ(360deg); /* force rainbow rendering onto GPU if available */
+}
+
+.emoji-picker {
+    z-index: 22;
 }
 
 /* CHAT ACTIONS POPUP */
