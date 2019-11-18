@@ -2332,6 +2332,9 @@ window.App = (function () {
                     const pos = board.fromScreen(clientX, clientY);
                     $.get("/lookup", pos, function (data) {
                         data = data || { x: pos.x, y: pos.y, bg: true };
+                        if (data && data.username) {
+                            typeaheadHelper.set('usernames', data.username, data.username);
+                        }
                         if (self.handle) {
                             self.handle(data);
                         } else {
@@ -3042,17 +3045,86 @@ window.App = (function () {
                 isOpen: self.isOpen
             };
         })(),
+        typeaheadHelper = (function() {
+            let self = {
+                databases: {},
+                addDatabase: (dbname, initial = {}) => {
+                    if (self.databases[dbname] != null) return;
+                    self.databases[dbname] = initial || {};
+                },
+                removeDatabase: (dbname) => {
+                    if (self.databases[dbname] == null) return false;
+                    return (delete self.databases[dbname]);
+                },
+                get: (dbname, start) => {
+                    let searchWith = start.toLowerCase().trim();
+                    let toReduce = Object.entries(self.databases[dbname] || []).filter(x => x[0].toLowerCase().includes(searchWith));
+                    let reduced = [];
+                    toReduce.forEach(entry => {
+                        if (Array.isArray(entry[1])) {
+                            entry[1].forEach(emoji => {
+                                if (!reduced.includes(emoji))
+                                    reduced.push(emoji);
+                            });
+                        } else {
+                            if (!reduced.includes(entry[1]))
+                                reduced.push(entry[1]);
+                        }
+                    });
+                    return reduced;
+                },
+                set: (dbname, key, value) => {
+                    if (!key || !value || typeof(key) !== 'string' || !key.trim() || typeof(value) !== 'string' || !value.trim()) return false;
+                    key = key.trim();
+                    value = value.trim();
+                    try {
+                        if (self.databases[dbname] == null)
+                            self.addDatabase(dbname);
+                        else
+                            self.databases[dbname][key] = value;
+                    } catch (ignored) {return false;}
+                    return true;
+                },
+                getDatabase: (dbname) => Object.assign({}, self.databases[dbname] || {}),
+                getDatabases: () => Object.assign({}, self.databases || {})
+            };
+            return {
+                addDatabase: self.addDatabase,
+                removeDatabase: self.removeDatabase,
+                get: self.get,
+                set: self.set,
+                getDatabase: self.getDatabase,
+                getDatabases: self.getDatabases,
+            }
+        })(),
         chat = (function() {
             let self = {
                 seenHistory: false,
                 stickToBottom: true,
                 repositionTimer: false,
                 pings: 0,
+                graphemeSplitter: null,
                 pingsList: [],
                 last_opened_panel: ls.get('chat.last_opened_panel') >> 0,
                 nonceLog: [],
                 typeahead: {
-                    confirmedSeen: []
+                    suggesting: false,
+                    suggestingType: '',
+                    triggerChar: '',
+                    triggers: {
+                        ':': {
+                            hasPair: true,
+                            type: 'emoji'
+                        },
+                        '@': {
+                            hasPair: false,
+                            type: 'usernames'
+                        }
+                    },
+                    cancels: [' '],
+                    highlightedIndex: 0,
+                    lastLength: false,
+                    expectingUpdate: false,
                 },
                 ignored: [],
                 chatban: {
@@ -3080,7 +3152,11 @@ window.App = (function () {
                     chat_settings_button: $("#btnChatSettings"),
                     pings_button: $("#btnPings"),
                     jump_button: $('#jump-to-bottom'),
+                    emoji_button: $('#emojiPanelTrigger'),
+                    typeahead: $('#typeahead'),
+                    typeahead_list: $('#typeahead ul'),
                 },
+                picker: null,
                 _anchorme: {
                     fnAttributes: urlObj => {},
                     fnExclude: urlObj => {}
@@ -3104,6 +3180,12 @@ window.App = (function () {
                     }
                 },
                 init: () => {
+                    if (window.emojiDB) {
+                        Object.entries(window.emojiDB).sort((a,b) => a[0].toLocaleLowerCase().localeCompare(b[0].toLocaleLowerCase())).forEach(emojiEntry => {
+                            typeaheadHelper.set('emoji', emojiEntry[0], emojiEntry[1].char);
+                        });
+                    }
+                    self.graphemeSplitter = new GraphemeSplitter();
                     self.reloadIgnores();
                     socket.on('ack_client_update', e => {
                         if (e.updateType && e.updateValue) {
@@ -3279,6 +3361,164 @@ window.App = (function () {
 
                     self.elements.rate_limit_overlay.hide();
 
+                    let triggersCache = Object.keys(self.typeahead.triggers);
+                    self.elements.input[0].addEventListener('keyup', function(event) {
+                        switch(event.key || event.code || event.which || event.charCode) {
+                            case 'Escape':
+                            case 27: {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                event.stopImmediatePropagation();
+                                self.typeahead.suggesting = false;
+                                self.elements.typeahead[0].style.display = 'none';
+                                break;
+                            }
+                            case 'Tab':
+                            case 9: {
+                                if (self.typeahead.suggesting) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    event.stopImmediatePropagation();
+                                    let nextIndex = self.typeahead.highlightedIndex + (event.shiftKey ? -1 : 1); //if we're holding shift, walk backwards (up).
+                                    let children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
+                                    if (event.shiftKey && nextIndex < 0) { //if we're holding shift, we're walking backwards and need to check underflow.
+                                        nextIndex = children.length-1;
+                                    } else if (nextIndex >= children.length) {
+                                        nextIndex = 0;
+                                    }
+                                    children[self.typeahead.highlightedIndex].classList.remove('active');
+                                    children[nextIndex].classList.add('active');
+                                    self.typeahead.highlightedIndex = nextIndex;
+                                    return;
+                                }
+                                break;
+                            }
+                            case 'ArrowUp':
+                            case 38: {
+                                if (self.typeahead.suggesting) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    event.stopImmediatePropagation();
+                                    let nextIndex = self.typeahead.highlightedIndex - 1;
+                                    let children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
+                                    if (nextIndex < 0) {
+                                        nextIndex = children.length-1;
+                                    }
+                                    children[self.typeahead.highlightedIndex].classList.remove('active');
+                                    children[nextIndex].classList.add('active');
+                                    self.typeahead.highlightedIndex = nextIndex;
+                                    return;
+                                }
+                                break;
+                            }
+                            case 'ArrowDown':
+                            case 40: {
+                                if (self.typeahead.suggesting) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    event.stopImmediatePropagation();
+                                    let nextIndex = self.typeahead.highlightedIndex + 1;
+                                    let children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
+                                    if (nextIndex >= children.length) {
+                                        nextIndex = 0;
+                                    }
+                                    children[self.typeahead.highlightedIndex].classList.remove('active');
+                                    children[nextIndex].classList.add('active');
+                                    self.typeahead.highlightedIndex = nextIndex;
+                                    return;
+                                }
+                                break;
+                            }
+                            case 'ArrowLeft':
+                            case 37:
+                            case 'ArrowRight':
+                            case 39:
+                            case 'Backspace':
+                            case 8: {
+                                //look in to scanning left from selectionStart, seeing if a trigger exists, and flag suggesting.
+                                break;
+                            }
+                            case 'Enter':
+                            case 13: {
+                                if (self.typeahead.suggesting) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    event.stopImmediatePropagation();
+                                    let selected = self.elements.typeahead_list[0].querySelector('li:not(.no-results).active');
+                                    if (selected) {
+                                        self._handleTypeaheadInsert(selected);
+                                    } else {
+                                        let topResult = self.elements.typeahead_list[0].querySelector('li:not(.no-results):first-child');
+                                        if (topResult) {
+                                            self._handleTypeaheadInsert(topResult);
+                                        }
+                                    }
+                                    return;
+                                }
+                                break;
+                            }
+                        }
+
+                        let graphemes = self.graphemeSplitter.splitGraphemes(this.value);
+                        if (self.typeahead.lastLength === graphemes.length) return;
+                        self.typeahead.lastLength = graphemes.length;
+                        let lastChar = graphemes[graphemes.length-1];
+
+                        if (self.typeahead.suggesting) {
+                            let isCancelChar = self.typeahead.cancels.includes(lastChar);
+                            if (!graphemes.length || isCancelChar) {
+                                self.resetTypeahead();
+                            } else {
+                                self.typeahead.suggesting = true;
+                            }
+                        } else {
+                            for (let trigger of triggersCache) {
+                                if (trigger === lastChar) {
+                                    self.typeahead.suggesting = true;
+                                    self.typeahead.suggestingType = self.typeahead.triggers[trigger].type;
+                                    self.typeahead.triggerChar = trigger;
+                                    self.typeahead.triggerStart = graphemes.length-1;
+                                    break;
+                                }
+                            }
+                        }
+                        if (self.typeahead.suggesting) {
+                            let startIndex = self.typeahead.triggerStart;
+                            let endIndex = graphemes.length;
+                            let searchStartIndex = startIndex+1;
+                            let searchEndIndex = endIndex; //we separate these because we want to search for the text between our trigger and optional terminator, but we want to replace the full length.
+
+                            // Check if this specific trigger has an ending pair we need to care about (e.g. optional closing ':' on emojis)
+                            if (self.typeahead.triggers[self.typeahead.triggerChar].hasPair) {
+                                if (graphemes.length-1 > self.typeahead.triggerStart && lastChar === self.typeahead.triggerChar) {
+                                    searchEndIndex -= 1; //if we're past the trigger index and our lastChar is our closing pair, subtract 1 from endIndex so that we only search for text within the pair.
+                                }
+                            }
+
+                            let toGet = graphemes.slice(searchStartIndex, searchEndIndex).join('');
+                            let got = [];
+                            try {
+                                got = typeaheadHelper.get(self.typeahead.suggestingType, toGet);
+                            } catch (e) {
+                                console.error('Failed to get typeahead suggestions, defaulting to zero', e);
+                            }
+                            self.typeahead.highlightedIndex = 0;
+                            if (!got.length) {
+                                self.elements.typeahead_list[0].innerHTML = `<li class="no-results">No Results</li>`;
+                            } else {
+                                self.elements.typeahead_list[0].innerHTML = ``;
+                                let prepend = self.typeahead.triggerChar === '@' ? '@' : '';
+                                let LIs = got.slice(0, 5).map(x =>
+                                    crel('li', {'data-insert': `${prepend}${x} `, 'data-start': startIndex, 'data-end': endIndex, onclick: self._handleTypeaheadInsert}, `${prepend}${x}`)
+                                );
+                                LIs[0].classList.add('active');
+                                crel(self.elements.typeahead_list[0], LIs);
+                            }
+                        }
+                        self.elements.typeahead[0].style.display = self.typeahead.suggesting ? 'block' : 'none';
+                        document.body.classList.toggle('typeahead-open', self.typeahead.suggesting);
+                    });
+
                     let commandsCache = [['tempban', '/tempban  USER  BAN_LENGTH  SHOULD_PURGE  BAN_REASON'], ['permaban', '/permaban  USER  SHOULD_PURGE  BAN_REASON'], ['purge', '/purge  USER  PURGE_AMOUNT  PURGE_REASON']];
                     self.elements.input.on('keydown', e => {
                         e.stopPropagation();
@@ -3421,7 +3661,7 @@ window.App = (function () {
                                 }
                             }
                             e.preventDefault();
-                            if (!handling) {
+                            if (!self.typeahead.suggesting && !handling) {
                                 self._send(self.elements.input[0].value);
                                 self.elements.input.val("");
                             }
@@ -3579,6 +3819,36 @@ window.App = (function () {
                         if (self.stickToBottom && self.elements.chat_panel[0].classList.contains('open')) self.clearPings();
                         self.elements.jump_button[0].style.display = self.stickToBottom ? 'none' : 'block';
                     });
+
+                    self.picker = new EmojiButton();
+                    self.picker.on('emoji', emojiStr => self.elements.input[0].value += emojiStr);
+                    self.elements.emoji_button.on('click', function() {
+                        self.picker.pickerVisible ? self.picker.hidePicker() : self.picker.showPicker(this);
+                        let searchEl = self.picker.pickerEl.querySelector('.emoji-picker__search'); //searchEl is destroyed every time the picker closes. have to re-attach
+                        if (searchEl)
+                            searchEl.addEventListener('keydown', e => e.stopPropagation());
+                    })
+                },
+                _handleTypeaheadInsert: function(elem) {
+                    if (this instanceof HTMLElement) elem = this;
+                    else if (!(elem instanceof HTMLElement)) return console.warn('Got non-elem on handleTypeaheadInsert: %o', elem);
+                    let start = parseInt(elem.dataset.start),
+                        end = parseInt(elem.dataset.end),
+                        toInsert = elem.dataset.insert || "";
+                    if (!toInsert || start >= end) {
+                        return console.warn('Got invalid data on elem %o.');
+                    }
+                    let graphemes = self.graphemeSplitter.splitGraphemes(self.elements.input[0].value);
+                    let startText = graphemes.slice(0, start).join(''),
+                        endText = graphemes.slice(end).join('');
+                    self.elements.input[0].value = `${startText}${toInsert}${endText}`;
+                    self.resetTypeahead();
+                },
+                resetTypeahead: () => {
+                    self.typeahead.triggerStart = 0;
+                    self.typeahead.suggesting = false;
+                    self.elements.typeahead[0].style.display = 'none';
+                    self.elements.typeahead_list[0].innerHTML = '';
                 },
                 reloadIgnores: () => self.ignored = (ls.get('chat.ignored') || '').split(','),
                 saveIgnores: () => ls.set('chat.ignored', (self.ignored || []).join(',')),
@@ -3799,6 +4069,7 @@ window.App = (function () {
                             }
                         }
                     }
+                    typeaheadHelper.set('usernames', packet.author, packet.author);
                     if (self.ignored.indexOf(packet.author) >= 0) return;
                     let hasPing = ls.get('chat.pings-enabled') === true && user.isLoggedIn() && packet.message_raw
                         .toLowerCase()
@@ -3821,6 +4092,8 @@ window.App = (function () {
                     }
 
                     let contentSpan = self.processMessage('span', 'content', packet.message_raw);
+                    twemoji.parse(contentSpan);
+                    //TODO basic markdown
                     let nameClasses = `user`;
                     if (Array.isArray(packet.authorNameClass)) nameClasses += ` ${packet.authorNameClass.join(' ')}`;
 
@@ -5235,5 +5508,6 @@ window.App = (function () {
             ban.me(4);
         },
         chat,
+        typeaheadHelper,
     };
 })();
