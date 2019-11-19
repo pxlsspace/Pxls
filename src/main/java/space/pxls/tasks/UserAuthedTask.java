@@ -27,8 +27,8 @@ public class UserAuthedTask implements Runnable {
     }
 
     private void lastIPAlert() {
-        if (!App.getDatabase().hasUserFlaggedLastIPAlert(user.getId())) {
-            List<Integer> uids = App.getDatabase().getDupedUsers(authIP, user.getId());
+        if (!App.getDatabase().hasLastIPAlertFlag(user.getId())) {
+            List<Integer> uids = App.getDatabase().getDuplicateUsers(user.getId(), authIP);
             if (uids != null && uids.size() > 0) {
                 StringBuilder toReport = new StringBuilder(String.format("User has %d IP matches (AuthIP: %s) in the database. Matched accounts:", uids.size(), authIP));
                 for (int i = 0; i < uids.size(); i++) {
@@ -39,8 +39,8 @@ public class UserAuthedTask implements Runnable {
                         System.err.printf("    ID from database (%d) resulted in a null user lookup (triggered by UserDupeIP task for %s (ID: %d))%n", uids.get(i), user.getName(), user.getId());
                     }
                 }
-                App.getDatabase().addServerReport(toReport.toString(), user.getId());
-                App.getDatabase().flagLastIPAlert(user.getId());
+                App.getDatabase().insertServerReport(user.getId(), toReport.toString());
+                App.getDatabase().setLastIPAlertFlag(user.getId(), true);
             }
         }
     }

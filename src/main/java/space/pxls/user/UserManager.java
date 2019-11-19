@@ -5,6 +5,7 @@ import space.pxls.data.DBUser;
 import space.pxls.util.Util;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class UserManager {
@@ -58,8 +59,9 @@ public class UserManager {
         return getByDB(App.getDatabase().getUserByID(uid));
     }
 
-    private User getByDB(DBUser user) {
-        if (user == null) return null;
+    private User getByDB(Optional<DBUser> optionalUser) {
+        if (!optionalUser.isPresent()) return null;
+        DBUser user = optionalUser.get();
         return userCache.computeIfAbsent(user.id, (k) -> new User(user.id, user.stacked, user.username, user.login, user.cooldownExpiry, user.role, user.banExpiry, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor));
     }
 
@@ -85,8 +87,8 @@ public class UserManager {
         String login = userSignupTokens.get(token);
         if (login == null) return null;
 
-        if (App.getDatabase().getUserByName(name) == null) {
-            DBUser user = App.getDatabase().createUser(name, login, ip);
+        if (!App.getDatabase().getUserByName(name).isPresent()) {
+            Optional<DBUser> user = App.getDatabase().createUser(name, login, ip);
             userSignupTokens.remove(token);
             return getByDB(user);
         }

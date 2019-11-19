@@ -1,7 +1,7 @@
 package space.pxls.data;
 
-import org.skife.jdbi.v2.StatementContext;
-import org.skife.jdbi.v2.tweak.ResultSetMapper;
+import org.jdbi.v3.core.mapper.RowMapper;
+import org.jdbi.v3.core.statement.StatementContext;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -30,21 +30,21 @@ public class DBPixelPlacementUser {
         this.discordName = discordName;
     }
 
-    public static class Mapper implements ResultSetMapper<DBPixelPlacementUser> {
+    public static class Mapper implements RowMapper<DBPixelPlacementUser> {
         @Override
-        public DBPixelPlacementUser map(int index, ResultSet r, StatementContext ctx) throws SQLException {
+        public DBPixelPlacementUser map(ResultSet r, StatementContext ctx) throws SQLException {
             Timestamp time = r.getTimestamp("time");
 
             return new DBPixelPlacementUser(
-                    r.getInt("id"),
+                    r.getInt("p_id"),
                     r.getInt("x"),
                     r.getInt("y"),
                     r.getInt("color"),
                     time == null ? 0 : time.getTime(),
-                    r.getString("users.login").startsWith("ip:") ? "-snip-" : r.getString("users.username"),
+                    r.getString("u_login").startsWith("ip:") ? "-snip-" : r.getString("username"),
                     r.getInt("pixel_count"),
                     r.getInt("pixel_count_alltime"),
-                    r.getString("users.discord_name")
+                    r.getString("discord_name")
             );
         }
     }

@@ -1,7 +1,7 @@
 package space.pxls.data;
 
-import org.skife.jdbi.v2.StatementContext;
-import org.skife.jdbi.v2.tweak.ResultSetMapper;
+import org.jdbi.v3.core.mapper.RowMapper;
+import org.jdbi.v3.core.statement.StatementContext;
 import space.pxls.user.Role;
 
 import java.sql.ResultSet;
@@ -49,35 +49,35 @@ public class DBPixelPlacement {
         this.discordName = discordName;
     }
 
-    public static class Mapper implements ResultSetMapper<DBPixelPlacement> {
+    public static class Mapper implements RowMapper<DBPixelPlacement> {
         @Override
-        public DBPixelPlacement map(int index, ResultSet r, StatementContext ctx) throws SQLException {
+        public DBPixelPlacement map(ResultSet r, StatementContext ctx) throws SQLException {
             Timestamp time = r.getTimestamp("time");
-            Timestamp ban_expiry = r.getTimestamp("users.ban_expiry");
-            boolean banned = Role.valueOf(r.getString("users.role")) == Role.BANNED;
+            Timestamp ban_expiry = r.getTimestamp("ban_expiry");
+            boolean banned = Role.valueOf(r.getString("role")) == Role.BANNED;
             if (!banned && ban_expiry != null) {
                 banned = ban_expiry.getTime() > System.currentTimeMillis();
             }
 
             return new DBPixelPlacement(
-                    r.getInt("id"),
+                    r.getInt("p_id"),
                     r.getInt("x"),
                     r.getInt("y"),
                     r.getInt("color"),
                     r.getInt("secondary_id"),
                     time == null ? 0 : time.getTime(),
-                    r.getInt("users.id"),
-                    r.getString("users.username"),
-                    r.getString("users.login"),
-                    Role.valueOf(r.getString("users.role")), // TODO: all users might not have valid roles
+                    r.getInt("u_id"),
+                    r.getString("username"),
+                    r.getString("login"),
+                    Role.valueOf(r.getString("role")), // TODO: all users might not have valid roles
                     ban_expiry == null ? 0 : ban_expiry.getTime(),
                     r.getInt("pixel_count"),
                     r.getInt("pixel_count_alltime"),
-                    r.getString("users.ban_reason"),
+                    r.getString("ban_reason"),
                     banned,
                     r.getBoolean("undo_action"),
                     r.getString("user_agent"),
-                    r.getString("users.discord_name")
+                    r.getString("discord_name")
             );
         }
     }

@@ -1,7 +1,7 @@
 package space.pxls.data;
 
-import org.skife.jdbi.v2.StatementContext;
-import org.skife.jdbi.v2.tweak.ResultSetMapper;
+import org.jdbi.v3.core.mapper.RowMapper;
+import org.jdbi.v3.core.statement.StatementContext;
 import space.pxls.user.Role;
 
 import java.sql.ResultSet;
@@ -39,9 +39,9 @@ public class DBUser {
         this.chatNameColor = chatNameColor;
     }
 
-    public static class Mapper implements ResultSetMapper<DBUser> {
+    public static class Mapper implements RowMapper<DBUser> {
         @Override
-        public DBUser map(int index, ResultSet r, StatementContext ctx) throws SQLException {
+        public DBUser map(ResultSet r, StatementContext ctx) throws SQLException {
             Timestamp stamp = r.getTimestamp("cooldown_expiry");
             Timestamp ban = r.getTimestamp("ban_expiry");
             Timestamp chatban = r.getTimestamp("chat_ban_expiry");
