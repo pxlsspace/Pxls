@@ -2586,6 +2586,7 @@ window.App = (function () {
                     curElem: 0,
                     intervalID: 0,
                     timeout: 10000,
+                    enabled: true,
                 },
                 usernameColor: 0,
                 elements: {
@@ -2845,32 +2846,50 @@ window.App = (function () {
                     });
                 },
                 _initBanner() {
+                    self.banner.enabled = ls.get('chat.banner-enabled') !== false;
                     self._bannerIntervalTick();
                 },
                 _bannerIntervalTick() {
                     let nextElem = self.banner.HTMLs[self.banner.curElem++ % self.banner.HTMLs.length >> 0];
                     let banner = self.elements.bottomBanner[0];
                     const fadeEnd = function() {
-                        banner.classList.add('transparent');
-                        banner.removeEventListener('animationend', fadeEnd);
-                        requestAnimationFrame(() => {
-                            banner.classList.remove('fade');
-                            self.elements.bottomBanner[0].innerHTML = nextElem;
+                        if (self.banner.enabled) {
+                            banner.classList.add('transparent');
+                            banner.removeEventListener('animationend', fadeEnd);
                             requestAnimationFrame(() => {
-                                banner.classList.add('fade-rev');
-                                banner.addEventListener('animationend', fadeRevEnd);
+                                banner.classList.remove('fade');
+                                self.elements.bottomBanner[0].innerHTML = nextElem;
+                                requestAnimationFrame(() => {
+                                    banner.classList.add('fade-rev');
+                                    banner.addEventListener('animationend', fadeRevEnd);
+                                });
                             });
-                        });
+                        } else {
+                            self.resetBanner();
+                        }
                     };
                     const fadeRevEnd = function() {
-                        banner.removeEventListener('animationend', fadeRevEnd);
-                        banner.classList.remove('transparent', 'fade-rev');
-                        setTimeout(() => self._bannerIntervalTick(), self.banner.timeout);
+                        if (self.banner.enabled) {
+                            banner.removeEventListener('animationend', fadeRevEnd);
+                            banner.classList.remove('transparent', 'fade-rev');
+                            setTimeout(() => self._bannerIntervalTick(), self.banner.timeout);
+                        } else {
+                            self.resetBanner();
+                        }
                     };
-                    requestAnimationFrame(() => {
-                        banner.addEventListener('animationend', fadeEnd);
-                        banner.classList.add('fade');
-                    });
+                    if (self.banner.enabled) {
+                        requestAnimationFrame(() => {
+                            banner.addEventListener('animationend', fadeEnd);
+                            banner.classList.add('fade');
+                        });
+                    } else {
+                        self.resetBanner();
+                    }
+                },
+                resetBanner: () => {
+                    self.banner.curElem = 1; //set to 1 so that when we re-enable, we don't show [0] again immediately.
+                    self.elements.bottomBanner[0].innerHTML = self.banner.HTMLs[0];
+                    self.elements.bottomBanner[0].classList.remove('transparent', 'fade', 'fade-rev');
                 },
                 handleDiscordNameSet() {
                     const name = self.elements.txtDiscordName.val();
@@ -2937,6 +2956,14 @@ window.App = (function () {
                         selUsernameColor.selectedIndex = self.usernameColor;
                         selUsernameColor.style.backgroundColor = place.getPaletteColor(self.usernameColor);
                     }
+                },
+                setBannerEnabled: enabled => {
+                    self.banner.enabled = enabled === true;
+                    if (!enabled) {
+                        self.resetBanner();
+                    } else {
+                        self._bannerIntervalTick();
+                    }
                 }
             };
 
@@ -2951,6 +2978,7 @@ window.App = (function () {
                 updateAudio: self.updateAudio,
                 updateSelectedNameColor: self.updateSelectedNameColor,
                 getUsernameColor: () => self.usernameColor >> 0,
+                setBannerEnabled: self.setBannerEnabled,
             };
         })(),
         panels = (function() {
@@ -3901,6 +3929,9 @@ window.App = (function () {
                     let _cbPings = crel('input', {'type': 'checkbox'});
                     let lblPings = crel('label', {'style': 'display: block;'}, _cbPings, 'Enable pings');
 
+                    let _cbBanner = crel('input', {'type': 'checkbox'});
+                    let lblBanner = crel('label', {'style': 'display: block;'}, _cbBanner, 'Enable the rotating banner under chat');
+
                     let _txtFontSize = crel('input', {'type': 'number', 'min': '1', 'max': '72'});
                     let _btnFontSizeConfirm = crel('button', {'class': 'buton'}, crel('i', {'class': 'fas fa-check'}));
                     let lblFontSize = crel('label', {'style': 'display: block;'}, 'Font Size: ', _txtFontSize, _btnFontSizeConfirm);
@@ -3973,6 +4004,12 @@ window.App = (function () {
                         ls.set('chat.pings-enabled', this.checked === true);
                     });
 
+                    _cbBanner.checked = ls.get('chat.banner-enabled') !== false;
+                    _cbBanner.addEventListener('change', function() {
+                        ls.set('chat.banner-enabled', this.checked === true);
+                        uiHelper.setBannerEnabled(this.checked === true);
+                    });
+
                     _btnUnignore.addEventListener('click', function() {
                         if (self.removeIgnore(_selIgnores.value)) {
                             _selIgnores.querySelector(`option[value="${_selIgnores.value}"]`).remove();
@@ -3999,6 +4036,7 @@ window.App = (function () {
                         lbl24hTimestamps,
                         lblPixelPlaceBadges,
                         lblPings,
+                        lblBanner,
                         lblFontSize,
                         lblInternalAction,
                         lblUsernameColor,
