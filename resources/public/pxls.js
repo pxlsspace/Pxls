@@ -3109,6 +3109,7 @@ window.App = (function () {
                 nonceLog: [],
                 typeahead: {
                     suggesting: false,
+                    hasResults: false,
                     suggestingType: '',
                     triggerChar: '',
                     triggers: {
@@ -3440,7 +3441,7 @@ window.App = (function () {
                             }
                             case 'Enter':
                             case 13: {
-                                if (self.typeahead.suggesting) {
+                                if (self.typeahead.suggesting && self.typeahead.hasResults) {
                                     event.preventDefault();
                                     event.stopPropagation();
                                     event.stopImmediatePropagation();
@@ -3503,6 +3504,7 @@ window.App = (function () {
                                 console.error('Failed to get typeahead suggestions, defaulting to zero', e);
                             }
                             self.typeahead.highlightedIndex = 0;
+                            self.typeahead.hasResults = got && got.length > 0;
                             if (!got.length) {
                                 self.elements.typeahead_list[0].innerHTML = `<li class="no-results">No Results</li>`;
                             } else {
@@ -3515,7 +3517,7 @@ window.App = (function () {
                                 crel(self.elements.typeahead_list[0], LIs);
                             }
                         }
-                        self.elements.typeahead[0].style.display = self.typeahead.suggesting ? 'block' : 'none';
+                        self.elements.typeahead[0].style.display = self.typeahead.suggesting && self.typeahead.hasResults ? 'block' : 'none';
                         document.body.classList.toggle('typeahead-open', self.typeahead.suggesting);
                     });
 
@@ -3661,7 +3663,7 @@ window.App = (function () {
                                 }
                             }
                             e.preventDefault();
-                            if (!self.typeahead.suggesting && !handling) {
+                            if (!(self.typeahead.suggesting && self.typeahead.hasResults) && !handling) {
                                 self._send(self.elements.input[0].value);
                                 self.elements.input.val("");
                             }
