@@ -903,6 +903,9 @@ window.App = (function () {
                             case "tw":
                                 template.queueUpdate({ tw: newValue === null ? null : newValue >> 0 });
                                 break;
+                            case "title":
+                                template.queueUpdate({ title: newValue === null ? '' : newValue });
+                                break;
                             case "oo":
                                 let parsed = parseFloat(newValue);
                                 if (!Number.isFinite(parsed)) parsed = null;
@@ -977,6 +980,7 @@ window.App = (function () {
                                 y: parseFloat(query.get("oy")),
                                 opacity: parseFloat(query.get("oo")),
                                 width: parseFloat(query.get("tw")),
+                                title: query.get('title'),
                                 url: url
                             });
                         }
@@ -1582,7 +1586,8 @@ window.App = (function () {
                     x: 0,
                     y: 0,
                     width: -1,
-                    opacity: 0.5
+                    opacity: 0.5,
+                    title: ''
                 },
                 options: {},
                 lazy_init: function () {
@@ -1647,7 +1652,7 @@ window.App = (function () {
                     //direction: true = url_to_template_obj, else = template_obj_to_url
                     //normalize the given update object with settings that may be present from someone guessing options based on the URL
 
-                    let iterOver = [["tw", "width"], ["ox", "x"], ["oy", "y"], ["oo", "opacity"], ["template", "url"]];
+                    let iterOver = [["tw", "width"], ["ox", "x"], ["oy", "y"], ["oo", "opacity"], ["template", "url"], ["title", "title"]];
                     if (direction !== true)
                         for (let i = 0; i < iterOver.length; i++)
                             iterOver[i].reverse();
@@ -1675,6 +1680,7 @@ window.App = (function () {
                     }, 200);
                 },
                 _update: function (options) {
+                    if (!Object.keys(options).length) return;
                     let urlUpdated = (options.url !== self.options.url && decodeURIComponent(options.url) !== self.options.url && options.url != null && self.options.url != null);
                     if (options.url != null && options.url.length > 0) {
                         options.url = decodeURIComponent(options.url);
@@ -1705,7 +1711,7 @@ window.App = (function () {
                             self.elements.template = null;
                         }
                         board.update(true);
-                        ["template", "ox", "oy", "oo", "tw"].forEach(x => query.remove(x, true));
+                        ["template", "ox", "oy", "oo", "tw", "title"].forEach(x => query.remove(x, true));
                     } else {
                         self.options.use = true;
                         if (urlUpdated === true && self.elements.template != null) {
@@ -1719,11 +1725,12 @@ window.App = (function () {
                         });
                         self.elements.template.css("width", options.width > 0 ? options.width : "auto");
 
-                        [["url", "template"], ["x", "ox"], ["y", "oy"], ["width", "tw"], ["opacity", "oo"]].forEach(x => {
+                        [["url", "template"], ["x", "ox"], ["y", "oy"], ["width", "tw"], ["opacity", "oo"], ["title", "title"]].forEach(x => {
                             query.set(x[1], self.options[x[0]], true);
                         });
                     }
                     self.update_drawer();
+                    document.title = uiHelper.getTitle();
                 },
                 disableTemplate: function () {
                     self._update({ url: null });
@@ -2576,7 +2583,9 @@ window.App = (function () {
             var self = {
                 _available: -1,
                 maxStacked: -1,
+                usernameColor: 0,
                 _alertUpdateTimer: false,
+                initTitle: '',
                 banner: {
                     HTMLs: [
                         crel('span', crel('i', {'class': 'fab fa-discord fa-is-left'}), ' We have a discord! Join here: ', crel('a', {'href': 'https://pxls.space/discord', 'target': '_blank'}, 'Discord Invite')).outerHTML,
@@ -2588,7 +2597,6 @@ window.App = (function () {
                     timeout: 10000,
                     enabled: true,
                 },
-                usernameColor: 0,
                 elements: {
                     stackCount: $("#placeableCount-bubble, #placeableCount-cursor"),
                     txtAlertLocation: $("#txtAlertLocation"),
@@ -2607,6 +2615,7 @@ window.App = (function () {
                     }
                 ],
                 init: function () {
+                    self.initTitle = document.title;
                     self._initThemes();
                     self._initStack();
                     self._initAudio();
@@ -2979,6 +2988,10 @@ window.App = (function () {
                 updateSelectedNameColor: self.updateSelectedNameColor,
                 getUsernameColor: () => self.usernameColor >> 0,
                 setBannerEnabled: self.setBannerEnabled,
+                getTitle: (prepend) => {
+                    if (typeof prepend !== 'string') prepend = '';
+                    return `${prepend ? prepend + ' ' : ''}${template.getOptions().use && template.getOptions().title ? template.getOptions().title : self.initTitle}`;
+                }
             };
         })(),
         panels = (function() {
@@ -3551,7 +3564,6 @@ window.App = (function () {
                                 let LIs = got.slice(0, 5).map(x =>
                                     crel('li', {'data-insert': `${prepend}${x} `, 'data-start': startIndex, 'data-end': endIndex, onclick: self._handleTypeaheadInsert}, `${prepend}${x}`)
                                 );
-                                // LIs[0].classList.add('active');
                                 crel(self.elements.typeahead_list[0], LIs);
                             }
                         }
@@ -4958,7 +4970,7 @@ window.App = (function () {
                             minuteStr = minutes < 10 ? "0" + minutes : minutes;
                         self.elements.timer.text(minuteStr + ":" + secsStr);
 
-                        document.title = "[" + minuteStr + ":" + secsStr + "] " + self.title;
+                        document.title = uiHelper.getTitle(`[${minuteStr}:${secsStr}]`);
 
                         if (self.runningTimer && !die) {
                             return;
@@ -4972,7 +4984,7 @@ window.App = (function () {
 
                     self.runningTimer = false;
 
-                    document.title = self.title;
+                    document.title = uiHelper.getTitle();
                     if (self.isOverlay) {
                         self.elements.palette.css("overflow-x", "auto");
                         self.elements.timer.css("left", "0");
