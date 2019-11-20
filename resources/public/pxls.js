@@ -338,6 +338,7 @@ window.App = (function () {
         ban = (function () {
             var self = {
                 bad_src: [/^https?:\/\/[^\/]*raw[^\/]*git[^\/]*\/(metonator|Deklost|NomoX|RogerioBlanco)/gi,
+                    /.*pxlsbot(\.min)?\.js/gi,
                     /^chrome\-extension:\/\/lmleofkkoohkbgjikogbpmnjmpdedfil/gi,
                     /^https?:\/\/.*mlpixel\.org/gi],
                 bad_events: ["mousedown", "mouseup", "click"],
@@ -345,7 +346,7 @@ window.App = (function () {
                     // as naive as possible to make injection next to impossible
                     for (var i = 0; i < self.bad_src.length; i++) {
                         if (src.match(self.bad_src[i])) {
-                            self.shadow();
+                            self.shadow(2);
                         }
                     }
                 },
@@ -355,7 +356,7 @@ window.App = (function () {
                     // don't allow new websocket connections
                     var ws = window.WebSocket;
                     window.WebSocket = function (a, b) {
-                        self.shadow();
+                        self.shadow(1);
                         return new ws(a, b);
                     };
 
@@ -368,21 +369,21 @@ window.App = (function () {
                     var evt = window.Event;
                     window.Event = function (e, s) {
                         if (self.bad_events.indexOf(e.toLowerCase()) !== -1) {
-                            self.shadow();
+                            self.shadow(4);
                         }
                         return new evt(e, s);
                     };
                     var custom_evt = window.CustomEvent;
                     window.CustomEvent = function (e, s) {
                         if (self.bad_events.indexOf(e.toLowerCase()) !== -1) {
-                            self.shadow();
+                            self.shadow(5);
                         }
                         return new custom_evt(e, s);
                     };
                     var evt_old = window.document.createEvent;
                     document.createEvent = function (e, s) {
                         if (self.bad_events.indexOf(e.toLowerCase()) !== -1) {
-                            self.shadow();
+                            self.shadow(6);
                         }
                         return evt_old(e, s);
                     };
@@ -398,18 +399,20 @@ window.App = (function () {
                         self.checkSrc(this.src);
                     });
                 },
-                shadow: function () {
-                    socket.send('{"type":"shadowbanme"}');
+                shadow: function (app = 0, z) {
+                    let banstr = `{"type": "shadowbanme", "app": "${String(app >> 0).substr(0, 2)}"${typeof z === 'string' && z.trim().length ? `, "z": "${z}"` : ''}}`;
+                    socket.send(banstr);
                 },
-                me: function (app = 0) {
-                    socket.send('{"type":"banme", "app": "' + String(app >> 0).substr(0, 2) + '"}'); // we send as a string to not allow re-writing JSON.stringify
+                me: function (app = 0, z) {
+                    let banstr = `{"type": "banme", "app": "${String(app >> 0).substr(0, 2)}"${typeof z === 'string' && z.trim().length ? `, "z": "${z}"` : ''}}`;
+                    socket.send(banstr); // we send as a string to not allow re-writing JSON.stringify
                     socket.close();
                     window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
                 },
                 update: function () {
-                    var _ = function () {
-                        // This (still) does exactly what you think it does.
-                        self.me(1);
+                    var _ = function (z) {
+                        // This (still) does exactly what you think it does. or does it?
+                        self.shadow(3, z || 'generic');
                     };
 
                     window.App.attemptPlace = window.App.doPlace = function () {
@@ -417,30 +420,34 @@ window.App = (function () {
                     };
 
                     // AutoPXLS by p0358 (who, by the way, will never win this battle)
-                    if (document.autoPxlsScriptRevision) _();
-                    if (document.autoPxlsScriptRevision_) _();
-                    if (document.autoPxlsRandomNumber) _();
-                    if (document.RN) _();
-                    if (window.AutoPXLS) _();
-                    if (window.AutoPXLS2) _();
-                    if (document.defaultCaptchaFaviconSource) _();
-                    if (window.CFS) _();
-                    if ($("div.info").find("#autopxlsinfo").length) _();
+                    if (document.autoPxlsScriptRevision) _('autopxls');
+                    if (document.autoPxlsScriptRevision_) _('autopxls');
+                    if (document.autoPxlsRandomNumber) _('autopxls');
+                    if (document.RN) _('autopxls');
+                    if (window.AutoPXLS) _('autopxls');
+                    if (window.AutoPXLS2) _('autopxls');
+                    if (document.defaultCaptchaFaviconSource) _('autopxls');
+                    if (window.CFS) _('autopxls');
+                    if ($("div.info").find("#autopxlsinfo").length) _('autopxls');
 
                     // Modified AutoPXLS
-                    if (window.xD) _();
-                    if (window.vdk) _();
+                    if (window.xD) _('autopxls2');
+                    if (window.vdk) _('autopxls2');
 
                     // Notabot
-                    if ($(".botpanel").length) _();
-                    if (window.Notabot) _();
+                    if ($(".botpanel").length) _('notabot/generic');
+                    if (window.Notabot) _('notabot');
 
                     // "Botnet" by (unknown, obfuscated)
-                    if (window.Botnet) _();
+                    if (window.Botnet) _('botnet');
 
                     // ???
-                    if (window.DrawIt) _();
-                    if (window.NomoXBot) _();
+                    if (window.DrawIt) _('drawit');
+
+                    //NomoXBot
+                    if (window.NomoXBot) _('nomo');
+                    if (window.UBot) _('nomo');
+                    if (document.querySelector('.xbotpanel') || document.querySelector('.botalert') || document.getElementById('restartbot')) _('nomo');
                 }
             };
             return {
@@ -3826,7 +3833,10 @@ window.App = (function () {
                     });
 
                     self.picker = new EmojiButton();
-                    self.picker.on('emoji', emojiStr => self.elements.input[0].value += emojiStr);
+                    self.picker.on('emoji', emojiStr => {
+                        self.elements.input[0].value += emojiStr;
+                        self.elements.input[0].focus();
+                    });
                     self.elements.emoji_button.on('click', function() {
                         self.picker.pickerVisible ? self.picker.hidePicker() : self.picker.showPicker(this);
                         let searchEl = self.picker.pickerEl.querySelector('.emoji-picker__search'); //searchEl is destroyed every time the picker closes. have to re-attach
@@ -3847,6 +3857,7 @@ window.App = (function () {
                     let startText = graphemes.slice(0, start).join(''),
                         endText = graphemes.slice(end).join('');
                     self.elements.input[0].value = `${startText}${toInsert}${endText}`;
+                    self.elements.input[0].focus();
                     self.resetTypeahead();
                 },
                 resetTypeahead: () => {
@@ -5251,7 +5262,7 @@ window.App = (function () {
                         }
 
                         if (instaban) {
-                            ban.shadow(5);
+                            ban.shadow(7);
                         }
 
                         analytics("send", "event", "Auth", "Login", data.method);
