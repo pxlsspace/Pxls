@@ -3123,9 +3123,12 @@ window.App = (function () {
                         }
                     },
                     cancels: [' '],
-                    highlightedIndex: 0,
+                    highlightedIndex: -1,
                     lastLength: false,
                     expectingUpdate: false,
+                    get isInsertable() {
+                        return self.typeahead.suggesting && self.typeahead.hasResults && self.typeahead.highlightedIndex !== -1;
+                    },
                 },
                 ignored: [],
                 chatban: {
@@ -3387,7 +3390,7 @@ window.App = (function () {
                                     } else if (nextIndex >= children.length) {
                                         nextIndex = 0;
                                     }
-                                    children[self.typeahead.highlightedIndex].classList.remove('active');
+                                    children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
                                     children[nextIndex].classList.add('active');
                                     self.typeahead.highlightedIndex = nextIndex;
                                     return;
@@ -3405,7 +3408,7 @@ window.App = (function () {
                                     if (nextIndex < 0) {
                                         nextIndex = children.length-1;
                                     }
-                                    children[self.typeahead.highlightedIndex].classList.remove('active');
+                                    children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
                                     children[nextIndex].classList.add('active');
                                     self.typeahead.highlightedIndex = nextIndex;
                                     return;
@@ -3423,7 +3426,7 @@ window.App = (function () {
                                     if (nextIndex >= children.length) {
                                         nextIndex = 0;
                                     }
-                                    children[self.typeahead.highlightedIndex].classList.remove('active');
+                                    children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
                                     children[nextIndex].classList.add('active');
                                     self.typeahead.highlightedIndex = nextIndex;
                                     return;
@@ -3441,7 +3444,7 @@ window.App = (function () {
                             }
                             case 'Enter':
                             case 13: {
-                                if (self.typeahead.suggesting && self.typeahead.hasResults) {
+                                if (self.typeahead.isInsertable) {
                                     event.preventDefault();
                                     event.stopPropagation();
                                     event.stopImmediatePropagation();
@@ -3503,7 +3506,7 @@ window.App = (function () {
                             } catch (e) {
                                 console.error('Failed to get typeahead suggestions, defaulting to zero', e);
                             }
-                            self.typeahead.highlightedIndex = 0;
+                            self.typeahead.highlightedIndex = -1;
                             self.typeahead.hasResults = got && got.length > 0;
                             if (!got.length) {
                                 self.elements.typeahead_list[0].innerHTML = `<li class="no-results">No Results</li>`;
@@ -3513,7 +3516,7 @@ window.App = (function () {
                                 let LIs = got.slice(0, 5).map(x =>
                                     crel('li', {'data-insert': `${prepend}${x} `, 'data-start': startIndex, 'data-end': endIndex, onclick: self._handleTypeaheadInsert}, `${prepend}${x}`)
                                 );
-                                LIs[0].classList.add('active');
+                                // LIs[0].classList.add('active');
                                 crel(self.elements.typeahead_list[0], LIs);
                             }
                         }
@@ -3663,7 +3666,7 @@ window.App = (function () {
                                 }
                             }
                             e.preventDefault();
-                            if (!(self.typeahead.suggesting && self.typeahead.hasResults) && !handling) {
+                            if (!self.typeahead.isInsertable && !handling) {
                                 self._send(self.elements.input[0].value);
                                 self.elements.input.val("");
                             }
