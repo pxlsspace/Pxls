@@ -3832,7 +3832,7 @@ window.App = (function () {
                         self.elements.jump_button[0].style.display = self.stickToBottom ? 'none' : 'block';
                     });
 
-                    self.picker = new EmojiButton();
+                    self.picker = new EmojiButton({position: 'left-start'});
                     self.picker.on('emoji', emojiStr => {
                         self.elements.input[0].value += emojiStr;
                         self.elements.input[0].focus();
