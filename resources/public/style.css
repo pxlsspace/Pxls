@@ -1483,6 +1483,18 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
     z-index: 22;
 }
 
+.emoji-picker img.emoji {
+    max-height: 1.3rem;
+}
+
+.emoji-picker .emoji-picker__search {
+    padding-left: .5em;
+}
+
+.emoji-picker .emoji-picker__preview {
+    padding-top: 1.75em;
+}
+
 /* CHAT ACTIONS POPUP */
 
 .popup {
