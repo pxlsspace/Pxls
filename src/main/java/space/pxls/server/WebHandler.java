@@ -172,17 +172,25 @@ public class WebHandler {
     }
 
     public void unban(HttpServerExchange exchange) {
-        User user = parseUserFromForm(exchange);
         User user_perform = exchange.getAttachment(AuthReader.USER);
-        if (user != null) {
-            user.unban(user_perform, "");
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
-            if (doLog(exchange)) {
-                App.getDatabase().adminLog("unban " + user.getName(), user_perform.getId());
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+        if (data.contains("username")) {
+            User unbanTarget = App.getUserManager().getByName(data.getFirst("username").getValue());
+            if (unbanTarget != null) {
+                String reason = "";
+                if (data.contains("reason")) {
+                    reason = data.getFirst("reason").getValue();
+                }
+                unbanTarget.unban(user_perform, reason);
+                if (doLog(exchange)) {
+                    App.getDatabase().adminLog(String.format("unban %s with reason %s", unbanTarget.getName(), reason.isEmpty() ? "(no reason provided)" : reason), user_perform.getId());
+                }
+                send(200, exchange, "User unbanned");
+            } else {
+                sendBadRequest(exchange, "Invalid user specified");
             }
-            exchange.setStatusCode(200);
         } else {
-            exchange.setStatusCode(400);
+            sendBadRequest(exchange, "Missing username field");
         }
     }
 
