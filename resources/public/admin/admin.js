@@ -117,11 +117,16 @@
                 ban_24h: function (username, fn) {
                     self.ban(username, 24*3600, fn);
                 },
-                unban: function (username, fn) {
+                unban: function (username, reason, fn) {
+                    if (typeof reason === 'function') {
+                        reason = '';
+                        fn = reason;
+                    }
                     $.post("/admin/unban", {
-                        username: username
+                        username,
+                        reason
                     }, function () {
-                        admin.alert.show("Unbanned user "+username);
+                        admin.alert.show(`Unbanned user ${username}`);
                         if (fn) {
                             fn();
                         }
@@ -227,11 +232,7 @@
                             }) : "")
                         ),
                         $("<div>").append(
-                            genButton("Unban").click(function () {
-                                ban.unban(data.username, function () {
-                                    self.elements.check.fadeOut(200);
-                                });
-                            }),
+                            genButton("Unban").click(() => self.popUnban(data.username)),
                             (admin.user.getRole() == "ADMIN" ?
                                 genButton("Shadowban").click(function () {
                                     ban.shadow(data.username, function () {
@@ -280,12 +281,39 @@
                     }, self.callback).fail(function () {
                         admin.alert.show("User "+username+" not found");
                     });
+                },
+                popUnban: username => {
+                    let btnSubmit = crel('button', {'type': 'submit', 'class': 'button'}, 'Unban');
+                    let txtUnbanReason = crel('input', {'type': 'text', 'required': 'true'});
+                    let lblUnbanReason = crel('label', 'Unban Reason: ', txtUnbanReason);
+
+                    txtUnbanReason.addEventListener('keydown', e => e.stopPropagation());
+
+                    let unbanWrapper = crel('form', {'class': 'chatmod-container'},
+                        crel('h3', 'Unban User'),
+                        crel('p', `Unbanning ${username}`),
+                        lblUnbanReason,
+                        crel('div', {'class': 'buttons'},
+                            crel('button', {'class': 'button', 'type': 'button', onclick: () => {admin.alert.hide(); unbanWrapper.remove();} }, 'Cancel'),
+                            btnSubmit
+                        )
+                    );
+
+                    unbanWrapper.onsubmit = e => {
+                        e.preventDefault();
+                        ban.unban(username, txtUnbanReason.value, function() {
+                            self.elements.check.fadeOut(200);
+                        });
+                    };
+
+                    admin.alert.show(unbanWrapper, true);
                 }
             };
             return {
                 init: self.init,
                 deinit: self.deinit,
-                check: self.check
+                check: self.check,
+                popUnban: self.popUnban
             };
         })(),
         panel = (function() {
@@ -326,7 +354,7 @@
                             // next do the text input
                             $.map([
                                 ["Ban user (24h)", ban.ban_24h],
-                                ["Unban user", ban.unban],
+                                ["Unban user", checkUser.popUnban],
                                 ["Check user", checkUser.check]
                             ], function (o) {
                                 return $("<input>").attr({
