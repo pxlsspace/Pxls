@@ -2990,7 +2990,13 @@ window.App = (function () {
                 setBannerEnabled: self.setBannerEnabled,
                 getTitle: (prepend) => {
                     if (typeof prepend !== 'string') prepend = '';
-                    return `${prepend ? prepend + ' ' : ''}${template.getOptions().use && template.getOptions().title ? template.getOptions().title : self.initTitle}`;
+                    let tplOpts = template.getOptions();
+                    let append = self.initTitle;
+
+                    if (tplOpts.use && tplOpts.title)
+                        append = tplOpts.title;
+
+                    return `${prepend ? prepend + ' ' : ''}${decodeURIComponent(append)}`;
                 }
             };
         })(),
@@ -3944,6 +3950,9 @@ window.App = (function () {
                     let _cbBanner = crel('input', {'type': 'checkbox'});
                     let lblBanner = crel('label', {'style': 'display: block;'}, _cbBanner, 'Enable the rotating banner under chat');
 
+                    let _cbTemplateTitles = crel('input', {'type': 'checkbox'});
+                    let lblTemplateTitles = crel('label', {'style': 'display: block;'}, _cbTemplateTitles, 'Replace template titls with URLs in chat where applicable');
+
                     let _txtFontSize = crel('input', {'type': 'number', 'min': '1', 'max': '72'});
                     let _btnFontSizeConfirm = crel('button', {'class': 'buton'}, crel('i', {'class': 'fas fa-check'}));
                     let lblFontSize = crel('label', {'style': 'display: block;'}, 'Font Size: ', _txtFontSize, _btnFontSizeConfirm);
@@ -3991,7 +4000,7 @@ window.App = (function () {
                             } else {
                                 ls.set("chat.font-size", val);
                                 self.elements.body.css("font-size", `${val}px`);
-                                notifBody.style.fontSize = `${val}px`;
+                                document.querySelector('.panel[data-panel="notifications"] .panel-body').style.fontSize = `${val}px`;
                             }
                         }
                     });
@@ -4022,6 +4031,11 @@ window.App = (function () {
                         uiHelper.setBannerEnabled(this.checked === true);
                     });
 
+                    _cbTemplateTitles.checked = ls.get('chat.use-template-urls') === true;
+                    _cbTemplateTitles.addEventListener('change', function() {
+                        ls.set('chat.use-template-urls', this.checked === true);
+                    });
+
                     _btnUnignore.addEventListener('click', function() {
                         if (self.removeIgnore(_selIgnores.value)) {
                             _selIgnores.querySelector(`option[value="${_selIgnores.value}"]`).remove();
@@ -4049,6 +4063,7 @@ window.App = (function () {
                         lblPixelPlaceBadges,
                         lblPings,
                         lblBanner,
+                        lblTemplateTitles,
                         lblFontSize,
                         lblInternalAction,
                         lblUsernameColor,
@@ -4249,8 +4264,10 @@ window.App = (function () {
                                         if (board.validateCoordinates(params.x, params.y)) {
                                             jumpTarget = Object.assign({displayText: `(${params.x}, ${params.y}${params.scale != null ? `, ${params.scale}x` : ''})`, raw: url.toString()}, params);
                                             if (params.template != null && params.template.length >= 11) { //we have a template, should probably make that known
-                                                let truncatedTemplate = decodeURIComponent(params.template);
-                                                jumpTarget.displayText += ` (template: ${(truncatedTemplate > 50) ? `${truncatedTemplate.substr(0, 50)}...` : truncatedTemplate})`;
+                                                let title = decodeURIComponent(params.template);
+                                                if (ls.get('chat.use-template-urls') !== true && params.title && params.title.trim())
+                                                    title = decodeURIComponent(params.title);
+                                                jumpTarget.displayText += ` (template: ${(title > 25) ? `${title.substr(0, 22)}...` : title})`;
                                             }
                                         }
                                     } else {
