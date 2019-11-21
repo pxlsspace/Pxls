@@ -30,6 +30,7 @@ public class User {
     private boolean justShowedCaptcha;
     private boolean lastPlaceWasStack = false;
     private AtomicBoolean placingLock = new AtomicBoolean(false);
+    private AtomicBoolean undoLock = new AtomicBoolean(false);
     private boolean isPermaChatbanned = false;
     private boolean isRenameRequested = false;
     private boolean isIdled = false;
@@ -568,6 +569,26 @@ public class User {
      */
     public void releasePlacingLock() {
         placingLock.set(false);
+    }
+
+    /**
+     * Same logic as {@link #tryGetPlacingLock()}
+     * @return True if a lock was acquired, false otherwise.
+     * @see #tryGetPlacingLock()
+     */
+    public boolean tryGetUndoLock() {
+        if (undoLock.compareAndSet(false, true)) {
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isUndoLocked() {
+        return undoLock.get();
+    }
+
+    public void releaseUndoLock() {
+        undoLock.set(false);
     }
 
     public boolean isPermaChatbanned() {

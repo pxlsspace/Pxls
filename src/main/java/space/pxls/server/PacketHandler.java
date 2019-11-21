@@ -166,32 +166,39 @@ public class PacketHandler {
             sendCooldownData(user);
             return;
         }
-        DBPixelPlacement thisPixel = App.getDatabase().getUserUndoPixel(user);
-        DBPixelPlacement recentPixel = App.getDatabase().getPixelAt(thisPixel.x, thisPixel.y);
-        if (thisPixel.id != recentPixel.id) return;
+        boolean gotLock = user.tryGetUndoLock();
+        if (gotLock) {
+            try {
+                DBPixelPlacement thisPixel = App.getDatabase().getUserUndoPixel(user);
+                DBPixelPlacement recentPixel = App.getDatabase().getPixelAt(thisPixel.x, thisPixel.y);
+                if (thisPixel.id != recentPixel.id) return;
 
-        if (user.lastPlaceWasStack()) {
-            user.setStacked(Math.min(user.getStacked() + 1, App.getConfig().getInt("stacking.maxStacked")));
-            sendAvailablePixels(user, "undo");
+                if (user.lastPlaceWasStack()) {
+                    user.setStacked(Math.min(user.getStacked() + 1, App.getConfig().getInt("stacking.maxStacked")));
+                    sendAvailablePixels(user, "undo");
+                }
+                user.setLastUndoTime();
+                user.setCooldown(0);
+                DBPixelPlacement lastPixel = App.getDatabase().getPixelByID(thisPixel.secondaryId);
+                if (lastPixel != null) {
+                    App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
+                    App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, ip, false, "user undo");
+                    broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
+                    ackUndo(user, lastPixel.x, lastPixel.y);
+                    sendAvailablePixels(user, "undo");
+                } else {
+                    byte defaultColor = App.getDefaultColor(thisPixel.x, thisPixel.y);
+                    App.getDatabase().putUserUndoPixel(thisPixel.x, thisPixel.y, defaultColor, user, thisPixel.id);
+                    App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, ip, false, "user undo");
+                    broadcastPixelUpdate(thisPixel.x, thisPixel.y, defaultColor);
+                    ackUndo(user, thisPixel.x, thisPixel.y);
+                    sendAvailablePixels(user, "undo");
+                }
+                sendCooldownData(user);
+            } finally {
+                user.releaseUndoLock();
+            }
         }
-        user.setLastUndoTime();
-        user.setCooldown(0);
-        DBPixelPlacement lastPixel = App.getDatabase().getPixelByID(thisPixel.secondaryId);
-        if (lastPixel != null) {
-            App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
-            App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, ip, false, "user undo");
-            broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
-            ackUndo(user, lastPixel.x, lastPixel.y);
-            sendAvailablePixels(user, "undo");
-        } else {
-            byte defaultColor = App.getDefaultColor(thisPixel.x, thisPixel.y);
-            App.getDatabase().putUserUndoPixel(thisPixel.x, thisPixel.y, defaultColor, user, thisPixel.id);
-            App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, ip, false, "user undo");
-            broadcastPixelUpdate(thisPixel.x, thisPixel.y, defaultColor);
-            ackUndo(user, thisPixel.x, thisPixel.y);
-            sendAvailablePixels(user, "undo");
-        }
-        sendCooldownData(user);
     }
 
     private void handlePlace(WebSocketChannel channel, User user, ClientPlace cp, String ip) {
