@@ -3263,7 +3263,6 @@ window.App = (function () {
                 stickToBottom: true,
                 repositionTimer: false,
                 pings: 0,
-                graphemeSplitter: null,
                 pingsList: [],
                 last_opened_panel: ls.get('chat.last_opened_panel') >> 0,
                 nonceLog: [],
@@ -3332,7 +3331,6 @@ window.App = (function () {
                 },
                 init: () => {
                     self.initTypeahead();
-                    self.graphemeSplitter = new GraphemeSplitter();
                     self.reloadIgnores();
                     socket.on('ack_client_update', e => {
                         if (e.updateType && e.updateValue) {
