@@ -123,7 +123,6 @@ public class Database {
                     "pixel_id INT," +
                     "reported INT," +
                     "claimed_by INT NOT NULL DEFAULT 0," +
-                    "resolved_by INT NOT NULL DEFAULT 0," +
                     "closed BOOL NOT NULL DEFAULT false," +
                     "time INT DEFAULT NULL)")
                     .execute();
