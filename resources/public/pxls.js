@@ -158,6 +158,164 @@ window.App = (function () {
     if (ms_edge) {
         have_image_rendering = false;
     }
+    const TH = (function() { //place typeahead in its own pseudo namespace
+        /**
+         *
+         * @param char {string} The char trigger. Should only be a one byte wide grapheme. Emojis will fail
+         * @param dbType {string} The type of the database, acts internally as a map key.
+         * @param [keepTrigger=false] {boolean} Whether or not this trigger type should keep it's matching trigger chars on search results.
+         * @param [hasPair=false] {boolean} Whether or not this trigger has a matching pair at the end, e.g. ':word:' vs '@word'
+         * @constructor
+         */
+        function Trigger(char, dbType, keepTrigger = false, hasPair = false) {
+            this.char = char;
+            this.dbType = dbType;
+            this.keepTrigger = keepTrigger;
+            this.hasPair = hasPair;
+        }
+
+        /**
+         *
+         * @param start {number} The first (typically left-most) index of the trigger match
+         * @param end {number} The right (typically right-most) index of the trigger match
+         * @param trigger {Trigger} The trigger this match is for
+         * @param word {string} The whole word this trigger matches
+         * @constructor
+         */
+        function TriggerMatch(start, end, trigger, word) {
+            this.start = start;
+            this.end = end;
+            this.trigger = trigger;
+            this.word = word;
+        }
+
+        /**
+         *
+         * @param name {string} The name of the database. Used internally as an accessor key.
+         * @param [initData={}] {object} The initial data to seed this database with.
+         * @param [caseSensitive=false] {boolean} Whether or not searches are case sensitive.
+         * @constructor
+         */
+        function Database(name, initData = {}, caseSensitive = false) {
+            this.name = name;
+            this._caseSensitive = caseSensitive;
+            this.initData = initData;
+
+            const fixKey = key => this._caseSensitive ? key.trim() : key.toLowerCase().trim();
+            this.search = start => {
+                start = fixKey(start);
+                return Object.entries(this.initData).filter(x => fixKey(x[0]).startsWith(start)).map(x => x[1]);
+            };
+            this.addEntry = (key, value) => {
+                key = fixKey(key);
+                this.initData[key] = value;
+            };
+            this.removeEntry = (key, value) => {
+                key = fixKey(key);
+                delete this.initData[key];
+            };
+        }
+
+        /**
+         *
+         * @param triggers {Trigger[]}
+         * @param [stops=[' ']] {string[]} An array of characters that mark the bounds of a match, e.g. if we have an input of "one two", a cancels of [' '], and we search from the end of the string, we'll grab the word "two"
+         * @param DBs {Database[]} The databases to scan for trigger matches
+         * @constructor
+         */
+        function Typeahead(triggers, stops = [' '], DBs = []) {
+            this.triggers = {};
+            this.triggersCache = [];
+            this.stops = stops;
+            this.DBs = DBs;
+            if (!Array.isArray(triggers) && triggers instanceof Trigger) {
+                triggers = [triggers];
+            }
+
+            triggers.forEach(trigger => {
+                this.triggers[trigger.char] = trigger;
+                if (!this.triggersCache.includes(trigger.char)) this.triggersCache.push(trigger.char);
+            });
+
+
+            /**
+             * Scans the given string from the specified start position for a trigger match.
+             * Starts from the right and scans left for a trigger. If found, we then scan to the right of the start index for a word break.
+             *
+             * @param startIndex {number} The index to start searching from. Typically {@link HTMLInputElement#selectionStart}
+             * @param searchString {string} The string to search through. Typically {@link HTMLInputElement#value}
+             * @returns {TriggerMatch|boolean} `false` if failed, a `TriggerMatch` otherwise.
+             */
+            this.scan = (startIndex, searchString) => {
+                let match = new TriggerMatch(0, searchString.length, null, ''),
+                    matched = false,
+                    foundOnce = false;
+                for (let i = startIndex-1; i >= 0; i--) { //Search left from the starting index looking for a trigger match
+                    let char = searchString.charAt(i);
+                    if (this.triggersCache.includes(char)) {
+                        match.start = i;
+                        match.trigger = this.triggers[char];
+                        matched = true;
+                        if (foundOnce) break; else foundOnce = true; //We only break if we've foundOnce so that if we start at the end of something like ":word:" we don't short circuit at the first one we see.
+                        //We don't just go until we see a break character because ":d:word:" is not a valid trigger. Can expand trigger in the future to potentially catch this though if a usecase pops up.
+                    } else if (this.stops.includes(char)) {
+                        break;
+                    }
+                }
+                if (matched) {
+                    for (let i = startIndex; i < searchString.length; i++) {
+                        let char = searchString.charAt(i);
+                        if (this.stops.includes(char)) { //we found the end of our word
+                            match.end = i;
+                            break;
+                        }
+                    }
+
+                    // If we have a pair and it's present, we don't want to include it in our DB searches. We go to len-1 in order to grab the whole word only (it's the difference between "word:" and "word")
+                    let fixedEnd = (match.trigger.hasPair && searchString.charAt(match.end - 1) === match.trigger.char) ? match.end - 1 : match.end;
+                    match.word = searchString.substring(match.start+1, fixedEnd);
+                }
+
+                return matched ? match : false;
+            };
+
+            /**
+             * @param trigger {TriggerMatch} The trigger match we should look for suggestions on.
+             */
+            this.suggestions = (trigger) => {
+                let db = this.DBs.filter(x => x.name === trigger.trigger.dbType);
+                if (!db || !db.length) return [];
+                db = db[0];
+                let fromDB = db.search(trigger.word);
+                if (fromDB && trigger.trigger.keepTrigger) {
+                    fromDB = fromDB.map(x => `${trigger.trigger.char}${x}`);
+                }
+                return fromDB;
+            };
+
+            /**
+             * Gets the requested database.
+             *
+             * @param dbName {string} The database's name.
+             * @see {@link Database#name}
+             * @returns {null|Database}
+             */
+            this.getDatabase = dbName => {
+                for (let x of this.DBs) {
+                    let key = x._caseSensitive ? dbName : dbName.toLowerCase();
+                    if (x.name === dbName.trim()) return x;
+                }
+                return null;
+            }
+        }
+
+        return {
+            Typeahead,
+            TriggerMatch,
+            Trigger,
+            Database
+        };
+    })();
     var ls = storageFactory(localStorage, 'ls_', 99),
         ss = storageFactory(sessionStorage, 'ss_', null),
         // this object is used to access the query parameters (and in the future probably to set them), it is prefered to use # now instead of ? as JS can change them
@@ -2347,7 +2505,7 @@ window.App = (function () {
                     $.get("/lookup", pos, function (data) {
                         data = data || { x: pos.x, y: pos.y, bg: true };
                         if (data && data.username) {
-                            typeaheadHelper.set('usernames', data.username, data.username);
+                            chat.typeahead.helper.getDatabase('users').addEntry(data.username, data.username);
                         }
                         if (self.handle) {
                             self.handle(data);
@@ -3099,58 +3257,6 @@ window.App = (function () {
                 isOpen: self.isOpen
             };
         })(),
-        typeaheadHelper = (function() {
-            let self = {
-                databases: {},
-                addDatabase: (dbname, initial = {}) => {
-                    if (self.databases[dbname] != null) return;
-                    self.databases[dbname] = initial || {};
-                },
-                removeDatabase: (dbname) => {
-                    if (self.databases[dbname] == null) return false;
-                    return (delete self.databases[dbname]);
-                },
-                get: (dbname, start) => {
-                    let searchWith = start.toLowerCase().trim();
-                    let toReduce = Object.entries(self.databases[dbname] || []).filter(x => x[0].toLowerCase().includes(searchWith));
-                    let reduced = [];
-                    toReduce.forEach(entry => {
-                        if (Array.isArray(entry[1])) {
-                            entry[1].forEach(emoji => {
-                                if (!reduced.includes(emoji))
-                                    reduced.push(emoji);
-                            });
-                        } else {
-                            if (!reduced.includes(entry[1]))
-                                reduced.push(entry[1]);
-                        }
-                    });
-                    return reduced;
-                },
-                set: (dbname, key, value) => {
-                    if (!key || !value || typeof(key) !== 'string' || !key.trim() || typeof(value) !== 'string' || !value.trim()) return false;
-                    key = key.trim();
-                    value = value.trim();
-                    try {
-                        if (self.databases[dbname] == null)
-                            self.addDatabase(dbname);
-                        else
-                            self.databases[dbname][key] = value;
-                    } catch (ignored) {return false;}
-                    return true;
-                },
-                getDatabase: (dbname) => Object.assign({}, self.databases[dbname] || {}),
-                getDatabases: () => Object.assign({}, self.databases || {})
-            };
-            return {
-                addDatabase: self.addDatabase,
-                removeDatabase: self.removeDatabase,
-                get: self.get,
-                set: self.set,
-                getDatabase: self.getDatabase,
-                getDatabases: self.getDatabases,
-            }
-        })(),
         chat = (function() {
             let self = {
                 seenHistory: false,
@@ -3162,27 +3268,14 @@ window.App = (function () {
                 last_opened_panel: ls.get('chat.last_opened_panel') >> 0,
                 nonceLog: [],
                 typeahead: {
+                    helper: null,
                     suggesting: false,
                     hasResults: false,
-                    suggestingType: '',
-                    triggerChar: '',
-                    triggers: {
-                        ':': {
-                            hasPair: true,
-                            type: 'emoji'
-                        },
-                        '@': {
-                            hasPair: false,
-                            type: 'usernames'
-                        }
-                    },
-                    cancels: [' '],
-                    highlightedIndex: -1,
+                    highlightedIndex: 0,
                     lastLength: false,
-                    expectingUpdate: false,
-                    get isInsertable() {
+                    get shouldInsert() {
                         return self.typeahead.suggesting && self.typeahead.hasResults && self.typeahead.highlightedIndex !== -1;
-                    },
+                    }
                 },
                 ignored: [],
                 chatban: {
@@ -3238,11 +3331,7 @@ window.App = (function () {
                     }
                 },
                 init: () => {
-                    if (window.emojiDB) {
-                        Object.entries(window.emojiDB).sort((a,b) => a[0].toLocaleLowerCase().localeCompare(b[0].toLocaleLowerCase())).forEach(emojiEntry => {
-                            typeaheadHelper.set('emoji', emojiEntry[0], emojiEntry[1].char);
-                        });
-                    }
+                    self.initTypeahead();
                     self.graphemeSplitter = new GraphemeSplitter();
                     self.reloadIgnores();
                     socket.on('ack_client_update', e => {
@@ -3419,164 +3508,6 @@ window.App = (function () {
 
                     self.elements.rate_limit_overlay.hide();
 
-                    let triggersCache = Object.keys(self.typeahead.triggers);
-                    self.elements.input[0].addEventListener('keyup', function(event) {
-                        switch(event.key || event.code || event.which || event.charCode) {
-                            case 'Escape':
-                            case 27: {
-                                event.preventDefault();
-                                event.stopPropagation();
-                                event.stopImmediatePropagation();
-                                self.typeahead.suggesting = false;
-                                self.elements.typeahead[0].style.display = 'none';
-                                break;
-                            }
-                            case 'Tab':
-                            case 9: {
-                                if (self.typeahead.suggesting) {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                    event.stopImmediatePropagation();
-                                    let nextIndex = self.typeahead.highlightedIndex + (event.shiftKey ? -1 : 1); //if we're holding shift, walk backwards (up).
-                                    let children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
-                                    if (event.shiftKey && nextIndex < 0) { //if we're holding shift, we're walking backwards and need to check underflow.
-                                        nextIndex = children.length-1;
-                                    } else if (nextIndex >= children.length) {
-                                        nextIndex = 0;
-                                    }
-                                    children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
-                                    children[nextIndex].classList.add('active');
-                                    self.typeahead.highlightedIndex = nextIndex;
-                                    return;
-                                }
-                                break;
-                            }
-                            case 'ArrowUp':
-                            case 38: {
-                                if (self.typeahead.suggesting) {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                    event.stopImmediatePropagation();
-                                    let nextIndex = self.typeahead.highlightedIndex - 1;
-                                    let children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
-                                    if (nextIndex < 0) {
-                                        nextIndex = children.length-1;
-                                    }
-                                    children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
-                                    children[nextIndex].classList.add('active');
-                                    self.typeahead.highlightedIndex = nextIndex;
-                                    return;
-                                }
-                                break;
-                            }
-                            case 'ArrowDown':
-                            case 40: {
-                                if (self.typeahead.suggesting) {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                    event.stopImmediatePropagation();
-                                    let nextIndex = self.typeahead.highlightedIndex + 1;
-                                    let children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
-                                    if (nextIndex >= children.length) {
-                                        nextIndex = 0;
-                                    }
-                                    children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
-                                    children[nextIndex].classList.add('active');
-                                    self.typeahead.highlightedIndex = nextIndex;
-                                    return;
-                                }
-                                break;
-                            }
-                            case 'ArrowLeft':
-                            case 37:
-                            case 'ArrowRight':
-                            case 39:
-                            case 'Backspace':
-                            case 8: {
-                                //look in to scanning left from selectionStart, seeing if a trigger exists, and flag suggesting.
-                                break;
-                            }
-                            case 'Enter':
-                            case 13: {
-                                if (self.typeahead.isInsertable) {
-                                    event.preventDefault();
-                                    event.stopPropagation();
-                                    event.stopImmediatePropagation();
-                                    let selected = self.elements.typeahead_list[0].querySelector('li:not(.no-results).active');
-                                    if (selected) {
-                                        self._handleTypeaheadInsert(selected);
-                                    } else {
-                                        let topResult = self.elements.typeahead_list[0].querySelector('li:not(.no-results):first-child');
-                                        if (topResult) {
-                                            self._handleTypeaheadInsert(topResult);
-                                        }
-                                    }
-                                    return;
-                                }
-                                break;
-                            }
-                        }
-
-                        let graphemes = self.graphemeSplitter.splitGraphemes(this.value);
-                        if (self.typeahead.lastLength === graphemes.length) return;
-                        self.typeahead.lastLength = graphemes.length;
-                        let lastChar = graphemes[graphemes.length-1];
-
-                        if (self.typeahead.suggesting) {
-                            let isCancelChar = self.typeahead.cancels.includes(lastChar);
-                            if (!graphemes.length || isCancelChar) {
-                                self.resetTypeahead();
-                            } else {
-                                self.typeahead.suggesting = true;
-                            }
-                        } else {
-                            for (let trigger of triggersCache) {
-                                if (trigger === lastChar) {
-                                    self.typeahead.suggesting = true;
-                                    self.typeahead.suggestingType = self.typeahead.triggers[trigger].type;
-                                    self.typeahead.triggerChar = trigger;
-                                    self.typeahead.triggerStart = graphemes.length-1;
-                                    break;
-                                }
-                            }
-                        }
-                        if (self.typeahead.suggesting) {
-                            let startIndex = self.typeahead.triggerStart;
-                            let endIndex = graphemes.length;
-                            let searchStartIndex = startIndex+1;
-                            let searchEndIndex = endIndex; //we separate these because we want to search for the text between our trigger and optional terminator, but we want to replace the full length.
-
-                            // Check if this specific trigger has an ending pair we need to care about (e.g. optional closing ':' on emojis)
-                            if (self.typeahead.triggers[self.typeahead.triggerChar].hasPair) {
-                                if (graphemes.length-1 > self.typeahead.triggerStart && lastChar === self.typeahead.triggerChar) {
-                                    searchEndIndex -= 1; //if we're past the trigger index and our lastChar is our closing pair, subtract 1 from endIndex so that we only search for text within the pair.
-                                }
-                            }
-
-                            let toGet = graphemes.slice(searchStartIndex, searchEndIndex).join('');
-                            let got = [];
-                            try {
-                                got = typeaheadHelper.get(self.typeahead.suggestingType, toGet);
-                            } catch (e) {
-                                console.error('Failed to get typeahead suggestions, defaulting to zero', e);
-                            }
-                            self.typeahead.highlightedIndex = -1;
-                            self.typeahead.hasResults = got && got.length > 0;
-                            if (!got.length) {
-                                self.elements.typeahead_list[0].innerHTML = `<li class="no-results">No Results</li>`;
-                            } else {
-                                self.elements.typeahead_list[0].innerHTML = ``;
-                                let prepend = self.typeahead.triggerChar === '@' ? '@' : '';
-                                let LIs = got.slice(0, 5).map(x =>
-                                    crel('li', {'data-insert': `${prepend}${x} `, 'data-start': startIndex, 'data-end': endIndex, onclick: self._handleTypeaheadInsert}, `${prepend}${x}`)
-                                );
-                                crel(self.elements.typeahead_list[0], LIs);
-                            }
-                        }
-                        self.elements.typeahead[0].style.display = self.typeahead.suggesting && self.typeahead.hasResults ? 'block' : 'none';
-                        document.body.classList.toggle('typeahead-open', self.typeahead.suggesting);
-                    });
-
                     let commandsCache = [['tempban', '/tempban  USER  BAN_LENGTH  SHOULD_PURGE  BAN_REASON'], ['permaban', '/permaban  USER  SHOULD_PURGE  BAN_REASON'], ['purge', '/purge  USER  PURGE_AMOUNT  PURGE_REASON']];
                     self.elements.input.on('keydown', e => {
                         e.stopPropagation();
@@ -3719,7 +3650,8 @@ window.App = (function () {
                                 }
                             }
                             e.preventDefault();
-                            if (!self.typeahead.isInsertable && !handling) {
+                            if (!self.typeahead.shouldInsert && !handling) {
+                                self.typeahead.lastLength = -1;
                                 self._send(self.elements.input[0].value);
                                 self.elements.input.val("");
                             }
@@ -3890,6 +3822,149 @@ window.App = (function () {
                             searchEl.addEventListener('keydown', e => e.stopPropagation());
                     })
                 },
+                initTypeahead() {
+                    // init DBs
+                    let dbEmojis = new TH.Database('emoji');
+                    let dbUsers = new TH.Database('users');
+
+                    if (window.emojiDB) {
+                        Object.entries(window.emojiDB).sort((a,b) => a[0].toLocaleLowerCase().localeCompare(b[0].toLocaleLowerCase())).forEach(emojiEntry => {
+                            dbEmojis.addEntry(emojiEntry[0], emojiEntry[1].char);
+                        });
+                    }
+
+                    // init triggers
+                    let triggerEmoji = new TH.Trigger(':', 'emoji', false, true);
+                    let triggerUsers = new TH.Trigger('@', 'users', true, false);
+
+                    // init typeahead
+                    self.typeahead.helper = new TH.Typeahead([triggerEmoji, triggerUsers], [' '], [dbEmojis, dbUsers]);
+                    window.th = self.typeahead.helper;
+
+                    // attach events
+                    self.elements.typeahead[0].querySelectorAll('[data-dismiss="typeahead"]').forEach(x => x.addEventListener('click', () => {
+                        self.resetTypeahead();
+                        self.elements.input[0].focus();
+                    }));
+                    self.elements.input[0].addEventListener('click', () => scan());
+                    self.elements.input[0].addEventListener('keyup', function(event) {
+                        switch(event.key || event.code || event.which || event.charCode) {
+                            case 'Escape':
+                            case 27: {
+                                if (self.typeahead.suggesting) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    event.stopImmediatePropagation();
+
+                                    self.resetTypeahead();
+                                }
+                                break;
+                            }
+                            case 'Tab':
+                            case 9: {
+                                if (self.typeahead.suggesting) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    event.stopImmediatePropagation();
+                                    let nextIndex = self.typeahead.highlightedIndex + (event.shiftKey ? -1 : 1); //if we're holding shift, walk backwards (up).
+                                    let children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
+                                    if (event.shiftKey && nextIndex < 0) { //if we're holding shift, we're walking backwards and need to check underflow.
+                                        nextIndex = children.length-1;
+                                    } else if (nextIndex >= children.length) {
+                                        nextIndex = 0;
+                                    }
+                                    children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
+                                    children[nextIndex].classList.add('active');
+                                    self.typeahead.highlightedIndex = nextIndex;
+                                    return;
+                                } else {
+                                    scan();
+                                }
+                                break;
+                            }
+                            case 'ArrowUp':
+                            case 38: {
+                                if (self.typeahead.suggesting) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    event.stopImmediatePropagation();
+                                    let nextIndex = self.typeahead.highlightedIndex - 1;
+                                    let children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
+                                    if (nextIndex < 0) {
+                                        nextIndex = children.length-1;
+                                    }
+                                    children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
+                                    children[nextIndex].classList.add('active');
+                                    self.typeahead.highlightedIndex = nextIndex;
+                                    return;
+                                }
+                                break;
+                            }
+                            case 'ArrowDown':
+                            case 40: {
+                                if (self.typeahead.suggesting) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    event.stopImmediatePropagation();
+                                    let nextIndex = self.typeahead.highlightedIndex + 1;
+                                    let children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
+                                    if (nextIndex >= children.length) {
+                                        nextIndex = 0;
+                                    }
+                                    children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
+                                    children[nextIndex].classList.add('active');
+                                    self.typeahead.highlightedIndex = nextIndex;
+                                    return;
+                                }
+                                break;
+                            }
+                            case 'Enter':
+                            case 13: {
+                                if (self.typeahead.shouldInsert) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    event.stopImmediatePropagation();
+                                    let selected = self.elements.typeahead_list[0].querySelector('li:not(.no-results).active');
+                                    if (selected) {
+                                        self._handleTypeaheadInsert(selected);
+                                    } else {
+                                        let topResult = self.elements.typeahead_list[0].querySelector('li:not(.no-results):first-child');
+                                        if (topResult) {
+                                            self._handleTypeaheadInsert(topResult);
+                                        }
+                                    }
+                                    return;
+                                }
+                                break;
+                            }
+                        }
+                        if (self.elements.input[0].value.length !== self.typeahead.lastLength) //stops it from scanning when we keyup with shift or some other control character.
+                            scan();
+                    });
+
+                    function scan() {
+                        let scanRes = self.typeahead.helper.scan(self.elements.input[0].selectionStart, self.elements.input[0].value);
+                        let got = false;
+                        self.typeahead.lastLength = self.elements.input[0].value.length;
+                        self.typeahead.suggesting = scanRes !== false;
+                        if (scanRes) {
+                            got = self.typeahead.helper.suggestions(scanRes);
+                            self.typeahead.hasResults = got.length > 0;
+                            if (!got.length) {
+                                self.elements.typeahead_list[0].innerHTML = `<li class="no-results">No Results</li>`; //no reason to crel this if we're just gonna innerHTML anyway.
+                            } else {
+                                self.elements.typeahead_list[0].innerHTML = ``;
+                                let LIs = got.slice(0, 10).map(x =>
+                                    crel('li', {'data-insert': `${x} `, 'data-start': scanRes.start, 'data-end': scanRes.end, onclick: self._handleTypeaheadInsert}, x)
+                                );
+                                LIs[0].classList.add('active');
+                                crel(self.elements.typeahead_list[0], LIs);
+                            }
+                        }
+                        self.elements.typeahead[0].style.display = self.typeahead.suggesting && self.typeahead.hasResults ? 'block' : 'none';
+                        document.body.classList.toggle('typeahead-open', self.typeahead.suggesting);
+                    }
+                },
                 _handleTypeaheadInsert: function(elem) {
                     if (this instanceof HTMLElement) elem = this;
                     else if (!(elem instanceof HTMLElement)) return console.warn('Got non-elem on handleTypeaheadInsert: %o', elem);
@@ -3899,18 +3974,17 @@ window.App = (function () {
                     if (!toInsert || start >= end) {
                         return console.warn('Got invalid data on elem %o.');
                     }
-                    let graphemes = self.graphemeSplitter.splitGraphemes(self.elements.input[0].value);
-                    let startText = graphemes.slice(0, start).join(''),
-                        endText = graphemes.slice(end).join('');
-                    self.elements.input[0].value = `${startText}${toInsert}${endText}`;
+                    self.elements.input[0].value = self.elements.input[0].value.substring(0, start) + toInsert + self.elements.input[0].value.substring(end);
                     self.elements.input[0].focus();
                     self.resetTypeahead();
                 },
-                resetTypeahead: () => {
-                    self.typeahead.triggerStart = 0;
+                resetTypeahead: () => { //close with reset
                     self.typeahead.suggesting = false;
+                    self.typeahead.hasResults = false;
+                    self.typeahead.highlightedIndex = 0;
                     self.elements.typeahead[0].style.display = 'none';
                     self.elements.typeahead_list[0].innerHTML = '';
+                    document.body.classList.remove('typeahead-open');
                 },
                 reloadIgnores: () => self.ignored = (ls.get('chat.ignored') || '').split(','),
                 saveIgnores: () => ls.set('chat.ignored', (self.ignored || []).join(',')),
@@ -4150,7 +4224,7 @@ window.App = (function () {
                             }
                         }
                     }
-                    typeaheadHelper.set('usernames', packet.author, packet.author);
+                    self.typeahead.helper.getDatabase('users').addEntry(packet.author, packet.author);
                     if (self.ignored.indexOf(packet.author) >= 0) return;
                     let hasPing = ls.get('chat.pings-enabled') === true && user.isLoggedIn() && packet.message_raw
                         .toLowerCase()
@@ -4926,6 +5000,7 @@ window.App = (function () {
                 addIgnore: self.addIgnore,
                 removeIgnore: self.removeIgnore,
                 getIgnores: self.getIgnores,
+                typeahead: self.typeahead,
             }
         })(),
         // this takes care of the countdown timer
@@ -5591,6 +5666,6 @@ window.App = (function () {
             ban.me(4);
         },
         chat,
-        typeaheadHelper,
+        typeahead: chat.typeahead
     };
 })();

@@ -29,7 +29,6 @@
     <script src="moment.min.js"></script>
     <script src="crel.min.js"></script>
     <script src="anchorme.min.js"></script>
-    <script src="grapheme-splitter.min.js"></script>
     <script src="emoji-button.min.js"></script>
     <script src="twemoji.min.js"></script>
     <script src="emojiDB.min.js"></script>
@@ -146,7 +145,7 @@
     </div>
 </aside>
 
-<aside id="chat" data-panel="chat" class="panel right">
+<aside id="chat" data-panel="chat" class="panel right open">
     <header class="panel-header">
         <div class="left"><i class="fas fa-times text-red panel-closer"></i></div>
         <h2><i class="fas fa-comment-alt fa-is-left fa-1_5x"></i>Chat</h2>
@@ -169,13 +168,8 @@
                     <i class="fas fa-arrow-down fa-is-left" style="float: right; margin-top: 4px;"></i>
                 </div>
                 <div id="typeahead" style="display: none;">
-                    <ul>
-                        <li>111</li>
-                        <li>222</li>
-                        <li>333</li>
-                        <li>444</li>
-                        <li>555</li>
-                    </ul>
+                    <p class="text-muted" data-dismiss="typeahead" style="cursor: pointer; padding-top: .25rem; padding-bottom: .25rem; margin: 0 0 .5rem 0rem; text-align: center; font-style: italic;">Tap here or press ESC to cancel</p>
+                    <ul></ul>
                 </div>
                 <i class="far fa-grin" id="emojiPanelTrigger"></i>
                 <label><textarea name="txtChatContent" id="txtChatContent" placeholder="Press ENTER to send..."></textarea></label>
