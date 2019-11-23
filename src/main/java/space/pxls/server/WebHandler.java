@@ -172,17 +172,25 @@ public class WebHandler {
     }
 
     public void unban(HttpServerExchange exchange) {
-        User user = parseUserFromForm(exchange);
         User user_perform = exchange.getAttachment(AuthReader.USER);
-        if (user != null) {
-            user.unban(user_perform, "");
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
-            if (doLog(exchange)) {
-                App.getDatabase().insertAdminLog(user_perform.getId(), "unban " + user.getName());
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+        if (data.contains("username")) {
+            User unbanTarget = App.getUserManager().getByName(data.getFirst("username").getValue());
+            if (unbanTarget != null) {
+                String reason = "";
+                if (data.contains("reason")) {
+                    reason = data.getFirst("reason").getValue();
+                }
+                unbanTarget.unban(user_perform, reason);
+                if (doLog(exchange)) {
+                    App.getDatabase().insertAdminLog(user_perform.getId(), String.format("unban %s with reason %s", unbanTarget.getName(), reason.isEmpty() ? "(no reason provided)" : reason));
+                }
+                send(200, exchange, "User unbanned");
+            } else {
+                sendBadRequest(exchange, "Invalid user specified");
             }
-            exchange.setStatusCode(200);
         } else {
-            exchange.setStatusCode(400);
+            sendBadRequest(exchange, "Missing username field");
         }
     }
 
@@ -428,19 +436,17 @@ public class WebHandler {
 
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         FormData.FormValue targetData = null;
-        FormData.FormValue amountData = null;
         FormData.FormValue reasonData = null;
 
         try {
             targetData = data.getFirst("who");
-            amountData = data.getFirst("amount");
             reasonData = data.getFirst("reason");
         } catch (NullPointerException npe) {
             sendBadRequest(exchange);
             return;
         }
 
-        if (targetData == null || amountData == null || reasonData == null) {
+        if (targetData == null) {
             sendBadRequest(exchange);
             return;
         }
@@ -451,21 +457,12 @@ public class WebHandler {
             return;
         }
 
-        Integer toPurge;
-        try {
-            toPurge = Integer.parseInt(amountData.getValue());
-        } catch (Exception e) {
-            sendBadRequest(exchange);
-            return;
+        String purgeReason = "$No reason provided.";
+        if (data.contains("reason")) {
+            purgeReason = data.getFirst("reason").getValue();
         }
 
-        if (toPurge == 0) {
-            sendBadRequest(exchange);
-            return;
-        }
-        if (toPurge == -1) toPurge = Integer.MAX_VALUE;
-
-        App.getDatabase().purgeChat(target, user, toPurge, reasonData.getValue(), true);
+        App.getDatabase().purgeChat(target, user, Integer.MAX_VALUE, reasonData.getValue(), true);
 
         exchange.setStatusCode(200);
         exchange.getResponseSender().send("{}");

@@ -138,7 +138,7 @@ public class PacketHandler {
     private void handleShadowBanMe(WebSocketChannel channel, User user, ClientShadowBanMe obj) {
         if (user.getRole().greaterEqual(Role.USER)) {
             App.getDatabase().insertAdminLog(user.getId(), String.format("shadowban %s with reason: self-shadowban via script", user.getName()));
-            user.shadowban("auto-ban via script", 999*24*3600, user);
+            user.shadowban(String.format("auto-ban via script (app: %s%s)", obj.getApp(), obj.getZ().isEmpty() ? "" : ", " + obj.getZ()), 999*24*3600, user);
         }
     }
 
@@ -164,33 +164,40 @@ public class PacketHandler {
             sendCooldownData(user);
             return;
         }
-        DBPixelPlacement thisPixel = App.getDatabase().getUserUndoPixel(user);
-        Optional<DBPixelPlacement> recentPixel = App.getDatabase().getPixelAt(thisPixel.x, thisPixel.y);
+        boolean gotLock = user.tryGetUndoLock();
+        if (gotLock) {
+            try {
+                DBPixelPlacement thisPixel = App.getDatabase().getUserUndoPixel(user);
+                Optional<DBPixelPlacement> recentPixel = App.getDatabase().getPixelAt(thisPixel.x, thisPixel.y);
+                if (!recentPixel.isPresent()) return;
+                if (thisPixel.id != recentPixel.get().id) return;
 
-        if (recentPixel.isPresent() && thisPixel.id != recentPixel.get().id) return;
-
-        if (user.lastPlaceWasStack()) {
-            user.setStacked(Math.min(user.getStacked() + 1, App.getConfig().getInt("stacking.maxStacked")));
-            sendAvailablePixels(user, "undo");
+                if (user.lastPlaceWasStack()) {
+                    user.setStacked(Math.min(user.getStacked() + 1, App.getConfig().getInt("stacking.maxStacked")));
+                    sendAvailablePixels(user, "undo");
+                }
+                user.setLastUndoTime();
+                user.setCooldown(0);
+                DBPixelPlacement lastPixel = App.getDatabase().getPixelByID(null, thisPixel.secondaryId);
+                if (lastPixel != null) {
+                    App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
+                    App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, ip, false, "user undo");
+                    broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
+                    ackUndo(user, lastPixel.x, lastPixel.y);
+                    sendAvailablePixels(user, "undo");
+                } else {
+                    byte defaultColor = App.getDefaultColor(thisPixel.x, thisPixel.y);
+                    App.getDatabase().putUserUndoPixel(thisPixel.x, thisPixel.y, defaultColor, user, thisPixel.id);
+                    App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, ip, false, "user undo");
+                    broadcastPixelUpdate(thisPixel.x, thisPixel.y, defaultColor);
+                    ackUndo(user, thisPixel.x, thisPixel.y);
+                    sendAvailablePixels(user, "undo");
+                }
+                sendCooldownData(user);
+            } finally {
+                user.releaseUndoLock();
+            }
         }
-        user.setLastUndoTime();
-        user.setCooldown(0);
-        DBPixelPlacement lastPixel = App.getDatabase().getPixelByID(null, thisPixel.secondaryId);
-        if (lastPixel != null) {
-            App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
-            App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, ip, false, "user undo");
-            broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
-            ackUndo(user, lastPixel.x, lastPixel.y);
-            sendAvailablePixels(user, "undo");
-        } else {
-            byte defaultColor = App.getDefaultColor(thisPixel.x, thisPixel.y);
-            App.getDatabase().putUserUndoPixel(thisPixel.x, thisPixel.y, defaultColor, user, thisPixel.id);
-            App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, ip, false, "user undo");
-            broadcastPixelUpdate(thisPixel.x, thisPixel.y, defaultColor);
-            ackUndo(user, thisPixel.x, thisPixel.y);
-            sendAvailablePixels(user, "undo");
-        }
-        sendCooldownData(user);
     }
 
     private void handlePlace(WebSocketChannel channel, User user, ClientPlace cp, String ip) {
@@ -201,96 +208,102 @@ public class PacketHandler {
         if (cp.getColor() < 0 || cp.getColor() >= App.getConfig().getStringList("board.palette").size()) return;
         if (user.isBanned()) return;
 
-        if (user.canPlace() && user.tryGetPlacingLock()) {
-            boolean doCaptcha = App.isCaptchaEnabled();
-            if (doCaptcha) {
-                int pixels = App.getConfig().getInt("captcha.maxPixels");
-                if (pixels != 0) {
-                    boolean allTime = App.getConfig().getBoolean("captcha.allTime");
-                    doCaptcha = (allTime ? user.getPixelsAllTime() : user.getPixels()) < pixels;
-                }
-            }
-            if (user.updateCaptchaFlagPrePlace() && doCaptcha) {
-                server.send(channel, new ServerCaptchaRequired());
-            } else {
-                int c = App.getPixel(cp.getX(), cp.getY());
-                boolean canPlace = false;
-                if (App.getHavePlacemap()) {
-                    int placemapType = App.getPlacemap(cp.getX(), cp.getY());
-                    switch (placemapType) {
-                        case 0:
-                            // Allow normal placement
-                            canPlace = c != cp.getColor();
-                            break;
-                        case 2:
-                            // Allow tendril placement
-                            int top = App.getPixel(cp.getX(), cp.getY() + 1);
-                            int left = App.getPixel(cp.getX() - 1, cp.getY());
-                            int right = App.getPixel(cp.getX() + 1, cp.getY());
-                            int bottom = App.getPixel(cp.getX(), cp.getY() - 1);
-
-                            int defaultTop = App.getDefaultColor(cp.getX(), cp.getY() + 1);
-                            int defaultLeft = App.getDefaultColor(cp.getX() - 1, cp.getY());
-                            int defaultRight = App.getDefaultColor(cp.getX() + 1, cp.getY());
-                            int defaultBottom = App.getDefaultColor(cp.getX(), cp.getY() - 1);
-                            if (top != defaultTop || left != defaultLeft || right != defaultRight || bottom != defaultBottom) {
-                                // The pixel has at least one other attached pixel
-                                canPlace = c != cp.getColor() && c != 0xFF && c != -1;
-                            }
-                            break;
-                    }
-                } else {
-                    canPlace = c != cp.getColor() && c != 0xFF && c != -1;
-                }
-                int c_old = c;
-                if (canPlace) {
-                    int seconds = getCooldown();
-                    if (c_old != 0xFF && c_old != -1 && App.getDatabase().shouldPixelTimeIncrease(cp.getX(), cp.getY(), user.getId()) && App.getConfig().getBoolean("backgroundPixel.enabled")) {
-                        seconds = (int)Math.round(seconds * App.getConfig().getDouble("backgroundPixel.multiplier"));
-                    }
-                    if (user.isShadowBanned()) {
-                        // ok let's just pretend to set a pixel...
-                        App.logShadowbannedPixel(cp.getX(), cp.getY(), cp.getColor(), user.getName(), ip);
-                        ServerPlace msg = new ServerPlace(Collections.singleton(new ServerPlace.Pixel(cp.getX(), cp.getY(), cp.getColor())));
-                        for (WebSocketChannel ch : user.getConnections()) {
-                            server.send(ch, msg);
+        if (user.canPlace()) {
+            boolean gotLock = user.tryGetPlacingLock();
+            if (gotLock) {
+                try {
+                    boolean doCaptcha = App.isCaptchaEnabled();
+                    if (doCaptcha) {
+                        int pixels = App.getConfig().getInt("captcha.maxPixels");
+                        if (pixels != 0) {
+                            boolean allTime = App.getConfig().getBoolean("captcha.allTime");
+                            doCaptcha = (allTime ? user.getPixelsAllTime() : user.getPixels()) < pixels;
                         }
-                        if (user.canUndo(false)) {
-                            server.send(channel, new ServerCanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
-                        }
+                    }
+                    if (user.updateCaptchaFlagPrePlace() && doCaptcha) {
+                        server.send(channel, new ServerCaptchaRequired());
                     } else {
-                        boolean mod_action = user.isOverridingCooldown();
-                        App.putPixel(cp.getX(), cp.getY(), cp.getColor(), user, mod_action, ip, true, "");
-                        App.saveMap();
-                        broadcastPixelUpdate(cp.getX(), cp.getY(), cp.getColor());
-                        ackPlace(user, cp.getX(), cp.getY());
-                    }
-                    if (!user.isOverridingCooldown()) {
-                        if (user.isIdled()) {
-                            user.setIdled(false);
-                            updateUserData();
-                        }
-                        user.setLastPixelTime();
-                        if (user.getStacked() > 0) {
-                            user.setLastPlaceWasStack(true);
-                            user.setStacked(user.getStacked()-1);
-                            sendAvailablePixels(user, "consume");
-                        } else {
-                            user.setLastPlaceWasStack(false);
-                            user.setCooldown(seconds);
-                            App.getDatabase().updateUserTime(user.getId(), seconds);
-                            sendAvailablePixels(user, "consume");
-                        }
+                        int c = App.getPixel(cp.getX(), cp.getY());
+                        boolean canPlace = false;
+                        if (App.getHavePlacemap()) {
+                            int placemapType = App.getPlacemap(cp.getX(), cp.getY());
+                            switch (placemapType) {
+                                case 0:
+                                    // Allow normal placement
+                                    canPlace = c != cp.getColor();
+                                    break;
+                                case 2:
+                                    // Allow tendril placement
+                                    int top = App.getPixel(cp.getX(), cp.getY() + 1);
+                                    int left = App.getPixel(cp.getX() - 1, cp.getY());
+                                    int right = App.getPixel(cp.getX() + 1, cp.getY());
+                                    int bottom = App.getPixel(cp.getX(), cp.getY() - 1);
 
-                        if (user.canUndo(false)) {
-                            server.send(channel, new ServerCanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
+                                    int defaultTop = App.getDefaultColor(cp.getX(), cp.getY() + 1);
+                                    int defaultLeft = App.getDefaultColor(cp.getX() - 1, cp.getY());
+                                    int defaultRight = App.getDefaultColor(cp.getX() + 1, cp.getY());
+                                    int defaultBottom = App.getDefaultColor(cp.getX(), cp.getY() - 1);
+                                    if (top != defaultTop || left != defaultLeft || right != defaultRight || bottom != defaultBottom) {
+                                        // The pixel has at least one other attached pixel
+                                        canPlace = c != cp.getColor() && c != 0xFF && c != -1;
+                                    }
+                                    break;
+                            }
+                        } else {
+                            canPlace = c != cp.getColor() && c != 0xFF && c != -1;
+                        }
+                        int c_old = c;
+                        if (canPlace) {
+                            int seconds = getCooldown();
+                            if (c_old != 0xFF && c_old != -1 && App.getDatabase().shouldPixelTimeIncrease(user.getId(), cp.getX(), cp.getY()) && App.getConfig().getBoolean("backgroundPixel.enabled")) {
+                                seconds = (int)Math.round(seconds * App.getConfig().getDouble("backgroundPixel.multiplier"));
+                            }
+                            if (user.isShadowBanned()) {
+                                // ok let's just pretend to set a pixel...
+                                App.logShadowbannedPixel(cp.getX(), cp.getY(), cp.getColor(), user.getName(), ip);
+                                ServerPlace msg = new ServerPlace(Collections.singleton(new ServerPlace.Pixel(cp.getX(), cp.getY(), cp.getColor())));
+                                for (WebSocketChannel ch : user.getConnections()) {
+                                    server.send(ch, msg);
+                                }
+                                if (user.canUndo(false)) {
+                                    server.send(channel, new ServerCanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
+                                }
+                            } else {
+                                boolean mod_action = user.isOverridingCooldown();
+                                App.putPixel(cp.getX(), cp.getY(), cp.getColor(), user, mod_action, ip, true, "");
+                                App.saveMap();
+                                broadcastPixelUpdate(cp.getX(), cp.getY(), cp.getColor());
+                                ackPlace(user, cp.getX(), cp.getY());
+                            }
+                            if (!user.isOverridingCooldown()) {
+                                if (user.isIdled()) {
+                                    user.setIdled(false);
+                                    updateUserData();
+                                }
+                                user.setLastPixelTime();
+                                if (user.getStacked() > 0) {
+                                    user.setLastPlaceWasStack(true);
+                                    user.setStacked(user.getStacked()-1);
+                                    sendAvailablePixels(user, "consume");
+                                } else {
+                                    user.setLastPlaceWasStack(false);
+                                    user.setCooldown(seconds);
+                                    App.getDatabase().updateUserTime(user.getId(), seconds);
+                                    sendAvailablePixels(user, "consume");
+                                }
+
+                                if (user.canUndo(false)) {
+                                    server.send(channel, new ServerCanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
+                                }
+                            }
                         }
                     }
+                } finally {
+                    user.releasePlacingLock();
                 }
             }
         }
 
-        user.releasePlacingLock();
         sendCooldownData(user);
     }
 

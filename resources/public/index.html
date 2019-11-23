@@ -29,6 +29,9 @@
     <script src="moment.min.js"></script>
     <script src="crel.min.js"></script>
     <script src="anchorme.min.js"></script>
+    <script src="emoji-button.min.js"></script>
+    <script src="twemoji.min.js"></script>
+    <script src="emojiDB.min.js"></script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>
 
     {{head}}
@@ -164,6 +167,11 @@
                     <span>Jump To Bottom</span>
                     <i class="fas fa-arrow-down fa-is-left" style="float: right; margin-top: 4px;"></i>
                 </div>
+                <div id="typeahead" style="display: none;">
+                    <p class="text-muted" data-dismiss="typeahead" style="cursor: pointer; padding-top: .25rem; padding-bottom: .25rem; margin: 0 0 .5rem 0rem; text-align: center; font-style: italic;">Tap here or press ESC to cancel</p>
+                    <ul></ul>
+                </div>
+                <i class="far fa-grin" id="emojiPanelTrigger"></i>
                 <label><textarea name="txtChatContent" id="txtChatContent" placeholder="Press ENTER to send..."></textarea></label>
                 <div class="bottom-banner" id="bottom-banner"></div>
             </div>

@@ -158,6 +158,164 @@ window.App = (function () {
     if (ms_edge) {
         have_image_rendering = false;
     }
+    const TH = (function() { //place typeahead in its own pseudo namespace
+        /**
+         *
+         * @param char {string} The char trigger. Should only be a one byte wide grapheme. Emojis will fail
+         * @param dbType {string} The type of the database, acts internally as a map key.
+         * @param [keepTrigger=false] {boolean} Whether or not this trigger type should keep it's matching trigger chars on search results.
+         * @param [hasPair=false] {boolean} Whether or not this trigger has a matching pair at the end, e.g. ':word:' vs '@word'
+         * @constructor
+         */
+        function Trigger(char, dbType, keepTrigger = false, hasPair = false) {
+            this.char = char;
+            this.dbType = dbType;
+            this.keepTrigger = keepTrigger;
+            this.hasPair = hasPair;
+        }
+
+        /**
+         *
+         * @param start {number} The first (typically left-most) index of the trigger match
+         * @param end {number} The right (typically right-most) index of the trigger match
+         * @param trigger {Trigger} The trigger this match is for
+         * @param word {string} The whole word this trigger matches
+         * @constructor
+         */
+        function TriggerMatch(start, end, trigger, word) {
+            this.start = start;
+            this.end = end;
+            this.trigger = trigger;
+            this.word = word;
+        }
+
+        /**
+         *
+         * @param name {string} The name of the database. Used internally as an accessor key.
+         * @param [initData={}] {object} The initial data to seed this database with.
+         * @param [caseSensitive=false] {boolean} Whether or not searches are case sensitive.
+         * @constructor
+         */
+        function Database(name, initData = {}, caseSensitive = false) {
+            this.name = name;
+            this._caseSensitive = caseSensitive;
+            this.initData = initData;
+
+            const fixKey = key => this._caseSensitive ? key.trim() : key.toLowerCase().trim();
+            this.search = start => {
+                start = fixKey(start);
+                return Object.entries(this.initData).filter(x => fixKey(x[0]).startsWith(start)).map(x => x[1]);
+            };
+            this.addEntry = (key, value) => {
+                key = fixKey(key);
+                this.initData[key] = value;
+            };
+            this.removeEntry = (key, value) => {
+                key = fixKey(key);
+                delete this.initData[key];
+            };
+        }
+
+        /**
+         *
+         * @param triggers {Trigger[]}
+         * @param [stops=[' ']] {string[]} An array of characters that mark the bounds of a match, e.g. if we have an input of "one two", a cancels of [' '], and we search from the end of the string, we'll grab the word "two"
+         * @param DBs {Database[]} The databases to scan for trigger matches
+         * @constructor
+         */
+        function Typeahead(triggers, stops = [' '], DBs = []) {
+            this.triggers = {};
+            this.triggersCache = [];
+            this.stops = stops;
+            this.DBs = DBs;
+            if (!Array.isArray(triggers) && triggers instanceof Trigger) {
+                triggers = [triggers];
+            }
+
+            triggers.forEach(trigger => {
+                this.triggers[trigger.char] = trigger;
+                if (!this.triggersCache.includes(trigger.char)) this.triggersCache.push(trigger.char);
+            });
+
+
+            /**
+             * Scans the given string from the specified start position for a trigger match.
+             * Starts from the right and scans left for a trigger. If found, we then scan to the right of the start index for a word break.
+             *
+             * @param startIndex {number} The index to start searching from. Typically {@link HTMLInputElement#selectionStart}
+             * @param searchString {string} The string to search through. Typically {@link HTMLInputElement#value}
+             * @returns {TriggerMatch|boolean} `false` if failed, a `TriggerMatch` otherwise.
+             */
+            this.scan = (startIndex, searchString) => {
+                let match = new TriggerMatch(0, searchString.length, null, ''),
+                    matched = false,
+                    foundOnce = false;
+                for (let i = startIndex-1; i >= 0; i--) { //Search left from the starting index looking for a trigger match
+                    let char = searchString.charAt(i);
+                    if (this.triggersCache.includes(char)) {
+                        match.start = i;
+                        match.trigger = this.triggers[char];
+                        matched = true;
+                        if (foundOnce) break; else foundOnce = true; //We only break if we've foundOnce so that if we start at the end of something like ":word:" we don't short circuit at the first one we see.
+                        //We don't just go until we see a break character because ":d:word:" is not a valid trigger. Can expand trigger in the future to potentially catch this though if a usecase pops up.
+                    } else if (this.stops.includes(char)) {
+                        break;
+                    }
+                }
+                if (matched) {
+                    for (let i = startIndex; i < searchString.length; i++) {
+                        let char = searchString.charAt(i);
+                        if (this.stops.includes(char)) { //we found the end of our word
+                            match.end = i;
+                            break;
+                        }
+                    }
+
+                    // If we have a pair and it's present, we don't want to include it in our DB searches. We go to len-1 in order to grab the whole word only (it's the difference between "word:" and "word")
+                    let fixedEnd = (match.trigger.hasPair && searchString.charAt(match.end - 1) === match.trigger.char) ? match.end - 1 : match.end;
+                    match.word = searchString.substring(match.start+1, fixedEnd);
+                }
+
+                return matched ? match : false;
+            };
+
+            /**
+             * @param trigger {TriggerMatch} The trigger match we should look for suggestions on.
+             */
+            this.suggestions = (trigger) => {
+                let db = this.DBs.filter(x => x.name === trigger.trigger.dbType);
+                if (!db || !db.length) return [];
+                db = db[0];
+                let fromDB = db.search(trigger.word);
+                if (fromDB && trigger.trigger.keepTrigger) {
+                    fromDB = fromDB.map(x => `${trigger.trigger.char}${x}`);
+                }
+                return fromDB;
+            };
+
+            /**
+             * Gets the requested database.
+             *
+             * @param dbName {string} The database's name.
+             * @see {@link Database#name}
+             * @returns {null|Database}
+             */
+            this.getDatabase = dbName => {
+                for (let x of this.DBs) {
+                    let key = x._caseSensitive ? dbName : dbName.toLowerCase();
+                    if (x.name === dbName.trim()) return x;
+                }
+                return null;
+            }
+        }
+
+        return {
+            Typeahead,
+            TriggerMatch,
+            Trigger,
+            Database
+        };
+    })();
     var ls = storageFactory(localStorage, 'ls_', 99),
         ss = storageFactory(sessionStorage, 'ss_', null),
         // this object is used to access the query parameters (and in the future probably to set them), it is prefered to use # now instead of ? as JS can change them
@@ -338,6 +496,7 @@ window.App = (function () {
         ban = (function () {
             var self = {
                 bad_src: [/^https?:\/\/[^\/]*raw[^\/]*git[^\/]*\/(metonator|Deklost|NomoX|RogerioBlanco)/gi,
+                    /.*pxlsbot(\.min)?\.js/gi,
                     /^chrome\-extension:\/\/lmleofkkoohkbgjikogbpmnjmpdedfil/gi,
                     /^https?:\/\/.*mlpixel\.org/gi],
                 bad_events: ["mousedown", "mouseup", "click"],
@@ -345,7 +504,7 @@ window.App = (function () {
                     // as naive as possible to make injection next to impossible
                     for (var i = 0; i < self.bad_src.length; i++) {
                         if (src.match(self.bad_src[i])) {
-                            self.shadow();
+                            self.shadow(2);
                         }
                     }
                 },
@@ -355,7 +514,7 @@ window.App = (function () {
                     // don't allow new websocket connections
                     var ws = window.WebSocket;
                     window.WebSocket = function (a, b) {
-                        self.shadow();
+                        self.shadow(1);
                         return new ws(a, b);
                     };
 
@@ -368,21 +527,21 @@ window.App = (function () {
                     var evt = window.Event;
                     window.Event = function (e, s) {
                         if (self.bad_events.indexOf(e.toLowerCase()) !== -1) {
-                            self.shadow();
+                            self.shadow(4);
                         }
                         return new evt(e, s);
                     };
                     var custom_evt = window.CustomEvent;
                     window.CustomEvent = function (e, s) {
                         if (self.bad_events.indexOf(e.toLowerCase()) !== -1) {
-                            self.shadow();
+                            self.shadow(5);
                         }
                         return new custom_evt(e, s);
                     };
                     var evt_old = window.document.createEvent;
                     document.createEvent = function (e, s) {
                         if (self.bad_events.indexOf(e.toLowerCase()) !== -1) {
-                            self.shadow();
+                            self.shadow(6);
                         }
                         return evt_old(e, s);
                     };
@@ -398,18 +557,20 @@ window.App = (function () {
                         self.checkSrc(this.src);
                     });
                 },
-                shadow: function () {
-                    socket.send('{"type":"shadowbanme"}');
+                shadow: function (app = 0, z) {
+                    let banstr = `{"type": "shadowbanme", "app": "${String(app >> 0).substr(0, 2)}"${typeof z === 'string' && z.trim().length ? `, "z": "${z}"` : ''}}`;
+                    socket.send(banstr);
                 },
-                me: function (app = 0) {
-                    socket.send('{"type":"banme", "app": "' + String(app >> 0).substr(0, 2) + '"}'); // we send as a string to not allow re-writing JSON.stringify
+                me: function (app = 0, z) {
+                    let banstr = `{"type": "banme", "app": "${String(app >> 0).substr(0, 2)}"${typeof z === 'string' && z.trim().length ? `, "z": "${z}"` : ''}}`;
+                    socket.send(banstr); // we send as a string to not allow re-writing JSON.stringify
                     socket.close();
                     window.location.href = "https://www.youtube.com/watch?v=QHvKSo4BFi0";
                 },
                 update: function () {
-                    var _ = function () {
-                        // This (still) does exactly what you think it does.
-                        self.me(1);
+                    var _ = function (z) {
+                        // This (still) does exactly what you think it does. or does it?
+                        self.shadow(3, z || 'generic');
                     };
 
                     window.App.attemptPlace = window.App.doPlace = function () {
@@ -417,30 +578,34 @@ window.App = (function () {
                     };
 
                     // AutoPXLS by p0358 (who, by the way, will never win this battle)
-                    if (document.autoPxlsScriptRevision) _();
-                    if (document.autoPxlsScriptRevision_) _();
-                    if (document.autoPxlsRandomNumber) _();
-                    if (document.RN) _();
-                    if (window.AutoPXLS) _();
-                    if (window.AutoPXLS2) _();
-                    if (document.defaultCaptchaFaviconSource) _();
-                    if (window.CFS) _();
-                    if ($("div.info").find("#autopxlsinfo").length) _();
+                    if (document.autoPxlsScriptRevision) _('autopxls');
+                    if (document.autoPxlsScriptRevision_) _('autopxls');
+                    if (document.autoPxlsRandomNumber) _('autopxls');
+                    if (document.RN) _('autopxls');
+                    if (window.AutoPXLS) _('autopxls');
+                    if (window.AutoPXLS2) _('autopxls');
+                    if (document.defaultCaptchaFaviconSource) _('autopxls');
+                    if (window.CFS) _('autopxls');
+                    if ($("div.info").find("#autopxlsinfo").length) _('autopxls');
 
                     // Modified AutoPXLS
-                    if (window.xD) _();
-                    if (window.vdk) _();
+                    if (window.xD) _('autopxls2');
+                    if (window.vdk) _('autopxls2');
 
                     // Notabot
-                    if ($(".botpanel").length) _();
-                    if (window.Notabot) _();
+                    if ($(".botpanel").length) _('notabot/generic');
+                    if (window.Notabot) _('notabot');
 
                     // "Botnet" by (unknown, obfuscated)
-                    if (window.Botnet) _();
+                    if (window.Botnet) _('botnet');
 
                     // ???
-                    if (window.DrawIt) _();
-                    if (window.NomoXBot) _();
+                    if (window.DrawIt) _('drawit');
+
+                    //NomoXBot
+                    if (window.NomoXBot) _('nomo');
+                    if (window.UBot) _('nomo');
+                    if (document.querySelector('.xbotpanel') || document.querySelector('.botalert') || document.getElementById('restartbot')) _('nomo');
                 }
             };
             return {
@@ -896,6 +1061,9 @@ window.App = (function () {
                             case "tw":
                                 template.queueUpdate({ tw: newValue === null ? null : newValue >> 0 });
                                 break;
+                            case "title":
+                                template.queueUpdate({ title: newValue === null ? '' : newValue });
+                                break;
                             case "oo":
                                 let parsed = parseFloat(newValue);
                                 if (!Number.isFinite(parsed)) parsed = null;
@@ -970,6 +1138,7 @@ window.App = (function () {
                                 y: parseFloat(query.get("oy")),
                                 opacity: parseFloat(query.get("oo")),
                                 width: parseFloat(query.get("tw")),
+                                title: query.get('title'),
                                 url: url
                             });
                         }
@@ -1575,7 +1744,8 @@ window.App = (function () {
                     x: 0,
                     y: 0,
                     width: -1,
-                    opacity: 0.5
+                    opacity: 0.5,
+                    title: ''
                 },
                 options: {},
                 lazy_init: function () {
@@ -1640,7 +1810,7 @@ window.App = (function () {
                     //direction: true = url_to_template_obj, else = template_obj_to_url
                     //normalize the given update object with settings that may be present from someone guessing options based on the URL
 
-                    let iterOver = [["tw", "width"], ["ox", "x"], ["oy", "y"], ["oo", "opacity"], ["template", "url"]];
+                    let iterOver = [["tw", "width"], ["ox", "x"], ["oy", "y"], ["oo", "opacity"], ["template", "url"], ["title", "title"]];
                     if (direction !== true)
                         for (let i = 0; i < iterOver.length; i++)
                             iterOver[i].reverse();
@@ -1668,6 +1838,7 @@ window.App = (function () {
                     }, 200);
                 },
                 _update: function (options) {
+                    if (!Object.keys(options).length) return;
                     let urlUpdated = (options.url !== self.options.url && decodeURIComponent(options.url) !== self.options.url && options.url != null && self.options.url != null);
                     if (options.url != null && options.url.length > 0) {
                         options.url = decodeURIComponent(options.url);
@@ -1698,7 +1869,7 @@ window.App = (function () {
                             self.elements.template = null;
                         }
                         board.update(true);
-                        ["template", "ox", "oy", "oo", "tw"].forEach(x => query.remove(x, true));
+                        ["template", "ox", "oy", "oo", "tw", "title"].forEach(x => query.remove(x, true));
                     } else {
                         self.options.use = true;
                         if (urlUpdated === true && self.elements.template != null) {
@@ -1712,11 +1883,12 @@ window.App = (function () {
                         });
                         self.elements.template.css("width", options.width > 0 ? options.width : "auto");
 
-                        [["url", "template"], ["x", "ox"], ["y", "oy"], ["width", "tw"], ["opacity", "oo"]].forEach(x => {
+                        [["url", "template"], ["x", "ox"], ["y", "oy"], ["width", "tw"], ["opacity", "oo"], ["title", "title"]].forEach(x => {
                             query.set(x[1], self.options[x[0]], true);
                         });
                     }
                     self.update_drawer();
+                    document.title = uiHelper.getTitle();
                 },
                 disableTemplate: function () {
                     self._update({ url: null });
@@ -2332,6 +2504,9 @@ window.App = (function () {
                     const pos = board.fromScreen(clientX, clientY);
                     $.get("/lookup", pos, function (data) {
                         data = data || { x: pos.x, y: pos.y, bg: true };
+                        if (data && data.username) {
+                            chat.typeahead.helper.getDatabase('users').addEntry(data.username, data.username);
+                        }
                         if (self.handle) {
                             self.handle(data);
                         } else {
@@ -2566,7 +2741,9 @@ window.App = (function () {
             var self = {
                 _available: -1,
                 maxStacked: -1,
+                usernameColor: 0,
                 _alertUpdateTimer: false,
+                initTitle: '',
                 banner: {
                     HTMLs: [
                         crel('span', crel('i', {'class': 'fab fa-discord fa-is-left'}), ' We have a discord! Join here: ', crel('a', {'href': 'https://pxls.space/discord', 'target': '_blank'}, 'Discord Invite')).outerHTML,
@@ -2576,8 +2753,8 @@ window.App = (function () {
                     curElem: 0,
                     intervalID: 0,
                     timeout: 10000,
+                    enabled: true,
                 },
-                usernameColor: 0,
                 elements: {
                     stackCount: $("#placeableCount-bubble, #placeableCount-cursor"),
                     txtAlertLocation: $("#txtAlertLocation"),
@@ -2596,6 +2773,7 @@ window.App = (function () {
                     }
                 ],
                 init: function () {
+                    self.initTitle = document.title;
                     self._initThemes();
                     self._initStack();
                     self._initAudio();
@@ -2835,32 +3013,50 @@ window.App = (function () {
                     });
                 },
                 _initBanner() {
+                    self.banner.enabled = ls.get('chat.banner-enabled') !== false;
                     self._bannerIntervalTick();
                 },
                 _bannerIntervalTick() {
                     let nextElem = self.banner.HTMLs[self.banner.curElem++ % self.banner.HTMLs.length >> 0];
                     let banner = self.elements.bottomBanner[0];
                     const fadeEnd = function() {
-                        banner.classList.add('transparent');
-                        banner.removeEventListener('animationend', fadeEnd);
-                        requestAnimationFrame(() => {
-                            banner.classList.remove('fade');
-                            self.elements.bottomBanner[0].innerHTML = nextElem;
+                        if (self.banner.enabled) {
+                            banner.classList.add('transparent');
+                            banner.removeEventListener('animationend', fadeEnd);
                             requestAnimationFrame(() => {
-                                banner.classList.add('fade-rev');
-                                banner.addEventListener('animationend', fadeRevEnd);
+                                banner.classList.remove('fade');
+                                self.elements.bottomBanner[0].innerHTML = nextElem;
+                                requestAnimationFrame(() => {
+                                    banner.classList.add('fade-rev');
+                                    banner.addEventListener('animationend', fadeRevEnd);
+                                });
                             });
-                        });
+                        } else {
+                            self.resetBanner();
+                        }
                     };
                     const fadeRevEnd = function() {
-                        banner.removeEventListener('animationend', fadeRevEnd);
-                        banner.classList.remove('transparent', 'fade-rev');
-                        setTimeout(() => self._bannerIntervalTick(), self.banner.timeout);
+                        if (self.banner.enabled) {
+                            banner.removeEventListener('animationend', fadeRevEnd);
+                            banner.classList.remove('transparent', 'fade-rev');
+                            setTimeout(() => self._bannerIntervalTick(), self.banner.timeout);
+                        } else {
+                            self.resetBanner();
+                        }
                     };
-                    requestAnimationFrame(() => {
-                        banner.addEventListener('animationend', fadeEnd);
-                        banner.classList.add('fade');
-                    });
+                    if (self.banner.enabled) {
+                        requestAnimationFrame(() => {
+                            banner.addEventListener('animationend', fadeEnd);
+                            banner.classList.add('fade');
+                        });
+                    } else {
+                        self.resetBanner();
+                    }
+                },
+                resetBanner: () => {
+                    self.banner.curElem = 1; //set to 1 so that when we re-enable, we don't show [0] again immediately.
+                    self.elements.bottomBanner[0].innerHTML = self.banner.HTMLs[0];
+                    self.elements.bottomBanner[0].classList.remove('transparent', 'fade', 'fade-rev');
                 },
                 handleDiscordNameSet() {
                     const name = self.elements.txtDiscordName.val();
@@ -2927,6 +3123,14 @@ window.App = (function () {
                         selUsernameColor.selectedIndex = self.usernameColor;
                         selUsernameColor.style.backgroundColor = place.getPaletteColor(self.usernameColor);
                     }
+                },
+                setBannerEnabled: enabled => {
+                    self.banner.enabled = enabled === true;
+                    if (!enabled) {
+                        self.resetBanner();
+                    } else {
+                        self._bannerIntervalTick();
+                    }
                 }
             };
 
@@ -2941,6 +3145,17 @@ window.App = (function () {
                 updateAudio: self.updateAudio,
                 updateSelectedNameColor: self.updateSelectedNameColor,
                 getUsernameColor: () => self.usernameColor >> 0,
+                setBannerEnabled: self.setBannerEnabled,
+                getTitle: (prepend) => {
+                    if (typeof prepend !== 'string') prepend = '';
+                    let tplOpts = template.getOptions();
+                    let append = self.initTitle;
+
+                    if (tplOpts.use && tplOpts.title)
+                        append = tplOpts.title;
+
+                    return `${prepend ? prepend + ' ' : ''}${decodeURIComponent(append)}`;
+                }
             };
         })(),
         panels = (function() {
@@ -3052,7 +3267,14 @@ window.App = (function () {
                 last_opened_panel: ls.get('chat.last_opened_panel') >> 0,
                 nonceLog: [],
                 typeahead: {
-                    confirmedSeen: []
+                    helper: null,
+                    suggesting: false,
+                    hasResults: false,
+                    highlightedIndex: 0,
+                    lastLength: false,
+                    get shouldInsert() {
+                        return self.typeahead.suggesting && self.typeahead.hasResults && self.typeahead.highlightedIndex !== -1;
+                    }
                 },
                 ignored: [],
                 chatban: {
@@ -3080,7 +3302,11 @@ window.App = (function () {
                     chat_settings_button: $("#btnChatSettings"),
                     pings_button: $("#btnPings"),
                     jump_button: $('#jump-to-bottom'),
+                    emoji_button: $('#emojiPanelTrigger'),
+                    typeahead: $('#typeahead'),
+                    typeahead_list: $('#typeahead ul'),
                 },
+                picker: null,
                 _anchorme: {
                     fnAttributes: urlObj => {},
                     fnExclude: urlObj => {}
@@ -3104,6 +3330,7 @@ window.App = (function () {
                     }
                 },
                 init: () => {
+                    self.initTypeahead();
                     self.reloadIgnores();
                     socket.on('ack_client_update', e => {
                         if (e.updateType && e.updateValue) {
@@ -3387,16 +3614,15 @@ window.App = (function () {
                                     }
                                     case 'purge': {
                                         handling = true;
-                                        let usage = `/purge USER PURGE_AMOUNT PURGE_REASON\n/purge help`;
+                                        let usage = `/purge USER PURGE_REASON\n/purge help`;
                                         let help = [
                                             usage,
                                             `    USER:         The username`,
-                                            `    PURGE_AMOUNT: The amount of messages to purge`,
                                             `    PURGE_REASON: The reason for the purge`,
                                             ``,
                                             `    /purge GlowingSocc 10 spam`
                                         ].join('\n');
-                                        if (args.length < 3) {
+                                        if (args.length < 2) {
                                             if (args[0] && args[0].toLowerCase() === 'help') {
                                                 self.showHint(help);
                                             } else {
@@ -3404,16 +3630,9 @@ window.App = (function () {
                                             }
                                         } else {
                                             let user = args.shift(),
-                                                purgeAmount = args.shift(),
                                                 purgeReason = args.join(' ');
-                                            if (!isNaN(purgeAmount)) {
-                                                purgeAmount = purgeAmount >> 0;
-                                            } else {
-                                                return self.showHint(`Invalid purgeAmount. Expected a number, got ${purgeAmount}`, true);
-                                            }
                                             $.post("/admin/chatPurge", {
                                                 who: user,
-                                                amount: purgeAmount,
                                                 reason: purgeReason
                                             }, function () {
                                                 alert.show('Chatpurge initiated');
@@ -3429,7 +3648,8 @@ window.App = (function () {
                                 }
                             }
                             e.preventDefault();
-                            if (!handling) {
+                            if (!self.typeahead.shouldInsert && !handling) {
+                                self.typeahead.lastLength = -1;
                                 self._send(self.elements.input[0].value);
                                 self.elements.input.val("");
                             }
@@ -3587,6 +3807,182 @@ window.App = (function () {
                         if (self.stickToBottom && self.elements.chat_panel[0].classList.contains('open')) self.clearPings();
                         self.elements.jump_button[0].style.display = self.stickToBottom ? 'none' : 'block';
                     });
+
+                    self.picker = new EmojiButton({position: 'left-start'});
+                    self.picker.on('emoji', emojiStr => {
+                        self.elements.input[0].value += emojiStr;
+                        self.elements.input[0].focus();
+                    });
+                    self.elements.emoji_button.on('click', function() {
+                        self.picker.pickerVisible ? self.picker.hidePicker() : self.picker.showPicker(this);
+                        let searchEl = self.picker.pickerEl.querySelector('.emoji-picker__search'); //searchEl is destroyed every time the picker closes. have to re-attach
+                        if (searchEl)
+                            searchEl.addEventListener('keydown', e => e.stopPropagation());
+                    })
+                },
+                initTypeahead() {
+                    // init DBs
+                    let dbEmojis = new TH.Database('emoji');
+                    let dbUsers = new TH.Database('users');
+
+                    if (window.emojiDB) {
+                        Object.entries(window.emojiDB).sort((a,b) => a[0].toLocaleLowerCase().localeCompare(b[0].toLocaleLowerCase())).forEach(emojiEntry => {
+                            dbEmojis.addEntry(emojiEntry[0], emojiEntry[1].char);
+                        });
+                    }
+
+                    // init triggers
+                    let triggerEmoji = new TH.Trigger(':', 'emoji', false, true);
+                    let triggerUsers = new TH.Trigger('@', 'users', true, false);
+
+                    // init typeahead
+                    self.typeahead.helper = new TH.Typeahead([triggerEmoji, triggerUsers], [' '], [dbEmojis, dbUsers]);
+                    window.th = self.typeahead.helper;
+
+                    // attach events
+                    self.elements.typeahead[0].querySelectorAll('[data-dismiss="typeahead"]').forEach(x => x.addEventListener('click', () => {
+                        self.resetTypeahead();
+                        self.elements.input[0].focus();
+                    }));
+                    self.elements.input[0].addEventListener('click', () => scan());
+                    self.elements.input[0].addEventListener('keyup', function(event) {
+                        switch(event.key || event.code || event.which || event.charCode) {
+                            case 'Escape':
+                            case 27: {
+                                if (self.typeahead.suggesting) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    event.stopImmediatePropagation();
+
+                                    self.resetTypeahead();
+                                }
+                                break;
+                            }
+                            case 'Tab':
+                            case 9: {
+                                if (self.typeahead.suggesting) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    event.stopImmediatePropagation();
+                                    let nextIndex = self.typeahead.highlightedIndex + (event.shiftKey ? -1 : 1); //if we're holding shift, walk backwards (up).
+                                    let children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
+                                    if (event.shiftKey && nextIndex < 0) { //if we're holding shift, we're walking backwards and need to check underflow.
+                                        nextIndex = children.length-1;
+                                    } else if (nextIndex >= children.length) {
+                                        nextIndex = 0;
+                                    }
+                                    children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
+                                    children[nextIndex].classList.add('active');
+                                    self.typeahead.highlightedIndex = nextIndex;
+                                    return;
+                                } else {
+                                    scan();
+                                }
+                                break;
+                            }
+                            case 'ArrowUp':
+                            case 38: {
+                                if (self.typeahead.suggesting) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    event.stopImmediatePropagation();
+                                    let nextIndex = self.typeahead.highlightedIndex - 1;
+                                    let children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
+                                    if (nextIndex < 0) {
+                                        nextIndex = children.length-1;
+                                    }
+                                    children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
+                                    children[nextIndex].classList.add('active');
+                                    self.typeahead.highlightedIndex = nextIndex;
+                                    return;
+                                }
+                                break;
+                            }
+                            case 'ArrowDown':
+                            case 40: {
+                                if (self.typeahead.suggesting) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    event.stopImmediatePropagation();
+                                    let nextIndex = self.typeahead.highlightedIndex + 1;
+                                    let children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
+                                    if (nextIndex >= children.length) {
+                                        nextIndex = 0;
+                                    }
+                                    children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
+                                    children[nextIndex].classList.add('active');
+                                    self.typeahead.highlightedIndex = nextIndex;
+                                    return;
+                                }
+                                break;
+                            }
+                            case 'Enter':
+                            case 13: {
+                                if (self.typeahead.shouldInsert) {
+                                    event.preventDefault();
+                                    event.stopPropagation();
+                                    event.stopImmediatePropagation();
+                                    let selected = self.elements.typeahead_list[0].querySelector('li:not(.no-results).active');
+                                    if (selected) {
+                                        self._handleTypeaheadInsert(selected);
+                                    } else {
+                                        let topResult = self.elements.typeahead_list[0].querySelector('li:not(.no-results):first-child');
+                                        if (topResult) {
+                                            self._handleTypeaheadInsert(topResult);
+                                        }
+                                    }
+                                    return;
+                                }
+                                break;
+                            }
+                        }
+                        if (self.elements.input[0].value.length !== self.typeahead.lastLength) //stops it from scanning when we keyup with shift or some other control character.
+                            scan();
+                    });
+
+                    function scan() {
+                        let scanRes = self.typeahead.helper.scan(self.elements.input[0].selectionStart, self.elements.input[0].value);
+                        let got = false;
+                        self.typeahead.lastLength = self.elements.input[0].value.length;
+                        self.typeahead.suggesting = scanRes !== false;
+                        if (scanRes) {
+                            got = self.typeahead.helper.suggestions(scanRes);
+                            self.typeahead.hasResults = got.length > 0;
+                            if (!got.length) {
+                                self.elements.typeahead_list[0].innerHTML = `<li class="no-results">No Results</li>`; //no reason to crel this if we're just gonna innerHTML anyway.
+                            } else {
+                                self.elements.typeahead_list[0].innerHTML = ``;
+                                let LIs = got.slice(0, 10).map(x =>
+                                    crel('li', {'data-insert': `${x} `, 'data-start': scanRes.start, 'data-end': scanRes.end, onclick: self._handleTypeaheadInsert}, x)
+                                );
+                                LIs[0].classList.add('active');
+                                crel(self.elements.typeahead_list[0], LIs);
+                            }
+                        }
+                        self.elements.typeahead[0].style.display = self.typeahead.suggesting && self.typeahead.hasResults ? 'block' : 'none';
+                        document.body.classList.toggle('typeahead-open', self.typeahead.suggesting);
+                    }
+                },
+                _handleTypeaheadInsert: function(elem) {
+                    if (this instanceof HTMLElement) elem = this;
+                    else if (!(elem instanceof HTMLElement)) return console.warn('Got non-elem on handleTypeaheadInsert: %o', elem);
+                    let start = parseInt(elem.dataset.start),
+                        end = parseInt(elem.dataset.end),
+                        toInsert = elem.dataset.insert || "";
+                    if (!toInsert || start >= end) {
+                        return console.warn('Got invalid data on elem %o.');
+                    }
+                    self.elements.input[0].value = self.elements.input[0].value.substring(0, start) + toInsert + self.elements.input[0].value.substring(end);
+                    self.elements.input[0].focus();
+                    self.resetTypeahead();
+                },
+                resetTypeahead: () => { //close with reset
+                    self.typeahead.suggesting = false;
+                    self.typeahead.hasResults = false;
+                    self.typeahead.highlightedIndex = 0;
+                    self.elements.typeahead[0].style.display = 'none';
+                    self.elements.typeahead_list[0].innerHTML = '';
+                    document.body.classList.remove('typeahead-open');
                 },
                 reloadIgnores: () => self.ignored = (ls.get('chat.ignored') || '').split(','),
                 saveIgnores: () => ls.set('chat.ignored', (self.ignored || []).join(',')),
@@ -3622,6 +4018,12 @@ window.App = (function () {
 
                     let _cbPings = crel('input', {'type': 'checkbox'});
                     let lblPings = crel('label', {'style': 'display: block;'}, _cbPings, 'Enable pings');
+
+                    let _cbBanner = crel('input', {'type': 'checkbox'});
+                    let lblBanner = crel('label', {'style': 'display: block;'}, _cbBanner, 'Enable the rotating banner under chat');
+
+                    let _cbTemplateTitles = crel('input', {'type': 'checkbox'});
+                    let lblTemplateTitles = crel('label', {'style': 'display: block;'}, _cbTemplateTitles, 'Replace template titls with URLs in chat where applicable');
 
                     let _txtFontSize = crel('input', {'type': 'number', 'min': '1', 'max': '72'});
                     let _btnFontSizeConfirm = crel('button', {'class': 'buton'}, crel('i', {'class': 'fas fa-check'}));
@@ -3670,7 +4072,7 @@ window.App = (function () {
                             } else {
                                 ls.set("chat.font-size", val);
                                 self.elements.body.css("font-size", `${val}px`);
-                                notifBody.style.fontSize = `${val}px`;
+                                document.querySelector('.panel[data-panel="notifications"] .panel-body').style.fontSize = `${val}px`;
                             }
                         }
                     });
@@ -3693,6 +4095,17 @@ window.App = (function () {
                     _cbPings.checked = ls.get('chat.pings-enabled') === true;
                     _cbPings.addEventListener('change', function() {
                         ls.set('chat.pings-enabled', this.checked === true);
+                    });
+
+                    _cbBanner.checked = ls.get('chat.banner-enabled') !== false;
+                    _cbBanner.addEventListener('change', function() {
+                        ls.set('chat.banner-enabled', this.checked === true);
+                        uiHelper.setBannerEnabled(this.checked === true);
+                    });
+
+                    _cbTemplateTitles.checked = ls.get('chat.use-template-urls') === true;
+                    _cbTemplateTitles.addEventListener('change', function() {
+                        ls.set('chat.use-template-urls', this.checked === true);
                     });
 
                     _btnUnignore.addEventListener('click', function() {
@@ -3721,6 +4134,8 @@ window.App = (function () {
                         lbl24hTimestamps,
                         lblPixelPlaceBadges,
                         lblPings,
+                        lblBanner,
+                        lblTemplateTitles,
                         lblFontSize,
                         lblInternalAction,
                         lblUsernameColor,
@@ -3807,8 +4222,12 @@ window.App = (function () {
                             }
                         }
                     }
+                    self.typeahead.helper.getDatabase('users').addEntry(packet.author, packet.author);
                     if (self.ignored.indexOf(packet.author) >= 0) return;
-                    let hasPing = ls.get('chat.pings-enabled') === true && user.isLoggedIn() && packet.message_raw.toLowerCase().split(' ').includes(`@${user.getUsername().toLowerCase()}`);
+                    let hasPing = ls.get('chat.pings-enabled') === true && user.isLoggedIn() && packet.message_raw
+                        .toLowerCase()
+                        .split(' ')
+                        .some((s) => s.search(new RegExp(`@${user.getUsername().toLowerCase()}(?![a-zA-Z0-9_\-])`)) == 0);
                     let when = moment.unix(packet.date);
                     let badges = crel('span', {'class': 'badges'});
                     if (Array.isArray(packet.badges)) {
@@ -3826,6 +4245,8 @@ window.App = (function () {
                     }
 
                     let contentSpan = self.processMessage('span', 'content', packet.message_raw);
+                    twemoji.parse(contentSpan);
+                    //TODO basic markdown
                     let nameClasses = `user`;
                     if (Array.isArray(packet.authorNameClass)) nameClasses += ` ${packet.authorNameClass.join(' ')}`;
 
@@ -3915,8 +4336,10 @@ window.App = (function () {
                                         if (board.validateCoordinates(params.x, params.y)) {
                                             jumpTarget = Object.assign({displayText: `(${params.x}, ${params.y}${params.scale != null ? `, ${params.scale}x` : ''})`, raw: url.toString()}, params);
                                             if (params.template != null && params.template.length >= 11) { //we have a template, should probably make that known
-                                                let truncatedTemplate = decodeURIComponent(params.template);
-                                                jumpTarget.displayText += ` (template: ${(truncatedTemplate > 50) ? `${truncatedTemplate.substr(0, 50)}...` : truncatedTemplate})`;
+                                                let title = decodeURIComponent(params.template);
+                                                if (ls.get('chat.use-template-urls') !== true && params.title && params.title.trim())
+                                                    title = decodeURIComponent(params.title);
+                                                jumpTarget.displayText += ` (template: ${(title > 25) ? `${title.substr(0, 22)}...` : title})`;
                                             }
                                         }
                                     } else {
@@ -4402,10 +4825,9 @@ window.App = (function () {
                             break;
                         }
                         case 'purge': {
-                            let txtPurgeAmount = crel('input', {'type': 'text', 'required': 'true', 'placeholder': '-1 for all', onkeydown: e => e.stopPropagation()});
                             let lblPurgeAmountError = crel('label', {'class': 'hidden error-label'});
 
-                            let txtPurgeReason = crel('input', {'type': 'text', 'required': 'true', onkeydown: e => e.stopPropagation()});
+                            let txtPurgeReason = crel('input', {'type': 'text', onkeydown: e => e.stopPropagation()});
                             let lblPurgeReasonError = crel('label', {'class': 'hidden error-label'});
 
                             let btnPurge = crel('button', {'class': 'button', 'type': 'submit'}, 'Purge');
@@ -4433,12 +4855,6 @@ window.App = (function () {
                                 crel('h5', 'Selected Message'),
                                 messageTable,
                                 crel('div',
-                                    crel('h5', 'Number of messages to purge'),
-                                    txtPurgeAmount,
-                                    crel('br'),
-                                    lblPurgeAmountError
-                                ),
-                                crel('div',
                                     crel('h5', 'Purge Reason'),
                                     txtPurgeReason,
                                     crel('br'),
@@ -4452,31 +4868,8 @@ window.App = (function () {
                             purgeWrapper.onsubmit = e => {
                                 e.preventDefault();
 
-                                if (!/^-?[0-9]+$/.test(txtPurgeAmount.value)) {
-                                    lblPurgeAmountError.innerHTML = 'Invalid purge amount';
-                                    return;
-                                } else {
-                                    lblPurgeAmountError.innerHTML = '';
-                                }
-
-                                if (txtPurgeAmount.value.trim().length === 0) {
-                                    lblPurgeReasonError.innerHTML = 'Invalid reason';
-                                    return;
-                                } else {
-                                    lblPurgeReasonError.innerHTML = '';
-                                }
-
-                                let amount = txtPurgeAmount.value >> 0;
-                                if (!amount) {
-                                    lblPurgeAmountError.innerHTML = 'Value must be -1 or >0';
-                                    return;
-                                } else {
-                                    lblPurgeAmountError.innerHTML = '';
-                                }
-
                                 $.post("/admin/chatPurge", {
                                     who: reportingTarget,
-                                    amount: txtPurgeAmount.value,
                                     reason: txtPurgeReason.value
                                 }, function () {
                                     purgeWrapper.remove();
@@ -4485,7 +4878,6 @@ window.App = (function () {
                                     alert.show("Error sending purge.");
                                 });
                             };
-
 
                             alert.show(purgeWrapper, true);
                             break;
@@ -4606,6 +4998,7 @@ window.App = (function () {
                 addIgnore: self.addIgnore,
                 removeIgnore: self.removeIgnore,
                 getIgnores: self.getIgnores,
+                typeahead: self.typeahead,
             }
         })(),
         // this takes care of the countdown timer
@@ -4667,7 +5060,7 @@ window.App = (function () {
                             minuteStr = minutes < 10 ? "0" + minutes : minutes;
                         self.elements.timer.text(minuteStr + ":" + secsStr);
 
-                        document.title = "[" + minuteStr + ":" + secsStr + "] " + self.title;
+                        document.title = uiHelper.getTitle(`[${minuteStr}:${secsStr}]`);
 
                         if (self.runningTimer && !die) {
                             return;
@@ -4681,7 +5074,7 @@ window.App = (function () {
 
                     self.runningTimer = false;
 
-                    document.title = self.title;
+                    document.title = uiHelper.getTitle();
                     if (self.isOverlay) {
                         self.elements.palette.css("overflow-x", "auto");
                         self.elements.timer.css("left", "0");
@@ -5009,7 +5402,7 @@ window.App = (function () {
                         }
 
                         if (instaban) {
-                            ban.shadow(5);
+                            ban.shadow(7);
                         }
 
                         analytics("send", "event", "Auth", "Login", data.method);
@@ -5271,5 +5664,6 @@ window.App = (function () {
             ban.me(4);
         },
         chat,
+        typeahead: chat.typeahead
     };
 })();
