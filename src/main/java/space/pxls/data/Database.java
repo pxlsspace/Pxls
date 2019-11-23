@@ -68,7 +68,6 @@ public class Database {
             // users
             handle.createUpdate("CREATE TABLE IF NOT EXISTS users (" +
                     "id SERIAL NOT NULL PRIMARY KEY," +
-                    "stacked INT DEFAULT 0," +
                     "username VARCHAR(32) NOT NULL," +
                     "login VARCHAR(64) NOT NULL," +
                     "signup_time TIMESTAMP NOT NULL DEFAULT NOW()," +
@@ -82,9 +81,10 @@ public class Database {
                     "chat_ban_expiry TIMESTAMP DEFAULT NOW()," +
                     "chat_ban_reason TEXT," +
                     "ban_reason VARCHAR(512) NOT NULL DEFAULT ''," +
-                    "user_agent VARCHAR(512) NOT NULL DEFAULT ''," +
                     "pixel_count INT NOT NULL DEFAULT 0," +
                     "pixel_count_alltime INT NOT NULL DEFAULT 0," +
+                    "user_agent VARCHAR(512) NOT NULL DEFAULT ''," +
+                    "stacked INT DEFAULT 0," +
                     "is_rename_requested BOOL NOT NULL DEFAULT false," +
                     "discord_name VARCHAR(37)," +
                     "chat_name_color INT NOT NULL DEFAULT 5)")
