@@ -161,7 +161,7 @@ public class WebHandler {
                 time = time_form.getValue();
             }
             if (doLog(exchange)) {
-                App.getDatabase().adminLog(String.format("ban %s with reason: %s", user.getName(), getBanReason(exchange)), user_perform.getId());
+                App.getDatabase().insertAdminLog(user_perform.getId(), String.format("ban %s with reason: %s", user.getName(), getBanReason(exchange)));
             }
             user.ban(Integer.parseInt(time), getBanReason(exchange), getRollbackTime(exchange), user_perform);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
@@ -183,7 +183,7 @@ public class WebHandler {
                 }
                 unbanTarget.unban(user_perform, reason);
                 if (doLog(exchange)) {
-                    App.getDatabase().adminLog(String.format("unban %s with reason %s", unbanTarget.getName(), reason.isEmpty() ? "(no reason provided)" : reason), user_perform.getId());
+                    App.getDatabase().insertAdminLog(user_perform.getId(), String.format("unban %s with reason %s", unbanTarget.getName(), reason.isEmpty() ? "(no reason provided)" : reason));
                 }
                 send(200, exchange, "User unbanned");
             } else {
@@ -201,7 +201,7 @@ public class WebHandler {
             user.permaban(getBanReason(exchange), getRollbackTime(exchange), user_perform);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             if (doLog(exchange)) {
-                App.getDatabase().adminLog(String.format("permaban %s with reason: %s", user.getName(), getBanReason(exchange)), user_perform.getId());
+                App.getDatabase().insertAdminLog(user_perform.getId(), String.format("permaban %s with reason: %s", user.getName(), getBanReason(exchange)));
             }
             exchange.setStatusCode(200);
         } else {
@@ -216,7 +216,7 @@ public class WebHandler {
             user.shadowban(getBanReason(exchange), getRollbackTime(exchange), user_perform);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             if (doLog(exchange)) {
-                App.getDatabase().adminLog(String.format("shadowban %s with reason: %s", user.getName(), getBanReason(exchange)), user_perform.getId());
+                App.getDatabase().insertAdminLog(user_perform.getId(), String.format("shadowban %s with reason: %s", user.getName(), getBanReason(exchange)));
             }
             exchange.setStatusCode(200);
         } else {
@@ -263,7 +263,7 @@ public class WebHandler {
 
         String _reportMessage = reportMessage.getValue().trim();
         if (_reportMessage.length() > 2048) _reportMessage = _reportMessage.substring(0, 2048);
-        App.getDatabase().addChatReport(chatMessage.nonce, chatMessage.author_uid, user.getId(), _reportMessage);
+        App.getDatabase().insertChatReport(chatMessage.nonce, chatMessage.author_uid, user.getId(), _reportMessage);
 
         exchange.setStatusCode(200);
         exchange.getResponseSender().send("{}");
@@ -414,7 +414,7 @@ public class WebHandler {
             return;
         }
 
-        App.getDatabase().purgeChatMessageByNonce(chatMessage.nonce, user.getId());
+        App.getDatabase().purgeChat(chatMessage.nonce, user.getId());
         App.getServer().getPacketHandler().sendSpecificPurge(author, user, chatMessage.nonce, "");
 
         send(StatusCodes.OK, exchange, "");
@@ -462,7 +462,7 @@ public class WebHandler {
             purgeReason = data.getFirst("reason").getValue();
         }
 
-        App.getDatabase().handlePurge(target, user, Integer.MAX_VALUE, purgeReason, true);
+        App.getDatabase().purgeChat(target, user, Integer.MAX_VALUE, reasonData.getValue(), true);
 
         exchange.setStatusCode(200);
         exchange.getResponseSender().send("{}");
@@ -501,7 +501,7 @@ public class WebHandler {
 
         String oldName = toUpdate.getName();
         if (toUpdate.updateUsername(newName, true)) {
-            App.getDatabase().adminLog(String.format("Changed %s's name to %s (uid: %d)", oldName, newName, toUpdate.getId()), user.getId());
+            App.getDatabase().insertAdminLog(user.getId(), String.format("Changed %s's name to %s (uid: %d)", oldName, newName, toUpdate.getId()));
             toUpdate.setRenameRequested(false);
             App.getServer().send(toUpdate, new ServerRenameSuccess(toUpdate.getName()));
             exchange.setStatusCode(200);
@@ -535,7 +535,7 @@ public class WebHandler {
 
         String oldName = user.getName();
         if (user.updateUsername(newName)) {
-            App.getDatabase().addServerReport(String.format("User %s just changed their name to %s.", oldName, user.getName()), user.getId());
+            App.getDatabase().insertServerReport(user.getId(), String.format("User %s just changed their name to %s.", oldName, user.getName()));
             user.setRenameRequested(false);
             App.getServer().send(user, new ServerRenameSuccess(user.getName()));
             exchange.setStatusCode(200);
@@ -577,7 +577,7 @@ public class WebHandler {
         }
 
         toFlag.setRenameRequested(isRequested);
-        App.getDatabase().adminLog(String.format("Flagged %s (%d) for name change", toFlag.getName(), toFlag.getId()), user.getId());
+        App.getDatabase().insertAdminLog(user.getId(), String.format("Flagged %s (%d) for name change", toFlag.getName(), toFlag.getId()));
 
         exchange.setStatusCode(200);
         exchange.getResponseSender().send("{}");
@@ -678,7 +678,7 @@ public class WebHandler {
         }
         try {
             int notifID = App.getDatabase().createNotification(user.getId(), title, body, Instant.ofEpochMilli(expiry).getEpochSecond());
-            App.getServer().broadcast(new ServerNotification(App.getDatabase().getNotificationByID(notifID))); //re-fetch to ensure we're returning exact time and expiry 'n whatnot from the database.
+            App.getServer().broadcast(new ServerNotification(App.getDatabase().getNotification(notifID))); //re-fetch to ensure we're returning exact time and expiry 'n whatnot from the database.
         } catch (Exception e) {
             e.printStackTrace();
             send(StatusCodes.INTERNAL_SERVER_ERROR, exchange, "Failed to create notification");
@@ -713,7 +713,7 @@ public class WebHandler {
         } catch (Exception e) {
             sendBadRequest(exchange, "Invalid notification id");
         }
-        DBNotification notif = App.getDatabase().getNotificationByID(notificationID);
+        DBNotification notif = App.getDatabase().getNotification(notificationID);
         if (notif == null) {
             send(StatusCodes.NOT_FOUND, exchange, "Notification doesn't exist");
         } else {
@@ -749,7 +749,7 @@ public class WebHandler {
         } catch (Exception e) {
             sendBadRequest(exchange, "Invalid notification id");
         }
-        if (App.getDatabase().getNotificationByID(notificationID) == null) {
+        if (App.getDatabase().getNotification(notificationID) == null) {
             send(StatusCodes.NOT_FOUND, exchange, "Notification doesn't exist");
             return;
         }
@@ -779,7 +779,7 @@ public class WebHandler {
     public void notificationsList(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
         exchange.setStatusCode(200);
-        exchange.getResponseSender().send(App.getGson().toJson(App.getDatabase().getNonExpiredNotifications()));
+        exchange.getResponseSender().send(App.getGson().toJson(App.getDatabase().getNotifications(true)));
         exchange.endExchange();
     }
 
@@ -816,7 +816,7 @@ public class WebHandler {
                             user.getLogin().split(":")[0],
                             user.isOverridingCooldown(),
                             user.isChatbanned(),
-                            App.getDatabase().getChatbanReasonForUser(user.getId()),
+                            App.getDatabase().getChatBanReason(user.getId()),
                             user.isPermaChatbanned(),
                             user.getChatbanExpiryTime(),
                             user.isRenameRequested(true),
@@ -872,7 +872,7 @@ public class WebHandler {
             for (String r : reports) {
                 msg += r+"\n";
             }
-            App.getDatabase().addServerReport(msg, user.getId());
+            App.getDatabase().insertServerReport(user.getId(), msg);
         }
 
         String loginToken = App.getUserManager().logIn(user, ip);
@@ -1120,17 +1120,17 @@ public class WebHandler {
                 .put(Headers.CONTENT_TYPE, "application/json")
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
         if (user == null) {
-            App.getDatabase().addLookup(null, exchange.getAttachment(IPReader.IP));
+            App.getDatabase().insertLookup(null, exchange.getAttachment(IPReader.IP));
         } else {
-            App.getDatabase().addLookup(user.getId(), exchange.getAttachment(IPReader.IP));
+            App.getDatabase().insertLookup(user.getId(), exchange.getAttachment(IPReader.IP));
         }
 
         if (user == null || user.getRole().lessThan(Role.TRIALMOD)) {
-            DBPixelPlacementUser pp = App.getDatabase().getPixelAtUser(x, y);
-            exchange.getResponseSender().send(App.getGson().toJson(pp));
+            Optional<DBPixelPlacementUser> pp = App.getDatabase().getPixelAtUser(x, y);
+            exchange.getResponseSender().send(App.getGson().toJson(pp.orElse(null)));
         } else {
-            DBPixelPlacement pp = App.getDatabase().getPixelAt(x, y);
-            exchange.getResponseSender().send(App.getGson().toJson(pp));
+            Optional<DBPixelPlacement> pp = App.getDatabase().getPixelAt(x, y);
+            exchange.getResponseSender().send(App.getGson().toJson(pp.orElse(null)));
         }
     }
 
@@ -1180,13 +1180,13 @@ public class WebHandler {
             exchange.endExchange();
             return;
         }
-        DBPixelPlacement pxl = App.getDatabase().getPixelByID(id);
+        DBPixelPlacement pxl = App.getDatabase().getPixelByID(null, id);
         if (pxl.x != x || pxl.y != y) {
             exchange.setStatusCode(StatusCodes.BAD_REQUEST);
             exchange.endExchange();
             return;
         }
-        App.getDatabase().addReport(user.getId(), pxl.userId, id, x, y, msgq.getValue());
+        App.getDatabase().insertReport(user.getId(), pxl.userId, id, x, y, msgq.getValue());
         exchange.setStatusCode(200);
     }
 

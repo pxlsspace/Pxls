@@ -9,6 +9,7 @@ import com.typesafe.config.Config;
 import io.undertow.websockets.core.WebSocketChannel;
 import org.apache.commons.text.translate.CharSequenceTranslator;
 import org.apache.commons.text.translate.LookupTranslator;
+import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 import space.pxls.App;
 import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBPixelPlacement;
@@ -18,10 +19,7 @@ import space.pxls.util.ChatFilter;
 import space.pxls.util.PxlsTimer;
 import space.pxls.util.RateLimitFactory;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
@@ -67,7 +65,7 @@ public class PacketHandler {
                     user.getLogin().split(":")[0],
                     user.isOverridingCooldown(),
                     user.isChatbanned(),
-                    App.getDatabase().getChatbanReasonForUser(user.getId()),
+                    App.getDatabase().getChatBanReason(user.getId()),
                     user.isPermaChatbanned(),
                     user.getChatbanExpiryTime(),
                     user.isRenameRequested(true),
@@ -139,14 +137,14 @@ public class PacketHandler {
 
     private void handleShadowBanMe(WebSocketChannel channel, User user, ClientShadowBanMe obj) {
         if (user.getRole().greaterEqual(Role.USER)) {
-            App.getDatabase().adminLog(String.format("shadowban %s with reason: self-shadowban via script", user.getName()), user.getId());
+            App.getDatabase().insertAdminLog(user.getId(), String.format("shadowban %s with reason: self-shadowban via script", user.getName()));
             user.shadowban(String.format("auto-ban via script (app: %s%s)", obj.getApp(), obj.getZ().isEmpty() ? "" : ", " + obj.getZ()), 999*24*3600, user);
         }
     }
 
     private void handleBanMe(WebSocketChannel channel, User user, ClientBanMe obj) {
         String app = obj.getApp();
-        App.getDatabase().adminLog(String.format("shadowban %s with reason: auto-ban via script (ap: %s)", user.getName(), app), user.getId());
+        App.getDatabase().insertAdminLog(user.getId(), String.format("shadowban %s with reason: auto-ban via script (ap: %s)", user.getName(), app));
         user.permaban(String.format("auto-ban via script(ap: %s)", app), 0, user);
     }
 
@@ -170,8 +168,9 @@ public class PacketHandler {
         if (gotLock) {
             try {
                 DBPixelPlacement thisPixel = App.getDatabase().getUserUndoPixel(user);
-                DBPixelPlacement recentPixel = App.getDatabase().getPixelAt(thisPixel.x, thisPixel.y);
-                if (thisPixel.id != recentPixel.id) return;
+                Optional<DBPixelPlacement> recentPixel = App.getDatabase().getPixelAt(thisPixel.x, thisPixel.y);
+                if (!recentPixel.isPresent()) return;
+                if (thisPixel.id != recentPixel.get().id) return;
 
                 if (user.lastPlaceWasStack()) {
                     user.setStacked(Math.min(user.getStacked() + 1, App.getConfig().getInt("stacking.maxStacked")));
@@ -179,7 +178,7 @@ public class PacketHandler {
                 }
                 user.setLastUndoTime();
                 user.setCooldown(0);
-                DBPixelPlacement lastPixel = App.getDatabase().getPixelByID(thisPixel.secondaryId);
+                DBPixelPlacement lastPixel = App.getDatabase().getPixelByID(null, thisPixel.secondaryId);
                 if (lastPixel != null) {
                     App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
                     App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, ip, false, "user undo");
@@ -256,7 +255,7 @@ public class PacketHandler {
                         int c_old = c;
                         if (canPlace) {
                             int seconds = getCooldown();
-                            if (c_old != 0xFF && c_old != -1 && App.getDatabase().shouldPixelTimeIncrease(cp.getX(), cp.getY(), user.getId()) && App.getConfig().getBoolean("backgroundPixel.enabled")) {
+                            if (c_old != 0xFF && c_old != -1 && App.getDatabase().shouldPixelTimeIncrease(user.getId(), cp.getX(), cp.getY()) && App.getConfig().getBoolean("backgroundPixel.enabled")) {
                                 seconds = (int)Math.round(seconds * App.getConfig().getDouble("backgroundPixel.multiplier"));
                             }
                             if (user.isShadowBanned()) {
@@ -392,7 +391,7 @@ public class PacketHandler {
         if (message.endsWith("\n")) message = message.replaceFirst("\n$", "");
         if (message.length() > 2048) message = message.substring(0, 2048);
         if (user == null) { //console
-            String nonce = App.getDatabase().insertChatMessage(0, nowMS, message, "");
+            String nonce = App.getDatabase().createChatMessage(0, nowMS, message, "");
             server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS / 1000L, message, null, null, 0)));
         } else {
             if (user.isChatbanned()) return;
@@ -409,13 +408,13 @@ public class PacketHandler {
                     if (App.getConfig().getBoolean("chat.filter.enabled")) {
                         ChatFilter.FilterResult result = ChatFilter.getInstance().filter(toSend);
                         toSend = result.filterHit ? result.filtered : result.original;
-                        String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, message, toSend);
+                        String nonce = App.getDatabase().createChatMessage(user.getId(), nowMS, message, toSend);
                         server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor())));
                     } else {
-                        String nonce = App.getDatabase().insertChatMessage(user.getId(), nowMS, message, "");
+                        String nonce = App.getDatabase().createChatMessage(user.getId(), nowMS, message, "");
                         server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor())));
                     }
-                } catch (org.skife.jdbi.v2.exceptions.UnableToExecuteStatementException utese) {
+                } catch (UnableToExecuteStatementException utese) {
                     utese.printStackTrace();
                     System.err.println("Failed to execute the ChatMessage insert statement.");
                 }

@@ -1,12 +1,10 @@
 package space.pxls.data;
 
-import org.skife.jdbi.v2.StatementContext;
-import org.skife.jdbi.v2.tweak.ResultSetMapper;
-import space.pxls.user.Role;
+import org.jdbi.v3.core.mapper.RowMapper;
+import org.jdbi.v3.core.statement.StatementContext;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 
 public class DBUserPixelCount {
     public int pixel_count;
@@ -14,9 +12,9 @@ public class DBUserPixelCount {
         this.pixel_count = count;
     }
 
-    public static class Mapper implements ResultSetMapper<DBUserPixelCount> {
+    public static class Mapper implements RowMapper<DBUserPixelCount> {
         @Override
-        public DBUserPixelCount map(int index, ResultSet r, StatementContext ctx) throws SQLException {
+        public DBUserPixelCount map(ResultSet r, StatementContext ctx) throws SQLException {
             return new DBUserPixelCount(
                     r.getInt("pixel_count")
             );

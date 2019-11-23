@@ -1,12 +1,13 @@
 package space.pxls.data;
 
-import org.skife.jdbi.v2.StatementContext;
-import org.skife.jdbi.v2.tweak.ResultSetMapper;
+import org.jdbi.v3.core.mapper.RowMapper;
+import org.jdbi.v3.core.statement.StatementContext;
 import space.pxls.App;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.Optional;
 
 public class DBBanlog {
     public final int id;
@@ -17,7 +18,7 @@ public class DBBanlog {
     public final String action;
     public final String ban_reason;
 
-    private DBUser bannerUser, bannedUser;
+    private Optional<DBUser> bannerUser, bannedUser;
 
     public DBBanlog(int id, long when, int banner, int banned, long ban_expiry, String action, String ban_reason) {
         this.id = id;
@@ -29,19 +30,19 @@ public class DBBanlog {
         this.ban_reason = ban_reason;
     }
 
-    public DBUser getBannerUser() {
+    public Optional<DBUser> getBannerUser() {
         if (bannerUser == null) bannerUser =  App.getDatabase().getUserByID(this.banner); //only request as necessary since it's another DB call. cache for the same reason.
         return bannerUser;
     }
 
-    public DBUser getBannedUser() {
+    public Optional<DBUser> getBannedUser() {
         if (bannedUser == null) bannedUser = App.getDatabase().getUserByID(this.banned); //only request as necessary since it's another DB call. cache for the same reason.
         return bannedUser;
     }
 
-    public static class Mapper implements ResultSetMapper<DBBanlog> {
+    public static class Mapper implements RowMapper<DBBanlog> {
         @Override
-        public DBBanlog map(int index, ResultSet r, StatementContext ctx) throws SQLException {
+        public DBBanlog map(ResultSet r, StatementContext ctx) throws SQLException {
             Timestamp bannedAt = r.getTimestamp("when");
             Timestamp banExpiry = r.getTimestamp("ban_expiry");
 

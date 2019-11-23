@@ -1,9 +1,7 @@
 package space.pxls.data;
 
-import org.skife.jdbi.v2.StatementContext;
-import org.skife.jdbi.v2.tweak.ResultSetMapper;
-import space.pxls.App;
-import space.pxls.user.User;
+import org.jdbi.v3.core.mapper.RowMapper;
+import org.jdbi.v3.core.statement.StatementContext;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,9 +23,9 @@ public class DBNotification {
         this.content = content;
     }
 
-    public static class Mapper implements ResultSetMapper<DBNotification> {
+    public static class Mapper implements RowMapper<DBNotification> {
         @Override
-        public DBNotification map(int index, ResultSet r, StatementContext ctx) throws SQLException {
+        public DBNotification map(ResultSet r, StatementContext ctx) throws SQLException {
             return new DBNotification(
                     r.getInt("id"),
                     r.getLong("time"),

@@ -113,7 +113,7 @@ public class UndertowServer {
             if (agent == null) {
                 agent = "";
             }
-            user.setUseragent(agent);
+            user.setUserAgent(agent);
 
             userTaskExecutor.submit(new UserAuthedTask(channel, user, ip)); //ip at this point should have gone through all the checks to extract an actual IP from behind a reverse proxy
         }

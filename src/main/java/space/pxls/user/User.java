@@ -9,10 +9,7 @@ import space.pxls.server.ServerChatBan;
 import space.pxls.server.ServerRename;
 import space.pxls.util.RateLimitFactory;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -62,7 +59,9 @@ public class User {
     }
 
     public void reloadFromDatabase() {
-        DBUser user = App.getDatabase().getUserByID(id);
+        Optional<DBUser> optionalUser = App.getDatabase().getUserByID(id);
+        if (!optionalUser.isPresent()) return;
+        DBUser user = optionalUser.get();
         this.id = user.id;
         this.stacked = user.stacked;
         this.name = user.username;
@@ -295,14 +294,14 @@ public class User {
                 this.chatbanExpiryTime = chatban.expiryTimeMS;
                 this.chatbanReason = chatban.reason;
                 App.getServer().getPacketHandler().sendChatban(this, new ServerChatBan(false, chatban.reason, chatban.expiryTimeMS));
-                App.getDatabase().updateUserChatbanReason(getId(), chatban.reason);
+                App.getDatabase().updateChatBanReason(getId(), chatban.reason);
                 break;
             }
             case PERMA: {
                 this.isPermaChatbanned = true;
                 this.chatbanReason = chatban.reason;
                 App.getServer().getPacketHandler().sendChatban(this, new ServerChatBan(true, chatban.reason, null));
-                App.getDatabase().updateUserChatbanReason(getId(), chatban.reason);
+                App.getDatabase().updateChatBanReason(getId(), chatban.reason);
                 break;
             }
             case UNBAN: {
@@ -314,20 +313,20 @@ public class User {
             }
         }
 
-        App.getDatabase().updateUserChatbanPerma(getId(), isPermaChatbanned);
-        App.getDatabase().updateUserChatbanExpiry(getId(), chatbanExpiryTime);
+        App.getDatabase().updateChatBanPerma(getId(), isPermaChatbanned);
+        App.getDatabase().updateChatBanExpiry(getId(), chatbanExpiryTime);
 
         if (chatban.purge && chatban.purgeAmount > 0) {
-            App.getDatabase().handlePurge(chatban.target, chatban.initiator, chatban.purgeAmount, "$automated chatban purge$", true);
+            App.getDatabase().purgeChat(chatban.target, chatban.initiator, chatban.purgeAmount, "$automated chatban purge$", true);
         }
 
         if (doLog) {
             if (chatban.initiator == null) {
-                App.getDatabase().adminLogServer(chatban.toString());
+                App.getDatabase().insertServerAdminLog(chatban.toString());
             } else {
-                App.getDatabase().adminLog(chatban.toString(), chatban.initiator.getId());
+                App.getDatabase().insertAdminLog(chatban.initiator.getId(), chatban.toString());
             }
-            App.getDatabase().insertChatban(chatban);
+            App.getDatabase().initiateChatBan(chatban);
         }
     }
 
@@ -343,7 +342,7 @@ public class User {
         setBanReason(reason);
         setRole(Role.SHADOWBANNED, true);
         App.rollbackAfterBan(this, rollbackTime);
-        App.getDatabase().insertBanlog(System.currentTimeMillis(), banner == null ? 0 : banner.getId(), this.getId(), 0L, "shadowban", reason);
+        App.getDatabase().insertBanLog(this.getId(), banner == null ? 0 : banner.getId(), System.currentTimeMillis(), 0L, "shadowban", reason);
     }
 
     public void shadowban(String reason, User banner) {
@@ -359,8 +358,8 @@ public class User {
         setBanReason(reason);
         sendUserData();
         App.rollbackAfterBan(this, rollbackTime);
-        Long now = System.currentTimeMillis();
-        App.getDatabase().insertBanlog(now, banner == null ? 0 : banner.getId(), this.getId(), now + (timeFromNowSeconds * 1000), "ban", reason);
+        long now = System.currentTimeMillis();
+        App.getDatabase().insertBanLog(this.getId(), banner == null ? 0 : banner.getId(), now, now + (timeFromNowSeconds * 1000), "ban", reason);
     }
 
     public void ban(long timeFromNowSeconds, String reason, User banner) {
@@ -376,8 +375,8 @@ public class User {
         setRole(Role.BANNED, true);
         sendUserData();
         App.rollbackAfterBan(this, rollbackTime);
-        Long now = System.currentTimeMillis();
-        App.getDatabase().insertBanlog(now, banner == null ? 0 : banner.getId(), this.getId(), 0L, "permaban", reason);
+        long now = System.currentTimeMillis();
+        App.getDatabase().insertBanLog(this.getId(), banner == null ? 0 : banner.getId(), now, 0L, "permaban", reason);
     }
 
     public void permaban(String reason, User banner) {
@@ -395,16 +394,16 @@ public class User {
         }
         sendUserData();
         App.undoRollback(this);
-        Long now = System.currentTimeMillis();
-        App.getDatabase().insertBanlog(now, whoUnbanned == null ? 0 : whoUnbanned.getId(), this.getId(), 0L, "unban", unbanReason);
+        long now = System.currentTimeMillis();
+        App.getDatabase().insertBanLog(this.getId(), whoUnbanned == null ? 0 : whoUnbanned.getId(), now, 0L, "unban", unbanReason);
     }
 
-    public void setUseragent(String s) {
+    public void setUserAgent(String s) {
         useragent = s;
-        App.getDatabase().updateUseragent(this, s);
+        App.getDatabase().updateUserAgent(this, s);
     }
 
-    public String getUseragent() {
+    public String getUserAgent() {
         return useragent;
     }
 
@@ -478,7 +477,7 @@ public class User {
     }
 
     public int getPixelsAllTime() {
-        return App.getDatabase().getUserPixelsAllTime(this.id);
+        return App.getDatabase().getPixelsAllTime(this.id);
     }
 
     public int getAvailablePixels() {
@@ -510,7 +509,7 @@ public class User {
         }
         try {
             App.getDatabase().updateUsername(id, newName);
-            App.getDatabase().adminLog(String.format("User %s (%d) has just changed their name to %s", name, id, newName), id);
+            App.getDatabase().insertAdminLog(id, String.format("User %s (%d) has just changed their name to %s", name, id, newName));
             App.getUserManager().reload();
         } catch (Exception e) {
             e.printStackTrace();
@@ -543,7 +542,7 @@ public class User {
     public void setChatNameColor(int colorIndex, boolean callDB) {
         this.chatNameColor = colorIndex;
         if (callDB) {
-            App.getDatabase().setUserChatNameColor(id, colorIndex);
+            App.getDatabase().setChatNameColor(id, colorIndex);
         }
     }
 
