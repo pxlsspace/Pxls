@@ -409,7 +409,7 @@ public class Database {
                     .execute();
             return rowID2;
         });
-        increasePixelCount(false, whoID);
+        //increasePixelCount(false, whoID);
         return rowID;
     }
 
@@ -435,7 +435,7 @@ public class Database {
                    .execute();
            return rowID2;
         });
-        increasePixelCount(false, who.getId());
+        //increasePixelCount(false, who.getId());
         return rowID;
     }
 
@@ -461,7 +461,7 @@ public class Database {
                     .bind("y", y)
                     .execute();
         });
-        increasePixelCount(false, who.getId());
+        //increasePixelCount(false, who.getId());
         return rowID;
     }
 
@@ -487,7 +487,7 @@ public class Database {
                     .bind("recent", pp.isPresent() && pp.get().secondaryId > 0)
                     .execute();
         });
-        increasePixelCount(false, whoID);
+        //increasePixelCount(false, whoID);
         return rowID;
     }
 
@@ -515,7 +515,7 @@ public class Database {
                     .bind("recent", pp.isPresent() && pp.get().secondaryId > 0)
                     .execute();
         });
-        increasePixelCount(false, whoID);
+        //increasePixelCount(false, whoID);
         return rowID;
     }
 
@@ -553,7 +553,7 @@ public class Database {
                     .bind("from", from)
                     .execute();
         });
-        increasePixelCount(false, whoID);
+        //increasePixelCount(false, whoID);
     }
 
     /**
@@ -580,7 +580,7 @@ public class Database {
                     .bind("from", from)
                     .execute();
         });
-        increasePixelCount(false, whoID);
+        //increasePixelCount(false, whoID);
     }
 
     /**
