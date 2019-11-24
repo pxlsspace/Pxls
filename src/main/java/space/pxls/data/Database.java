@@ -244,7 +244,8 @@ public class Database {
     public void updateUserTime(int id, long seconds) {
         jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET cooldown_expiry = NOW() + :seconds * '1 SECOND'::INTERVAL WHERE id = :id")
                 .bind("seconds", seconds)
-                .bind("id", id));
+                .bind("id", id)
+                .execute());
     }
 
     /**
