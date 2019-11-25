@@ -394,7 +394,7 @@ public class Database {
      * @param color The new color.
      * @param who The user who undid the pixel.
      * @param from The previous pixel ID.
-     * @return
+     * @return The inserted row ID.
      */
     public Integer putUndoPixel(int x, int y, int color, User who, int from) {
         int whoID = who == null ? 0 : who.getId();
@@ -410,7 +410,6 @@ public class Database {
                     .execute();
             return rowID2;
         });
-        //increasePixelCount(false, whoID);
         return rowID;
     }
 
@@ -436,7 +435,6 @@ public class Database {
                    .execute();
            return rowID2;
         });
-        //increasePixelCount(false, who.getId());
         return rowID;
     }
 
@@ -462,7 +460,6 @@ public class Database {
                     .bind("y", y)
                     .execute();
         });
-        //increasePixelCount(false, who.getId());
         return rowID;
     }
 
@@ -481,14 +478,13 @@ public class Database {
                     .bind("x", x)
                     .bind("y", y)
                     .execute();
-            return handle.createUpdate("INSERT INTO pixels (x, y, color, most_recent) VALUES (:x, :y, :color, :recent")
+            return handle.createUpdate("INSERT INTO pixels (x, y, color, most_recent) VALUES (:x, :y, :color, :recent)")
                     .bind("x", x)
                     .bind("y", y)
                     .bind("color", color)
                     .bind("recent", pp.isPresent() && pp.get().secondaryId > 0)
                     .execute();
         });
-        //increasePixelCount(false, whoID);
         return rowID;
     }
 
@@ -516,7 +512,6 @@ public class Database {
                     .bind("recent", pp.isPresent() && pp.get().secondaryId > 0)
                     .execute();
         });
-        //increasePixelCount(false, whoID);
         return rowID;
     }
 
@@ -554,7 +549,7 @@ public class Database {
                     .bind("from", from)
                     .execute();
         });
-        //increasePixelCount(false, whoID);
+        decreasePixelCount(whoID);
     }
 
     /**
@@ -581,7 +576,7 @@ public class Database {
                     .bind("from", from)
                     .execute();
         });
-        //increasePixelCount(false, whoID);
+        decreasePixelCount(whoID);
     }
 
     /**
@@ -1405,5 +1400,15 @@ public class Database {
                         .execute();
             }
         });
+    }
+
+    /**
+     * Decreases the specified user's pixel count by one. Primarily used when undoing.
+     * @param who The ID of the {@link User}.
+     */
+    private void decreasePixelCount(int who) {
+        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET pixel_count = pixel_count - 1, pixel_count_alltime = pixel_count_alltime - 1 WHERE id = :who")
+                .bind("who", who)
+                .execute());
     }
 }
