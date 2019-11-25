@@ -3397,7 +3397,6 @@ window.App = (function () {
                     socket.on('message_cooldown', e => {
                         self.timeout.ends = (new Date >> 0) + ((e.diff >> 0) * 1e3) + 1e3; //add 1 second so that we're 1-based instead of 0-based
                         self.elements.input.val(e.message);
-                        self.elements.input.blur();
                         if ((new Date >> 0) > self.timeout.ends) {
                             self.elements.rate_limit_overlay.fadeOut();
                         } else {
@@ -3516,9 +3515,9 @@ window.App = (function () {
                             if (trimmed.startsWith('/') && user.getRole() !== "USER") {
                                 let args = trimmed.substr(1).split(' '),
                                     command = args.shift();
+                                handling = true;
                                 switch (command.toLowerCase().trim()) {
                                     case 'permaban': {
-                                        handling = true;
                                         let usage = `/permaban USER SHOULD_PURGE BAN_REASON\n/permaban help`;
                                         let help = [
                                             usage,
@@ -3563,7 +3562,6 @@ window.App = (function () {
                                         break;
                                     }
                                     case 'tempban': {
-                                        handling = true;
                                         let usage = `/tempban USER BAN_LENGTH SHOULD_PURGE BAN_REASON\n/tempban help`;
                                         let help = [
                                             usage,
@@ -3613,7 +3611,6 @@ window.App = (function () {
                                         break;
                                     }
                                     case 'purge': {
-                                        handling = true;
                                         let usage = `/purge USER PURGE_REASON\n/purge help`;
                                         let help = [
                                             usage,
@@ -3645,12 +3642,24 @@ window.App = (function () {
                                         }
                                         break;
                                     }
+                                    default: {
+                                        handling = false;
+                                    }
                                 }
                             }
                             e.preventDefault();
+
+                            if (trimmed.length === 0) {
+                                return;
+                            }
+
+                            if (self.timeout.timer) {
+                                return;
+                            }
+
                             if (!self.typeahead.shouldInsert && !handling) {
                                 self.typeahead.lastLength = -1;
-                                self._send(self.elements.input[0].value);
+                                self._send(trimmed);
                                 self.elements.input.val("");
                             }
                         } else if (e.originalEvent.key == "Tab" || e.originalEvent.which == 9) {
