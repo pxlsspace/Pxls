@@ -526,12 +526,12 @@ public class User {
     }
 
     public int getChatNameColor() {
-        return (App.getConfig().getBoolean("chat.devRainbow") && role.equals(Role.DEVELOPER)) ? 0xffffff : this.chatNameColor;
+        return (App.getConfig().getBoolean("chat.staffRainbow") && role.greaterEqual(Role.MODERATOR)) ? 0xffffff : this.chatNameColor;
     }
 
     public List<String> getChatNameClasses() {
         List<String> toReturn = new ArrayList<>();
-        if (App.getConfig().getBoolean("chat.devRainbow") && role.equals(Role.DEVELOPER)) {
+        if (App.getConfig().getBoolean("chat.staffRainbow") && role.greaterEqual(Role.MODERATOR)) {
             toReturn.add("rainbow-name");
         }
         return toReturn.size() != 0 ? toReturn : null;
