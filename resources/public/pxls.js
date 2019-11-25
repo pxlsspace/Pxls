@@ -5456,7 +5456,7 @@ window.App = (function () {
                     });
                 },
                 _handleRenameClick: function(event) {
-                    let toPop = crel('form', {onsubmit: self._handleSubmit},
+                    let renamePopup = crel('form', {onsubmit: self._handleSubmit},
                         crel('h3', 'Change Username'),
                         crel('hr'),
                         crel('p', 'Staff have required you to change your username, this usually means your name breaks one of our rules.'),
@@ -5466,10 +5466,11 @@ window.App = (function () {
                         ),
                         crel('p', {'style': 'display: none; font-weight: bold; color: #f00; font-size: .9rem;', 'class': 'rename-error'}, ''),
                         crel('div', {'style': 'text-align: right'},
+                            crel('button', {'class': 'button', 'onclick': alert.hide}, 'Not now'),
                             crel('button', {'class': 'button rename-submit', 'type': 'submit'}, 'Change')
                         )
                     );
-                    alert.showElem(toPop, true);
+                    alert.showElem(renamePopup, true);
                 },
                 showRenameRequest: () => {
                     self.elements.userMessage.empty().show().append(
