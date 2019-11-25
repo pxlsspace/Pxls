@@ -1067,7 +1067,7 @@ public class Database {
      * @return The new chat message's nonce.
      */
     public String createChatMessage(User author, long sent, String content, String filtered) {
-        return createChatMessage(author == null ? -1 : author.getId(), sent, content, filtered);
+        return createChatMessage(author == null ? -1 : author.getId(), sent / 1000L, content, filtered);
     }
 
     /**
