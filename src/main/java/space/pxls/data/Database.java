@@ -776,7 +776,7 @@ public class Database {
      * @param username The new username.
      */
     public void updateUsername(int who, String username) {
-        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET username = :name WHERE id = :who")
+        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET username = :username WHERE id = :who")
                 .bind("who", who)
                 .bind("username", username)
                 .execute());

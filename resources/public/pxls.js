@@ -4914,7 +4914,7 @@ window.App = (function () {
 
                             renameWrapper.onsubmit = e => {
                                 e.preventDefault();
-                                $.post('/admin/flagNameChange', {user: reportingTarget, flagState: rbStateOn.checked === true ? '1' : '0'}, function() {
+                                $.post('/admin/flagNameChange', {user: reportingTarget, flagState: rbStateOn.checked === true}, function() {
                                     renameWrapper.remove();
                                     alert.show("Rename request updated");
                                 }).fail(function(xhrObj) {

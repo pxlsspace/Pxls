@@ -565,7 +565,7 @@ public class WebHandler {
             return;
         }
         try {
-            isRequested = data.getFirst("flagState").getValue().equalsIgnoreCase("1");
+            isRequested = data.getFirst("flagState").getValue().equalsIgnoreCase("true");
         } catch (Exception e) {
             //ignored
         }

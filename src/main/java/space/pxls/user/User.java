@@ -504,9 +504,7 @@ public class User {
 
     public boolean updateUsername(String newName, boolean ignoreRequestedStatus) {
         if (!ignoreRequestedStatus && !isRenameRequested) return false;
-        if (App.getDatabase().getUserByName(newName) != null) {
-            return false;
-        }
+        if (App.getDatabase().getUserByName(newName).isPresent()) return false;
         try {
             App.getDatabase().updateUsername(id, newName);
             App.getDatabase().insertAdminLog(id, String.format("User %s (%d) has just changed their name to %s", name, id, newName));
