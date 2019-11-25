@@ -191,6 +191,7 @@ li.chat-line .user {
 
 .emoji-picker__emoji {
     background: transparent;
+    color: white;
 }
 
 .emoji-picker__emoji:hover {

@@ -3423,6 +3423,8 @@ window.App = (function () {
                         self.chatban.banEndFormatted = self.chatban.banEnd.format('MMM Do YYYY, hh:mm:ss A');
                         setTimeout(() => {
                             clearInterval(self.chatban.timer);
+                            self.elements.input.prop('disabled', true);
+                            self.elements.emoji_button.hide();
                             if (e.expiry - self.chatban.banStart > 0 && !e.permanent) {
                                 self.elements.rate_limit_overlay.show();
                                 self.elements.rate_limit_counter.text('You have been banned from chat.');
@@ -3438,6 +3440,7 @@ window.App = (function () {
                                     } else {
                                         self.elements.rate_limit_overlay.hide();
                                         self.elements.rate_limit_counter.text('');
+                                        self.elements.emoji_button.show();
                                     }
                                 }, 150);
                             } else if (e.permanent) {
@@ -3448,8 +3451,10 @@ window.App = (function () {
                                     self.addServerAction(`Ban reason: ${e.reason}`);
                                 }
                             } else if (e.type !== "chat_ban_state") { //chat_ban_state is a query result, not an action notice.
+                                self.elements.input.prop('disabled', false);
                                 self.elements.rate_limit_overlay.hide();
                                 self.elements.rate_limit_counter.text('');
+                                self.elements.emoji_button.show();
                                 self.addServerAction(`You have been unbanned from chat.`);
                             }
                         }, 0);
@@ -3697,15 +3702,7 @@ window.App = (function () {
                                 ls.set("chat-last_seen_nonce", lastN.dataset.nonce);
                             }
 
-                            if (self.isChatBanned()) {
-                                self.elements.rate_limit_overlay.show();
-                            } else if (user.isLoggedIn()) {
-                                self.elements.rate_limit_overlay.hide();
-                                self.elements.rate_limit_counter.text('');
-                            } else {
-                                self.elements.rate_limit_overlay.show();
-                                self.elements.rate_limit_counter.text('You must be logged in to chat.');
-                            }
+                            self.updateInputLoginState(user.isLoggedIn());
                         }
                     });
 
@@ -3718,11 +3715,7 @@ window.App = (function () {
                         }
                     });
 
-                    $(window).on('pxls:user:loginState', (e, state) => {
-                        if (!self.isChatBanned()) {
-                            self.elements.rate_limit_overlay.hide();
-                        }
-                    });
+                    $(window).on('pxls:user:loginState', (e, isLoggedIn) => self.updateInputLoginState(isLoggedIn));
 
                     $(window).on("mouseup", e => {
                         let target = e.target;
@@ -4171,6 +4164,23 @@ window.App = (function () {
                 },
                 isChatBanned: () => {
                     return self.chatban.permanent || (self.chatban.banEnd - moment.now() > 0);
+                },
+                updateInputLoginState: (isLoggedIn) => {
+                    const isChatBanned = self.isChatBanned();
+
+                    if (isLoggedIn && !isChatBanned) {
+                        self.elements.input.prop('disabled', false);
+                        self.elements.rate_limit_overlay.hide();
+                        self.elements.rate_limit_counter.text('');
+                        self.elements.emoji_button.show();
+                    } else {
+                        self.elements.input.prop('disabled', true);
+                        self.elements.rate_limit_overlay.show();
+                        if (!isChatBanned) {
+                            self.elements.rate_limit_counter.text('You must be logged in to chat.');
+                        }
+                        self.elements.emoji_button.hide();
+                    }
                 },
                 clearPings: () => {
                     self.elements.message_icon.removeClass('has-notification');
