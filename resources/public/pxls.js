@@ -4023,7 +4023,7 @@ window.App = (function () {
                     let lblBanner = crel('label', {'style': 'display: block;'}, _cbBanner, 'Enable the rotating banner under chat');
 
                     let _cbTemplateTitles = crel('input', {'type': 'checkbox'});
-                    let lblTemplateTitles = crel('label', {'style': 'display: block;'}, _cbTemplateTitles, 'Replace template titls with URLs in chat where applicable');
+                    let lblTemplateTitles = crel('label', {'style': 'display: block;'}, _cbTemplateTitles, 'Replace template titles with URLs in chat where applicable');
 
                     let _txtFontSize = crel('input', {'type': 'number', 'min': '1', 'max': '72'});
                     let _btnFontSizeConfirm = crel('button', {'class': 'buton'}, crel('i', {'class': 'fas fa-check'}));
