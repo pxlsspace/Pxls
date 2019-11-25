@@ -1454,6 +1454,15 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
     padding: 0;
 }
 
+.popup .pings-list:empty::before {
+    content: "No pings here";
+    position: absolute;
+    top: 50%;
+    width: 100%;
+    text-align: center;
+    opacity: .5;
+}
+
 .popup .pings-list li {
     font-family: monospace;
     white-space: pre;
