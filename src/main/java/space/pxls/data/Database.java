@@ -1370,7 +1370,7 @@ public class Database {
      * @return The inserted row ID.
      */
     public Integer insertOrUpdateIPLog(int id, String ip) {
-        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO ip_log (user, ip, last_used) VALUES (:user, :ip::INET, NULL) ON CONFLICT UPDATE ip_log SET last_used = NOW() WHERE user = :user AND ip = :ip::INET")
+        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO ip_log (\"user\", ip, last_used) VALUES (:user, :ip::INET, NULL) ON CONFLICT UPDATE ip_log SET last_used = NOW() WHERE \"user\" = :user AND ip = :ip::INET")
                 .bind("user", id)
                 .bind("ip", ip)
                 .execute());
