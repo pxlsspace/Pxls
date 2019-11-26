@@ -9,7 +9,7 @@ Pxls is a collaborative image editor where you can place up to six pixels at a t
 - [Maven][maven]
 - [Java 8][java]
 - [JDK (for development)][jdk8]
-- [MariaDB][mariadb]
+- [Postgres][postgres]
 
 ## Building
 
@@ -51,8 +51,7 @@ You will need to set the database URI/credentials in `pxls.conf`.
 The relevant config options are `database.url`, `database.user`, and `database.pass`. An example database section in the config could look like this:
 
     database {
-      driver: org.mariadb.jdbc.driver
-      url: "jdbc:mariadb://localhost:3306/pxls"
+      url: "jdbc:postgresql://localhost:3306/pxls"
       user: "AzureDiamond"
       pass: "hunter2"
     }
@@ -114,9 +113,22 @@ Commands are entered directly into the running instance (stdin):
 - `shadowban <user> <reason>` - Shadowbans the user (hiding newly-placed pixels to all but themself), with the specified reason (if any).
 - `unban <user>` - Unbans the user.
 - `nuke <x1> <y1> <x2> <y2> <color>` - Replaces all pixels from (`x1`, `y1`) to (`x2`, `y2`) with the color (by index).
+- `replace <x1> <y1> <x2> <y2> <from> <to>` - Replaces all pixels in the rectangle delimited by (`x1`, `y1`) to (`x2`, `y2`) from the color `from` to the color `to`
 - `cons [authed]` - Lists the total (or authed) connection count.
 - `users` - Lists all of the authed users, by username.
 - `stack <user> [set <amount>]` - Sets the user's stack count. The user must not be on cooldown before setting.
+- `cd-override list|<user> [on|off]` - Sets or lists the cooldown override status of an user
+- `broadcast <message>` - Sends a message in chat
+- `chatban <user> <length> <purge> <reason>` - Chat bans the user for `length` in seconds, optionally purges all of their messages
+- `permachatban <user> <purge> <reason>` - Perma chat bans the user, optionally purges all of their messages
+- `unchatban <user>` - Unchatbans the user
+- `chatpurge <user> [amount] [reason]` - Purges up to `amount` chat messages from the user
+- `cf <query>` - Runs a chat filter against `query`
+- `reloadusers` - Reloads the user manager (laggy)
+- `flagrename <user> [0|1]` - Sets the user's Rename Requested flag
+- `setname <user> <name>` - (alias: updateusername) Changes the user's name
+- `idlecheck` - Runs an user timeout check
+- `senduserdata` - Broadcasts the non-idle user count in chat
 
 ## Contributors
 
@@ -140,7 +152,7 @@ A full list of contributors is available [here](https://github.com/xSke/Pxls/gra
 [maven]: https://maven.apache.org/
 [java]: https://www.java.com/en/download/linux_manual.jsp
 [jdk8]: http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
-[mariadb]: https://mariadb.com/
+[postgres]: https://www.postgresql.org/
 [hocon]: https://github.com/typesafehub/config/blob/master/HOCON.md
 [googleconsole]: https://console.developers.google.com
 [redditapps]: https://www.reddit.com/prefs/apps
