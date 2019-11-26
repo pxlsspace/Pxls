@@ -3,10 +3,8 @@ package space.pxls.data;
 import com.typesafe.config.Config;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.apache.logging.log4j.Level;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
-import org.jdbi.v3.core.result.ResultIterable;
 import space.pxls.App;
 import space.pxls.server.Badge;
 import space.pxls.server.ChatMessage;
@@ -19,7 +17,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static java.lang.Math.toIntExact;
