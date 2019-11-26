@@ -785,7 +785,7 @@ public class Database {
      * @param discordName The new discord username.
      */
     public void setDiscordName(int who, String discordName) {
-        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET discord_name = :name WHERE id = :id")
+        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET discord_name = :name WHERE id = :who")
                 .bind("who", who)
                 .bind("name", discordName)
                 .execute());
