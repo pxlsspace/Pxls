@@ -1733,15 +1733,13 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
     }
 
     #ui .left {
-        left: 16px;
-        bottom: 16px;
-        right: auto;
+        position: fixed;
+        top: 64px;
     }
 
     #ui .right {
-        left: 16px;
-        bottom: 16px;
-        right: auto;
+        position: fixed;
+        top: 64px;
     }
 
     #drawers-opener {
