@@ -84,7 +84,7 @@ public class Database {
                     "stacked INT DEFAULT 0," +
                     "is_rename_requested BOOL NOT NULL DEFAULT false," +
                     "discord_name VARCHAR(37)," +
-                    "chat_name_color INT NOT NULL DEFAULT 5)")
+                    "chat_name_color INT NOT NULL)")
                     .execute();
             // sessions
             handle.createUpdate("CREATE TABLE IF NOT EXISTS sessions ("+
@@ -632,10 +632,11 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> createUser(String name, String login, String ip) {
-        jdbi.useHandle(handle -> handle.createUpdate("INSERT INTO users (username, login, signup_ip, last_ip) VALUES (:username, :login, :ip::INET, :ip::INET)")
+        jdbi.useHandle(handle -> handle.createUpdate("INSERT INTO users (username, login, signup_ip, last_ip, chat_name_color) VALUES (:username, :login, :ip::INET, :ip::INET, :chat_name_color)")
                 .bind("username", name)
                 .bind("login", login)
                 .bind("ip", ip)
+                .bind("chat_name_color", App.getConfig().getInt("chat.defaultColorIndex"))
                 .execute());
         return getUserByName(name);
     }

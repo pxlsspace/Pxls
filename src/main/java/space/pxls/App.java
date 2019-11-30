@@ -141,11 +141,21 @@ public class App {
         try {
             String[] token = line.split(" ");
             if (token[0].equalsIgnoreCase("reload")) {
-                cachedWhoamiOrigin = null;
-                loadConfig();
+                try {
+                    cachedWhoamiOrigin = null;
+                    loadConfig();
+                    System.out.println("Success!");
+                } catch (Exception x) {
+                    x.printStackTrace();
+                }
             } else if (token[0].equalsIgnoreCase("save")) {
-                saveMapForce();
-                saveMapBackup();
+                try {
+                    saveMapForce();
+                    saveMapBackup();
+                    System.out.println("Success!");
+                } catch (Exception x) {
+                    x.printStackTrace();
+                }
             } else if (token[0].equalsIgnoreCase("role")) {
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
