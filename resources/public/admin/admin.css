@@ -3,6 +3,7 @@
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
 .admin {
+    z-index: 10;
     position: absolute;
     top: 40vh;
     background: #333;
