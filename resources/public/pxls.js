@@ -5224,6 +5224,7 @@ window.App = (function () {
                     query.has("oo") ? append += "&oo=" + query.get("oo") : 0;
                     query.has("ox") ? append += "&ox=" + query.get("ox") : 0;
                     query.has("oy") ? append += "&oy=" + query.get("oy") : 0;
+                    query.has("title") ? append += "&title=" + query.get("title") : "";
                     return `${location.origin}/#x=${Math.floor(x)}&y=${Math.floor(y)}&scale=${scale}${append}`;
                 }
             };
