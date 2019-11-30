@@ -129,6 +129,7 @@ Commands are entered directly into the running instance (stdin):
 - `setname <user> <name>` - (alias: updateusername) Changes the user's name
 - `idlecheck` - Runs an user timeout check
 - `senduserdata` - Broadcasts the non-idle user count in chat
+- `addnotification <title> <expiry> <body>` - Adds a notification to the notification panel. A "+x" on the `expiry` makes the expiry now + x in seconds.   
 
 ## Contributors
 

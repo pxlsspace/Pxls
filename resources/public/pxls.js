@@ -5608,7 +5608,7 @@ window.App = (function () {
                         crel('div', {'class': 'notification-title'}, notification.title),
                         chat.processMessage('div', 'notification-body', notification.content),
                         crel('div', {'class': 'notification-footer'},
-                            document.createTextNode(`Posted by ${notification.who}`),
+                            notification.who ? document.createTextNode(`Posted by ${notification.who}`) : null,
                             notification.expiry !== 0 ? crel('span', {'class': 'notification-expiry'},
                                 crel('i', {'class': 'far fa-clock fa-is-left'}),
                                 crel('span', {'title': moment.unix(notification.expiry).format('MMMM DD, YYYY, hh:mm:ss A')}, `Expires ${moment.unix(notification.expiry).format('MMM DD YYYY')}`)
