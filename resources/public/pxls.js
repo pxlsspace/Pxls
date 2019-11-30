@@ -2756,7 +2756,8 @@ window.App = (function () {
                     enabled: true,
                 },
                 elements: {
-                    stackCount: $("#placeableCount-bubble, #placeableCount-cursor"),
+                    stackCount: $("#placeable-count, #placeableCount-cursor"),
+                    coords: $("#coords-info .coords"),
                     txtAlertLocation: $("#txtAlertLocation"),
                     rangeAlertVolume: $("#rangeAlertVolume"),
                     lblAlertVolume: $("#lblAlertVolume"),
@@ -2779,6 +2780,8 @@ window.App = (function () {
                     self._initAudio();
                     self._initAccount();
                     self._initBanner();
+
+                    self.elements.coords.click(() => coords.copyCoords(true));
 
                     var useMono = ls.get("monospace_lookup");
                     if (typeof useMono === 'undefined') {
@@ -5025,9 +5028,8 @@ window.App = (function () {
             var self = {
                 elements: {
                     palette: $("#palette"),
-                    timer_bubble: $("#cd-timer-bubble"),
                     timer_overlay: $("#cd-timer-overlay"),
-                    timer: null
+                    timer: $("#cooldown-timer")
                 },
                 isOverlay: false,
                 hasFiredNotification: true,
@@ -5045,8 +5047,9 @@ window.App = (function () {
 
                     if (self.runningTimer === false) {
                         self.isOverlay = ls.get("auto_reset") === true;
-                        self.elements.timer = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble;
-                        self.elements.timer_bubble.hide();
+                        if (self.isOverlay) {
+                            self.elements.timer = self.elements.timer_overlay;
+                        }
                         self.elements.timer_overlay.hide();
                     }
 
@@ -5123,8 +5126,7 @@ window.App = (function () {
                 },
                 init: function () {
                     self.title = document.title;
-                    self.elements.timer_bubble.hide();
-                    self.elements.timer_overlay.hide();
+                    self.elements.timer.hide();
 
                     $(window).focus(function () {
                         self.focus = true;
@@ -5159,9 +5161,9 @@ window.App = (function () {
         coords = (function () {
             var self = {
                 elements: {
-                    coordsWrapper: $("#coords"),
-                    coords: $("#coords .coords-text"),
-                    lockIcon: $("#coords .icon-lock")
+                    coordsWrapper: $("#coords-info"),
+                    coords: $("#coords-info .coords"),
+                    lockIcon: $("#coords-info .icon-lock")
                 },
                 mouseCoords: null,
                 init: function () {
@@ -5192,32 +5194,42 @@ window.App = (function () {
                     }
 
                     $(window).keydown(event => {
-                        if (!event.ctrlKey && (event.key === "c" || event.key === "C" || event.keyCode === 67) && navigator.clipboard && self.mouseCoords) {
-                            navigator.clipboard.writeText(self.getLinkToCoords(self.mouseCoords.x, self.mouseCoords.y));
-                            self.elements.coordsWrapper.addClass("copyPulse");
-                            setTimeout(() => {
-                                self.elements.coordsWrapper.removeClass("copyPulse");
-                            }, 200);
+                        if (!event.ctrlKey && (event.key === "c" || event.key === "C" || event.keyCode === 67)) {
+                            self.copyCoords();
                         }
                     });
+                },
+                copyCoords: function (useHash = false) {
+                    if (!navigator.clipboard || !self.mouseCoords) {
+                        return;
+                    }
+                    let x = useHash ? query.get('x') : self.mouseCoords.x;
+                    let y = useHash ? query.get('y') : self.mouseCoords.y;
+                    let scale = useHash ? query.get('scale') : 20;
+                    navigator.clipboard.writeText(self.getLinkToCoords(x, y, scale));
+                    self.elements.coordsWrapper.addClass("copyPulse");
+                    setTimeout(() => {
+                        self.elements.coordsWrapper.removeClass("copyPulse");
+                    }, 200);
                 },
                 /**
                  * Returns a link to the website at a specific position.
                  * @param {number} x The X coordinate for the link to have.
                  * @param {number} y The Y coordinate for the link to have.
                  */
-                getLinkToCoords: (x = 0, y = 0) => {
+                getLinkToCoords: (x = 0, y = 0, scale = 20) => {
                     var append = "";
                     query.has("template") ? append += "&template=" + query.get("template") : 0;
                     query.has("tw") ? append += "&tw=" + query.get("tw") : 0;
                     query.has("oo") ? append += "&oo=" + query.get("oo") : 0;
                     query.has("ox") ? append += "&ox=" + query.get("ox") : 0;
                     query.has("oy") ? append += "&oy=" + query.get("oy") : 0;
-                    return `${location.origin}/#x=${Math.floor(x)}&y=${Math.floor(y)}&scale=20${append}`;
+                    return `${location.origin}/#x=${Math.floor(x)}&y=${Math.floor(y)}&scale=${scale}${append}`;
                 }
             };
             return {
                 init: self.init,
+                copyCoords: self.copyCoords,
                 getLinkToCoords: self.getLinkToCoords,
                 lockIcon: self.elements.lockIcon,
             };
@@ -5226,8 +5238,8 @@ window.App = (function () {
         user = (function () {
             var self = {
                 elements: {
-                    users: $("#online"),
-                    userInfo: $("#userinfo"),
+                    users: $("#online-count"),
+                    userInfo: $("#user-info"),
                     loginOverlay: $("#login-overlay"),
                     userMessage: $("#user-message"),
                     prompt: $("#prompt"),
@@ -5365,7 +5377,7 @@ window.App = (function () {
                         self.renameRequested = data.renameRequested;
                         uiHelper.setDiscordName(data.discordName || "");
                         self.elements.loginOverlay.fadeOut(200);
-                        self.elements.userInfo.find("span.name").text(data.username);
+                        self.elements.userInfo.find("span#username").text(data.username);
                         if (data.method == 'ip') {
                             self.elements.userInfo.hide();
                         } else {
