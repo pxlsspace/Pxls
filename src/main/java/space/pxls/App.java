@@ -434,6 +434,30 @@ public class App {
                 }
             } else if (token[0].equalsIgnoreCase("sendUserData")) {
                 App.getServer().getPacketHandler().updateUserData();
+            } else if (token[0].equalsIgnoreCase("addnotification")) {
+                if (token.length < 4) {
+                    System.out.printf("%s TITLE EXPIRY BODY%n", token[0]);
+                    return;
+                }
+
+                String title = token[1];
+                long expiry;
+                try {
+                    if (token[2].startsWith("+")) {
+                        expiry = (new Date().getTime() / 1000) + Long.parseUnsignedLong(token[2].substring(1));
+                    } else {
+                        expiry = Long.parseUnsignedLong(token[2]);
+                    }
+                } catch (NumberFormatException e) {
+                    e.printStackTrace();
+                    System.err.println("Invalid expiry.");
+                    return;
+                }
+                String body = token[3];
+
+                int id = App.getDatabase().createNotification(-1, title, body, expiry);
+                App.getServer().broadcast(new ServerNotification(App.getDatabase().getNotification(id)));
+                System.out.println("Notification sent");
             }
         } catch (RuntimeException e) {
             e.printStackTrace();

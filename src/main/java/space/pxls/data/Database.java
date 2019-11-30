@@ -1304,16 +1304,17 @@ public class Database {
      * @param title The notification's title.
      * @param content The notification's content.
      * @param expiry The notification's expiry.
-     * @return The created notification.
+     * @return The created notification's ID.
      */
     public Integer createNotification(int creatorID, String title, String content, Long expiry) {
-        System.err.println(expiry);
         return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO notifications (time, expiry, title, content, who) VALUES (EXTRACT(epoch FROM CURRENT_TIMESTAMP)::INTEGER, :expiry, :title, :content, :who)")
                 .bind("who", creatorID)
                 .bind("title", title)
                 .bind("content", content)
                 .bind("expiry", expiry)
-                .execute());
+                .executeAndReturnGeneratedKeys("id")
+                    .mapTo(Integer.TYPE)
+                    .first());
     }
 
     /* END NOTIFICATIONS */
