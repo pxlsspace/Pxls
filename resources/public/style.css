@@ -525,18 +525,73 @@ button.button.dark:disabled {
 | UI
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
-#ui .left, #ui .right {
+#ui {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    top: 0;
+    left: 0;
+    transition: width ease-in-out .25s, left ease-in-out .25s;
+    user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-select: none;
+    pointer-events: none;
+    z-index: 9;
+    display: flex;
+    flex-direction: column;
+}
+
+#ui > * {
+    position: relative;
     pointer-events: none;
 }
 
-#ui .left a, #ui .right a {
+#ui > * > * {
+    pointer-events: all;
+}
+
+#ui .bubble {
+    position: absolute;
+    display: inline-block;
+    padding: 8px 16px;
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+    color: #fff;
+}
+
+#ui-top {
+    height: 100%;
+}
+
+#ui #loading-bubble.bubble {
+    display: none;
+}
+
+#main-bubble[position~="top"] {
+    top: 4rem;
+}
+
+#main-bubble[position~="left"] {
+    left: 1rem;
+}
+
+#main-bubble[position~="bottom"] {
+    bottom: 1rem;
+}
+
+#main-bubble[position~="right"] {
+    right: 1rem;
+}
+
+#main-bubble a {
     pointer-events: auto;
 }
 
-.ui-bar {
+#ui-bottom {
     position: relative;
     z-index: 6;
-    width: 100vw;
+    width: 100%;
     left: 0;
 }
 
@@ -682,57 +737,12 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     z-index: 2;
 }
 
-.bubble {
-    display: inline-block;
-    padding: 8px 16px;
-    background-color: rgba(0, 0, 0, 0.7);
-    border-radius: 5px;
-    color: #fff;
-}
-
-.bubble.orange-bubble {
-    background-color: rgba(255, 115, 0, 0.7);
-}
-
-.bubble.fat-bubble {
-    padding: 16px 24px;
-}
-
 .coords {
     transition: 0.2s;
 }
 
 .copyPulse {
     color: rgba(0, 211, 221, 0.7);
-}
-
-#ui {
-    position: fixed;
-    bottom: 0;
-    user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    -webkit-user-select: none;
-    pointer-events: none;
-    z-index: 9;
-}
-
-#ui > * {
-    pointer-events: all;
-}
-
-#ui .left {
-    position: relative;
-    left: 1rem;
-    bottom: 1rem;
-    z-index: 9;
-}
-
-#ui .right {
-    position: relative;
-    right: 1rem;
-    bottom: 1rem;
-    z-index: 9;
 }
 
 .userinfo .logout {
@@ -853,6 +863,10 @@ input[type="text"] {
     height: 110vh;
     pointer-events: none;
     background-image: linear-gradient(to right, #aaa 1px, transparent 1px), linear-gradient(to bottom, #aaa 1px, transparent 1px);
+}
+
+.settingToggles > * {
+    margin: 3px 0;
 }
 
 .settingToggles > label {
@@ -1111,33 +1125,36 @@ article .body {
     margin: 0 !important;
 }
 
-body.panel-open .ui-bar {
+body.panel-open #ui {
     width: 70vw;
-    transition: width .25s, left .25s;
-    left: 0;
 }
 
-body.panel-open.panel-left .ui-bar {
+body.panel-open.panel-left #ui {
     left: 30vw;
     right: 0;
 }
 
-body.panel-open.panel-left.panel-left-halfwidth .ui-bar,
-body.panel-open.panel-right.panel-right-halfwidth .ui-bar {
+body.panel-open.panel-left.panel-left-halfwidth #ui {
+    left: 50vw;
     width: 50vw;
 }
 
-body.panel-left.panel-right .ui-bar {
+body.panel-open.panel-right.panel-right-halfwidth #ui {
+    right: 50vw;
+    width: 50vw;
+}
+
+body.panel-left.panel-right #ui {
     left: 30vw;
     width: 40vw;
 }
 
-body.panel-left.panel-left-halfwidth.panel-right .ui-bar {
+body.panel-left.panel-left-halfwidth.panel-right #ui {
     left: 50vw;
     width: 20vw;
 }
 
-body.panel-left.panel-right.panel-right-halfwidth .ui-bar {
+body.panel-left.panel-right.panel-right-halfwidth #ui {
     right: 50vw;
     width: 20vw;
 }
@@ -1655,6 +1672,40 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
     color: #aaa;
 }
 
+/* Settings tweaks */
+#bubble-position {
+    width: 0;
+    grid-template: repeat(2, 1fr) / repeat(2, .5fr);
+    display: grid;
+}
+
+#bubble-position label {
+    position: relative;
+    width: 55px;
+    height: 30px;
+}
+
+#bubble-position label > input {
+    visibility: hidden;
+}
+
+#bubble-position label > div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: inherit;
+    height: inherit;
+    border: 1px solid #797979;
+}
+
+#bubble-position label:hover > div {
+    border: 2px solid #6495ED;
+}
+
+#bubble-position label input:checked ~ div {
+    background-color: #eee;
+}
+
 /* Chat settings tweaks */
 .chat-settings-wrapper label {
     display: block;
@@ -1721,6 +1772,10 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
 | Mobile Styles
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
+.mobile-only {
+    display: none;
+}
+
 @media (max-width: 1500px) {
     #donate, #donate > * {
         max-width: 300px;
@@ -1728,18 +1783,12 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
 }
 
 @media (max-width: 768px) {
+    .mobile-only {
+        display: initial;
+    }
+
     .palette {
         width: 100%;
-    }
-
-    #ui .left {
-        position: fixed;
-        top: 64px;
-    }
-
-    #ui .right {
-        position: fixed;
-        top: 64px;
     }
 
     #drawers-opener {
@@ -1786,10 +1835,21 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
         right: -105%;
     }
 
-    body.panel-open .ui-bar {
+    body.panel-open #ui {
         right: initial;
         width: initial;
         transition: none;
+    }
+
+    #ui #main-bubble {
+        top: 4rem;
+        bottom: initial;
+        left: 1rem;
+        right: initial;
+    }
+
+    #bubble-position {
+        opacity: .5;
     }
 
     #chat-hint {

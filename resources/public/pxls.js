@@ -2756,6 +2756,7 @@ window.App = (function () {
                     enabled: true,
                 },
                 elements: {
+                    mainBubble: $("#main-bubble"),
                     stackCount: $("#placeable-count, #placeableCount-cursor"),
                     coords: $("#coords-info .coords"),
                     txtAlertLocation: $("#txtAlertLocation"),
@@ -2872,6 +2873,16 @@ window.App = (function () {
                             }
                         });
                     self.adjustColorBrightness(ls.get('brightness.enabled') === true ? colorBrightnessLevel : null); //ensure we clear if it's disabled on init
+
+
+                    const initialBubblePosition = ls.get('ui.bubble-position') || 'bottom left';
+                    $(`#bubble-position input[value="${initialBubblePosition}"]`).prop('checked', true);
+                    self.elements.mainBubble.attr('position', initialBubblePosition);
+                    $("#bubble-position input")
+                        .click((e) => {
+                            ls.set('ui.bubble-position', e.target.value);
+                            self.elements.mainBubble.attr('position', e.target.value);
+                        });
 
                     $(window).keydown(function (evt) {
                         switch (evt.key || evt.which) {
