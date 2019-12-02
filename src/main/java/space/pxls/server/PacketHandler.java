@@ -391,7 +391,7 @@ public class PacketHandler {
         if (message.endsWith("\n")) message = message.replaceFirst("\n$", "");
         if (message.length() > 2048) message = message.substring(0, 2048);
         if (user == null) { //console
-            String nonce = App.getDatabase().createChatMessage(0, nowMS, message, "");
+            String nonce = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "");
             server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS / 1000L, message, null, null, 0)));
         } else {
             if (user.isChatbanned()) return;
@@ -408,10 +408,10 @@ public class PacketHandler {
                     if (App.getConfig().getBoolean("chat.filter.enabled")) {
                         ChatFilter.FilterResult result = ChatFilter.getInstance().filter(toSend);
                         toSend = result.filterHit ? result.filtered : result.original;
-                        String nonce = App.getDatabase().createChatMessage(user.getId(), nowMS, message, toSend);
+                        String nonce = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toSend);
                         server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor())));
                     } else {
-                        String nonce = App.getDatabase().createChatMessage(user.getId(), nowMS, message, "");
+                        String nonce = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, "");
                         server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor())));
                     }
                 } catch (UnableToExecuteStatementException utese) {

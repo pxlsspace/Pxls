@@ -3,10 +3,8 @@ package space.pxls.data;
 import com.typesafe.config.Config;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.apache.logging.log4j.Level;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
-import org.jdbi.v3.core.result.ResultIterable;
 import space.pxls.App;
 import space.pxls.server.Badge;
 import space.pxls.server.ChatMessage;
@@ -19,7 +17,6 @@ import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import static java.lang.Math.toIntExact;
@@ -87,7 +84,7 @@ public class Database {
                     "stacked INT DEFAULT 0," +
                     "is_rename_requested BOOL NOT NULL DEFAULT false," +
                     "discord_name VARCHAR(37)," +
-                    "chat_name_color INT NOT NULL DEFAULT 5)")
+                    "chat_name_color INT NOT NULL)")
                     .execute();
             // sessions
             handle.createUpdate("CREATE TABLE IF NOT EXISTS sessions ("+
@@ -244,7 +241,8 @@ public class Database {
     public void updateUserTime(int id, long seconds) {
         jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET cooldown_expiry = NOW() + :seconds * '1 SECOND'::INTERVAL WHERE id = :id")
                 .bind("seconds", seconds)
-                .bind("id", id));
+                .bind("id", id)
+                .execute());
     }
 
     /**
@@ -393,7 +391,7 @@ public class Database {
      * @param color The new color.
      * @param who The user who undid the pixel.
      * @param from The previous pixel ID.
-     * @return
+     * @return The inserted row ID.
      */
     public Integer putUndoPixel(int x, int y, int color, User who, int from) {
         int whoID = who == null ? 0 : who.getId();
@@ -409,7 +407,6 @@ public class Database {
                     .execute();
             return rowID2;
         });
-        //increasePixelCount(false, whoID);
         return rowID;
     }
 
@@ -435,7 +432,6 @@ public class Database {
                    .execute();
            return rowID2;
         });
-        //increasePixelCount(false, who.getId());
         return rowID;
     }
 
@@ -461,7 +457,6 @@ public class Database {
                     .bind("y", y)
                     .execute();
         });
-        //increasePixelCount(false, who.getId());
         return rowID;
     }
 
@@ -480,14 +475,13 @@ public class Database {
                     .bind("x", x)
                     .bind("y", y)
                     .execute();
-            return handle.createUpdate("INSERT INTO pixels (x, y, color, most_recent) VALUES (:x, :y, :color, :recent")
+            return handle.createUpdate("INSERT INTO pixels (x, y, color, most_recent) VALUES (:x, :y, :color, :recent)")
                     .bind("x", x)
                     .bind("y", y)
                     .bind("color", color)
                     .bind("recent", pp.isPresent() && pp.get().secondaryId > 0)
                     .execute();
         });
-        //increasePixelCount(false, whoID);
         return rowID;
     }
 
@@ -515,7 +509,6 @@ public class Database {
                     .bind("recent", pp.isPresent() && pp.get().secondaryId > 0)
                     .execute();
         });
-        //increasePixelCount(false, whoID);
         return rowID;
     }
 
@@ -553,7 +546,7 @@ public class Database {
                     .bind("from", from)
                     .execute();
         });
-        //increasePixelCount(false, whoID);
+        decreasePixelCount(whoID);
     }
 
     /**
@@ -580,7 +573,7 @@ public class Database {
                     .bind("from", from)
                     .execute();
         });
-        //increasePixelCount(false, whoID);
+        decreasePixelCount(whoID);
     }
 
     /**
@@ -639,10 +632,11 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> createUser(String name, String login, String ip) {
-        jdbi.useHandle(handle -> handle.createUpdate("INSERT INTO users (username, login, signup_ip, last_ip) VALUES (:username, :login, :ip::INET, :ip::INET)")
+        jdbi.useHandle(handle -> handle.createUpdate("INSERT INTO users (username, login, signup_ip, last_ip, chat_name_color) VALUES (:username, :login, :ip::INET, :ip::INET, :chat_name_color)")
                 .bind("username", name)
                 .bind("login", login)
                 .bind("ip", ip)
+                .bind("chat_name_color", App.getConfig().getInt("chat.defaultColorIndex"))
                 .execute());
         return getUserByName(name);
     }
@@ -780,7 +774,7 @@ public class Database {
      * @param username The new username.
      */
     public void updateUsername(int who, String username) {
-        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET username = :name WHERE id = :who")
+        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET username = :username WHERE id = :who")
                 .bind("who", who)
                 .bind("username", username)
                 .execute());
@@ -792,7 +786,7 @@ public class Database {
      * @param discordName The new discord username.
      */
     public void setDiscordName(int who, String discordName) {
-        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET discord_name = :name WHERE id = :id")
+        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET discord_name = :name WHERE id = :who")
                 .bind("who", who)
                 .bind("name", discordName)
                 .execute());
@@ -1071,7 +1065,7 @@ public class Database {
      * @return The new chat message's nonce.
      */
     public String createChatMessage(User author, long sent, String content, String filtered) {
-        return createChatMessage(author == null ? -1 : author.getId(), sent, content, filtered);
+        return createChatMessage(author == null ? -1 : author.getId(), sent / 1000L, content, filtered);
     }
 
     /**
@@ -1310,16 +1304,17 @@ public class Database {
      * @param title The notification's title.
      * @param content The notification's content.
      * @param expiry The notification's expiry.
-     * @return The created notification.
+     * @return The created notification's ID.
      */
     public Integer createNotification(int creatorID, String title, String content, Long expiry) {
-        System.err.println(expiry);
         return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO notifications (time, expiry, title, content, who) VALUES (EXTRACT(epoch FROM CURRENT_TIMESTAMP)::INTEGER, :expiry, :title, :content, :who)")
                 .bind("who", creatorID)
                 .bind("title", title)
                 .bind("content", content)
                 .bind("expiry", expiry)
-                .execute());
+                .executeAndReturnGeneratedKeys("id")
+                    .mapTo(Integer.TYPE)
+                    .first());
     }
 
     /* END NOTIFICATIONS */
@@ -1374,7 +1369,7 @@ public class Database {
      * @return The inserted row ID.
      */
     public Integer insertOrUpdateIPLog(int id, String ip) {
-        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO ip_log (user, ip, last_used) VALUES (:user, :ip::INET, NULL) ON CONFLICT UPDATE ip_log SET last_used = NOW() WHERE user = :user AND ip = :ip::INET")
+        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO ip_log (\"user\", ip, last_used) VALUES (:user, :ip::INET, NULL) ON CONFLICT UPDATE ip_log SET last_used = NOW() WHERE \"user\" = :user AND ip = :ip::INET")
                 .bind("user", id)
                 .bind("ip", ip)
                 .execute());
@@ -1404,5 +1399,15 @@ public class Database {
                         .execute();
             }
         });
+    }
+
+    /**
+     * Decreases the specified user's pixel count by one. Primarily used when undoing.
+     * @param who The ID of the {@link User}.
+     */
+    private void decreasePixelCount(int who) {
+        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET pixel_count = pixel_count - 1, pixel_count_alltime = pixel_count_alltime - 1 WHERE id = :who")
+                .bind("who", who)
+                .execute());
     }
 }

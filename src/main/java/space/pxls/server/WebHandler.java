@@ -565,7 +565,7 @@ public class WebHandler {
             return;
         }
         try {
-            isRequested = data.getFirst("flagState").getValue().equalsIgnoreCase("1");
+            isRequested = data.getFirst("flagState").getValue().equalsIgnoreCase("true");
         } catch (Exception e) {
             //ignored
         }
@@ -779,7 +779,7 @@ public class WebHandler {
     public void notificationsList(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
         exchange.setStatusCode(200);
-        exchange.getResponseSender().send(App.getGson().toJson(App.getDatabase().getNotifications(true)));
+        exchange.getResponseSender().send(App.getGson().toJson(App.getDatabase().getNotifications(false)));
         exchange.endExchange();
     }
 

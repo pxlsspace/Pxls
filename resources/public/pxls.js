@@ -2756,7 +2756,8 @@ window.App = (function () {
                     enabled: true,
                 },
                 elements: {
-                    stackCount: $("#placeableCount-bubble, #placeableCount-cursor"),
+                    stackCount: $("#placeable-count, #placeableCount-cursor"),
+                    coords: $("#coords-info .coords"),
                     txtAlertLocation: $("#txtAlertLocation"),
                     rangeAlertVolume: $("#rangeAlertVolume"),
                     lblAlertVolume: $("#lblAlertVolume"),
@@ -2779,6 +2780,8 @@ window.App = (function () {
                     self._initAudio();
                     self._initAccount();
                     self._initBanner();
+
+                    self.elements.coords.click(() => coords.copyCoords(true));
 
                     var useMono = ls.get("monospace_lookup");
                     if (typeof useMono === 'undefined') {
@@ -3397,7 +3400,6 @@ window.App = (function () {
                     socket.on('message_cooldown', e => {
                         self.timeout.ends = (new Date >> 0) + ((e.diff >> 0) * 1e3) + 1e3; //add 1 second so that we're 1-based instead of 0-based
                         self.elements.input.val(e.message);
-                        self.elements.input.blur();
                         if ((new Date >> 0) > self.timeout.ends) {
                             self.elements.rate_limit_overlay.fadeOut();
                         } else {
@@ -3424,6 +3426,8 @@ window.App = (function () {
                         self.chatban.banEndFormatted = self.chatban.banEnd.format('MMM Do YYYY, hh:mm:ss A');
                         setTimeout(() => {
                             clearInterval(self.chatban.timer);
+                            self.elements.input.prop('disabled', true);
+                            self.elements.emoji_button.hide();
                             if (e.expiry - self.chatban.banStart > 0 && !e.permanent) {
                                 self.elements.rate_limit_overlay.show();
                                 self.elements.rate_limit_counter.text('You have been banned from chat.');
@@ -3439,6 +3443,7 @@ window.App = (function () {
                                     } else {
                                         self.elements.rate_limit_overlay.hide();
                                         self.elements.rate_limit_counter.text('');
+                                        self.elements.emoji_button.show();
                                     }
                                 }, 150);
                             } else if (e.permanent) {
@@ -3449,8 +3454,10 @@ window.App = (function () {
                                     self.addServerAction(`Ban reason: ${e.reason}`);
                                 }
                             } else if (e.type !== "chat_ban_state") { //chat_ban_state is a query result, not an action notice.
+                                self.elements.input.prop('disabled', false);
                                 self.elements.rate_limit_overlay.hide();
                                 self.elements.rate_limit_counter.text('');
+                                self.elements.emoji_button.show();
                                 self.addServerAction(`You have been unbanned from chat.`);
                             }
                         }, 0);
@@ -3516,9 +3523,9 @@ window.App = (function () {
                             if (trimmed.startsWith('/') && user.getRole() !== "USER") {
                                 let args = trimmed.substr(1).split(' '),
                                     command = args.shift();
+                                handling = true;
                                 switch (command.toLowerCase().trim()) {
                                     case 'permaban': {
-                                        handling = true;
                                         let usage = `/permaban USER SHOULD_PURGE BAN_REASON\n/permaban help`;
                                         let help = [
                                             usage,
@@ -3563,7 +3570,6 @@ window.App = (function () {
                                         break;
                                     }
                                     case 'tempban': {
-                                        handling = true;
                                         let usage = `/tempban USER BAN_LENGTH SHOULD_PURGE BAN_REASON\n/tempban help`;
                                         let help = [
                                             usage,
@@ -3613,7 +3619,6 @@ window.App = (function () {
                                         break;
                                     }
                                     case 'purge': {
-                                        handling = true;
                                         let usage = `/purge USER PURGE_REASON\n/purge help`;
                                         let help = [
                                             usage,
@@ -3645,12 +3650,24 @@ window.App = (function () {
                                         }
                                         break;
                                     }
+                                    default: {
+                                        handling = false;
+                                    }
                                 }
                             }
                             e.preventDefault();
+
+                            if (trimmed.length === 0) {
+                                return;
+                            }
+
+                            if (self.timeout.timer) {
+                                return;
+                            }
+
                             if (!self.typeahead.shouldInsert && !handling) {
                                 self.typeahead.lastLength = -1;
-                                self._send(self.elements.input[0].value);
+                                self._send(trimmed);
                                 self.elements.input.val("");
                             }
                         } else if (e.originalEvent.key == "Tab" || e.originalEvent.which == 9) {
@@ -3688,15 +3705,7 @@ window.App = (function () {
                                 ls.set("chat-last_seen_nonce", lastN.dataset.nonce);
                             }
 
-                            if (self.isChatBanned()) {
-                                self.elements.rate_limit_overlay.show();
-                            } else if (user.isLoggedIn()) {
-                                self.elements.rate_limit_overlay.hide();
-                                self.elements.rate_limit_counter.text('');
-                            } else {
-                                self.elements.rate_limit_overlay.show();
-                                self.elements.rate_limit_counter.text('You must be logged in to chat.');
-                            }
+                            self.updateInputLoginState(user.isLoggedIn());
                         }
                     });
 
@@ -3709,11 +3718,7 @@ window.App = (function () {
                         }
                     });
 
-                    $(window).on('pxls:user:loginState', (e, state) => {
-                        if (!self.isChatBanned()) {
-                            self.elements.rate_limit_overlay.hide();
-                        }
-                    });
+                    $(window).on('pxls:user:loginState', (e, isLoggedIn) => self.updateInputLoginState(isLoggedIn));
 
                     $(window).on("mouseup", e => {
                         let target = e.target;
@@ -4023,7 +4028,7 @@ window.App = (function () {
                     let lblBanner = crel('label', {'style': 'display: block;'}, _cbBanner, 'Enable the rotating banner under chat');
 
                     let _cbTemplateTitles = crel('input', {'type': 'checkbox'});
-                    let lblTemplateTitles = crel('label', {'style': 'display: block;'}, _cbTemplateTitles, 'Replace template titls with URLs in chat where applicable');
+                    let lblTemplateTitles = crel('label', {'style': 'display: block;'}, _cbTemplateTitles, 'Replace template titles with URLs in chat where applicable');
 
                     let _txtFontSize = crel('input', {'type': 'number', 'min': '1', 'max': '72'});
                     let _btnFontSizeConfirm = crel('button', {'class': 'buton'}, crel('i', {'class': 'fas fa-check'}));
@@ -4162,6 +4167,23 @@ window.App = (function () {
                 },
                 isChatBanned: () => {
                     return self.chatban.permanent || (self.chatban.banEnd - moment.now() > 0);
+                },
+                updateInputLoginState: (isLoggedIn) => {
+                    const isChatBanned = self.isChatBanned();
+
+                    if (isLoggedIn && !isChatBanned) {
+                        self.elements.input.prop('disabled', false);
+                        self.elements.rate_limit_overlay.hide();
+                        self.elements.rate_limit_counter.text('');
+                        self.elements.emoji_button.show();
+                    } else {
+                        self.elements.input.prop('disabled', true);
+                        self.elements.rate_limit_overlay.show();
+                        if (!isChatBanned) {
+                            self.elements.rate_limit_counter.text('You must be logged in to chat.');
+                        }
+                        self.elements.emoji_button.hide();
+                    }
                 },
                 clearPings: () => {
                     self.elements.message_icon.removeClass('has-notification');
@@ -4914,7 +4936,7 @@ window.App = (function () {
 
                             renameWrapper.onsubmit = e => {
                                 e.preventDefault();
-                                $.post('/admin/flagNameChange', {user: reportingTarget, flagState: rbStateOn.checked === true ? '1' : '0'}, function() {
+                                $.post('/admin/flagNameChange', {user: reportingTarget, flagState: rbStateOn.checked === true}, function() {
                                     renameWrapper.remove();
                                     alert.show("Rename request updated");
                                 }).fail(function(xhrObj) {
@@ -5006,9 +5028,8 @@ window.App = (function () {
             var self = {
                 elements: {
                     palette: $("#palette"),
-                    timer_bubble: $("#cd-timer-bubble"),
                     timer_overlay: $("#cd-timer-overlay"),
-                    timer: null
+                    timer: $("#cooldown-timer")
                 },
                 isOverlay: false,
                 hasFiredNotification: true,
@@ -5026,8 +5047,9 @@ window.App = (function () {
 
                     if (self.runningTimer === false) {
                         self.isOverlay = ls.get("auto_reset") === true;
-                        self.elements.timer = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble;
-                        self.elements.timer_bubble.hide();
+                        if (self.isOverlay) {
+                            self.elements.timer = self.elements.timer_overlay;
+                        }
                         self.elements.timer_overlay.hide();
                     }
 
@@ -5104,8 +5126,7 @@ window.App = (function () {
                 },
                 init: function () {
                     self.title = document.title;
-                    self.elements.timer_bubble.hide();
-                    self.elements.timer_overlay.hide();
+                    self.elements.timer.hide();
 
                     $(window).focus(function () {
                         self.focus = true;
@@ -5140,9 +5161,9 @@ window.App = (function () {
         coords = (function () {
             var self = {
                 elements: {
-                    coordsWrapper: $("#coords"),
-                    coords: $("#coords .coords-text"),
-                    lockIcon: $("#coords .icon-lock")
+                    coordsWrapper: $("#coords-info"),
+                    coords: $("#coords-info .coords"),
+                    lockIcon: $("#coords-info .icon-lock")
                 },
                 mouseCoords: null,
                 init: function () {
@@ -5173,32 +5194,43 @@ window.App = (function () {
                     }
 
                     $(window).keydown(event => {
-                        if (!event.ctrlKey && (event.key === "c" || event.key === "C" || event.keyCode === 67) && navigator.clipboard && self.mouseCoords) {
-                            navigator.clipboard.writeText(self.getLinkToCoords(self.mouseCoords.x, self.mouseCoords.y));
-                            self.elements.coordsWrapper.addClass("copyPulse");
-                            setTimeout(() => {
-                                self.elements.coordsWrapper.removeClass("copyPulse");
-                            }, 200);
+                        if (!event.ctrlKey && (event.key === "c" || event.key === "C" || event.keyCode === 67)) {
+                            self.copyCoords();
                         }
                     });
+                },
+                copyCoords: function (useHash = false) {
+                    if (!navigator.clipboard || !self.mouseCoords) {
+                        return;
+                    }
+                    let x = useHash ? query.get('x') : self.mouseCoords.x;
+                    let y = useHash ? query.get('y') : self.mouseCoords.y;
+                    let scale = useHash ? query.get('scale') : 20;
+                    navigator.clipboard.writeText(self.getLinkToCoords(x, y, scale));
+                    self.elements.coordsWrapper.addClass("copyPulse");
+                    setTimeout(() => {
+                        self.elements.coordsWrapper.removeClass("copyPulse");
+                    }, 200);
                 },
                 /**
                  * Returns a link to the website at a specific position.
                  * @param {number} x The X coordinate for the link to have.
                  * @param {number} y The Y coordinate for the link to have.
                  */
-                getLinkToCoords: (x = 0, y = 0) => {
+                getLinkToCoords: (x = 0, y = 0, scale = 20) => {
                     var append = "";
                     query.has("template") ? append += "&template=" + query.get("template") : 0;
                     query.has("tw") ? append += "&tw=" + query.get("tw") : 0;
                     query.has("oo") ? append += "&oo=" + query.get("oo") : 0;
                     query.has("ox") ? append += "&ox=" + query.get("ox") : 0;
                     query.has("oy") ? append += "&oy=" + query.get("oy") : 0;
-                    return `${location.origin}/#x=${Math.floor(x)}&y=${Math.floor(y)}&scale=20${append}`;
+                    query.has("title") ? append += "&title=" + query.get("title") : "";
+                    return `${location.origin}/#x=${Math.floor(x)}&y=${Math.floor(y)}&scale=${scale}${append}`;
                 }
             };
             return {
                 init: self.init,
+                copyCoords: self.copyCoords,
                 getLinkToCoords: self.getLinkToCoords,
                 lockIcon: self.elements.lockIcon,
             };
@@ -5207,8 +5239,8 @@ window.App = (function () {
         user = (function () {
             var self = {
                 elements: {
-                    users: $("#online"),
-                    userInfo: $("#userinfo"),
+                    users: $("#online-count"),
+                    userInfo: $("#user-info"),
                     loginOverlay: $("#login-overlay"),
                     userMessage: $("#user-message"),
                     prompt: $("#prompt"),
@@ -5346,7 +5378,7 @@ window.App = (function () {
                         self.renameRequested = data.renameRequested;
                         uiHelper.setDiscordName(data.discordName || "");
                         self.elements.loginOverlay.fadeOut(200);
-                        self.elements.userInfo.find("span.name").text(data.username);
+                        self.elements.userInfo.find("span#username").text(data.username);
                         if (data.method == 'ip') {
                             self.elements.userInfo.hide();
                         } else {
@@ -5447,7 +5479,7 @@ window.App = (function () {
                     });
                 },
                 _handleRenameClick: function(event) {
-                    let toPop = crel('form', {onsubmit: self._handleSubmit},
+                    let renamePopup = crel('form', {onsubmit: self._handleSubmit},
                         crel('h3', 'Change Username'),
                         crel('hr'),
                         crel('p', 'Staff have required you to change your username, this usually means your name breaks one of our rules.'),
@@ -5457,10 +5489,11 @@ window.App = (function () {
                         ),
                         crel('p', {'style': 'display: none; font-weight: bold; color: #f00; font-size: .9rem;', 'class': 'rename-error'}, ''),
                         crel('div', {'style': 'text-align: right'},
+                            crel('button', {'class': 'button', 'onclick': alert.hide}, 'Not now'),
                             crel('button', {'class': 'button rename-submit', 'type': 'submit'}, 'Change')
                         )
                     );
-                    alert.showElem(toPop, true);
+                    alert.showElem(renamePopup, true);
                 },
                 showRenameRequest: () => {
                     self.elements.userMessage.empty().show().append(
@@ -5575,7 +5608,7 @@ window.App = (function () {
                         crel('div', {'class': 'notification-title'}, notification.title),
                         chat.processMessage('div', 'notification-body', notification.content),
                         crel('div', {'class': 'notification-footer'},
-                            document.createTextNode(`Posted by ${notification.who}`),
+                            notification.who ? document.createTextNode(`Posted by ${notification.who}`) : null,
                             notification.expiry !== 0 ? crel('span', {'class': 'notification-expiry'},
                                 crel('i', {'class': 'far fa-clock fa-is-left'}),
                                 crel('span', {'title': moment.unix(notification.expiry).format('MMMM DD, YYYY, hh:mm:ss A')}, `Expires ${moment.unix(notification.expiry).format('MMM DD YYYY')}`)

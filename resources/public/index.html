@@ -9,15 +9,11 @@
     <style type="text/css">
         /** These MUST be here because the YUI compressor breaks calc() and is abandoned */
         body.panel-open.panel-right #ui .right {
-            right: calc(30% + 10px);
+            right: calc(30vw + 10px);
         }
 
         body.panel-open.panel-left #ui .left {
-            left: calc(30% + 10px);
-        }
-
-        body.panel-open #ui .left, body.panel-open #ui .right {
-            bottom: 70px;
+            left: calc(30vw + 10px);
         }
     </style>
     <link rel="stylesheet" href="style.css">
@@ -75,6 +71,29 @@
 </div>
 
 <div id="ui">
+    <div class="left">
+        <div class="bubble">
+            <div id="user-info">
+                <!-- TODO: link to position on stats page -->
+                <!-- TODO: later on, link to my.pxls.space profile -->
+                <span id="username"></span>
+                <a href="/logout" class="logout"><i class="fas fa-sign-out-alt" id="logout-icon"></i></a>
+                <br>
+            </div>
+            <span id="online-count">Waiting for online count...</span>
+            <br><br>
+            <div id="coords-info">
+                <a class="coords"></a>
+                <img src="lock.png" class="icon-lock" style="display: none;">
+            </div>
+            <div id="placement-info">
+                <span>Pixels available: </span><span id="placeable-count">N/A</span>
+                <br>
+                <span id="cooldown-timer"></span>
+            </div>
+        </div>
+    </div>
+
     <div class="ui-bar">
         <div id="undo"><span>Undo</span></div>
         <div id="login-overlay" class="palette-overlay">
@@ -84,18 +103,6 @@
         <div id="palette">
             <div id="cd-timer-overlay" class="palette-overlay"></div>
         </div>
-    </div>
-
-    <div class="left">
-        <div id="coords" class="bubble"><img src="lock.png" class="icon-lock" style="display: none;"> <span class="coords-text"></span></div>
-        <div id="heatmapLoadingBubble" class="bubble orange-bubble fat-bubble">Loading heatmap...</div>
-        <div id="virginmapLoadingBubble" class="bubble orange-bubble fat-bubble">Loading virginmap...</div>
-        <div id="cd-timer-bubble" class="bubble"></div>
-        <div id="placeableInfoBubble" class="bubble">Pixels available: <span id="placeableCount-bubble">0/0</span></div>
-    </div>
-    <div class="right">
-        <div id="userinfo" class="bubble"><span class="name"></span> <a href="/logout" class="logout">logout</a></div>
-        <div id="online" class="bubble"></div>
     </div>
 </div>
 
