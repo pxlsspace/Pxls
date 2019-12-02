@@ -369,7 +369,7 @@
                                 })
                             })
                         )
-                    ).appendTo(document.body).fadeIn(200);
+                    ).appendTo($("#ui-top")).fadeIn(200);
                 },
                 deinint: function () {
                     self.elements.panel.remove();
