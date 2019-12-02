@@ -5,16 +5,16 @@
 .admin {
     z-index: 10;
     position: absolute;
-    top: 40vh;
-    background: #333;
-    color: #fff;
+    top: 50%;
+    left: -180px;
     width: 210px;
     min-height: 62px;
+    background: #333;
+    color: #fff;
     padding: 10px;
     border-radius: 0 5px 5px 0;
-
-    left: -180px;
     transition: left 0.2s ease-out;
+    transform: translateY(-50%);
 }
 
 .admin:hover {
