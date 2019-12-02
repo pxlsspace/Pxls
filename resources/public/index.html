@@ -71,12 +71,8 @@
 </div>
 
 <div id="ui">
-    <div id="ui-top">
-        <div id="loading-bubble" class="bubble">
-            <div class="loading-bubble-item" data-process="heatmap">Loading Heatmap (press <kbd>H</kbd> to cancel)</div>
-            <div class="loading-bubble-item" data-process="virginmap">Loading Virginmap (press <kbd>X</kbd> to cancel)</div>
-        </div>
-        <div id="main-bubble" class="bubble">
+    <div class="left">
+        <div class="bubble">
             <div id="user-info">
                 <!-- TODO: link to position on stats page -->
                 <!-- TODO: later on, link to my.pxls.space profile -->
@@ -98,7 +94,7 @@
         </div>
     </div>
 
-    <div id="ui-bottom">
+    <div class="ui-bar">
         <div id="undo"><span>Undo</span></div>
         <div id="login-overlay" class="palette-overlay">
             You are not signed in.&nbsp;<a href="#">Sign in with...</a>
@@ -255,8 +251,8 @@
                     <label style="text-indent:1em"><input id="scrollDirectionToggle" type="checkbox"/>Invert scroll direction</label>
                     <label><input id="cbEnableMiddleMouseSelect" type="checkbox"> Enable middle mouse button selecting color from board</label>
                     <label><input id="cbNumberedPalette" type="checkbox"> Add numbers to palette entries</label>
-                    <label>Heatmap Background Opacity: <input type="range" min="0" max="1" step="0.01" id="heatmap-opacity"></label>
-                    <label>Virginmap Background Opacity: <input type="range" min="0" max="1" step="0.01" id="virginmap-opacity"></label>
+                    <label>Heatmap BG Opacity: <input type="range" min="0" max="1" step="0.01" id="heatmap-opacity"></label>
+                    <label>Virginmap BG Opacity: <input type="range" min="0" max="1" step="0.01" id="virginmap-opacity"></label>
                     <label>
                         Snapshot (hotkey: <kbd>P</kbd>) image format
                         <select id="snapshotImageFormat">
@@ -265,28 +261,6 @@
                             <option value="image/webp">WEBP (Chrome only)</option>
                         </select>
                     </label>
-                    <div>
-                        Bubble position
-                        <span class="text-orange mobile-only">(not available for mobile/low resolution displays)</span>
-                        <div id="bubble-position">
-                            <label>
-                                <input type="radio" name="bubble-position" value="top left" />
-                                <div></div>
-                            </label>
-                            <label>
-                                <input type="radio" name="bubble-position" value="top right" />
-                                <div></div>
-                            </label>
-                            <label>
-                                <input type="radio" name="bubble-position" value="bottom left" />
-                                <div></div>
-                            </label>
-                            <label>
-                                <input type="radio" name="bubble-position" value="bottom right" />
-                                <div></div>
-                            </label>
-                        </div>
-                    </div>
 
                     <label class="vertical-spacing"><input type="checkbox" id="color-brightness-toggle"> Enable Color Brightness</label>
                     <label class="text-orange fake-indent"><i class="fas fa-exclamation-triangle"></i> Warning: Known to cause fuzziness in Chrome on some Mac/Linux installs</label>

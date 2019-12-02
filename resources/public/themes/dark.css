@@ -105,10 +105,6 @@ aside.panel {
     color: #eee;
 }
 
-#bubble-position label input:checked ~ div {
-    background-color: #9d9d9d;
-}
-
 /* Chat */
 
 ul.chat-body li.chat-line {
