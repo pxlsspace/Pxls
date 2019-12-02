@@ -13,7 +13,8 @@ data class CanvasInfo (
         val heatmapCooldown: Int,
         val maxStacked: Int,
         val authServices: Map<String, AuthService>,
-        val registrationEnabled: Boolean
+        val registrationEnabled: Boolean,
+        val chatCharacterLimit: Int
 )
 
 data class WhoAmI(
