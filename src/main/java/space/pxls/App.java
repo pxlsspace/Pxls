@@ -71,16 +71,9 @@ public class App {
         placemap = new byte[width * height];
         virginmap = new byte[width * height];
 
-        if (!loadMap()) {
-            for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
-                    board[x + width * y] = getDefaultColor(x, y);
-                }
-            }
-        }
-
+        loadMap();
         loadHeatmap();
-        loadPlacemap();
+        havePlacemap = loadPlacemap();
         loadVirginmap();
 
         database = new Database();
@@ -672,55 +665,96 @@ public class App {
     }
 
     private static boolean loadMap() {
-        try {
-            byte[] bytes = Files.readAllBytes(getStorageDir().resolve("board.dat"));
-            System.arraycopy(bytes, 0, board, 0, width * height);
-        } catch (NoSuchFileException e) {
+        Path path = getStorageDir().resolve("board.dat");
+        if (!Files.exists(path)) {
             getLogger().warn("Cannot find board.dat in working directory, using blank board");
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    board[x + width * y] = getDefaultColor(x, y);
+                }
+            }
+            saveMapToDir(path);
+            return true;
+        }
+
+        try {
+            byte[] bytes = Files.readAllBytes(path);
+            System.arraycopy(bytes, 0, board, 0, width * height);
+            return true;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            getLogger().error("board.dat dimensions don't match the ones on pxls.conf");
             return false;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
-        return true;
     }
 
-    private static void loadHeatmap() {
+    private static boolean loadHeatmap() {
+        Path path = getStorageDir().resolve("heatmap.dat");
+        if (!Files.exists(path)) {
+            getLogger().warn("Cannot find heatmap.dat in working directory, using heatmap");
+            saveHeatmapToDir(path);
+            return true;
+        }
+
         try {
-            byte[] bytes = Files.readAllBytes(getStorageDir().resolve("heatmap.dat"));
+            byte[] bytes = Files.readAllBytes(path);
             System.arraycopy(bytes, 0, heatmap, 0, width * height);
-        } catch (NoSuchFileException e) {
-            getLogger().warn("Cannot find heatmap.dat in working directory, using blank heatmap");
+            return true;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            getLogger().error("heatmap.dat dimensions don't match the ones on pxls.conf");
+            return false;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
-    private static void loadPlacemap() {
-        try {
-            byte[] bytes = Files.readAllBytes(getStorageDir().resolve("placemap.dat"));
-            System.arraycopy(bytes, 0, placemap, 0, width * height);
-            havePlacemap = true;
-        } catch (NoSuchFileException e) {
+    private static boolean loadPlacemap() {
+        Path path = getStorageDir().resolve("placemap.dat");
+        if (!Files.exists(path)) {
             getLogger().warn("Cannot find placemap.dat in working directory, using blank placemap");
-            havePlacemap = false;
+            return false;
+        }
+
+        try {
+            byte[] bytes = Files.readAllBytes(path);
+            System.arraycopy(bytes, 0, placemap, 0, width * height);
+            return true;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            getLogger().error("placemap.dat dimensions don't match the ones on pxls.conf");
+            return false;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
-    private static void loadVirginmap() {
-        try {
-            byte[] bytes = Files.readAllBytes(getStorageDir().resolve("virginmap.dat"));
-            System.arraycopy(bytes, 0, virginmap, 0, width * height);
-        } catch (NoSuchFileException e) {
+    private static boolean loadVirginmap() {
+        Path path = getStorageDir().resolve("virginmap.dat");
+        if (!Files.exists(path)) {
             getLogger().warn("Cannot find virginmap.dat in working directory, using blank virginmap");
+
             for (int x = 0; x < width; x++) {
                 for (int y = 0; y < height; y++) {
                     virginmap[x + width * y] = (byte) 0xFF;
                 }
             }
+            saveVirginmapToDir(path);
+            return true;
+        }
+
+        try {
+            byte[] bytes = Files.readAllBytes(path);
+            System.arraycopy(bytes, 0, virginmap, 0, width * height);
+            return true;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            getLogger().error("virginmap.dat dimensions don't match the ones on pxls.conf");
+            return false;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -810,14 +844,17 @@ public class App {
     }
 
     public static byte getDefaultColor(int x, int y) {
-        try {
-            RandomAccessFile raf = new RandomAccessFile(getStorageDir().resolve("default_board.dat").toAbsolutePath().toString(), "r");
-            raf.seek(x + y*width);
-            byte b = raf.readByte();
-            raf.close();
-            return b;
-        } catch (NoSuchFileException e) {
-        } catch (IOException e) {
+        Path path = getStorageDir().resolve("default_board.dat").toAbsolutePath();
+        if (Files.exists(path)) {
+            try {
+                RandomAccessFile raf = new RandomAccessFile(path.toString(), "r");
+                raf.seek(x + y * width);
+                byte b = raf.readByte();
+                raf.close();
+                return b;
+            } catch (NoSuchFileException e) {
+            } catch (IOException e) {
+            }
         }
         return (byte) config.getInt("board.defaultColor");
     }
