@@ -1103,6 +1103,7 @@ window.App = (function () {
                         self.height = data.height;
                         place.setPalette(data.palette);
                         uiHelper.setMax(data.maxStacked);
+                        chat.setCharLimit(data.chatCharacterLimit);
                         if (data.captchaKey) {
                             $(".g-recaptcha").attr("data-sitekey", data.captchaKey);
 
@@ -4165,6 +4166,9 @@ window.App = (function () {
                         elem.classList.add('-scrolled-to');
                     }
                 },
+                setCharLimit(num) {
+                    self.elements.input.prop("maxlength", num);
+                },
                 isChatBanned: () => {
                     return self.chatban.permanent || (self.chatban.banEnd - moment.now() > 0);
                 },
@@ -5013,6 +5017,7 @@ window.App = (function () {
                 init: self.init,
                 _handleActionClick: self._handleActionClick,
                 clearPings: self.clearPings,
+                setCharLimit: self.setCharLimit,
                 processMessage: self.processMessage,
                 popChatSettings: self.popChatSettings,
                 saveIgnores: self.saveIgnores,

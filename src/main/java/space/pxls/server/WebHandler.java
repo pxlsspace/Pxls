@@ -1030,18 +1030,18 @@ public class WebHandler {
         exchange.getResponseHeaders()
                 .add(HttpString.tryFromString("Content-Type"), "application/json")
                 .add(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
-        exchange.getResponseSender().send(App.getGson().toJson(
-                new CanvasInfo(
-			App.getCanvasCode(),
-                        App.getWidth(),
-                        App.getHeight(),
-                        App.getConfig().getStringList("board.palette"),
-                        App.getConfig().getString("captcha.key"),
-                        (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS),
-                        (int) App.getConfig().getInt("stacking.maxStacked"),
-                        services,
-                        App.getRegistrationEnabled()
-                )));
+        exchange.getResponseSender().send(App.getGson().toJson(new CanvasInfo(
+            App.getCanvasCode(),
+            App.getWidth(),
+            App.getHeight(),
+            App.getConfig().getStringList("board.palette"),
+            App.getConfig().getString("captcha.key"),
+            (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS),
+            (int) App.getConfig().getInt("stacking.maxStacked"),
+            services,
+            App.getRegistrationEnabled(),
+            Math.min(App.getConfig().getInt("chat.characterLimit"), 2048)
+        )));
     }
 
     public void data(HttpServerExchange exchange) {

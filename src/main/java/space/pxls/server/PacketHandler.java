@@ -385,11 +385,15 @@ public class PacketHandler {
     }});
 
     public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
+        int charLimit = Math.min(config.getInt("chat.characterLimit"), 2048);
+        if (charLimit <= 0) {
+            charLimit = 2048;
+        }
         Long nowMS = System.currentTimeMillis();
         String message = clientChatMessage.getMessage();
         if (message.contains("\r")) message = message.replaceAll("\r", "");
         if (message.endsWith("\n")) message = message.replaceFirst("\n$", "");
-        if (message.length() > 2048) message = message.substring(0, 2048);
+        if (message.length() > charLimit) message = message.substring(0, charLimit);
         if (user == null) { //console
             String nonce = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "");
             server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS / 1000L, message, null, null, 0)));
