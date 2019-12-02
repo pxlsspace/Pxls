@@ -80,8 +80,6 @@ window.App = (function () {
         };
     },
         binary_ajax = function (url, fn, failfn) {
-            // TODO(netux): convert to use async/await (https://caniuse.com/#feat=async-functions)
-            // and possibly fetch (https://caniuse.com/#feat=fetch)
             var xhr = new XMLHttpRequest();
             xhr.open("GET", url, true);
             xhr.responseType = "arraybuffer";
@@ -98,8 +96,6 @@ window.App = (function () {
                 }
             };
             xhr.send(null);
-
-            return xhr;
         },
         createImageData = function (w, h) {
             try {
@@ -1099,7 +1095,7 @@ window.App = (function () {
                     });
                 },
                 start: function () {
-                    $.get("/info", (data) => {
+                    $.get("/info", function (data) {
                         heatmap.webinit(data);
                         virginmap.webinit(data);
                         user.webinit(data);
@@ -1440,7 +1436,8 @@ window.App = (function () {
         heatmap = (function () {
             var self = {
                 elements: {
-                    heatmap: $("#heatmap")
+                    heatmap: $("#heatmap"),
+                    heatmapLoadingBubble: $("#heatmapLoadingBubble")
                 },
                 ctx: null,
                 id: null,
@@ -1448,7 +1445,6 @@ window.App = (function () {
                 width: 0,
                 height: 0,
                 lazy_inited: false,
-                fetchRequest: null,
                 is_shown: false,
                 color: 0x005C5CCD,
                 loop: function () {
@@ -1462,16 +1458,15 @@ window.App = (function () {
                     self.ctx.putImageData(self.id, 0, 0);
                     setTimeout(self.loop, self.seconds * 1000 / 256);
                 },
-                lazy_init: () => {
+                lazy_init: function () {
                     if (self.lazy_inited) {
-                        uiHelper.setLoadingState("heatmap", false);
+                        self.elements.heatmapLoadingBubble.hide();
                         return;
                     }
-                    uiHelper.setLoadingState("heatmap", true);
+                    self.elements.heatmapLoadingBubble.show();
                     self.lazy_inited = true;
                     // we use xhr directly because of jquery being weird on raw binary
-                    self.fetchRequest = binary_ajax("/heatmap" + "?_" + (new Date()).getTime(), function (data) {
-                        self.fetchRequest = null;
+                    binary_ajax("/heatmap" + "?_" + (new Date()).getTime(), function (data) {
                         self.ctx = self.elements.heatmap[0].getContext("2d");
                         self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
                         self.id = createImageData(self.width, self.height);
@@ -1482,7 +1477,7 @@ window.App = (function () {
                         }
                         self.ctx.putImageData(self.id, 0, 0);
                         self.elements.heatmap.fadeIn(200);
-                        uiHelper.setLoadingState("heatmap", false);
+                        self.elements.heatmapLoadingBubble.hide();
                         setTimeout(self.loop, self.seconds * 1000 / 256);
                         socket.on("pixel", function (data) {
                             self.ctx.fillStyle = "#CD5C5C";
@@ -1519,6 +1514,7 @@ window.App = (function () {
                 },
                 init: function () {
                     self.elements.heatmap.hide();
+                    self.elements.heatmapLoadingBubble.hide();
                     self.setBackgroundOpacity(ls.get("heatmap_background_opacity"));
                     $("#heatmap-opacity").val(ls.get("heatmap_background_opacity")); //heatmap_background_opacity should always be valid after a call to self.setBackgroundOpacity.
                     $("#heatmap-opacity").on("change input", function () {
@@ -1527,8 +1523,8 @@ window.App = (function () {
                     $("#hvmapClear").click(function () {
                         self.clear();
                     });
-                    $(window).keydown((evt) => {
-                        if (evt.key == "o" || evt.key == "O" || evt.which == 79) {
+                    $(window).keydown(function (evt) {
+                        if (evt.key == "o" || evt.key == "O" || evt.which == 79) { //O key
                             self.clear();
                         }
                     });
@@ -1545,14 +1541,6 @@ window.App = (function () {
                     self.is_shown = !self.is_shown;
                     ls.set("heatmap", self.is_shown);
                     $("#heatmaptoggle")[0].checked = self.is_shown;
-                    if (self.fetchRequest) {
-                       self.fetchRequest.abort();
-                       uiHelper.setLoadingState("heatmap", false);
-                       self.lazy_inited = false;
-                       self.fetchRequest = null;
-                       return;
-                    }
-
                     if (self.lazy_inited) {
                         if (self.is_shown) {
                             this.elements.heatmap.fadeIn(200);
@@ -1605,25 +1593,24 @@ window.App = (function () {
         virginmap = (function () {
             var self = {
                 elements: {
-                    virginmap: $("#virginmap")
+                    virginmap: $("#virginmap"),
+                    virginmapLoadingBubble: $("#virginmapLoadingBubble")
                 },
                 ctx: null,
                 id: null,
                 width: 0,
                 height: 0,
                 lazy_inited: false,
-                fetchRequest: null,
                 is_shown: false,
                 lazy_init: function () {
                     if (self.lazy_inited) {
-                        uiHelper.setLoadingState("virginmap", false);
+                        self.elements.virginmapLoadingBubble.hide();
                         return;
                     }
-                    uiHelper.setLoadingState("virginmap", true);
+                    self.elements.virginmapLoadingBubble.show();
                     self.lazy_inited = true;
                     // we use xhr directly because of jquery being weird on raw binary
-                    self.fetchRequest = binary_ajax("/virginmap" + "?_" + (new Date()).getTime(), (data) => {
-                        self.fetchRequest = null;
+                    binary_ajax("/virginmap" + "?_" + (new Date()).getTime(), function (data) {
                         self.ctx = self.elements.virginmap[0].getContext("2d");
                         self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
                         self.id = createImageData(self.width, self.height);
@@ -1640,7 +1627,7 @@ window.App = (function () {
                             }
                         }
                         self.elements.virginmap.fadeIn(200);
-                        uiHelper.setLoadingState("virginmap", false);
+                        self.elements.virginmapLoadingBubble.hide();
                         socket.on("pixel", function (data) {
                             $.map(data.pixels, function (px) {
                                 self.ctx.fillStyle = "#000000";
@@ -1670,6 +1657,7 @@ window.App = (function () {
                 },
                 init: function () {
                     self.elements.virginmap.hide();
+                    self.elements.virginmapLoadingBubble.hide();
                     self.setBackgroundOpacity(ls.get("virginmap_background_opacity"));
                     $("#virginmap-opacity").val(ls.get("virginmap_background_opacity")); //virginmap_background_opacity should always be valid after a call to self.setBackgroundOpacity.
                     $("#virginmap-opacity").on("change input", function () {
@@ -1696,14 +1684,6 @@ window.App = (function () {
                     self.is_shown = !self.is_shown;
                     ls.set("virginmap", self.is_shown);
                     $("#virginmaptoggle")[0].checked = self.is_shown;
-                    if (self.fetchRequest) {
-                       self.fetchRequest.abort();
-                       uiHelper.setLoadingState("virginmap", false);
-                       self.lazy_inited = false;
-                       self.fetchRequest = null;
-                       return;
-                    }
-
                     if (self.lazy_inited) {
                         if (self.is_shown) {
                             this.elements.virginmap.fadeIn(200);
@@ -2765,8 +2745,6 @@ window.App = (function () {
                 usernameColor: 0,
                 _alertUpdateTimer: false,
                 initTitle: '',
-                isLoadingBubbleShown: false,
-                loadingStates: {},
                 banner: {
                     HTMLs: [
                         crel('span', crel('i', {'class': 'fab fa-discord fa-is-left'}), ' We have a discord! Join here: ', crel('a', {'href': 'https://pxls.space/discord', 'target': '_blank'}, 'Discord Invite')).outerHTML,
@@ -2779,8 +2757,6 @@ window.App = (function () {
                     enabled: true,
                 },
                 elements: {
-                    mainBubble: $("#main-bubble"),
-                    loadingBubble: $("#loading-bubble"),
                     stackCount: $("#placeable-count, #placeableCount-cursor"),
                     coords: $("#coords-info .coords"),
                     txtAlertLocation: $("#txtAlertLocation"),
@@ -2897,16 +2873,6 @@ window.App = (function () {
                             }
                         });
                     self.adjustColorBrightness(ls.get('brightness.enabled') === true ? colorBrightnessLevel : null); //ensure we clear if it's disabled on init
-
-
-                    const initialBubblePosition = ls.get('ui.bubble-position') || 'bottom left';
-                    $(`#bubble-position input[value="${initialBubblePosition}"]`).prop('checked', true);
-                    self.elements.mainBubble.attr('position', initialBubblePosition);
-                    $("#bubble-position input")
-                        .click((e) => {
-                            ls.set('ui.bubble-position', e.target.value);
-                            self.elements.mainBubble.attr('position', e.target.value);
-                        });
 
                     $(window).keydown(function (evt) {
                         switch (evt.key || evt.which) {
@@ -3096,14 +3062,6 @@ window.App = (function () {
                     self.elements.bottomBanner[0].innerHTML = self.banner.HTMLs[0];
                     self.elements.bottomBanner[0].classList.remove('transparent', 'fade', 'fade-rev');
                 },
-                setBannerEnabled: enabled => {
-                    self.banner.enabled = enabled === true;
-                    if (!enabled) {
-                        self.resetBanner();
-                    } else {
-                        self._bannerIntervalTick();
-                    }
-                },
                 handleDiscordNameSet() {
                     const name = self.elements.txtDiscordName.val();
 
@@ -3170,20 +3128,12 @@ window.App = (function () {
                         selUsernameColor.style.backgroundColor = place.getPaletteColor(self.usernameColor);
                     }
                 },
-                setLoadingState: (process, state) => {
-                    self.loadingStates[process] = state;
-                    const processItem = self.elements.loadingBubble.children(`.loading-bubble-item[data-process="${process}"]`);
-
-                    const hasVisibleItems = Object.values(self.loadingStates).some((v) => v);
-                    if (hasVisibleItems && !self.isLoadingBubbleShown) {
-                        processItem.show();
-                        self.elements.loadingBubble.fadeIn(300);
-                        self.isLoadingBubbleShown = true;
-                    } else if(!hasVisibleItems && self.isLoadingBubbleShown) {
-                        self.elements.loadingBubble.fadeOut(300, () => processItem.hide());
-                        self.isLoadingBubbleShown = false;
+                setBannerEnabled: enabled => {
+                    self.banner.enabled = enabled === true;
+                    if (!enabled) {
+                        self.resetBanner();
                     } else {
-                        processItem.toggle(state);
+                        self._bannerIntervalTick();
                     }
                 }
             };
@@ -3209,8 +3159,7 @@ window.App = (function () {
                         append = tplOpts.title;
 
                     return `${prepend ? prepend + ' ' : ''}${decodeURIComponent(append)}`;
-                },
-                setLoadingState: self.setLoadingState
+                }
             };
         })(),
         panels = (function() {
