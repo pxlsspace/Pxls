@@ -3769,27 +3769,15 @@ window.App = (function () {
                             crel('div', {'class': 'right'})
                         );
                         let mainPanel = crel('div', {'class': 'pane'});
-                        let pingsList = crel('ul', {'class': 'pings-list'});
 
-                        crel(pingsList, self.pingsList.map(packet =>
-                            crel('li', packet.nonce)
-                        ));
-
-                        crel('div', {'class': 'pane'},
-                            crel('ul', {'class': 'pings-list'}, self.pingsList.map(packet =>
-                                crel('li', packet.nonce)
-                            ))
-                        );
-
-                        let popup = crel(popupWrapper, panelHeader, crel('div', {'class': 'pane'},
-                            crel('ul', {'class': 'pings-list'}, self.pingsList.map(packet => {
-                                    let _processed = self.processMessage('span', '', packet.message_raw);
-                                    return crel('li', {'title': _processed.textContent}, crel('i', {'class': 'fas fa-external-link-alt fa-is-left', 'style': 'font-size: .65rem; cursor: pointer;', 'data-nonce': packet.nonce, onclick: self._handlePingJumpClick}), `${packet.author}: `, _processed);
-                                })
-                            )
-                        ));
+                        const pingsList = crel('ul', {'class': 'pings-list'}, self.pingsList.map(packet => {
+                            let _processed = self.processMessage('span', '', packet.message_raw);
+                            return crel('li', {'title': _processed.textContent}, crel('i', {'class': 'fas fa-external-link-alt fa-is-left', 'style': 'font-size: .65rem; cursor: pointer;', 'data-nonce': packet.nonce, onclick: self._handlePingJumpClick}), `${packet.author}: `, _processed);
+                        }));
+                        let popup = crel(popupWrapper, panelHeader, crel('div', {'class': 'pane'}, pingsList));
                         document.body.appendChild(popup);
                         self._positionPopupRelativeToX(popup, this);
+                        pingsList.scrollTop = pingsList.scrollHeight;
                     });
 
                     self.elements.jump_button[0].addEventListener('click', function() {

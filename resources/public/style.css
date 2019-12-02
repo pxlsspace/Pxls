@@ -1459,9 +1459,12 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
 }
 
 .popup ul.pings-list {
+    width: 100%;
+    max-height: 73vh;
     list-style: none;
-    margin-left: .5rem;
-    padding: 0;
+    margin: 0;
+    padding: .5rem .5rem 0 .5rem;
+    overflow-y: auto;
 }
 
 .popup .pings-list:empty::before {
@@ -1548,6 +1551,7 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
 
 .popup.panels .pane {
     display: inline-block;
+    width: 100%;
     height: 100%;
     vertical-align: top;
 }
