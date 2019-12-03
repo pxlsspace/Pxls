@@ -3775,7 +3775,7 @@ window.App = (function () {
                             let _processed = self.processMessage('span', '', packet.message_raw);
                             return crel('li', {'title': _processed.textContent}, crel('i', {'class': 'fas fa-external-link-alt fa-is-left', 'style': 'font-size: .65rem; cursor: pointer;', 'data-nonce': packet.nonce, onclick: self._handlePingJumpClick}), `${packet.author}: `, _processed);
                         }));
-                        let popup = crel(popupWrapper, panelHeader, crel('div', {'class': 'pane'}, pingsList));
+                        let popup = crel(popupWrapper, panelHeader, crel('div', {'class': 'pane pane-full'}, pingsList));
                         document.body.appendChild(popup);
                         self._positionPopupRelativeToX(popup, this);
                         pingsList.scrollTop = pingsList.scrollHeight;
