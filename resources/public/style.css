@@ -1503,7 +1503,6 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
 
 .popup .pings-list li {
     font-family: monospace;
-    white-space: pre;
 }
 
 @keyframes rainbow-name {
@@ -1559,10 +1558,11 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
 }
 
 .popup.panels {
-    width: 400px;
-    max-height:99vh;
+    width: 99%;
+    max-height: 99vh;
     max-width: 400px;
     min-height: 200px;
+    min-width: 300px;
     padding-bottom: .5rem;
 }
 
@@ -1576,9 +1576,12 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
 
 .popup.panels .pane {
     display: inline-block;
-    width: 100%;
     height: 100%;
     vertical-align: top;
+}
+
+.popup.panels .pane.pane-full {
+    width: 100%;
 }
 
 .popup.panels header:first-of-type {
