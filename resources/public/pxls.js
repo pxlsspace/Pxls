@@ -2719,43 +2719,47 @@ window.App = (function () {
                 elements: {
                     alert: $("#alert")
                 },
-                show: function(s, hideControls = false) {
+                isOpen: false,
+                removeContent: () => {
                     self.elements.alert.find(".text,.custWrapper").empty();
-                    self.elements.alert.find(".text").append(s);
-                    self.elements.alert.fadeIn(200);
+                },
+                show: (content, hideControls = false) => {
+                    self.removeContent();
+                    if (typeof content === "string") {
+                        self.elements.alert.find(".text").append(content);
+                    } else {
+                        self.elements.alert.find(".custWrapper").append(content);
+                    }
+                    if (!self.isOpen) {
+                        self.elements.alert.fadeIn(200);
+                    }
                     if (hideControls === true) {
                         self.elements.alert.find('.default-control').hide();
                     } else {
                         self.elements.alert.find('.default-control').show();
                     }
+                    self.isOpen = true;
                 },
-                showElem: function(element, hideControls = false) {
-                    self.elements.alert.find(".text,.custWrapper").empty();
-                    self.elements.alert.find(".custWrapper").append(element);
-                    self.elements.alert.fadeIn(200);
-                    if (hideControls === true) {
-                        self.elements.alert.find('.default-control').hide();
-                    } else {
-                        self.elements.alert.find('.default-control').show();
+                hide: function(clear = false) {
+                    if (self.isOpen) {
+                        self.elements.alert.fadeOut(200, () => {
+                            if (clear) {
+                                self.removeContent();
+                            }
+                        });
                     }
-                },
-                hide: function() {
-                    self.elements.alert.fadeOut(200);
+                    self.isOpen = false;
                 },
                 init: function () {
-                    self.elements.alert.hide().find(".button").click(function () {
-                        self.elements.alert.fadeOut(200);
-                    });
-                    socket.on("alert", function (data) {
-                        self.show(data.message);
-                    });
+                    self.elements.alert.hide();
+                    self.elements.alert.find(".button").click(self.hide);
+                    socket.on("alert", (data) => self.show(data.message));
                 }
             };
             return {
                 init: self.init,
                 show: self.show,
-                hide: self.hide,
-                showElem: self.showElem
+                hide: self.hide
             };
         })(),
         uiHelper = (function () {
@@ -3764,8 +3768,7 @@ window.App = (function () {
                     $(window).on("pxls:panel:closed", (e, which) => {
                         if (which === "chat") {
                             if (document.querySelector('.chat-settings-title')) {
-                                alert.showElem(crel('div'));
-                                alert.hide();
+                                alert.hide(true);
                             }
                         }
                     });
@@ -4174,7 +4177,7 @@ window.App = (function () {
                     });
 
                     //show everything
-                    alert.showElem(crel(body,
+                    alert.show(crel(body,
                         crel('h3', {'class': 'chat-settings-title'}, 'Chat Settings'),
                         lbl24hTimestamps,
                         lblPixelPlaceBadges,
@@ -4477,12 +4480,10 @@ window.App = (function () {
                         }
                         case self.TEMPLATE_ACTIONS.NEW_TAB.id: {
                             if (!window.open(linkElem.dataset.raw, '_blank')) { //what popup blocker still blocks _blank redirects? idk but i'm sure they exist.
-                                alert.showElem(
-                                    crel('div',
-                                        crel('h3', 'Failed to automatically open in a new tab'),
-                                        crel('a', {href: linkElem.dataset.raw, target: '_blank'}, 'Click here to open in a new tab instead')
-                                    )
-                                );
+                                alert.show(crel('div',
+                                    crel('h3', 'Failed to automatically open in a new tab'),
+                                    crel('a', {href: linkElem.dataset.raw, target: '_blank'}, 'Click here to open in a new tab instead')
+                                ));
                             }
                             break;
                         }
@@ -4493,7 +4494,7 @@ window.App = (function () {
                         let bodyWrapper = crel('div');
                         let buttons = crel('div', {'style': 'text-align: right; display: block; width: 100%;'});
 
-                        alert.showElem(crel(bodyWrapper,
+                        alert.show(crel(bodyWrapper,
                             crel('h3', {'class': 'text-orange'}, 'This link will overwrite your current template. What would you like to do?'),
                             Object.values(self.TEMPLATE_ACTIONS).map(action => action.id === 0 ? null :
                                 crel('label', {'style': 'display: block; margin: 3px 3px 3px 1rem; margin-left: 1rem;'},
@@ -4678,7 +4679,7 @@ window.App = (function () {
                                     reportButton.disabled = false;
                                 });
                             };
-                            alert.showElem(chatReport, true);
+                            alert.show(chatReport, true);
                             break;
                         }
                         case 'mention': {
@@ -4846,7 +4847,7 @@ window.App = (function () {
                                     alert.show("Error occurred while chatbanning");
                                 });
                             };
-                            alert.showElem(chatbanContainer, true);
+                            alert.show(chatbanContainer, true);
                             break;
                         }
                         case 'delete': {
@@ -4886,7 +4887,7 @@ window.App = (function () {
                                     btnDelete
                                 )
                             );
-                            alert.showElem(deleteWrapper, true);
+                            alert.show(deleteWrapper, true);
                             break;
                         }
                         case 'purge': {
@@ -5467,7 +5468,7 @@ window.App = (function () {
                             ).append(
                                 $("<p>").append(data.ban_reason)
                             );
-                            alert.showElem(banelem);
+                            alert.show(banelem);
                             if (window.deInitAdmin) {
                                 window.deInitAdmin();
                             }
@@ -5505,8 +5506,7 @@ window.App = (function () {
                     $.post("/execNameChange", {newName: input.value.trim()}, function() {
                         self.renameRequested = false;
                         self.hideRenameRequest();
-                        alert.show(''); //clear out the DOM
-                        alert.hide();
+                        alert.hide(true);
                     }).fail(function(xhrObj) {
                         let resp = "An unknown error occurred. Please contact staff on discord";
                         if (xhrObj.responseJSON) {
@@ -5537,7 +5537,7 @@ window.App = (function () {
                             crel('button', {'class': 'button rename-submit', 'type': 'submit'}, 'Change')
                         )
                     );
-                    alert.showElem(renamePopup, true);
+                    alert.show(renamePopup, true);
                 },
                 showRenameRequest: () => {
                     self.elements.userMessage.empty().show().append(
