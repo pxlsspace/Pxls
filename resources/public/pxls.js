@@ -4581,6 +4581,7 @@ window.App = (function () {
                         let actionPurgeUser = crel('li', {'data-action': 'purge', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Purge User');
                         let actionDeleteMessage = crel('li', {'data-action': 'delete', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Delete');
                         let actionModLookup = crel('li', {'data-action': 'lookup', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Mod Lookup');
+                        let actionCopyNonce = crel('li', {'data-action': 'copy-nonce', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Copy Nonce');
 
                         crel(leftPanel, crel('p', {'class': 'popup-timestamp-header'}, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(ls.get('chat.24h') === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
                         crel(leftPanel, crel('p', {'style': 'margin-top: 3px; margin-left: 3px; text-align: left;'}, closest.querySelector('.content').textContent));
@@ -4593,6 +4594,9 @@ window.App = (function () {
                             crel(actionsList, actionDeleteMessage);
                             crel(actionsList, actionPurgeUser);
                             crel(actionsList, actionModLookup);
+                            if (user.getRole() === "DEVELOPER") {
+                                crel(actionsList, actionCopyNonce);
+                            }
                         }
                         crel(rightPanel, actionsList);
 
@@ -5041,6 +5045,16 @@ window.App = (function () {
                             };
 
                             alert.show(renameWrapper, true);
+                            break;
+                        }
+                        case 'copy-nonce': {
+                            // TODO(netux): use Clipboard API once it becomes Stable
+                            const textArea = document.createElement('textarea');
+                            textArea.value = this.dataset.nonce;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textArea);
                             break;
                         }
                     }
