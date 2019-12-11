@@ -1430,6 +1430,9 @@ window.App = (function () {
                 save: self.save,
                 centerOn: self.centerOn,
                 getRenderBoard: self.getRenderBoard,
+                getContainer: () => self.elements.container,
+                getWidth: () => self.width,
+                getHeight: () => self.height,
                 refresh: self.refresh,
                 updateViewport: self.updateViewport,
                 allowDrag: self.allowDrag,
@@ -5664,7 +5667,71 @@ window.App = (function () {
             return {
                 init: self.init
             };
-        })();
+        })(),
+        // this attempts to fix a problem with chromium based browsers offsetting the canvas
+        // by a pixel when the window size is odd.
+        chromeOffsetWorkaround = (function() {
+            const self = {
+                elements: {
+                    boardContainer: board.getContainer(),
+                    setting: $("#chrome-canvas-offset-setting"),
+                    checkbox: $("#chrome-canvas-offset-toggle")
+                },
+                init: () => {
+                    const chromeUAMatch = navigator.userAgent.match(/Chrome\/(\d+)/);
+                    if (!chromeUAMatch || parseInt(chromeUAMatch[1]) < 78) {
+                        self.elements.setting.hide();
+                        return;
+                    }
+
+                    let settingState = ls.get("chrome-canvas-offset-workaround");
+                    if (settingState === null) {
+                        // default to enabled
+                        settingState = true;
+                        ls.set("chrome-canvas-offset-workaround", settingState);
+                    }
+
+                    if (settingState) {
+                        self.enable();
+                    }
+
+                    self.elements.checkbox.prop("checked", settingState);
+                    self.elements.checkbox.on("change", (e) => {
+                        ls.set("chrome-canvas-offset-workaround", e.target.checked);
+                        if (e.target.checked) {
+                            self.enable();
+                        } else {
+                            self.disable();
+                        }
+                    });
+                },
+                enable: () => {
+                    window.addEventListener("resize", self.updateContainer);
+                    self.updateContainer();
+                },
+                updateContainer: () => {
+                    let offsetWidth = window.innerWidth % 2 === 0;
+                    if (board.getWidth() % 2 === 0) {
+                        offsetWidth = !offsetWidth;
+                    }
+                    let offsetHeight = window.innerHeight % 2 === 0;
+                    if (board.getHeight() % 2 === 0) {
+                        offsetHeight = !offsetHeight;
+                    }
+
+                    self.elements.boardContainer.css("width", `${window.innerWidth - (offsetWidth ? 1 : 0)}px`);
+                    self.elements.boardContainer.css("height", `${window.innerHeight - (offsetHeight ? 1 : 0)}px`);
+                },
+                disable: () => {
+                    window.removeEventListener("resize", self.updateContainer);
+                    self.elements.boardContainer.css("width", "");
+                    self.elements.boardContainer.css("height", "");
+                }
+            }
+            return {
+                init: self.init
+            }
+        }());
     // init progress
     query.init();
     board.init();
@@ -5686,6 +5753,7 @@ window.App = (function () {
     nativeNotifications.init();
     notifications.init();
     chat.init();
+    chromeOffsetWorkaround.init();
     // and here we finally go...
     board.start();
 
