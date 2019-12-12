@@ -1129,6 +1129,10 @@ article .body {
     display: block;
 }
 
+.panel-body article input[type="range"] {
+    vertical-align: middle;
+}
+
 .no-p-margin p {
     margin: 0 !important;
 }
