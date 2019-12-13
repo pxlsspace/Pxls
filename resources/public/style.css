@@ -873,12 +873,24 @@ input[type="text"] {
     background-image: linear-gradient(to right, #aaa 1px, transparent 1px), linear-gradient(to bottom, #aaa 1px, transparent 1px);
 }
 
-.settingToggles > * {
+#settings .settingToggles > * {
     margin: 3px 0;
 }
 
-.settingToggles > label {
+#settings .settingToggles > label {
     display: block;
+}
+
+#settings input.small-input {
+    width: 6em;
+}
+#settings input[disabled] {
+    opacity: 0.5;
+}
+
+#template-image-error-warning {
+    margin-bottom: 0.5em;
+    display: inline-block;
 }
 
 /*//////////////////////////*\

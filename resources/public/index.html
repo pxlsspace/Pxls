@@ -299,10 +299,30 @@
                 <h2>Template</h2>
             </header>
             <div class="pad-wrapper">
+                <div>
+                    <label><input type="checkbox" id="template-use"> Use template</label>
+                </div>
                 <p>Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around</p>
-                <p><label>Use template: <input type="checkbox" id="template-use"></label></p>
-                <p><label>URL: <input type="text" id="template-url"></label></p>
-                <p><label>Opacity: <input type="range" min="0" max="1" step="0.01" id="template-opacity"></label></p>
+                <div class="longTextInputWrapper">
+                    <label>Title:</label>
+                    <input type="text" id="template-title">
+                </div>
+                <div class="longTextInputWrapper">
+                    <label>URL:</label>
+                    <input type="text" id="template-url">
+                    <span id="template-image-error-warning" class="text-red">There was an error getting the image</span>
+                </div>
+                <div>
+                    <label>Position: <input type="number" min="0" class="template-coords small-input" id="template-coords-x">, <input type="number" min="0" class="template-coords small-input" id="template-coords-y"></label>
+                </div>
+                <div>
+                    <label>Opacity: <input type="range" id="template-opacity" min="0" max="1" step="0.01"></label>
+                    <span id="template-opacity-percentage">100%</span>
+                </div>
+                <div>
+                    <label>Width: <input type="number" id="template-width" class="small-input" min="0"></label>
+                    <button id="template-width-reset">Reset</button>
+                </div>
             </div>
         </article>
         <article>
@@ -322,16 +342,6 @@
                     <span id="lblAlertVolume"></span>
                 </div>
                 <label style="display: block;">Delay (Seconds): <input type="text" width="30px" value="0" id="alertDelay"></label>
-            </div>
-        </article>
-        <article>
-            <header class="slim darker">
-                <h2>Chat Settings</h2>
-            </header>
-            <div class="pad-wrapper">
-                <div class="settingToggles">
-                    <p class="text-red">Moved to the top right of the chat panel. Click the cogs</p>
-                </div>
             </div>
         </article>
         <article>
