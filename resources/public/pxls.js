@@ -1108,6 +1108,7 @@ window.App = (function () {
                         place.setPalette(data.palette);
                         uiHelper.setMax(data.maxStacked);
                         chat.setCharLimit(data.chatCharacterLimit);
+                        chromeOffsetWorkaround.update();
                         if (data.captchaKey) {
                             $(".g-recaptcha").attr("data-sitekey", data.captchaKey);
 
@@ -5672,6 +5673,7 @@ window.App = (function () {
         // by a pixel when the window size is odd.
         chromeOffsetWorkaround = (function() {
             const self = {
+                isEnabled: false,
                 elements: {
                     boardContainer: board.getContainer(),
                     setting: $("#chrome-canvas-offset-setting"),
@@ -5684,21 +5686,22 @@ window.App = (function () {
                         return;
                     }
 
-                    let settingState = ls.get("chrome-canvas-offset-workaround");
-                    if (settingState === null) {
+                    self.isEnabled = ls.get("chrome-canvas-offset-workaround");
+                    if (self.isEnabled === null) {
                         // default to enabled
-                        settingState = true;
-                        ls.set("chrome-canvas-offset-workaround", settingState);
+                        self.isEnabled = true;
+                        ls.set("chrome-canvas-offset-workaround", self.isEnabled);
                     }
 
-                    if (settingState) {
+                    if (self.isEnabled) {
                         self.enable();
                     }
 
-                    self.elements.checkbox.prop("checked", settingState);
+                    self.elements.checkbox.prop("checked", self.isEnabled);
                     self.elements.checkbox.on("change", (e) => {
-                        ls.set("chrome-canvas-offset-workaround", e.target.checked);
-                        if (e.target.checked) {
+                        self.isEnabled = e.target.checked;
+                        ls.set("chrome-canvas-offset-workaround", self.isEnabled);
+                        if (self.isEnabled) {
                             self.enable();
                         } else {
                             self.disable();
@@ -5706,30 +5709,31 @@ window.App = (function () {
                     });
                 },
                 enable: () => {
+                    self.isEnabled = true;
                     window.addEventListener("resize", self.updateContainer);
                     self.updateContainer();
                 },
                 updateContainer: () => {
-                    let offsetWidth = window.innerWidth % 2 === 0;
-                    if (board.getWidth() % 2 === 0) {
-                        offsetWidth = !offsetWidth;
-                    }
-                    let offsetHeight = window.innerHeight % 2 === 0;
-                    if (board.getHeight() % 2 === 0) {
-                        offsetHeight = !offsetHeight;
-                    }
+                    let offsetWidth = (window.innerWidth + board.getWidth()) % 2;
+                    let offsetHeight = (window.innerHeight + board.getHeight()) % 2;
 
-                    self.elements.boardContainer.css("width", `${window.innerWidth - (offsetWidth ? 1 : 0)}px`);
-                    self.elements.boardContainer.css("height", `${window.innerHeight - (offsetHeight ? 1 : 0)}px`);
+                    self.elements.boardContainer.css("width", `${window.innerWidth - offsetWidth}px`);
+                    self.elements.boardContainer.css("height", `${window.innerHeight - offsetHeight}px`);
                 },
                 disable: () => {
+                    self.isEnabled = false;
                     window.removeEventListener("resize", self.updateContainer);
                     self.elements.boardContainer.css("width", "");
                     self.elements.boardContainer.css("height", "");
                 }
             }
             return {
-                init: self.init
+                init: self.init,
+                update: () => {
+                    if (self.isEnabled) {
+                        self.updateContainer();
+                    }
+                }
             }
         }());
     // init progress
