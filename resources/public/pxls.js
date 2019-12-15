@@ -804,6 +804,11 @@ window.App = (function () {
                     });
 
                     $(document.body).on("keydown", function (evt) {
+                        if (["INPUT", "TEXTAREA"].includes(evt.target.nodeName)) {
+                            // prevent inputs from triggering shortcuts
+                            return;
+                        }
+
                         switch (evt.originalEvent.code || evt.keyCode || evt.which || evt.key) {
                             case "KeyW":        // W
                             case "ArrowUp":
@@ -965,12 +970,10 @@ window.App = (function () {
                     self.elements.board_render[0].addEventListener("touchmove", handleInputMove, { passive: false });
 
                     function handleInputDown(event) {
-                        // Lord forgive me for what I must do...
-                        // UNRELATED
-                        if (event.target && !event.target.closest('.panel')) {
-                            $("#txtChatContent").blur();
+                        if (["INPUT", "TEXTAREA"].includes(document.activeElement.nodeName)) {
+                            document.activeElement.blur();
                         }
-                        // RELATED
+
                         let clientX = 0,
                             clientY = 0,
                             prereq = true;
@@ -1528,6 +1531,11 @@ window.App = (function () {
                         self.clear();
                     });
                     $(window).keydown((evt) => {
+                        if (["INPUT", "TEXTAREA"].includes(evt.target.nodeName)) {
+                            // prevent inputs from triggering shortcuts
+                            return;
+                        }
+
                         if (evt.key == "o" || evt.key == "O" || evt.which == 79) {
                             self.clear();
                         }
@@ -1586,6 +1594,11 @@ window.App = (function () {
                     });
 
                     $(window).keydown(function (e) {
+                        if (["INPUT", "TEXTAREA"].includes(e.target.nodeName)) {
+                            // prevent inputs from triggering shortcuts
+                            return;
+                        }
+
                         if (e.key == "h" || e.key == "H" || e.which == 72) { // h key
                             self.toggle();
                             $("#heatmaptoggle")[0].checked = ls.get("heatmap");
@@ -1679,6 +1692,11 @@ window.App = (function () {
                         self.clear();
                     });
                     $(window).keydown(function (evt) {
+                        if (["INPUT", "TEXTAREA"].includes(evt.target.nodeName)) {
+                            // prevent inputs from triggering shortcuts
+                            return;
+                        }
+
                         if (evt.key == "o" || evt.key == "O" || evt.which == 79) { //O key
                             self.clear();
                         }
@@ -1737,6 +1755,11 @@ window.App = (function () {
                     });
 
                     $(window).keydown(function (e) {
+                        if (["INPUT", "TEXTAREA"].includes(e.target.nodeName)) {
+                            // prevent inputs from triggering shortcuts
+                            return;
+                        }
+
                         if (e.key == "x" || e.key == "X" || e.which == 88) { // x key
                             self.toggle();
                             $("#virginmaptoggle")[0].checked = ls.get("virginmap");
@@ -1756,7 +1779,17 @@ window.App = (function () {
         template = (function () {
             var self = {
                 elements: {
-                    template: null
+                    template: null,
+                    useCheckbox: $("#template-use"),
+                    titleInput: $("#template-title"),
+                    urlInput: $("#template-url"),
+                    imageErrorWarning: $("#template-image-error-warning"),
+                    coordsXInput: $("#template-coords-x"),
+                    coordsYInput: $("#template-coords-y"),
+                    opacityInput: $("#template-opacity"),
+                    opacityPercentage: $("#template-opacity-percentage"),
+                    widthInput: $("#template-width"),
+                    widthResetBtn: $("#template-width-reset")
                 },
                 queueTimer: 0,
                 _queuedUpdates: {},
@@ -1774,6 +1807,8 @@ window.App = (function () {
                         return;
                     }
                     self.options.use = true;
+
+                    self.elements.imageErrorWarning.hide();
 
                     var drag = {
                         x: 0,
@@ -1820,16 +1855,47 @@ window.App = (function () {
                                 drag.y = evt.clientY;
                             }
                         }
+                    }).on("load", (e) => {
+                        if (self.options.width < 0) {
+                            self.elements.widthInput.val(self.elements.template.width());
+                        }
+                    }).on("error", () => {
+                        self.elements.imageErrorWarning.show();
+                        self.elements.template.remove();
                     });
                     if (board.update(true)) {
                         return;
                     }
                     board.getRenderBoard().parent().prepend(self.elements.template);
                 },
-                update_drawer: function () {
-                    $("#template-use")[0].checked = self.options.use;
-                    $("#template-url").val(self.options.url);
-                    $("#template-opacity").val(self.options.opacity);
+                updateDrawer: function () {
+                    self.elements.useCheckbox.prop("checked", self.options.use);
+                    self.elements.urlInput.val(self.options.url ? self.options.url : "");
+
+                    self.elements.titleInput
+                        .prop("disabled", !self.options.use)
+                        .val(self.options.title ? decodeURIComponent(self.options.title) : "");
+
+                    self.elements.opacityInput
+                        .prop("disabled", !self.options.use)
+                        .val(self.options.opacity);
+                    self.elements.opacityPercentage.text(`${Math.floor(self.options.opacity * 100)}%`);
+
+                    self.elements.coordsXInput
+                        .prop("disabled", !self.options.use)
+                        .val(self.options.x);
+                    self.elements.coordsYInput
+                        .prop("disabled", !self.options.use)
+                        .val(self.options.y);
+
+                    self.elements.widthInput.prop("disabled", !self.options.use);
+                    if (self.options.width >= 0) {
+                        self.elements.widthInput.val(self.options.width);
+                    } else if (self.elements.template) {
+                        self.elements.widthInput.val(self.elements.template.width());
+                    } else {
+                        self.elements.widthInput.val(null);
+                    }
                 },
                 normalizeTemplateObj(objectToNormalize, direction) {
                     //direction: true = url_to_template_obj, else = template_obj_to_url
@@ -1862,8 +1928,11 @@ window.App = (function () {
                         self.queueTimer = 0;
                     }, 200);
                 },
-                _update: function (options) {
-                    if (!Object.keys(options).length) return;
+                _update: function (options, updateDrawer = true) {
+                    if (!Object.keys(options).length) {
+                        return;
+                    }
+
                     let urlUpdated = (options.url !== self.options.url && decodeURIComponent(options.url) !== self.options.url && options.url != null && self.options.url != null);
                     if (options.url != null && options.url.length > 0) {
                         options.url = decodeURIComponent(options.url);
@@ -1912,7 +1981,9 @@ window.App = (function () {
                             query.set(x[1], self.options[x[0]], true);
                         });
                     }
-                    self.update_drawer();
+                    if (updateDrawer) {
+                        self.updateDrawer();
+                    }
                     document.title = uiHelper.getTitle();
                 },
                 disableTemplate: function () {
@@ -1933,33 +2004,32 @@ window.App = (function () {
                     ctx2.drawImage(self.elements.template[0], (self.options.x - pxl_x) * scale, (self.options.y - pxl_y) * scale, width * scale, height * scale);
                 },
                 init: function () {
+                    self.elements.imageErrorWarning.hide();
                     drawer.create("#template-control", 84, "template_open", false);
-                    $("#template-use").change(function () {
-                        self._update({ use: this.checked });
+
+                    self.elements.useCheckbox.change((e) => self._update({ use: e.target.checked }));
+                    self.elements.titleInput.change((e) => self._update({ title: e.target.value }, false));
+                    self.elements.urlInput.change((e) => self._update({ use: true, url: e.target.value }));
+
+                    self.elements.opacityInput.on("change input", (e) => {
+                        self.elements.opacityPercentage.text(`${Math.floor(e.target.value * 100)}%`);
+                        self._update({ opacity: parseFloat(e.target.value) }, false);
                     });
-                    $("#template-url").change(function () {
-                        self._update({ url: this.value });
-                    }).keydown(function (evt) {
-                        if (evt.key == "Enter" || evt.which === 13) {
-                            $(this).change();
-                        }
-                        if ((evt.key == "v" || evt.key == "V" || evt.which == 86) && evt.ctrlKey) {
-                            $(this).trigger("paste");
-                        }
-                        evt.stopPropagation();
-                    }).on("paste", function () {
-                        var _this = this;
-                        setTimeout(function () {
-                            self._update({
-                                use: true,
-                                url: _this.value
-                            });
-                        }, 100);
-                    });
-                    $("#template-opacity").on("change input", function () {
-                        self._update({ opacity: parseFloat(this.value) });
-                    });
+
+                    self.elements.coordsXInput.on("change input", (e) => self._update({ x: parseInt(e.target.value) }, false));
+                    self.elements.coordsYInput.on("change input", (e) => self._update({ y: parseInt(e.target.value) }, false));
+
+                    self.elements.widthInput.on("change input", (e) => self._update({ width: parseFloat(e.target.value) }, false));
+                    self.elements.widthResetBtn.on("click", (e) => self._update({ width: -1 }));
+
+                    self.updateDrawer();
+
                     $(window).keydown(function (evt) {
+                        if (["INPUT", "TEXTAREA"].includes(evt.target.nodeName)) {
+                            // prevent inputs from triggering shortcuts
+                            return;
+                        }
+
                         if (self.options.use) {
                             switch(evt.originalEvent.code || evt.originalEvent.keyCode || evt.originalEvent.which || evt.originalEvent.key) {
                                 case "ControlLeft":
@@ -2013,7 +2083,7 @@ window.App = (function () {
                 draw: self.draw,
                 init: self.init,
                 queueUpdate: self.queueUpdate,
-                getOptions: self.getOptions,
+                getOptions: self.getOptions
             };
         })(),
         // here all the grid stuff happens
@@ -2033,6 +2103,11 @@ window.App = (function () {
                         self.elements.grid.fadeToggle({ duration: 100 });
                     }
                     $(document.body).on("keydown", function (evt) {
+                        if (["INPUT", "TEXTAREA"].includes(evt.target.nodeName)) {
+                            // prevent inputs from triggering shortcuts
+                            return;
+                        }
+
                         if (evt.key == "g" || evt.key == "G" || evt.keyCode === 71) {
                             $("#gridtoggle")[0].checked = !$("#gridtoggle")[0].checked;
                             $("#gridtoggle").trigger("change");
@@ -2218,6 +2293,11 @@ window.App = (function () {
                             return;
                         }
                     }).keydown(function (evt) {
+                        if (["INPUT", "TEXTAREA"].includes(evt.target.nodeName)) {
+                            // prevent inputs from triggering shortcuts
+                            return;
+                        }
+
                         if (self.can_undo && (evt.key == "z" || evt.key == "Z" || evt.keyCode == 90) && evt.ctrlKey) {
                             self.undo(evt);
                         }
@@ -2644,6 +2724,11 @@ window.App = (function () {
                         doTrigger();
                     }
                     $(document.body).keydown(function (evt) {
+                        if (["INPUT", "TEXTAREA"].includes(evt.target.nodeName)) {
+                            // prevent inputs from triggering shortcuts
+                            return;
+                        }
+
                         if (evt.keyCode === keycode) {
                             elem.toggleClass("open");
                             ls.set(localstorage, elem.hasClass("open") ^ open);
@@ -2918,6 +3003,11 @@ window.App = (function () {
                         });
 
                     $(window).keydown(function (evt) {
+                        if (["INPUT", "TEXTAREA"].includes(evt.target.nodeName)) {
+                            // prevent inputs from triggering shortcuts
+                            return;
+                        }
+
                         switch (evt.key || evt.which) {
                             case "Escape":
                             case 27:
@@ -5257,7 +5347,12 @@ window.App = (function () {
                         if (!self.elements.coordsWrapper.is(":visible")) self.elements.coordsWrapper.fadeIn(200);
                     }
 
-                    $(window).keydown(event => {
+                    $(window).keydown((event) => {
+                        if (["INPUT", "TEXTAREA"].includes(event.target.nodeName)) {
+                            // prevent inputs from triggering shortcuts
+                            return;
+                        }
+
                         if (!event.ctrlKey && (event.key === "c" || event.key === "C" || event.keyCode === 67)) {
                             self.copyCoords();
                         }
