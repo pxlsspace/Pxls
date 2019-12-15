@@ -1801,6 +1801,10 @@ window.App = (function () {
                     }).on("mousemove pointermove", function (evt) {
                         evt.preventDefault();
                         if ($(this).data("dragging")) {
+                            if (!evt.ctrlKey && !evt.altKey) {
+                                self.stopDragging();
+                                return;
+                            }
                             var px_old = board.fromScreen(drag.x, drag.y),
                                 px_new = board.fromScreen(evt.clientX, evt.clientY),
                                 dx = (px_new.x) - (px_old.x),
@@ -1992,11 +1996,12 @@ window.App = (function () {
                                 });
                                 break;
                         }
-                    }).on("keyup blur", function (evt) {
-                        if (self.options.use) {
-                            self.elements.template.css("pointer-events", "none").data("dragging", false);
-                        }
-                    });
+                    }).on("keyup blur", self.stopDragging);
+                },
+                stopDragging: function () {
+                    if (self.options.use) {
+                        self.elements.template.css("pointer-events", "none").data("dragging", false);
+                    }
                 },
                 getOptions: function () {
                     return self.options;
