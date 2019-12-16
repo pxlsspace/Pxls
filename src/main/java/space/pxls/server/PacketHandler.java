@@ -358,7 +358,11 @@ public class PacketHandler {
         if (nameColor != null && !nameColor.trim().isEmpty()) {
             try {
                 int t = Integer.parseInt(nameColor);
-                if (t >= 0 && t < App.getConfig().getStringList("board.palette").size()) {
+                if (t >= -1 && t < App.getConfig().getStringList("board.palette").size()) {
+                    if (t < 0 && user.getRole().lessThan(Role.MODERATOR)) {
+                        server.send(channel, new ServerACKClientUpdate(false, "Color reserved for staff members", "NameColor", null));
+                        return;
+                    }
                     user.setChatNameColor(t, true);
                     server.send(channel, new ServerACKClientUpdate(true, null, "NameColor", String.valueOf(t)));
                     toBroadcast.put("NameColor", String.valueOf(t));

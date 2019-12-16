@@ -151,6 +151,23 @@ dd a {
     display: inline !important;
 }
 
+@keyframes rainbow-move {
+    0% {
+        background-position-x: 66%;
+    }
+    100% {
+        background-position-x: 0%;
+    }
+}
+
+.rainbow {
+    background-image: linear-gradient(45deg, violet, #308dff, aqua, green, yellow, orange, red, orange, yellow, green, aqua, #308dff, violet, violet, #308dff, aqua, green, yellow, orange, red, orange, yellow, green, aqua, #308dff, violet);
+    background-size: 600% 100%;
+    animation: rainbow-move 4s linear 1ms infinite;
+    background-position-x: 66%;
+    transform: rotateZ(360deg); /* force rainbow rendering onto GPU if available */
+}
+
 /*//////////////////////////*\
 | Overlays
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
@@ -1517,24 +1534,41 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
     font-family: monospace;
 }
 
-@keyframes rainbow-name {
-    0% {
-        background-position: 5px 0%;
-    }
-    100% {
-        background-position: -500px 0%;
-    }
+.username-color-picker {
+    font-family: monospace;
+    font-size: 1.25rem;
+    padding: 5px;
+    border-radius: 5px;
 }
-.user.rainbow-name {
+
+.username-color-picker.rainbow {
+    background-color: black;
+    text-shadow: 0 0 0.5em black;
+    color: white;
+}
+
+@keyframes rainbow-transition-bg {
+    0% { background-color: violet; }
+    14% { background-color: #308dff; }
+    28% { background-color: aqua; }
+    42% { background-color: green; }
+    56% { background-color: yellow; }
+    70% { background-color: orange; }
+    84% { background-color: red; }
+    98%, 100% { background-color: violet; }
+}
+
+.username-color-picker option.rainbow {
+    animation: rainbow-transition-bg 4s linear infinite;
+    background-color: violet;
+}
+
+.user.rainbow {
     display: inline-block;
-    background-image: linear-gradient(45deg, violet, #308dff, cyan, green, yellow, orange, red, orange, yellow, green, cyan, #308dff, violet, violet);
-    background-size: 500px 100%;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent !important;
     color: transparent !important;
-    animation: rainbow-name 4s linear 1ms infinite;
     text-shadow: none !important;
-    transform: rotateZ(360deg); /* force rainbow rendering onto GPU if available */
 }
 
 .emoji-picker {
