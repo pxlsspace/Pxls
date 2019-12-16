@@ -525,14 +525,20 @@ public class User {
         App.getDatabase().setDiscordName(id, discordName);
     }
 
+    public boolean hasRainbowChatNameColor() {
+        return App.getConfig().getBoolean("chat.staffRainbow")
+                && role.greaterEqual(Role.MODERATOR)
+                && this.chatNameColor == -1;
+    }
+
     public int getChatNameColor() {
-        return (App.getConfig().getBoolean("chat.staffRainbow") && role.greaterEqual(Role.MODERATOR)) ? 0xffffff : this.chatNameColor;
+        return this.chatNameColor;
     }
 
     public List<String> getChatNameClasses() {
         List<String> toReturn = new ArrayList<>();
-        if (App.getConfig().getBoolean("chat.staffRainbow") && role.greaterEqual(Role.MODERATOR)) {
-            toReturn.add("rainbow-name");
+        if (this.hasRainbowChatNameColor()) {
+            toReturn.add("rainbow");
         }
         return toReturn.size() != 0 ? toReturn : null;
     }

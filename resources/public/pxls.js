@@ -2856,7 +2856,6 @@ window.App = (function () {
             var self = {
                 _available: -1,
                 maxStacked: -1,
-                usernameColor: 0,
                 _alertUpdateTimer: false,
                 initTitle: '',
                 isLoadingBubbleShown: false,
@@ -2892,6 +2891,7 @@ window.App = (function () {
                         location: '/themes/dark.css'
                     }
                 ],
+                specialChatColorClasses: ['rainbow'],
                 init: function () {
                     self.initTitle = document.title;
                     self._initThemes();
@@ -3261,12 +3261,28 @@ window.App = (function () {
                 getAvailable() {
                     return self._available;
                 },
-                updateSelectedNameColor: idx => {
-                    self.usernameColor = idx >> 0;
+                updateSelectedNameColor: (colorIdx) => {
                     let selUsernameColor = document.querySelector('.username-color-picker');
                     if (selUsernameColor) {
-                        selUsernameColor.selectedIndex = self.usernameColor;
-                        selUsernameColor.style.backgroundColor = place.getPaletteColor(self.usernameColor);
+                        selUsernameColor.value = colorIdx;
+                        self.styleElemWithChatNameColor(selUsernameColor, colorIdx);
+                    }
+                },
+                styleElemWithChatNameColor: (elem, colorIdx, layer = 'bg') => {
+                    elem.classList.remove(... self.specialChatColorClasses);
+                    if (colorIdx >= 0) {
+                        switch (layer) {
+                            case 'bg':
+                                elem.style.backgroundColor = place.getPaletteColor(colorIdx);
+                                break;
+                            case 'color':
+                                elem.style.color = place.getPaletteColor(colorIdx);
+                                break;
+                        }
+                    } else {
+                        elem.style.backgroundColor = null;
+                        elem.style.color = null;
+                        elem.classList.add(self.specialChatColorClasses[-colorIdx - 1]);
                     }
                 },
                 setLoadingState: (process, state) => {
@@ -3297,7 +3313,7 @@ window.App = (function () {
                 setDiscordName: self.setDiscordName,
                 updateAudio: self.updateAudio,
                 updateSelectedNameColor: self.updateSelectedNameColor,
-                getUsernameColor: () => self.usernameColor >> 0,
+                styleElemWithChatNameColor: self.styleElemWithChatNameColor,
                 setBannerEnabled: self.setBannerEnabled,
                 getTitle: (prepend) => {
                     if (typeof prepend !== 'string') prepend = '';
@@ -3506,7 +3522,7 @@ window.App = (function () {
                             for (let update of Object.entries(e.updates)) {
                                 switch(update[0]) {
                                     case 'NameColor': {
-                                        self._updateAuthorNameColor(e.who, place.getPaletteColor(update[1] >> 0));
+                                        self._updateAuthorNameColor(e.who, Math.floor(update[1]));
                                         break;
                                     }
                                     default: {
@@ -4179,7 +4195,8 @@ window.App = (function () {
                     );
                     let lblInternalAction = crel('label', {'style': 'display: block;'}, 'Default internal link action click: ', _selInternalClick);
 
-                    let _selUsernameColor = crel('select', {'class': 'username-color-picker', 'style': 'font-family: monospace; font-size: 1.25rem; color: #FFFFFF; padding: 5px; border-radius: 5px;'},
+                    let _selUsernameColor = crel('select', {'class': 'username-color-picker'},
+                        user.isStaff() ? crel('option', {value: -1, 'class': 'rainbow'}, 'rainbow') : null,
                         place.getPalette().map((x, i) => crel('option', {value: i, 'data-idx': i, style: `background-color: ${x}`}, x))
                     );
                     let lblUsernameColor = crel('label', {'style': 'display: block;'}, 'Username Color: ', _selUsernameColor);
@@ -4196,9 +4213,8 @@ window.App = (function () {
 
 
                     //events/scaffolding
-                    _selUsernameColor.selectedIndex = uiHelper.getUsernameColor() >> 0;
-                    _selUsernameColor.style.backgroundColor = place.getPaletteColor(_selUsernameColor.selectedIndex);
-                    _selUsernameColor.style.color = _selUsernameColor.selectedIndex === 0 ? `#000000` : `#FFFFFF`;
+                    _selUsernameColor.value = user.getChatNameColor();
+                    uiHelper.styleElemWithChatNameColor(_selUsernameColor);
                     _selUsernameColor.addEventListener('change', function() {
                         socket.send({type: "UserUpdate", updates: {NameColor: String(this.value >> 0)}});
                     });
@@ -4371,8 +4387,10 @@ window.App = (function () {
                         board.setScale(zoom);
                     }
                 },
-                _updateAuthorNameColor: (author, colorString) => {
-                    self.elements.body.find(`.chat-line[data-author="${author}"] .user`).css('color', colorString);
+                _updateAuthorNameColor: (author, colorIdx) => {
+                    self.elements.body.find(`.chat-line[data-author="${author}"] .user`).each(function() {
+                        uiHelper.styleElemWithChatNameColor(this, colorIdx, 'color');
+                    });
                 },
                 _process: packet => {
                     if (packet.nonce) {
@@ -4684,7 +4702,7 @@ window.App = (function () {
                         crel(actionsList, actionReport);
                         crel(actionsList, actionMention);
                         crel(actionsList, actionIgnore);
-                        if (["MODERATOR", "DEVELOPER", "ADMIN", "TRIALMOD"].includes(user.getRole())) {
+                        if (user.isStaff()) {
                             crel(actionsList, actionChatban);
                             crel(actionsList, actionDeleteMessage);
                             crel(actionsList, actionPurgeUser);
@@ -5410,9 +5428,8 @@ window.App = (function () {
                 loggedIn: false,
                 username: '',
                 chatNameColor: 0,
-                getRole: function () {
-                    return self.role;
-                },
+                getRole: () => self.role,
+                isStaff: () => ["MODERATOR", "DEVELOPER", "ADMIN", "TRIALMOD"].includes(self.getRole()),
                 getUsername: () => self.username,
                 signin: function () {
                     var data = ls.get("auth_respond");
@@ -5668,6 +5685,7 @@ window.App = (function () {
             return {
                 init: self.init,
                 getRole: self.getRole,
+                isStaff: self.isStaff,
                 getUsername: self.getUsername,
                 webinit: self.webinit,
                 wsinit: self.wsinit,
