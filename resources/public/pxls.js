@@ -2321,7 +2321,7 @@ window.App = (function () {
                         switch (data.ackFor) {
                             case "PLACE":
                                 $(window).trigger('pxls:ack:place', [data.x, data.y]);
-                                if (!ls.get("audio_muted")) {
+                                if (uiHelper.tabHasFocus() && !ls.get("audio_muted")) {
                                     var clone = self.audio.cloneNode(false);
                                     clone.volume = parseFloat(ls.get("alert.volume"));
                                     clone.play();
@@ -2858,6 +2858,7 @@ window.App = (function () {
         })(),
         uiHelper = (function () {
             var self = {
+                tabId: null,
                 _available: -1,
                 maxStacked: -1,
                 _alertUpdateTimer: false,
@@ -2903,6 +2904,7 @@ window.App = (function () {
                     self._initAudio();
                     self._initAccount();
                     self._initBanner();
+                    self._initMultiTabDetection();
 
                     self.elements.coords.click(() => coords.copyCoords(true));
 
@@ -3157,6 +3159,33 @@ window.App = (function () {
                     self.banner.enabled = ls.get('chat.banner-enabled') !== false;
                     self._bannerIntervalTick();
                 },
+                _initMultiTabDetection() {
+                    const openTabIds = ls.get('tabs.open') || [];
+                    while (self.tabId === null || openTabIds.includes(self.tabId)) {
+                        self.tabId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+                    }
+                    openTabIds.push(self.tabId);
+                    ls.set('tabs.open', openTabIds);
+                    ls.set('tabs.has-focus', self.tabId);
+
+                    window.addEventListener('focus', () => {
+                        ls.set('tabs.has-focus', self.tabId);
+                    });
+
+                    let unloadHandled = false;
+                    const handleUnload = () => {
+                        if (unloadHandled) {
+                            // try to avoid race conditions
+                            return;
+                        }
+                        unloadHandled = true;
+                        const openTabIds = ls.get('tabs.open') || [];
+                        openTabIds.splice(openTabIds.indexOf(self.tabId), 1);
+                        ls.set('tabs.open', openTabIds);
+                    }
+                    window.addEventListener("beforeunload", handleUnload, false);
+                    window.addEventListener("unload", handleUnload, false);
+                },
                 _bannerIntervalTick() {
                     let nextElem = self.banner.HTMLs[self.banner.curElem++ % self.banner.HTMLs.length >> 0];
                     let banner = self.elements.bottomBanner[0];
@@ -3329,7 +3358,8 @@ window.App = (function () {
 
                     return `${prepend ? prepend + ' ' : ''}${decodeURIComponent(append)}`;
                 },
-                setLoadingState: self.setLoadingState
+                setLoadingState: self.setLoadingState,
+                tabHasFocus: () => parseInt(ls.get('tabs.has-focus')) === self.tabId
             };
         })(),
         panels = (function() {
@@ -5321,7 +5351,7 @@ window.App = (function () {
                     });
                 },
                 playAudio: function () {
-                    if (!ls.get("audio_muted")) {
+                    if (uiHelper.tabHasFocus() && !ls.get("audio_muted")) {
                         self.audio.play();
                     }
                 }
@@ -5715,15 +5745,19 @@ window.App = (function () {
                     }
                 },
                 show: function (s) {
+                    if (!uiHelper.tabHasFocus()) {
+                        return;
+                    }
+
                     try {
-                        var n = new Notification("pxls.space", {
+                        const notif = new Notification("pxls.space", {
                             body: s,
                             icon: "favicon.ico"
                         });
-                        n.onclick = function () {
+                        notif.onclick = () => {
                             parent.focus();
                             window.focus();
-                            this.close();
+                            notif.close();
                         };
                     } catch (e) {
                         console.log("No notifications available!");
