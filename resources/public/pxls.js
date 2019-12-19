@@ -1878,7 +1878,7 @@ window.App = (function () {
 
                     self.elements.titleInput
                         .prop("disabled", !self.options.use)
-                        .val(self.options.title ? decodeURIComponent(self.options.title) : "");
+                        .val(self.options.title ? self.options.title : "");
 
                     self.elements.opacityInput
                         .prop("disabled", !self.options.use)
@@ -1940,6 +1940,9 @@ window.App = (function () {
                     let urlUpdated = (options.url !== self.options.url && decodeURIComponent(options.url) !== self.options.url && options.url != null && self.options.url != null);
                     if (options.url != null && options.url.length > 0) {
                         options.url = decodeURIComponent(options.url);
+                    }
+                    if (options.title != null && options.title.length > 0) {
+                        options.title = decodeURIComponent(options.title);
                     }
 
                     //fix for `width` and other props being set after disabling template with the 'v' key then enabling a template without said prop set in the URL.
@@ -2076,9 +2079,6 @@ window.App = (function () {
                     if (self.options.use) {
                         self.elements.template.css("pointer-events", "none").data("dragging", false);
                     }
-                },
-                getOptions: function () {
-                    return self.options;
                 }
             };
             return {
@@ -2087,7 +2087,7 @@ window.App = (function () {
                 draw: self.draw,
                 init: self.init,
                 queueUpdate: self.queueUpdate,
-                getOptions: self.getOptions
+                getOptions: () => self.options
             };
         })(),
         // here all the grid stuff happens
@@ -3348,6 +3348,7 @@ window.App = (function () {
                 updateSelectedNameColor: self.updateSelectedNameColor,
                 styleElemWithChatNameColor: self.styleElemWithChatNameColor,
                 setBannerEnabled: self.setBannerEnabled,
+                getInitTitle: () => self.initTitle,
                 getTitle: (prepend) => {
                     if (typeof prepend !== 'string') prepend = '';
                     let tplOpts = template.getOptions();
@@ -3359,7 +3360,7 @@ window.App = (function () {
                     return `${prepend ? prepend + ' ' : ''}${decodeURIComponent(append)}`;
                 },
                 setLoadingState: self.setLoadingState,
-                tabHasFocus: () => parseInt(ls.get('tabs.has-focus')) === self.tabId
+                tabHasFocus: () => ls.get('tabs.has-focus') === self.tabId
             };
         })(),
         panels = (function() {
@@ -5749,8 +5750,13 @@ window.App = (function () {
                         return;
                     }
 
+                    let title = uiHelper.getInitTitle();
+                    const templateOpts = template.getOptions();
+                    if (templateOpts.use && templateOpts.title) {
+                        title = `${templateOpts.title} - ${title}`
+                    }
                     try {
-                        const notif = new Notification("pxls.space", {
+                        const notif = new Notification(title, {
                             body: s,
                             icon: "favicon.ico"
                         });
