@@ -5268,7 +5268,7 @@ window.App = (function () {
                     if (alertDelay < 0 && delta < Math.abs(alertDelay) && !self.hasFiredNotification) {
                         self.playAudio();
                         if (!self.focus) {
-                            nativeNotifications.show(`Your next pixel will be available in ${Math.abs(alertDelay)} seconds!`);
+                            nativeNotifications.maybeShow(`Your next pixel will be available in ${Math.abs(alertDelay)} seconds!`);
                         }
                         setTimeout(() => {
                             uiHelper.setPlaceableText(1);
@@ -5314,7 +5314,7 @@ window.App = (function () {
                         setTimeout(() => {
                             self.playAudio();
                             if (!self.focus) {
-                                nativeNotifications.show(`Your next pixel has been available for ${alertDelay} seconds!`);
+                                nativeNotifications.maybeShow(`Your next pixel has been available for ${alertDelay} seconds!`);
                             }
                             uiHelper.setPlaceableText(1);
                             self.hasFiredNotification = true;
@@ -5325,7 +5325,7 @@ window.App = (function () {
                     if (!self.hasFiredNotification) {
                         self.playAudio();
                         if (!self.focus) {
-                            nativeNotifications.show("Your next pixel is available!");
+                            nativeNotifications.maybeShow("Your next pixel is available!");
                         }
                         uiHelper.setPlaceableText(1);
                         self.hasFiredNotification = true;
@@ -5738,18 +5738,32 @@ window.App = (function () {
         // this takes care of browser notifications
         nativeNotifications = (function () {
             var self = {
-                init: function () {
+                elements: {
+                    toggle: $('#native-notification-toggle')
+                },
+                init: () => {
+                    let pixelAvailEnabled = ls.get('nativenotifications.pixel-avail');
+                    if (pixelAvailEnabled === null) {
+                        pixelAvailEnabled = true;
+                        ls.set('nativenotifications.pixel-avail', pixelAvailEnabled);
+                        self.request();
+                    }
+                    self.elements.toggle.prop('checked', pixelAvailEnabled);
+                    self.elements.toggle.on('change', (e) => {
+                        ls.set('nativenotifications.pixel-avail', e.target.checked);
+                        if (e.target.checked) {
+                            self.request();
+                        }
+                    });
+                },
+                request: () => {
                     try {
                         Notification.requestPermission();
                     } catch (e) {
-                        console.log('Notifications not available');
+                        console.warn('Notifications not available');
                     }
                 },
-                show: function (s) {
-                    if (!uiHelper.tabHasFocus()) {
-                        return;
-                    }
-
+                show: (body) => {
                     let title = uiHelper.getInitTitle();
                     const templateOpts = template.getOptions();
                     if (templateOpts.use && templateOpts.title) {
@@ -5757,22 +5771,29 @@ window.App = (function () {
                     }
                     try {
                         const notif = new Notification(title, {
-                            body: s,
-                            icon: "favicon.ico"
+                            body,
+                            icon: 'favicon.ico'
                         });
                         notif.onclick = () => {
                             parent.focus();
                             window.focus();
                             notif.close();
                         };
-                    } catch (e) {
-                        console.log("No notifications available!");
+                    } catch (err) {
+                        console.warn('Notifications not available');
+                    }
+                },
+                maybeShow: (body) => {
+                    if (ls.get('nativenotifications.pixel-avail')
+                        && uiHelper.tabHasFocus()
+                        && Notification.permission === 'granted') {
+                        self.show(body);
                     }
                 }
             };
             return {
                 init: self.init,
-                show: self.show
+                maybeShow: self.maybeShow
             }
         })(),
         notifications = (function() {
