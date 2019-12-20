@@ -50,8 +50,12 @@ if placemapPath:
 width = img.size[0]
 height = img.size[1]
 
-print('Width:', width)
-print('Height:', height)
+if placemapPath:
+	if pmimg.size[0] != width or pmimg.size[1] != height:
+		print(f"{placemapPath} dimensions ({pmimg.size[0]}x{pmimg.size[1]}) don't match {imagePath} dimensions ({width}x{height})")
+		sys.exit(1)
+
+print(f'Board is {width}x{height}')
 
 # Convertion
 
@@ -68,37 +72,35 @@ def color_to_palette(c):
 			min = i
 	return min
 
-i = 0
+print('Converting...')
 
+i = 0
 with open(outputPath, 'wb+') as f:
 	f.truncate()
+	bs = []
 	for y in range(height):
 		for x in range(width):
 			p = pix[x, y] # (r, g, b, a)
 			b = 0xFF
-			if type(p) == int:
-				p = (p, p, p, 255)
 			if p[3] == 255:
 				c = (p[0], p[1], p[2])
 				b = color_to_palette(c)
 				i += 1
-			f.write(bytes([b]))
+			bs.append(b)
+	f.write(bytes(bs))
+print(f"✔ board.dat ({i}/{width*height} empty pixels)")
 
+i = 0
 with open(pmoutputPath, 'wb+') as f:
 	f.truncate()
-	if placemapPath:
-		for y in range(height):
-			for x in range(width):
-				b = 0xFF
-				if placemapPath:
-					p = pmpix[x, y] # (r, g, b, a)
-					if type(p) == int:
-						p = (p, p, p, 255)
-					if p[3] == 255:
-						b = 0x00
-				f.write(bytes([b]))
-	else:
-		# assume the whole canvas is placeable
-		f.write(bytes([0x00 for _ in range(width*height)]))
-
-print(i)
+	bs = []
+	for y in range(height):
+		for x in range(width):
+			b = 0xFF
+			p = pmpix[x, y] if placemapPath else pix[x, y] # (r, g, b, a)
+			if p[3] == 255:
+				b = 0x00
+				i += 1
+			bs.append(b)
+	f.write(bytes(bs))
+print(f"✔ board.dat ({i}/{width*height} placeable pixels)")
