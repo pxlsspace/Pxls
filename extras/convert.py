@@ -37,10 +37,14 @@ outputPath = 'default_board.dat'
 pmoutputPath = 'placemap.dat'
 
 img = Image.open(imagePath)
+if img.mode != 'RGBA':
+	img = img.convert('RGBA')
 pix = img.load()
 
 if placemapPath:
 	pmimg = Image.open(placemapPath)
+	if pmimg.mode != 'RGBA':
+		pmimg = pmimg.convert('RGBA')
 	pmpix = pmimg.load()
 
 width = img.size[0]
