@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from PIL import Image
 import json
 import os
@@ -21,7 +22,7 @@ lines = [line.strip() for line in config.splitlines()]
 paletteMatch = None
 
 for line in lines:
-    paletteMatch = paletteMatch or re.search('^palette: (\[.+\])', line)
+	paletteMatch = paletteMatch or re.search('^palette: (\[.+\])', line)
 
 paletteArr = json.loads(paletteMatch.group(1))
 
@@ -30,7 +31,7 @@ palette = [hexToRGB(hex) for hex in paletteArr]
 # Getting paths
 
 imagePath = sys.argv[1]
-placemapPath = sys.argv[2]
+placemapPath = sys.argv[2] if len(sys.argv) > 2 else None
 
 outputPath = 'default_board.dat'
 pmoutputPath = 'placemap.dat'
@@ -38,8 +39,9 @@ pmoutputPath = 'placemap.dat'
 img = Image.open(imagePath)
 pix = img.load()
 
-pmimg = Image.open(placemapPath)
-pmpix = pmimg.load()
+if placemapPath:
+	pmimg = Image.open(placemapPath)
+	pmpix = pmimg.load()
 
 width = img.size[0]
 height = img.size[1]
@@ -68,8 +70,10 @@ with open(outputPath, 'wb+') as f:
 	f.truncate()
 	for y in range(height):
 		for x in range(width):
-			p = pix[x, y]
+			p = pix[x, y] # (r, g, b, a)
 			b = 0xFF
+			if type(p) == int:
+				p = (p, p, p, 255)
 			if p[3] == 255:
 				c = (p[0], p[1], p[2])
 				b = color_to_palette(c)
@@ -80,10 +84,13 @@ with open(pmoutputPath, 'wb+') as f:
 	f.truncate()
 	for y in range(height):
 		for x in range(width):
-			p = pmpix[x, y] # (r, g, b, a)
 			b = 0xFF
-			if p[3] == 255:
-				b = 0x00
+			if placemapPath:
+				p = pmpix[x, y] # (r, g, b, a)
+				if type(p) == int:
+					p = (p, p, p, 255)
+				if p[3] == 255:
+					b = 0x00
 			f.write(bytes([b]))
 
 print(i)
