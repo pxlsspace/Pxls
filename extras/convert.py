@@ -86,15 +86,19 @@ with open(outputPath, 'wb+') as f:
 
 with open(pmoutputPath, 'wb+') as f:
 	f.truncate()
-	for y in range(height):
-		for x in range(width):
-			b = 0xFF
-			if placemapPath:
-				p = pmpix[x, y] # (r, g, b, a)
-				if type(p) == int:
-					p = (p, p, p, 255)
-				if p[3] == 255:
-					b = 0x00
-			f.write(bytes([b]))
+	if placemapPath:
+		for y in range(height):
+			for x in range(width):
+				b = 0xFF
+				if placemapPath:
+					p = pmpix[x, y] # (r, g, b, a)
+					if type(p) == int:
+						p = (p, p, p, 255)
+					if p[3] == 255:
+						b = 0x00
+				f.write(bytes([b]))
+	else:
+		# assume the whole canvas is placeable
+		f.write(bytes([0x00 for _ in range(width*height)]))
 
 print(i)
