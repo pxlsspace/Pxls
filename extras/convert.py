@@ -12,20 +12,24 @@ convertpath = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__fi
 # /absolute/path/to/Pxls/pxls.conf
 configpath = convertpath + '\\pxls.conf'
 
-configfile = open(configpath, 'r+')
-config = str(configfile.read())
-configfile.close()
+try:
+	lines = None
+	with open(configpath, 'r+') as configfile:
+		config = str(configfile.read())
+		lines = [line.strip() for line in config.splitlines()]
+
+	for line in lines:
+		paletteMatch = re.search('^palette: (\[.+\])', line)
+		if paletteMatch is not None:
+			paletteRaw = paletteMatch.group(1)
+			break
+except FileNotFoundError:
+	print('Cannot find pxls.conf in previous directory')
+	paletteRaw = input('Input palette array manually in the format \'["#000000", "#FF0000", ...]\': ')
+
+paletteArr = json.loads(paletteRaw)
 
 hexToRGB = lambda hex : tuple(int(hex.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
-lines = [line.strip() for line in config.splitlines()]
-
-paletteMatch = None
-
-for line in lines:
-	paletteMatch = paletteMatch or re.search('^palette: (\[.+\])', line)
-
-paletteArr = json.loads(paletteMatch.group(1))
-
 palette = [hexToRGB(hex) for hex in paletteArr]
 
 # Getting paths
