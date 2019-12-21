@@ -2859,6 +2859,7 @@ window.App = (function () {
         uiHelper = (function () {
             var self = {
                 tabId: null,
+                focus: false,
                 _available: -1,
                 maxStacked: -1,
                 _alertUpdateTimer: false,
@@ -3008,7 +3009,7 @@ window.App = (function () {
                             self.elements.mainBubble.attr('position', e.target.value);
                         });
 
-                    $(window).keydown(function (evt) {
+                    $(window).keydown((evt) => {
                         if (["INPUT", "TEXTAREA"].includes(evt.target.nodeName)) {
                             // prevent inputs from triggering shortcuts
                             return;
@@ -3028,6 +3029,10 @@ window.App = (function () {
                                 }
                                 break;
                         }
+                    }).focus(() => {
+                        self.focus = true;
+                    }).blur(() => {
+                        self.focus = false;
                     });
 
                     let _info = document.querySelector('.panel[data-panel="info"]');
@@ -3360,7 +3365,8 @@ window.App = (function () {
                     return `${prepend ? prepend + ' ' : ''}${decodeURIComponent(append)}`;
                 },
                 setLoadingState: self.setLoadingState,
-                tabHasFocus: () => ls.get('tabs.has-focus') === self.tabId
+                tabHasFocus: () => ls.get('tabs.has-focus') === self.tabId,
+                windowHasFocus: () => self.focus
             };
         })(),
         panels = (function() {
@@ -3463,12 +3469,14 @@ window.App = (function () {
             };
         })(),
         chat = (function() {
-            let self = {
+            const self = {
                 seenHistory: false,
                 stickToBottom: true,
                 repositionTimer: false,
                 pings: 0,
                 pingsList: [],
+                pingAudio: new Audio('chatnotify.wav'),
+                lastPingAudioTimestamp: 0,
                 last_opened_panel: ls.get('chat.last_opened_panel') >> 0,
                 nonceLog: [],
                 typeahead: {
@@ -3571,7 +3579,7 @@ window.App = (function () {
                     socket.on('chat_history', e => {
                         if (self.seenHistory) return;
                         for (let packet of e.messages.reverse()) {
-                            self._process(packet);
+                            self._process(packet, true);
                         }
                         let last = self.elements.body.find("li[data-nonce]").last()[0];
                         if (last) {
@@ -3952,6 +3960,9 @@ window.App = (function () {
                     if (ls.get('chat.pings-enabled') == null) {
                         ls.set('chat.pings-enabled', true);
                     }
+                    if (ls.get('chat.ping-audio-volume') == null) {
+                        ls.set('chat.ping-audio-volume', 0.5);
+                    }
 
                     self.elements.chat_settings_button[0].addEventListener('click', () => self.popChatSettings());
 
@@ -4213,6 +4224,15 @@ window.App = (function () {
                     let _cbPings = crel('input', {'type': 'checkbox'});
                     let lblPings = crel('label', {'style': 'display: block;'}, _cbPings, 'Enable pings');
 
+                    let _cbPingAudio = crel('input', {'type': 'checkbox'});
+                    let _rgPingAudioVol = crel('input', {'type': 'range', min: 0, max: 100});
+                    let _txtPingAudioVol = crel('span');
+                    let lblPingAudio = crel('label', {'style': 'display: block;'},
+                        _cbPingAudio,
+                        'Play sound on ping',
+                        crel('span', _rgPingAudioVol, _txtPingAudioVol)
+                    );
+
                     let _cbBanner = crel('input', {'type': 'checkbox'});
                     let lblBanner = crel('label', {'style': 'display: block;'}, _cbBanner, 'Enable the rotating banner under chat');
 
@@ -4291,6 +4311,18 @@ window.App = (function () {
                         ls.set('chat.pings-enabled', this.checked === true);
                     });
 
+                    _cbPingAudio.checked = ls.get('chat.ping-audio-enabled') === true;
+                    _cbPingAudio.addEventListener('change', function() {
+                        ls.set('chat.ping-audio-enabled', this.checked === true);
+                    });
+
+                    _rgPingAudioVol.value = ls.get('chat.ping-audio-volume') * 100;
+                    _txtPingAudioVol.innerText = `${_rgPingAudioVol.value}%`;
+                    _rgPingAudioVol.addEventListener('change', function() {
+                        ls.set('chat.ping-audio-volume', this.value / 100);
+                        _txtPingAudioVol.innerText = `${this.value}%`;
+                    });
+
                     _cbBanner.checked = ls.get('chat.banner-enabled') !== false;
                     _cbBanner.addEventListener('change', function() {
                         ls.set('chat.banner-enabled', this.checked === true);
@@ -4328,6 +4360,7 @@ window.App = (function () {
                         lbl24hTimestamps,
                         lblPixelPlaceBadges,
                         lblPings,
+                        lblPingAudio,
                         lblBanner,
                         lblTemplateTitles,
                         lblFontSize,
@@ -4427,7 +4460,7 @@ window.App = (function () {
                         uiHelper.styleElemWithChatNameColor(this, colorIdx, 'color');
                     });
                 },
-                _process: packet => {
+                _process: (packet, isHistory = false) => {
                     if (packet.nonce) {
                         if (self.nonceLog.includes(packet.nonce)) {
                             return;
@@ -4488,8 +4521,16 @@ window.App = (function () {
                             ++self.pings;
                             self.elements.panel_trigger.addClass('has-ping');
                             self.elements.pings_button.addClass('has-notification');
-                            // self.elements.ping_counter.text(self.pings);
                         }
+
+                        const canPlayPingAudio = !isHistory && !ls.get("audio_muted")
+                            && ls.get('chat.ping-audio-enabled') && Date.now() - self.lastPingAudioTimestamp > 5000;
+                        if ((!panels.isOpen('chat') || !uiHelper.windowHasFocus()) && uiHelper.tabHasFocus() && canPlayPingAudio) {
+                            self.pingAudio.volume = parseFloat(ls.get('chat.ping-audio-volume'));
+                            self.pingAudio.play();
+                            self.lastPingAudioTimestamp = Date.now();
+                        }
+
                     }
                 },
                 processMessage: (elem, elemClass, str) => {
@@ -5242,7 +5283,6 @@ window.App = (function () {
                 hasFiredNotification: true,
                 cooldown: 0,
                 runningTimer: false,
-                focus: true,
                 audio: new Audio('notify.wav'),
                 title: "",
                 cooledDown: function () {
@@ -5267,7 +5307,7 @@ window.App = (function () {
                     var alertDelay = parseInt(ls.get("alert_delay"));
                     if (alertDelay < 0 && delta < Math.abs(alertDelay) && !self.hasFiredNotification) {
                         self.playAudio();
-                        if (!self.focus) {
+                        if (!uiHelper.windowHasFocus()) {
                             nativeNotifications.maybeShow(`Your next pixel will be available in ${Math.abs(alertDelay)} seconds!`);
                         }
                         setTimeout(() => {
@@ -5313,7 +5353,7 @@ window.App = (function () {
                     if (alertDelay > 0) {
                         setTimeout(() => {
                             self.playAudio();
-                            if (!self.focus) {
+                            if (!uiHelper.windowHasFocus()) {
                                 nativeNotifications.maybeShow(`Your next pixel has been available for ${alertDelay} seconds!`);
                             }
                             uiHelper.setPlaceableText(1);
@@ -5324,7 +5364,7 @@ window.App = (function () {
 
                     if (!self.hasFiredNotification) {
                         self.playAudio();
-                        if (!self.focus) {
+                        if (!uiHelper.windowHasFocus()) {
                             nativeNotifications.maybeShow("Your next pixel is available!");
                         }
                         uiHelper.setPlaceableText(1);
@@ -5335,11 +5375,6 @@ window.App = (function () {
                     self.title = document.title;
                     self.elements.timer.hide();
 
-                    $(window).focus(function () {
-                        self.focus = true;
-                    }).blur(function () {
-                        self.focus = false;
-                    });
                     setTimeout(function () {
                         if (self.cooledDown() && uiHelper.getAvailable() === 0) {
                             uiHelper.setPlaceableText(1);
