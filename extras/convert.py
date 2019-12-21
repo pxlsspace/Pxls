@@ -88,7 +88,7 @@ with open(outputPath, 'wb+') as f:
 				i += 1
 			bs.append(b)
 	f.write(bytes(bs))
-print(f"✔ board.dat ({i}/{width*height} empty pixels)")
+print(f"* Written {outputPath} ({i}/{width*height} empty pixels)")
 
 i = 0
 with open(pmoutputPath, 'wb+') as f:
@@ -103,4 +103,4 @@ with open(pmoutputPath, 'wb+') as f:
 				i += 1
 			bs.append(b)
 	f.write(bytes(bs))
-print(f"✔ board.dat ({i}/{width*height} placeable pixels)")
+print(f"* Written {pmoutputPath} ({i}/{width*height} placeable pixels)")
