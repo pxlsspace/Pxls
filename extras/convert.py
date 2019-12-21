@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 from PIL import Image
 import json
 import os
@@ -11,41 +12,54 @@ convertpath = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__fi
 # /absolute/path/to/Pxls/pxls.conf
 configpath = convertpath + '\\pxls.conf'
 
-configfile = open(configpath, 'r+')
-config = str(configfile.read())
-configfile.close()
+try:
+	lines = None
+	with open(configpath, 'r+') as configfile:
+		config = str(configfile.read())
+		lines = [line.strip() for line in config.splitlines()]
+
+	for line in lines:
+		paletteMatch = re.search('^palette: (\[.+\])', line)
+		if paletteMatch is not None:
+			paletteRaw = paletteMatch.group(1)
+			break
+except FileNotFoundError:
+	print('Cannot find pxls.conf in previous directory')
+	paletteRaw = input('Input palette array manually in the format \'["#000000", "#FF0000", ...]\': ')
+
+paletteArr = json.loads(paletteRaw)
 
 hexToRGB = lambda hex : tuple(int(hex.lstrip('#')[i:i+2], 16) for i in (0, 2, 4))
-lines = [line.strip() for line in config.splitlines()]
-
-paletteMatch = None
-
-for line in lines:
-    paletteMatch = paletteMatch or re.search('^palette: (\[.+\])', line)
-
-paletteArr = json.loads(paletteMatch.group(1))
-
 palette = [hexToRGB(hex) for hex in paletteArr]
 
 # Getting paths
 
 imagePath = sys.argv[1]
-placemapPath = sys.argv[2]
+placemapPath = sys.argv[2] if len(sys.argv) > 2 else None
 
 outputPath = 'default_board.dat'
 pmoutputPath = 'placemap.dat'
 
 img = Image.open(imagePath)
+if img.mode != 'RGBA':
+	img = img.convert('RGBA')
 pix = img.load()
 
-pmimg = Image.open(placemapPath)
-pmpix = pmimg.load()
+if placemapPath:
+	pmimg = Image.open(placemapPath)
+	if pmimg.mode != 'RGBA':
+		pmimg = pmimg.convert('RGBA')
+	pmpix = pmimg.load()
 
 width = img.size[0]
 height = img.size[1]
 
-print('Width:', width)
-print('Height:', height)
+if placemapPath:
+	if pmimg.size[0] != width or pmimg.size[1] != height:
+		print(f"{placemapPath} dimensions ({pmimg.size[0]}x{pmimg.size[1]}) don't match {imagePath} dimensions ({width}x{height})")
+		sys.exit(1)
+
+print(f'Board is {width}x{height}')
 
 # Convertion
 
@@ -62,28 +76,35 @@ def color_to_palette(c):
 			min = i
 	return min
 
-i = 0
+print('Converting...')
 
+i = 0
 with open(outputPath, 'wb+') as f:
 	f.truncate()
+	bs = []
 	for y in range(height):
 		for x in range(width):
-			p = pix[x, y]
+			p = pix[x, y] # (r, g, b, a)
 			b = 0xFF
 			if p[3] == 255:
 				c = (p[0], p[1], p[2])
 				b = color_to_palette(c)
 				i += 1
-			f.write(bytes([b]))
+			bs.append(b)
+	f.write(bytes(bs))
+print(f"* Written {outputPath} ({i}/{width*height} empty pixels)")
 
+i = 0
 with open(pmoutputPath, 'wb+') as f:
 	f.truncate()
+	bs = []
 	for y in range(height):
 		for x in range(width):
-			p = pmpix[x, y] # (r, g, b, a)
 			b = 0xFF
+			p = pmpix[x, y] if placemapPath else pix[x, y] # (r, g, b, a)
 			if p[3] == 255:
 				b = 0x00
-			f.write(bytes([b]))
-
-print(i)
+				i += 1
+			bs.append(b)
+	f.write(bytes(bs))
+print(f"* Written {pmoutputPath} ({i}/{width*height} placeable pixels)")
