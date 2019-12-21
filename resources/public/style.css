@@ -614,7 +614,6 @@ button.button.dark:disabled {
 }
 
 #ui-bottom {
-    position: relative;
     z-index: 6;
     width: 100%;
     left: 0;
