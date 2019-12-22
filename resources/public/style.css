@@ -554,6 +554,7 @@ button.button.dark:disabled {
     -ms-user-select: none;
     -webkit-user-select: none;
     pointer-events: none;
+    cursor: default;
     z-index: 9;
     display: flex;
     flex-direction: column;
@@ -637,6 +638,7 @@ button.button.dark:disabled {
 }
 
 #palette {
+    position: relative;
     z-index: 6;
     padding: 15px 0 7px;
     margin: 0 auto;
@@ -645,7 +647,24 @@ button.button.dark:disabled {
     text-align: center;
     white-space: nowrap;
     background-color: rgba(255, 255, 255, 0.8);
-    position:relative;
+
+    /* Scrollbar, Firefox only */
+    scrollbar-width: thin;
+    scrollbar-color: #aaa transparent;
+}
+
+/* Scrollbar, Chrome only */
+#palette::-webkit-scrollbar {
+    height: 6px;
+}
+#palette::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+#palette::-webkit-scrollbar-thumb {
+    background-color: #aaa;
+}
+#palette::-webkit-scrollbar-thumb:hover {
+    background-color: #888;
 }
 
 .palette-color {
