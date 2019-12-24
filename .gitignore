@@ -16,6 +16,8 @@ placemap.dat
 pxls.conf
 index_cache.html
 TODO
+*-canvas-*/
+__pycache__
 /.vs/Pxls/v15/.suo
 /.vs/ProjectSettings.json
 /.vs/slnx.sqlite

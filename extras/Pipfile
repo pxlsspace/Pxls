@@ -7,6 +7,8 @@ verify_ssl = true
 
 [packages]
 pillow = "==6.*"
+pyhocon = "*"
+psycopg2 = "*"
 
 [requires]
 python_version = "3.7"
