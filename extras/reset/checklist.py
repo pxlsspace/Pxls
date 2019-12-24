@@ -155,8 +155,8 @@ def create_steps(step):
 		if not is_yes(input('Update palette colors? [y/N]: ')):
 			return
 
-		from re import compile as re_compile
-		color_regex = re_compile(r'^#\d{6}$')
+		import re
+		color_regex = re.compile(r'^#[a-f0-9]{6}$', re.IGNORECASE)
 
 		from json import loads
 

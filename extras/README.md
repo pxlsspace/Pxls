@@ -11,7 +11,7 @@ Install the environment by running `pipenv install`
 
 ## convert/img2board.py
 
-`convert/img2board.py` converts input images `canvas.png` and `placemap.png` to `default_board.dat` and `placemap.dat`. The input images must have a 32-bit depth (RGBA).
+`convert/img2board.py` converts input images `canvas.png` and `placemap.png` to `default_board.dat` and `placemap.dat`.
 
 When using the script, colors will automatically be mapped to the palette, but using an input image with the same palette colors is more desirable.
 
@@ -23,6 +23,17 @@ When using the script, colors will automatically be mapped to the palette, but u
 The output `default_board.dat` and `placemap.dat` will appear in the directory. They should be moved to the storage directory as configured in `pxls.conf`.
 
 If the script is placed in any other directory than `Pxls/extras`, make sure to include a `pxls.conf` on the parent folder (e.g. if the script is in `a/folder/convert.py`, put `pxls.conf` on `a/pxls.conf`).
+
+
+## convert/board2img.py
+
+`convert/board2img.py` converts input data files `board.dat` to `board.png`.
+
+### Running
+
+1. Inside `convert/`, execute the script with `pipenv run python board2img.py /path/to/board.dat [mode]`, where `mode` is one of `board` (default), `placemap`, `heatmap`, `virginmap`
+
+The output `board.png` will appear in the directory.
 
 
 ## reset/reset.py
