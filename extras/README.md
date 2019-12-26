@@ -44,7 +44,9 @@ The output `board.png` will appear in the directory.
 - Backups canvas-related files and the database
 
 ### Running
-1. Make sure to have a `pxls.conf` accessible. If the `pxls.conf` is placed as much as two directories above the `reset/` directory, the script will find it automatically.
-2. Inside `reset/`, execute the script with `pipenv run python reset.py`
+
+1. Copy `checklist.template.py` into `checklist.py`, add or remove steps as desired
+2. Make sure to have a `pxls.conf` somewhere in your PC. If the `pxls.conf` is placed as much as two directories above the `reset/` directory, the script will find it automatically.
+3. Inside `reset/`, execute the script with `pipenv run python reset.py`
 	- add `-h` or `--help` to see a list of available arguments.
 	- add `--list` to see a list of all steps.

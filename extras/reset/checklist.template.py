@@ -1,7 +1,15 @@
+"""
+Working as of 24/12/19 (commit 6e17b5a8e1916a3751754327ac7c816d4c95ea3f)
+"""
+
+
+import re
+import subprocess
 from shutil import copy
 from pathlib import Path
 from os.path import basename
 from operator import itemgetter
+from json import loads as json_loads
 
 from reset import parse_database_url
 from hoconutil import replace_hocon_value
@@ -70,8 +78,6 @@ def create_steps(step):
 		mkdir_ifnotexists(storage_path)
 		outpath = storage_path / (db_name + '.sql')
 		with outpath.open('wb') as outfile:
-			import subprocess
-
 			args = ['pg_dump']
 			args.extend(('-h', db_url.hostname))
 			args.extend(('-p', str(db_url.port)))
@@ -155,16 +161,13 @@ def create_steps(step):
 		if not is_yes(input('Update palette colors? [y/N]: ')):
 			return
 
-		import re
 		color_regex = re.compile(r'^#[a-f0-9]{6}$', re.IGNORECASE)
-
-		from json import loads
 
 		palette = config.get('board.palette')
 		new_palette = None
 		while	new_palette is None:
 			try:
-				new_palette = loads(input('Paste Palette array: '))
+				new_palette = json_loads(input('Paste Palette array: '))
 
 				if type(new_palette) != list or any(type(v) != str or not color_regex.match(v) for v in new_palette):
 					new_palette = None

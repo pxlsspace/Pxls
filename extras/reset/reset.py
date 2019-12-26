@@ -1,8 +1,6 @@
 """
 reset.py - Run steps to reset the canvas
 Author: Martín "Netux" Rodriguez
-
-Working as of 24/12/19 (commit 6e17b5a8e1916a3751754327ac7c816d4c95ea3f)
 """
 
 import os
@@ -71,7 +69,11 @@ def get_step_idx_from_input(steps, foo):
 if __name__ == "__main__":
 	import argparse
 
-	from checklist import create_steps
+	try:
+		from checklist import create_steps
+	except ModuleNotFoundError:
+		print("Missing reset/checklist.py, copy reset/checklist.template.py into reset/checklist.py to continue.")
+		badbye()
 
 	args_parser = argparse.ArgumentParser()
 	args_parser.add_argument('--list', help="Show a list of all steps", action='store_const', const=True)
