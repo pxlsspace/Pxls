@@ -1221,6 +1221,7 @@ ul.chat-body li.chat-line {
     /*border:1px solid #000;*/
     line-height: 1.5rem;
     border-bottom: 1px solid #bfbfbf;
+    overflow: hidden;
 }
 
 ul.chat-body li.chat-line:nth-child(odd) {
