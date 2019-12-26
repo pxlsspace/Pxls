@@ -5307,11 +5307,15 @@ window.App = (function () {
                     var alertDelay = parseInt(ls.get("alert_delay"));
                     if (alertDelay < 0 && delta < Math.abs(alertDelay) && !self.hasFiredNotification) {
                         self.playAudio();
+                        let notif;
                         if (!uiHelper.windowHasFocus()) {
-                            nativeNotifications.maybeShow(`Your next pixel will be available in ${Math.abs(alertDelay)} seconds!`);
+                            notif = nativeNotifications.maybeShow(`Your next pixel will be available in ${Math.abs(alertDelay)} seconds!`);
                         }
                         setTimeout(() => {
                             uiHelper.setPlaceableText(1);
+                            if (notif) {
+                                $(window).one('pxls:ack:place', () => notif.close());
+                            }
                         }, delta * 1000);
                         self.hasFiredNotification = true;
                     }
@@ -5354,7 +5358,10 @@ window.App = (function () {
                         setTimeout(() => {
                             self.playAudio();
                             if (!uiHelper.windowHasFocus()) {
-                                nativeNotifications.maybeShow(`Your next pixel has been available for ${alertDelay} seconds!`);
+                                const notif = nativeNotifications.maybeShow(`Your next pixel has been available for ${alertDelay} seconds!`);
+                                if (notif) {
+                                    $(window).one('pxls:ack:place', () => notif.close());
+                                }
                             }
                             uiHelper.setPlaceableText(1);
                             self.hasFiredNotification = true;
@@ -5365,7 +5372,10 @@ window.App = (function () {
                     if (!self.hasFiredNotification) {
                         self.playAudio();
                         if (!uiHelper.windowHasFocus()) {
-                            nativeNotifications.maybeShow("Your next pixel is available!");
+                            const notif = nativeNotifications.maybeShow("Your next pixel is available!");
+                            if (notif) {
+                                $(window).one('pxls:ack:place', () => notif.close());
+                            }
                         }
                         uiHelper.setPlaceableText(1);
                         self.hasFiredNotification = true;
@@ -5804,6 +5814,7 @@ window.App = (function () {
                     if (templateOpts.use && templateOpts.title) {
                         title = `${templateOpts.title} - ${title}`
                     }
+
                     try {
                         const notif = new Notification(title, {
                             body,
@@ -5814,15 +5825,19 @@ window.App = (function () {
                             window.focus();
                             notif.close();
                         };
+
+                        return notif;
                     } catch (err) {
                         console.warn('Notifications not available');
                     }
+
+                    return null;
                 },
                 maybeShow: (body) => {
                     if (ls.get('nativenotifications.pixel-avail')
                         && uiHelper.tabHasFocus()
                         && Notification.permission === 'granted') {
-                        self.show(body);
+                        return self.show(body);
                     }
                 }
             };
