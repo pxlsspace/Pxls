@@ -5277,7 +5277,7 @@ window.App = (function () {
                 elements: {
                     palette: $("#palette"),
                     timer_overlay: $("#cd-timer-overlay"),
-                    timer: $("#cooldown-timer")
+                    timer_bubble: $("#cooldown-timer")
                 },
                 isOverlay: false,
                 hasFiredNotification: true,
@@ -5294,9 +5294,7 @@ window.App = (function () {
 
                     if (self.runningTimer === false) {
                         self.isOverlay = ls.get("auto_reset") === true;
-                        if (self.isOverlay) {
-                            self.elements.timer = self.elements.timer_overlay;
-                        }
+                        self.elements.timer = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble;
                         self.elements.timer_overlay.hide();
                     }
 
@@ -5373,6 +5371,9 @@ window.App = (function () {
                 },
                 init: function () {
                     self.title = document.title;
+                    self.elements.timer = ls.get("auto_reset") === true
+                        ? self.elements.timer_overlay
+                        : self.elements.timer_bubble;
                     self.elements.timer.hide();
 
                     setTimeout(function () {
