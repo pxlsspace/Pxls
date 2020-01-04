@@ -4224,13 +4224,22 @@ window.App = (function () {
                     let _cbPings = crel('input', {'type': 'checkbox'});
                     let lblPings = crel('label', {'style': 'display: block;'}, _cbPings, 'Enable pings');
 
-                    let _cbPingAudio = crel('input', {'type': 'checkbox'});
+                    let _cbPingAudio = crel('select', {},
+                        crel('option', {'value': 'off'}, 'Off'),
+                        crel('option', {'value': 'discrete'}, 'Only when necessary'),
+                        crel('option', {'value': 'always'}, 'Always')
+                    );
+                    let lblPingAudio = crel('div', {'style': 'display: block;'},
+                        'Play sound on ping',
+                        _cbPingAudio
+                    );
+
                     let _rgPingAudioVol = crel('input', {'type': 'range', min: 0, max: 100});
                     let _txtPingAudioVol = crel('span');
-                    let lblPingAudio = crel('label', {'style': 'display: block;'},
-                        _cbPingAudio,
-                        'Play sound on ping',
-                        crel('span', _rgPingAudioVol, _txtPingAudioVol)
+                    let lblPingAudioVol = crel('label', {'style': 'display: block;'},
+                        'Ping sound volume',
+                        _rgPingAudioVol,
+                        _txtPingAudioVol
                     );
 
                     let _cbBanner = crel('input', {'type': 'checkbox'});
@@ -4311,9 +4320,9 @@ window.App = (function () {
                         ls.set('chat.pings-enabled', this.checked === true);
                     });
 
-                    _cbPingAudio.checked = ls.get('chat.ping-audio-enabled') === true;
+                    _cbPingAudio.value = ls.get('chat.ping-audio-state') || 'off';
                     _cbPingAudio.addEventListener('change', function() {
-                        ls.set('chat.ping-audio-enabled', this.checked === true);
+                        ls.set('chat.ping-audio-state', this.value);
                     });
 
                     _rgPingAudioVol.value = ls.get('chat.ping-audio-volume') * 100;
@@ -4361,6 +4370,7 @@ window.App = (function () {
                         lblPixelPlaceBadges,
                         lblPings,
                         lblPingAudio,
+                        lblPingAudioVol,
                         lblBanner,
                         lblTemplateTitles,
                         lblFontSize,
@@ -4523,9 +4533,11 @@ window.App = (function () {
                             self.elements.pings_button.addClass('has-notification');
                         }
 
+                        const pingAudioState = ls.get('chat.ping-audio-state');
                         const canPlayPingAudio = !isHistory && !ls.get("audio_muted")
-                            && ls.get('chat.ping-audio-enabled') && Date.now() - self.lastPingAudioTimestamp > 5000;
-                        if ((!panels.isOpen('chat') || !uiHelper.windowHasFocus()) && uiHelper.tabHasFocus() && canPlayPingAudio) {
+                            && pingAudioState !== 'off' && Date.now() - self.lastPingAudioTimestamp > 5000;
+                        if ((!panels.isOpen('chat') || !uiHelper.windowHasFocus() || pingAudioState === 'always')
+                            && uiHelper.tabHasFocus() && canPlayPingAudio) {
                             self.pingAudio.volume = parseFloat(ls.get('chat.ping-audio-volume'));
                             self.pingAudio.play();
                             self.lastPingAudioTimestamp = Date.now();
