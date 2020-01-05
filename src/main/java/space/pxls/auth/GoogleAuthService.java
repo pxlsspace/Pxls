@@ -4,13 +4,18 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.typesafe.config.Config;
 import org.json.JSONObject;
 import space.pxls.App;
+
+import java.util.List;
 
 public class GoogleAuthService extends AuthService {
     public GoogleAuthService(String id) {
         super(id);
     }
+
+    Config config = App.getConfig();
 
     @Override
     public String getRedirectUrl(String state) {
@@ -54,7 +59,20 @@ public class GoogleAuthService extends AuthService {
         if (json.has("error")) {
             return null;
         } else {
-            return json.getString("id");
+            if (!config.getBoolean("oauth.google.restrictions.enable")) {
+                return json.getString("id");
+            }
+            if (!json.has("hd")) {
+                return null;
+            }
+            String domain = json.getString("hd");
+            boolean whitelist = config.getBoolean("oauth.google.restrictions.whitelist");
+            List<String> domains = config.getStringList("oauth.google.restrictions.domains");
+            if (domains.contains(domain) && whitelist) {
+                return json.getString("id");
+            } else {
+                return null;
+            }
         }
     }
 
