@@ -888,7 +888,7 @@ window.App = (function () {
                                 break;
                             // Following stuff could be broken af for many non-English layouts
                             case "KeyE":        // E
-                            case "Equal":       // = 
+                            case "Equal":       // =
                             case "NumpadAdd":   // numpad +
                             case 69:            // E
                             case 107:           // numpad +
@@ -2143,6 +2143,7 @@ window.App = (function () {
                     undo: $("#undo")
                 },
                 undoTimeout: false,
+                lastPointerType: 'mouse',
                 palette: [],
                 reticule: {
                     x: 0,
@@ -2171,7 +2172,7 @@ window.App = (function () {
                         self.elements.reticule.hide();
                         return;
                     }
-                    if (self.scale <= 15) {
+                    if (self.scale <= 15 && self.lastCursorType === 'mouse') {
                         self.elements.cursor.show();
                     }
                     self.elements.cursor.css("background-color", self.palette[newColor]);
@@ -2220,15 +2221,18 @@ window.App = (function () {
                         self.elements.cursor.hide();
                         return;
                     }
-                    var screenPos = board.toScreen(self.reticule.x, self.reticule.y),
-                        scale = board.getScale();
-                    self.elements.reticule.css({
-                        left: screenPos.x - 1,
-                        top: screenPos.y - 1,
-                        width: scale - 1,
-                        height: scale - 1
-                    }).show();
-                    self.elements.cursor.show();
+                    if (self.lastCursorType === 'mouse') {
+                        const screenPos = board.toScreen(self.reticule.x, self.reticule.y);
+                        const scale = board.getScale();
+                        self.elements.reticule.css({
+                            left: screenPos.x - 1,
+                            top: screenPos.y - 1,
+                            width: scale - 1,
+                            height: scale - 1
+                        });
+                        self.elements.reticule.show();
+                        self.elements.cursor.show();
+                    }
                 },
                 setNumberedPaletteEnabled: function(shouldBeNumbered) {
                     self.elements.palette[0].classList.toggle('no-pills', !shouldBeNumbered);
@@ -2292,10 +2296,20 @@ window.App = (function () {
                             y = evt.clientY;
                         }
 
-                        self.elements.cursor.css("transform", "translate(" + x + "px, " + y + "px)");
+                        if (self.lastPointerType === 'mouse') {
+                            self.elements.cursor.css("transform", "translate(" + x + "px, " + y + "px)");
+                        }
                         if (self.can_undo) {
                             return;
                         }
+                    }).on('touchstart', () => {
+                        self.lastPointerType = 'touch';
+                        self.elements.reticule.hide();
+                        self.elements.cursor.hide();
+                    }).on('mousedown', () => {
+                        self.lastPointerType = 'mouse';
+                      self.elements.reticule.show();
+                      self.elements.cursor.show();
                     }).keydown(function (evt) {
                         if (["INPUT", "TEXTAREA"].includes(evt.target.nodeName)) {
                             // prevent inputs from triggering shortcuts
