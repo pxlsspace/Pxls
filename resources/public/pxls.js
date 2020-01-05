@@ -2143,7 +2143,6 @@ window.App = (function () {
                     undo: $("#undo")
                 },
                 undoTimeout: false,
-                lastPointerType: 'mouse',
                 palette: [],
                 reticule: {
                     x: 0,
@@ -2168,12 +2167,12 @@ window.App = (function () {
 
                     $("body").toggleClass("show-placeable-bubble", newColor === -1);
                     if (newColor === -1) {
-                        self.elements.cursor.hide();
-                        self.elements.reticule.hide();
+                        self.toggleCursor(false);
+                        self.toggleReticule(false);
                         return;
                     }
-                    if (self.scale <= 15 && self.lastCursorType === 'mouse') {
-                        self.elements.cursor.show();
+                    if (self.scale <= 15) {
+                        self.toggleCursor(true);
                     }
                     self.elements.cursor.css("background-color", self.palette[newColor]);
                     self.elements.reticule.css("background-color", self.palette[newColor]);
@@ -2217,11 +2216,11 @@ window.App = (function () {
                         };
                     }
                     if (self.color === -1) {
-                        self.elements.reticule.hide();
-                        self.elements.cursor.hide();
+                        self.toggleReticule(false);
+                        self.toggleCursor(false);
                         return;
                     }
-                    if (self.lastCursorType === 'mouse') {
+                    if (ls.get('ui.show-reticule')) {
                         const screenPos = board.toScreen(self.reticule.x, self.reticule.y);
                         const scale = board.getScale();
                         self.elements.reticule.css({
@@ -2230,12 +2229,28 @@ window.App = (function () {
                             width: scale - 1,
                             height: scale - 1
                         });
-                        self.elements.reticule.show();
-                        self.elements.cursor.show();
+                        self.toggleReticule(true);
+                    }
+                    if (ls.get('ui.show-cursor')) {
+                        self.toggleCursor(true);
                     }
                 },
                 setNumberedPaletteEnabled: function(shouldBeNumbered) {
                     self.elements.palette[0].classList.toggle('no-pills', !shouldBeNumbered);
+                },
+                toggleReticule: (show) => {
+                    if (show && ls.get('ui.show-reticule')) {
+                        self.elements.reticule.show();
+                    } else if (!show) {
+                        self.elements.reticule.hide();
+                    }
+                },
+                toggleCursor: (show) => {
+                    if (show && ls.get('ui.show-cursor')) {
+                        self.elements.cursor.show();
+                    } else if (!show) {
+                        self.elements.cursor.hide();
+                    }
                 },
                 setPalette: function (palette) {
                     self.palette = palette;
@@ -2278,8 +2293,8 @@ window.App = (function () {
                     self.elements.undo.removeClass("open");
                 },
                 init: function () {
-                    self.elements.reticule.hide();
-                    self.elements.cursor.hide();
+                    self.toggleReticule(false);
+                    self.toggleCursor(false);
                     document.body.classList.remove("undo-visible");
                     self.elements.undo.removeClass("open");
                     board.getRenderBoard().on("pointermove mousemove", function (evt) {
@@ -2296,20 +2311,12 @@ window.App = (function () {
                             y = evt.clientY;
                         }
 
-                        if (self.lastPointerType === 'mouse') {
+                        if (ls.get('ui.show-cursor') !== false) {
                             self.elements.cursor.css("transform", "translate(" + x + "px, " + y + "px)");
                         }
                         if (self.can_undo) {
                             return;
                         }
-                    }).on('touchstart', () => {
-                        self.lastPointerType = 'touch';
-                        self.elements.reticule.hide();
-                        self.elements.cursor.hide();
-                    }).on('mousedown', () => {
-                        self.lastPointerType = 'mouse';
-                      self.elements.reticule.show();
-                      self.elements.cursor.show();
                     }).keydown(function (evt) {
                         if (["INPUT", "TEXTAREA"].includes(evt.target.nodeName)) {
                             // prevent inputs from triggering shortcuts
@@ -2424,7 +2431,9 @@ window.App = (function () {
                 setNumberedPaletteEnabled: self.setNumberedPaletteEnabled,
                 get color() {
                     return self.color;
-                }
+                },
+                toggleReticule: self.toggleReticule,
+                toggleCursor: self.toggleCursor
             };
         })(),
         // this is the user lookup helper
@@ -3021,6 +3030,33 @@ window.App = (function () {
                         .click((e) => {
                             ls.set('ui.bubble-position', e.target.value);
                             self.elements.mainBubble.attr('position', e.target.value);
+                        });
+
+                    console.log(window.innerWidth < 768, navigator.userAgent.includes('Mobile'));
+                    const possiblyMobile = window.innerWidth < 768 && navigator.userAgent.includes('Mobile');
+
+                    let initialShowReticule = ls.get('ui.show-reticule');
+                    if (initialShowReticule === null) {
+                        initialShowReticule = !possiblyMobile;
+                        ls.set('ui.show-reticule', initialShowReticule);
+                    }
+                    $("#showReticuleToggle")
+                        .prop("checked", initialShowReticule)
+                        .change(function() {
+                            ls.set("ui.show-reticule", this.checked === true);
+                            place.toggleReticule(this.checked);
+                        });
+
+                    let initialShowCursor = ls.get('ui.show-cursor');
+                    if (initialShowCursor === null) {
+                        initialShowCursor = !possiblyMobile;
+                        ls.set('ui.show-cursor', initialShowCursor);
+                    }
+                    $("#showCursorToggle")
+                        .prop("checked", initialShowCursor)
+                        .change(function() {
+                            ls.set("ui.show-cursor", this.checked === true);
+                            place.toggleCursor(this.checked);
                         });
 
                     $(window).keydown((evt) => {
