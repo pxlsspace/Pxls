@@ -634,7 +634,7 @@ window.App = (function () {
                         $.get(window.location.pathname + "?_" + (new Date()).getTime(), function () {
                             window.location.reload();
                         }).fail(function () {
-                            console.log("Server still down...");
+                            console.info("Server still down...");
                             self.reconnect();
                         });
                     }, 3000);
@@ -3080,7 +3080,7 @@ window.App = (function () {
                         let theme = parseInt(this.value);
                         // If theme is -1, the user selected the default theme, so we should remove all other themes
                         if (theme === -1) {
-                            console.log('Default theme - should reset!')
+                            console.info('Default theme - should reset!')
                             // Default theme
                             $('*[data-theme]').remove();
                             ls.set('currentTheme', -1);
@@ -3627,7 +3627,6 @@ window.App = (function () {
                             }
                         }, 100);
                     });
-                    socket.on('message_delete', e => console.log('[message_delete] %o', e));
                     const handleChatban = e => {
                         clearInterval(self.timeout.timer);
                         self.chatban.banStart = moment.now();
@@ -3696,7 +3695,7 @@ window.App = (function () {
                                     break;
                                 }
                             }
-                        } else console.log(lines, 'was not an array-like, or was empty.');
+                        } else console.warn(lines, 'was not an array-like, or was empty.');
                         if (e.amount >= 2147483647) {
                             self.addServerAction(`${e.initiator} purged all messages from ${e.target}.`);
                         } else {
@@ -3900,6 +3899,10 @@ window.App = (function () {
                                 self.showHint(matches.join('\n'));
                             }
                         }
+                    }).on('focus', e => {
+                        if (self.stickToBottom) {
+                            setTimeout(self.scrollToBottom, 300);
+                        }
                     });
 
                     $(window).on("pxls:chat:userIgnored", (e, who) => {
@@ -3992,9 +3995,7 @@ window.App = (function () {
                         pingsList.scrollTop = pingsList.scrollHeight;
                     });
 
-                    self.elements.jump_button[0].addEventListener('click', function() {
-                        self.elements.body[0].scrollTop = self.elements.body[0].scrollHeight;
-                    });
+                    self.elements.jump_button[0].addEventListener('click', self.scrollToBottom);
 
                     if (ls.get("chat.font-size") == null) {
                         ls.set("chat.font-size", 16);
@@ -4007,9 +4008,10 @@ window.App = (function () {
                     notifBody.style.fontSize = `${ls.get("chat.font-size") >> 0 || 16}px`;
 
                     self.elements.body.on("scroll", e => {
-                        let obj = self.elements.body[0];
-                        self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
-                        if (self.stickToBottom && self.elements.chat_panel[0].classList.contains('open')) self.clearPings();
+                        self.updateStickToBottom();
+                        if (self.stickToBottom && self.elements.chat_panel[0].classList.contains('open')) {
+                            self.clearPings();
+                        }
                         self.elements.jump_button[0].style.display = self.stickToBottom ? 'none' : 'block';
                     });
 
@@ -4385,6 +4387,10 @@ window.App = (function () {
                         self.scrollToNonce(this.dataset.nonce);
                     }
                 },
+                updateStickToBottom() {
+                    const obj = self.elements.body[0];
+                    self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
+                },
                 scrollToNonce(nonce) {
                     let elem = self.elements.body[0].querySelector(`.chat-line[data-nonce="${nonce}"]`);
                     if (elem) {
@@ -4396,6 +4402,10 @@ window.App = (function () {
                         elem.addEventListener('animationend', ripAnim);
                         elem.classList.add('-scrolled-to');
                     }
+                },
+                scrollToBottom() {
+                    self.elements.body[0].scrollTop = self.elements.body[0].scrollHeight;
+                    self.stickToBottom = true;
                 },
                 setCharLimit(num) {
                     self.elements.input.prop("maxlength", num);
@@ -4542,7 +4552,6 @@ window.App = (function () {
                             self.pingAudio.play();
                             self.lastPingAudioTimestamp = Date.now();
                         }
-
                     }
                 },
                 processMessage: (elem, elemClass, str) => {
