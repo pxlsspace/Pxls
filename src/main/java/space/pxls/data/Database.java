@@ -175,7 +175,8 @@ public class Database {
                     "id SERIAL NOT NULL PRIMARY KEY," +
                     "\"user\" INT NOT NULL," +
                     "ip INET NOT NULL," +
-                    "last_used TIMESTAMP NOT NULL DEFAULT NOW())")
+                    "last_used TIMESTAMP NOT NULL DEFAULT NOW());" +
+                    "CREATE UNIQUE INDEX IF NOT EXISTS \"ip_log_user_ip_pair\" ON \"ip_log\" (\"user\", \"ip\")")
                     .execute();
             // notifications
             handle.createUpdate("CREATE TABLE IF NOT EXISTS notifications (" +
@@ -1366,11 +1367,10 @@ public class Database {
      * Inserts the IP log pair. If the pair exists, <pre>last_used</pre> will be updated instead.
      * @param id The ID of the {@link User}.
      * @param ip The IP.
-     * @return The inserted row ID.
      */
-    public Integer insertOrUpdateIPLog(int id, String ip) {
-        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO ip_log (\"user\", ip, last_used) VALUES (:user, :ip::INET, NULL) ON CONFLICT UPDATE ip_log SET last_used = NOW() WHERE \"user\" = :user AND ip = :ip::INET")
-                .bind("user", id)
+    public void insertOrUpdateIPLog(int id, String ip) {
+        jdbi.useHandle(handle -> handle.createUpdate("INSERT INTO ip_log (\"user\", \"ip\") VALUES (:id, :ip::INET) ON CONFLICT (\"user\", \"ip\") DO UPDATE SET \"last_used\" = NOW() WHERE \"ip_log\".\"user\" = :id AND \"ip_log\".\"ip\" = :ip::INET")
+                .bind("id", id)
                 .bind("ip", ip)
                 .execute());
     }
