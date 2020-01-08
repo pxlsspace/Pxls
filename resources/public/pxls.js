@@ -454,7 +454,9 @@ window.App = (function () {
                 update: function () {
                     var s = self.getStr();
                     if (window.history.replaceState) {
-                        window.history.replaceState(null, null, '#' + s);
+                        let _hash = s && s.length ? `#${s}` : ``;
+                        let _search = document.location.search && document.location.search.length ? `?${document.location.search}` : ``;
+                        window.history.replaceState(null, null, `${document.location.origin}${document.location.pathname}${_search}${_hash}`); // use replaceState to completely remove the hash if we don't need it. otherwise, update the URL accordingly.
                     } else {
                         window.location.hash = s;
                     }
@@ -888,7 +890,7 @@ window.App = (function () {
                                 break;
                             // Following stuff could be broken af for many non-English layouts
                             case "KeyE":        // E
-                            case "Equal":       // = 
+                            case "Equal":       // =
                             case "NumpadAdd":   // numpad +
                             case 69:            // E
                             case 107:           // numpad +
@@ -1051,8 +1053,11 @@ window.App = (function () {
                             case "x":
                             case "y":
                                 board.centerOn(query.get("x") >> 0, query.get("y") >> 0);
+                                query.remove("x", true);
+                                query.remove("y", true);
                                 break;
                             case "scale":
+                                query.remove("scale", true);
                                 board.setScale(newValue >> 0);
                                 break;
 
@@ -1122,9 +1127,36 @@ window.App = (function () {
                             height: self.height
                         });
 
-                        var cx = query.get("x") || self.width / 2,
-                            cy = query.get("y") || self.height / 2;
-                        self.scale = query.get("scale") || self.scale;
+                        let cx, cy, scale;
+                        if (query.has("x")) {
+                            cx = query.get("x");
+                        } else if (ls.get("pan.x") != null) {
+                            cx = ls.get("pan.x");
+                        } else {
+                            cx = self.width / 2;
+                        }
+
+                        if (query.has("y")) {
+                            cy = query.get("y");
+                        } else if (ls.get("pan.y") != null) {
+                            cy = ls.get("pan.y");
+                        } else {
+                            cy = self.height / 2;
+                        }
+
+                        if (query.has("scale")) {
+                            scale = query.get("scale");
+                        } else if (ls.get("board.scale") != null) {
+                            scale = ls.get("board.scale");
+                        }
+
+                        self.scale = scale || self.scale;
+                        ls.set('pan.x', cx);
+                        ls.set('pan.y', cy);
+                        ls.set('board.scale', self.scale);
+                        query.remove('x', true);
+                        query.remove('y', true);
+                        query.remove('scale', true);
                         self.centerOn(cx, cy);
                         socket.init();
                         binary_ajax("/boarddata" + "?_" + (new Date()).getTime(), self.draw, socket.reconnect);
@@ -1149,6 +1181,16 @@ window.App = (function () {
                                 width: parseFloat(query.get("tw")),
                                 title: query.get('title'),
                                 url: url
+                            });
+                        } else if (ls.get('template.url') != null && ls.get('template.use') === true) {
+                            template.queueUpdate({
+                                use: true,
+                                x: parseFloat(ls.get('template.x')),
+                                y: parseFloat(ls.get('template.y')),
+                                opacity: parseFloat(ls.get('template.opacity')),
+                                width: parseFloat(ls.get('template.width')),
+                                title: ls.get('template.title'),
+                                url: ls.get('template.url'),
                             });
                         }
                         var spin = parseFloat(query.get("spin"));
@@ -1180,11 +1222,10 @@ window.App = (function () {
                 update: function (optional) {
                     self.pan.x = Math.min(self.width / 2, Math.max(-self.width / 2, self.pan.x));
                     self.pan.y = Math.min(self.height / 2, Math.max(-self.height / 2, self.pan.y));
-                    query.set({
-                        x: Math.round((self.width / 2) - self.pan.x),
-                        y: Math.round((self.height / 2) - self.pan.y),
-                        scale: Math.round(self.scale * 100) / 100
-                    }, true);
+                    ls.set('pan.x', Math.round((self.width / 2) - self.pan.x));
+                    ls.set('pan.y', Math.round((self.height / 2) - self.pan.y));
+                    ls.set('board.scale', Math.round(self.scale * 100) / 100);
+                    coords.updateCoords();
                     if (self.use_js_render) {
                         var ctx2 = self.elements.board_render[0].getContext("2d"),
                             pxl_x = -self.pan.x + ((self.width - (window.innerWidth / self.scale)) / 2),
@@ -1440,7 +1481,15 @@ window.App = (function () {
                 refresh: self.refresh,
                 updateViewport: self.updateViewport,
                 allowDrag: self.allowDrag,
-                validateCoordinates: self.validateCoordinates
+                validateCoordinates: self.validateCoordinates,
+                getUrl: (includeTemplate = true) => {
+                    let toRet = `${document.location.origin}${document.location.pathname}#x=${ls.get('pan.x') || 0}&y=${ls.get('pan.y') || 0}&scale=${ls.get('board.scale')}`;
+                    if (includeTemplate) {
+                        let topt = template.getOptions();
+                        toRet += `&template=${topt.url}&ox=${topt.x}&oy=${topt.y}&oo=${topt.opacity}&tw=${topt.width}`;
+                    }
+                    return toRet;
+                }
             };
         })(),
         // heatmap init stuff
@@ -1937,6 +1986,19 @@ window.App = (function () {
                         return;
                     }
 
+                    if (options.width != null && typeof options.width !== 'number') {
+                        options.width = isNaN(options.width) ? 0 : parseFloat(options.width);
+                    }
+                    if (options.opacity != null && typeof options.opacity !== 'number') {
+                        options.opacity = isNaN(options.opacity) ? 0 : parseFloat(options.opacity);
+                    }
+                    if (options.x != null && typeof options.x !== 'number') {
+                        options.x = isNaN(options.x) ? 0 : parseFloat(options.x);
+                    }
+                    if (options.y != null && typeof options.y !== 'number') {
+                        options.y = isNaN(options.y) ? 0 : parseFloat(options.y);
+                    }
+
                     let urlUpdated = (options.url !== self.options.url && decodeURIComponent(options.url) !== self.options.url && options.url != null && self.options.url != null);
                     if (options.url != null && options.url.length > 0) {
                         options.url = decodeURIComponent(options.url);
@@ -1944,6 +2006,13 @@ window.App = (function () {
                     if (options.title != null && options.title.length > 0) {
                         options.title = decodeURIComponent(options.title);
                     }
+
+                    if (options.url != null) ls.set('template.url', options.url);
+                    if (options.x != null) ls.set('template.x', options.x);
+                    if (options.y != null) ls.set('template.y', options.y);
+                    if (options.width != null) ls.set('template.width', options.width);
+                    if (options.opacity != null) ls.set('template.opacity', options.opacity);
+                    if (options.title != null) ls.set('template.title', options.title);
 
                     //fix for `width` and other props being set after disabling template with the 'v' key then enabling a template without said prop set in the URL.
                     if (urlUpdated && !self.options.use) {
@@ -1965,6 +2034,7 @@ window.App = (function () {
 
                     if (options.url.length === 0 || options.use === false) {
                         self.options.use = false;
+                        ls.set('template.use', false);
                         if (self.elements.template) {
                             self.elements.template.remove();
                             self.elements.template = null;
@@ -1973,6 +2043,7 @@ window.App = (function () {
                         ["template", "ox", "oy", "oo", "tw", "title"].forEach(x => query.remove(x, true));
                     } else {
                         self.options.use = true;
+                        ls.set('template.use', true);
                         if (urlUpdated === true && self.elements.template != null) {
                             self.elements.template.remove(); //necessary so everything gets redrawn properly 'n whatnot. could probably just update the url directly...
                             self.elements.template = null;
@@ -1985,7 +2056,7 @@ window.App = (function () {
                         self.elements.template.css("width", options.width > 0 ? options.width : "auto");
 
                         [["url", "template"], ["x", "ox"], ["y", "oy"], ["width", "tw"], ["opacity", "oo"], ["title", "title"]].forEach(x => {
-                            query.set(x[1], self.options[x[0]], true);
+                            query.remove(x[1], true);
                         });
                     }
                     if (updateDrawer) {
@@ -4589,7 +4660,18 @@ window.App = (function () {
 
                                 //check for any special URL needs and store the proper anchor `target`
                                 if ((document.location.origin && url.origin) && document.location.origin === url.origin) { //URL is for this origin, run some checks for game features
-                                    if (params.x != null && params.y != null) { //url has x/y so it's probably in the game window
+                                    if ((params.template != null && params.tw != null) || (params.x != null && params.y != null)) { //url has x/y or a template so it's probably in the game window
+                                        if (parseFloat(params.tw) > 0) {
+                                            if (!params.x) {
+                                                params.x = parseFloat(params.ox) + (parseFloat(params.tw) / 2 >> 0);
+                                            }
+                                            if (!params.y) {
+                                                params.y = parseFloat(params.oy) + (parseFloat(params.tw) / 2 >> 0);
+                                            }
+                                        } else {
+                                            if (!params.x) params.x = params.ox;
+                                            if (!params.y) params.y = params.oy;
+                                        }
                                         if (board.validateCoordinates(params.x, params.y)) {
                                             jumpTarget = Object.assign({displayText: `(${params.x}, ${params.y}${params.scale != null ? `, ${params.scale}x` : ''})`, raw: url.toString()}, params);
                                             if (params.template != null && params.template.length >= 11) { //we have a template, should probably make that known
@@ -4658,12 +4740,30 @@ window.App = (function () {
                     switch(action) {
                         case false: break;
                         case self.TEMPLATE_ACTIONS.CURRENT_TAB.id: {
-                            self._pushStateMaybe(); //ensure people can back button if available
-                            document.location.href = linkElem.dataset.raw; //overwrite href since that will trigger hash-based update of template. no need to re-write that logic
+                            let jumpX = isNaN(linkElem.dataset.x) ? null : parseFloat(linkElem.dataset.x),
+                                jumpY = isNaN(linkElem.dataset.y) ? null : parseFloat(linkElem.dataset.y);
+                            board.centerOn(jumpX, jumpY);
+
+                            if (!isNaN(linkElem.dataset.scale)) {
+                                board.setScale(parseFloat(linkElem.dataset.scale));
+                            }
+
+                            if (linkElem.dataset.template) {
+                                let _oo = isNaN(linkElem.dataset.oo) ? 0.5 : parseFloat(linkElem.dataset.oo);
+                                let _tw = isNaN(linkElem.dataset.two) ? -1 : parseFloat(linkElem.dataset.tw);
+                                template.queueUpdate(Object.assign({}, template.getOptions(), { // we can't pass this directly to template.normalizeObj() because normalize will see `.x`/`.y` and manipulate them. we need to pass only template options.
+                                    x: parseFloat(linkElem.dataset.ox) || 0,
+                                    y: parseFloat(linkElem.dataset.oy) || 0,
+                                    width: _tw,
+                                    opacity: _oo,
+                                    url: linkElem.dataset.template,
+                                    title: linkElem.dataset.title,
+                                    use: true,
+                                }));
+                            }
                             break;
                         }
                         case self.TEMPLATE_ACTIONS.JUMP_ONLY.id: {
-                            self._pushStateMaybe(); //ensure people can back button if available
                             self.jump(parseFloat(linkElem.dataset.x), parseFloat(linkElem.dataset.y), parseFloat(linkElem.dataset.scale));
                             break;
                         }
@@ -5415,8 +5515,9 @@ window.App = (function () {
             var self = {
                 elements: {
                     coordsWrapper: $("#coords-info"),
-                    coords: $("#coords-info .coords"),
-                    lockIcon: $("#coords-info .icon-lock")
+                    coords: $("#txtCoords"),
+                    btnShare: $("#btnShareCoords"),
+                    lockIcon: $("#coords-info .icon-lock"),
                 },
                 mouseCoords: null,
                 init: function () {
@@ -5426,15 +5527,94 @@ window.App = (function () {
                     _board.addEventListener("mousemove", pointerHandler, { passive: false });
                     _board.addEventListener("touchstart", touchHandler, { passive: false });
                     _board.addEventListener("touchmove", touchHandler, { passive: false });
-                    // board.getRenderBoard().on("pointermove mousemove", function (evt) {
-                    // }).on("touchstart touchmove", function (evt) {
-                    // });
+
+                    self.elements.coords.click(() => {
+                        const txtX = crel('input', {'style': 'width: 3em; border: 1px solid #aaa;', 'type': 'number', 'min': '0', 'max': board.getWidth(), 'value': ls.get('pan.x') || '0', 'required': 'true'});
+                        const txtY = crel('input', {'style': 'width: 3em; border: 1px solid #aaa;', 'type': 'number', 'min': '0', 'max': board.getHeight(), 'value': ls.get('pan.y') || '0', 'required': 'true'});
+                        const txtScale = crel('input', {'style': 'width: 3em; border: 1px solid #aaa;', 'type': 'number', 'min': '0.5', 'step': '0.5', 'value': ls.get('board.scale') || '1', 'required': 'true'});
+
+                        const btnCancel = crel('button', {'type': 'button', 'class': 'button'}, 'Cancel');
+                        const btnGo = crel('button', {'type': 'submit', 'class': 'button'}, 'Jump');
+
+                        const form = crel('form', {'method': 'GET', 'action': '/'},
+                            crel('div', {'style': 'margin: 3px 0; padding: 1px;'},
+                                'Coordinates: ', txtX, ', ', txtY, ', ', txtScale, 'x'
+                            ),
+                            crel('div', {'style': 'margin-top: 1em; text-align: right; padding: 2px;'},
+                                btnCancel,
+                                btnGo
+                            )
+                        );
+                        const body = crel('div',
+                            crel('h3', {'style': 'border-bottom: 1px solid #888; padding-bottom: 3px;'}, 'Jump to Coordinates'),
+                            form
+                        );
+
+                        btnCancel.addEventListener('click', function(e) {
+                            alert.hide();
+                        });
+
+                        form.addEventListener('submit', function(e) {
+                            e.preventDefault();
+
+                            let jumpX = !isNaN(txtX.value) ? parseFloat(txtX.value) : null,
+                                jumpY = !isNaN(txtY.value) ? parseFloat(txtY.value) : null,
+                                jumpScale = !isNaN(txtScale.value) ? parseFloat(txtScale.value) : null;
+
+                            if (jumpX != null || jumpY != null) {
+                                board.centerOn(jumpX, jumpY);
+                            }
+                            if (jumpScale) {
+                                board.setScale(jumpScale);
+                            }
+
+                            alert.hide();
+                        });
+
+                        alert.show(body, true);
+                    });
+
+                    self.elements.btnShare.click(() => {
+                        const cbTemplate = crel('input', {'type': 'checkbox', 'checked': 'true'});
+                        const txtUrl = crel('textarea', {'style': 'width: 100%; height: 4em; padding: 1px; border-radius: 3px;', 'readonly': 'true'}, board.getUrl());
+                        const btnClose = crel('button', {'class': 'button'}, 'Close');
+                        const btnUpdate = crel('button', {'class': 'button'}, 'Refresh');
+                        const body = crel('div',
+                            crel('h3', {'style': 'border-bottom: 1px solid #888; padding-bottom: 3px;'}, 'Pxls Link'),
+                            crel('label', {'style': 'display: block;'},
+                                txtUrl
+                            ),
+                            crel('div', {'style': 'display: block; text-align: right; padding-right: .5em;'},
+                                crel('label',
+                                    cbTemplate,
+                                    ' Include Template'
+                                )
+                            ),
+                            crel('div', {'style': 'display: block; text-align: right;'},
+                                btnClose,
+                                btnUpdate
+                            )
+                        );
+
+                        btnClose.addEventListener('click', function() {
+                            alert.hide();
+                        });
+
+                        btnUpdate.addEventListener('click', function() {
+                            txtUrl.value = board.getUrl(cbTemplate.checked);
+                        });
+
+                        cbTemplate.addEventListener('change', function() {
+                            txtUrl.value = board.getUrl(this.checked);
+                        });
+                        alert.show(body, true);
+                    });
 
                     function pointerHandler(evt) {
                         var boardPos = board.fromScreen(evt.clientX, evt.clientY);
 
                         self.mouseCoords = boardPos;
-                        self.elements.coords.text("(" + (boardPos.x) + ", " + (boardPos.y) + ")");
+                        self.updateCoords();
                         if (!self.elements.coordsWrapper.is(":visible")) self.elements.coordsWrapper.fadeIn(200);
                     }
 
@@ -5442,7 +5622,7 @@ window.App = (function () {
                         var boardPos = board.fromScreen(evt.changedTouches[0].clientX, evt.changedTouches[0].clientY);
 
                         self.mouseCoords = boardPos;
-                        self.elements.coords.text("(" + (boardPos.x) + ", " + (boardPos.y) + ")");
+                        self.updateCoords();
                         if (!self.elements.coordsWrapper.is(":visible")) self.elements.coordsWrapper.fadeIn(200);
                     }
 
@@ -5457,13 +5637,13 @@ window.App = (function () {
                         }
                     });
                 },
-                copyCoords: function (useHash = false) {
+                copyCoords: function (useViewport = false) {
                     if (!navigator.clipboard || !self.mouseCoords) {
                         return;
                     }
-                    let x = useHash ? query.get('x') : self.mouseCoords.x;
-                    let y = useHash ? query.get('y') : self.mouseCoords.y;
-                    let scale = useHash ? query.get('scale') : 20;
+                    let x = useViewport ? ls.get('pan.x') : self.mouseCoords.x;
+                    let y = useViewport ? ls.get('pan.y') : self.mouseCoords.y;
+                    let scale = useViewport ? ls.get('board.scale') : 20;
                     navigator.clipboard.writeText(self.getLinkToCoords(x, y, scale));
                     self.elements.coordsWrapper.addClass("copyPulse");
                     setTimeout(() => {
@@ -5484,13 +5664,18 @@ window.App = (function () {
                     query.has("oy") ? append += "&oy=" + query.get("oy") : 0;
                     query.has("title") ? append += "&title=" + query.get("title") : "";
                     return `${location.origin}/#x=${Math.floor(x)}&y=${Math.floor(y)}&scale=${scale}${append}`;
-                }
+                },
+                updateCoords() {
+                    if (!self.mouseCoords) return;
+                    self.elements.coords.text(`(${self.mouseCoords.x}, ${self.mouseCoords.y}, ${board.getScale()}x)`);
+                },
             };
             return {
                 init: self.init,
                 copyCoords: self.copyCoords,
                 getLinkToCoords: self.getLinkToCoords,
                 lockIcon: self.elements.lockIcon,
+                updateCoords: self.updateCoords,
             };
         })(),
         // this holds user stuff / info
@@ -6010,6 +6195,12 @@ window.App = (function () {
         ls: ls,
         ss: ss,
         query: query,
+        board: {
+            getScale: heatmap.getScale,
+            getWidth: heatmap.getWidth,
+            getHeight: heatmap.getHeight,
+            getUrl: heatmap.getUrl,
+        },
         heatmap: {
             clear: heatmap.clear
         },
