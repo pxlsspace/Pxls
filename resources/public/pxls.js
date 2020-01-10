@@ -5114,8 +5114,15 @@ window.App = (function () {
                             break;
                         }
                         case 'delete': {
+                            let _txtReason = crel('input', {
+                                'type': 'text',
+                                'name': 'txtReason',
+                                'style': 'display: inline-block; width: 100%; font-family: sans-serif; font-size: 1rem;'
+                            });
+
                             const doDelete = () => $.post('/admin/delete', {
-                                nonce: this.dataset.nonce
+                                nonce: this.dataset.nonce,
+                                reason: _txtReason.value
                             }, () => {
                                 deleteWrapper.remove();
                                 alert.hide();
@@ -5130,7 +5137,6 @@ window.App = (function () {
                             btnDelete.onclick = () => doDelete();
                             let deleteWrapper = crel('div', {'class': 'chatmod-container'},
                                 crel('h3', 'Delete Message'),
-                                crel('h5', 'Message:'),
                                 crel('table',
                                     crel('tr',
                                         crel('th', 'Nonce: '),
@@ -5143,6 +5149,10 @@ window.App = (function () {
                                     crel('tr',
                                         crel('th', 'Message: '),
                                         crel('td', {'title': reportingMessage}, `${reportingMessage.substr(0, 120)}${reportingMessage.length > 120 ? '...' : ''}`)
+                                    ),
+                                    crel('tr',
+                                        crel('th', 'Reason: '),
+                                        crel('td', _txtReason)
                                     )
                                 ),
                                 crel('div', {'class': 'buttons'},

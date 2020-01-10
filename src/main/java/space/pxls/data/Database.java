@@ -1232,8 +1232,26 @@ public class Database {
         }
     }
 
-    public void purgeChat(String nonce, int purgerID) {
-        // TODO
+    /**
+     * Purges an specific chat message, for the specified reason.
+     * @param target The {@link User} to purge messages from, for logging purposes.
+     * @param initiator The {@link User} who purged chat messages.
+     * @param nonce The nonce of the chat message to purge.
+     * @param reason The reason for the purge.
+     * @param broadcast Whether or not to broadcast a purge message.
+     */
+    public void purgeChat(User target, User initiator, String nonce, String reason, boolean broadcast) {
+        jdbi.useHandle(handle -> handle.createUpdate("UPDATE chat_messages SET purged = true, purged_by = :initiator WHERE nonce = :nonce")
+                .bind("initiator", initiator.getId())
+                .bind("nonce", nonce)
+                .execute());
+        String initiatorName = initiator == null ? "CONSOLE" : initiator.getName();
+        int initiatorID = initiator == null ? 0 : initiator.getId();
+        String logReason = reason != null && reason.length() > 0 ? " because: " + reason : "";
+        insertServerAdminLog(String.format("<%s, %s> purged message with nonce %s from <%s, %s>%s.", initiatorName, initiatorID, nonce, target.getName(), target.getId(), logReason));
+        if (broadcast) {
+            App.getServer().getPacketHandler().sendSpecificPurge(target, initiator, nonce, reason);
+        }
     }
 
     /**
