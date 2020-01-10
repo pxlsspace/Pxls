@@ -389,6 +389,7 @@ public class WebHandler {
 
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         FormData.FormValue chatNonce = null;
+        String reason = null;
 
         try {
             chatNonce = data.getFirst("nonce");
@@ -414,8 +415,14 @@ public class WebHandler {
             return;
         }
 
-        App.getDatabase().purgeChat(chatMessage.nonce, user.getId());
-        App.getServer().getPacketHandler().sendSpecificPurge(author, user, chatMessage.nonce, "");
+        try {
+            FormData.FormValue formReason = data.getFirst("reason");
+            reason = formReason.toString();
+        } catch (NullPointerException npe) {
+            reason = "";
+        }
+
+        App.getDatabase().purgeChat(user, author, chatMessage.nonce, reason, true);
 
         send(StatusCodes.OK, exchange, "");
     }
