@@ -634,7 +634,7 @@ window.App = (function () {
                         $.get(window.location.pathname + "?_" + (new Date()).getTime(), function () {
                             window.location.reload();
                         }).fail(function () {
-                            console.log("Server still down...");
+                            console.info("Server still down...");
                             self.reconnect();
                         });
                     }, 3000);
@@ -3080,7 +3080,7 @@ window.App = (function () {
                         let theme = parseInt(this.value);
                         // If theme is -1, the user selected the default theme, so we should remove all other themes
                         if (theme === -1) {
-                            console.log('Default theme - should reset!')
+                            console.info('Default theme - should reset!')
                             // Default theme
                             $('*[data-theme]').remove();
                             ls.set('currentTheme', -1);
@@ -3627,7 +3627,6 @@ window.App = (function () {
                             }
                         }, 100);
                     });
-                    socket.on('message_delete', e => console.log('[message_delete] %o', e));
                     const handleChatban = e => {
                         clearInterval(self.timeout.timer);
                         self.chatban.banStart = moment.now();
@@ -3696,7 +3695,7 @@ window.App = (function () {
                                     break;
                                 }
                             }
-                        } else console.log(lines, 'was not an array-like, or was empty.');
+                        } else console.warn(lines, 'was not an array-like, or was empty.');
                         if (e.amount >= 2147483647) {
                             self.addServerAction(`${e.initiator} purged all messages from ${e.target}.`);
                         } else {
@@ -3900,6 +3899,10 @@ window.App = (function () {
                                 self.showHint(matches.join('\n'));
                             }
                         }
+                    }).on('focus', e => {
+                        if (self.stickToBottom) {
+                            setTimeout(self.scrollToBottom, 300);
+                        }
                     });
 
                     $(window).on("pxls:chat:userIgnored", (e, who) => {
@@ -3992,9 +3995,7 @@ window.App = (function () {
                         pingsList.scrollTop = pingsList.scrollHeight;
                     });
 
-                    self.elements.jump_button[0].addEventListener('click', function() {
-                        self.elements.body[0].scrollTop = self.elements.body[0].scrollHeight;
-                    });
+                    self.elements.jump_button[0].addEventListener('click', self.scrollToBottom);
 
                     if (ls.get("chat.font-size") == null) {
                         ls.set("chat.font-size", 16);
@@ -4007,9 +4008,10 @@ window.App = (function () {
                     notifBody.style.fontSize = `${ls.get("chat.font-size") >> 0 || 16}px`;
 
                     self.elements.body.on("scroll", e => {
-                        let obj = self.elements.body[0];
-                        self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
-                        if (self.stickToBottom && self.elements.chat_panel[0].classList.contains('open')) self.clearPings();
+                        self.updateStickToBottom();
+                        if (self.stickToBottom && self.elements.chat_panel[0].classList.contains('open')) {
+                            self.clearPings();
+                        }
                         self.elements.jump_button[0].style.display = self.stickToBottom ? 'none' : 'block';
                     });
 
@@ -4224,13 +4226,22 @@ window.App = (function () {
                     let _cbPings = crel('input', {'type': 'checkbox'});
                     let lblPings = crel('label', {'style': 'display: block;'}, _cbPings, 'Enable pings');
 
-                    let _cbPingAudio = crel('input', {'type': 'checkbox'});
+                    let _cbPingAudio = crel('select', {},
+                        crel('option', {'value': 'off'}, 'Off'),
+                        crel('option', {'value': 'discrete'}, 'Only when necessary'),
+                        crel('option', {'value': 'always'}, 'Always')
+                    );
+                    let lblPingAudio = crel('div', {'style': 'display: block;'},
+                        'Play sound on ping',
+                        _cbPingAudio
+                    );
+
                     let _rgPingAudioVol = crel('input', {'type': 'range', min: 0, max: 100});
                     let _txtPingAudioVol = crel('span');
-                    let lblPingAudio = crel('label', {'style': 'display: block;'},
-                        _cbPingAudio,
-                        'Play sound on ping',
-                        crel('span', _rgPingAudioVol, _txtPingAudioVol)
+                    let lblPingAudioVol = crel('label', {'style': 'display: block;'},
+                        'Ping sound volume',
+                        _rgPingAudioVol,
+                        _txtPingAudioVol
                     );
 
                     let _cbBanner = crel('input', {'type': 'checkbox'});
@@ -4311,9 +4322,9 @@ window.App = (function () {
                         ls.set('chat.pings-enabled', this.checked === true);
                     });
 
-                    _cbPingAudio.checked = ls.get('chat.ping-audio-enabled') === true;
+                    _cbPingAudio.value = ls.get('chat.ping-audio-state') || 'off';
                     _cbPingAudio.addEventListener('change', function() {
-                        ls.set('chat.ping-audio-enabled', this.checked === true);
+                        ls.set('chat.ping-audio-state', this.value);
                     });
 
                     _rgPingAudioVol.value = ls.get('chat.ping-audio-volume') * 100;
@@ -4361,6 +4372,7 @@ window.App = (function () {
                         lblPixelPlaceBadges,
                         lblPings,
                         lblPingAudio,
+                        lblPingAudioVol,
                         lblBanner,
                         lblTemplateTitles,
                         lblFontSize,
@@ -4375,6 +4387,10 @@ window.App = (function () {
                         self.scrollToNonce(this.dataset.nonce);
                     }
                 },
+                updateStickToBottom() {
+                    const obj = self.elements.body[0];
+                    self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
+                },
                 scrollToNonce(nonce) {
                     let elem = self.elements.body[0].querySelector(`.chat-line[data-nonce="${nonce}"]`);
                     if (elem) {
@@ -4386,6 +4402,10 @@ window.App = (function () {
                         elem.addEventListener('animationend', ripAnim);
                         elem.classList.add('-scrolled-to');
                     }
+                },
+                scrollToBottom() {
+                    self.elements.body[0].scrollTop = self.elements.body[0].scrollHeight;
+                    self.stickToBottom = true;
                 },
                 setCharLimit(num) {
                     self.elements.input.prop("maxlength", num);
@@ -4523,14 +4543,15 @@ window.App = (function () {
                             self.elements.pings_button.addClass('has-notification');
                         }
 
+                        const pingAudioState = ls.get('chat.ping-audio-state');
                         const canPlayPingAudio = !isHistory && !ls.get("audio_muted")
-                            && ls.get('chat.ping-audio-enabled') && Date.now() - self.lastPingAudioTimestamp > 5000;
-                        if ((!panels.isOpen('chat') || !uiHelper.windowHasFocus()) && uiHelper.tabHasFocus() && canPlayPingAudio) {
+                            && pingAudioState !== 'off' && Date.now() - self.lastPingAudioTimestamp > 5000;
+                        if ((!panels.isOpen('chat') || !uiHelper.windowHasFocus() || pingAudioState === 'always')
+                            && uiHelper.tabHasFocus() && canPlayPingAudio) {
                             self.pingAudio.volume = parseFloat(ls.get('chat.ping-audio-volume'));
                             self.pingAudio.play();
                             self.lastPingAudioTimestamp = Date.now();
                         }
-
                     }
                 },
                 processMessage: (elem, elemClass, str) => {
