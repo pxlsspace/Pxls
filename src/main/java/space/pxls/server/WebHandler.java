@@ -417,7 +417,7 @@ public class WebHandler {
 
         try {
             FormData.FormValue formReason = data.getFirst("reason");
-            reason = formReason.toString();
+            reason = formReason.getValue();
         } catch (NullPointerException npe) {
             reason = "";
         }
