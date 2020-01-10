@@ -3032,7 +3032,6 @@ window.App = (function () {
                             self.elements.mainBubble.attr('position', e.target.value);
                         });
 
-                    console.log(window.innerWidth < 768, navigator.userAgent.includes('Mobile'));
                     const possiblyMobile = window.innerWidth < 768 && navigator.userAgent.includes('Mobile');
 
                     let initialShowReticule = ls.get('ui.show-reticule');
