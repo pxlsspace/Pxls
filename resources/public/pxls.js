@@ -1484,7 +1484,7 @@ window.App = (function () {
                 validateCoordinates: self.validateCoordinates,
                 getUrl: (includeTemplate = true) => {
                     let toRet = `${document.location.origin}${document.location.pathname}#x=${ls.get('pan.x') || 0}&y=${ls.get('pan.y') || 0}&scale=${ls.get('board.scale')}`;
-                    if (includeTemplate) {
+                    if (includeTemplate && template.getOptions().use) {
                         let topt = template.getOptions();
                         toRet += `&template=${topt.url}&ox=${topt.x}&oy=${topt.y}&oo=${topt.opacity}&tw=${topt.width}`;
                     }
@@ -3409,6 +3409,15 @@ window.App = (function () {
                     } else {
                         processItem.toggle(state);
                     }
+                },
+                copyText: text => {
+                    // TODO(netux): use Clipboard API once it becomes Stable
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
                 }
             };
 
@@ -3437,7 +3446,8 @@ window.App = (function () {
                 },
                 setLoadingState: self.setLoadingState,
                 tabHasFocus: () => ls.get('tabs.has-focus') === self.tabId,
-                windowHasFocus: () => self.focus
+                windowHasFocus: () => self.focus,
+                copyText: self.copyText,
             };
         })(),
         panels = (function() {
@@ -5337,13 +5347,7 @@ window.App = (function () {
                             break;
                         }
                         case 'copy-nonce': {
-                            // TODO(netux): use Clipboard API once it becomes Stable
-                            const textArea = document.createElement('textarea');
-                            textArea.value = this.dataset.nonce;
-                            document.body.appendChild(textArea);
-                            textArea.select();
-                            document.execCommand('copy');
-                            document.body.removeChild(textArea);
+                            uiHelper.copyText(this.dataset.nonce);
                             break;
                         }
                     }
@@ -5531,7 +5535,7 @@ window.App = (function () {
                     self.elements.coords.click(() => {
                         const txtX = crel('input', {'style': 'width: 3em; border: 1px solid #aaa;', 'type': 'number', 'min': '0', 'max': board.getWidth(), 'value': ls.get('pan.x') || '0', 'required': 'true'});
                         const txtY = crel('input', {'style': 'width: 3em; border: 1px solid #aaa;', 'type': 'number', 'min': '0', 'max': board.getHeight(), 'value': ls.get('pan.y') || '0', 'required': 'true'});
-                        const txtScale = crel('input', {'style': 'width: 3em; border: 1px solid #aaa;', 'type': 'number', 'min': '0.5', 'step': '0.5', 'value': ls.get('board.scale') || '1', 'required': 'true'});
+                        const txtScale = crel('input', {'style': 'width: 4em; border: 1px solid #aaa;', 'type': 'number', 'min': '1', 'step': '1', 'value': ls.get('board.scale') || '1', 'required': 'true'});
 
                         const btnCancel = crel('button', {'type': 'button', 'class': 'button'}, 'Cancel');
                         const btnGo = crel('button', {'type': 'submit', 'class': 'button'}, 'Jump');
@@ -5575,10 +5579,12 @@ window.App = (function () {
                     });
 
                     self.elements.btnShare.click(() => {
-                        const cbTemplate = crel('input', {'type': 'checkbox', 'checked': 'true'});
+                        let _copyTextTimer = 0;
+                        const cbTemplate = crel('input', {'type': 'checkbox', 'checked': String(template.getOptions().use)});
                         const txtUrl = crel('textarea', {'style': 'width: 100%; height: 4em; padding: 1px; border-radius: 3px;', 'readonly': 'true'}, board.getUrl());
                         const btnClose = crel('button', {'class': 'button'}, 'Close');
                         const btnUpdate = crel('button', {'class': 'button'}, 'Refresh');
+                        const btnCopy = crel('button', {'class': 'button'}, 'Copy');
                         const body = crel('div',
                             crel('h3', {'style': 'border-bottom: 1px solid #888; padding-bottom: 3px;'}, 'Pxls Link'),
                             crel('label', {'style': 'display: block;'},
@@ -5592,16 +5598,29 @@ window.App = (function () {
                             ),
                             crel('div', {'style': 'display: block; text-align: right;'},
                                 btnClose,
+                                btnCopy,
                                 btnUpdate
                             )
                         );
 
                         btnClose.addEventListener('click', function() {
+                            clearInterval(_copyTextTimer);
                             alert.hide();
                         });
 
                         btnUpdate.addEventListener('click', function() {
                             txtUrl.value = board.getUrl(cbTemplate.checked);
+                        });
+
+                        btnCopy.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            uiHelper.copyText(txtUrl.value);
+                            btnCopy.innerHTML  = 'Copied!';
+
+                            clearInterval(_copyTextTimer);
+                            _copyTextTimer = setTimeout(() => {
+                                btnCopy.innerHTML = 'Copy';
+                            }, 1e3);
                         });
 
                         cbTemplate.addEventListener('change', function() {
@@ -6196,10 +6215,10 @@ window.App = (function () {
         ss: ss,
         query: query,
         board: {
-            getScale: heatmap.getScale,
-            getWidth: heatmap.getWidth,
-            getHeight: heatmap.getHeight,
-            getUrl: heatmap.getUrl,
+            getScale: board.getScale,
+            getWidth: board.getWidth,
+            getHeight: board.getHeight,
+            getUrl: board.getUrl,
         },
         heatmap: {
             clear: heatmap.clear
