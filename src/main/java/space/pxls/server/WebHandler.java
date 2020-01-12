@@ -422,7 +422,7 @@ public class WebHandler {
             reason = "";
         }
 
-        App.getDatabase().purgeChat(user, author, chatMessage.nonce, reason, true);
+        App.getDatabase().purgeChat(author, user, chatMessage.nonce, reason, true);
 
         send(StatusCodes.OK, exchange, "");
     }
