@@ -4012,6 +4012,9 @@ window.App = (function () {
                     if (ls.get('chat.pings-enabled') == null) {
                         ls.set('chat.pings-enabled', true);
                     }
+                    if (ls.get('chat.ping-audio-state') == null) {
+                        ls.set('chat.ping-audio-state', 'off');
+                    }
                     if (ls.get('chat.ping-audio-volume') == null) {
                         ls.set('chat.ping-audio-volume', 0.5);
                     }
@@ -4371,7 +4374,7 @@ window.App = (function () {
                         ls.set('chat.pings-enabled', this.checked === true);
                     });
 
-                    _cbPingAudio.value = ls.get('chat.ping-audio-state') || 'off';
+                    _cbPingAudio.value = ls.get('chat.ping-audio-state');
                     _cbPingAudio.addEventListener('change', function() {
                         ls.set('chat.ping-audio-state', this.value);
                     });
