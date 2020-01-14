@@ -2989,6 +2989,10 @@ window.App = (function () {
                     {
                         name: "Dark",
                         location: '/themes/dark.css'
+                    },
+                    {
+                        name: "Darker",
+                        location: '/themes/darker.css'
                     }
                 ],
                 specialChatColorClasses: ['rainbow'],
