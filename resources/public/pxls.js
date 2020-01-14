@@ -2240,10 +2240,16 @@ window.App = (function () {
                     if (newColor === -1) {
                         self.toggleCursor(false);
                         self.toggleReticule(false);
+                        if ('removeProperty' in document.documentElement.style) {
+                            document.documentElement.style.removeProperty('--selected-palette-color');
+                        }
                         return;
                     }
                     if (self.scale <= 15) {
                         self.toggleCursor(true);
+                    }
+                    if ('setProperty' in document.documentElement.style) {
+                        document.documentElement.style.setProperty('--selected-palette-color', self.palette[newColor]);
                     }
                     self.elements.cursor.css("background-color", self.palette[newColor]);
                     self.elements.reticule.css("background-color", self.palette[newColor]);
