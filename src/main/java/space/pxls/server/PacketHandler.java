@@ -359,7 +359,7 @@ public class PacketHandler {
             try {
                 int t = Integer.parseInt(nameColor);
                 if (t >= -1 && t < App.getConfig().getStringList("board.palette").size()) {
-                    if (t < 0 && user.getRole().lessThan(Role.MODERATOR)) {
+                    if (t < 0 && user.getRole().lessThan(Role.TRIALMOD)) {
                         server.send(channel, new ServerACKClientUpdate(false, "Color reserved for staff members", "NameColor", null));
                         return;
                     }

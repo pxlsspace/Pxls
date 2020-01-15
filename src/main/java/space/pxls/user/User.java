@@ -415,7 +415,7 @@ public class User {
         this.stacked = stacked;
         App.getDatabase().updateUserStacked(this, stacked);
     }
-    
+
     public long getInitialAuthTime() {
         return initialAuthTime;
     }
@@ -447,9 +447,9 @@ public class User {
     public void tickStack(boolean sendRes) {
         int multiplier = App.getStackMultiplier();
         int maxStacked = App.getStackMaxStacked();
-        
+
         int curCD = App.getServer().getPacketHandler().getCooldown();
-        
+
         long lastPixelTime = getLastPixelTime() == 0 ? (this.cooldownExpiry == 0 ? getInitialAuthTime() : (this.cooldownExpiry - (curCD*1000))) : getLastPixelTime();
         if (lastPixelTime == 0) {
             return;
@@ -527,7 +527,7 @@ public class User {
 
     public boolean hasRainbowChatNameColor() {
         return App.getConfig().getBoolean("chat.staffRainbow")
-                && role.greaterEqual(Role.MODERATOR)
+                && role.greaterEqual(Role.TRIALMOD)
                 && this.chatNameColor == -1;
     }
 
