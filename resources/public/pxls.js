@@ -2987,6 +2987,7 @@ window.App = (function () {
                     lblAlertVolume: $("#lblAlertVolume"),
                     btnForceAudioUpdate: $("#btnForceAudioUpdate"),
                     themeSelect: $("#themeSelect"),
+                    themeColorMeta: $("meta[name=\"theme-color\"]"),
                     txtDiscordName: $("#txtDiscordName"),
                     selUsernameColor: $("#selUsernameColor"),
                     bottomBanner: $("#bottom-banner"),
@@ -2994,11 +2995,13 @@ window.App = (function () {
                 themes: [
                     {
                         name: "Dark",
-                        location: '/themes/dark.css'
+                        location: '/themes/dark.css',
+                        color: '#1A1A1A'
                     },
                     {
                         name: "Darker",
-                        location: '/themes/darker.css'
+                        location: '/themes/darker.css',
+                        color: '#000'
                     }
                 ],
                 specialChatColorClasses: ['rainbow'],
@@ -3203,6 +3206,7 @@ window.App = (function () {
                         currentTheme = parseInt(currentTheme);
                         if (currentTheme !== -1) {
                             self.themes[currentTheme].element.appendTo(document.head);
+                            self.elements.themeColorMeta.attr('content', self.themes[currentTheme].color);
                             self.elements.themeSelect.val(currentTheme);
                         }
                     }
@@ -3214,9 +3218,11 @@ window.App = (function () {
                             // Default theme
                             $('*[data-theme]').remove();
                             ls.set('currentTheme', -1);
+                            self.elements.themeColorMeta.attr('content', null);
                             return;
                         }
                         self.themes[theme].element.appendTo(document.head);
+                        self.elements.themeColorMeta.attr('content', self.themes[theme].color);
                         ls.set('currentTheme', theme);
                     })
                 },
