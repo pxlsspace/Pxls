@@ -5769,7 +5769,7 @@ window.App = (function () {
                 },
                 updateCoords() {
                     if (!self.mouseCoords) return;
-                    self.elements.coords.text(`(${self.mouseCoords.x}, ${self.mouseCoords.y}, ${board.getScale()}x)`);
+                    self.elements.coords.text(`(${self.mouseCoords.x}, ${self.mouseCoords.y}, ${ls.get('board.scale')}x)`);
                 },
             };
             return {
