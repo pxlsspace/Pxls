@@ -342,7 +342,7 @@ public class User {
         setBanReason(reason);
         setRole(Role.SHADOWBANNED, true);
         App.rollbackAfterBan(this, rollbackTime);
-        App.getDatabase().insertBanLog(this.getId(), banner == null ? 0 : banner.getId(), System.currentTimeMillis(), 0L, "shadowban", reason);
+        App.getDatabase().insertBanLog(banner == null ? 0 : banner.getId(), this.getId(), System.currentTimeMillis(), 0L, "shadowban", reason);
     }
 
     public void shadowban(String reason, User banner) {
@@ -359,7 +359,7 @@ public class User {
         sendUserData();
         App.rollbackAfterBan(this, rollbackTime);
         long now = System.currentTimeMillis();
-        App.getDatabase().insertBanLog(this.getId(), banner == null ? 0 : banner.getId(), now, now + (timeFromNowSeconds * 1000), "ban", reason);
+        App.getDatabase().insertBanLog(banner == null ? 0 : banner.getId(), this.getId(), now, now + (timeFromNowSeconds * 1000), "ban", reason);
     }
 
     public void ban(long timeFromNowSeconds, String reason, User banner) {
@@ -376,7 +376,7 @@ public class User {
         sendUserData();
         App.rollbackAfterBan(this, rollbackTime);
         long now = System.currentTimeMillis();
-        App.getDatabase().insertBanLog(this.getId(), banner == null ? 0 : banner.getId(), now, 0L, "permaban", reason);
+        App.getDatabase().insertBanLog(banner == null ? 0 : banner.getId(), this.getId(), now, 0L, "permaban", reason);
     }
 
     public void permaban(String reason, User banner) {
@@ -395,7 +395,7 @@ public class User {
         sendUserData();
         App.undoRollback(this);
         long now = System.currentTimeMillis();
-        App.getDatabase().insertBanLog(this.getId(), whoUnbanned == null ? 0 : whoUnbanned.getId(), now, 0L, "unban", unbanReason);
+        App.getDatabase().insertBanLog(whoUnbanned == null ? 0 : whoUnbanned.getId(), this.getId(), now, 0L, "unban", unbanReason);
     }
 
     public void setUserAgent(String s) {
