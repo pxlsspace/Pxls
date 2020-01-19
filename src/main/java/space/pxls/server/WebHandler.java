@@ -106,12 +106,18 @@ public class WebHandler {
 
     private Map<String, AuthService> services = new ConcurrentHashMap<>();
 
+    private void addServiceIfAvailable(String key, AuthService service) {
+        if (service.use()) {
+            services.put(key, service);
+        }
+    }
+
     {
-        services.put("reddit", new RedditAuthService("reddit"));
-        services.put("google", new GoogleAuthService("google"));
-        services.put("discord", new DiscordAuthService("discord"));
-        services.put("vk", new VKAuthService("vk"));
-        services.put("tumblr", new TumblrAuthService("tumblr"));
+        addServiceIfAvailable("reddit", new RedditAuthService("reddit"));
+        addServiceIfAvailable("google", new GoogleAuthService("google"));
+        addServiceIfAvailable("discord", new DiscordAuthService("discord"));
+        addServiceIfAvailable("vk", new VKAuthService("vk"));
+        addServiceIfAvailable("tumblr", new TumblrAuthService("tumblr"));
     }
 
     private String getBanReason(HttpServerExchange exchange) {
@@ -896,7 +902,7 @@ public class WebHandler {
         String id = exchange.getRelativePath().substring(1);
 
         AuthService service = services.get(id);
-        if (service != null) {
+        if (service != null && service.use()) {
 
             // Verify the given OAuth state, to make sure people don't double-send requests
             Deque<String> stateQ = exchange.getQueryParameters().get("state");
@@ -999,6 +1005,9 @@ public class WebHandler {
                 respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_service", "No auth service named " + id));
                 return;
             }
+        } else {
+            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_service", "No auth service named " + id));
+            return;
         }
     }
 
