@@ -26,11 +26,11 @@ import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 public class PacketHandler {
     private UndertowServer server;
-    private PxlsTimer userData = new PxlsTimer(5);
     private int numAllCons = 0;
-    private Config config = App.getConfig();
 
     public int getCooldown() {
+        Config config = App.getConfig();
+
         String cooldownType = config.getString("cooldownType").toLowerCase();
         if (cooldownType.equalsIgnoreCase("activity")) {
             double x = server.getNonIdledUsersCount();
@@ -390,7 +390,7 @@ public class PacketHandler {
     }});
 
     public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
-        int charLimit = Math.min(config.getInt("chat.characterLimit"), 2048);
+        int charLimit = Math.min(App.getConfig().getInt("chat.characterLimit"), 2048);
         if (charLimit <= 0) {
             charLimit = 2048;
         }
