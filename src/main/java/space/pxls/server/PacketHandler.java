@@ -31,23 +31,24 @@ public class PacketHandler {
     private Config config = App.getConfig();
 
     public int getCooldown() {
-        // TODO: make these parameters somehow configurable
+        String cooldownType = config.getString("cooldownType").toLowerCase();
+        if (cooldownType.equalsIgnoreCase("activity")) {
+            double x = server.getNonIdledUsersCount();
+            double s = config.getDouble("activityCooldown.steepness");
+            double u = config.getDouble("activityCooldown.userOffset");
+            double t = config.getDouble("activityCooldown.globalOffset");
 
-        if (config.getBoolean("useStaticCooldown")) {
-            return (int)config.getDuration("cooldown", TimeUnit.SECONDS);
+            // Formula by Atomic10 and c4rt
+            // https://www.desmos.com/calculator/sgphb1abzi
+            double cooldown = s * Math.sqrt(x + u) + t;
+
+            double multiplier = config.getDouble("activityCooldown.multiplier");
+            cooldown *= multiplier;
+
+            return (int) Math.abs(cooldown);
+        } else {
+            return (int) config.getDuration("staticCooldown.time", TimeUnit.SECONDS);
         }
-
-        // Formula by Atomic10 and c4rt
-        // https://www.desmos.com/calculator/fickubayim
-        // 2.5 sqrt(x + 12) + 6.5
-
-        double x = 1;
-        if (config.getBoolean("activityCooldown.enabled"))
-            x = server.getNonIdledUsersCount();
-        double cooldown = 2.5 * Math.sqrt(x + 12) + 6.5;
-        double multiplier = config.getDouble("activityCooldown.multiplier");
-        cooldown *= multiplier;
-        return (int)cooldown;
     }
 
     public PacketHandler(UndertowServer server) {

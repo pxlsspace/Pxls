@@ -62,7 +62,7 @@ public class App {
         shadowbannedPixelLogger = LogManager.getLogger("ShadowbannedPixels");
         appLogger = LogManager.getLogger("App");
 
-	canvasCode = config.getString("canvascode");
+	    canvasCode = config.getString("canvascode");
 
         width = config.getInt("board.width");
         height = config.getInt("board.height");
