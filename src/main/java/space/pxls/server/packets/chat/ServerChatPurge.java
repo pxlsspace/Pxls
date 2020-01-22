@@ -1,6 +1,7 @@
 package space.pxls.server.packets.chat;
 
 public class ServerChatPurge {
+    public String type = "chat_purge";
     public String target;
     public String initiator;
     public Integer amount;
@@ -11,6 +12,10 @@ public class ServerChatPurge {
         this.initiator = initiator;
         this.amount = amount;
         this.reason = reason;
+    }
+
+    public String getType() {
+        return type;
     }
 
     public String getTarget() {
