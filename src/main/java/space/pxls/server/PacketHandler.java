@@ -412,8 +412,8 @@ public class PacketHandler {
         if (message.endsWith("\n")) message = message.replaceFirst("\n$", "");
         if (message.length() > charLimit) message = message.substring(0, charLimit);
         if (user == null) { //console
-            String nonce = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "");
-            server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS / 1000L, message, null, null, 0)));
+            Integer cmid = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "");
+            server.broadcast(new ServerChatMessage(new ChatMessage(cmid, "CONSOLE", nowMS / 1000L, message, null, null, 0)));
         } else {
             if (!user.canChat()) return;
             if (message.trim().length() == 0) return;
@@ -429,11 +429,11 @@ public class PacketHandler {
                     if (App.getConfig().getBoolean("chat.filter.enabled")) {
                         ChatFilter.FilterResult result = ChatFilter.getInstance().filter(toSend);
                         toSend = result.filterHit ? result.filtered : result.original;
-                        String nonce = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toSend);
-                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor())));
+                        Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toSend);
+                        server.broadcast(new ServerChatMessage(new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor())));
                     } else {
-                        String nonce = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, "");
-                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor())));
+                        Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, "");
+                        server.broadcast(new ServerChatMessage(new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor())));
                     }
                 } catch (UnableToExecuteStatementException utese) {
                     utese.printStackTrace();
@@ -451,12 +451,12 @@ public class PacketHandler {
         server.broadcast(new ServerChatPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), amount, reason));
     }
 
-    public void sendSpecificPurge(User target, User initiator, String nonce, String reason) {
-        sendSpecificPurge(target, initiator, Collections.singletonList(nonce), reason);
+    public void sendSpecificPurge(User target, User initiator, Integer cmid, String reason) {
+        sendSpecificPurge(target, initiator, Collections.singletonList(cmid), reason);
     }
 
-    public void sendSpecificPurge(User target, User initiator, List<String> nonces, String reason) {
-        server.broadcast(new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), nonces, reason));
+    public void sendSpecificPurge(User target, User initiator, List<Integer> cmids, String reason) {
+        server.broadcast(new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), cmids, reason));
     }
 
     public void updateUserData() {

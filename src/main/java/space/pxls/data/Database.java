@@ -153,7 +153,7 @@ public class Database {
                     .execute();
             // chat_messages
             handle.createUpdate("CREATE TABLE IF NOT EXISTS chat_messages (" +
-                    "nonce VARCHAR(36) PRIMARY KEY," +
+                    "id BIGSERIAL PRIMARY KEY," +
                     "author INT," +
                     "sent BIGINT NOT NULL," +
                     "content VARCHAR(2048) NOT NULL," +
@@ -165,7 +165,7 @@ public class Database {
             handle.createUpdate("CREATE TABLE IF NOT EXISTS chat_reports (" +
                     "id SERIAL NOT NULL PRIMARY KEY," +
                     "time INT DEFAULT NULL," +
-                    "chat_message VARCHAR(36) NOT NULL," +
+                    "cmid BIGSERIAL NOT NULL," +
                     "report_message TEXT NOT NULL," +
                     "target INT NOT NULL," +
                     "initiator INT NOT NULL," +
@@ -1046,18 +1046,17 @@ public class Database {
      * @param sent The chat message's creation epoch.
      * @param content The chat contents.
      * @param filtered The filtered chat contents.
-     * @return The new chat message's nonce.
+     * @return The new chat message's ID.
      */
-    public String createChatMessage(int authorID, long sent, String content, String filtered) {
-        String nonce = java.util.UUID.randomUUID().toString();
-        jdbi.useHandle(handle -> handle.createUpdate("INSERT INTO chat_messages (author, sent, content, filtered, nonce) VALUES (:author, :sent, :content, :filtered, :nonce)")
+    public Integer createChatMessage(int authorID, long sent, String content, String filtered) {
+        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO chat_messages (author, sent, content, filtered) VALUES (:author, :sent, :content, :filtered)")
                 .bind("author", authorID)
                 .bind("sent", sent)
                 .bind("content", content)
                 .bind("filtered", filtered)
-                .bind("nonce", nonce)
-                .execute());
-        return nonce;
+                .executeAndReturnGeneratedKeys("id")
+                    .mapTo(Integer.TYPE)
+                    .first());
     }
 
     /**
@@ -1065,20 +1064,20 @@ public class Database {
      * @param sent The chat message's creation epoch.
      * @param content The chat contents.
      * @param filtered The filtered chat contents.
-     * @return The new chat message's nonce.
+     * @return The new chat message's ID.
      */
-    public String createChatMessage(User author, long sent, String content, String filtered) {
+    public Integer createChatMessage(User author, long sent, String content, String filtered) {
         return createChatMessage(author == null ? -1 : author.getId(), sent / 1000L, content, filtered);
     }
 
     /**
-     * Retrieves the {@link DBChatMessage} associated with the given <pre>nonce</pre>.
-     * @param nonce The {@link DBChatMessage} nonce to fetch with.
+     * Retrieves the {@link DBChatMessage} associated with the given <pre>id</pre>.
+     * @param id The {@link DBChatMessage} id to fetch with.
      * @return The retrieved {@link DBChatMessage}.
      */
-    public DBChatMessage getChatMessageByNonce(String nonce) {
-        return jdbi.withHandle(handle -> handle.select("SELECT nonce, author, sent, content, filtered, purged, purged_by FROM chat_messages WHERE nonce = :nonce LIMIT 1")
-                .bind("nonce", nonce)
+    public DBChatMessage getChatMessageByID(int id) {
+        return jdbi.withHandle(handle -> handle.select("SELECT id, author, sent, content, filtered, purged, purged_by FROM chat_messages WHERE id = :id LIMIT 1")
+                .bind("id", id)
                 .map(new DBChatMessage.Mapper())
                 .first());
     }
@@ -1089,7 +1088,7 @@ public class Database {
      * @return The retrieved {@link DBChatMessage}s.
      */
     public DBChatMessage[] getChatMessagesByAuthor(int authorID) {
-        return jdbi.withHandle(handle -> handle.select("SELECT nonce, author, sent, content, filtered, purged, purged_by FROM chat_messages WHERE author = :author ORDER BY sent ASC")
+        return jdbi.withHandle(handle -> handle.select("SELECT id, author, sent, content, filtered, purged, purged_by FROM chat_messages WHERE author = :author ORDER BY sent ASC")
                 .bind("author", authorID)
                 .map(new DBChatMessage.Mapper())
                 .list()
@@ -1111,7 +1110,7 @@ public class Database {
      * @return The retrieved {@link DBChatMessage}s. The length is determined by the {@link ResultSet} size.
      */
     public DBChatMessage[] getLastXMessages(int x, boolean includePurged) {
-        return jdbi.withHandle(handle -> handle.select("SELECT nonce, author, sent, content, filtered, purged, purged_by FROM chat_messages WHERE CASE WHEN :includePurged THEN true ELSE purged = false END ORDER BY sent DESC LIMIT :limit")
+        return jdbi.withHandle(handle -> handle.select("SELECT id, author, sent, content, filtered, purged, purged_by FROM chat_messages WHERE CASE WHEN :includePurged THEN true ELSE purged = false END ORDER BY sent DESC LIMIT :limit")
                 .bind("includePurged", includePurged)
                 .bind("limit", x)
                 .map(new DBChatMessage.Mapper())
@@ -1145,7 +1144,7 @@ public class Database {
                     nameClass = temp.getChatNameClasses();
                 }
             }
-            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, dbChatMessage.sent, App.getConfig().getBoolean("chat.filter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameClass, nameColor));
+            toReturn.add(new ChatMessage(dbChatMessage.id, author, dbChatMessage.sent, App.getConfig().getBoolean("chat.filter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameClass, nameColor));
         }
         return toReturn;
     }
@@ -1194,15 +1193,15 @@ public class Database {
     }
 
     /**
-     * @param nonce The {@link ChatMessage}'s nonce.
+     * @param cmid The {@link ChatMessage}'s id.
      * @param targetID The reported {@link User}'s ID.
      * @param initiatorID The initiating {@link User}'s ID.
      * @param reportMessage The body of the report.
      * @return The inserted row ID.
      */
-    public Integer insertChatReport(String nonce, int targetID, int initiatorID, String reportMessage) {
-        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO chat_reports (chat_message, target, initiator, report_message, time) VALUES (:chat_message, :target, :initiator, :report_message, (SELECT EXTRACT(EPOCH FROM NOW())))")
-                .bind("chat_message", nonce)
+    public Integer insertChatReport(int cmid, int targetID, int initiatorID, String reportMessage) {
+        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO chat_reports (cmid, target, initiator, report_message, time) VALUES (:cmid, :target, :initiator, :report_message, (SELECT EXTRACT(EPOCH FROM NOW())))")
+                .bind("cmid", cmid)
                 .bind("target", targetID)
                 .bind("initiator", initiatorID)
                 .bind("report_message", reportMessage)
@@ -1210,14 +1209,14 @@ public class Database {
     }
 
     /**
-     * @param nonce The {@link ChatMessage}'s nonce.
+     * @param cmid The {@link ChatMessage}'s id.
      * @param target The reported {@link User}.
      * @param initiator The initiating {@link User}.
      * @param reportMessage The body of the report.
      * @return The inserted row ID.
      */
-    public Integer insertChatReport(String nonce, User target, User initiator, String reportMessage) {
-        return insertChatReport(nonce, target.getId(), initiator == null ? 0 : initiator.getId(), reportMessage);
+    public Integer insertChatReport(int cmid, User target, User initiator, String reportMessage) {
+        return insertChatReport(cmid, target.getId(), initiator == null ? 0 : initiator.getId(), reportMessage);
     }
 
     /**
@@ -1246,21 +1245,21 @@ public class Database {
      * Purges an specific chat message, for the specified reason.
      * @param target The {@link User} to purge messages from, for logging purposes.
      * @param initiator The {@link User} who purged chat messages.
-     * @param nonce The nonce of the chat message to purge.
+     * @param id The id of the chat message to purge.
      * @param reason The reason for the purge.
      * @param broadcast Whether or not to broadcast a purge message.
      */
-    public void purgeChat(User target, User initiator, String nonce, String reason, boolean broadcast) {
-        jdbi.useHandle(handle -> handle.createUpdate("UPDATE chat_messages SET purged = true, purged_by = :initiator WHERE nonce = :nonce")
+    public void purgeChatID(User target, User initiator, Integer id, String reason, boolean broadcast) {
+        jdbi.useHandle(handle -> handle.createUpdate("UPDATE chat_messages SET purged = true, purged_by = :initiator WHERE id = :id")
                 .bind("initiator", initiator.getId())
-                .bind("nonce", nonce)
+                .bind("id", id)
                 .execute());
         String initiatorName = initiator == null ? "CONSOLE" : initiator.getName();
         int initiatorID = initiator == null ? 0 : initiator.getId();
         String logReason = reason != null && reason.length() > 0 ? " because: " + reason : "";
-        insertServerAdminLog(String.format("<%s, %s> purged message with nonce %s from <%s, %s>%s.", initiatorName, initiatorID, nonce, target.getName(), target.getId(), logReason));
+        insertServerAdminLog(String.format("<%s, %s> purged message with id %d from <%s, %s>%s.", initiatorName, initiatorID, id, target.getName(), target.getId(), logReason));
         if (broadcast) {
-            App.getServer().getPacketHandler().sendSpecificPurge(target, initiator, nonce, reason);
+            App.getServer().getPacketHandler().sendSpecificPurge(target, initiator, id, reason);
         }
     }
 

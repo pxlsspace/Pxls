@@ -3,7 +3,7 @@ package space.pxls.server.packets.chat;
 import java.util.List;
 
 public class ChatMessage {
-    public String nonce;
+    public int id;
     public String author;
     public Long date;
     public String message_raw;
@@ -11,8 +11,8 @@ public class ChatMessage {
     public List<String> authorNameClass;
     public Number authorNameColor;
 
-    public ChatMessage(String nonce, String author, Long date, String message_raw, List<Badge> badges, List<String> authorNameClass, Number authorNameColor) {
-        this.nonce = nonce;
+    public ChatMessage(int id, String author, Long date, String message_raw, List<Badge> badges, List<String> authorNameClass, Number authorNameColor) {
+        this.id = id;
         this.author = author;
         this.date = date;
         this.message_raw = message_raw;
@@ -21,8 +21,8 @@ public class ChatMessage {
         this.authorNameColor = authorNameColor;
     }
 
-    public String getNonce() {
-        return nonce;
+    public int getId() {
+        return id;
     }
 
     public String getAuthor() {
