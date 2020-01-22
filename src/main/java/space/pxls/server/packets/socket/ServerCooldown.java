@@ -1,10 +1,6 @@
 package space.pxls.server.packets.socket;
 
 public class ServerCooldown {
-    public Float getWait() {
-        return wait;
-    }
-
     public String type = "cooldown";
     public Float wait;
 
@@ -14,5 +10,9 @@ public class ServerCooldown {
 
     public String getType() {
         return type;
+    }
+
+    public Float getWait() {
+        return wait;
     }
 }

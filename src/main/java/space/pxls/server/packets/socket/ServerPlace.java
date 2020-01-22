@@ -3,10 +3,6 @@ package space.pxls.server.packets.socket;
 import java.util.Collection;
 
 public class ServerPlace {
-    public Collection<Pixel> getPixels() {
-        return pixels;
-    }
-
     public String type = "pixel";
     public Collection<Pixel> pixels;
 
@@ -28,5 +24,9 @@ public class ServerPlace {
 
     public String getType() {
         return type;
+    }
+
+    public Collection<Pixel> getPixels() {
+        return pixels;
     }
 }

@@ -1,10 +1,6 @@
 package space.pxls.server.packets.socket;
 
 public class ServerCaptchaStatus {
-    public Boolean getSuccess() {
-        return success;
-    }
-
     public String type = "captcha_status";
     public Boolean success;
 
@@ -14,5 +10,9 @@ public class ServerCaptchaStatus {
 
     public String getType() {
         return type;
+    }
+
+    public Boolean getSuccess() {
+        return success;
     }
 }

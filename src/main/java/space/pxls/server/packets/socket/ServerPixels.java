@@ -1,14 +1,6 @@
 package space.pxls.server.packets.socket;
 
 public class ServerPixels {
-    public Integer getCount() {
-        return count;
-    }
-
-    public String getCause() {
-        return cause;
-    }
-
     public String type = "pixels";
     public Integer count;
     public String cause;
@@ -20,5 +12,13 @@ public class ServerPixels {
 
     public String getType() {
         return type;
+    }
+
+    public Integer getCount() {
+        return count;
+    }
+
+    public String getCause() {
+        return cause;
     }
 }
