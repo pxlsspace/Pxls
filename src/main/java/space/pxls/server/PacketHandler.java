@@ -13,6 +13,8 @@ import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 import space.pxls.App;
 import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBPixelPlacement;
+import space.pxls.server.packets.chat.*;
+import space.pxls.server.packets.socket.*;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.util.ChatFilter;
@@ -351,7 +353,7 @@ public class PacketHandler {
     }
 
     public void handleClientUserUpdate(WebSocketChannel channel, User user, ClientUserUpdate clientUserUpdate) {
-        Map<String,String> map = clientUserUpdate.component1();
+        Map<String,String> map = clientUserUpdate.getUpdates();
         Map<String,String> toBroadcast = new HashMap<>();
 
         String nameColor = map.get("NameColor");

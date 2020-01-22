@@ -17,6 +17,9 @@ import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBNotification;
 import space.pxls.data.DBPixelPlacement;
 import space.pxls.data.DBPixelPlacementUser;
+import space.pxls.server.packets.http.*;
+import space.pxls.server.packets.http.Error;
+import space.pxls.server.packets.socket.*;
 import space.pxls.user.Chatban;
 import space.pxls.user.Role;
 import space.pxls.user.User;
@@ -28,10 +31,7 @@ import space.pxls.util.SimpleDiscordWebhook;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
-import java.sql.Timestamp;
 import java.time.Instant;
-import java.time.Year;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -843,30 +843,30 @@ public class WebHandler {
 
     public void signUp(HttpServerExchange exchange) {
         if (!App.getRegistrationEnabled()) {
-            respond(exchange, StatusCodes.UNAUTHORIZED, new Error("registration_disabled", "Registration has been disabled"));
+            respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("registration_disabled", "Registration has been disabled"));
             return;
         }
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         FormData.FormValue nameVal = data.getFirst("username");
         FormData.FormValue tokenVal = data.getFirst("token");
         if (nameVal == null || tokenVal == null) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_params", "Missing parameters"));
+            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_params", "Missing parameters"));
             return;
         }
 
         String name = nameVal.getValue();
         String token = tokenVal.getValue();
         if (token.isEmpty()) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_token", "Missing signup token"));
+            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_token", "Missing signup token"));
             return;
         } else if (name.isEmpty()) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_username", "Username may not be empty"));
+            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_username", "Username may not be empty"));
             return;
         } else if (!name.matches("[a-zA-Z0-9_\\-]+")) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_username", "Username contains invalid characters"));
+            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_username", "Username contains invalid characters"));
             return;
         } else if (!App.getUserManager().isValidSignupToken(token)) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_token", "Invalid signup token"));
+            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_token", "Invalid signup token"));
             return;
         }
 
@@ -874,7 +874,7 @@ public class WebHandler {
         User user = App.getUserManager().signUp(name, token, ip);
 
         if (user == null) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_username", "Username taken, try another?"));
+            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_username", "Username taken, try another?"));
             return;
         }
 
@@ -940,13 +940,13 @@ public class WebHandler {
                 if (redirect) {
                     redirect(exchange, "/auth_done.html?nologin=1");
                 } else {
-                    respond(exchange, StatusCodes.UNAUTHORIZED, new Error("oauth_error", error));
+                    respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("oauth_error", error));
                 }
                 return;
             }
 
             if (!service.verifyState(state)) {
-                respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_state", "Invalid state token"));
+                respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_state", "Invalid state token"));
                 return;
             }
 
@@ -956,7 +956,7 @@ public class WebHandler {
                 if (redirect) {
                     redirect(exchange, "/auth_done.html?nologin=1");
                 } else {
-                    respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_code", "No OAuth code specified"));
+                    respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_code", "No OAuth code specified"));
                 }
                 return;
             }
@@ -964,7 +964,7 @@ public class WebHandler {
             // Get a more persistent user token
             String token = service.getToken(code);
             if (token == null) {
-                respond(exchange, StatusCodes.UNAUTHORIZED, new Error("bad_code", "OAuth code invalid"));
+                respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("bad_code", "OAuth code invalid"));
                 return;
             }
 
@@ -973,7 +973,7 @@ public class WebHandler {
             try {
                 identifier = service.getIdentifier(token);
             } catch (AuthService.InvalidAccountException e) {
-                respond(exchange, StatusCodes.UNAUTHORIZED, new Error("invalid_account", e.getMessage()));
+                respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("invalid_account", e.getMessage()));
                 return;
             }
 
@@ -1002,7 +1002,7 @@ public class WebHandler {
                     return;
                 }
             } else {
-                respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_service", "No auth service named " + id));
+                respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_service", "No auth service named " + id));
                 return;
             }
         } else {
