@@ -12,6 +12,8 @@ import space.pxls.data.DBPixelPlacement;
 import space.pxls.data.DBRollbackPixel;
 import space.pxls.data.Database;
 import space.pxls.server.*;
+import space.pxls.server.packets.chat.ClientChatMessage;
+import space.pxls.server.packets.socket.*;
 import space.pxls.user.Chatban;
 import space.pxls.user.Role;
 import space.pxls.user.User;
@@ -610,7 +612,7 @@ public class App {
                 DBPixelPlacement fromPixel = database.getPixelByID(null, rbPixel.fromId);
                 byte rollbackDefault = getDefaultColor(fromPixel.x, fromPixel.y);
                 putPixel(fromPixel.x, fromPixel.y, rollbackDefault, who, false, "", false, "rollback");
-                forBroadcast.add(new ServerPlace.Pixel(fromPixel.x, fromPixel.y, rollbackDefault));
+                forBroadcast.add(new ServerPlace.Pixel(fromPixel.x, fromPixel.y, (int) rollbackDefault));
                 database.putRollbackPixelNoPrevious(fromPixel.x, fromPixel.y, who, fromPixel.id);
             }
         }
@@ -652,7 +654,7 @@ public class App {
                 // fromColor is 0xFF or -1 if we're nuking
                 if (pixelColor != toColor) {
                     putPixel(x, y, c, null, true, "", false, "console nuke");
-                    forBroadcast.add(new ServerPlace.Pixel(x, y, c));
+                    forBroadcast.add(new ServerPlace.Pixel(x, y, (int) c));
                     if (fromColor == 0xFF || fromColor == -1) {
                         database.putNukePixel(x, y, c);
                     } else if (pixelColor == fromColor) {

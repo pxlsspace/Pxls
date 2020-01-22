@@ -3,10 +3,10 @@ package space.pxls.user;
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
 import space.pxls.data.DBUser;
-import space.pxls.server.Badge;
-import space.pxls.server.ClientUndo;
-import space.pxls.server.ServerChatBan;
-import space.pxls.server.ServerRename;
+import space.pxls.server.packets.chat.Badge;
+import space.pxls.server.packets.socket.ClientUndo;
+import space.pxls.server.packets.chat.ServerChatBan;
+import space.pxls.server.packets.socket.ServerRename;
 import space.pxls.util.RateLimitFactory;
 
 import java.util.*;

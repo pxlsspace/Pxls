@@ -13,6 +13,8 @@ import io.undertow.websockets.core.WebSocketChannel;
 import io.undertow.websockets.core.WebSockets;
 import io.undertow.websockets.spi.WebSocketHttpExchange;
 import space.pxls.App;
+import space.pxls.server.packets.chat.*;
+import space.pxls.server.packets.socket.*;
 import space.pxls.tasks.UserAuthedTask;
 import space.pxls.user.Role;
 import space.pxls.user.User;
