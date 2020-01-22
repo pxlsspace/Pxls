@@ -23,6 +23,7 @@ public class ServerUserInfo {
                           Number chatNameColor) {
         this.username = username;
         this.role = role;
+        this.banned = banned;
         this.banExpiry = banExpiry;
         this.ban_reason = ban_reason;
         this.method = method;
