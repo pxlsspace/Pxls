@@ -23,3 +23,5 @@ extras/reset/checklist.py
 /.vs/ProjectSettings.json
 /.vs/slnx.sqlite
 /.vs/VSWorkspaceState.json
+node/
+node_modules/
