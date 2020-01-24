@@ -4348,7 +4348,7 @@ window.App = (function () {
 
                     //events/scaffolding
                     _selUsernameColor.value = user.getChatNameColor();
-                    uiHelper.styleElemWithChatNameColor(_selUsernameColor);
+                    uiHelper.styleElemWithChatNameColor(_selUsernameColor, user.getChatNameColor());
                     _selUsernameColor.addEventListener('change', function() {
                         socket.send({type: "UserUpdate", updates: {NameColor: String(this.value >> 0)}});
                     });
