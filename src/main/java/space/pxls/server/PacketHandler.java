@@ -298,6 +298,8 @@ public class PacketHandler {
                                     server.send(channel, new ServerCanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
                                 }
                             }
+
+                            sendCooldownData(user);
                         }
                     }
                 } finally {
@@ -305,8 +307,6 @@ public class PacketHandler {
                 }
             }
         }
-
-        sendCooldownData(user);
     }
 
     private void handlePlaceMaybe(WebSocketChannel channel, User user, ClientPlace cp, String ip) {
