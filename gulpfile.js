@@ -1,7 +1,7 @@
 const { src, dest, parallel } = require('gulp');
 const cleanCSS = require('gulp-clean-css');
 const sourcemaps = require('gulp-sourcemaps');
-const eslint = require('gulp-eslint');
+// const eslint = require('gulp-eslint');
 const minify = require('gulp-minify');
 const merge = require('merge-stream');
 
@@ -23,8 +23,8 @@ function js () {
     .pipe(dest('target/classes/public'));
 
   const source = src(['resources/public/*.js', '!resources/public/*.min.js'])
-    .pipe(eslint())
-    .pipe(eslint.failAfterError())
+    // .pipe(eslint())
+    // .pipe(eslint.failAfterError())
     .pipe(minify({
       ext: {
         src: '.src.js',
