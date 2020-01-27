@@ -3,7 +3,7 @@
 .gradle/
 target/
 run/
-logs/
+*.log
 backups/
 .settings/
 .classpath
