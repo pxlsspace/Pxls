@@ -1,0 +1,6 @@
+{
+  "extends": "semistandard",
+  "rules": {
+    "no-console": ["error", {"allow": ["info", "warn", "error"]}]
+  }
+}

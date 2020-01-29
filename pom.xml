@@ -89,42 +89,34 @@
             </plugin>
 
             <plugin>
-                <groupId>com.samaxes.maven</groupId>
-                <artifactId>minify-maven-plugin</artifactId>
-                <version>1.7.6</version>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>1.8.0</version>
                 <executions>
                     <execution>
-                        <id>default-minify</id>
-                        <configuration>
-                            <charset>UTF-8</charset>
-                            <webappSourceDir>resources/</webappSourceDir>
-                            <webappTargetDir>${project.build.directory}/classes</webappTargetDir>
-                            <cssSourceDir>public</cssSourceDir>
-                            <jsSourceDir>public</jsSourceDir>
-
-                            <cssSourceFiles>
-                                <cssSourceFile>style.css</cssSourceFile>
-                            </cssSourceFiles>
-
-                            <jsSourceFiles>
-                                <jsSourceFile>pxls.js</jsSourceFile>
-                            </jsSourceFiles>
-
-                            <closureWarningLevels>
-                                <nonStandardJsDocs>OFF</nonStandardJsDocs>
-                            </closureWarningLevels>
-
-                            <jsEngine>CLOSURE</jsEngine>
-                            <nosuffix>true</nosuffix>
-                            <skipMerge>true</skipMerge>
-                            <verbose>true</verbose>
-                        </configuration>
+                        <id>install node and npm</id>
                         <goals>
-                            <goal>minify</goal>
+                            <goal>install-node-and-npm</goal>
                         </goals>
-                        <phase>prepare-package</phase>
+                    </execution>
+                    <execution>
+                        <id>npm install</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+                    </execution>
+                    <execution>
+                        <id>gulp build</id>
+                        <goals>
+                            <goal>gulp</goal>
+                        </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <!-- Latest LTS as of 2019-01-23 -->
+                    <nodeVersion>v12.14.1</nodeVersion>
+                </configuration>
             </plugin>
         </plugins>
     </build>
