@@ -1025,11 +1025,12 @@ window.App = (function () {
                         var dx = Math.abs(downX - clientX),
                             dy = Math.abs(downY - clientY);
                         if ((event.button === 0 || touch) && downDelta < 500) {
+                            let pos;
                             if (!self.allowDrag && dx < 25 && dy < 25) {
-                                var pos = self.fromScreen(downX, downY);
+                                pos = self.fromScreen(downX, downY);
                                 place.place(pos.x, pos.y);
                             } else if (dx < 5 && dy < 5) {
-                                var pos = self.fromScreen(clientX, clientY);
+                                pos = self.fromScreen(clientX, clientY);
                                 place.place(pos.x, pos.y);
                             }
                         }
@@ -2516,7 +2517,7 @@ window.App = (function () {
                 hooks: [],
                 /**
                  * Registers hooks.
-                 * @param {Object} hooks Information about the hook.
+                 * @param {...Object} hooks Information about the hook.
                  * @param {String} hooks.id An ID for the hook.
                  * @param {String} hooks.name A user-facing name for the hook.
                  * @param {Boolean} hooks.sensitive Whenever the hook contains sensitive information.
@@ -3801,7 +3802,8 @@ window.App = (function () {
                         if ((e.originalEvent.key == "Enter" || e.originalEvent.which === 13) && !e.shiftKey) {
                             if (trimmed.startsWith('/') && user.getRole() !== "USER") {
                                 let args = trimmed.substr(1).split(' '),
-                                    command = args.shift();
+                                    command = args.shift(),
+                                    banReason; // To fix compiler warning
                                 handling = true;
                                 switch (command.toLowerCase().trim()) {
                                     case 'permaban': {

@@ -110,6 +110,10 @@
                                 <jsSourceFile>pxls.js</jsSourceFile>
                             </jsSourceFiles>
 
+                            <closureWarningLevels>
+                                <nonStandardJsDocs>OFF</nonStandardJsDocs>
+                            </closureWarningLevels>
+
                             <jsEngine>CLOSURE</jsEngine>
                             <nosuffix>true</nosuffix>
                             <skipMerge>true</skipMerge>
