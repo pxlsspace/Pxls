@@ -56,7 +56,7 @@ public class WebHandler {
     }
     private String resourceToString (String r) {
         try {
-            InputStream in = getClass().getResourceAsStream(r); 
+            InputStream in = getClass().getResourceAsStream(r);
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             String s = "";
             String line;
@@ -982,13 +982,16 @@ public class WebHandler {
                 User user = App.getUserManager().getByLogin(login);
                 // If there is no user with that identifier, we make a signup token and tell the client to sign up with that token
                 if (user == null) {
-                    String signUpToken = App.getUserManager().generateUserCreationToken(login);
-                    if (redirect) {
-                        redirect(exchange, String.format("/auth_done.html?token=%s&signup=true", encodedURIComponent(signUpToken)));
+                    if (service.isRegistrationEnabled()) {
+                        String signUpToken = App.getUserManager().generateUserCreationToken(login);
+                        if (redirect) {
+                            redirect(exchange, String.format("/auth_done.html?token=%s&signup=true", encodedURIComponent(signUpToken)));
+                        } else {
+                            respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
+                        }
                     } else {
-                        respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
+                        respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("invalid_service_operation", "Registration is currently disabled for this service. Please try one of the other ones."));
                     }
-                    return;
                 } else {
                     // We need the IP for logging/db purposes
                     String ip = exchange.getAttachment(IPReader.IP);
@@ -999,15 +1002,12 @@ public class WebHandler {
                     } else {
                         respond(exchange, StatusCodes.OK, new AuthResponse(loginToken, false));
                     }
-                    return;
                 }
             } else {
                 respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_service", "No auth service named " + id));
-                return;
             }
         } else {
             respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_service", "No auth service named " + id));
-            return;
         }
     }
 
@@ -1269,5 +1269,11 @@ public class WebHandler {
 
     private boolean validateUsername(String username) {
         return !username.isEmpty() && username.matches("[a-zA-Z0-9_\\-]+");
+    }
+
+    public void reloadServicesEnabledState() {
+        for (Map.Entry<String, AuthService> entry : services.entrySet()) {
+            entry.getValue().reloadEnabledState();
+        }
     }
 }

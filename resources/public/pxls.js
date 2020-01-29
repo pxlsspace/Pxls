@@ -5638,27 +5638,37 @@ window.App = (function () {
                 webinit: function (data) {
                     self.elements.loginOverlay.find("a").click(function (evt) {
                         evt.preventDefault();
-                        self.elements.prompt.empty().append(
-                            $("<h1>").html("Sign&nbsp;in&nbsp;with..."),
-                            $("<ul>").append(
-                                $.map(data.authServices, function (a) {
-                                    return $("<li>").append(
-                                        $("<a>").attr("href", "/signin/" + a.id + "?redirect=1").text(a.name).click(function (evt) {
-                                            if (window.open(this.href, "_blank")) {
-                                                evt.preventDefault();
-                                                return;
-                                            }
-                                            ls.set("auth_same_window", true);
-                                        })
-                                    );
+
+                        const cancelButton = crel('button', {'class': 'button'}, 'Cancel');
+                        cancelButton.addEventListener('click', function() {
+                            self.elements.prompt.fadeOut(200);
+                        });
+
+                        self.elements.prompt[0].innerHTML = '';
+                        crel(self.elements.prompt[0],
+                            crel('h1', 'Sign in with...'),
+                            crel('ul',
+                                Object.values(data.authServices).map(service => {
+                                    const anchor = crel('a', {'href': `/signin/${service.id}?redirect=1`}, service.name);
+                                    anchor.addEventListener('click', function(e) {
+                                        if (window.open(this.href, '_blank')) {
+                                            e.preventDefault();
+                                            return;
+                                        }
+                                        ls.set('auth_same_window', true);
+                                    });
+                                    let toRet = crel('li', anchor);
+                                    if (!service.registrationEnabled) {
+                                        crel(toRet, crel('span', {'style': 'font-style: italic; font-size: .75em; font-weight: bold; color: red; margin-left: .5em'}, 'New Accounts Disabled'));
+                                    }
+                                    return toRet;
                                 })
                             ),
-                            $("<div>").addClass("buttons").append(
-                                $("<div>").addClass("button").text("Cancel").click(function () {
-                                    self.elements.prompt.fadeOut(200);
-                                })
+                            crel('div', {'class': 'buttons'},
+                                cancelButton
                             )
-                        ).fadeIn(200);
+                        );
+                        self.elements.prompt.fadeIn(200);
                     });
                 },
                 wsinit: function () {

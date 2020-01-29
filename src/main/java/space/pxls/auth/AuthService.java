@@ -1,5 +1,6 @@
 package space.pxls.auth;
 
+import com.google.gson.annotations.Expose;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import space.pxls.App;
 
@@ -23,9 +24,13 @@ public abstract class AuthService {
     private String id;
     private String name = getName();
     private transient Set<String> validStates = ConcurrentHashMap.newKeySet();
+    protected transient boolean enabled;
+    protected boolean registrationEnabled;
 
-    public AuthService(String id) {
+    public AuthService(String id, boolean enabled, boolean registrationEnabled) {
         this.id = id;
+        this.enabled = enabled;
+        this.registrationEnabled = registrationEnabled;
     }
 
     public String generateState() {
@@ -33,6 +38,8 @@ public abstract class AuthService {
         validStates.add(s);
         return s;
     }
+
+    public abstract void reloadEnabledState();
 
     protected static Map<String, String> parseQuery(String s) {
         Map<String, String> query_pairs = new LinkedHashMap<String, String>();
@@ -43,16 +50,14 @@ public abstract class AuthService {
                 int idx = pair.indexOf("=");
                 query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
             }
-        } catch (UnsupportedEncodingException e) {
-            
-        }
+        } catch (UnsupportedEncodingException e) {}
         return query_pairs;
     }
 
     private String getOauthSignature(String url, String params, String secret, String method) {
         try {
             String base = method + "&" + url + "&" + params;
-            
+
             // yea, don't ask me why, it is needed to append a "&" to the end of
             // secret key.
             String privKey = App.getConfig().getString("oauth."+id+".secret") + "&" + secret;
@@ -124,8 +129,16 @@ public abstract class AuthService {
     }
 
     public boolean use() {
-        return !App.getConfig().getString("oauth."+id+".key").isEmpty();
+        return enabled && !App.getConfig().getString("oauth."+id+".key").isEmpty();
     }
 
     public abstract String getName();
+
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public boolean isRegistrationEnabled() {
+        return registrationEnabled;
+    }
 }
