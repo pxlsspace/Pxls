@@ -79,7 +79,7 @@ kbd {
 }
 
 input[type="text"], textarea {
-    border: 1px solid #444;
+    border: 1px solid #2f2f2f;
     background-color: #111;
     color: #fff;
 }
@@ -113,11 +113,11 @@ aside.panel {
 /* Chat */
 
 ul.chat-body li.chat-line {
-    border-bottom: 1px solid #4f4f4f;
+    border-bottom: 1px solid #2f2f2f;
 }
 
 ul.chat-body li.chat-line:nth-child(odd) {
-    background-color: #222;
+    background-color: #111;
 }
 
 ul.chat-body li.chat-line.server-action {
@@ -161,6 +161,10 @@ li.chat-line .user {
     to {
         background-color: #2c5445;
     }
+}
+
+.message select.username-color-picker {
+    border: 1px solid #333;
 }
 
 .emoji-picker {

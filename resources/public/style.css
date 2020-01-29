@@ -153,18 +153,17 @@ dd a {
 
 @keyframes rainbow-move {
     0% {
-        background-position-x: 66%;
+        background-position: 5px 0%;
     }
     100% {
-        background-position-x: 0%;
+        background-position: -500px 0%;
     }
 }
 
 .rainbow {
-    background-image: linear-gradient(45deg, violet, #308dff, aqua, green, yellow, orange, red, orange, yellow, green, aqua, #308dff, violet, violet, #308dff, aqua, green, yellow, orange, red, orange, yellow, green, aqua, #308dff, violet);
-    background-size: 600% 100%;
+    background-image: linear-gradient(45deg, violet, #308dff, cyan, green, yellow, orange, red, orange, yellow, green, cyan, #308dff, violet, violet);
+    background-size: 500px 100%;
     animation: rainbow-move 4s linear 1ms infinite;
-    background-position-x: 66%;
     transform: rotateZ(360deg); /* force rainbow rendering onto GPU if available */
 }
 

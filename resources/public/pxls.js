@@ -1025,11 +1025,12 @@ window.App = (function () {
                         var dx = Math.abs(downX - clientX),
                             dy = Math.abs(downY - clientY);
                         if ((event.button === 0 || touch) && downDelta < 500) {
+                            let pos;
                             if (!self.allowDrag && dx < 25 && dy < 25) {
-                                var pos = self.fromScreen(downX, downY);
+                                pos = self.fromScreen(downX, downY);
                                 place.place(pos.x, pos.y);
                             } else if (dx < 5 && dy < 5) {
-                                var pos = self.fromScreen(clientX, clientY);
+                                pos = self.fromScreen(clientX, clientY);
                                 place.place(pos.x, pos.y);
                             }
                         }
@@ -2516,7 +2517,7 @@ window.App = (function () {
                 hooks: [],
                 /**
                  * Registers hooks.
-                 * @param {Object} hooks Information about the hook.
+                 * @param {...Object} hooks Information about the hook.
                  * @param {String} hooks.id An ID for the hook.
                  * @param {String} hooks.name A user-facing name for the hook.
                  * @param {Boolean} hooks.sensitive Whenever the hook contains sensitive information.
@@ -3139,20 +3140,25 @@ window.App = (function () {
                             self.elements.themeSelect.val(currentTheme);
                         }
                     }
-                    self.elements.themeSelect.on("change", function() {
-                        let theme = parseInt(this.value);
+                    self.elements.themeSelect.on("change", async function() {
+                        const themeIdx = parseInt(this.value);
                         // If theme is -1, the user selected the default theme, so we should remove all other themes
-                        if (theme === -1) {
-                            console.info('Default theme - should reset!')
+                        if (themeIdx === -1) {
                             // Default theme
-                            $('*[data-theme]').remove();
                             ls.set('currentTheme', -1);
+                            $('*[data-theme]').remove();
                             self.elements.themeColorMeta.attr('content', null);
                             return;
                         }
-                        self.themes[theme].element.appendTo(document.head);
-                        self.elements.themeColorMeta.attr('content', self.themes[theme].color);
-                        ls.set('currentTheme', theme);
+
+                        const theme = self.themes[themeIdx];
+                        theme.element.one('load', () => {
+                            self.elements.themeColorMeta.attr('content', theme.color);
+                            $(`*[data-theme]:not([data-theme=${themeIdx}])`).remove();
+                        });
+                        theme.element.appendTo(document.head);
+
+                        ls.set('currentTheme', themeIdx);
                     })
                 },
                 _initStack: function () {
@@ -3796,7 +3802,8 @@ window.App = (function () {
                         if ((e.originalEvent.key == "Enter" || e.originalEvent.which === 13) && !e.shiftKey) {
                             if (trimmed.startsWith('/') && user.getRole() !== "USER") {
                                 let args = trimmed.substr(1).split(' '),
-                                    command = args.shift();
+                                    command = args.shift(),
+                                    banReason; // To fix compiler warning
                                 handling = true;
                                 switch (command.toLowerCase().trim()) {
                                     case 'permaban': {
@@ -4348,7 +4355,7 @@ window.App = (function () {
 
                     //events/scaffolding
                     _selUsernameColor.value = user.getChatNameColor();
-                    uiHelper.styleElemWithChatNameColor(_selUsernameColor);
+                    uiHelper.styleElemWithChatNameColor(_selUsernameColor, user.getChatNameColor());
                     _selUsernameColor.addEventListener('change', function() {
                         socket.send({type: "UserUpdate", updates: {NameColor: String(this.value >> 0)}});
                     });
