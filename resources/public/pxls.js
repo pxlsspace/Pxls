@@ -3139,20 +3139,25 @@ window.App = (function () {
                             self.elements.themeSelect.val(currentTheme);
                         }
                     }
-                    self.elements.themeSelect.on("change", function() {
-                        let theme = parseInt(this.value);
+                    self.elements.themeSelect.on("change", async function() {
+                        const themeIdx = parseInt(this.value);
                         // If theme is -1, the user selected the default theme, so we should remove all other themes
-                        if (theme === -1) {
-                            console.info('Default theme - should reset!')
+                        if (themeIdx === -1) {
                             // Default theme
-                            $('*[data-theme]').remove();
                             ls.set('currentTheme', -1);
+                            $('*[data-theme]').remove();
                             self.elements.themeColorMeta.attr('content', null);
                             return;
                         }
-                        self.themes[theme].element.appendTo(document.head);
-                        self.elements.themeColorMeta.attr('content', self.themes[theme].color);
-                        ls.set('currentTheme', theme);
+
+                        const theme = self.themes[themeIdx];
+                        theme.element.one('load', () => {
+                            self.elements.themeColorMeta.attr('content', theme.color);
+                            $(`*[data-theme]:not([data-theme=${themeIdx}])`).remove();
+                        });
+                        theme.element.appendTo(document.head);
+
+                        ls.set('currentTheme', themeIdx);
                     })
                 },
                 _initStack: function () {
