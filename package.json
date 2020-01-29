@@ -1,6 +1,7 @@
 {
   "name": "pxls",
   "version": "1.0.0",
+  "private": true,
   "dependencies": {
     "eslint": "^6.8.0",
     "eslint-config-semistandard": "^15.0.0",
