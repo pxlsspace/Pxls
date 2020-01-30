@@ -8,6 +8,7 @@ import org.jdbi.v3.core.Jdbi;
 import space.pxls.App;
 import space.pxls.server.packets.chat.Badge;
 import space.pxls.server.packets.chat.ChatMessage;
+import space.pxls.server.packets.chat.ServerChatLookup;
 import space.pxls.user.Chatban;
 import space.pxls.user.Role;
 import space.pxls.user.User;
@@ -23,6 +24,7 @@ import static java.lang.Math.toIntExact;
 
 public class Database {
     private final Jdbi jdbi;
+    private static final String SQL_USER_BY_NAME = "SELECT id, stacked, username, login, signup_time, cooldown_expiry, role, ban_expiry, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color FROM users WHERE username = :username";
 
     public Database() {
         try {
@@ -595,7 +597,7 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> getUserByName(String name) {
-        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, login, signup_time, cooldown_expiry, role, ban_expiry, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color FROM users WHERE username = :username")
+        return jdbi.withHandle(handle -> handle.select(SQL_USER_BY_NAME)
                 .bind("username", name)
                 .map(new DBUser.Mapper())
                 .findFirst());
@@ -1094,6 +1096,14 @@ public class Database {
                 .toArray(new DBChatMessage[0]));
     }
 
+    public List<DBChatMessage> getLastXMessagesFromUID(int authorID, int limit) {
+        return jdbi.withHandle(handle -> handle.select("SELECT * FROM chat_messages WHERE author = :uid ORDER BY sent DESC LIMIT :limit")
+            .bind("uid", authorID)
+            .bind("limit", limit)
+            .map(new DBChatMessage.Mapper())
+            .list());
+    }
+
     /**
      * Retrieves the last <pre>x</pre> amount of {@link DBChatMessage}s.
      * @param x The amount of chat messages to retrieve.
@@ -1276,6 +1286,36 @@ public class Database {
                 .bind("reason", reason)
                 .bind("id", id)
                 .execute());
+    }
+
+    /**
+     * Returns the requested user's last 100 messages and chatbans.
+     *
+     * @param username The {@link User}'s name to look up.
+     * @return The requested user's last 100 messages and chatbans.
+     */
+    public ServerChatLookup runChatLookupForUsername(String username) {
+        // we want to run all these queries with their own handle so we don't hit the pool x times.
+        return jdbi.withHandle(handle -> {
+            Optional<DBUser> dbu = handle.createQuery(SQL_USER_BY_NAME)
+                    .bind("username", username)
+                    .map(new DBUser.Mapper())
+                    .findFirst();
+            if (!dbu.isPresent()) return null;
+            DBUser dbUser = dbu.get();
+
+            List<DBExtendedChatban> chatbans = handle.createQuery("SELECT cb.*,u.username AS target_name,u1.username AS initiator_name FROM chatbans cb INNER JOIN users u ON u.id = cb.target INNER JOIN users u1 ON u1.id = cb.initiator WHERE cb.target = :uid ORDER BY \"when\" DESC;")
+                    .bind("uid", dbUser.id)
+                    .map(new DBExtendedChatban.Mapper())
+                    .list();
+
+            List<DBChatMessage> messages = handle.createQuery("SELECT * FROM chat_messages WHERE author = :uid ORDER BY sent DESC LIMIT 100")
+                    .bind("uid", dbUser.id)
+                    .map(new DBChatMessage.Mapper())
+                    .list();
+
+            return new ServerChatLookup(dbUser, messages, chatbans);
+        });
     }
 
     /* END CHAT */

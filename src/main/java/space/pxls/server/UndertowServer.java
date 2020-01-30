@@ -105,7 +105,7 @@ public class UndertowServer {
 
         if (user != null) {
             user.getConnections().add(channel);
-            
+
             // aaaaaaand update the useragent
             List<String> agentAr = exchange.getRequestHeaders().get(Headers.USER_AGENT.toString());
             String agent = "";
@@ -134,20 +134,19 @@ public class UndertowServer {
                 if (type.equals("pixel")) obj = App.getGson().fromJson(jsonObj, ClientPlace.class);
                 if (type.equals("undo")) obj = App.getGson().fromJson(jsonObj, ClientUndo.class);
                 if (type.equals("captcha")) obj = App.getGson().fromJson(jsonObj, ClientCaptcha.class);
-                if (type.equals("admin_cdoverride"))
-                    obj = App.getGson().fromJson(jsonObj, ClientAdminCooldownOverride.class);
-                if (type.equals("admin_message"))
-                    obj = App.getGson().fromJson(jsonObj, ClientAdminMessage.class);
+                if (type.equals("admin_cdoverride")) obj = App.getGson().fromJson(jsonObj, ClientAdminCooldownOverride.class);
+                if (type.equals("admin_message")) obj = App.getGson().fromJson(jsonObj, ClientAdminMessage.class);
                 if (type.equals("shadowbanme")) obj = App.getGson().fromJson(jsonObj, ClientShadowBanMe.class);
                 if (type.equals("banme")) obj = App.getGson().fromJson(jsonObj, ClientBanMe.class);
                 if (type.equalsIgnoreCase("ChatHistory")) obj = App.getGson().fromJson(jsonObj, ClientChatHistory.class);
                 if (type.equalsIgnoreCase("ChatbanState")) obj = App.getGson().fromJson(jsonObj, ClientChatbanState.class);
                 if (type.equalsIgnoreCase("ChatMessage")) obj = App.getGson().fromJson(jsonObj, ClientChatMessage.class);
                 if (type.equalsIgnoreCase("UserUpdate")) obj = App.getGson().fromJson(jsonObj, ClientUserUpdate.class);
+                if (type.equalsIgnoreCase("ChatLookup")) obj = App.getGson().fromJson(jsonObj, ClientChatLookup.class);
 
                 // old thing, will auto-shadowban
                 if (type.equals("place")) obj = App.getGson().fromJson(jsonObj, ClientPlace.class);
-                
+
                 // lol
                 if (type.equals("placepixel")) obj = App.getGson().fromJson(jsonObj, ClientBanMe.class);
 
