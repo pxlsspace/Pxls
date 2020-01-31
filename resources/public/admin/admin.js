@@ -96,12 +96,12 @@
                             data.time = time;
                         }
                         $.post(path, data, function () {
-                            admin.alert.show(done_msg + " " + username);
+                            admin.modal.showText(`${done_msg} ${username}`);
                             if (fn) {
                                 fn();
                             }
                         }).fail(function () {
-                            admin.alert.show("Something went wrong! Perhaps insufficient permissions?");
+                            admin.modal.showText("Something went wrong! Perhaps insufficient permissions?");
                         });
                     })
                 },
@@ -126,7 +126,7 @@
                         username,
                         reason
                     }, function () {
-                        admin.alert.show(`Unbanned user ${username}`);
+                        admin.modal.showText(`Unbanned user ${username}`, {modalOpts: {closeExisting: true}});
                         if (fn) {
                             fn();
                         }
@@ -279,7 +279,7 @@
                     $.post("/admin/check", {
                         username: username
                     }, self.callback).fail(function () {
-                        admin.alert.show("User "+username+" not found");
+                        admin.modal.showText(`User ${username} not found.`);
                     });
                 },
                 popUnban: username => {
@@ -290,11 +290,10 @@
                     txtUnbanReason.addEventListener('keydown', e => e.stopPropagation());
 
                     let unbanWrapper = crel('form', {'class': 'chatmod-container'},
-                        crel('h3', 'Unban User'),
                         crel('p', `Unbanning ${username}`),
                         lblUnbanReason,
                         crel('div', {'class': 'buttons'},
-                            crel('button', {'class': 'button', 'type': 'button', onclick: () => {admin.alert.hide(); unbanWrapper.remove();} }, 'Cancel'),
+                            crel('button', {'class': 'button', 'type': 'button', onclick: () => {admin.modal.closeAll();} }, 'Cancel'),
                             btnSubmit
                         )
                     );
@@ -306,7 +305,10 @@
                         });
                     };
 
-                    admin.alert.show(unbanWrapper, true);
+                    admin.modal.show(admin.modal.buildDom(
+                        crel('h2', {'class': 'modal-title'}, 'Unban'),
+                        unbanWrapper
+                    ));
                 }
             };
             return {
