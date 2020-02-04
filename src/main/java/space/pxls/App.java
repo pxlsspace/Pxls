@@ -411,7 +411,7 @@ public class App {
                         toRename.setRenameRequested(false);
                         if (toRename.updateUsername(token[2], true)) {
                             App.getServer().send(toRename, new ServerRenameSuccess(toRename.getName()));
-                            System.out.println("Name udpated");
+                            System.out.println("Name updated");
                         } else {
                             System.out.println("Failed to update name (function returned false. name taken or an error occurred)");
                         }

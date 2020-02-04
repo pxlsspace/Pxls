@@ -3746,7 +3746,7 @@ window.App = (function () {
                     socket.on('chat_ban_state', handleChatban);
 
                     const _doPurge = (elem, e) => {
-                        if (user.getRole() !== "USER") {
+                        if (user.isStaff()) {
                             elem.classList.add('purged');
                             elem.setAttribute('title', `Purged by ${e.initiator} with reason: ${e.reason || 'none provided'}`);
                             elem.dataset.purgedBy = e.initiator;
