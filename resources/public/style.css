@@ -1251,7 +1251,7 @@ body.panel-left.panel-right.panel-right-halfwidth #ui {
 
 ul.chat-body li.chat-line {
     /*border:1px solid #000;*/
-    line-height: 1.5rem;
+    line-height: 1.5em;
     border-bottom: 1px solid #bfbfbf;
     overflow: hidden;
 }
@@ -1278,10 +1278,10 @@ li.chat-line i[title] {
 }
 
 li.chat-line .text-badge, header .text-badge {
-    line-height: 1rem;
+    line-height: 1em;
     background-color: #ccc;
-    padding: .15rem .5rem;
-    border-radius: 1rem;
+    padding: .15em .5em;
+    border-radius: 1em;
     color: #770;
     cursor: default;
     -webkit-user-select: none;
@@ -1358,12 +1358,14 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 }
 
 .chat-wrapper .bottom-banner {
-    height: 1.25rem;
-    line-height: 1.25rem;
-    font-size: 1rem;
+    height: 1.25em;
+    line-height: 1.25em;
+    font-size: 1em;
     text-align: right;
     font-style: italic;
     opacity: 100%;
+    overflow-y: hidden;
+    text-align: center;
 }
 
 .chat-wrapper .bottom-banner.transparent {
@@ -1395,7 +1397,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     width: 100%;
     height: 100%;
     margin: 0;
-    padding: 5px;
+    padding: 5px 1.75rem 5px 5px;
     resize: none;
     font-family: Arial, Helvetica, sans-serif;
 }
@@ -1491,11 +1493,11 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 }
 
 #typeahead ul li {
-    font-size: 1rem;
-    line-height: 1.5rem;
+    font-size: 1em;
+    line-height: 1.5em;
     cursor: pointer;
     user-select: none;
-    text-indent: .75rem;
+    text-indent: .75em;
     background-color: #a3a3a3;
     border-radius: 4px;
     padding: 3px;
@@ -1983,6 +1985,42 @@ ul.chat-history, ul.chatban-history {
     }
 }
 
+@media (max-width: 1152px) {
+    .panel, .panel.half-width {
+        max-width: 50% !important;
+        width: 50% !important;
+    }
+
+    .panel.left {
+        left: -55%;
+    }
+
+    .panel.right {
+        right: -55%;
+    }
+}
+
+@media (max-width: 960px) {
+    .panel, .panel.half-width {
+        max-width: 100% !important;
+        width: 100% !important;
+    }
+
+    .panel.left {
+        left: -105%;
+    }
+
+    .panel.right {
+        right: -105%;
+    }
+
+    body.panel-open #ui {
+        right: initial;
+        width: initial;
+        transition: none;
+    }
+}
+
 @media (max-width: 768px) {
     .modal {
         min-width: 1vw;
@@ -2026,25 +2064,6 @@ ul.chat-history, ul.chatban-history {
         max-height: 100%;
         overflow: auto;
         width: 95%;
-    }
-
-    .panel, .panel.half-width {
-        max-width: 100% !important;
-        width: 100% !important;
-    }
-
-    .panel.left {
-        left: -105%;
-    }
-
-    .panel.right {
-        right: -105%;
-    }
-
-    body.panel-open #ui {
-        right: initial;
-        width: initial;
-        transition: none;
     }
 
     #ui #main-bubble {

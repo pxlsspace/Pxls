@@ -2847,9 +2847,9 @@ window.App = (function () {
                 loadingStates: {},
                 banner: {
                     HTMLs: [
-                        crel('span', crel('i', {'class': 'fab fa-discord fa-is-left'}), ' We have a discord! Join here: ', crel('a', {'href': 'https://pxls.space/discord', 'target': '_blank'}, 'Discord Invite')).outerHTML,
-                        crel('span', {'style': 'font-size: .75rem'}, crel('i', {'class': 'fas fa-gavel fa-is-left'}), 'Chat is moderated, ensure you read the rules in the info panel.').outerHTML,
-                        crel('span', {'style': 'font-size: .8rem'}, crel('i', {'class': 'fas fa-question-circle fa-is-left'}), 'If you haven\'t already, make sure you read the FAQ top left!').outerHTML
+                        crel('span', crel('i', {'class': 'fab fa-discord fa-is-left'}), ' Official Discord: ', crel('a', {'href': 'https://pxls.space/discord', 'target': '_blank'}, 'Invite Link')).outerHTML,
+                        crel('span', {'style': ''}, crel('i', {'class': 'fas fa-gavel fa-is-left'}), 'Read the chat rules in the info panel.').outerHTML,
+                        crel('span', {'style': ''}, crel('i', {'class': 'fas fa-question-circle fa-is-left'}), 'Ensure you read the FAQ top left!').outerHTML
                     ],
                     curElem: 0,
                     intervalID: 0,
