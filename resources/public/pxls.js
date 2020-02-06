@@ -201,17 +201,23 @@ window.App = (function () {
          * @param name {string} The name of the database. Used internally as an accessor key.
          * @param [initData={}] {object} The initial data to seed this database with.
          * @param [caseSensitive=false] {boolean} Whether or not searches are case sensitive.
+         * @param [leftAnchored=false] {boolean} Whether or not searches are left-anchored.
+         *                                       If true, `startsWith` is used. Otherwise, `includes` is used.
          * @constructor
          */
-        function Database(name, initData = {}, caseSensitive = false) {
+        function Database(name, initData = {}, caseSensitive = false, leftAnchored = false) {
             this.name = name;
             this._caseSensitive = caseSensitive;
             this.initData = initData;
+            this.leftAnchored = leftAnchored;
 
             const fixKey = key => this._caseSensitive ? key.trim() : key.toLowerCase().trim();
-            this.search = start => {
+            this.search = (start) => {
                 start = fixKey(start);
-                return Object.entries(this.initData).filter(x => fixKey(x[0]).startsWith(start)).map(x => x[1]);
+                return Object.entries(this.initData).filter(x => {
+                    let key = fixKey(x[0]);
+                    return this.leftAnchored ? key.startsWith(start) : key.includes(start);
+                }).map(x => x[1]);
             };
             this.addEntry = (key, value) => {
                 key = fixKey(key);
@@ -293,7 +299,7 @@ window.App = (function () {
                 let db = this.DBs.filter(x => x.name === trigger.trigger.dbType);
                 if (!db || !db.length) return [];
                 db = db[0];
-                let fromDB = db.search(trigger.word);
+                let fromDB = db.search(trigger.word, trigger.trigger.leftAnchored);
                 if (fromDB && trigger.trigger.keepTrigger) {
                     fromDB = fromDB.map(x => `${trigger.trigger.char}${x}`);
                 }
