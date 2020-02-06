@@ -169,13 +169,16 @@ window.App = (function () {
          * @param dbType {string} The type of the database, acts internally as a map key.
          * @param [keepTrigger=false] {boolean} Whether or not this trigger type should keep it's matching trigger chars on search results.
          * @param [hasPair=false] {boolean} Whether or not this trigger has a matching pair at the end, e.g. ':word:' vs '@word'
+         * @param [minLength=0] {number} The minimum length of the match before this trigger is considered valid.
+         *                                Length is calculated without `this.char`, so a trigger of ":" and a match of ":one" will be a length of 3.
          * @constructor
          */
-        function Trigger(char, dbType, keepTrigger = false, hasPair = false) {
+        function Trigger(char, dbType, keepTrigger = false, hasPair = false, minLength = 0) {
             this.char = char;
             this.dbType = dbType;
             this.keepTrigger = keepTrigger;
             this.hasPair = hasPair;
+            this.minLength = minLength;
         }
 
         /**
@@ -280,7 +283,7 @@ window.App = (function () {
                     match.word = searchString.substring(match.start+1, fixedEnd);
                 }
 
-                return matched ? match : false;
+                return matched ? (match.word.length >= match.trigger.minLength ? match : false) : false;
             };
 
             /**
@@ -4157,7 +4160,7 @@ window.App = (function () {
                     }
 
                     // init triggers
-                    let triggerEmoji = new TH.Trigger(':', 'emoji', false, true);
+                    let triggerEmoji = new TH.Trigger(':', 'emoji', false, true, 2);
                     let triggerUsers = new TH.Trigger('@', 'users', true, false);
 
                     // init typeahead
