@@ -164,6 +164,7 @@ public class App {
                 }
             } else if (token[0].equalsIgnoreCase("alert")) {
                 String rest = line.substring(token[0].length() + 1).trim();
+                App.getDatabase().insertServerAdminLog(String.format("Sent a server-wide broadcast with the content: %s", rest));
                 server.broadcast(new ServerAlert("console", rest));
             } else if (token[0].equalsIgnoreCase("ban")) {
                 if (token.length < 3) {

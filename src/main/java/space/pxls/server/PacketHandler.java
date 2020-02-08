@@ -132,6 +132,7 @@ public class PacketHandler {
         User u = App.getUserManager().getByName(obj.getUsername());
         if (u != null) {
             ServerAlert msg = new ServerAlert(user.getName(), escapeHtml4(obj.getMessage()));
+            App.getDatabase().insertAdminLog(user.getId(), String.format("Sent an alert to %s (UID: %d) with the content: %s", u.getName(), u.getId(), escapeHtml4(obj.getMessage())));
             for (WebSocketChannel ch : u.getConnections()) {
                 server.send(ch, msg);
             }
