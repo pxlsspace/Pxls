@@ -131,7 +131,7 @@ public class PacketHandler {
     private void handleAdminMessage(WebSocketChannel channel, User user, ClientAdminMessage obj) {
         User u = App.getUserManager().getByName(obj.getUsername());
         if (u != null) {
-            ServerAlert msg = new ServerAlert(escapeHtml4(obj.getMessage()));
+            ServerAlert msg = new ServerAlert(user.getName(), escapeHtml4(obj.getMessage()));
             for (WebSocketChannel ch : u.getConnections()) {
                 server.send(ch, msg);
             }
