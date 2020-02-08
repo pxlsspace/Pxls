@@ -15,7 +15,7 @@ kbd {
     color: #eee;
 }
 
-.message select, .message textarea, .message input {
+.modal select, .modal textarea, .modal input {
     border: 2px solid #333;
     background-color: #222;
     color: #eee;
@@ -78,7 +78,7 @@ kbd {
     color: #fff;
 }
 
-input[type="text"], textarea {
+input[type="text"], input[type="number"], textarea, select {
     border: 1px solid #333;
     background-color: #222;
     color: #eee;
@@ -284,6 +284,20 @@ li.chat-line .user {
 
 .notification-footer .notification-expiry {
     color: #995050;
+}
+
+/*//////////////////////////*\
+| Modal
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
+/* https://github.com/kylefox/jquery-modal/blob/a8b9c9b01961c0a3c6676fcc8fe6cc5b8c74cb5c/jquery.modal.css */
+
+.modal {
+    color: #ddd;
+    background-color: #3d3d3d;
+}
+
+.modal .modal-header, .modal .modal-footer {
+    background-color: #292929;
 }
 
 /* Mobile */

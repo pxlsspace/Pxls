@@ -2377,7 +2377,7 @@ window.App = (function () {
 
                             analytics("send", "event", "Captcha", "Accepted")
                         } else {
-                            alert.show("Failed captcha verification");
+                            modal.showText("Failed captcha verification");
                             analytics("send", "event", "Captcha", "Failed")
                         }
                     });
@@ -2452,64 +2452,53 @@ window.App = (function () {
                 },
                 handle: null,
                 report: function (id, x, y) {
-                    self.elements.prompt.empty().append(
-                        $("<p>").addClass("text").css({
-                            fontWeight: 800,
-                            marginTop: 0
-                        }).text("Report pixel to moderator"),
-                        $("<select>").append(
-                            $("<option>").text("Rule #1: Hateful/derogatory speech or symbols"),
-                            $("<option>").text("Rule #2: Nudity, genitalia, or non-PG-13 content"),
-                            $("<option>").text("Rule #3: Multi-account"),
-                            $("<option>").text("Rule #4: Botting"),
-                            $("<option>").attr("value", "other").text("Other (specify below)")
-                        ).css({
-                            width: "100%",
-                            "margin-bottom": "1em"
-                        }),
-                        $("<textarea>").attr("placeholder", "Additional information (if applicable)").css({
-                            width: '100%',
-                            height: '5em'
-                        }).keydown(function (evt) {
-                            evt.stopPropagation();
-                        }),
-                        $("<div>").addClass("buttons").append(
-                            $("<div>").addClass("button").text("Cancel")
-                                .click(function () {
-                                    self.elements.prompt.fadeOut(200);
-                                }),
-                            $("<button>").addClass("button").text("Report")
-                                .click(function () {
-                                    this.disabled = true;
-                                    this.textContent = "Sending...";
+                    const reportButton = crel('button', {'class': 'button'}, 'Report');
+                    reportButton.addEventListener('click', function() {
+                        this.disabled = true;
+                        this.textContent = "Sending...";
 
-                                    var selectedRule = self.elements.prompt.find("select").val();
-                                    var textarea = self.elements.prompt.find("textarea").val().trim();
-                                    var msg = selectedRule;
-                                    if (selectedRule === "other") {
-                                        if (textarea === "") {
-                                            alert.show("You must specify the details.");
-                                            return;
-                                        }
-                                        msg = textarea;
-                                    } else if (textarea !== "") {
-                                        msg += "; additional information: " + textarea;
-                                    }
-                                    $.post("/report", {
-                                        id: id,
-                                        x: x,
-                                        y: y,
-                                        message: msg
-                                    }, function () {
-                                        alert.show("Sent report!");
-                                        self.elements.prompt.hide();
-                                        self.elements.lookup.hide();
-                                    }).fail(function () {
-                                        alert.show("Error sending report.");
-                                    })
-                                })
-                        )
-                    ).fadeIn(200);
+                        var selectedRule = this.closest('.modal').querySelector("select").value;
+                        var textarea = this.closest('.modal').querySelector("textarea").value.trim();
+                        var msg = selectedRule;
+                        if (selectedRule === "other") {
+                            if (textarea === "") {
+                                modal.showText('You must specify the details.');
+                                return;
+                            }
+                            msg = textarea;
+                        } else if (textarea !== "") {
+                            msg += "; additional information: " + textarea;
+                        }
+                        $.post("/report", {
+                            id: id,
+                            x: x,
+                            y: y,
+                            message: msg
+                        }, function () {
+                            modal.showText('Sent report!');
+                            self.elements.prompt.hide();
+                            self.elements.lookup.hide();
+                        }).fail(function () {
+                            modal.showText('Error sending report.');
+                        })
+                    })
+                    modal.show(modal.buildDom(
+                        crel('h2', {'class': 'modal-title'}, 'Report Pixel'),
+                        crel('div',
+                            crel('select', {'style': 'width: 100%; margin-bottom: 1em;'},
+                                crel('option', 'Rule #1: Hateful/derogatory speech or symbols'),
+                                crel('option', 'Rule #2: Nudity, genitalia, or non-PG-13 content'),
+                                crel('option', 'Rule #3: Multi-account'),
+                                crel('option', 'Rule #4: Botting'),
+                                crel('option', {'value': 'other'}, 'Other (specify below)')
+                            ),
+                            crel('textarea', {'placeholder': 'Additional information (if applicable)', 'style': 'width: 100%; height: 5em', onkeydown: e => e.stopPropagation()})
+                        ),
+                        [ // crel will inject the array as fragments
+                            crel('button', {'class': 'button', onclick: () => modal.closeAll()}, 'Cancel'),
+                            reportButton
+                        ]
+                    ));
                 },
                 /**
                  * All lookup hooks.
@@ -2837,55 +2826,6 @@ window.App = (function () {
                 init: self.init
             };
         })(),
-        // this takes care of the custom alert look
-        alert = (function () {
-            var self = {
-                elements: {
-                    alert: $("#alert")
-                },
-                isOpen: false,
-                removeContent: () => {
-                    self.elements.alert.find(".text,.custWrapper").empty();
-                },
-                show: (content, hideControls = false) => {
-                    self.removeContent();
-                    if (typeof content === "string") {
-                        self.elements.alert.find(".text").append(content);
-                    } else {
-                        self.elements.alert.find(".custWrapper").append(content);
-                    }
-                    if (!self.isOpen) {
-                        self.elements.alert.fadeIn(200);
-                    }
-                    if (hideControls === true) {
-                        self.elements.alert.find('.default-control').hide();
-                    } else {
-                        self.elements.alert.find('.default-control').show();
-                    }
-                    self.isOpen = true;
-                },
-                hide: function(clear = false) {
-                    if (self.isOpen) {
-                        self.elements.alert.fadeOut(200, () => {
-                            if (clear) {
-                                self.removeContent();
-                            }
-                        });
-                    }
-                    self.isOpen = false;
-                },
-                init: function () {
-                    self.elements.alert.hide();
-                    self.elements.alert.find(".button").click(self.hide);
-                    socket.on("alert", (data) => self.show(data.message));
-                }
-            };
-            return {
-                init: self.init,
-                show: self.show,
-                hide: self.hide
-            };
-        })(),
         uiHelper = (function () {
             var self = {
                 tabId: null,
@@ -2945,6 +2885,8 @@ window.App = (function () {
                     self._initMultiTabDetection();
 
                     self.elements.coords.click(() => coords.copyCoords(true));
+
+                    socket.on('alert', (data) => modal.showText(data.message, {title: 'Server Alert', modalOpts: {closeExisting: false}}));
 
                     var useMono = ls.get("monospace_lookup");
                     if (typeof useMono === 'undefined') {
@@ -3323,14 +3265,14 @@ window.App = (function () {
                             discordName: name
                         },
                         success: function () {
-                            alert.show("Discord name updated successfully");
+                            modal.showText('Discord name updated successfully');
                         },
                         error: function (data) {
                             let err = data.responseJSON && data.responseJSON.details ? data.responseJSON.details : data.responseText;
                             if (data.status === 200) { // seems to be caused when response body isn't json? just show whatever we can and trust server sent good enough details.
-                                alert.show(err);
+                                modal.showText(err);
                             } else {
-                                alert.show("Couldn't change discord name: " + err);
+                                modal.showText('Couldn\'t change discord name: ' + err);
                             }
                         }
                     });
@@ -3341,7 +3283,7 @@ window.App = (function () {
                         timer.audioElem.src = url;
                         ls.set("alert.src", url);
                     } catch (e) {
-                        alert.show("Failed to update audio src, using default sound.");
+                        modal.showText('Failed to update audio src, using default sound.');
                         timer.audioElem.src = "notify.wav";
                         ls.set("alert.src", "notify.wav");
                     }
@@ -3840,11 +3782,11 @@ window.App = (function () {
                                                 removalAmount: shouldPurge ? -1 : 0,
                                                 banLength: 0
                                             }, () => {
-                                                alert.show('Chatban initiated');
+                                                modal.showText('Chatban initiated');
                                                 self.elements.input[0].value = '';
                                                 self.elements.input[0].disabled = false;
                                             }).fail(() => {
-                                                alert.show('Failed to chatban');
+                                                modal.showText('Failed to chatban');
                                                 self.elements.input[0].disabled = false;
                                             });
                                         }
@@ -3888,11 +3830,11 @@ window.App = (function () {
                                                     removalAmount: shouldPurge ? -1 : 0,
                                                     banLength: banLength
                                                 }, () => {
-                                                    alert.show('Chatban initiated');
+                                                    modal.showText('Chatban initiated');
                                                     self.elements.input[0].value = '';
                                                     self.elements.input[0].disabled = false;
                                                 }).fail(() => {
-                                                    alert.show('Failed to chatban');
+                                                    modal.showText('Failed to chatban');
                                                     self.elements.input[0].disabled = false;
                                                 });
                                             }
@@ -3921,11 +3863,11 @@ window.App = (function () {
                                                 who: user,
                                                 reason: purgeReason
                                             }, function () {
-                                                alert.show('Chatpurge initiated');
+                                                modal.showText('Chatpurge initiated');
                                                 self.elements.input[0].value = '';
                                                 self.elements.input[0].disabled = false;
                                             }).fail(() => {
-                                                alert.show('Failed to chatpurge');
+                                                modal.showText('Failed to chatpurge');
                                                 self.elements.input[0].disabled = false;
                                             });
                                         }
@@ -3997,7 +3939,7 @@ window.App = (function () {
                     $(window).on("pxls:panel:closed", (e, which) => {
                         if (which === "chat") {
                             if (document.querySelector('.chat-settings-title')) {
-                                alert.hide(true);
+                                modal.closeAll();
                             }
                         }
                     });
@@ -4364,11 +4306,11 @@ window.App = (function () {
                     _txtFontSize.addEventListener('change', function() {});
                     _btnFontSizeConfirm.addEventListener('click', function() {
                         if (isNaN(_txtFontSize.value)) {
-                            alert.show("Invalid value. Expected a number between 1 and 72");
+                            modal.showText('Invalid value. Expected a number between 1 and 72');
                         } else {
                             let val = _txtFontSize.value >> 0;
                             if (val < 1 || val > 72) {
-                                alert.show("Invalid value. Expected a number between 1 and 72");
+                                modal.showText('Invalid value. Expected a number between 1 and 72');
                             } else {
                                 ls.set("chat.font-size", val);
                                 self.elements.body.css("font-size", `${val}px`);
@@ -4440,8 +4382,7 @@ window.App = (function () {
                         }
                     });
 
-                    //show everything
-                    alert.show(crel(body,
+                    crel(body,
                         crel('h3', {'class': 'chat-settings-title'}, 'Chat Settings'),
                         lbl24hTimestamps,
                         lblPixelPlaceBadges,
@@ -4455,6 +4396,10 @@ window.App = (function () {
                         lblUsernameColor,
                         lblIgnores,
                         lblIgnoresFeedback
+                    )
+                    modal.show(modal.buildDom(
+                        crel('h2', {'class': 'modal-title'}, 'Chat Settings'),
+                        body
                     ));
                 },
                 _handlePingJumpClick: function() { //must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
@@ -4733,7 +4678,7 @@ window.App = (function () {
                                     let internalClickDefault = ls.get('chat.internalClickDefault') >> 0;
                                     if (internalClickDefault === 0) {
                                         self._popTemplateOverwriteConfirm(x).then(action => {
-                                            alert.hide();
+                                            modal.closeAll();
                                             self._handleTemplateOverwriteAction(action, x);
                                         });
                                     } else {
@@ -4765,9 +4710,12 @@ window.App = (function () {
                         }
                         case self.TEMPLATE_ACTIONS.NEW_TAB.id: {
                             if (!window.open(linkElem.dataset.raw, '_blank')) { //what popup blocker still blocks _blank redirects? idk but i'm sure they exist.
-                                alert.show(crel('div',
-                                    crel('h3', 'Failed to automatically open in a new tab'),
-                                    crel('a', {href: linkElem.dataset.raw, target: '_blank'}, 'Click here to open in a new tab instead')
+                                modal.show(modal.buildDom(
+                                    crel('h2', {'class': 'modal-title'}, 'Open Failed'),
+                                    crel('div',
+                                        crel('h3', 'Failed to automatically open in a new tab'),
+                                        crel('a', {href: linkElem.dataset.raw, target: '_blank'}, 'Click here to open in a new tab instead')
+                                    )
                                 ));
                             }
                             break;
@@ -4779,24 +4727,25 @@ window.App = (function () {
                         let bodyWrapper = crel('div');
                         let buttons = crel('div', {'style': 'text-align: right; display: block; width: 100%;'});
 
-                        alert.show(crel(bodyWrapper,
-                            crel('h3', {'class': 'text-orange'}, 'This link will overwrite your current template. What would you like to do?'),
-                            Object.values(self.TEMPLATE_ACTIONS).map(action => action.id === 0 ? null :
-                                crel('label', {'style': 'display: block; margin: 3px 3px 3px 1rem; margin-left: 1rem;'},
-                                    crel('input', {'type': 'radio', 'name': 'link-action-rb', 'data-action-id': action.id}),
-                                    action.pretty
-                                )
+                        modal.show(modal.buildDom(
+                            crel('h2', {'class': 'modal-title'}, 'Open Template'),
+                            crel(bodyWrapper,
+                                crel('h3', {'class': 'text-orange'}, 'This link will overwrite your current template. What would you like to do?'),
+                                Object.values(self.TEMPLATE_ACTIONS).map(action => action.id === 0 ? null :
+                                    crel('label', {'style': 'display: block; margin: 3px 3px 3px 1rem; margin-left: 1rem;'},
+                                        crel('input', {'type': 'radio', 'name': 'link-action-rb', 'data-action-id': action.id}),
+                                        action.pretty
+                                    )
+                                ),
+                                crel('span', {'class': 'text-muted'}, 'Note: You can set a default action in the settings menu which bypasses this popup completely'),
                             ),
-                            crel('span', {'class': 'text-muted'}, 'Note: You can set a default action in the settings menu which bypasses this popup completely'),
-                            crel('div', {'style': 'text-align: right; display: block; width: 100%'},
-                                [
-                                    ["Cancel", () => resolve(false)],
-                                    ["OK", () => resolve(bodyWrapper.querySelector('input[type=radio]:checked').dataset.actionId >> 0)]
-                                ].map(x =>
-                                    crel('button', {'class': 'button', 'style': 'margin-left: 3px; position: initial !important; bottom: initial !important; right: initial !important;', onclick: x[1]}, x[0])
-                                )
+                            [
+                                ["Cancel", () => resolve(false)],
+                                ["OK", () => resolve(bodyWrapper.querySelector('input[type=radio]:checked').dataset.actionId >> 0)]
+                            ].map(x =>
+                                crel('button', {'class': 'button', 'style': 'margin-left: 3px; position: initial !important; bottom: initial !important; right: initial !important;', onclick: x[1]}, x[0])
                             )
-                        ), true);
+                        ));
                         bodyWrapper.querySelector(`input[type="radio"][data-action-id="${self.TEMPLATE_ACTIONS.NEW_TAB.id}"]`).checked = true;
                     });
                 },
@@ -4940,8 +4889,6 @@ window.App = (function () {
 
                             let chatReport =
                                 crel('form', {'class': 'report chat-report', 'data-chat-nonce': this.dataset.nonce},
-                                    crel('h3', 'Chat Report'),
-                                    crel('p', 'Use this form to report chat offenses.'),
                                     crel('p', {'style': 'font-size: 1rem !important;'},
                                         `You are reporting a chat message from `,
                                         crel('span', {'style': 'font-weight: bold'}, reportingTarget),
@@ -4949,7 +4896,7 @@ window.App = (function () {
                                     ),
                                     textArea,
                                     crel('div', {'style': 'text-align: right'},
-                                        crel('button', {'class': 'button', 'style': 'position: initial; margin-right: .25rem', 'type': 'button', onclick: () => {alert.hide(); chatReport.remove();}}, 'Cancel'),
+                                        crel('button', {'class': 'button', 'style': 'position: initial; margin-right: .25rem', 'type': 'button', onclick: () => {modal.closeAll(); chatReport.remove();}}, 'Cancel'),
                                         reportButton
                                     )
                                 );
@@ -4962,13 +4909,16 @@ window.App = (function () {
                                     report_message: textArea.value
                                 }, function () {
                                     chatReport.remove();
-                                    alert.show("Sent report!");
+                                    modal.showText('Sent report!');
                                 }).fail(function () {
-                                    alert.show("Error sending report.");
+                                    modal.showText('Error sending report.');
                                     reportButton.disabled = false;
                                 });
                             };
-                            alert.show(chatReport, true);
+                            modal.show(modal.buildDom(
+                                crel('h2', {'class': 'modal-title'}, 'Report User'),
+                                chatReport
+                            ));
                             break;
                         }
                         case 'mention': {
@@ -4980,9 +4930,9 @@ window.App = (function () {
                         case 'ignore': {
                             if (reportingTarget) {
                                 if (chat.addIgnore(reportingTarget)) {
-                                    alert.show('User ignored. You can unignore from chat settings.');
+                                    modal.showText('User ignored. You can unignore from chat settings.');
                                 } else {
-                                    alert.show('Failed to ignore user. Either they\'re already ignored, or an error occurred. If the problem persists, contact a developer.');
+                                    modal.showText('Failed to ignore user. Either they\'re already ignored, or an error occurred. If the problem persists, contact a developer.');
                                 }
                             } else console.warn('no reportingTarget');
                             break;
@@ -5043,11 +4993,10 @@ window.App = (function () {
 
                             let _reasonWrap = crel('div', {'style': 'display: block;'});
 
-                            let _btnCancel = crel('button', {'class': 'button', 'type': 'button', onclick: () => {chatbanContainer.remove(); alert.hide();}}, 'Cancel');
+                            let _btnCancel = crel('button', {'class': 'button', 'type': 'button', onclick: () => {chatbanContainer.remove(); modal.closeAll();}}, 'Cancel');
                             let _btnOK = crel('button', {'class': 'button', 'type': 'submit'}, 'Ban');
 
                             let chatbanContainer = crel('form', {'class': 'chatmod-container', 'data-chat-nonce': this.dataset.nonce},
-                                crel('h3', 'Chatban'),
                                 crel('h5', mode ? 'Banning:' : 'Message:'),
                                 messageTable,
                                 crel('h5', 'Ban Length'),
@@ -5130,13 +5079,17 @@ window.App = (function () {
                                     postData.who = reportingTarget;
 
                                 $.post("/admin/chatban", postData, () => {
-                                    chatbanContainer.remove();
-                                    alert.show("Chatban initiated");
+                                    modal.showText('Chatban initiated');
                                 }).fail(() => {
-                                    alert.show("Error occurred while chatbanning");
+                                    modal.showText('Error occurred while chatbanning');
                                 });
                             };
-                            alert.show(chatbanContainer, true);
+                            modal.show(modal.buildDom(
+                                crel('h2', {'class': 'modal-title'}, 'Chatban'),
+                                crel('div', {'style': 'padding-left: 1em'},
+                                    chatbanContainer
+                                )
+                            ));
                             break;
                         }
                         case 'delete': {
@@ -5151,9 +5104,9 @@ window.App = (function () {
                                 reason: _txtReason.value
                             }, () => {
                                 deleteWrapper.remove();
-                                alert.hide();
+                                modal.closeAll();
                             }).fail(() => {
-                                alert.show('Failed to delete');
+                                modal.showText('Failed to delete');
                             });
 
                             if (e.shiftKey === true) {
@@ -5162,7 +5115,6 @@ window.App = (function () {
                             let btnDelete = crel('button', {'class': 'button'}, 'Delete');
                             btnDelete.onclick = () => doDelete();
                             let deleteWrapper = crel('div', {'class': 'chatmod-container'},
-                                crel('h3', 'Delete Message'),
                                 crel('table',
                                     crel('tr',
                                         crel('th', 'Nonce: '),
@@ -5182,11 +5134,14 @@ window.App = (function () {
                                     )
                                 ),
                                 crel('div', {'class': 'buttons'},
-                                    crel('button', { 'class': 'button', 'type': 'button', onclick: () => {deleteWrapper.remove(); alert.hide();} }, 'Cancel'),
+                                    crel('button', { 'class': 'button', 'type': 'button', onclick: () => {deleteWrapper.remove(); modal.closeAll();} }, 'Cancel'),
                                     btnDelete
                                 )
                             );
-                            alert.show(deleteWrapper, true);
+                            modal.show(modal.buildDom(
+                                crel('h2', {'class': 'modal-title'}, 'Delete Message'),
+                                deleteWrapper
+                            ));
                             break;
                         }
                         case 'purge': {
@@ -5216,7 +5171,6 @@ window.App = (function () {
                                 );
 
                             let purgeWrapper = crel('form', {'class': 'chatmod-container'},
-                                crel('h3', 'Purge User'),
                                 crel('h5', 'Selected Message'),
                                 messageTable,
                                 crel('div',
@@ -5226,7 +5180,7 @@ window.App = (function () {
                                     lblPurgeReasonError
                                 ),
                                 crel('div', {'class': 'buttons'},
-                                    crel('button', { 'class': 'button', 'type': 'button', onclick: () => {purgeWrapper.remove(); alert.hide();} }, 'Cancel'),
+                                    crel('button', { 'class': 'button', 'type': 'button', onclick: () => {purgeWrapper.remove(); modal.closeAll();} }, 'Cancel'),
                                     btnPurge
                                 )
                             );
@@ -5238,13 +5192,15 @@ window.App = (function () {
                                     reason: txtPurgeReason.value
                                 }, function () {
                                     purgeWrapper.remove();
-                                    alert.show("User purged");
+                                    modal.showText('User purged');
                                 }).fail(function () {
-                                    alert.show("Error sending purge.");
+                                    modal.showText('Error sending purge.');
                                 });
                             };
-
-                            alert.show(purgeWrapper, true);
+                            modal.show(modal.buildDom(
+                                crel('h2', {'class': 'modal-title'}, 'Purge User'),
+                                crel('div', {'style': 'padding-left: 1em'}, purgeWrapper)
+                            ));
                             break;
                         }
                         case 'lookup': {
@@ -5272,7 +5228,7 @@ window.App = (function () {
                                 crel('div', stateOn, stateOff),
                                 renameError,
                                 crel('div', {'class': 'buttons'},
-                                    crel('button', {'class': 'button', 'type': 'button', onclick: () => {renameWrapper.remove(); alert.hide();}}, 'Cancel'),
+                                    crel('button', {'class': 'button', 'type': 'button', onclick: () => {renameWrapper.remove(); modal.closeAll();}}, 'Cancel'),
                                     btnSetState
                                 )
                             );
@@ -5281,7 +5237,7 @@ window.App = (function () {
                                 e.preventDefault();
                                 $.post('/admin/flagNameChange', {user: reportingTarget, flagState: rbStateOn.checked === true}, function() {
                                     renameWrapper.remove();
-                                    alert.show("Rename request updated");
+                                    modal.showText('Rename request updated');
                                 }).fail(function(xhrObj) {
                                     let resp = "An unknown error occurred. Please contact a developer";
                                     if (xhrObj.responseJSON) {
@@ -5296,8 +5252,10 @@ window.App = (function () {
                                     renameError.innerHTML = resp;
                                 });
                             };
-
-                            alert.show(renameWrapper, true);
+                            modal.show(modal.buildDom(
+                                crel('h2', {'class': 'modal-title'}, 'Request Rename'),
+                                renameWrapper
+                            ));
                             break;
                         }
                         case 'force-rename': {
@@ -5309,12 +5267,11 @@ window.App = (function () {
                             let renameError = crel('p', {'style': 'display: none; color: #f00; font-weight: bold; font-size: .9rem', 'class': 'rename-error'}, '');
 
                             let renameWrapper = crel('form', {'class': 'chatmod-container'},
-                                crel('h3', 'Toggle Rename Request'),
-                                crel('p', 'Select one of the options below to set the current rename request state.'),
+                                crel('p', 'Enter the new name for the user below. Please note that if you\'re trying to change the caps, you\'ll have to rename to something else first.'),
                                 newNameWrapper,
                                 renameError,
                                 crel('div', {'class': 'buttons'},
-                                    crel('button', {'class': 'button', 'type': 'button', onclick: () => {renameWrapper.remove(); alert.hide();}}, 'Cancel'),
+                                    crel('button', {'class': 'button', 'type': 'button', onclick: () => {modal.closeAll();}}, 'Cancel'),
                                     btnSetState
                                 )
                             );
@@ -5322,8 +5279,7 @@ window.App = (function () {
                             renameWrapper.onsubmit = e => {
                                 e.preventDefault();
                                 $.post('/admin/forceNameChange', {user: reportingTarget, newName: newNameInput.value.trim()}, function() {
-                                    renameWrapper.remove();
-                                    alert.show("User renamed");
+                                    modal.showText('User renamed');
                                 }).fail(function(xhrObj) {
                                     let resp = "An unknown error occurred. Please contact a developer";
                                     if (xhrObj.responseJSON) {
@@ -5338,8 +5294,10 @@ window.App = (function () {
                                     renameError.innerHTML = resp;
                                 });
                             };
-
-                            alert.show(renameWrapper, true);
+                            modal.show(modal.buildDom(
+                                crel('h2', {'class': 'modal-title'}, 'Force Rename'),
+                                renameWrapper
+                            ));
                             break;
                         }
                         case 'copy-nonce': {
@@ -5728,11 +5686,11 @@ window.App = (function () {
                     });
                     socket.on("session_limit", function (data) {
                         socket.close();
-                        alert.show("Too many sessions open, try closing some tabs.");
+                        modal.showText('Too many sessions open, try closing some tabs.');
                     });
                     socket.on("userinfo", function (data) {
                         let isBanned = false,
-                            banelem = $("<div>").addClass("ban-alert-content");
+                            banelem = crel('div', {'class': 'ban-alert-content'});
                         self.username = data.username;
                         self.loggedIn = true;
                         self.chatNameColor = data.chatNameColor;
@@ -5751,14 +5709,10 @@ window.App = (function () {
 
                         if (self.role == "BANNED") {
                             isBanned = true;
-                            banelem.append(
-                                $("<p>").text("You are permanently banned.")
-                            );
+                            crel(banelem, crel('p', 'You are permanently banned.'));
                         } else if (data.banned === true) {
                             isBanned = true;
-                            banelem.append(
-                                $("<p>").text(`You are temporarily banned and will not be allowed to place until ${new Date(data.banExpiry).toLocaleString()}`)
-                            );
+                            crel(banelem, crel('p', `You are temporarily banned and will not be allowed to place until ${new Date(data.banExpiry).toLocaleString()}`));
                         } else if (["TRIALMOD", "MODERATOR", "DEVELOPER", "ADMIN"].indexOf(self.role) != -1) {
                             if (window.deInitAdmin) {
                                 window.deInitAdmin();
@@ -5768,7 +5722,7 @@ window.App = (function () {
                                     socket: socket,
                                     user: user,
                                     place: place,
-                                    alert: alert,
+                                    modal: modal,
                                     lookup: lookup,
                                     chat: chat,
                                     cdOverride: data.cdOverride
@@ -5779,14 +5733,15 @@ window.App = (function () {
                         }
                         if (isBanned) {
                             self.elements.userMessage.empty().show().text("You can contact us using one of the links in the info menu.").fadeIn(200);
-                            banelem.append(
-                                $("<p>").text("If you think this was an error, please contact us using one of the links in the info tab.")
-                            ).append(
-                                $("<p>").append("Ban reason:")
-                            ).append(
-                                $("<p>").append(data.ban_reason)
+                            crel(banelem,
+                                crel('p', 'If you think this was an error, please contact us using one of the links in the info tab.'),
+                                crel('p', 'Ban reason:'),
+                                crel('p', data.ban_reason)
                             );
-                            alert.show(banelem);
+                            modal.show(modal.buildDom(
+                                crel('h2', 'Banned'),
+                                banelem
+                            ), {escapeClose: false, clickClose: false, showClose: true});
                             if (window.deInitAdmin) {
                                 window.deInitAdmin();
                             }
@@ -5824,7 +5779,7 @@ window.App = (function () {
                     $.post("/execNameChange", {newName: input.value.trim()}, function() {
                         self.renameRequested = false;
                         self.hideRenameRequest();
-                        alert.hide(true);
+                        modal.closeAll();
                     }).fail(function(xhrObj) {
                         let resp = "An unknown error occurred. Please contact staff on discord";
                         if (xhrObj.responseJSON) {
@@ -5842,8 +5797,6 @@ window.App = (function () {
                 },
                 _handleRenameClick: function(event) {
                     let renamePopup = crel('form', {onsubmit: self._handleSubmit},
-                        crel('h3', 'Change Username'),
-                        crel('hr'),
                         crel('p', 'Staff have required you to change your username, this usually means your name breaks one of our rules.'),
                         crel('p', 'If you disagree, please contact us on Discord (link in the info panel).'),
                         crel('label', 'New Username: ',
@@ -5851,11 +5804,14 @@ window.App = (function () {
                         ),
                         crel('p', {'style': 'display: none; font-weight: bold; color: #f00; font-size: .9rem;', 'class': 'rename-error'}, ''),
                         crel('div', {'style': 'text-align: right'},
-                            crel('button', {'class': 'button', 'onclick': alert.hide}, 'Not now'),
+                            crel('button', {'class': 'button', 'onclick': () => modal.closeAll()}, 'Not now'),
                             crel('button', {'class': 'button rename-submit', 'type': 'submit'}, 'Change')
                         )
                     );
-                    alert.show(renamePopup, true);
+                    modal.show(modal.buildDom(
+                        crel('h2', {'class': 'modal-title'}, 'Rename Requested'),
+                        renamePopup
+                    ));
                 },
                 showRenameRequest: () => {
                     self.elements.userMessage.empty().show().append(
@@ -6085,7 +6041,67 @@ window.App = (function () {
                     }
                 }
             }
-        }());
+        }()),
+        modal = (function() {
+            return {
+                showText: function(text, opts) {
+                    opts = Object.assign({}, {title: 'Pxls', footerButtons: [], modalOpts: {}}, opts);
+                    if (opts.footerButtons != null && !Array.isArray(opts.footerButtons)) {
+                        if (!(footerButtons instanceof HTMLElement)) throw new Error('Invalid footerButtons provided. Expected HTMLElement[]');
+                        opts.footerButtons = [opts.footerButtons];
+                    }
+                    let footer;
+                    if (Array.isArray(opts.footerButtons)) {
+                        let validButtons = opts.footerButtons.filter(x => x instanceof HTMLElement);
+                        if (validButtons.length > 0) {
+                            footer = crel('div', {'class': 'modal-footer'}, validButtons);
+                        }
+                    }
+                    modal.show(modal.buildDom(
+                        crel('h2', {'class': 'modal-title'}, opts.title || 'Pxls'),
+                        crel('p', {'style': 'margin: 0;'}, text)
+                    ), opts.modalOpts);
+                },
+                show: function(modal, opts) {
+                    if (!(modal instanceof HTMLElement)) throw new Error("Invalid modal object supplied. Expected an HTMLElement");
+                    opts = Object.assign({}, $.modal.defaults || {}, {
+                        closeExisting: true,
+                        escapeClose: true,
+                        clickClose: true,
+                        showClose: true,
+                    }, {removeOnClose: true}, opts);
+                    if (!document.body.contains(modal)) {
+                        document.body.appendChild(modal);
+                    }
+                    const modalObj = $(modal).modal(opts);
+                    if (opts.removeOnClose === true) {
+                        modalObj.on($.modal.AFTER_CLOSE, function() {
+                            $(this).remove();
+                        });
+                    }
+                },
+                buildDom: function(headerContent, bodyContent, footerContent) {
+                    return crel('div', {'class': 'modal', 'tabindex': '-1', 'role': 'dialog'},
+                        crel('div', {'class': 'modal-wrapper', 'role': 'document'},
+                            headerContent == null ? null : crel('div', {'class': 'modal-header'}, headerContent),
+                            bodyContent == null ? null : crel('div', {'class': 'modal-body'}, bodyContent),
+                            footerContent == null ? null : crel('div', {'class': 'modal-footer'}, footerContent)
+                        )
+                    );
+                },
+                closeAll: function(clearDom = true) {
+                    while ($.modal.isActive())
+                        $.modal.close();
+                    if (clearDom)
+                        Array.from(document.querySelectorAll('.modal')).forEach(el => el.remove());
+                },
+                closeTop: function(clearDom = true) {
+                    let elem = $.modal.close();
+                    if (clearDom && elem && elem[0])
+                        elem[0].remove();
+                }
+            };
+        })();
     // init progress
     query.init();
     board.init();
@@ -6098,7 +6114,6 @@ window.App = (function () {
     grid.init();
     place.init();
     info.init();
-    alert.init();
     timer.init();
     uiHelper.init();
     panels.init();
@@ -6151,7 +6166,7 @@ window.App = (function () {
             template.queueUpdate(t);
         },
         alert: function (s) {
-            alert.show($('<span>').text(s).html());
+            modal.showText(s, {title: 'Alert', modalOpts: {closeExisting: false}});
         },
         doPlace: function () {
             ban.me(3);

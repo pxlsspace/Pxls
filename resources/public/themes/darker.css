@@ -288,6 +288,20 @@ li.chat-line .user {
     color: #c45454;
 }
 
+/*//////////////////////////*\
+| Modal
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
+/* https://github.com/kylefox/jquery-modal/blob/a8b9c9b01961c0a3c6676fcc8fe6cc5b8c74cb5c/jquery.modal.css */
+
+.modal {
+    color: #ddd;
+    background-color: #1a1a1a;
+}
+
+.modal .modal-header, .modal .modal-footer {
+    background-color: #000000;
+}
+
 /* Mobile */
 
 @media (max-width: 768px) {
