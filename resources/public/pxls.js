@@ -2886,7 +2886,13 @@ window.App = (function () {
 
                     self.elements.coords.click(() => coords.copyCoords(true));
 
-                    socket.on('alert', (data) => modal.showText(data.message, {title: 'Server Alert', modalOpts: {closeExisting: false}}));
+                    socket.on('alert', (data) => {
+                        modal.show(modal.buildDom(
+                            crel('h2', {'class': 'modal-title'}, 'Alert'),
+                            crel('p', {'style': 'padding: 0; margin: 0;'}, data.message),
+                            crel('span', {'style': 'font-style: italic'}, `Sent from ${data.sender || '$Unknown'}`)
+                        ), {closeExisting: false});
+                    });
 
                     var useMono = ls.get("monospace_lookup");
                     if (typeof useMono === 'undefined') {
