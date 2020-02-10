@@ -6,6 +6,9 @@ This folder contains miscellaneous scripts.
 
 - [Python 3.5 to 3.7](https://www.python.org/)
 - [Pipenv](https://pipenv.kennethreitz.org/en/latest/#install-pipenv-today)
+- libpq (PostgreSQL bindings)
+	- on Windows: bundled with the PostgreSQL installer
+	- on Debian: `$ apt install libpq-dev`
 
 Install the environment by running `pipenv install`
 
@@ -50,3 +53,13 @@ The output `board.png` will appear in the directory.
 3. Inside `reset/`, execute the script with `pipenv run python reset.py`
 	- add `-h` or `--help` to see a list of available arguments.
 	- add `--list` to see a list of all steps.
+
+
+## logs/sanitize.py
+
+`logs/sanitize.py` removes the IPs from a log file and writes the sanitized logs into a new file.
+By default, it reads from `pixels.log` and writes to `pixels.sanit.log`
+
+### Running
+
+1. Inside `logs/`, execute the script with `pipenv run python sanitize.py [/path/to/pixels.log] [/output/path/pixels.sanit.log]`
