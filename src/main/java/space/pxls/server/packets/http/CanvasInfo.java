@@ -15,9 +15,10 @@ public class CanvasInfo {
     public Integer maxStacked;
     public Map<String, AuthService> authServices;
     public Boolean registrationEnabled;
+    public Boolean chatRespectsCanvasBan;
     public Integer chatCharacterLimit;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<String> palette, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Integer chatCharacterLimit) {
+    public CanvasInfo(String canvasCode, Integer width, Integer height, List<String> palette, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
@@ -28,6 +29,7 @@ public class CanvasInfo {
         this.authServices = authServices;
         this.registrationEnabled = registrationEnabled;
         this.chatCharacterLimit = chatCharacterLimit;
+        this.chatRespectsCanvasBan = chatRespectsCanvasBan;
     }
 
     public String getCanvasCode() {
@@ -68,5 +70,9 @@ public class CanvasInfo {
 
     public Integer getChatCharacterLimit() {
         return chatCharacterLimit;
+    }
+
+    public Boolean getChatRespectsCanvasBan() {
+        return chatRespectsCanvasBan;
     }
 }

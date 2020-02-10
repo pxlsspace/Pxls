@@ -406,7 +406,7 @@ public class PacketHandler {
             String nonce = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "");
             server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS / 1000L, message, null, null, 0)));
         } else {
-            if (user.isChatbanned()) return;
+            if (!user.canChat()) return;
             if (message.trim().length() == 0) return;
             if (user.isRenameRequested(false)) return;
             int remaining = RateLimitFactory.getTimeRemaining(DBChatMessage.class, String.valueOf(user.getId()));
