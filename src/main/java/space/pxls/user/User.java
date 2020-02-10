@@ -283,6 +283,13 @@ public class User {
         setBanExpiryTime(timeFromNowSeconds, false);
     }
 
+    public boolean canChat() {
+        if (App.getConfig().getBoolean("chat.canvasBanRespected") && isBanned()) {
+            return false;
+        }
+        return !isChatbanned();
+    }
+
     public boolean isChatbanned() {
         return this.isPermaChatbanned || this.chatbanExpiryTime > System.currentTimeMillis();
     }

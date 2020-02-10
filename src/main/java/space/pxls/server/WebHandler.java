@@ -56,7 +56,7 @@ public class WebHandler {
     }
     private String resourceToString (String r) {
         try {
-            InputStream in = getClass().getResourceAsStream(r); 
+            InputStream in = getClass().getResourceAsStream(r);
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
             String s = "";
             String line;
@@ -828,7 +828,7 @@ public class WebHandler {
                             user.getBanReason(),
                             user.getLogin().split(":")[0],
                             user.isOverridingCooldown(),
-                            user.isChatbanned(),
+                            user.canChat(),
                             App.getDatabase().getChatBanReason(user.getId()),
                             user.isPermaChatbanned(),
                             user.getChatbanExpiryTime(),
@@ -1056,7 +1056,8 @@ public class WebHandler {
             (int) App.getConfig().getInt("stacking.maxStacked"),
             services,
             App.getRegistrationEnabled(),
-            Math.min(App.getConfig().getInt("chat.characterLimit"), 2048)
+            Math.min(App.getConfig().getInt("chat.characterLimit"), 2048),
+            App.getConfig().getBoolean("chat.canvasBanRespected")
         )));
     }
 

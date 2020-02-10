@@ -1111,7 +1111,7 @@ window.App = (function () {
                         self.height = data.height;
                         place.setPalette(data.palette);
                         uiHelper.setMax(data.maxStacked);
-                        chat.setCharLimit(data.chatCharacterLimit);
+                        chat.webinit(data);
                         chromeOffsetWorkaround.update();
                         if (data.captchaKey) {
                             $(".g-recaptcha").attr("data-sitekey", data.captchaKey);
@@ -3504,6 +3504,7 @@ window.App = (function () {
                 },
                 ignored: [],
                 chatban: {
+                    banned: false,
                     banStart: 0,
                     banEnd: 0,
                     permanent: false,
@@ -3651,7 +3652,7 @@ window.App = (function () {
                             self.elements.input.prop('disabled', true);
                             self.elements.emoji_button.hide();
                             if (e.expiry - self.chatban.banStart > 0 && !e.permanent) {
-                                self.elements.rate_limit_overlay.show();
+                                self.chatban.banned = true;
                                 self.elements.rate_limit_counter.text('You have been banned from chat.');
                                 self.addServerAction(`You are banned ${e.permanent ? 'permanently from chat.' : 'until ' + self.chatban.banEndFormatted}`);
                                 if (e.reason) {
@@ -3669,19 +3670,18 @@ window.App = (function () {
                                     }
                                 }, 150);
                             } else if (e.permanent) {
-                                self.elements.rate_limit_overlay.show();
+                                self.chatban.banned = true;
                                 self.elements.rate_limit_counter.text('You have been banned from chat.');
                                 self.addServerAction(`You are banned from chat${e.permanent ? ' permanently.' : 'until ' + self.chatban.banEndFormatted}`);
                                 if (e.reason) {
                                     self.addServerAction(`Ban reason: ${e.reason}`);
                                 }
                             } else if (e.type !== "chat_ban_state") { //chat_ban_state is a query result, not an action notice.
-                                self.elements.input.prop('disabled', false);
-                                self.elements.rate_limit_overlay.hide();
-                                self.elements.rate_limit_counter.text('');
-                                self.elements.emoji_button.show();
                                 self.addServerAction(`You have been unbanned from chat.`);
+                                self.elements.rate_limit_counter.text('You can not use chat while canvas banned.');
+                                self.chatban.banned = false;
                             }
+                            self._handleChatbanVisualState(self._canChat());
                         }, 0);
                     };
                     socket.on('chat_ban', handleChatban);
@@ -3932,7 +3932,12 @@ window.App = (function () {
                                 ls.set("chat-last_seen_nonce", lastN.dataset.nonce);
                             }
 
-                            self.updateInputLoginState(user.isLoggedIn());
+                            if (user.isLoggedIn()) {
+                                self._handleChatbanVisualState(self._canChat());
+                            } else {
+                                self._handleChatbanVisualState(false);
+                                self.elements.rate_limit_counter.text('You must be logged in to chat');
+                            }
                         }
                     });
 
@@ -4043,6 +4048,22 @@ window.App = (function () {
                         if (searchEl)
                             searchEl.addEventListener('keydown', e => e.stopPropagation());
                     })
+                },
+                _handleChatbanVisualState(canChat) {
+                    if (canChat) {
+                        self.elements.input.prop('disabled', false);
+                        self.elements.rate_limit_overlay.hide();
+                        self.elements.rate_limit_counter.text('');
+                        self.elements.emoji_button.show();
+                    } else {
+                        self.elements.input.prop('disabled', true);
+                        self.elements.rate_limit_overlay.show();
+                        self.elements.emoji_button.hide();
+                    }
+                },
+                webinit(data) {
+                    self.setCharLimit(data.chatCharacterLimit);
+                    self.canvasBanRespected = data.chatRespectsCanvasBan;
                 },
                 initTypeahead() {
                     // init DBs
@@ -5318,10 +5339,25 @@ window.App = (function () {
                     } catch (ignored) {
                         elem.scrollIntoView(false);
                     }
+                },
+                _canChat() {
+                    if (!user.isLoggedIn()) return false;
+                    if (!self.canvasBanRespected) return !self.chatban.banned;
+                    return !self.chatban.banned && !self.canvasBanned;
+                },
+                updateCanvasBanState(state) {
+                    self.canvasBanned = state;
+                    let canChat = self._canChat();
+                    self._handleChatbanVisualState(canChat);
+                    if (!canChat) {
+                        if (self.elements.rate_limit_counter.text().trim().length === 0)
+                            self.elements.rate_limit_counter.text('You can not use chat while canvas banned.');
+                    }
                 }
             };
             return {
                 init: self.init,
+                webinit: self.webinit,
                 _handleActionClick: self._handleActionClick,
                 clearPings: self.clearPings,
                 setCharLimit: self.setCharLimit,
@@ -5333,6 +5369,7 @@ window.App = (function () {
                 removeIgnore: self.removeIgnore,
                 getIgnores: self.getIgnores,
                 typeahead: self.typeahead,
+                updateCanvasBanState: self.updateCanvasBanState,
             }
         })(),
         // this takes care of the countdown timer
@@ -5750,6 +5787,7 @@ window.App = (function () {
                         } else {
                             self.elements.userMessage.hide();
                         }
+                        chat.updateCanvasBanState(isBanned);
 
                         if (instaban) {
                             ban.shadow(7);
