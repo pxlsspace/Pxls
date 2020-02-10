@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 public class DiscordAuthService extends AuthService {
     public DiscordAuthService(String id) {
-        super(id);
+        super(id, App.getConfig().getBoolean("oauth.discord.enabled"), App.getConfig().getBoolean("oauth.discord.registrationEnabled"));
     }
 
     public String getRedirectUrl(String state) {
@@ -60,5 +60,11 @@ public class DiscordAuthService extends AuthService {
 
     public String getName() {
         return "Discord";
+    }
+
+    @Override
+    public void reloadEnabledState() {
+        this.enabled = App.getConfig().getBoolean("oauth.discord.enabled");
+        this.registrationEnabled = App.getConfig().getBoolean("oauth.discord.registrationEnabled");
     }
 }

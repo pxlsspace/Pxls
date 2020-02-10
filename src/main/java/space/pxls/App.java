@@ -479,6 +479,10 @@ public class App {
 
         ChatFilter.getInstance().reload();
 
+        if (server != null) {
+            server.getWebHandler().reloadServicesEnabledState();
+        }
+
         try {
             Files.deleteIfExists(getStorageDir().resolve("index_cache.html"));
         } catch (IOException e) {

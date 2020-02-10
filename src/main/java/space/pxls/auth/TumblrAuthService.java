@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 public class TumblrAuthService extends AuthService {
     public TumblrAuthService(String id) {
-        super(id);
+        super(id, App.getConfig().getBoolean("oauth.tumblr.enabled"), App.getConfig().getBoolean("oauth.tumblr.registrationEnabled"));
     }
 
     private transient Map<String, String> tokens = new ConcurrentHashMap<String, String>();
@@ -79,5 +79,11 @@ public class TumblrAuthService extends AuthService {
 
     public String getName() {
         return "Tumblr";
+    }
+
+    @Override
+    public void reloadEnabledState() {
+        this.enabled = App.getConfig().getBoolean("oauth.tumblr.enabled");
+        this.registrationEnabled = App.getConfig().getBoolean("oauth.tumblr.registrationEnabled");
     }
 }

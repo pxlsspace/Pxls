@@ -11,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 
 public class RedditAuthService extends AuthService {
     public RedditAuthService(String id) {
-        super(id);
+        super(id, App.getConfig().getBoolean("oauth.reddit.enabled"), App.getConfig().getBoolean("oauth.reddit.registrationEnabled"));
     }
 
     public String getRedirectUrl(String state) {
@@ -59,5 +59,11 @@ public class RedditAuthService extends AuthService {
 
     public String getName() {
         return "Reddit";
+    }
+
+    @Override
+    public void reloadEnabledState() {
+        this.enabled = App.getConfig().getBoolean("oauth.reddit.enabled");
+        this.registrationEnabled = App.getConfig().getBoolean("oauth.reddit.registrationEnabled");
     }
 }

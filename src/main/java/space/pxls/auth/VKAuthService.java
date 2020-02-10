@@ -14,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 
 public class VKAuthService extends AuthService {
     public VKAuthService(String id) {
-        super(id);
+        super(id, App.getConfig().getBoolean("oauth.vk.enabled"), App.getConfig().getBoolean("oauth.vk.registrationEnabled"));
     }
 
     public String getRedirectUrl(String state) {
@@ -24,7 +24,7 @@ public class VKAuthService extends AuthService {
         } catch (UnsupportedEncodingException e) {
             // do nothing
         }
-        
+
         return "https://oauth.vk.com/authorize?" +
             "client_id=" + App.getConfig().getString("oauth.vk.key") +
             "&response_type=code" +
@@ -74,5 +74,11 @@ public class VKAuthService extends AuthService {
 
     public String getName() {
         return "VK";
+    }
+
+    @Override
+    public void reloadEnabledState() {
+        this.enabled = App.getConfig().getBoolean("oauth.vk.enabled");
+        this.registrationEnabled = App.getConfig().getBoolean("oauth.vk.registrationEnabled");
     }
 }

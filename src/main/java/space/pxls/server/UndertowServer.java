@@ -105,7 +105,7 @@ public class UndertowServer {
 
         if (user != null) {
             user.getConnections().add(channel);
-            
+
             // aaaaaaand update the useragent
             List<String> agentAr = exchange.getRequestHeaders().get(Headers.USER_AGENT.toString());
             String agent = "";
@@ -147,7 +147,7 @@ public class UndertowServer {
 
                 // old thing, will auto-shadowban
                 if (type.equals("place")) obj = App.getGson().fromJson(jsonObj, ClientPlace.class);
-                
+
                 // lol
                 if (type.equals("placepixel")) obj = App.getGson().fromJson(jsonObj, ClientBanMe.class);
 
@@ -239,5 +239,9 @@ public class UndertowServer {
 
     public Undertow getServer() {
         return server;
+    }
+
+    public WebHandler getWebHandler() {
+        return webHandler;
     }
 }

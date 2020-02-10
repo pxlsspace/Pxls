@@ -9,7 +9,7 @@ import space.pxls.App;
 
 public class GoogleAuthService extends AuthService {
     public GoogleAuthService(String id) {
-        super(id);
+        super(id, App.getConfig().getBoolean("oauth.google.enabled"), App.getConfig().getBoolean("oauth.google.registrationEnabled"));
     }
 
     @Override
@@ -60,5 +60,11 @@ public class GoogleAuthService extends AuthService {
 
     public String getName() {
         return "Google";
+    }
+
+    @Override
+    public void reloadEnabledState() {
+        this.enabled = App.getConfig().getBoolean("oauth.google.enabled");
+        this.registrationEnabled = App.getConfig().getBoolean("oauth.google.registrationEnabled");
     }
 }
