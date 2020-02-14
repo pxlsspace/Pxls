@@ -1916,7 +1916,7 @@ ul.chat-history, ul.chatban-history {
     z-index: 100;
     width: initial;
     min-width: 10vw;
-    max-width: 97vw;
+    max-width: 96vw;
     max-height: 99vh;
     background-color: #f5f5f5;
     padding: 0;
