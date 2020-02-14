@@ -3677,7 +3677,7 @@ window.App = (function () {
                                     crel('ul', {'class': 'chatban-history'},
                                         e.chatbans.map(chatban => {
                                             return crel('li', {'class': 'chatban'},
-                                                crel('h4', `${chatban.initiator_name} banned ${e.target.username}${chatban.type !== 'PERMA' ? '' : ''}`),
+                                                crel('h4', `${chatban.initiator_name} ${chatban.type === 'UNBAN' ? 'un' : ''}banned ${e.target.username}${chatban.type !== 'PERMA' ? '' : ''}`),
                                                 crel('table',
                                                     crel('tbody',
                                                         crel('tr',

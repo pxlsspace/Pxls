@@ -170,6 +170,7 @@ dd a {
 .halves {
     display: flex;
     flex-wrap: wrap;
+    min-width: 50vw;
 }
 
 .halves .side {
