@@ -3641,7 +3641,6 @@ window.App = (function () {
                         }, 100);
                     });
                     socket.on('chat_lookup', e => {
-                        const moment_format = `MMM Do 'YY, ${ls.get('chat.24h') === true  ? 'HH:mm:ss' : 'h:mm:ss a'}`;
                         if (e.target && Array.isArray(e.history) && Array.isArray(e.chatbans)) {
                             const now = moment(),
                                 is24h = ls.get('chat.24h') === true,

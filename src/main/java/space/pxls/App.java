@@ -1,7 +1,6 @@
 package space.pxls;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import org.apache.logging.log4j.Level;
