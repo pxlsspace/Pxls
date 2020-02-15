@@ -167,6 +167,21 @@ dd a {
     transform: rotateZ(360deg); /* force rainbow rendering onto GPU if available */
 }
 
+.halves {
+    display: flex;
+    flex-wrap: wrap;
+    min-width: 50vw;
+}
+
+.halves .side {
+    flex: 1 0 50%;
+}
+
+.chat-lookup-side {
+    max-height: calc(88vh - 30px);
+    overflow: auto;
+}
+
 /*//////////////////////////*\
 | Overlays
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
@@ -1514,6 +1529,44 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
     animation: -scrolled-flash 150ms linear 1ms 4 alternate;
 }
 
+.chat-history .chat-line {
+    word-break: break-all;
+}
+
+ul.chat-history, ul.chatban-history {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+.chatban-history li {
+    margin: 7px;
+    border-radius: 7px;
+    background-color: rgba(177, 177, 177, 0.3);
+    border: 1px solid #828282;
+}
+
+.chatban-history h4 {
+    margin: 0 0 1em 0;
+    background-color: #82828233;
+    border-radius: 7px 7px 0 0;
+    text-align: center;
+    font-size: 1.25em;
+    line-height: 1.25em;
+    border-bottom: 1px solid #828282;
+}
+
+.chatban-history table {
+    margin: 7px;
+}
+
+.chatban-history th {
+    text-align: right;
+    font-weight: bold;
+    margin-right: .5em;
+}
+
+
 .panel-trigger .ping-counter {
     position: absolute;
     bottom: 0;
@@ -1864,7 +1917,7 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
     z-index: 100;
     width: initial;
     min-width: 10vw;
-    max-width: 99vw;
+    max-width: 96vw;
     max-height: 99vh;
     background-color: #f5f5f5;
     padding: 0;
@@ -1933,6 +1986,7 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
 @media (max-width: 768px) {
     .modal {
         min-width: 1vw;
+        max-width: 95vw;
     }
 
     .mobile-only {
@@ -2016,5 +2070,13 @@ ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
         line-height: 2rem;
         font-size: 1.25rem;
         top: -2rem;
+    }
+
+    .halves .side {
+        flex: 1 0 100%;
+    }
+
+    .chat-lookup-side {
+        max-height: initial;
     }
 }

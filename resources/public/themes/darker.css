@@ -124,6 +124,16 @@ ul.chat-body li.chat-line.server-action {
     color: #ccc;
 }
 
+.chatban-history li {
+    background-color: #000;
+    border: 1px solid #464646;
+}
+
+.chatban-history h4 {
+    background-color: #46464633;
+    border-bottom: 1px solid #464646;
+}
+
 .popup {
     background-color: #111;
     color: #fff;

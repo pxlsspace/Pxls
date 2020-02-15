@@ -243,7 +243,8 @@
                         ),
                         crel('div',
                             crel('button', {'data-action': 'chatban', 'data-target': data.username, 'class': 'button', 'style': 'position: initial; right: auto; left: auto; bottom: auto;', onclick: admin.chat._handleActionClick}, 'Chat (un)ban'),
-                            crel('button', {'data-action': 'purge', 'data-target': data.username, 'class': 'button', 'style': 'position: initial; right: auto; left: auto; bottom: auto;', onclick: admin.chat._handleActionClick}, 'Chat purge')
+                            crel('button', {'data-action': 'purge', 'data-target': data.username, 'class': 'button', 'style': 'position: initial; right: auto; left: auto; bottom: auto;', onclick: admin.chat._handleActionClick}, 'Chat purge'),
+                            crel('button', {'data-action': 'lookup-chat', 'data-target': data.username, 'class': 'button', 'style': 'position: initial; right: auto; left: auto; bottom: auto;', onclick: admin.chat._handleActionClick}, 'Chat lookup')
                         ),
                         (admin.user.getRole() !== "TRIALMOD"
                                 ? crel('div',

@@ -3647,6 +3647,80 @@ window.App = (function () {
                             }
                         }, 100);
                     });
+                    socket.on('chat_lookup', e => {
+                        if (e.target && Array.isArray(e.history) && Array.isArray(e.chatbans)) {
+                            const now = moment(),
+                                is24h = ls.get('chat.24h') === true,
+                                shortFormat = `MMM Do YYYY, ${is24h ? 'HH:mm' : 'hh:mm A'}`,
+                                longFormat = `dddd, MMMM Do YYYY, ${is24h ? 'HH:mm:ss' : 'h:mm:ss a'}`;
+                            const dom = crel('div', {'class': 'halves'},
+                                crel('div', {'class': 'side chat-lookup-side'},
+                                    e.history.length > 0 ? ([ // array children are injected as fragments
+                                        crel('h3', {'style': 'text-align: center'}, `Last ${e.history.length} messages`),
+                                        crel('hr'),
+                                        crel('ul', {'class': 'chat-history chat-body'},
+                                            e.history.map(message => crel('li', {'class': `chat-line ${message.purged ? 'purged' : ''}`.trimRight()},
+                                                crel('span', {'title': moment(message.sent*1e3).format(longFormat)}, moment(message.sent*1e3).format(shortFormat)),
+                                                ' ',
+                                                (() => {
+                                                    let toRet = crel('span', {'class': 'user'}, e.target.username);
+                                                    uiHelper.styleElemWithChatNameColor(toRet, e.target.chatNameColor, 'color');
+                                                    return toRet;
+                                                })(),
+                                                ': ',
+                                                crel('span', {'class': 'content'}, message.content)
+                                            ))
+                                        )
+                                    ]) : ([
+                                        crel('h3', {'style': 'text-align: center'}, `Last Messages`),
+                                        crel('hr'),
+                                        crel('p', 'No message history')
+                                    ]),
+                                ),
+                                crel('div', {'class': 'side chat-lookup-side'},
+                                    crel('h3', {'style': 'text-align: center'}, 'Chat Bans'),
+                                    crel('hr'),
+                                    crel('ul', {'class': 'chatban-history'},
+                                        e.chatbans.map(chatban => {
+                                            return crel('li', {'class': 'chatban'},
+                                                crel('h4', `${chatban.initiator_name} ${chatban.type === 'UNBAN' ? 'un' : ''}banned ${e.target.username}${chatban.type !== 'PERMA' ? '' : ''}`),
+                                                crel('table',
+                                                    crel('tbody',
+                                                        crel('tr',
+                                                            crel('th', 'Reason:'),
+                                                            crel('td', chatban.reason || '$No reason provided$')
+                                                        ),
+                                                        crel('tr',
+                                                            crel('th', 'When:'),
+                                                            crel('td', moment(chatban.when*1e3).format(longFormat))
+                                                        ),
+                                                        chatban.type !== 'UNBAN' ? ([
+                                                            crel('tr',
+                                                                crel('th', 'Length:'),
+                                                                crel('td', (chatban.type.toUpperCase().trim() === 'PERMA') ? 'Permanent' : `${chatban.expiry-chatban.when}s`)
+                                                            ),
+                                                            (chatban.type.toUpperCase().trim() === 'PERMA') ? null : crel('tr',
+                                                                crel('th', 'Expiry:'),
+                                                                crel('td', moment(chatban.expiry*1e3).format(longFormat))
+                                                            ),
+                                                            crel('tr',
+                                                                crel('th', 'Purged:'),
+                                                                crel('td', String(chatban.purged))
+                                                            )
+                                                        ]) : null
+                                                    )
+                                                )
+                                            );
+                                        })
+                                    )
+                                )
+                            );
+                            modal.show(modal.buildDom(
+                                crel('h2', {'class': 'modal-title'}, 'Chat Lookup'),
+                                dom
+                            ));
+                        }
+                    });
                     const handleChatban = e => {
                         clearInterval(self.timeout.timer);
                         self.chatban.banStart = moment.now();
@@ -4841,8 +4915,8 @@ window.App = (function () {
                         let actionChatban = crel('li', {'data-action': 'chatban', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Chat (un)ban');
                         let actionPurgeUser = crel('li', {'data-action': 'purge', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Purge User');
                         let actionDeleteMessage = crel('li', {'data-action': 'delete', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Delete');
-                        let actionModLookup = crel('li', {'data-action': 'lookup', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Mod Lookup');
-                        let actionCopyNonce = crel('li', {'data-action': 'copy-nonce', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Copy Nonce');
+                        let actionModLookup = crel('li', {'data-action': 'lookup-mod', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Mod Lookup');
+                        let actionChatLookup = crel('li', {'data-action': 'lookup-chat', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Chat Lookup');
 
                         crel(leftPanel, crel('p', {'class': 'popup-timestamp-header'}, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(ls.get('chat.24h') === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
                         crel(leftPanel, crel('p', {'style': 'margin-top: 3px; margin-left: 3px; text-align: left;'}, closest.querySelector('.content').textContent));
@@ -4855,9 +4929,7 @@ window.App = (function () {
                             crel(actionsList, actionDeleteMessage);
                             crel(actionsList, actionPurgeUser);
                             crel(actionsList, actionModLookup);
-                            if (user.getRole() === "DEVELOPER") {
-                                crel(actionsList, actionCopyNonce);
-                            }
+                            crel(actionsList, actionChatLookup);
                         }
                         crel(rightPanel, actionsList);
 
@@ -5230,10 +5302,14 @@ window.App = (function () {
                             ));
                             break;
                         }
-                        case 'lookup': {
+                        case 'lookup-mod': {
                             if (user.admin && user.admin.checkUser && user.admin.checkUser.check) {
                                 user.admin.checkUser.check(reportingTarget);
                             }
+                            break;
+                        }
+                        case 'lookup-chat': {
+                            socket.send({type: 'ChatLookup', who: reportingTarget});
                             break;
                         }
                         case 'request-rename': {
@@ -5325,16 +5401,6 @@ window.App = (function () {
                                 crel('h2', {'class': 'modal-title'}, 'Force Rename'),
                                 renameWrapper
                             ));
-                            break;
-                        }
-                        case 'copy-nonce': {
-                            // TODO(netux): use Clipboard API once it becomes Stable
-                            const textArea = document.createElement('textarea');
-                            textArea.value = this.dataset.nonce;
-                            document.body.appendChild(textArea);
-                            textArea.select();
-                            document.execCommand('copy');
-                            document.body.removeChild(textArea);
                             break;
                         }
                     }

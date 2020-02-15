@@ -18,7 +18,6 @@ import space.pxls.server.packets.socket.*;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.util.ChatFilter;
-import space.pxls.util.PxlsTimer;
 import space.pxls.util.RateLimitFactory;
 
 import java.util.*;
@@ -117,6 +116,7 @@ public class PacketHandler {
             if (obj instanceof ClientChatbanState) handleChatbanState(channel, user, ((ClientChatbanState) obj));
             if (obj instanceof ClientChatMessage) handleChatMessage(channel, user, ((ClientChatMessage) obj));
             if (obj instanceof ClientUserUpdate) handleClientUserUpdate(channel, user, ((ClientUserUpdate) obj));
+            if (obj instanceof ClientChatLookup) handleChatLookup(channel, user, ((ClientChatLookup) obj));
 
             if (user.getRole().greaterEqual(Role.MODERATOR)) {
                 if (obj instanceof ClientAdminCooldownOverride)
@@ -136,6 +136,15 @@ public class PacketHandler {
             for (WebSocketChannel ch : u.getConnections()) {
                 server.send(ch, msg);
             }
+        }
+    }
+
+    private void handleChatLookup(WebSocketChannel channel, User user, ClientChatLookup obj) {
+        if (user.getRole().greaterEqual(Role.TRIALMOD)) {
+            ServerChatLookup scl = App.getDatabase().runChatLookupForUsername(obj.getWho());
+            server.send(channel, scl == null ? new ServerError("User doesn't exist") : scl);
+        } else {
+            server.send(channel, new ServerError("Missing Permissions"));
         }
     }
 
