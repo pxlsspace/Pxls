@@ -3003,7 +3003,7 @@ window.App = (function () {
                             self.elements.mainBubble.attr('position', e.target.value);
                         });
 
-                    const possiblyMobile = window.innerWidth < 768 && navigator.userAgent.includes('Mobile');
+                    const possiblyMobile = window.innerWidth < 768 && nua.includes('Mobile');
 
                     let initialShowReticule = ls.get('ui.show-reticule');
                     if (initialShowReticule === null) {
@@ -6119,8 +6119,7 @@ window.App = (function () {
                     checkbox: $("#chrome-canvas-offset-toggle")
                 },
                 init: () => {
-                    const chromeUAMatch = navigator.userAgent.match(/Chrome\/(\d+)/);
-                    if (!chromeUAMatch || parseInt(chromeUAMatch[1]) < 78) {
+                    if (!nua.match(/AppleWebKit/)) {
                         self.elements.setting.hide();
                         return;
                     }
