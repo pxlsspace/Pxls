@@ -2019,16 +2019,16 @@ ul.chat-history, ul.chatban-history {
         width: initial;
         transition: none;
     }
+
+    .mobile-only {
+        display: initial;
+    }
 }
 
 @media (max-width: 768px) {
     .modal {
         min-width: 1vw;
         max-width: 95vw;
-    }
-
-    .mobile-only {
-        display: initial;
     }
 
     .palette {

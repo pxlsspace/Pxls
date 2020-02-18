@@ -5459,7 +5459,8 @@ window.App = (function () {
                 elements: {
                     palette: $("#palette"),
                     timer_overlay: $("#cd-timer-overlay"),
-                    timer_bubble: $("#cooldown-timer")
+                    timer_bubble: $("#cooldown-timer"),
+                    timer_chat: $('#txtMobileChatCooldown'),
                 },
                 isOverlay: false,
                 hasFiredNotification: true,
@@ -5511,7 +5512,8 @@ window.App = (function () {
                             secsStr = secs < 10 ? "0" + secs : secs,
                             minutes = Math.floor(delta / 60),
                             minuteStr = minutes < 10 ? "0" + minutes : minutes;
-                        self.elements.timer.text(minuteStr + ":" + secsStr);
+                        self.elements.timer.text(`${minuteStr}:${secsStr}`);
+                        self.elements.timer_chat.text(`(${minuteStr}:${secsStr})`);
 
                         document.title = uiHelper.getTitle(`[${minuteStr}:${secsStr}]`);
 
@@ -5533,6 +5535,7 @@ window.App = (function () {
                         self.elements.timer.css("left", "0");
                     }
                     self.elements.timer.hide();
+                    self.elements.timer_chat.text('');
 
                     if (alertDelay > 0) {
                         setTimeout(() => {
@@ -5567,6 +5570,7 @@ window.App = (function () {
                         ? self.elements.timer_overlay
                         : self.elements.timer_bubble;
                     self.elements.timer.hide();
+                    self.elements.timer_chat.text('');
 
                     setTimeout(function () {
                         if (self.cooledDown() && uiHelper.getAvailable() === 0) {
