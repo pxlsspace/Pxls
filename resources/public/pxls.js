@@ -169,13 +169,16 @@ window.App = (function () {
          * @param dbType {string} The type of the database, acts internally as a map key.
          * @param [keepTrigger=false] {boolean} Whether or not this trigger type should keep it's matching trigger chars on search results.
          * @param [hasPair=false] {boolean} Whether or not this trigger has a matching pair at the end, e.g. ':word:' vs '@word'
+         * @param [minLength=0] {number} The minimum length of the match before this trigger is considered valid.
+         *                                Length is calculated without `this.char`, so a trigger of ":" and a match of ":one" will be a length of 3.
          * @constructor
          */
-        function Trigger(char, dbType, keepTrigger = false, hasPair = false) {
+        function Trigger(char, dbType, keepTrigger = false, hasPair = false, minLength = 0) {
             this.char = char;
             this.dbType = dbType;
             this.keepTrigger = keepTrigger;
             this.hasPair = hasPair;
+            this.minLength = minLength;
         }
 
         /**
@@ -198,17 +201,23 @@ window.App = (function () {
          * @param name {string} The name of the database. Used internally as an accessor key.
          * @param [initData={}] {object} The initial data to seed this database with.
          * @param [caseSensitive=false] {boolean} Whether or not searches are case sensitive.
+         * @param [leftAnchored=false] {boolean} Whether or not searches are left-anchored.
+         *                                       If true, `startsWith` is used. Otherwise, `includes` is used.
          * @constructor
          */
-        function Database(name, initData = {}, caseSensitive = false) {
+        function Database(name, initData = {}, caseSensitive = false, leftAnchored = false) {
             this.name = name;
             this._caseSensitive = caseSensitive;
             this.initData = initData;
+            this.leftAnchored = leftAnchored;
 
             const fixKey = key => this._caseSensitive ? key.trim() : key.toLowerCase().trim();
-            this.search = start => {
+            this.search = (start) => {
                 start = fixKey(start);
-                return Object.entries(this.initData).filter(x => fixKey(x[0]).startsWith(start)).map(x => x[1]);
+                return Object.entries(this.initData).filter(x => {
+                    let key = fixKey(x[0]);
+                    return this.leftAnchored ? key.startsWith(start) : key.includes(start);
+                }).map(x => x[1]);
             };
             this.addEntry = (key, value) => {
                 key = fixKey(key);
@@ -280,7 +289,7 @@ window.App = (function () {
                     match.word = searchString.substring(match.start+1, fixedEnd);
                 }
 
-                return matched ? match : false;
+                return matched ? (match.word.length >= match.trigger.minLength ? match : false) : false;
             };
 
             /**
@@ -290,7 +299,7 @@ window.App = (function () {
                 let db = this.DBs.filter(x => x.name === trigger.trigger.dbType);
                 if (!db || !db.length) return [];
                 db = db[0];
-                let fromDB = db.search(trigger.word);
+                let fromDB = db.search(trigger.word, trigger.trigger.leftAnchored);
                 if (fromDB && trigger.trigger.keepTrigger) {
                     fromDB = fromDB.map(x => `${trigger.trigger.char}${x}`);
                 }
@@ -2838,9 +2847,9 @@ window.App = (function () {
                 loadingStates: {},
                 banner: {
                     HTMLs: [
-                        crel('span', crel('i', {'class': 'fab fa-discord fa-is-left'}), ' We have a discord! Join here: ', crel('a', {'href': 'https://pxls.space/discord', 'target': '_blank'}, 'Discord Invite')).outerHTML,
-                        crel('span', {'style': 'font-size: .75rem'}, crel('i', {'class': 'fas fa-gavel fa-is-left'}), 'Chat is moderated, ensure you read the rules in the info panel.').outerHTML,
-                        crel('span', {'style': 'font-size: .8rem'}, crel('i', {'class': 'fas fa-question-circle fa-is-left'}), 'If you haven\'t already, make sure you read the FAQ top left!').outerHTML
+                        crel('span', crel('i', {'class': 'fab fa-discord fa-is-left'}), ' Official Discord: ', crel('a', {'href': 'https://pxls.space/discord', 'target': '_blank'}, 'Invite Link')).outerHTML,
+                        crel('span', {'style': ''}, crel('i', {'class': 'fas fa-gavel fa-is-left'}), 'Read the chat rules in the info panel.').outerHTML,
+                        crel('span', {'style': ''}, crel('i', {'class': 'fas fa-question-circle fa-is-left'}), 'Ensure you read the FAQ top left!').outerHTML
                     ],
                     curElem: 0,
                     intervalID: 0,
@@ -4157,7 +4166,7 @@ window.App = (function () {
                     }
 
                     // init triggers
-                    let triggerEmoji = new TH.Trigger(':', 'emoji', false, true);
+                    let triggerEmoji = new TH.Trigger(':', 'emoji', false, true, 2);
                     let triggerUsers = new TH.Trigger('@', 'users', true, false);
 
                     // init typeahead
@@ -5450,7 +5459,8 @@ window.App = (function () {
                 elements: {
                     palette: $("#palette"),
                     timer_overlay: $("#cd-timer-overlay"),
-                    timer_bubble: $("#cooldown-timer")
+                    timer_bubble: $("#cooldown-timer"),
+                    timer_chat: $('#txtMobileChatCooldown'),
                 },
                 isOverlay: false,
                 hasFiredNotification: true,
@@ -5502,7 +5512,8 @@ window.App = (function () {
                             secsStr = secs < 10 ? "0" + secs : secs,
                             minutes = Math.floor(delta / 60),
                             minuteStr = minutes < 10 ? "0" + minutes : minutes;
-                        self.elements.timer.text(minuteStr + ":" + secsStr);
+                        self.elements.timer.text(`${minuteStr}:${secsStr}`);
+                        self.elements.timer_chat.text(`(${minuteStr}:${secsStr})`);
 
                         document.title = uiHelper.getTitle(`[${minuteStr}:${secsStr}]`);
 
@@ -5524,6 +5535,7 @@ window.App = (function () {
                         self.elements.timer.css("left", "0");
                     }
                     self.elements.timer.hide();
+                    self.elements.timer_chat.text('');
 
                     if (alertDelay > 0) {
                         setTimeout(() => {
@@ -5558,6 +5570,7 @@ window.App = (function () {
                         ? self.elements.timer_overlay
                         : self.elements.timer_bubble;
                     self.elements.timer.hide();
+                    self.elements.timer_chat.text('');
 
                     setTimeout(function () {
                         if (self.cooledDown() && uiHelper.getAvailable() === 0) {
