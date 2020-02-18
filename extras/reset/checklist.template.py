@@ -55,7 +55,7 @@ def create_steps(step):
 			suggested = str(int(current) + 1)
 		except ValueError:
 			pass
-		
+
 		new = None
 		while new is None:
 			new = input(f"New canvas code?{' [' + suggested + ']' if suggested else ''}: {current} -> ")
@@ -133,7 +133,7 @@ def create_steps(step):
 		origin_path = config_path.parent / 'logs'
 		target_path = config_path.parent / ('logs-canvas-' + prev_canvas_code)
 		files_to_move = [ '*.log' ]
-		
+
 		move_files(origin_path, target_path, files_to_move)
 
 	@step(name="Backup HTML files", key="bkhtml", uses_config=True)
@@ -146,7 +146,7 @@ def create_steps(step):
 			pathname = config_html[k]
 			if pathname.startswith('resource:'):
 				files_to_copy.append('resources' + pathname[9:])
-		
+
 		mkdir_ifnotexists(storage_path)
 		for filepath in files_to_copy:
 			origin = config_path.parent / filepath
@@ -176,7 +176,7 @@ def create_steps(step):
 				palette = new_palette
 			except:
 				print('Invalid array format. Array must be in the format: \'["#000000", "#FF0000", ...]\'')
-		
+
 		replace_hocon_value(config_path, 'board.palette', new_palette)
 		print('Palette updated')
 
@@ -193,13 +193,18 @@ def create_steps(step):
 					print('Default color index out of range')
 			except ValueError:
 				print('New default color index is not an integer')
-		
+
 		replace_hocon_value(config_path, 'board.defaultColor', new_default_color)
 		print('Default color index updated')
 
-	@step(name="Create and copy default_board.dat and placemap.dat", key="boarddata", uses_config=True)
+	@step(name="Create and copy default_board.dat and placemap.dat (optional)", key="boarddata", uses_config=True)
 	def step__make_data_files(**kargs):
 		config, config_path = itemgetter('config', 'config_path')(kargs)
+
+		if is_no(input('Use a default_board.dat (and placemap.dat)? [Y/n]: ')):
+			default_color_hex = config.get('board.palette')[config.get('board.defaultColor')]
+			print(f'Board will be a rectangle of color {default_color_hex}.')
+			return
 
 		default_board_path = Path(__file__).parent / '../convert/default_board.dat'
 		default_placemap_path = Path(__file__).parent / '../convert/placemap.dat'
@@ -236,9 +241,9 @@ def create_steps(step):
 					placemap_path = Path(placemap_path_input)
 					if not placemap_path.is_file():
 						print("File doesn't exist or isn't a file")
-			
+
 			return (board_path, placemap_path, use_placemap)
-			
+
 		if not board_path or not board_path.is_file():
 			if is_no(input('Do you have a default_board.dat file to use? [Y/n]: ')):
 				print('Run convert/img2board.py with a canvas.png and optional placemap.png and come back when you are done')
