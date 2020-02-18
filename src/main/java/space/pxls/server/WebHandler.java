@@ -828,7 +828,7 @@ public class WebHandler {
                             user.getBanReason(),
                             user.getLogin().split(":")[0],
                             user.isOverridingCooldown(),
-                            user.canChat(),
+                            !user.canChat(),
                             App.getDatabase().getChatBanReason(user.getId()),
                             user.isPermaChatbanned(),
                             user.getChatbanExpiryTime(),
