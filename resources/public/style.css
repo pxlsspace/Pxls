@@ -1985,22 +1985,7 @@ ul.chat-history, ul.chatban-history {
     }
 }
 
-@media (max-width: 1152px) {
-    .panel, .panel.half-width {
-        max-width: 50% !important;
-        width: 50% !important;
-    }
-
-    .panel.left {
-        left: -55%;
-    }
-
-    .panel.right {
-        right: -55%;
-    }
-}
-
-@media (max-width: 960px) {
+@media (max-width: 768px) {
     .panel, .panel.half-width {
         max-width: 100% !important;
         width: 100% !important;
@@ -2023,9 +2008,7 @@ ul.chat-history, ul.chatban-history {
     .mobile-only {
         display: initial;
     }
-}
 
-@media (max-width: 768px) {
     .modal {
         min-width: 1vw;
         max-width: 95vw;
