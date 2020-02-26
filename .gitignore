@@ -15,6 +15,8 @@ virginmap.dat
 placemap.dat
 pxls.conf
 index_cache.html
+.gitignore
+pom.xml
 TODO
 *-canvas-*/
 __pycache__
