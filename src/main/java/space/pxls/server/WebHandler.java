@@ -821,7 +821,7 @@ public class WebHandler {
         if (user != null) {
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
             exchange.getResponseSender().send(App.getGson().toJson(
-                    new ServerUserInfo(user.getName(),
+                    new ServerUserPixelInfo(user.getName(),
                             user.getRole().name(),
                             user.isBanned(),
                             user.getBanExpiryTime(),
