@@ -141,7 +141,7 @@ public class PacketHandler {
 
     private void handleChatLookup(WebSocketChannel channel, User user, ClientChatLookup obj) {
         if (user.getRole().greaterEqual(Role.TRIALMOD)) {
-            ServerChatLookup scl = App.getDatabase().runChatLookupForUsername(obj.getWho());
+            ServerChatLookup scl = App.getDatabase().runChatLookupForUsername(obj.getWho(), App.getConfig().getInt("chat.chatLookupScrollbackAmount"));
             server.send(channel, scl == null ? new ServerError("User doesn't exist") : scl);
         } else {
             server.send(channel, new ServerError("Missing Permissions"));
