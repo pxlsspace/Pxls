@@ -85,7 +85,6 @@
                             <mainClass>space.pxls.App</mainClass>
                         </manifest>
                     </archive>
-                    <outputDirectory>/Users/Mikerific/IdeaProjects/Pxls/run</outputDirectory>
                 </configuration>
             </plugin>
 
