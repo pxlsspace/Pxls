@@ -64,6 +64,8 @@ public class PacketHandler {
                     user.isBanned(),
                     user.isBanned() ? user.getBanExpiryTime() : 0,
                     user.isBanned() ? user.getBanReason() : "",
+                    user.getPixels(),
+                    user.getPixelsAllTime(),
                     user.getLogin().split(":")[0],
                     user.isOverridingCooldown(),
                     user.isChatbanned(),

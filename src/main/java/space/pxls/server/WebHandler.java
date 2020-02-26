@@ -826,6 +826,8 @@ public class WebHandler {
                             user.isBanned(),
                             user.getBanExpiryTime(),
                             user.getBanReason(),
+                            user.getPixels(),
+                            user.getPixelsAllTime(),
                             user.getLogin().split(":")[0],
                             user.isOverridingCooldown(),
                             !user.canChat(),
