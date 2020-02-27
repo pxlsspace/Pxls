@@ -4506,18 +4506,17 @@ window.App = (function () {
 
                     crel(body,
                         crel('h3', {'class': 'chat-settings-title'}, 'Chat Settings'),
-                        crel('div', {'class': 'd-block'}, lbl24hTimestamps),
-                        crel('div', {'class': 'd-block'}, lblPixelPlaceBadges),
-                        crel('div', {'class': 'd-block'}, lblPings),
-                        crel('div', {'class': 'd-block'}, lblPingAudio),
-                        crel('div', {'class': 'd-block'}, lblPingAudioVol),
-                        crel('div', {'class': 'd-block'}, lblBanner),
-                        crel('div', {'class': 'd-block'}, lblTemplateTitles),
-                        crel('div', {'class': 'd-block'}, lblFontSize),
-                        crel('div', {'class': 'd-block'}, lblInternalAction),
-                        crel('div', {'class': 'd-block'}, lblUsernameColor),
-                        crel('div', {'class': 'd-block'}, lblIgnores),
-                        crel('div', {'class': 'd-block'}, lblIgnoresFeedback)
+                        [
+                            lbl24hTimestamps,
+                            lblPixelPlaceBadges,
+                            lblPings,
+                            lblPingAudio,
+                            lblPingAudioVol,
+                            lblBanner,
+                            lblFontSize,
+                            lblUsernameColor,
+                            lblIgnoresFeedback
+                        ].map(x => crel('div', {'class': 'd-block'}, x))
                     )
                     modal.show(modal.buildDom(
                         crel('h2', {'class': 'modal-title'}, 'Chat Settings'),
