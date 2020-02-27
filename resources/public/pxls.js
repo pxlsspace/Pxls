@@ -861,9 +861,8 @@ window.App = (function () {
                             case 76:            // L
                             case "l":
                             case "L":
-                                self.allowDrag = !self.allowDrag;
-                                if (self.allowDrag) coords.lockIcon.fadeOut(200);
-                                else coords.lockIcon.fadeIn(200);
+                                board.setAllowDrag(!self.allowDrag);
+                                $('#lockCanvasToggle').prop('checked', !self.allowDrag);
                                 break;
                             case "KeyR":
                             case 82:            // R
@@ -1450,6 +1449,14 @@ window.App = (function () {
                 refresh: self.refresh,
                 updateViewport: self.updateViewport,
                 allowDrag: self.allowDrag,
+                setAllowDrag: (allowDrag) => {
+                    self.allowDrag = allowDrag === true;
+                    if (self.allowDrag)
+                        coords.lockIcon.fadeOut(200);
+                    else
+                        coords.lockIcon.fadeIn(200);
+                    ls.set('canvas.unlocked', self.allowDrag);
+                },
                 validateCoordinates: self.validateCoordinates
             };
         })(),
@@ -2966,6 +2973,11 @@ window.App = (function () {
                             place.setNumberedPaletteEnabled(this.checked === true);
                         });
 
+                    board.setAllowDrag(ls.get('canvas.unlocked') !== false); // false check for new connections
+                    $('#lockCanvasToggle').prop('checked', board.allowDrag)
+                        .change(function() {
+                            board.setAllowDrag(this.checked === false); // updates localStorage for us
+                        });
 
                     const numOrDefault = (n, def) => isNaN(n) ? def : n;
                     const colorBrightnessLevel = numOrDefault(parseFloat(ls.get("colorBrightness")), 1);
