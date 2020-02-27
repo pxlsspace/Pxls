@@ -760,10 +760,10 @@ window.App = (function () {
                     if (!isNaN(data.scale)) self.scale = parseFloat(data.scale);
                     self.centerOn(data.x, data.y);
                 },
-                centerOn: function (x, y) {
+                centerOn: function (x, y, ignoreLock=false) {
                     if (x != null) self.pan.x = (self.width / 2 - x);
                     if (y != null) self.pan.y = (self.height / 2 - y);
-                    self.update();
+                    self.update(null, ignoreLock);
                 },
                 replayBuffer: function () {
                     $.map(self.pixelBuffer, function (p) {
@@ -1134,7 +1134,7 @@ window.App = (function () {
                         var cx = query.get("x") || self.width / 2,
                             cy = query.get("y") || self.height / 2;
                         self.scale = query.get("scale") || self.scale;
-                        self.centerOn(cx, cy);
+                        self.centerOn(cx, cy, true);
                         socket.init();
                         binary_ajax("/boarddata" + "?_" + (new Date()).getTime(), self.draw, socket.reconnect);
 
@@ -1186,7 +1186,7 @@ window.App = (function () {
                         socket.reconnect();
                     });
                 },
-                update: function (optional) {
+                update: function (optional, ignoreCanvasLock=false) {
                     self.pan.x = Math.min(self.width / 2, Math.max(-self.width / 2, self.pan.x));
                     self.pan.y = Math.min(self.height / 2, Math.max(-self.height / 2, self.pan.y));
                     query.set({
@@ -1261,7 +1261,7 @@ window.App = (function () {
                     } else {
                         self.elements.board.addClass("pixelate");
                     }
-                    if (self.allowDrag || (!self.allowDrag && self.pannedWithKeys)) {
+                    if (ignoreCanvasLock || self.allowDrag || (!self.allowDrag && self.pannedWithKeys)) {
                         self.elements.mover.css({
                             width: self.width,
                             height: self.height,
