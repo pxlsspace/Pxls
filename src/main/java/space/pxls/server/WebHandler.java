@@ -269,7 +269,9 @@ public class WebHandler {
 
         String _reportMessage = reportMessage.getValue().trim();
         if (_reportMessage.length() > 2048) _reportMessage = _reportMessage.substring(0, 2048);
-        App.getDatabase().insertChatReport(chatMessage.nonce, chatMessage.author_uid, user.getId(), _reportMessage);
+        Integer rid = App.getDatabase().insertChatReport(chatMessage.nonce, chatMessage.author_uid, user.getId(), _reportMessage);
+        if (rid != null)
+            App.getServer().broadcastToStaff(new ServerReceivedReport(rid, ServerReceivedReport.REPORT_TYPE_CHAT));
 
         exchange.setStatusCode(200);
         exchange.getResponseSender().send("{}");
@@ -1203,7 +1205,9 @@ public class WebHandler {
             exchange.endExchange();
             return;
         }
-        App.getDatabase().insertReport(user.getId(), pxl.userId, id, x, y, msgq.getValue());
+        Integer rid = App.getDatabase().insertReport(user.getId(), pxl.userId, id, x, y, msgq.getValue());
+        if (rid != null)
+            App.getServer().broadcastToStaff(new ServerReceivedReport(rid, ServerReceivedReport.REPORT_TYPE_CANVAS));
         exchange.setStatusCode(200);
     }
 

@@ -934,7 +934,9 @@ public class Database {
                 .bind("x", x)
                 .bind("y", y)
                 .bind("message", message)
-                .execute());
+                .executeAndReturnGeneratedKeys("id")
+                .mapTo(Integer.TYPE)
+                .first());
     }
 
     /**
@@ -942,11 +944,13 @@ public class Database {
      * @param reported The banned {@link User}'s ID.
      * @param message The report message.
      */
-    public void insertServerReport(int reported, String message) {
-        jdbi.useHandle(handle -> handle.createUpdate("INSERT INTO reports (who, pixel_id, x, y, message, reported, time) VALUES (0, 0, 0, 0, :message, :reported, (SELECT EXTRACT(EPOCH FROM NOW())))")
+    public Integer insertServerReport(int reported, String message) {
+        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO reports (who, pixel_id, x, y, message, reported, time) VALUES (0, 0, 0, 0, :message, :reported, (SELECT EXTRACT(EPOCH FROM NOW())))")
                 .bind("message", message)
                 .bind("reported", reported)
-                .execute());
+                .executeAndReturnGeneratedKeys("id")
+                .mapTo(Integer.TYPE)
+                .first());
     }
 
     /**
@@ -1206,7 +1210,9 @@ public class Database {
                 .bind("target", targetID)
                 .bind("initiator", initiatorID)
                 .bind("report_message", reportMessage)
-                .execute());
+                .executeAndReturnGeneratedKeys("id")
+                .mapTo(Integer.TYPE)
+                .first());
     }
 
     /**

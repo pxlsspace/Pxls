@@ -2,6 +2,7 @@ package space.pxls.tasks;
 
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
+import space.pxls.server.packets.socket.ServerReceivedReport;
 import space.pxls.user.User;
 
 import java.util.List;
@@ -39,7 +40,9 @@ public class UserAuthedTask implements Runnable {
                         System.err.printf("    ID from database (%d) resulted in a null user lookup (triggered by UserDupeIP task for %s (ID: %d))%n", uids.get(i), user.getName(), user.getId());
                     }
                 }
-                App.getDatabase().insertServerReport(user.getId(), toReport.toString());
+                Integer rid = App.getDatabase().insertServerReport(user.getId(), toReport.toString());
+                if (rid != null)
+                    App.getServer().broadcastToStaff(new ServerReceivedReport(rid, ServerReceivedReport.REPORT_TYPE_CANVAS));
                 App.getDatabase().setLastIPAlertFlag(user.getId(), true);
             }
         }
