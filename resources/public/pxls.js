@@ -6201,6 +6201,7 @@ window.App = (function () {
                         escapeClose: true,
                         clickClose: true,
                         showClose: true,
+                        closeText: '<i class="fas fa-times"></i>',
                     }, {removeOnClose: true}, opts);
                     if (!document.body.contains(modal)) {
                         document.body.appendChild(modal);
