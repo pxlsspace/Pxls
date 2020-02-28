@@ -1930,6 +1930,23 @@ ul.chat-history, ul.chatban-history {
     outline: 0;
 }
 
+.modal a.close-modal {
+    position: absolute;
+    font-size: 1.25em;
+    top: 0;
+    right: 0;
+    background: #660000;
+    width: 1.5em;
+    height: 1.5em;
+    line-height: 1.5em;
+    text-align: center;
+    color: #eee;
+    text-decoration: none;
+    text-indent: 0;
+    border-radius: 0 6px 0 12px;
+    box-shadow: 1px 1px 5px #660000aa;
+}
+
 .modal .modal-footer {
     text-align: right;
 }
