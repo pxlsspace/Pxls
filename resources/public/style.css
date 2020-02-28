@@ -1846,7 +1846,7 @@ ul.chat-history, ul.chatban-history {
 
 /* Chat settings tweaks */
 .chat-settings-wrapper label {
-    display: block;
+    display: inline-block;
     cursor: pointer;
     user-select: none;
     margin: 6px 0;
@@ -1854,6 +1854,10 @@ ul.chat-history, ul.chatban-history {
 
 .chat-settings-wrapper input:not([type=checkbox]) {
     border: 1px solid #888;
+}
+
+.d-block {
+    display: block !important;
 }
 
 /* Notifications */

@@ -760,10 +760,10 @@ window.App = (function () {
                     if (!isNaN(data.scale)) self.scale = parseFloat(data.scale);
                     self.centerOn(data.x, data.y);
                 },
-                centerOn: function (x, y) {
+                centerOn: function (x, y, ignoreLock=false) {
                     if (x != null) self.pan.x = (self.width / 2 - x);
                     if (y != null) self.pan.y = (self.height / 2 - y);
-                    self.update();
+                    self.update(null, ignoreLock);
                 },
                 replayBuffer: function () {
                     $.map(self.pixelBuffer, function (p) {
@@ -861,9 +861,8 @@ window.App = (function () {
                             case 76:            // L
                             case "l":
                             case "L":
-                                self.allowDrag = !self.allowDrag;
-                                if (self.allowDrag) coords.lockIcon.fadeOut(200);
-                                else coords.lockIcon.fadeIn(200);
+                                board.setAllowDrag(!self.allowDrag);
+                                $('#lockCanvasToggle').prop('checked', !self.allowDrag);
                                 break;
                             case "KeyR":
                             case 82:            // R
@@ -1135,7 +1134,7 @@ window.App = (function () {
                         var cx = query.get("x") || self.width / 2,
                             cy = query.get("y") || self.height / 2;
                         self.scale = query.get("scale") || self.scale;
-                        self.centerOn(cx, cy);
+                        self.centerOn(cx, cy, true);
                         socket.init();
                         binary_ajax("/boarddata" + "?_" + (new Date()).getTime(), self.draw, socket.reconnect);
 
@@ -1187,7 +1186,7 @@ window.App = (function () {
                         socket.reconnect();
                     });
                 },
-                update: function (optional) {
+                update: function (optional, ignoreCanvasLock=false) {
                     self.pan.x = Math.min(self.width / 2, Math.max(-self.width / 2, self.pan.x));
                     self.pan.y = Math.min(self.height / 2, Math.max(-self.height / 2, self.pan.y));
                     query.set({
@@ -1262,7 +1261,7 @@ window.App = (function () {
                     } else {
                         self.elements.board.addClass("pixelate");
                     }
-                    if (self.allowDrag || (!self.allowDrag && self.pannedWithKeys)) {
+                    if (ignoreCanvasLock || self.allowDrag || (!self.allowDrag && self.pannedWithKeys)) {
                         self.elements.mover.css({
                             width: self.width,
                             height: self.height,
@@ -1450,6 +1449,14 @@ window.App = (function () {
                 refresh: self.refresh,
                 updateViewport: self.updateViewport,
                 allowDrag: self.allowDrag,
+                setAllowDrag: (allowDrag) => {
+                    self.allowDrag = allowDrag === true;
+                    if (self.allowDrag)
+                        coords.lockIcon.fadeOut(200);
+                    else
+                        coords.lockIcon.fadeIn(200);
+                    ls.set('canvas.unlocked', self.allowDrag);
+                },
                 validateCoordinates: self.validateCoordinates
             };
         })(),
@@ -2966,6 +2973,11 @@ window.App = (function () {
                             place.setNumberedPaletteEnabled(this.checked === true);
                         });
 
+                    board.setAllowDrag(ls.get('canvas.unlocked') !== false); // false check for new connections
+                    $('#lockCanvasToggle').prop('checked', board.allowDrag)
+                        .change(function() {
+                            board.setAllowDrag(this.checked === false); // updates localStorage for us
+                        });
 
                     const numOrDefault = (n, def) => isNaN(n) ? def : n;
                     const colorBrightnessLevel = numOrDefault(parseFloat(ls.get("colorBrightness")), 1);
@@ -4345,54 +4357,54 @@ window.App = (function () {
                     let body = crel('div', {'class': 'chat-settings-wrapper'});
 
                     let _cb24hTimestamps = crel('input', {'type': 'checkbox'});
-                    let lbl24hTimestamps = crel('label', {'style': 'display: block;'}, _cb24hTimestamps, '24 Hour Timestamps');
+                    let lbl24hTimestamps = crel('label', _cb24hTimestamps, '24 Hour Timestamps');
 
                     let _cbPixelPlaceBadges = crel('input', {'type': 'checkbox'});
-                    let lblPixelPlaceBadges = crel('label', {'style': 'display: block;'}, _cbPixelPlaceBadges, 'Show pixel-placed badges');
+                    let lblPixelPlaceBadges = crel('label', _cbPixelPlaceBadges, 'Show pixel-placed badges');
 
                     let _cbPings = crel('input', {'type': 'checkbox'});
-                    let lblPings = crel('label', {'style': 'display: block;'}, _cbPings, 'Enable pings');
+                    let lblPings = crel('label', _cbPings, 'Enable pings');
 
                     let _cbPingAudio = crel('select', {},
                         crel('option', {'value': 'off'}, 'Off'),
                         crel('option', {'value': 'discrete'}, 'Only when necessary'),
                         crel('option', {'value': 'always'}, 'Always')
                     );
-                    let lblPingAudio = crel('div', {'style': 'display: block;'},
-                        'Play sound on ping',
+                    let lblPingAudio = crel('label',
+                        'Play sound on ping: ',
                         _cbPingAudio
                     );
 
                     let _rgPingAudioVol = crel('input', {'type': 'range', min: 0, max: 100});
                     let _txtPingAudioVol = crel('span');
-                    let lblPingAudioVol = crel('label', {'style': 'display: block;'},
-                        'Ping sound volume',
+                    let lblPingAudioVol = crel('label',
+                        'Ping sound volume: ',
                         _rgPingAudioVol,
                         _txtPingAudioVol
                     );
 
                     let _cbBanner = crel('input', {'type': 'checkbox'});
-                    let lblBanner = crel('label', {'style': 'display: block;'}, _cbBanner, 'Enable the rotating banner under chat');
+                    let lblBanner = crel('label', _cbBanner, 'Enable the rotating banner under chat');
 
                     let _cbTemplateTitles = crel('input', {'type': 'checkbox'});
-                    let lblTemplateTitles = crel('label', {'style': 'display: block;'}, _cbTemplateTitles, 'Replace template titles with URLs in chat where applicable');
+                    let lblTemplateTitles = crel('label', _cbTemplateTitles, 'Replace template titles with URLs in chat where applicable');
 
                     let _txtFontSize = crel('input', {'type': 'number', 'min': '1', 'max': '72'});
                     let _btnFontSizeConfirm = crel('button', {'class': 'buton'}, crel('i', {'class': 'fas fa-check'}));
-                    let lblFontSize = crel('label', {'style': 'display: block;'}, 'Font Size: ', _txtFontSize, _btnFontSizeConfirm);
+                    let lblFontSize = crel('label', 'Font Size: ', _txtFontSize, _btnFontSizeConfirm);
 
                     let _selInternalClick = crel('select',
                         Object.values(self.TEMPLATE_ACTIONS).map(action =>
                             crel('option', {'value': action.id}, action.pretty)
                         )
                     );
-                    let lblInternalAction = crel('label', {'style': 'display: block;'}, 'Default internal link action click: ', _selInternalClick);
+                    let lblInternalAction = crel('label', 'Default internal link action click: ', _selInternalClick);
 
                     let _selUsernameColor = crel('select', {'class': 'username-color-picker'},
                         user.isStaff() ? crel('option', {value: -1, 'class': 'rainbow'}, 'rainbow') : null,
                         place.getPalette().map((x, i) => crel('option', {value: i, 'data-idx': i, style: `background-color: ${x}`}, x))
                     );
-                    let lblUsernameColor = crel('label', {'style': 'display: block;'}, 'Username Color: ', _selUsernameColor);
+                    let lblUsernameColor = crel('label', 'Username Color: ', _selUsernameColor);
 
                     let _selIgnores = crel('select', {'class': 'user-ignores', 'style': 'font-family: monospace; padding: 5px; border-radius: 5px;'},
                         self.getIgnores().sort((a, b) => a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase())).map(x =>
@@ -4494,18 +4506,17 @@ window.App = (function () {
 
                     crel(body,
                         crel('h3', {'class': 'chat-settings-title'}, 'Chat Settings'),
-                        lbl24hTimestamps,
-                        lblPixelPlaceBadges,
-                        lblPings,
-                        lblPingAudio,
-                        lblPingAudioVol,
-                        lblBanner,
-                        lblTemplateTitles,
-                        lblFontSize,
-                        lblInternalAction,
-                        lblUsernameColor,
-                        lblIgnores,
-                        lblIgnoresFeedback
+                        [
+                            lbl24hTimestamps,
+                            lblPixelPlaceBadges,
+                            lblPings,
+                            lblPingAudio,
+                            lblPingAudioVol,
+                            lblBanner,
+                            lblFontSize,
+                            lblUsernameColor,
+                            lblIgnoresFeedback
+                        ].map(x => crel('div', {'class': 'd-block'}, x))
                     )
                     modal.show(modal.buildDom(
                         crel('h2', {'class': 'modal-title'}, 'Chat Settings'),
