@@ -6239,10 +6239,6 @@ window.App = (function () {
         })(),
         slidein = (() => {
             let self = {};
-            /**
-             * @returns {string}
-             */
-            const r = () => `${Math.random() * 1e7 >> 0}-${Math.random() * 1e7 >> 0}-${Math.random() * 1e7 >> 0}-${Math.random() * 1e7 >> 0}`;
 
             const SLIDEIN_TYPES = Object.freeze({
                 SUCCESS: 'success',
@@ -6272,7 +6268,6 @@ window.App = (function () {
                 this.closeable = closeable === true;
                 this.icon = icon || false;
                 this.type = type || SLIDEIN_TYPES.DARK;
-                this.r = r();
                 this._dom = _buildSlideinDom(this);
                 this._delayClose = 0;
                 this.show = () => {
