@@ -12,6 +12,7 @@ public class DBUser {
     public int id;
     public int stacked;
     public int chatNameColor;
+    public Timestamp signup_time;
     public String username;
     public String login;
     public long cooldownExpiry;
@@ -23,11 +24,12 @@ public class DBUser {
     public String discordName;
     public String chatbanReason;
 
-    public DBUser(int id, int stacked, String username, String login, long cooldownExpiry, Role role, long banExpiry, boolean isPermaChatbanned, long chatbanExpiry, boolean isRenameRequested, String discordName, String chatbanReason, int chatNameColor) {
+    public DBUser(int id, int stacked, String username, String login, Timestamp signup, long cooldownExpiry, Role role, long banExpiry, boolean isPermaChatbanned, long chatbanExpiry, boolean isRenameRequested, String discordName, String chatbanReason, int chatNameColor) {
         this.id = id;
         this.stacked = stacked;
         this.username = username;
         this.login = login;
+        this.signup_time = signup;
         this.cooldownExpiry = cooldownExpiry;
         this.role = role;
         this.banExpiry = banExpiry;
@@ -50,6 +52,7 @@ public class DBUser {
                     r.getInt("stacked"),
                     r.getString("username"),
                     r.getString("login"),
+                    r.getTimestamp("signup_time"),
                     stamp == null ? 0 : stamp.getTime(),
                     Role.valueOf(r.getString("role")),
                     ban == null ? 0 : ban.getTime(),

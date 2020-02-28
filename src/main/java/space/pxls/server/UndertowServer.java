@@ -84,7 +84,10 @@ public class UndertowServer {
                 .addPrefixPath("/setNotificationExpired", new RoleGate(Role.DEVELOPER, webHandler::setNotificationExpired))
                 .addPrefixPath("/notifications", webHandler::notificationsList)
                 .addExactPath("/", webHandler::index)
-                .addExactPath("/index.html", webHandler::index)
+                .addExactPath("/index.html", webHandler::profile)
+                .addExactPath("/profile", webHandler::profile)
+                .addExactPath("/profile/view", webHandler::profile)
+                .addExactPath("/profile/index.html", webHandler::profile)
                 .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/"))
                         .setCacheTime(10));
         //EncodingHandler encoder = new EncodingHandler(mainHandler, new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50, Predicates.parse("max-content-size(1024)")));

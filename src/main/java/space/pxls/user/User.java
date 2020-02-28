@@ -9,6 +9,7 @@ import space.pxls.server.packets.chat.ServerChatBan;
 import space.pxls.server.packets.socket.ServerRename;
 import space.pxls.util.RateLimitFactory;
 
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -37,6 +38,7 @@ public class User {
     private long lastPixelTime = 0;
     private long lastUndoTime = 0;
     private long initialAuthTime = 0L;
+    private Timestamp signup_time;
 
     // 0 = not banned
     private long banExpiryTime;
@@ -44,11 +46,12 @@ public class User {
 
     private Set<WebSocketChannel> connections = new HashSet<>();
 
-    public User(int id, int stacked, String name, String login, long cooldownExpiry, Role role, long banExpiryTime, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor) {
+    public User(int id, int stacked, String name, String login, Timestamp signup, long cooldownExpiry, Role role, long banExpiryTime, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor) {
         this.id = id;
         this.stacked = stacked;
         this.name = name;
         this.login = login;
+        this.signup_time = signup;
         this.cooldownExpiry = cooldownExpiry;
         this.role = role;
         this.banExpiryTime = banExpiryTime;
@@ -66,6 +69,7 @@ public class User {
         this.stacked = user.stacked;
         this.name = user.username;
         this.login = user.login;
+        this.signup_time = user.signup_time;
         this.cooldownExpiry = user.cooldownExpiry;
         this.role = user.role;
         this.banExpiryTime = user.banExpiry;
@@ -619,5 +623,9 @@ public class User {
 
     public void setIdled(boolean idled) {
         isIdled = idled;
+    }
+
+    public Timestamp getSignupTime() {
+        return signup_time;
     }
 }

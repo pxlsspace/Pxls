@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+              content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>{{username}} - Pxls</title>
+        <link rel="stylesheet" href="css/theme-purple.min.css">
+        <link rel="stylesheet" href="../fontawesome-all.min.css">
+        <script src="../jquery-3.4.1.min.js"></script>
+        <script src="js/bootstrap.bundle.min.js"></script>
+        <script src="../crel.min.js"></script>
+    </head>
+    <body>
+        <nav class="navbar navbar-dark navbar-expand-md" role="nav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a href="/" class="nav-link">Pxls</a>
+                </li>
+                <li class="nav-item active">
+                    <a href="/profile/view" class="nav-link">Profile</a>
+                </li>
+            </ul>
+        </nav>
+        <main role="main" class="mb-3">
+            <div class="container">
+                <h1>{{username}}'s Profile</h1>
+                <hr>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="list-group" id="tabsTriggers">
+                            <a href="/profile/view?action=details" data-action="details" class="list-group-item text-light active">
+                                <i class="fas fa-id-card mr-2 d-none d-md-inline-block"></i>Info
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-md-9 tab-content" id="tabsWrapper">
+                        <div id="tab-details" class="tab-pane text-center active" data-tab="details">
+                            <h3>{{username}}</h3>
+                            <table class="inline-block">
+                                <tbody>
+                                    <tr>
+                                        <th class="text-right pr-3">Registration Date</th>
+                                        <td class="text-left">{{user.registration_date}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-right pr-3">Canvas Pixels</th>
+                                        <td class="text-left">{{user.canvas_pixels}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-right pr-3">Alltime Pixels</th>
+                                        <td class="text-left">{{user.alltime_pixels}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        <script src="js/views/index.js"></script>
+    </body>
+</html>

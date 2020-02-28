@@ -7,7 +7,6 @@ import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
-import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 import io.undertow.util.StatusCodes;
@@ -17,9 +16,12 @@ import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBNotification;
 import space.pxls.data.DBPixelPlacement;
 import space.pxls.data.DBPixelPlacementUser;
-import space.pxls.server.packets.http.*;
 import space.pxls.server.packets.http.Error;
-import space.pxls.server.packets.socket.*;
+import space.pxls.server.packets.http.*;
+import space.pxls.server.packets.socket.ServerNotification;
+import space.pxls.server.packets.socket.ServerRenameSuccess;
+import space.pxls.server.packets.socket.ServerUserInfo;
+import space.pxls.server.packets.socket.ServerUsers;
 import space.pxls.user.Chatban;
 import space.pxls.user.Role;
 import space.pxls.user.User;
@@ -31,13 +33,25 @@ import space.pxls.util.SimpleDiscordWebhook;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 public class WebHandler {
-    private String fileToString (File f) {
+    private String _templateBase = null;
+    private Map<String, AuthService> services = new ConcurrentHashMap<>();
+
+    {
+        addServiceIfAvailable("reddit", new RedditAuthService("reddit"));
+        addServiceIfAvailable("google", new GoogleAuthService("google"));
+        addServiceIfAvailable("discord", new DiscordAuthService("discord"));
+        addServiceIfAvailable("vk", new VKAuthService("vk"));
+        addServiceIfAvailable("tumblr", new TumblrAuthService("tumblr"));
+    }
+
+    private String fileToString(File f) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(f));
             String s = "";
@@ -51,10 +65,12 @@ public class WebHandler {
             return "";
         }
     }
-    private String fileToString (String s) {
+
+    private String fileToString(String s) {
         return fileToString(new File(s));
     }
-    private String resourceToString (String r) {
+
+    private String resourceToString(String r) {
         try {
             InputStream in = getClass().getResourceAsStream(r);
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -68,6 +84,7 @@ public class WebHandler {
             return "";
         }
     }
+
     public void index(HttpServerExchange exchange) {
         File index_cache = new File(App.getStorageDir().resolve("index_cache.html").toString());
         if (index_cache.exists()) {
@@ -75,7 +92,6 @@ public class WebHandler {
             exchange.getResponseSender().send(fileToString(index_cache));
             return;
         }
-        ClassPathResourceManager cprm = new ClassPathResourceManager(App.class.getClassLoader(), "public/");
         String s = resourceToString("/public/index.html");
         String[] replacements = {"title", "head", "info", "faq"};
         for (String p : replacements) {
@@ -103,21 +119,30 @@ public class WebHandler {
         }
     }
 
+    public void profile(HttpServerExchange exchange) {
+        if (_templateBase == null) {
+            _templateBase = resourceToString("/public/profile/index.html");
+        }
+        User requestingUser = exchange.getAttachment(AuthReader.USER);
 
-    private Map<String, AuthService> services = new ConcurrentHashMap<>();
+        String toRet = (_templateBase + "")
+                .replaceAll(hbar("username"), requestingUser == null ? "Anonymous" : requestingUser.getName())
+                .replaceAll(hbar("user.registration_date"), requestingUser == null ? "n/a" : new SimpleDateFormat("LLL d, y, h:m:s a (z)").format(requestingUser.getSignupTime()))
+                .replaceAll(hbar("user.canvas_pixels"), requestingUser == null ? "0" : String.format("%,d", requestingUser.getPixels()))
+                .replaceAll(hbar("user.alltime_pixels"), requestingUser == null ? "0" : String.format("%,d", requestingUser.getPixelsAllTime()));
+
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
+        exchange.getResponseSender().send(toRet);
+    }
+
+    private String hbar(String k) {
+        return String.format("\\{\\{%s\\}\\}", k);
+    }
 
     private void addServiceIfAvailable(String key, AuthService service) {
         if (service.use()) {
             services.put(key, service);
         }
-    }
-
-    {
-        addServiceIfAvailable("reddit", new RedditAuthService("reddit"));
-        addServiceIfAvailable("google", new GoogleAuthService("google"));
-        addServiceIfAvailable("discord", new DiscordAuthService("discord"));
-        addServiceIfAvailable("vk", new VKAuthService("vk"));
-        addServiceIfAvailable("tumblr", new TumblrAuthService("tumblr"));
     }
 
     private String getBanReason(HttpServerExchange exchange) {
@@ -801,6 +826,7 @@ public class WebHandler {
     private void sendBadRequest(HttpServerExchange exchange) {
         sendBadRequest(exchange, "");
     }
+
     private void sendBadRequest(HttpServerExchange exchange, String details) {
         send(StatusCodes.BAD_REQUEST, exchange, details);
     }
@@ -887,7 +913,7 @@ public class WebHandler {
         if (reports.size() > 0) {
             String msg = "Potential dupe user. Reasons:\n\n";
             for (String r : reports) {
-                msg += r+"\n";
+                msg += r + "\n";
             }
             App.getDatabase().insertServerReport(user.getId(), msg);
         }
@@ -1037,9 +1063,9 @@ public class WebHandler {
             String state = service.generateState();
             if (redirect) {
                 exchange.setResponseCookie(new CookieImpl("pxls-auth-redirect", "1").setPath("/"));
-                redirect(exchange, service.getRedirectUrl(state+"|redirect"));
+                redirect(exchange, service.getRedirectUrl(state + "|redirect"));
             } else {
-                respond(exchange, StatusCodes.OK, new SignInResponse(service.getRedirectUrl(state+"|json")));
+                respond(exchange, StatusCodes.OK, new SignInResponse(service.getRedirectUrl(state + "|json")));
             }
         } else {
             respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_service", "No auth method named " + id));
@@ -1051,17 +1077,17 @@ public class WebHandler {
                 .add(HttpString.tryFromString("Content-Type"), "application/json")
                 .add(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
         exchange.getResponseSender().send(App.getGson().toJson(new CanvasInfo(
-            App.getCanvasCode(),
-            App.getWidth(),
-            App.getHeight(),
-            App.getConfig().getStringList("board.palette"),
-            App.getConfig().getString("captcha.key"),
-            (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS),
-            (int) App.getConfig().getInt("stacking.maxStacked"),
-            services,
-            App.getRegistrationEnabled(),
-            Math.min(App.getConfig().getInt("chat.characterLimit"), 2048),
-            App.getConfig().getBoolean("chat.canvasBanRespected")
+                App.getCanvasCode(),
+                App.getWidth(),
+                App.getHeight(),
+                App.getConfig().getStringList("board.palette"),
+                App.getConfig().getString("captcha.key"),
+                (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS),
+                (int) App.getConfig().getInt("stacking.maxStacked"),
+                services,
+                App.getRegistrationEnabled(),
+                Math.min(App.getConfig().getInt("chat.characterLimit"), 2048),
+                App.getConfig().getBoolean("chat.canvasBanRespected")
         )));
     }
 
