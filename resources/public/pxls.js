@@ -3718,7 +3718,7 @@ window.App = (function () {
                                                         chatban.type !== 'UNBAN' ? ([
                                                             crel('tr',
                                                                 crel('th', 'Length:'),
-                                                                crel('td', (chatban.type.toUpperCase().trim() === 'PERMA') ? 'Permanent' : `${chatban.expiry-chatban.when}s`)
+                                                                crel('td', (chatban.type.toUpperCase().trim() === 'PERMA') ? 'Permanent' : `${chatban.expiry-chatban.when}s${(chatban.expiry-chatban.when) >= 60 ? ` (${moment.duration(chatban.expiry-chatban.when, 'seconds').humanize()})` : ''}`)
                                                             ),
                                                             (chatban.type.toUpperCase().trim() === 'PERMA') ? null : crel('tr',
                                                                 crel('th', 'Expiry:'),

@@ -1292,9 +1292,10 @@ public class Database {
      * Returns the requested user's last 100 messages and chatbans.
      *
      * @param username The {@link User}'s name to look up.
+     * @param history_limit The maximum number of chat message history to fetch.
      * @return The requested user's last 100 messages and chatbans.
      */
-    public ServerChatLookup runChatLookupForUsername(String username) {
+    public ServerChatLookup runChatLookupForUsername(String username, int history_limit) {
         // we want to run all these queries with their own handle so we don't hit the pool x times.
         return jdbi.withHandle(handle -> {
             Optional<DBUser> dbu = handle.createQuery(SQL_USER_BY_NAME)
@@ -1309,8 +1310,9 @@ public class Database {
                     .map(new DBExtendedChatban.Mapper())
                     .list();
 
-            List<DBChatMessage> messages = handle.createQuery("SELECT * FROM chat_messages WHERE author = :uid ORDER BY sent DESC LIMIT 100")
+            List<DBChatMessage> messages = handle.createQuery("SELECT * FROM chat_messages WHERE author = :uid ORDER BY sent DESC LIMIT :lim")
                     .bind("uid", dbUser.id)
+                    .bind("lim", history_limit)
                     .map(new DBChatMessage.Mapper())
                     .list();
 
