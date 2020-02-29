@@ -939,6 +939,24 @@ public class Database {
                 .first());
     }
 
+    public List<DBChatReport> getChatReportsFromUser(int uid) {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("SELECT * FROM chat_reports WHERE initiator = :uid ORDER BY time DESC")
+                .bind("uid", uid)
+                .map(new DBChatReport.Mapper())
+                .list()
+        );
+    }
+
+    public List<DBCanvasReport> getCanvasReportsFromUser(int uid) {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("SELECT * FROM reports WHERE who = :uid ORDER BY time DESC")
+                .bind("uid", uid)
+                .map(new DBCanvasReport.Mapper())
+                .list()
+        );
+    }
+
     /**
      * Inserts a server report.
      * @param reported The banned {@link User}'s ID.

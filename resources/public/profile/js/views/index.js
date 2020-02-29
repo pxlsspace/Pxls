@@ -17,6 +17,14 @@
       }
     }
   }
+  Array.from(document.querySelectorAll('.collapseable')).forEach(elMain => {
+    const collapseButton = elMain.querySelector('[data-action="collapse"]');
+    if (collapseButton) {
+      collapseButton.addEventListener('click', function() {
+        handleCollapseIconToggle(this.closest('.collapseable').querySelector('.body-collapse-target'), this.querySelector('.fas'));
+      })
+    }
+  });
 })();
 
 function handleTabTrigger(e) {
@@ -38,4 +46,15 @@ function handleTabTrigger(e) {
 
   targetTab.classList.add('active');
   this.classList.add('active');
+}
+
+function handleCollapseIconToggle(colTarget, elIcon) {
+  let wasCollapsed = colTarget.classList.contains('collapse') && !colTarget.classList.contains('show');
+  elIcon.classList.toggle('fa-chevron-down', !wasCollapsed);
+  elIcon.classList.toggle('fa-chevron-up', wasCollapsed); //update icons immediately so that they don't wait for the animation to complete
+  $(colTarget).collapse('toggle').one(wasCollapsed ? 'shown.bs.collapse' : 'hidden.bs.collapse', function() { //bind to ensure we show the correct icon once collapse fires
+    let isCollapsed = colTarget.classList.contains('collapse') && !colTarget.classList.contains('show');
+    elIcon.classList.toggle('fa-chevron-down', isCollapsed);
+    elIcon.classList.toggle('fa-chevron-up', !isCollapsed);
+  });
 }

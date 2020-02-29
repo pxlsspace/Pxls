@@ -2,6 +2,10 @@ package space.pxls.server;
 
 import com.google.gson.JsonObject;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mitchellbosecke.pebble.PebbleEngine;
+import com.mitchellbosecke.pebble.loader.ClasspathLoader;
+import com.mitchellbosecke.pebble.loader.StringLoader;
+import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
@@ -12,10 +16,7 @@ import io.undertow.util.HttpString;
 import io.undertow.util.StatusCodes;
 import space.pxls.App;
 import space.pxls.auth.*;
-import space.pxls.data.DBChatMessage;
-import space.pxls.data.DBNotification;
-import space.pxls.data.DBPixelPlacement;
-import space.pxls.data.DBPixelPlacementUser;
+import space.pxls.data.*;
 import space.pxls.server.packets.http.Error;
 import space.pxls.server.packets.http.*;
 import space.pxls.server.packets.socket.ServerNotification;
@@ -38,17 +39,22 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class WebHandler {
-    private String _templateBase = null;
+    private String _templateBase;
+    private PebbleEngine engine;
     private Map<String, AuthService> services = new ConcurrentHashMap<>();
 
-    {
+    public WebHandler() {
         addServiceIfAvailable("reddit", new RedditAuthService("reddit"));
         addServiceIfAvailable("google", new GoogleAuthService("google"));
         addServiceIfAvailable("discord", new DiscordAuthService("discord"));
         addServiceIfAvailable("vk", new VKAuthService("vk"));
         addServiceIfAvailable("tumblr", new TumblrAuthService("tumblr"));
+
+        _templateBase = resourceToString("/public/profile/index.html");
+        engine = new PebbleEngine.Builder().loader(new StringLoader()).build();
     }
 
     private String fileToString(File f) {
@@ -120,16 +126,29 @@ public class WebHandler {
     }
 
     public void profile(HttpServerExchange exchange) {
-        if (_templateBase == null) {
-            _templateBase = resourceToString("/public/profile/index.html");
-        }
         User requestingUser = exchange.getAttachment(AuthReader.USER);
 
-        String toRet = (_templateBase + "")
-                .replaceAll(hbar("username"), requestingUser == null ? "Anonymous" : requestingUser.getName())
-                .replaceAll(hbar("user.registration_date"), requestingUser == null ? "n/a" : new SimpleDateFormat("LLL d, y, h:m:s a (z)").format(requestingUser.getSignupTime()))
-                .replaceAll(hbar("user.canvas_pixels"), requestingUser == null ? "0" : String.format("%,d", requestingUser.getPixels()))
-                .replaceAll(hbar("user.alltime_pixels"), requestingUser == null ? "0" : String.format("%,d", requestingUser.getPixelsAllTime()));
+        String toRet = _templateBase;
+        try {
+            List<DBChatReport> chatReports = new ArrayList<>();
+            List<DBCanvasReport> canvasReports = new ArrayList<>();
+            if (requestingUser != null) {
+                chatReports = App.getDatabase().getChatReportsFromUser(requestingUser.getId());
+                canvasReports = App.getDatabase().getCanvasReportsFromUser(requestingUser.getId());
+            }
+            HashMap<String,Object> m = new HashMap<>();
+            m.put("user", requestingUser);
+            m.put("chat_reports", chatReports);
+            m.put("chat_reports_open_count", chatReports.stream().filter(dbChatReport -> !dbChatReport.closed).count());
+            m.put("canvas_reports", canvasReports);
+            m.put("canvas_reports_open_count", canvasReports.stream().filter(dbCanvasReport -> !dbCanvasReport.closed).count());
+
+            Writer writer = new StringWriter();
+            engine.getTemplate(_templateBase).evaluate(writer, m);
+            toRet = writer.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
         exchange.getResponseSender().send(toRet);
