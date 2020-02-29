@@ -3,10 +3,14 @@ package space.pxls.server;
 import com.google.gson.JsonObject;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
+import io.undertow.server.RoutingHandler;
+import io.undertow.server.handlers.AllowedMethodsHandler;
 import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.form.EagerFormParsingHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.util.Headers;
+import io.undertow.util.HttpString;
+import io.undertow.util.Methods;
 import io.undertow.websockets.core.AbstractReceiveListener;
 import io.undertow.websockets.core.BufferedTextMessage;
 import io.undertow.websockets.core.WebSocketChannel;
@@ -47,7 +51,7 @@ public class UndertowServer {
     }
 
     public void start() {
-        PathHandler mainHandler = Handlers.path()
+        PathHandler pathHandler = Handlers.path()
                 .addExactPath("/ws", Handlers.websocket(this::webSocketHandler))
                 .addPrefixPath("/ws", Handlers.websocket(this::webSocketHandler))
                 .addPrefixPath("/info", webHandler::info)
@@ -88,14 +92,21 @@ public class UndertowServer {
                 .addExactPath("/profile", Handlers.redirect("/profile/view"))
                 .addExactPath("/profile/index.html", Handlers.redirect("/profile/view"))
                 .addExactPath("/profile/view", webHandler::profile)
+                .addExactPath("/factions", new AllowedMethodsHandler(webHandler::getRequestingUserFactions, Methods.GET))
                 .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/"))
                         .setCacheTime(10));
+        RoutingHandler routingHandler = Handlers.routing()
+            .get("/factions/{fid}", new JsonReader(webHandler::manageFactions))
+            .post("/factions", new JsonReader(webHandler::manageFactions))
+            .put("/factions/{fid}", new JsonReader(webHandler::manageFactions))
+            .delete("/factions/{fid}", new JsonReader(webHandler::manageFactions))
+            .setFallbackHandler(pathHandler);
         //EncodingHandler encoder = new EncodingHandler(mainHandler, new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50, Predicates.parse("max-content-size(1024)")));
         server = Undertow.builder()
                 .addHttpListener(port, "0.0.0.0")
                 .setIoThreads(32)
                 .setWorkerThreads(128)
-                .setHandler(new IPReader(new AuthReader(new EagerFormParsingHandler().setNext(mainHandler)))).build();
+                .setHandler(new IPReader(new AuthReader(new EagerFormParsingHandler().setNext(routingHandler)))).build();
         server.start();
     }
 

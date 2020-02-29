@@ -628,4 +628,8 @@ public class User {
     public Timestamp getSignupTime() {
         return signup_time;
     }
+
+    public static User fromDBUser(DBUser user) {
+        return new User(user.id, user.stacked, user.username, user.login, user.signup_time, user.cooldownExpiry, user.role, user.banExpiry, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor);
+    }
 }

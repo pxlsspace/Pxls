@@ -1,0 +1,20 @@
+.media-text-icon {
+    width: 64px;
+    height: 64px;
+    line-height: 64px;
+    border-radius: 128px;
+    font-size: 1rem;
+    text-align: center;
+    background-color: #eee1;
+    box-shadow: #2226 0 0 5px;
+    color: #eee;
+    transition: background-color 100ms ease-in;
+    user-select: none;
+    cursor: default;
+}
+
+.media:hover .media-text-icon {
+    box-shadow: #222b 0 0 7px;
+    background-color: #eee3;
+    color: #fff;
+}

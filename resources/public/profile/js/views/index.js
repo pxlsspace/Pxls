@@ -1,12 +1,14 @@
 (() => {
   console.debug('spawned');
 
+  // hook up in-page tab navigation
   document.querySelectorAll('#tabsTriggers a[data-action]').forEach(x => x.addEventListener('click', handleTabTrigger));
+
+  // ensure our current action is selected
   if (location.search) {
     const _search = location.search.substr(location.search.startsWith('?') ? 1 : 0).split('&').map(x => x.split('='));
     let action = _search.find(x => x[0].toLowerCase().trim() === 'action');
     if (Array.isArray(action) && action[1] != null) {
-      console.log(action[1]);
       Array.from(document.querySelectorAll('.tab-pane.active')).forEach(x => x.classList.remove('active'));
       Array.from(document.querySelectorAll('.list-group-item[data-action].active')).forEach(x => x.classList.remove('active'));
       let elPane = document.querySelector(`.tab-pane[data-tab="${action[1].toLowerCase()}"]`);
@@ -17,6 +19,8 @@
       }
     }
   }
+
+  // hook up collapseable card triggers
   Array.from(document.querySelectorAll('.collapseable')).forEach(elMain => {
     const collapseButton = elMain.querySelector('[data-action="collapse"]');
     if (collapseButton) {
@@ -25,7 +29,21 @@
       })
     }
   });
+
+  // hook up global faction actions
+  Array.from(document.querySelectorAll('.global-faction-action[data-action]')).forEach(elAction => elAction.addEventListener('click', handleGlobalFactionAction));
+
+  // hook up faction membership actions
+  Array.from(document.querySelectorAll('.faction-media[data-faction-id] .faction-action[data-action]')).forEach(elAction => elAction.addEventListener('click', handleFactionAction));
 })();
+
+function handleFactionAction(e) {
+  console.log(this.closest('.faction-media[data-faction-id]').dataset.factionId, this.dataset.action);
+}
+
+function handleGlobalFactionAction(e) {
+  console.log(this.dataset.action);
+}
 
 function handleTabTrigger(e) {
   e.preventDefault();
@@ -56,5 +74,68 @@ function handleCollapseIconToggle(colTarget, elIcon) {
     let isCollapsed = colTarget.classList.contains('collapse') && !colTarget.classList.contains('show');
     elIcon.classList.toggle('fa-chevron-down', isCollapsed);
     elIcon.classList.toggle('fa-chevron-up', !isCollapsed);
+  });
+}
+
+function popModal(modalDom, focusInput) {
+  $(modalDom).on('shown.bs.modal', () => focusInput && focusInput.focus && focusInput.focus()).on('hidden.bs.modal', () => $(modalDom).modal('dispose').remove()).modal({keyboard: false, backdrop: 'static', focus: true, show: true});
+}
+
+async function getJSON(url) {
+  return _doGetLike(url, 'GET');
+}
+
+async function deleteJSON(url, body = null) {
+  if (body != null) {
+    return _doPostLike(url, 'DELETE', body);
+  } else {
+    return _doGetLike(url, 'DELETE');
+  }
+}
+
+async function putJSON(url, data = {}) {
+  return _doPostLike(url, 'PUT', data);
+}
+
+async function postJSON(url, data = {}) {
+  return _doPostLike(url, 'POST', data);
+}
+
+async function patchJSON(url, data = {}) {
+  return _doPostLike(url, 'PATCH', data);
+}
+
+async function _doGetLike(url, type) {
+  return new Promise((resolve, reject) => {
+    let req = new XMLHttpRequest();
+    req.onload = function() {
+      try {
+        resolve(JSON.parse(this.responseText));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    req.onerror = reject;
+    req.open(type.trim().toUpperCase(), url);
+    req.setRequestHeader('Accept', 'application/json;q=1.0, */*;q=0.5');
+    req.send();
+  });
+}
+
+async function _doPostLike(url, type, data = {}) {
+  return new Promise((resolve, reject) => {
+    let req = new XMLHttpRequest();
+    req.onload = function() {
+      try {
+        resolve(JSON.parse(this.responseText));
+      } catch (e) {
+        reject(e);
+      }
+    };
+    req.onerror = reject;
+    req.open(type.toUpperCase().trim(), url);
+    req.setRequestHeader('Content-Type', 'application/json');
+    req.setRequestHeader('Accept', 'application/json;q=1.0, */*;q=0.5');
+    req.send(JSON.stringify(data));
   });
 }

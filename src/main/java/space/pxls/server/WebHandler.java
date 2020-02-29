@@ -1,19 +1,18 @@
 package space.pxls.server;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mitchellbosecke.pebble.PebbleEngine;
-import com.mitchellbosecke.pebble.loader.ClasspathLoader;
 import com.mitchellbosecke.pebble.loader.StringLoader;
-import com.mitchellbosecke.pebble.template.PebbleTemplate;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
+import io.undertow.server.handlers.PathTemplateHandler;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
-import io.undertow.util.Headers;
-import io.undertow.util.HttpString;
-import io.undertow.util.StatusCodes;
+import io.undertow.util.*;
 import space.pxls.App;
 import space.pxls.auth.*;
 import space.pxls.data.*;
@@ -24,17 +23,14 @@ import space.pxls.server.packets.socket.ServerRenameSuccess;
 import space.pxls.server.packets.socket.ServerUserInfo;
 import space.pxls.server.packets.socket.ServerUsers;
 import space.pxls.user.Chatban;
+import space.pxls.user.Faction;
 import space.pxls.user.Role;
 import space.pxls.user.User;
-import space.pxls.util.AuthReader;
-import space.pxls.util.IPReader;
-import space.pxls.util.RateLimitFactory;
-import space.pxls.util.SimpleDiscordWebhook;
+import space.pxls.util.*;
 
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -132,16 +128,21 @@ public class WebHandler {
         try {
             List<DBChatReport> chatReports = new ArrayList<>();
             List<DBCanvasReport> canvasReports = new ArrayList<>();
+            List<DBFaction> factions = new ArrayList<>();
             if (requestingUser != null) {
                 chatReports = App.getDatabase().getChatReportsFromUser(requestingUser.getId());
                 canvasReports = App.getDatabase().getCanvasReportsFromUser(requestingUser.getId());
+                factions = App.getDatabase().getFactionsForUID(requestingUser.getId());
             }
+
             HashMap<String,Object> m = new HashMap<>();
             m.put("user", requestingUser);
             m.put("chat_reports", chatReports);
             m.put("chat_reports_open_count", chatReports.stream().filter(dbChatReport -> !dbChatReport.closed).count());
             m.put("canvas_reports", canvasReports);
             m.put("canvas_reports_open_count", canvasReports.stream().filter(dbCanvasReport -> !dbCanvasReport.closed).count());
+            m.put("factions", factions);
+            m.put("palette", App.getConfig().getStringList("board.palette"));
 
             Writer writer = new StringWriter();
             engine.getTemplate(_templateBase).evaluate(writer, m);
@@ -154,8 +155,149 @@ public class WebHandler {
         exchange.getResponseSender().send(toRet);
     }
 
-    private String hbar(String k) {
-        return String.format("\\{\\{%s\\}\\}", k);
+    public void getRequestingUserFactions(HttpServerExchange exchange) throws Exception {
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null) {
+            send(StatusCodes.UNAUTHORIZED, exchange, "Not Authorized");
+        } else {
+//            List<UserFaction> factions = App.getDatabase().getFactionsForUID(user.getId()).stream().map(dbf -> dbf.owner == user.getId() ? new ExtendedUserFaction(dbf) : new UserFaction(dbf)).collect(Collectors.toList());
+            exchange.setStatusCode(StatusCodes.OK);
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+            exchange.getResponseSender().send(App.getGson().toJson(App.getDatabase().getFactionsForUID(user.getId()).stream().map(dbf -> dbf.owner == user.getId() ? new ExtendedUserFaction(dbf) : new UserFaction(dbf)).collect(Collectors.toList())));
+        }
+    }
+
+    public void manageFactions(HttpServerExchange exchange) throws Exception {
+        User user = exchange.getAttachment(AuthReader.USER);
+        JsonElement _data = exchange.getAttachment(JsonReader.ATTACHMENT_KEY);
+        JsonObject dataObj = null;
+
+        if (_data != null) {
+            if (!_data.isJsonObject()) {
+                sendBadRequest(exchange, "Invalid data");
+                return;
+            }
+            dataObj = _data.getAsJsonObject();
+        } // we don't require data for fetch/delete, so don't throw here.
+
+        if (user == null) { // This is not a fetch endpoint, if the user doesn't exist we can't continue.
+            send(StatusCodes.UNAUTHORIZED, exchange, "Not Authorized");
+        } else if (exchange.getRequestMethod().equals(Methods.POST)) { // create a new faction
+            if (dataObj == null) {
+                sendBadRequest(exchange, "Missing data");
+                return;
+            }
+            String name = null;
+            String tag = null;
+            try {
+                name = dataObj.get("name").getAsString();
+            } catch (Exception ignored) {}
+            try {
+                tag = dataObj.get("tag").getAsString();
+            } catch (Exception ignored) {}
+            if (name == null || tag == null) {
+                sendBadRequest(exchange, "Invalid/Missing name/tag");
+            } else {
+                if (tag.length() > 4) tag = tag.substring(0, 4);
+                Integer fid = App.getDatabase().createFaction(name, tag, user.getId());
+                if (fid == null) {
+                    send(500, exchange, "Failed to create faction.");
+                } else {
+                    send(200, exchange, String.valueOf(fid));
+                }
+            }
+        } else {
+            int fid;
+            try {
+                fid = Integer.parseInt(exchange.getAttachment(PathTemplateMatch.ATTACHMENT_KEY).getParameters().get("fid"));
+            } catch (Exception e) {
+                sendBadRequest(exchange, "Invalid/Missing Faction ID");
+                return;
+            }
+
+            DBFaction dbFaction = App.getDatabase().getFactionByID(fid);
+            if (dbFaction == null) {
+                sendBadRequest(exchange, "Invalid faction ID");
+                return;
+            }
+            Faction faction = new Faction(dbFaction.id, dbFaction.name, dbFaction.tag, dbFaction.owner, dbFaction.created);
+
+            if (exchange.getRequestMethod().equals(Methods.GET)) { // serialize requested faction
+                exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+                exchange.getResponseSender().send(App.getGson().toJson((user.getId() == dbFaction.owner) ? new ExtendedUserFaction(dbFaction) : new UserFaction(dbFaction)));
+            } else if (exchange.getRequestMethod().equals(Methods.PUT)) { // update requested faction
+                if (user.getId() != dbFaction.owner) {
+                    send(StatusCodes.FORBIDDEN, exchange, "You do not own this resource");
+                    return;
+                }
+                if (dataObj == null) {
+                    sendBadRequest(exchange, "Missing data");
+                    return;
+                }
+
+                if (dataObj.has("displayed")) { // user is attempting to update displayed status
+                    boolean displaying = false;
+                    try {
+                        displaying = dataObj.get("displayed").getAsBoolean();
+                    } catch (Exception ignored) {}
+                    App.getDatabase().setDisplayedFactionForUID(user.getId(), displaying ? faction.getId() : -1);
+                } else { // user is attempting to update faction details
+                    if (dataObj.has("name")) {
+                        String _name = null;
+                        try {
+                            _name = dataObj.get("name").getAsString();
+                        } catch (Exception ignored) {}
+                        if (_name != null) {
+                            faction.setName(dataObj.get("name").getAsString());
+                        }
+                    }
+                    if (dataObj.has("tag")) {
+                        String _tag = null;
+                        try {
+                            _tag = dataObj.get("tag").getAsString();
+                        } catch (Exception ignored) {}
+                        if (_tag != null) {
+                            if (_tag.length() < 1 || _tag.length() > 4) {
+                                sendBadRequest(exchange, "Invalid tag. Expected a length of (0,4]");
+                                return;
+                            } else {
+                                faction.setTag(dataObj.get("tag").getAsString());
+                            }
+                        }
+                    }
+                    if (dataObj.has("owner")) {
+                        String _owner = null;
+                        try {
+                            _owner = dataObj.get("owner").getAsString();
+                        } catch (Exception ignored) {}
+                        if (_owner != null) {
+                            String final_owner = _owner;
+                            // verify that the member we're setting to owner actually exists in this faction.
+                            //  usernames are case-sensitive so we can safely use #equals
+                            User toSet = dbFaction.fetchMembers().stream()
+                                .filter(n -> n.getName().equals(final_owner))
+                                .findFirst()
+                                .orElse(null);
+                            if (toSet != null) {
+                                faction.setOwner(toSet.getId());
+                            } else {
+                                sendBadRequest(exchange, "Invalid owner specified");
+                                return;
+                            }
+                        }
+                    }
+                    App.getDatabase().updateFaction(faction);
+                }
+                send(200, exchange, "OK");
+            } else if (exchange.getRequestMethod().equals(Methods.DELETE)) { // remove requested faction
+                if (user.getId() != dbFaction.owner) {
+                    send(StatusCodes.FORBIDDEN, exchange, "You do not own this resource");
+                    return;
+                }
+                App.getDatabase().deleteFactionByFID(fid);
+                send(200, exchange, "OK");
+            }
+        }
     }
 
     private void addServiceIfAvailable(String key, AuthService service) {

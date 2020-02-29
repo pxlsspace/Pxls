@@ -10,6 +10,7 @@ import space.pxls.server.packets.chat.Badge;
 import space.pxls.server.packets.chat.ChatMessage;
 import space.pxls.server.packets.chat.ServerChatLookup;
 import space.pxls.user.Chatban;
+import space.pxls.user.Faction;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 
@@ -214,7 +215,8 @@ public class Database {
                 .execute();
             handle.createUpdate("CREATE TABLE IF NOT EXISTS faction_membership (" +
                 "  fid INT NOT NULL REFERENCES faction(id)," +
-                "  uid INT NOT NULL REFERENCES users(id)" +
+                "  uid INT NOT NULL REFERENCES users(id)," +
+                "  displayed BOOLEAN NOT NULL DEFAULT False" +
                 ");" +
                 "CREATE INDEX IF NOT EXISTS _faction_membership_fid ON faction_membership(fid);" +
                 "CREATE INDEX IF NOT EXISTS _faction_membership_uuid ON faction_membership(uid);" +
@@ -1489,16 +1491,23 @@ public class Database {
      * @return The ID of the newly created faction, or null on insertion error.
      */
     public Integer createFaction(String factionName, String factionTag, int owner_uid) {
-        return jdbi.withHandle(handle ->
-            handle.createUpdate("INSERT INTO factions (\"name\", \"tag\", \"owner\") VALUES (:name, :tag, :owner)")
+        return jdbi.withHandle(handle -> {
+            Integer toRet = handle.createUpdate("INSERT INTO faction (\"name\", \"tag\", \"owner\", \"created\") VALUES (:name, :tag, :owner, now())")
                 .bind("name", factionName)
                 .bind("tag", factionTag)
                 .bind("owner", owner_uid)
                 .executeAndReturnGeneratedKeys("id")
                 .mapTo(Integer.TYPE)
                 .findFirst()
-                .orElse(null)
-        );
+                .orElse(null);
+            if (toRet != null) {
+                handle.createUpdate("INSERT INTO faction_membership (\"fid\", \"uid\") VALUES (:fid, :uid)")
+                    .bind("fid", toRet)
+                    .bind("uid", owner_uid)
+                    .execute();
+            }
+            return toRet;
+        });
     }
 
     /**
@@ -1509,7 +1518,7 @@ public class Database {
      */
     public DBFaction getFactionByID(int fid) {
         return jdbi.withHandle(handle ->
-            handle.createQuery("SELECT * FROM factions WHERE id = :fid")
+            handle.createQuery("SELECT * FROM faction WHERE id = :fid")
                 .bind("fid", fid)
                 .map(new DBFaction.Mapper())
                 .findFirst()
@@ -1574,6 +1583,81 @@ public class Database {
                 .bind("fid", fid)
                 .map(new DBUser.Mapper())
                 .list()
+        );
+    }
+
+    /**
+     * Updates an existing faction in the database with the provided Faction
+     * object.
+     *
+     * @param faction The faction to update.
+     *                Updates where `faction.id` = {@link Faction#getId()} and uses
+     *                faction values where appropriate.
+     */
+    public void updateFaction(Faction faction) {
+        jdbi.useHandle(handle ->
+            handle.createUpdate("UPDATE faction SET name=:name,tag=:tag,owner=:owner WHERE id=:id")
+                .bind("name", faction.getName())
+                .bind("tag", faction.getTag())
+                .bind("owner", faction.getOwner())
+                .bind("id", faction.getId())
+                .execute()
+        );
+    }
+
+    /**
+     * Deletes the faction and removes all faction memberships.
+     *
+     * @param fid The ID of the faction.
+     */
+    public void deleteFactionByFID(int fid) {
+        jdbi.useHandle(handle -> { // only consume a single connection for these ops.
+            handle.createUpdate("DELETE FROM faction_membership WHERE fid=:fid")
+                .bind("fid", fid)
+                .execute();
+            handle.createUpdate("DELETE FROM faction WHERE id=:fid")
+                .bind("fid", fid)
+                .execute();
+        });
+    }
+
+    /**
+     * Deletes factions that do not have any members.
+     *
+     * @return A list of deleted orphaned factions.
+     */
+    public List<DBFaction> pruneOrphanedFactions() {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("DELETE FROM faction WHERE id NOT IN (SELECT fid FROM faction_membership GROUP BY fid) RETURNING *")
+                .map(new DBFaction.Mapper())
+                .list()
+        );
+    }
+
+    /**
+     * Gets factions that do not currently have any members.
+     *
+     * @return A list of orphaned factions.
+     */
+    public List<DBFaction> getOrphanedFactions() {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("SELECT * FROM faction WHERE id NOT IN (SELECT fid FROM faction_membership GROUP BY fid)")
+                .map(new DBFaction.Mapper())
+                .list()
+        );
+    }
+
+    /**
+     * Updates the user's displayed faction.
+     *
+     * @param uid The user's ID
+     * @param fid The faction's ID
+     */
+    public void setDisplayedFactionForUID(int uid, int fid) {
+        jdbi.useHandle(handle -> handle.createUpdate("UPDATE faction_membership SET displayed=(fid = :fid) WHERE uid = :uid")
+            .bind("uid", uid)
+            .bind("fid", fid)
+            .execute()
         );
     }
 
