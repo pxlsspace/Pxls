@@ -200,6 +200,27 @@ public class Database {
                     "reason TEXT NOT NULL," +
                     "purged BOOL NOT NULL);")
                     .execute();
+            // factions
+            handle.createUpdate("CREATE TABLE IF NOT EXISTS faction (" +
+                "  id SERIAL NOT NULL PRIMARY KEY," +
+                "  name TEXT NOT NULL," +
+                "  tag VARCHAR(4) NOT NULL," +
+                "  owner INT NOT NULL REFERENCES users(id)," +
+                "  created TIMESTAMP NOT NULL DEFAULT NOW()" +
+                ");" +
+                "CREATE INDEX IF NOT EXISTS _faction_name ON faction (\"name\");" +
+                "CREATE INDEX IF NOT EXISTS _faction_tag ON faction (tag);" +
+                "CREATE INDEX IF NOT EXISTS _owner ON faction (owner);")
+                .execute();
+            handle.createUpdate("CREATE TABLE IF NOT EXISTS faction_membership (" +
+                "  fid INT NOT NULL REFERENCES faction(id)," +
+                "  uid INT NOT NULL REFERENCES users(id)" +
+                ");" +
+                "CREATE INDEX IF NOT EXISTS _faction_membership_fid ON faction_membership(fid);" +
+                "CREATE INDEX IF NOT EXISTS _faction_membership_uuid ON faction_membership(uid);" +
+                "CREATE UNIQUE INDEX IF NOT EXISTS _faction_membership_uid_fid_pair ON faction_membership(uid, fid);")
+                .execute();
+
         });
     }
 
@@ -1457,6 +1478,103 @@ public class Database {
                 .bind("id", id)
                 .bind("ip", ip)
                 .execute());
+    }
+
+    /**
+     * Creates a new faction.
+     *
+     * @param factionName The name of the faction.
+     * @param factionTag The faction's tag.
+     * @param owner_uid The owner's ID.
+     * @return The ID of the newly created faction, or null on insertion error.
+     */
+    public Integer createFaction(String factionName, String factionTag, int owner_uid) {
+        return jdbi.withHandle(handle ->
+            handle.createUpdate("INSERT INTO factions (\"name\", \"tag\", \"owner\") VALUES (:name, :tag, :owner)")
+                .bind("name", factionName)
+                .bind("tag", factionTag)
+                .bind("owner", owner_uid)
+                .executeAndReturnGeneratedKeys("id")
+                .mapTo(Integer.TYPE)
+                .findFirst()
+                .orElse(null)
+        );
+    }
+
+    /**
+     * Gets the requested faction by ID
+     *
+     * @param fid The faction ID
+     * @return The faction
+     */
+    public DBFaction getFactionByID(int fid) {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("SELECT * FROM factions WHERE id = :fid")
+                .bind("fid", fid)
+                .map(new DBFaction.Mapper())
+                .findFirst()
+                .orElse(null)
+        );
+    }
+
+    /**
+     * Creates a new faction membership specified by (faction.id, user.id)
+     *
+     * @param fid The faction ID
+     * @param uid The user ID
+     */
+    public void joinFaction(int fid, int uid) {
+        jdbi.useHandle(handle ->
+            handle.createUpdate("INSERT INTO faction_membership (\"fid\", \"uid\") VALUES (:fid, :uid)")
+                .bind("fid", fid)
+                .bind("uid", uid)
+                .execute()
+        );
+    }
+
+    /**
+     * Removes the faction membership specified by (faction.id, user.id)
+     *
+     * @param fid The faction ID
+     * @param uid The user ID
+     */
+    public void leaveFaction(int fid, int uid) {
+        jdbi.useHandle(handle ->
+            handle.createUpdate("DELETE FROM faction_membership WHERE fid = :fid AND uid = :uid")
+                .bind("fid", fid)
+                .bind("uid", uid)
+                .execute()
+        );
+    }
+
+    /**
+     * Gets factions that this user belongs to.
+     *
+     * @param uid The user's ID
+     * @return The factions that this user belongs to.
+     */
+    public List<DBFaction> getFactionsForUID(int uid) {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("SELECT * FROM faction WHERE id IN (SELECT fid FROM faction_membership WHERE uid = :uid)")
+                .bind("uid", uid)
+                .map(new DBFaction.Mapper())
+                .list()
+        );
+    }
+
+    /**
+     * Gets users that belong to the given faction.
+     *
+     * @param fid The faction's ID
+     * @return A list of users that belong to the given faction
+     */
+    public List<DBUser> getUsersForFID(int fid) {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("SELECT * FROM users WHERE id IN (SELECT uid FROM faction_membership WHERE fid = :fid)")
+                .bind("fid", fid)
+                .map(new DBUser.Mapper())
+                .list()
+        );
     }
 
     /**
