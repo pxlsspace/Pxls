@@ -4782,7 +4782,9 @@ window.App = (function () {
                                 if (anchorTarget) elem.target = anchorTarget;
                             }
 
-                            str = str.replace(x.raw, elem.outerHTML);
+                            if (!str.includes(elem.outerHTML)) {
+                                str = str.split(x.raw).join(elem.outerHTML);
+                            }
                         }
 
                         //any other text manipulation after anchor insertion
