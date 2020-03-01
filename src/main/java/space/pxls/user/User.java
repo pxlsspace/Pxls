@@ -16,13 +16,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class User {
     private int id;
-    private int stacked = 0;
-    private int chatNameColor = 0;
+    private int stacked;
+    private int chatNameColor;
     private String name;
     private String login;
     private String useragent;
 
-    private Role role = Role.USER;
+    private Role role;
     private boolean overrideCooldown;
     private boolean flaggedForCaptcha = true;
     private boolean justShowedCaptcha;
@@ -39,14 +39,17 @@ public class User {
     private long lastUndoTime = 0;
     private long initialAuthTime = 0L;
     private Timestamp signup_time;
+    private Integer displayedFaction;
 
     // 0 = not banned
     private long banExpiryTime;
     private long chatbanExpiryTime;
 
+    private transient Faction _displayedFaction;
+
     private Set<WebSocketChannel> connections = new HashSet<>();
 
-    public User(int id, int stacked, String name, String login, Timestamp signup, long cooldownExpiry, Role role, long banExpiryTime, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor) {
+    public User(int id, int stacked, String name, String login, Timestamp signup, long cooldownExpiry, Role role, long banExpiryTime, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor, Integer displayedFaction) {
         this.id = id;
         this.stacked = stacked;
         this.name = name;
@@ -59,26 +62,28 @@ public class User {
         this.chatbanExpiryTime = chatbanExpiryTime;
         this.chatbanReason = chatbanReason;
         this.chatNameColor = chatNameColor;
+        this.displayedFaction = displayedFaction;
     }
 
     public void reloadFromDatabase() {
-        Optional<DBUser> optionalUser = App.getDatabase().getUserByID(id);
-        if (!optionalUser.isPresent()) return;
-        DBUser user = optionalUser.get();
-        this.id = user.id;
-        this.stacked = user.stacked;
-        this.name = user.username;
-        this.login = user.login;
-        this.signup_time = user.signup_time;
-        this.cooldownExpiry = user.cooldownExpiry;
-        this.role = user.role;
-        this.banExpiryTime = user.banExpiry;
-        this.isPermaChatbanned = user.isPermaChatbanned;
-        this.chatbanExpiryTime = user.chatbanExpiry;
-        this.isRenameRequested = user.isRenameRequested;
-        this.discordName = user.discordName;
-        this.chatbanReason = user.chatbanReason;
-        this.chatNameColor = user.chatNameColor;
+        DBUser user = App.getDatabase().getUserByID(id).orElse(null);
+        if (user != null) {
+            this.id = user.id;
+            this.stacked = user.stacked;
+            this.name = user.username;
+            this.login = user.login;
+            this.signup_time = user.signup_time;
+            this.cooldownExpiry = user.cooldownExpiry;
+            this.role = user.role;
+            this.banExpiryTime = user.banExpiry;
+            this.isPermaChatbanned = user.isPermaChatbanned;
+            this.chatbanExpiryTime = user.chatbanExpiry;
+            this.isRenameRequested = user.isRenameRequested;
+            this.discordName = user.discordName;
+            this.chatbanReason = user.chatbanReason;
+            this.chatNameColor = user.chatNameColor;
+            this.displayedFaction = user.displayedFaction;
+        }
     }
 
     public int getId() {
@@ -629,7 +634,30 @@ public class User {
         return signup_time;
     }
 
+    public Integer getDisplayedFaction() {
+        return displayedFaction;
+    }
+
+    public void setDisplayedFaction(Integer displayedFaction) {
+        setDisplayedFaction(displayedFaction, true);
+    }
+    public void setDisplayedFaction(Integer displayedFaction, boolean hitDB) {
+        this.displayedFaction = displayedFaction;
+        if (hitDB) {
+            App.getDatabase().setDisplayedFactionForUID(id, displayedFaction);
+        }
+    }
+
+    public Faction fetchDisplayedFaction() {
+        if (displayedFaction == null) return null;
+        if (_displayedFaction == null) {
+            _displayedFaction = new Faction(App.getDatabase().getFactionByID(displayedFaction));
+        }
+
+        return _displayedFaction;
+    }
+
     public static User fromDBUser(DBUser user) {
-        return new User(user.id, user.stacked, user.username, user.login, user.signup_time, user.cooldownExpiry, user.role, user.banExpiry, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor);
+        return new User(user.id, user.stacked, user.username, user.login, user.signup_time, user.cooldownExpiry, user.role, user.banExpiry, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction);
     }
 }

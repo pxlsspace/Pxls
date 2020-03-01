@@ -4,6 +4,8 @@ import space.pxls.App;
 import space.pxls.data.DBFaction;
 
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class Faction {
     private int id;
@@ -11,6 +13,9 @@ public class Faction {
     private String tag;
     private int owner;
     private Timestamp created;
+    private transient List<User> _cachedMembers = null;
+    private transient List<User> _cachedBans = null;
+    private transient User _cachedOwner = null;
 
     public Faction(int id, String name, String tag, int owner, Timestamp created) {
         this.id = id;
@@ -20,12 +25,44 @@ public class Faction {
         this.created = created;
     }
 
+    public Faction(DBFaction from) {
+        this.id = from.id;
+        this.name = from.name;
+        this.tag = from.tag;
+        this.owner = from.owner;
+        this.created = from.created;
+    }
+
     public void reloadFromDb() {
         DBFaction dbf = App.getDatabase().getFactionByID(id);
         this.id = dbf.id;
         this.name = dbf.name;
         this.owner = dbf.owner;
         this.created = dbf.created;
+    }
+
+    public User fetchOwner() {
+        if (_cachedOwner == null) {
+            _cachedOwner = App.getUserManager().getByID(this.owner);
+        }
+
+        return _cachedOwner;
+    }
+
+    public List<User> fetchMembers() {
+        if (_cachedMembers == null) {
+            _cachedMembers = App.getDatabase().getUsersForFID(this.id).stream().map(User::fromDBUser).collect(Collectors.toList());
+        }
+
+        return _cachedMembers;
+    }
+
+    public List<User> fetchBans() {
+        if (_cachedBans == null) {
+            _cachedBans = App.getDatabase().getBansForFID(this.id).stream().map(User::fromDBUser).collect(Collectors.toList());
+        }
+
+        return _cachedBans;
     }
 
     public int getId() {

@@ -128,11 +128,11 @@ public class WebHandler {
         try {
             List<DBChatReport> chatReports = new ArrayList<>();
             List<DBCanvasReport> canvasReports = new ArrayList<>();
-            List<DBFaction> factions = new ArrayList<>();
+            List<Faction> factions = new ArrayList<>();
             if (requestingUser != null) {
                 chatReports = App.getDatabase().getChatReportsFromUser(requestingUser.getId());
                 canvasReports = App.getDatabase().getCanvasReportsFromUser(requestingUser.getId());
-                factions = App.getDatabase().getFactionsForUID(requestingUser.getId());
+                factions = App.getDatabase().getFactionsForUID(requestingUser.getId()).stream().map(Faction::new).collect(Collectors.toList());
             }
 
             HashMap<String,Object> m = new HashMap<>();
@@ -160,7 +160,6 @@ public class WebHandler {
         if (user == null) {
             send(StatusCodes.UNAUTHORIZED, exchange, "Not Authorized");
         } else {
-//            List<UserFaction> factions = App.getDatabase().getFactionsForUID(user.getId()).stream().map(dbf -> dbf.owner == user.getId() ? new ExtendedUserFaction(dbf) : new UserFaction(dbf)).collect(Collectors.toList());
             exchange.setStatusCode(StatusCodes.OK);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
             exchange.getResponseSender().send(App.getGson().toJson(App.getDatabase().getFactionsForUID(user.getId()).stream().map(dbf -> dbf.owner == user.getId() ? new ExtendedUserFaction(dbf) : new UserFaction(dbf)).collect(Collectors.toList())));
@@ -173,11 +172,13 @@ public class WebHandler {
         JsonObject dataObj = null;
 
         if (_data != null) {
-            if (!_data.isJsonObject()) {
-                sendBadRequest(exchange, "Invalid data");
-                return;
+            if (!_data.isJsonNull()) {
+                if (!_data.isJsonObject()) {
+                    sendBadRequest(exchange, "Invalid data");
+                    return;
+                }
+                dataObj = _data.getAsJsonObject();
             }
-            dataObj = _data.getAsJsonObject();
         } // we don't require data for fetch/delete, so don't throw here.
 
         if (user == null) { // This is not a fetch endpoint, if the user doesn't exist we can't continue.
@@ -191,10 +192,12 @@ public class WebHandler {
             String tag = null;
             try {
                 name = dataObj.get("name").getAsString();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
             try {
                 tag = dataObj.get("tag").getAsString();
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
             if (name == null || tag == null) {
                 sendBadRequest(exchange, "Invalid/Missing name/tag");
             } else {
@@ -240,7 +243,7 @@ public class WebHandler {
                     try {
                         displaying = dataObj.get("displayed").getAsBoolean();
                     } catch (Exception ignored) {}
-                    App.getDatabase().setDisplayedFactionForUID(user.getId(), displaying ? faction.getId() : -1);
+                    user.setDisplayedFaction(displaying ? faction.getId() : null);
                 } else { // user is attempting to update faction details
                     if (dataObj.has("name")) {
                         String _name = null;
@@ -274,7 +277,7 @@ public class WebHandler {
                             String final_owner = _owner;
                             // verify that the member we're setting to owner actually exists in this faction.
                             //  usernames are case-sensitive so we can safely use #equals
-                            User toSet = dbFaction.fetchMembers().stream()
+                            User toSet = faction.fetchMembers().stream()
                                 .filter(n -> n.getName().equals(final_owner))
                                 .findFirst()
                                 .orElse(null);

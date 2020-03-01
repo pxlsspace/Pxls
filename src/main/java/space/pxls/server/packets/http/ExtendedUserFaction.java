@@ -1,6 +1,7 @@
 package space.pxls.server.packets.http;
 
 import space.pxls.data.DBFaction;
+import space.pxls.user.Faction;
 import space.pxls.user.User;
 
 import java.util.List;
@@ -11,6 +12,6 @@ public class ExtendedUserFaction extends UserFaction {
 
     public ExtendedUserFaction(DBFaction faction) {
         super(faction);
-        this.members = faction.fetchMembers().stream().map(User::getName).collect(Collectors.toList());
+        this.members = new Faction(faction).fetchMembers().stream().map(User::getName).collect(Collectors.toList());
     }
 }
