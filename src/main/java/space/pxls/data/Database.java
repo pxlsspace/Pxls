@@ -1542,7 +1542,7 @@ public class Database {
      */
     public void joinFaction(int fid, int uid) {
         jdbi.useHandle(handle ->
-            handle.createUpdate("INSERT INTO faction_membership (\"fid\", \"uid\") VALUES (:fid, :uid)")
+            handle.createUpdate("INSERT INTO faction_membership (\"fid\", \"uid\") VALUES (:fid, :uid) ON CONFLICT DO NOTHING")
                 .bind("fid", fid)
                 .bind("uid", uid)
                 .execute()

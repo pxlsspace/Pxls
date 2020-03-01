@@ -60,6 +60,42 @@ async function handleFactionAction(e) {
       }
       break;
     }
+    case 'factionremovedisplayed': {
+      if (await popConfirmDialog('Are you sure you want to remove this from your displayed status? It will no longer show up next to your name in chat.') === true) {
+        let res = await putJSON(`/factions/${fid}`, {displayed: false});
+        if (res && res.success === true) {
+          alert('Status updated. The page will now reload.');
+          document.location.href = document.location.href; //TODO replace with slidein
+        } else {
+          alert((res && res.details) || 'An unknown error occurred. Please try again later.');
+        }
+      }
+      break;
+    }
+    case 'factionsetdisplayed': {
+      if (await popConfirmDialog('Are you sure you want to set this as your displayed status? It will show up next to your name in chat.') === true) {
+        let res = await putJSON(`/factions/${fid}`, {displayed: true});
+        if (res && res.success === true) {
+          alert('Status updated. The page will now reload.');
+          document.location.href = document.location.href; //TODO replace with slidein
+        } else {
+          alert((res && res.details) || 'An unknown error occurred. Please try again later.');
+        }
+      }
+      break;
+    }
+    case 'factionleave': {
+      if (await popConfirmDialog('Are you sure you want to leave this faction? You will have to find it again in the factions list if you want to rejoin.') === true) {
+        let res = await putJSON(`/factions/${fid}`, {joinState: false});
+        if (res && res.success === true) {
+          alert('Faction left. The page will now reload.');
+          document.location.href = document.location.href; //TODO replace with slidein
+        } else {
+          alert((res && res.details) || 'An unknown error occurred. Please try again later.');
+        }
+      }
+      break;
+    }
   }
 }
 

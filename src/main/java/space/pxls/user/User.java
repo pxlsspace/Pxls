@@ -643,6 +643,7 @@ public class User {
     }
     public void setDisplayedFaction(Integer displayedFaction, boolean hitDB) {
         this.displayedFaction = displayedFaction;
+        this._displayedFaction = null;
         if (hitDB) {
             App.getDatabase().setDisplayedFactionForUID(id, displayedFaction);
         }

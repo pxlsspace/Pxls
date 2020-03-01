@@ -229,10 +229,6 @@ public class WebHandler {
                 exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
                 exchange.getResponseSender().send(App.getGson().toJson((user.getId() == dbFaction.owner) ? new ExtendedUserFaction(dbFaction) : new UserFaction(dbFaction)));
             } else if (exchange.getRequestMethod().equals(Methods.PUT)) { // update requested faction
-                if (user.getId() != dbFaction.owner) {
-                    send(StatusCodes.FORBIDDEN, exchange, "You do not own this resource");
-                    return;
-                }
                 if (dataObj == null) {
                     sendBadRequest(exchange, "Missing data");
                     return;
@@ -242,9 +238,25 @@ public class WebHandler {
                     boolean displaying = false;
                     try {
                         displaying = dataObj.get("displayed").getAsBoolean();
-                    } catch (Exception ignored) {}
+                    } catch (Exception ignored) {
+                    }
                     user.setDisplayedFaction(displaying ? faction.getId() : null);
+                } else if (dataObj.has("joinState")) { // user is attempting to leave/join
+                    boolean joining = false;
+                    try {
+                        joining = dataObj.get("joinState").getAsBoolean();
+                    } catch (Exception ignored) {
+                    }
+                    if (joining) {
+                        App.getDatabase().joinFaction(fid, user.getId());
+                    } else {
+                        App.getDatabase().leaveFaction(fid, user.getId());
+                    }
                 } else { // user is attempting to update faction details
+                    if (user.getId() != dbFaction.owner) {
+                        send(StatusCodes.FORBIDDEN, exchange, "You do not own this resource");
+                        return;
+                    }
                     if (dataObj.has("name")) {
                         String _name = null;
                         try {

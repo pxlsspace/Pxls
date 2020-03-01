@@ -26,7 +26,7 @@
         </nav>
         <main role="main" class="mb-3">
             <div class="container">
-                <h1>{{user.name | default("Anonymous")}}'s {{user.displayedFaction}} Profile</h1>
+                <h1>{{user.name | default("Anonymous")}}'s Profile</h1>
                 <hr>
                 <div class="row">
                     <div class="col-md-3">
@@ -196,8 +196,12 @@
                                             <span>{{member.name}}</span>
                                         </div>
                                         <div class="col-md-6 text-right">
+                                            {% if member.id != user.id %}
                                             <button class="btn btn-sm btn-success" data-action="transfer">Transfer Ownership</button>
                                             <button class="btn btn-sm btn-danger" data-action="ban">Ban</button>
+                                            {% else %}
+                                            <button class="btn btn-sm btn-danger" data-action="leave">Leave</button>
+                                            {% endif %}
                                         </div>
                                     </div>
                                     {% else %}
