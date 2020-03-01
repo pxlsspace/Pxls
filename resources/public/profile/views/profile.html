@@ -5,13 +5,13 @@
         <meta name="viewport"
               content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <title>{{user.name | default("Anonymous")}} - Pxls</title>
-        <link rel="stylesheet" href="css/theme-purple.min.css">
-        <link rel="stylesheet" href="../fontawesome-all.min.css">
-        <link rel="stylesheet" href="css/views/index.css">
-        <script src="../jquery-3.4.1.min.js"></script>
-        <script src="js/bootstrap.bundle.min.js"></script>
-        <script src="../crel.min.js"></script>
+        <title>{{profile_of.name | default("Anonymous")}} - Pxls</title>
+        <link rel="stylesheet" href="/profile/css/theme-purple.min.css">
+        <link rel="stylesheet" href="/fontawesome-all.min.css">
+        <link rel="stylesheet" href="/profile/css/views/index.css">
+        <script src="/jquery-3.4.1.min.js"></script>
+        <script src="/profile/js/bootstrap.bundle.min.js"></script>
+        <script src="/crel.min.js"></script>
     </head>
     <body>
         <nav class="navbar navbar-dark navbar-expand-md" role="nav">
@@ -19,32 +19,37 @@
                 <li class="nav-item">
                     <a href="/" class="nav-link">Pxls</a>
                 </li>
+                {% if not requested_self %}
+                <li class="nav-item"><a href="/profile" class="nav-link">My Profile</a></li>
+                {% endif %}
                 <li class="nav-item active">
-                    <a href="/profile/view" class="nav-link">Profile</a>
+                    <a href="{{route_root}}" class="nav-link">{{profile_of.name | default("Anonymous")}}'s profile</a>
                 </li>
             </ul>
         </nav>
         <main role="main" class="mb-3">
             <div class="container">
-                <h1>{{user.name | default("Anonymous")}}'s Profile</h1>
+                <h1>{% if profile_of.displayedFaction | default(0) > 0 %}[{{profile_of.fetchDisplayedFaction.tag}}] {% endif %}{{profile_of.name | default("Anonymous")}}'s {{a}} Profile</h1>
                 <hr>
                 <div class="row">
                     <div class="col-md-3">
                         <div class="list-group" id="tabsTriggers">
-                            <a href="/profile/view?action=details" data-action="details" class="list-group-item text-light active">
+                            <a href="{{route_root}}?action=details" data-action="details" class="list-group-item text-light active">
                                 <i class="fas fa-id-card mr-2 d-none d-md-inline-block"></i>Info
                             </a>
-                            <a href="/profile/view?action=reports" class="list-group-item text-light" data-action="reports">
+                            {% if requested_self %}
+                            <a href="{{route_root}}?action=reports" class="list-group-item text-light" data-action="reports">
                                 <i class="fas fa-flag mr-2 d-none d-md-inline-block"></i>Reports
                             </a>
-                            <a href="/profile/view?action=factions" class="list-group-item text-light" data-action="factions">
+                            <a href="{{route_root}}?action=factions" class="list-group-item text-light" data-action="factions">
                                 <i class="fas fa-users mr-2 d-none d-md-inline-block"></i>Factions
                             </a>
+                            {% endif %}
                         </div>
                     </div>
                     <div class="col-md-9 tab-content mt-3 mt-md-0" id="tabsWrapper">
                         <div id="tab-details" class="tab-pane text-center active" data-tab="details">
-                            {% if user is null %}
+                            {% if profile_of is null %}
                             <p class="text-warning text-center">You must be logged in to view your profile.</p>
                             {% else %}
                             <h3>{{username}}</h3>
@@ -52,26 +57,31 @@
                                 <tbody>
                                     <tr>
                                         <th class="text-right pr-3">Registration Date</th>
-                                        <td class="text-left">{{user.signupTime | date("LLL d, y, hh:mm:s a (z)")}}</td>
+                                        <td class="text-left">{{profile_of.signupTime | date("LLL d, y, hh:mm:s a (z)")}}</td>
                                     </tr>
                                     <tr>
                                         <th class="text-right pr-3">Alltime Pixels</th>
-                                        <td class="text-left">{{user.pixelsAllTime | numberformat("#,###")}}</td>
+                                        <td class="text-left">{{profile_of.pixelsAllTime | numberformat("#,###")}}</td>
                                     </tr>
                                     <tr>
                                         <th class="text-right pr-3">Current Canvas Pixels</th>
-                                        <td class="text-left">{{user.pixels | numberformat("#,###")}}</td>
+                                        <td class="text-left">{{profile_of.pixels | numberformat("#,###")}}</td>
                                     </tr>
                                     <tr>
                                         <th class="text-right pr-3">Discord Tag</th>
-                                        <td class="text-left">{{user.discordName | default("Not Set")}}</td>
+                                        <td class="text-left">{{profile_of.discordName | default("Not Set")}}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-right pr-3">Faction</th>
+                                        <td class="text-left">{% if profile_of.displayedFaction | default(0) > 0 %}[{{profile_of.fetchDisplayedFaction.tag}}] {{profile_of.fetchDisplayedFaction.name}} (ID: {{profile_of.fetchDisplayedFaction.id}}){% else %}None{% endif %}</td>
                                     </tr>
                                 </tbody>
                             </table>
                             {% endif %}
                         </div>
+                        {% if requested_self %}
                         <div id="tab-reports" class="tab-pane" data-tab="reports">
-                            {% if user is null %}
+                            {% if profile_of is null %}
                             <p class="text-warning text-center">You must be logged in to view your reports.</p>
                             {% else %}
                             <h3 class="text-center">Reports</h3>
@@ -130,28 +140,29 @@
                             {% endif %}
                         </div>
                         <div id="tab-factions" class="tab-pane" data-tab="factions">
-                            {% if user is null %}
+                            {% if profile_of is null %}
                             <p class="text-center text-warning">You must be logged in to manage your factions.</p>
                             {% else %}
                             <div class="mb-2">
                                 <button class="btn btn-success btn-sm mr-1 global-faction-action" data-action="factionCreate"><i class="fas fa-plus"></i> Create</button>
+                                <button class="btn btn-primary btn-sm mr-1 global-faction-action" data-action="factionJoin"><i class="fas fa-user-plus"></i> Join</button>
                             </div>
                             {% if factions|length > 0 %}
                             {% for faction in factions %}
-                            <div class="media mb-2 faction-media" data-faction-id="{{faction.id}}">
+                            <div class="media mb-2 faction-media" data-faction-id="{{faction.id}}" data-faction-name="{{faction.name}}" data-faction-tag="{{faction.tag}}">
                                 <span class="media-text-icon mr-3">[{{faction.tag}}]</span>
                                 <div class="media-body">
-                                    <h5 class="mt-0 mb-1">{% if user.displayedFaction|default(-1) == faction.id %} <i class="fas fa-eye mr-1 text-success" style="font-size: 0.75em;" title="This is your currently displayed faction."></i>{% endif %}{{faction.name}} (members: {{faction.fetchMembers|length}})</h5>
+                                    <h5 class="mt-0 mb-1">{% if profile_of.displayedFaction|default(-1) == faction.id %} <i class="fas fa-eye mr-1 text-success" style="font-size: 0.75em;" title="This is your currently displayed faction."></i>{% endif %}{{faction.name}} (members: {{faction.fetchMembers|length}}, ID: {{faction.id}})</h5>
                                     <div class="mb-1 mt-2">
                                         <span class="text-muted">Owner: {{faction.fetchOwner.name}}</span>
                                     </div>
                                     <div>
-                                        {% if user.displayedFaction|default(-1) == faction.id %}
+                                        {% if profile_of.displayedFaction|default(-1) == faction.id %}
                                         <button class="btn btn-info btn-sm mr-1 mt-1 faction-action" data-action="factionRemoveDisplayed"><i class="fas fa-minus mr-1"></i>Remove Displayed</button>
                                         {% else %}
                                         <button class="btn btn-info btn-sm mr-1 mt-1 faction-action" data-action="factionSetDisplayed"><i class="fas fa-check mr-1"></i>Set Displayed</button>
                                         {% endif %}
-                                        {% if faction.owner == user.id %}
+                                        {% if faction.owner == profile_of.id %}
                                         <button class="btn btn-info btn-sm mr-1 mt-1 faction-action" data-action="factionMembers" data-toggle="modal" data-target="#modal-member-list-{{faction.id}}"><i class="fas fa-users mr-1"></i>Members</button>
                                         <button class="btn btn-info btn-sm mr-1 mt-1 faction-action" data-action="factionEdit"><i class="fas fa-pencil-alt mr-1"></i>Edit</button>
                                         <button class="btn btn-danger btn-sm mr-1 mt-1 faction-action" data-action="factionDelete"><i class="fas fa-times mr-1"></i>Delete</button>
@@ -163,16 +174,18 @@
                             </div>
                             {% endfor %}
                             {% else %}
-                            <p class="text-center text-warning">You are not in any factions yet! <button class="btn btn-sm btn-primary">Join one</button> or <button class="btn btn-sm btn-primary">Create one</button></p>
+                            <p class="text-center text-warning">You are not in any factions yet!</p>
                             {% endif %}
                             {% endif %}
                         </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </main>
+        {% if requested_self %}
         {% for faction in factions %}
-        {% if faction.owner == user.id %}
+        {% if faction.owner == profile_of.id %}
         <div class="modal fade member-list-modal" id="modal-member-list-{{faction.id}}" data-faction-id="{{faction.id}}" tabindex="-1" role="dialog" aria-hidden="true">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
@@ -196,7 +209,7 @@
                                             <span>{{member.name}}</span>
                                         </div>
                                         <div class="col-md-6 text-right">
-                                            {% if member.id != user.id %}
+                                            {% if member.id != profile_of.id %}
                                             <button class="btn btn-sm btn-success" data-action="transfer">Transfer Ownership</button>
                                             <button class="btn btn-sm btn-danger" data-action="ban">Ban</button>
                                             {% else %}
@@ -241,6 +254,8 @@
         </div>
         {% endif %}
         {% endfor %}
-        <script src="js/views/index.js"></script>
+        {% endif %}
+        <script src="/profile/js/views/root.js"></script>
+        <script src="/profile/js/views/profile.js"></script>
     </body>
 </html>

@@ -49,7 +49,7 @@ public class User {
 
     private Set<WebSocketChannel> connections = new HashSet<>();
 
-    public User(int id, int stacked, String name, String login, Timestamp signup, long cooldownExpiry, Role role, long banExpiryTime, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor, Integer displayedFaction) {
+    public User(int id, int stacked, String name, String login, Timestamp signup, long cooldownExpiry, Role role, long banExpiryTime, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor, Integer displayedFaction, String discordName) {
         this.id = id;
         this.stacked = stacked;
         this.name = name;
@@ -63,6 +63,7 @@ public class User {
         this.chatbanReason = chatbanReason;
         this.chatNameColor = chatNameColor;
         this.displayedFaction = displayedFaction;
+        this.discordName = discordName;
     }
 
     public void reloadFromDatabase() {
@@ -659,6 +660,6 @@ public class User {
     }
 
     public static User fromDBUser(DBUser user) {
-        return new User(user.id, user.stacked, user.username, user.login, user.signup_time, user.cooldownExpiry, user.role, user.banExpiry, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction);
+        return new User(user.id, user.stacked, user.username, user.login, user.signup_time, user.cooldownExpiry, user.role, user.banExpiry, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName);
     }
 }

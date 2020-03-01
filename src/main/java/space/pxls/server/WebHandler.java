@@ -5,6 +5,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mitchellbosecke.pebble.PebbleEngine;
+import com.mitchellbosecke.pebble.loader.ClasspathLoader;
 import com.mitchellbosecke.pebble.loader.StringLoader;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
@@ -13,6 +14,7 @@ import io.undertow.server.handlers.PathTemplateHandler;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
 import io.undertow.util.*;
+import org.apache.http.HttpStatus;
 import space.pxls.App;
 import space.pxls.auth.*;
 import space.pxls.data.*;
@@ -35,12 +37,13 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class WebHandler {
-    private String _templateBase;
     private PebbleEngine engine;
     private Map<String, AuthService> services = new ConcurrentHashMap<>();
+    public static final String TEMPLATE_PROFILE = "public/profile/views/profile.html";
 
     public WebHandler() {
         addServiceIfAvailable("reddit", new RedditAuthService("reddit"));
@@ -49,8 +52,7 @@ public class WebHandler {
         addServiceIfAvailable("vk", new VKAuthService("vk"));
         addServiceIfAvailable("tumblr", new TumblrAuthService("tumblr"));
 
-        _templateBase = resourceToString("/public/profile/index.html");
-        engine = new PebbleEngine.Builder().loader(new StringLoader()).build();
+        engine = new PebbleEngine.Builder().loader(new ClasspathLoader(getClass().getClassLoader())).build();
     }
 
     private String fileToString(File f) {
@@ -121,38 +123,61 @@ public class WebHandler {
         }
     }
 
-    public void profile(HttpServerExchange exchange) {
-        User requestingUser = exchange.getAttachment(AuthReader.USER);
+    public void profileView(HttpServerExchange exchange) {
+        final User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null) {
+            exchange.setStatusCode(403);
+            exchange.getResponseSender().send("<p style=\"text-align: center;\">Socc forgot to add a 403 page :)</p>");
+        } else {
+            PathTemplateMatch match = exchange.getAttachment(PathTemplateMatch.ATTACHMENT_KEY);
+            String requested = match.getParameters().computeIfAbsent("who", s -> user.getName());
+            boolean requested_self = user.getName().equals(requested); // usernames are case-sensitive, we can use #equals relatively safely.
+            User profileUser = requested_self ? user : App.getUserManager().getByName(requested);
 
-        String toRet = _templateBase;
-        try {
-            List<DBChatReport> chatReports = new ArrayList<>();
-            List<DBCanvasReport> canvasReports = new ArrayList<>();
-            List<Faction> factions = new ArrayList<>();
-            if (requestingUser != null) {
-                chatReports = App.getDatabase().getChatReportsFromUser(requestingUser.getId());
-                canvasReports = App.getDatabase().getCanvasReportsFromUser(requestingUser.getId());
-                factions = App.getDatabase().getFactionsForUID(requestingUser.getId()).stream().map(Faction::new).collect(Collectors.toList());
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
+            if (profileUser == null) {
+                exchange.setStatusCode(404);
+                exchange.getResponseSender().send("<p style=\"text-align: center;\">Socc forgot to add a 404 page :)</p>");
+            } else {
+                String toRet = "<p style=\"text-align: center;\">Socc probably broke something... let someone know please.</p>";
+                try {
+                    List<DBChatReport> chatReports = new ArrayList<>();
+                    List<DBCanvasReport> canvasReports = new ArrayList<>();
+                    List<Faction> factions = App.getDatabase().getFactionsForUID(profileUser.getId()).stream().map(Faction::new).collect(Collectors.toList());
+
+                    HashMap<String,Object> m = new HashMap<>();
+                    m.put("requested_self", requested_self);
+                    m.put("requesting_user", user);
+                    m.put("profile_of", profileUser);
+                    m.put("factions", factions);
+                    m.put("palette", App.getConfig().getStringList("board.palette"));
+                    m.put("route_root", requested_self ? "/profile" : String.format("/profile/%s", requested));
+
+                    if (requested_self) {
+                        try {
+                            chatReports = App.getDatabase().getChatReportsFromUser(profileUser.getId());
+                            canvasReports = App.getDatabase().getCanvasReportsFromUser(profileUser.getId());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        m.put("chat_reports", chatReports);
+                        m.put("chat_reports_open_count", chatReports.stream().filter(dbChatReport -> !dbChatReport.closed).count());
+                        m.put("canvas_reports", canvasReports);
+                        m.put("canvas_reports_open_count", canvasReports.stream().filter(dbCanvasReport -> !dbCanvasReport.closed).count());
+                    }
+
+                    Writer writer = new StringWriter();
+                    engine.getTemplate(TEMPLATE_PROFILE).evaluate(writer, m);
+                    toRet = writer.toString();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                exchange.setStatusCode(200);
+                exchange.getResponseSender().send(toRet);
             }
 
-            HashMap<String,Object> m = new HashMap<>();
-            m.put("user", requestingUser);
-            m.put("chat_reports", chatReports);
-            m.put("chat_reports_open_count", chatReports.stream().filter(dbChatReport -> !dbChatReport.closed).count());
-            m.put("canvas_reports", canvasReports);
-            m.put("canvas_reports_open_count", canvasReports.stream().filter(dbCanvasReport -> !dbCanvasReport.closed).count());
-            m.put("factions", factions);
-            m.put("palette", App.getConfig().getStringList("board.palette"));
-
-            Writer writer = new StringWriter();
-            engine.getTemplate(_templateBase).evaluate(writer, m);
-            toRet = writer.toString();
-        } catch (Exception e) {
-            e.printStackTrace();
         }
-
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
-        exchange.getResponseSender().send(toRet);
     }
 
     public void getRequestingUserFactions(HttpServerExchange exchange) throws Exception {

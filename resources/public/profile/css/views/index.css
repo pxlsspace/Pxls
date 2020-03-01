@@ -11,6 +11,7 @@
     transition: background-color 100ms ease-in;
     user-select: none;
     cursor: default;
+    overflow:hidden;
 }
 
 .media:hover .media-text-icon {
