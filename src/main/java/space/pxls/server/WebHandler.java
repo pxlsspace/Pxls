@@ -272,10 +272,14 @@ public class WebHandler {
                         joining = dataObj.get("joinState").getAsBoolean();
                     } catch (Exception ignored) {
                     }
-                    if (joining) {
-                        App.getDatabase().joinFaction(fid, user.getId());
+                    if (faction.getOwner() == user.getId()) {
+                        sendBadRequest(exchange, "You can not modify the joinState of a faction you own. Transfer ownership first.");
                     } else {
-                        App.getDatabase().leaveFaction(fid, user.getId());
+                        if (joining) {
+                            App.getDatabase().joinFaction(fid, user.getId());
+                        } else {
+                            App.getDatabase().leaveFaction(fid, user.getId());
+                        }
                     }
                 } else { // user is attempting to update faction details
                     if (user.getId() != dbFaction.owner) {
@@ -328,7 +332,8 @@ public class WebHandler {
                     }
                     App.getDatabase().updateFaction(faction);
                 }
-                send(200, exchange, "OK");
+                if (!exchange.isResponseStarted())
+                    send(200, exchange, "OK");
             } else if (exchange.getRequestMethod().equals(Methods.DELETE)) { // remove requested faction
                 if (user.getId() != dbFaction.owner) {
                     send(StatusCodes.FORBIDDEN, exchange, "You do not own this resource");

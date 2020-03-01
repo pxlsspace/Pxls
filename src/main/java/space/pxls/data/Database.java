@@ -1629,6 +1629,9 @@ public class Database {
      */
     public void deleteFactionByFID(int fid) {
         jdbi.useHandle(handle -> { // only consume a single connection for these ops.
+            handle.createUpdate("UPDATE users SET displayed_faction=null WHERE displayed_faction=:fid") // can't delete fid if there's a dependent present.
+                .bind("fid", fid)
+                .execute();
             handle.createUpdate("DELETE FROM faction_membership WHERE fid=:fid")
                 .bind("fid", fid)
                 .execute();
