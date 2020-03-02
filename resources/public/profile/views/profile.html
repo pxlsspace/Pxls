@@ -19,13 +19,23 @@
                 <li class="nav-item">
                     <a href="/" class="nav-link">Pxls</a>
                 </li>
-                {% if not requested_self %}
-                <li class="nav-item"><a href="/profile" class="nav-link">My Profile</a></li>
-                {% endif %}
                 <li class="nav-item active">
                     <a href="{{route_root}}" class="nav-link">{{profile_of.name | default("Anonymous")}}'s profile</a>
                 </li>
             </ul>
+            {% if requesting_user is not null %}
+            <div class="my-2 my-lg-0">
+                <div class="dropdown">
+                    <button class="navbar-text btn btn-link dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false" aria-haspopup="true" id="btnNavUserDropdown">
+                        <i class="fas fa-user-alt mr-1"></i>{{requesting_user.name}}
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" id="navUserDropdown" aria-labelledby="btnNavUserDropdown">
+                        <a href="/profile?action=details" class="dropdown-item">My Profile</a>
+                        <a href="/profile?action=factions" class="dropdown-item">My Factions</a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
         </nav>
         <main role="main" class="mb-3">
             <div class="container">
