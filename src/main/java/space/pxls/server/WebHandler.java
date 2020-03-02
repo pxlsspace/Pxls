@@ -289,7 +289,7 @@ public class WebHandler {
                         } else {
                             App.getDatabase().leaveFaction(fid, user.getId());
                             if (user.getDisplayedFaction() != null && user.getDisplayedFaction() == fid) {
-                                user.setDisplayedFaction(null, false); // db is hit by #leaveFaction() already. we just need to update the memcache.
+                                user.setDisplayedFaction(null, false, true); // db is hit by #leaveFaction() already. we just need to update the memcache.
                             }
                         }
                     }

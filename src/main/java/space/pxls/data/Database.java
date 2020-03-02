@@ -288,7 +288,7 @@ public class Database {
     public Optional<DBPixelPlacement> getPixelAt(int x, int y) {
         Optional<DBPixelPlacement> pp;
         try {
-            pp = jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.secondary_id, p.time, p.undo_action, u.id as u_id, u.username, u.login, u.role, u.ban_expiry, u.pixel_count, u.pixel_count_alltime, u.ban_reason, u.user_agent, u.discord_name FROM pixels p LEFT JOIN users u ON p.who = u.id WHERE p.x = :x AND p.y = :y AND p.most_recent ORDER BY p.time DESC LIMIT 1")
+            pp = jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.secondary_id, p.time, p.undo_action, u.id as u_id, u.username, u.login, u.role, u.ban_expiry, u.pixel_count, u.pixel_count_alltime, u.ban_reason, u.user_agent, u.discord_name, COALESCE(f.name, '') as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.x = :x AND p.y = :y AND p.most_recent ORDER BY p.time DESC LIMIT 1")
                     .bind("x", x)
                     .bind("y", y)
                     .map(new DBPixelPlacement.Mapper())
@@ -311,7 +311,7 @@ public class Database {
     public Optional<DBPixelPlacementUser> getPixelAtUser(int x, int y) {
         Optional<DBPixelPlacementUser> pp;
         try {
-            pp = jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.time, u.id as u_id, u.username, u.ban_expiry, u.pixel_count, u.pixel_count_alltime, u.login as u_login, u.discord_name FROM pixels p LEFT JOIN users u ON p.who = u.id WHERE p.x = :x AND p.y = :y AND p.most_recent ORDER BY p.time DESC LIMIT 1")
+            pp = jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.time, u.id as u_id, u.username, u.ban_expiry, u.pixel_count, u.pixel_count_alltime, u.login as u_login, u.discord_name, COALESCE(f.name, '') as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.x = :x AND p.y = :y AND p.most_recent ORDER BY p.time DESC LIMIT 1")
                     .bind("x", x)
                     .bind("y", y)
                     .map(new DBPixelPlacementUser.Mapper())

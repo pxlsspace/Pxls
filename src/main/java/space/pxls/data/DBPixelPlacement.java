@@ -27,8 +27,9 @@ public class DBPixelPlacement {
     public final boolean undoAction;
     public final String userAgent;
     public final String discordName;
+    public final String faction;
 
-    public DBPixelPlacement(int id, int x, int y, int color, int secondaryId, long time, int userId, String username, String login, Role role, long ban_expiry, int pixel_count, int pixel_count_alltime, String ban_reason, boolean banned, boolean undoAction, String userAgent, String discordName) {
+    public DBPixelPlacement(int id, int x, int y, int color, int secondaryId, long time, int userId, String username, String login, Role role, long ban_expiry, int pixel_count, int pixel_count_alltime, String ban_reason, boolean banned, boolean undoAction, String userAgent, String discordName, String faction) {
         this.id = id;
         this.x = x;
         this.y = y;
@@ -47,6 +48,7 @@ public class DBPixelPlacement {
         this.undoAction = undoAction;
         this.userAgent = userAgent;
         this.discordName = discordName;
+        this.faction = faction;
     }
 
     public static class Mapper implements RowMapper<DBPixelPlacement> {
@@ -54,10 +56,14 @@ public class DBPixelPlacement {
         public DBPixelPlacement map(ResultSet r, StatementContext ctx) throws SQLException {
             Timestamp time = r.getTimestamp("time");
             Timestamp ban_expiry = r.getTimestamp("ban_expiry");
+            String faction = null;
             boolean banned = Role.valueOf(r.getString("role")) == Role.BANNED;
             if (!banned && ban_expiry != null) {
                 banned = ban_expiry.getTime() > System.currentTimeMillis();
             }
+            try {
+                faction = r.getString("faction");
+            } catch (Exception ignored) {}
 
             return new DBPixelPlacement(
                     r.getInt("p_id"),
@@ -77,7 +83,8 @@ public class DBPixelPlacement {
                     banned,
                     r.getBoolean("undo_action"),
                     r.getString("user_agent"),
-                    r.getString("discord_name")
+                    r.getString("discord_name"),
+                    faction
             );
         }
     }

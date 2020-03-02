@@ -5,6 +5,7 @@ import space.pxls.App;
 import space.pxls.data.DBFaction;
 import space.pxls.data.DBUser;
 import space.pxls.server.packets.chat.Badge;
+import space.pxls.server.packets.chat.ServerChatUserUpdate;
 import space.pxls.server.packets.socket.ClientUndo;
 import space.pxls.server.packets.chat.ServerChatBan;
 import space.pxls.server.packets.socket.ServerRename;
@@ -649,13 +650,18 @@ public class User {
     }
 
     public void setDisplayedFaction(Integer displayedFaction) {
-        setDisplayedFaction(displayedFaction, true);
+        setDisplayedFaction(displayedFaction, true, true);
     }
-    public void setDisplayedFaction(Integer displayedFaction, boolean hitDB) {
+    public void setDisplayedFaction(Integer displayedFaction, boolean hitDB, boolean broadcast) {
         this.displayedFaction = displayedFaction;
         this._displayedFaction = null;
         if (hitDB) {
             App.getDatabase().setDisplayedFactionForUID(id, displayedFaction);
+        }
+        if (broadcast) {
+            Map<String,String> m = new HashMap<>();
+            m.put("DisplayedFaction", displayedFaction == null || displayedFaction == 0 ? "" : fetchDisplayedFaction().getTag());
+            App.getServer().broadcast(new ServerChatUserUpdate(getName(), m));
         }
     }
 
