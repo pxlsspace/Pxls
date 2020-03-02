@@ -281,6 +281,60 @@ public class WebHandler {
                             App.getDatabase().leaveFaction(fid, user.getId());
                         }
                     }
+                } else if (dataObj.has("banState") && dataObj.has("user")) {
+                    boolean isBanned;
+                    String opUser;
+                    try {
+                        isBanned = dataObj.get("banState").getAsBoolean();
+                        opUser = dataObj.get("user").getAsString();
+                    } catch (ClassCastException | IllegalStateException e) {
+                        sendBadRequest(exchange, "Invalid banState and/or user supplied");
+                        return;
+                    }
+                    if (opUser.trim().isEmpty()) {
+                        sendBadRequest(exchange, "Invalid user supplied");
+                    } else {
+                        User userToModify = App.getUserManager().getByName(opUser);
+                        if (userToModify == null || userToModify.getId() == user.getId()) {
+                            sendBadRequest(exchange, "Invalid user supplied");
+                        } else {
+                            if (isBanned) { // we're attempting to ban a user. make sure they exist in the user list
+                                if (faction.fetchMembers().stream().filter(fUser -> fUser.getId() == userToModify.getId()).findFirst().orElse(null) != null) {
+                                    App.getDatabase().addFactionBanForUID(userToModify.getId(), faction.getId());
+                                } else {
+                                    sendBadRequest(exchange, "The requested user is not a member of this faction.");
+                                }
+                            } else {
+                                if (faction.fetchBans().stream().filter(fUser -> fUser.getId() == userToModify.getId()).findFirst().orElse(null) != null) {
+                                    App.getDatabase().removeFactionBanForUID(userToModify.getId(), faction.getId());
+                                } else {
+                                    sendBadRequest(exchange, "The requested user is not banned from this faction.");
+                                }
+                            }
+                        }
+                    }
+                } else if (dataObj.has("newOwner")) {
+                    String newOwner;
+                    try {
+                        newOwner = dataObj.get("newOwner").getAsString();
+                    } catch (ClassCastException | IllegalStateException e) {
+                        sendBadRequest(exchange, "Invalid newOwner supplied");
+                        return;
+                    }
+                    if (user.getId() == dbFaction.owner) {
+                        User userToModify = App.getUserManager().getByName(newOwner);
+                        if (userToModify != null) {
+                            if (faction.fetchMembers().stream().filter(fUser -> fUser.getId() == userToModify.getId()).findFirst().orElse(null) != null) {
+                                App.getDatabase().setFactionOwnerForFID(faction.getId(), userToModify.getId());
+                            } else {
+                                sendBadRequest(exchange, "The requested user is not a member of the specified faction.");
+                            }
+                        } else {
+                            sendBadRequest(exchange, "The requested user does not exist.");
+                        }
+                    } else {
+                        send(StatusCodes.FORBIDDEN, exchange, "You do not own this resource.");
+                    }
                 } else { // user is attempting to update faction details
                     if (user.getId() != dbFaction.owner) {
                         send(StatusCodes.FORBIDDEN, exchange, "You do not own this resource");

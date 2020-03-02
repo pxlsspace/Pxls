@@ -202,6 +202,12 @@ public class UndertowServer {
         }
     }
 
+    public void broadcastRaw(String raw) {
+        if (connections != null) {
+            connections.forEach(channel -> sendRaw(channel, raw));
+        }
+    }
+
     public void broadcastNoShadow(Object obj) {
         broadcastToUserPredicate(obj, user -> user.getRole() != Role.SHADOWBANNED);
     }

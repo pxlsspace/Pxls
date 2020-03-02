@@ -30,6 +30,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class App {
     private static Gson gson;
@@ -454,6 +455,12 @@ public class App {
                 int id = App.getDatabase().createNotification(-1, title, body, expiry);
                 App.getServer().broadcast(new ServerNotification(App.getDatabase().getNotification(id)));
                 System.out.println("Notification sent");
+            } else if (token[0].equalsIgnoreCase("bp")) {
+                if (token.length == 1) {
+                    System.out.printf("%s raw_packet%n", token[0]);
+                    return;
+                }
+                App.getServer().broadcastRaw(line.substring(token[0].length() + 1).trim());
             }
         } catch (RuntimeException e) {
             e.printStackTrace();

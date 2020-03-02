@@ -26,6 +26,8 @@
 
   // hook up faction membership actions
   Array.from(document.querySelectorAll('.faction-media[data-faction-id] .faction-action[data-action]')).forEach(elAction => elAction.addEventListener('click', handleFactionAction));
+
+  Array.from(document.querySelectorAll('.member-list-modal[data-faction-id] .member-row[data-member] .faction-subaction[data-action]')).forEach(elAction => elAction.addEventListener('click', handleFactionSubaction));
 })();
 
 async function handleFactionAction(e) {
@@ -90,7 +92,67 @@ async function handleFactionAction(e) {
   }
 }
 
+async function handleFactionSubaction(e) {
+  const fid = this.closest('[data-faction-id]').dataset.factionId;
+  const action = this.dataset.action.toLowerCase().trim();
+  const member = this.closest('[data-member]').dataset.member;
+  if (!fid || !action || !member) return;
+  console.debug(fid, member, action);
+  switch(action) {
+    case 'transfer': {
+      if (await popConfirmDialog(`Are you sure you want to transfer ownership? You'll have to ask ${member} to transfer back if you change your mind, and they can say no!`) === true) {
+        console.debug('handling %s on member %s and faction %s', action, member, fid);
+        let res;
+        try {
+          res = await putJSON(`/factions/${fid}`, {newOwner: member});
+        } catch (e) {}
+        if (res && res.success === true) {
+          alert('Faction updated. The page will now reload.');
+          document.location.href = document.location.href; //TODO replace with slidein
+        } else {
+          alert((res && res.details) || 'An unknown error occurred. Please try again later.');
+        }
+      }
+      break;
+    }
+    case 'ban': {
+      if (await popConfirmDialog(`Are you sure you want to ban ${member}?`) === true) {
+        console.debug('handling %s on member %s and faction %s', action, member, fid);
+        let res;
+        try {
+          res = await putJSON(`/factions/${fid}`, {user: member, banState: true});
+        } catch (e) {}
+        if (res && res.success === true) {
+          alert('Faction updated. The page will now reload.');
+          document.location.href = document.location.href; //TODO replace with slidein
+        } else {
+          alert((res && res.details) || 'An unknown error occurred. Please try again later.');
+        }
+      }
+      break;
+    }
+    case 'unban': {
+      if (await popConfirmDialog(`Are you sure you want to unban ${member}?`) === true) {
+        console.debug('handling %s on member %s and faction %s', action, member, fid);
+        let res;
+        try {
+          res = await putJSON(`/factions/${fid}`, {user: member, banState: false});
+        } catch (e) {}
+        if (res && res.success === true) {
+          alert('Faction updated. The page will now reload.');
+          document.location.href = document.location.href; //TODO replace with slidein
+        } else {
+          alert((res && res.details) || 'An unknown error occurred. Please try again later.');
+        }
+      }
+      break;
+    }
+  }
+}
+
 function popFactionModal(isEdit=false,data={}) {
+  if (isEdit && data.fid == null) throw new Error('Invalid data supplied to popFactionModal. Missing fid');
+
   const txtFactionName = crel('input', {'type': 'text', 'autocomplete': 'disabled', 'class': 'form-control', 'required': 'true', 'value': data.name || ''});
   const txtFactionTag = crel('input', {'type': 'text', 'autocomplete': 'disabled', 'class': 'form-control', 'maxLength': '4', 'required': 'true', 'value': data.tag || ''});
   const btnCancel = crel('button', {'class': 'btn btn-secondary ml-1', 'data-dismiss': 'modal', 'type': 'button'}, 'Cancel');

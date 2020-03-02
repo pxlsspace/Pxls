@@ -1285,7 +1285,7 @@ public class Database {
      */
     public void purgeChat(User target, User initiator, int amount, String reason, boolean broadcast) {
         jdbi.useHandle(handle -> handle.createUpdate("UPDATE chat_messages SET purged = true, purged_by = :initiator WHERE author = :who")
-                .bind("initiator", initiator.getId())
+                .bind("initiator", initiator == null ? 0 : initiator.getId())
                 .bind("who", target.getId())
                 .execute());
         String initiatorName = initiator == null ? "CONSOLE" : initiator.getName();
@@ -1676,6 +1676,55 @@ public class Database {
     public void setDisplayedFactionForUID(int uid, Integer fid) {
         jdbi.useHandle(handle ->
             handle.createUpdate("UPDATE users SET displayed_faction=:fid WHERE id=:uid")
+                .bind("fid", fid)
+                .bind("uid", uid)
+                .execute()
+        );
+    }
+
+    /**
+     * Removes a faction ban for the given uid.
+     *
+     * @param uid The user's ID to remove
+     * @param fid The faction ID to modify
+     */
+    public void removeFactionBanForUID(int uid, int fid) {
+        jdbi.useHandle(handle -> handle.createUpdate("DELETE FROM faction_ban WHERE uid=:uid AND fid=:fid")
+            .bind("uid", uid)
+            .bind("fid", fid)
+            .execute()
+        );
+    }
+
+    /**
+     * Adds a faction ban for the given uid. Will also remove an active
+     *  faction_membership.
+     *
+     * @param uid The user's ID to add
+     * @param fid The faction ID to modify
+     */
+    public void addFactionBanForUID(int uid, int fid) {
+        jdbi.useHandle(handle -> {
+            handle.createUpdate("DELETE FROM faction_membership WHERE uid=:uid AND fid=:fid")
+                .bind("uid", uid)
+                .bind("fid", fid)
+                .execute();
+            handle.createUpdate("INSERT INTO faction_ban (\"uid\", \"fid\") VALUES (:uid, :fid) ON CONFLICT DO NOTHING")
+                .bind("uid", uid)
+                .bind("fid", fid)
+                .execute();
+        });
+    }
+
+    /**
+     * Sets a new owner for the faction. Does not verify faction_member state.
+     *
+     * @param fid The ID of the faction to modify
+     * @param uid The ID of the user to set as owner
+     */
+    public void setFactionOwnerForFID(int fid, int uid) {
+        jdbi.useHandle(handle ->
+            handle.createUpdate("UPDATE faction SET owner = :uid WHERE id = :fid")
                 .bind("fid", fid)
                 .bind("uid", uid)
                 .execute()

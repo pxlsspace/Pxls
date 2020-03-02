@@ -206,13 +206,13 @@
                                     {# This loop only fires when on our own profile. We can't leave a faction we own, we can only transfer ownership, so no point in showing ourselves in the member list. #}
                                     {% for member in faction.fetchMembers %}
                                     {% if member.id != profile_of.id %}
-                                    <div class="row mb-1">
+                                    <div class="row member-row mb-1" data-member="{{member.name}}">
                                         <div class="col-md-6">
                                             <span>{{member.name}}</span>
                                         </div>
                                         <div class="col-md-6 text-right">
-                                            <button class="btn btn-sm btn-success" data-action="transfer">Transfer Ownership</button>
-                                            <button class="btn btn-sm btn-danger" data-action="ban">Ban</button>
+                                            <button class="btn btn-sm btn-success faction-subaction" data-action="transfer">Transfer Ownership</button>
+                                            <button class="btn btn-sm btn-danger faction-subaction" data-action="ban">Ban</button>
                                         </div>
                                     </div>
                                     {% endif %}
@@ -230,12 +230,12 @@
                             <div class="card-body p-0 body-collapse-target collapse">
                                 <div class="p-3">
                                     {% for member in faction.fetchBans %}
-                                    <div class="row mb-1">
+                                    <div class="row member-row mb-1" data-member="{{member.name}}">
                                         <div class="col-md-6">
                                             <span>{{member.name}}</span>
                                         </div>
                                         <div class="col-md-6 text-right">
-                                            <button class="btn btn-sm btn-primary" data-action="unban">Unban</button>
+                                            <button class="btn btn-sm btn-primary faction-subaction" data-action="unban">Unban</button>
                                         </div>
                                     </div>
                                     {% else %}
