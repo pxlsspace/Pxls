@@ -2070,10 +2070,6 @@ ul.chat-history, ul.chatban-history {
         width: 95%;
     }
 
-    #bubble-position {
-        opacity: .5;
-    }
-
     #chat-hint {
         font-size: .7rem;
     }
