@@ -21,21 +21,19 @@ const ConfirmDialogStyles = Object.freeze({
 })();
 
 function initInPageTabNavigation(page) {
-  console.debug('[tab-nav] Initializing for page "%s"', page);
   if (page.startsWith('/')) page = page.substr(1);
   document.querySelectorAll('#tabsTriggers a[data-action]').forEach(x => x.addEventListener('click', handleTabTrigger));
 
   function handleTabTrigger(e) {
     e.preventDefault();
-    console.debug('[tab-nav] handling tab trigger %o (%o)', this.dataset.action, e);
 
     let oldTarget = document.querySelector(`#tabsWrapper .tab-pane[data-tab].active`);
     oldTarget = oldTarget ? (oldTarget.dataset.tab || false) : false;
 
-    if (oldTarget === this.dataset.action) return console.debug('[tab-nav] user attempted to reactivate an already activated tab, aborting');
+    if (oldTarget === this.dataset.action) return;
 
     let targetTab = document.querySelector(`#tabsWrapper .tab-pane[data-tab="${this.dataset.action}"]`);
-    if (!targetTab) return console.error('Tried to set tab %o active but no associated tab-pane', this.dataset.action);
+    if (!targetTab) return;
 
     history.replaceState(null, document.title, `/${page}?action=${this.dataset.action}`); //updates the URL in-place without triggering a navigation
 

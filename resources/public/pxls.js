@@ -3619,7 +3619,6 @@ window.App = (function () {
                     socket.on('chat_user_update', e => {
                         if (e.who && e.updates && typeof (e.updates) === "object") {
                             for (let update of Object.entries(e.updates)) {
-                                console.log(update);
                                 switch(update[0]) {
                                     case 'NameColor': {
                                         self._updateAuthorNameColor(e.who, Math.floor(update[1]));
@@ -4658,7 +4657,6 @@ window.App = (function () {
                     });
                 },
                 _updateAuthorDisplayedFaction: (author, tag) => {
-                    console.log('updating author %s\'s tag to %o', author, tag);
                     self.elements.body.find(`.chat-line[data-author="${author}"]`).each(function() {
                         this.dataset.tag = tag || '';
                         $(this).find('.faction-tag').each(function() {

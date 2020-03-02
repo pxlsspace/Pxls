@@ -1,5 +1,4 @@
 (() => {
-  console.debug('spawned');
 
   // hook up in-page tab navigation
   // document.querySelectorAll('#tabsTriggers a[data-action]').forEach(x => x.addEventListener('click', handleTabTrigger));
@@ -39,14 +38,10 @@
       btnSearch.innerHTML = `<i class="fas fa-spinner fa-pulse"></i>`;
       btnSearch.disabled = true;
       txtSearch.disabled = true;
-      console.debug('[faction-search] looking for %o', txtSearch.value);
       let res;
       try {
         res = await getJSON(`/factions/search?term=${encodeURIComponent(txtSearch.value)}&after=0`);
-      } catch (e) {
-        console.debug('[faction-search] err: %o', e);
-      }
-      console.debug('[faction-search] res: %o', res);
+      } catch (e) {}
       if (res && res.success === true) {
         if (Array.isArray(res.details)) {
           if (res.details.length > 0) {
@@ -152,7 +147,6 @@ async function handleFactionAction(e) {
   const fid = fmedia.dataset.factionId;
   const action = this.dataset.action.toLowerCase().trim();
   if (!fid) return;
-  console.debug(fid, action);
   switch(action) {
     case 'factiondelete': {
       if (await popConfirmDialog('Are you sure you want to delete this faction? This cannot be undone!') === true) {
@@ -214,11 +208,9 @@ async function handleFactionSubaction(e) {
   const action = this.dataset.action.toLowerCase().trim();
   const member = this.closest('[data-member]').dataset.member;
   if (!fid || !action || !member) return;
-  console.debug(fid, member, action);
   switch(action) {
     case 'transfer': {
       if (await popConfirmDialog(`Are you sure you want to transfer ownership? You'll have to ask ${member} to transfer back if you change your mind, and they can say no!`) === true) {
-        console.debug('handling %s on member %s and faction %s', action, member, fid);
         let res;
         try {
           res = await putJSON(`/factions/${fid}`, {newOwner: member});
@@ -234,7 +226,6 @@ async function handleFactionSubaction(e) {
     }
     case 'ban': {
       if (await popConfirmDialog(`Are you sure you want to ban ${member}?`) === true) {
-        console.debug('handling %s on member %s and faction %s', action, member, fid);
         let res;
         try {
           res = await putJSON(`/factions/${fid}`, {user: member, banState: true});
@@ -250,7 +241,6 @@ async function handleFactionSubaction(e) {
     }
     case 'unban': {
       if (await popConfirmDialog(`Are you sure you want to unban ${member}?`) === true) {
-        console.debug('handling %s on member %s and faction %s', action, member, fid);
         let res;
         try {
           res = await putJSON(`/factions/${fid}`, {user: member, banState: false});
@@ -310,7 +300,6 @@ function popFactionModal(isEdit=false,data={}) {
       let endpoint = isEdit ? `/factions/${data.fid}` : `/factions`;
       let _toPost = {name: txtFactionName.value, tag: txtFactionTag.value};
       let res = await (isEdit ? putJSON : postJSON)(endpoint, _toPost);
-      console.debug('got res from faction op: %o', res);
       if (res && res.success === true) {
         alert(`Faction ${isEdit ? 'edit' : 'creat'}ed. The page will now reload`);
         document.location.href = document.location.href; //TODO replace with slideins
@@ -319,9 +308,7 @@ function popFactionModal(isEdit=false,data={}) {
         btnCancel.disabled = false;
         btnSave.innerHTML = `Create`;
       }
-    } catch (e) {
-      console.error('Failed to create faction', e);
-    }
+    } catch (e) {}
   });
 
   popModal(crel('div', {'class': 'modal', 'tabindex': '-1', 'data-backdrop': 'static', 'data-keyboard': 'false'},
@@ -339,7 +326,6 @@ function popFactionModal(isEdit=false,data={}) {
 }
 
 function handleGlobalFactionAction(e) {
-  console.log(this.dataset.action);
   switch (this.dataset.action.toLowerCase().trim()) {
     case 'factioncreate': {
       popFactionModal();
