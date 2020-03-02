@@ -5,15 +5,17 @@ import java.util.List;
 public class ChatMessage {
     public String nonce;
     public String author;
+    public String tag;
     public Long date;
     public String message_raw;
     public List<Badge> badges;
     public List<String> authorNameClass;
     public Number authorNameColor;
 
-    public ChatMessage(String nonce, String author, Long date, String message_raw, List<Badge> badges, List<String> authorNameClass, Number authorNameColor) {
+    public ChatMessage(String nonce, String author, String tag, Long date, String message_raw, List<Badge> badges, List<String> authorNameClass, Number authorNameColor) {
         this.nonce = nonce;
         this.author = author;
+        this.tag = tag;
         this.date = date;
         this.message_raw = message_raw;
         this.badges = badges;
@@ -27,6 +29,10 @@ public class ChatMessage {
 
     public String getAuthor() {
         return author;
+    }
+
+    public String getTag() {
+        return tag;
     }
 
     public Long getDate() {

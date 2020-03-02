@@ -26,8 +26,125 @@
 
   // hook up faction membership actions
   Array.from(document.querySelectorAll('.faction-media[data-faction-id] .faction-action[data-action]')).forEach(elAction => elAction.addEventListener('click', handleFactionAction));
-
   Array.from(document.querySelectorAll('.member-list-modal[data-faction-id] .member-row[data-member] .faction-subaction[data-action]')).forEach(elAction => elAction.addEventListener('click', handleFactionSubaction));
+
+  const frmSearch = document.getElementById('frmFactionSearch');
+  const txtSearch = document.getElementById('txtFactionSearch');
+  const btnSearch = document.getElementById('btnFactionSearch');
+  const searchTarget = document.getElementById('searchTarget');
+  if (frmSearch && txtSearch && btnSearch && searchTarget) {
+    frmSearch.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const oldHtml = btnSearch.innerHTML;
+      btnSearch.innerHTML = `<i class="fas fa-spinner fa-pulse"></i>`;
+      btnSearch.disabled = true;
+      txtSearch.disabled = true;
+      console.debug('[faction-search] looking for %o', txtSearch.value);
+      let res;
+      try {
+        res = await getJSON(`/factions/search?term=${encodeURIComponent(txtSearch.value)}&after=0`);
+      } catch (e) {
+        console.debug('[faction-search] err: %o', e);
+      }
+      console.debug('[faction-search] res: %o', res);
+      if (res && res.success === true) {
+        if (Array.isArray(res.details)) {
+          if (res.details.length > 0) {
+            searchTarget.innerHTML = ``;
+            crel(searchTarget,
+              crel('ul', {'class': 'list-group'},
+                res.details.map(x => {
+                  const btnDetails = crel('button', {'class': 'btn btn-sm btn-info ml-1'},
+                    crel('i', {'class': 'fas fa-list mr-1'}),
+                    'Details'
+                  );
+                  const btnJoin = crel('button', {'class': 'btn btn-sm btn-success ml-1'},
+                    crel('i', {'class': 'fas fa-user-plus mr-1'}),
+                    'Join'
+                  );
+
+                  btnDetails.addEventListener('click', function() {
+                    popModal(
+                      crel('div', {'class': 'modal fade', 'tabindex': '-1'},
+                        crel('div', {'class': 'modal-dialog modal-md'},
+                          crel('div', {'class': 'modal-content'},
+                            crel('div', {'class': 'modal-header'},
+                              crel('h5', {'class': 'modal-title'}, `Create Faction`),
+                              crel('button', {'type': 'button', 'class': 'close', 'data-dismiss': 'modal', 'aria-label': 'Close'},
+                                crel('span', {'aria-hidden': 'true'}, '×')
+                              )
+                            ),
+                            crel('div', {'class': 'modal-body'},
+                              crel('table',
+                                crel('tbody',
+                                  crel('tr',
+                                    crel('th', {'class': 'text-right pr-3'}, 'ID'),
+                                    crel('td', {'class': 'text-left'}, x.id)
+                                  ),
+                                  crel('tr',
+                                    crel('th', {'class': 'text-right pr-3'}, 'Name'),
+                                    crel('td', {'class': 'text-left'}, x.name)
+                                  ),
+                                  crel('tr',
+                                    crel('th', {'class': 'text-right pr-3'}, 'Tag'),
+                                    crel('td', {'class': 'text-left'}, x.tag)
+                                  ),
+                                  crel('tr',
+                                    crel('th', {'class': 'text-right pr-3'}, 'Owner'),
+                                    crel('td', {'class': 'text-left'}, x.owner)
+                                  ),
+                                  crel('tr',
+                                    crel('th', {'class': 'text-right pr-3'}, 'Created'),
+                                    crel('td', {'class': 'text-left'}, new Date(x.creation_ms).toString())
+                                  ),
+                                )
+                              )
+                            ),
+                            crel('div', {'class': 'modal-footer'},
+                              crel('button', {'class': 'btn btn-primary', 'data-dismiss': 'modal'}, 'Close')
+                            )
+                          )
+                        )
+                      )
+                    )
+                  });
+                  btnJoin.addEventListener('click', async function() {
+                    if (await popConfirmDialog('Are you sure you want to join this faction?') === true) {
+                      let res;
+                      try {
+                        res = await putJSON(`/factions/${x.id}`, {joinState: true});;
+                      } catch (e) {}
+                      if (res && res.success === true) {
+                        alert('Faction joined. The page will now reload.');
+                        document.location.href = document.location.href; //TODO replace with slidein
+                      } else {
+                        alert((res && res.details) || 'An unknown error occurred. Please try again later.');
+                      }
+                    }
+                  });
+
+                  return crel('li', {'class': 'list-group-item d-flex justify-content-between align-items-center'},
+                    crel('span', {'class': 'faction-name'}, `[${x.tag}] ${x.name} from ${x.owner}`),
+                    crel('div', {'class': 'd-inline-block'},
+                      btnDetails,
+                      btnJoin
+                    )
+                  );
+                })
+              )
+            );
+          } else {
+            searchTarget.innerHTML = `<p class="text-muted text-center">No results for this search term.</p>`
+          }
+        }
+      } else {
+        alert((res && res.details) || 'An unknown error occurred. Please try again later.');
+      }
+      btnSearch.innerHTML = oldHtml;
+      btnSearch.disabled = false;
+      txtSearch.disabled = false;
+    });
+  }
 })();
 
 async function handleFactionAction(e) {

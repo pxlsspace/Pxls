@@ -2,6 +2,7 @@ package space.pxls.user;
 
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
+import space.pxls.data.DBFaction;
 import space.pxls.data.DBUser;
 import space.pxls.server.packets.chat.Badge;
 import space.pxls.server.packets.socket.ClientUndo;
@@ -217,6 +218,14 @@ public class User {
 
     public String getName() {
         return name;
+    }
+
+    public String getTag() {
+        Faction f = fetchDisplayedFaction();
+        if (f != null) {
+            return f.getTag();
+        }
+        return null;
     }
 
     public List<Badge> getChatBadges() {
@@ -651,9 +660,12 @@ public class User {
     }
 
     public Faction fetchDisplayedFaction() {
-        if (displayedFaction == null) return null;
+        if (displayedFaction == null || displayedFaction == 0) return null;
         if (_displayedFaction == null) {
-            _displayedFaction = new Faction(App.getDatabase().getFactionByID(displayedFaction));
+            DBFaction dbFaction = App.getDatabase().getFactionByID(displayedFaction);
+            if (dbFaction != null) {
+                _displayedFaction = new Faction(App.getDatabase().getFactionByID(displayedFaction));
+            }
         }
 
         return _displayedFaction;

@@ -413,7 +413,7 @@ public class PacketHandler {
         if (message.length() > charLimit) message = message.substring(0, charLimit);
         if (user == null) { //console
             String nonce = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "");
-            server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS / 1000L, message, null, null, 0)));
+            server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", null, nowMS / 1000L, message, null, null, 0)));
         } else {
             if (!user.canChat()) return;
             if (message.trim().length() == 0) return;
@@ -430,10 +430,10 @@ public class PacketHandler {
                         ChatFilter.FilterResult result = ChatFilter.getInstance().filter(toSend);
                         toSend = result.filterHit ? result.filtered : result.original;
                         String nonce = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toSend);
-                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor())));
+                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), user.getTag(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor())));
                     } else {
                         String nonce = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, "");
-                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor())));
+                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), user.getTag(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor())));
                     }
                 } catch (UnableToExecuteStatementException utese) {
                     utese.printStackTrace();

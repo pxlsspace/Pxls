@@ -1185,6 +1185,7 @@ public class Database {
         for (DBChatMessage dbChatMessage : fromDB) {
             List<Badge> badges = new ArrayList<>();
             String author = "CONSOLE";
+            String tag = null;
             int nameColor = 0;
             String parsedMessage = dbChatMessage.content; //TODO https://github.com/atlassian/commonmark-java
             List<String> nameClass = null;
@@ -1193,12 +1194,13 @@ public class Database {
                 User temp = App.getUserManager().getByID(dbChatMessage.author_uid);
                 if (temp != null) {
                     author = temp.getName();
+                    tag = temp.getTag();
                     badges = temp.getChatBadges();
                     nameColor = temp.getChatNameColor();
                     nameClass = temp.getChatNameClasses();
                 }
             }
-            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, dbChatMessage.sent, App.getConfig().getBoolean("chat.filter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameClass, nameColor));
+            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, tag, dbChatMessage.sent, App.getConfig().getBoolean("chat.filter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameClass, nameColor));
         }
         return toReturn;
     }
@@ -1556,12 +1558,16 @@ public class Database {
      * @param uid The user ID
      */
     public void leaveFaction(int fid, int uid) {
-        jdbi.useHandle(handle ->
+        jdbi.useHandle(handle -> {
+            handle.createUpdate("UPDATE users SET displayed_faction=null WHERE id=:uid AND displayed_faction=:fid")
+                .bind("uid", uid)
+                .bind("fid", fid)
+                .execute();
             handle.createUpdate("DELETE FROM faction_membership WHERE fid = :fid AND uid = :uid")
                 .bind("fid", fid)
                 .bind("uid", uid)
-                .execute()
-        );
+                .execute();
+        });
     }
 
     /**
@@ -1728,6 +1734,25 @@ public class Database {
                 .bind("fid", fid)
                 .bind("uid", uid)
                 .execute()
+        );
+    }
+
+    /**
+     * Performs a left-anchored case insensitive search with the given input.
+     *  Supports basic pagination using the `after` param, which maps to a
+     *  faction ID.
+     *
+     * @param search The search term
+     * @param after The ID to search from. 0 to start from the beginning.
+     * @return A list of {@link DBFaction}s.
+     */
+    public List<DBFaction> searchFactions(String search, int after) {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("SELECT * FROM faction WHERE name ILIKE concat(:search, '%') AND id > :after ORDER BY id ASC LIMIT 50")
+                .bind("search", search)
+                .bind("after", after)
+                .map(new DBFaction.Mapper())
+                .list()
         );
     }
 

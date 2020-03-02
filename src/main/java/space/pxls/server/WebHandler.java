@@ -1,5 +1,6 @@
 package space.pxls.server;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -192,6 +193,10 @@ public class WebHandler {
     }
 
     public void manageFactions(HttpServerExchange exchange) throws Exception {
+        if (exchange.getRelativePath().toLowerCase().trim().endsWith("/search")) { // eugh
+            factionSearch(exchange);
+            return;
+        }
         User user = exchange.getAttachment(AuthReader.USER);
         JsonElement _data = exchange.getAttachment(JsonReader.ATTACHMENT_KEY);
         JsonObject dataObj = null;
@@ -276,9 +281,16 @@ public class WebHandler {
                         sendBadRequest(exchange, "You can not modify the joinState of a faction you own. Transfer ownership first.");
                     } else {
                         if (joining) {
-                            App.getDatabase().joinFaction(fid, user.getId());
+                            if (faction.fetchBans().stream().anyMatch(fUser -> fUser.getId() == user.getId())) {
+                                sendBadRequest(exchange, "You are banned from this faction. Please contact the owner and try again.");
+                            } else {
+                                App.getDatabase().joinFaction(fid, user.getId());
+                            }
                         } else {
                             App.getDatabase().leaveFaction(fid, user.getId());
+                            if (user.getDisplayedFaction() != null && user.getDisplayedFaction() == fid) {
+                                user.setDisplayedFaction(null, false); // db is hit by #leaveFaction() already. we just need to update the memcache.
+                            }
                         }
                     }
                 } else if (dataObj.has("banState") && dataObj.has("user")) {
@@ -299,13 +311,13 @@ public class WebHandler {
                             sendBadRequest(exchange, "Invalid user supplied");
                         } else {
                             if (isBanned) { // we're attempting to ban a user. make sure they exist in the user list
-                                if (faction.fetchMembers().stream().filter(fUser -> fUser.getId() == userToModify.getId()).findFirst().orElse(null) != null) {
+                                if (faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
                                     App.getDatabase().addFactionBanForUID(userToModify.getId(), faction.getId());
                                 } else {
                                     sendBadRequest(exchange, "The requested user is not a member of this faction.");
                                 }
                             } else {
-                                if (faction.fetchBans().stream().filter(fUser -> fUser.getId() == userToModify.getId()).findFirst().orElse(null) != null) {
+                                if (faction.fetchBans().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
                                     App.getDatabase().removeFactionBanForUID(userToModify.getId(), faction.getId());
                                 } else {
                                     sendBadRequest(exchange, "The requested user is not banned from this faction.");
@@ -324,7 +336,7 @@ public class WebHandler {
                     if (user.getId() == dbFaction.owner) {
                         User userToModify = App.getUserManager().getByName(newOwner);
                         if (userToModify != null) {
-                            if (faction.fetchMembers().stream().filter(fUser -> fUser.getId() == userToModify.getId()).findFirst().orElse(null) != null) {
+                            if (faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
                                 App.getDatabase().setFactionOwnerForFID(faction.getId(), userToModify.getId());
                             } else {
                                 sendBadRequest(exchange, "The requested user is not a member of the specified faction.");
@@ -397,6 +409,27 @@ public class WebHandler {
                 send(200, exchange, "OK");
             }
         }
+    }
+
+    public void factionSearch(HttpServerExchange exchange) {
+        Deque<String> _search = exchange.getQueryParameters().get("term");
+        List<UserFaction> toReturn = new ArrayList<>();
+        if (_search != null) {
+            String search = _search.getFirst();
+            String _after = exchange.getQueryParameters().getOrDefault("after", new ArrayDeque<>(Collections.singleton("0"))).getFirst();
+            int after = 0;
+            try {
+                after = Integer.parseInt(_after);
+            } catch (Exception ignored) {}
+            toReturn = App.getDatabase().searchFactions(search, after).stream().map(UserFaction::new).collect(Collectors.toList());
+        }
+        exchange.setStatusCode(200);
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+        JsonObject o = new JsonObject();
+        o.add("success", new JsonPrimitive(true));
+        o.add("message", new JsonPrimitive(""));
+        o.add("details", App.getGson().toJsonTree(toReturn));
+        exchange.getResponseSender().send(App.getGson().toJson(o));
     }
 
     private void addServiceIfAvailable(String key, AuthService service) {
