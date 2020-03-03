@@ -161,6 +161,8 @@ public class WebHandler {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+                        m.put("max_faction_tag_length", App.getConfig().getInt("factions.maxTagLength"));
+                        m.put("max_faction_name_length", App.getConfig().getInt("factions.maxNameLength"));
                         m.put("chat_reports", chatReports);
                         m.put("chat_reports_open_count", chatReports.stream().filter(dbChatReport -> !dbChatReport.closed).count());
                         m.put("canvas_reports", canvasReports);
@@ -231,12 +233,17 @@ public class WebHandler {
             if (name == null || tag == null) {
                 sendBadRequest(exchange, "Invalid/Missing name/tag");
             } else {
-                if (tag.length() > 4) tag = tag.substring(0, 4);
-                Integer fid = App.getDatabase().createFaction(name, tag, user.getId());
-                if (fid == null) {
-                    send(500, exchange, "Failed to create faction.");
+                if (!Faction.ValidateTag(tag)) {
+                    sendBadRequest(exchange, "Invalid/Disallowed Tag");
+                } else if (!Faction.ValidateName(name)) {
+                    sendBadRequest(exchange, "Invalid/Disallowed Name");
                 } else {
-                    send(200, exchange, String.valueOf(fid));
+                    Integer fid = App.getDatabase().createFaction(name, tag, user.getId());
+                    if (fid == null) {
+                        send(500, exchange, "Failed to create faction.");
+                    } else {
+                        send(200, exchange, String.valueOf(fid));
+                    }
                 }
             }
         } else {
@@ -357,8 +364,13 @@ public class WebHandler {
                         try {
                             _name = dataObj.get("name").getAsString();
                         } catch (Exception ignored) {}
-                        if (_name != null) {
-                            faction.setName(dataObj.get("name").getAsString());
+                        if (_name != null && !_name.equals(faction.getName())) {
+                            if (Faction.ValidateName(_name)) {
+                                faction.setName(_name);
+                            } else {
+                                sendBadRequest(exchange, "Invalid/Disallowed Name");
+                                return;
+                            }
                         }
                     }
                     if (dataObj.has("tag")) {
@@ -366,12 +378,12 @@ public class WebHandler {
                         try {
                             _tag = dataObj.get("tag").getAsString();
                         } catch (Exception ignored) {}
-                        if (_tag != null) {
-                            if (_tag.length() < 1 || _tag.length() > 4) {
-                                sendBadRequest(exchange, "Invalid tag. Expected a length of (0,4]");
-                                return;
-                            } else {
+                        if (_tag != null && !_tag.equals(faction.getTag())) {
+                            if (Faction.ValidateTag(_tag)) {
                                 faction.setTag(dataObj.get("tag").getAsString());
+                            } else {
+                                sendBadRequest(exchange, "Invalid/Disallowed Tag");
+                                return;
                             }
                         }
                     }

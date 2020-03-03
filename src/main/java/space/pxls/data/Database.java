@@ -1200,7 +1200,7 @@ public class Database {
                     nameClass = temp.getChatNameClasses();
                 }
             }
-            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, tag, dbChatMessage.sent, App.getConfig().getBoolean("chat.filter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameClass, nameColor));
+            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, tag, dbChatMessage.sent, App.getConfig().getBoolean("textFilter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameClass, nameColor));
         }
         return toReturn;
     }

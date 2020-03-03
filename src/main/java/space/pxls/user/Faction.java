@@ -1,7 +1,9 @@
 package space.pxls.user;
 
+import com.typesafe.config.Config;
 import space.pxls.App;
 import space.pxls.data.DBFaction;
+import space.pxls.util.TextFilter;
 
 import java.sql.Timestamp;
 import java.util.List;
@@ -101,5 +103,27 @@ public class Faction {
 
     public void setCreated(Timestamp created) {
         this.created = created;
+    }
+
+    public static boolean ValidateTag(String tag) {
+        if (tag.length() < 1 || tag.length() > App.getConfig().getInt("factions.maxTagLength")) {
+            return false;
+        }
+        //noinspection RedundantIfStatement - leaving room for future checks.
+        if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(tag)) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean ValidateName(String name) {
+        if (name.length() < 1 || name.length() > App.getConfig().getInt("factions.maxNameLength")) {
+            return false;
+        }
+        //noinspection RedundantIfStatement - leaving room for future checks.
+        if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(name)) {
+            return false;
+        }
+        return true;
     }
 }

@@ -17,7 +17,7 @@ import space.pxls.server.packets.chat.*;
 import space.pxls.server.packets.socket.*;
 import space.pxls.user.Role;
 import space.pxls.user.User;
-import space.pxls.util.ChatFilter;
+import space.pxls.util.TextFilter;
 import space.pxls.util.RateLimitFactory;
 
 import java.util.*;
@@ -426,8 +426,8 @@ public class PacketHandler {
                     String toSend = bracketTranslator.translate(message); //filter out brackets before we do anything else so it's filtered in db
                     if (App.getConfig().getBoolean("chat.trimInput"))
                         toSend = toSend.trim();
-                    if (App.getConfig().getBoolean("chat.filter.enabled")) {
-                        ChatFilter.FilterResult result = ChatFilter.getInstance().filter(toSend);
+                    if (App.getConfig().getBoolean("textFilter.enabled")) {
+                        TextFilter.FilterResult result = TextFilter.getInstance().filter(toSend);
                         toSend = result.filterHit ? result.filtered : result.original;
                         String nonce = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toSend);
                         server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), user.getTag(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor())));

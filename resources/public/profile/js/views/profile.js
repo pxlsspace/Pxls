@@ -259,9 +259,11 @@ async function handleFactionSubaction(e) {
 
 function popFactionModal(isEdit=false,data={}) {
   if (isEdit && data.fid == null) throw new Error('Invalid data supplied to popFactionModal. Missing fid');
+  const _nameMax = document.body.dataset.factionMaxName || 99999;
+  const _tagMax = document.body.dataset.factionMaxTag || 99999;
 
-  const txtFactionName = crel('input', {'type': 'text', 'autocomplete': 'disabled', 'class': 'form-control', 'required': 'true', 'value': data.name || ''});
-  const txtFactionTag = crel('input', {'type': 'text', 'autocomplete': 'disabled', 'class': 'form-control', 'maxLength': '4', 'required': 'true', 'value': data.tag || ''});
+  const txtFactionName = crel('input', {'type': 'text', 'autocomplete': 'disabled', 'class': 'form-control', 'maxLength': _nameMax, 'required': 'true', 'value': data.name || ''});
+  const txtFactionTag = crel('input', {'type': 'text', 'autocomplete': 'disabled', 'class': 'form-control', 'maxLength': _tagMax, 'required': 'true', 'value': data.tag || ''});
   const btnCancel = crel('button', {'class': 'btn btn-secondary ml-1', 'data-dismiss': 'modal', 'type': 'button'}, 'Cancel');
   const btnSave = crel('button', {'class': 'btn btn-primary ml-1', 'type': 'submit'}, isEdit ? 'Update' : 'Create');
   const frmMain = crel('form', {'action': '#', 'method': 'POST'}, // abusing forms for required input checks
@@ -273,14 +275,14 @@ function popFactionModal(isEdit=false,data={}) {
         ),
         txtFactionName
       ),
-      crel('small', {'class': 'text-muted'}, 'The name of your faction will be displayed when your tag is hovered in chat.'),
+      crel('small', {'class': 'text-muted'}, `The name of your faction will be displayed when your tag is hovered in chat. Maximum of ${_nameMax} characters.`),
       crel('div', {'class': 'input-group mt-3 mb-0'},
         crel('div', {'class': 'input-group-prepend'},
           crel('span', {'class': 'input-group-text'}, 'Faction Tag:')
         ),
         txtFactionTag
       ),
-      crel('small', {'class': 'text-muted'}, 'Your tag is displayed next to your name in chat. Maximum of 4 characters.'),
+      crel('small', {'class': 'text-muted'}, `Your tag is displayed next to your name in chat. Maximum of ${_tagMax} characters.`),
       crel('div', {'class': 'mt-3 text-right'},
         btnCancel,
         btnSave
@@ -290,6 +292,7 @@ function popFactionModal(isEdit=false,data={}) {
 
   frmMain.addEventListener('submit', async function(e) {
     e.preventDefault();
+    const oldHtml = btnSave.innerHTML;
     txtFactionName.disabled = true;
     txtFactionTag.disabled = true;
     btnCancel.disabled = true;
@@ -308,7 +311,14 @@ function popFactionModal(isEdit=false,data={}) {
         btnCancel.disabled = false;
         btnSave.innerHTML = `Create`;
       }
-    } catch (e) {}
+    } catch (e) {} finally {
+      txtFactionName.disabled = false;
+      txtFactionTag.disabled = false;
+      btnCancel.disabled = false;
+      btnSave.disabled = false;
+      btnSave.innerHTML = oldHtml;
+    }
+
   });
 
   popModal(crel('div', {'class': 'modal', 'tabindex': '-1', 'data-backdrop': 'static', 'data-keyboard': 'false'},

@@ -30,7 +30,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 public class App {
     private static Gson gson;
@@ -386,7 +385,7 @@ public class App {
                 }
             } else if (token[0].equalsIgnoreCase("cf")) {
                 String z = line.substring(token[0].length() + 1);
-                System.out.printf("running chat filter against '%s'%nResult: %s%n", z, ChatFilter.getInstance().filter(z, true));
+                System.out.printf("running chat filter against '%s'%nResult: %s%n", z, TextFilter.getInstance().filter(z, true));
             } else if (token[0].equalsIgnoreCase("reloadUsers")) {
                 System.out.println("Working... (may cause some lag)");
                 userManager.reload();
@@ -485,7 +484,7 @@ public class App {
         stackMaxStacked = App.getConfig().getInt("stacking.maxStacked");
         userIdleTimeout = App.getConfig().getDuration("userIdleTimeout", TimeUnit.MILLISECONDS);
 
-        ChatFilter.getInstance().reload();
+        TextFilter.getInstance().reload();
 
         if (server != null) {
             server.getWebHandler().reloadServicesEnabledState();
