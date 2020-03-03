@@ -366,7 +366,7 @@ public class PacketHandler {
 
     public void handleClientUserUpdate(WebSocketChannel channel, User user, ClientUserUpdate clientUserUpdate) {
         Map<String,String> map = clientUserUpdate.getUpdates();
-        Map<String,String> toBroadcast = new HashMap<>();
+        Map<String,Object> toBroadcast = new HashMap<>();
 
         String nameColor = map.get("NameColor");
         if (nameColor != null && !nameColor.trim().isEmpty()) {

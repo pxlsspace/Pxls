@@ -655,8 +655,8 @@ public class User {
             App.getDatabase().setDisplayedFactionForUID(id, displayedFaction);
         }
         if (broadcast) {
-            Map<String,String> m = new HashMap<>();
-            m.put("DisplayedFaction", displayedFaction == null || displayedFaction == 0 ? "" : fetchDisplayedFaction().getTag());
+            Map<String,Object> m = new HashMap<>();
+            m.put("DisplayedFaction", displayedFaction == null || displayedFaction == 0 ? "" : fetchDisplayedFaction());
             App.getServer().broadcast(new ServerChatUserUpdate(getName(), m));
         }
     }

@@ -3636,6 +3636,9 @@ window.App = (function () {
                             }
                         } else console.warn('Malformed chat_user_update: %o', e);
                     });
+                    socket.on('faction_update', e => {
+                        self._updateFaction(e.faction);
+                    });
                     socket.on('chat_history', e => {
                         if (self.seenHistory) return;
                         for (let packet of e.messages.reverse()) {
@@ -4656,23 +4659,27 @@ window.App = (function () {
                         uiHelper.styleElemWithChatNameColor(this, colorIdx, 'color');
                     });
                 },
-                _updateAuthorDisplayedFaction: (author, tag) => {
-                    console.log('updating %s\'s faction to %o', author, tag);
+                _updateAuthorDisplayedFaction: (author, faction) => {
                     self.elements.body.find(`.chat-line[data-author="${author}"]`).each(function() {
-                        this.dataset.tag = tag || '';
+                        const tag = (faction && faction.tag) || '';
+                        const color = faction ? `#${('000000' + (faction.color >>> 0).toString(16)).slice(-6)}` : null;
+                        const tagStr = (faction && faction.tag) ? `[${faction.tag}] ` : ``;
+
+                        this.dataset.faction = (faction && faction.id) || '';
+                        this.dataset.tag = tag;
                         $(this).find('.faction-tag').each(function() {
-                            this.dataset.tag = tag || '';
-                            this.innerHTML = tag ? `[${tag}] ` : ``;
+                            this.dataset.tag = tag;
+                            this.style.color = color;
+                            this.innerHTML = tagStr;
                         });
                     });
                 },
                 _updateFaction: (faction) => {
                     if (faction == null || faction.id == null) return;
-                    console.log('handling faction update for %o', faction);
                     const colorHex = `#${('000000' + (faction.color >>> 0).toString(16)).slice(-6)}`;
                     self.elements.body.find(`.chat-line[data-faction="${faction.id}"]`).each(function() {
                         this.dataset.tag = faction.tag;
-                        this.find('.faction-tag').attr('data-tag', faction.tag).css('color', colorHex);
+                        $(this).find('.faction-tag').attr('data-tag', faction.tag).css('color', colorHex).html(`[${faction.tag}] `);
                     });
                 },
                 _process: (packet, isHistory = false) => {
