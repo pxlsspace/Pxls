@@ -378,7 +378,7 @@ function popFactionModal(isEdit=false,data={}) {
     crel('div', {'class': 'modal-dialog'},
       crel('div', {'class': 'modal-content'},
         crel('div', {'class': 'modal-header'},
-          crel('h5', {'class': 'modal-title'}, `Create Faction`)
+          crel('h5', {'class': 'modal-title'}, `${isEdit ? 'Edit' : 'Create'} Faction`)
         ),
         crel('div', {'class': 'modal-body'},
           frmMain
