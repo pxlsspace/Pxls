@@ -206,7 +206,7 @@ public class Database {
             handle.createUpdate("CREATE TABLE IF NOT EXISTS faction (" +
                 "  id SERIAL NOT NULL PRIMARY KEY," +
                 "  name TEXT NOT NULL," +
-                "  tag VARCHAR(4) NOT NULL," +
+                "  tag TEXT NOT NULL," +
                 "  color INT NOT NULL DEFAULT 0," +
                 "  owner INT NOT NULL REFERENCES users(id)," +
                 "  created TIMESTAMP NOT NULL DEFAULT NOW()" +
@@ -231,7 +231,6 @@ public class Database {
                 "CREATE INDEX IF NOT EXISTS _faction_ban_uuid ON faction_ban(uid);" +
                 "CREATE UNIQUE INDEX IF NOT EXISTS _faction_ban_uid_fid_pair ON faction_ban(uid, fid);")
                 .execute();
-
         });
     }
 
@@ -1188,20 +1187,25 @@ public class Database {
             String author = "CONSOLE";
             String tag = null;
             int nameColor = 0;
+            Integer faction = null;
+            Integer factionColor = null;
             String parsedMessage = dbChatMessage.content; //TODO https://github.com/atlassian/commonmark-java
             List<String> nameClass = null;
             if (dbChatMessage.author_uid > 0) {
                 author = "$Unknown";
                 User temp = App.getUserManager().getByID(dbChatMessage.author_uid);
                 if (temp != null) {
+                    Faction tempFaction = temp.fetchDisplayedFaction();
                     author = temp.getName();
                     tag = temp.getTag();
                     badges = temp.getChatBadges();
                     nameColor = temp.getChatNameColor();
                     nameClass = temp.getChatNameClasses();
+                    faction = tempFaction != null ? tempFaction.getId() : null;
+                    factionColor = tempFaction != null ? tempFaction.getColor() : null;
                 }
             }
-            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, tag, dbChatMessage.sent, App.getConfig().getBoolean("textFilter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameClass, nameColor));
+            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, tag, dbChatMessage.sent, App.getConfig().getBoolean("textFilter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameClass, nameColor, faction, factionColor));
         }
         return toReturn;
     }
@@ -1494,26 +1498,32 @@ public class Database {
     }
 
     /**
-     * Creates a new faction.
+     * Creates a new faction.<br>
+     * Note: This is included for db access, but most faction operations should
+     *       be done in the {@link space.pxls.user.FactionManager}.
      *
      * @param factionName The name of the faction.
      * @param factionTag The faction's tag.
      * @param owner_uid The owner's ID.
+     * @param color The faction's color, or null for default.
      * @return The ID of the newly created faction, or null on insertion error.
+     * @see space.pxls.user.FactionManager#create
      */
-    public Integer createFaction(String factionName, String factionTag, int owner_uid) {
+    public DBFaction createFaction(String factionName, String factionTag, int owner_uid, Integer color) {
+        final Integer _color = color == null ? 0 : color;
+
         return jdbi.withHandle(handle -> {
-            Integer toRet = handle.createUpdate("INSERT INTO faction (\"name\", \"tag\", \"owner\", \"created\") VALUES (:name, :tag, :owner, now())")
+            DBFaction toRet = handle.createQuery("INSERT INTO faction (\"name\", \"tag\", \"owner\", \"created\", \"color\") VALUES (:name, :tag, :owner, now(), :color) RETURNING *")
                 .bind("name", factionName)
                 .bind("tag", factionTag)
                 .bind("owner", owner_uid)
-                .executeAndReturnGeneratedKeys("id")
-                .mapTo(Integer.TYPE)
+                .bind("color", _color)
+                .map(new DBFaction.Mapper())
                 .findFirst()
                 .orElse(null);
             if (toRet != null) {
                 handle.createUpdate("INSERT INTO faction_membership (\"fid\", \"uid\") VALUES (:fid, :uid)")
-                    .bind("fid", toRet)
+                    .bind("fid", toRet.id)
                     .bind("uid", owner_uid)
                     .execute();
             }
@@ -1522,10 +1532,13 @@ public class Database {
     }
 
     /**
-     * Gets the requested faction by ID
+     * Gets the requested faction by ID.<br>
+     * Note: This is included for db access, but most faction operations should
+     *       be done in the {@link space.pxls.user.FactionManager}.
      *
      * @param fid The faction ID
      * @return The faction
+     * @see space.pxls.user.FactionManager#getByID(Integer)
      */
     public DBFaction getFactionByID(int fid) {
         return jdbi.withHandle(handle ->
@@ -1612,11 +1625,14 @@ public class Database {
 
     /**
      * Updates an existing faction in the database with the provided Faction
-     * object.
+     * object.<br>
+     * Note: This is included for db access, but most faction operations should
+     *       be done in the {@link space.pxls.user.FactionManager}.
      *
      * @param faction The faction to update.
      *                Updates where `faction.id` = {@link Faction#getId()} and
      *                uses faction values where appropriate.
+     * @see space.pxls.user.FactionManager#update(Faction, boolean)
      */
     public void updateFaction(Faction faction) {
         jdbi.useHandle(handle ->
@@ -1631,9 +1647,13 @@ public class Database {
     }
 
     /**
-     * Deletes the faction and removes all faction memberships.
+     * Deletes the faction and removes all faction memberships.<br>
+     * Note: This is included for db access, but most faction operations should
+     *       be done in the {@link space.pxls.user.FactionManager}.
      *
      * @param fid The ID of the faction.
+     *
+     * @see space.pxls.user.FactionManager#deleteByID(int)
      */
     public void deleteFactionByFID(int fid) {
         jdbi.useHandle(handle -> { // only consume a single connection for these ops.

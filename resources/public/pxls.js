@@ -4657,12 +4657,22 @@ window.App = (function () {
                     });
                 },
                 _updateAuthorDisplayedFaction: (author, tag) => {
+                    console.log('updating %s\'s faction to %o', author, tag);
                     self.elements.body.find(`.chat-line[data-author="${author}"]`).each(function() {
                         this.dataset.tag = tag || '';
                         $(this).find('.faction-tag').each(function() {
                             this.dataset.tag = tag || '';
                             this.innerHTML = tag ? `[${tag}] ` : ``;
                         });
+                    });
+                },
+                _updateFaction: (faction) => {
+                    if (faction == null || faction.id == null) return;
+                    console.log('handling faction update for %o', faction);
+                    const colorHex = `#${('000000' + (faction.color >>> 0).toString(16)).slice(-6)}`;
+                    self.elements.body.find(`.chat-line[data-faction="${faction.id}"]`).each(function() {
+                        this.dataset.tag = faction.tag;
+                        this.find('.faction-tag').attr('data-tag', faction.tag).css('color', colorHex);
                     });
                 },
                 _process: (packet, isHistory = false) => {
@@ -4705,12 +4715,12 @@ window.App = (function () {
                     if (Array.isArray(packet.authorNameClass)) nameClasses += ` ${packet.authorNameClass.join(' ')}`;
 
                     self.elements.body.append(
-                        crel('li', {'data-nonce': packet.nonce, 'data-tag': packet.tag || '', 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`},
+                        crel('li', {'data-nonce': packet.nonce, 'data-tag': packet.tag || '', 'data-faction': packet.authorFaction || '', 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`},
                             crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format(ls.get('chat.24h') === true ? 'HH:mm' : 'hh:mm A')),
                             document.createTextNode(' '),
                             badges,
                             document.createTextNode(' '),
-                            crel('span', {'class': 'faction-tag', 'data-tag': packet.tag || ''}, packet.tag ? `[${packet.tag}] ` : ''),
+                            crel('span', {'class': 'faction-tag', 'data-tag': packet.tag || '', 'style': `color: #${('000000' + (packet.factionColor >>> 0).toString(16)).slice(-6)}`}, packet.tag ? `[${packet.tag}] ` : ''),
                             crel('span', {'class': nameClasses, style: `color: ${place.getPaletteColor(packet.authorNameColor)}`, onclick: self._popUserPanel, onmousemiddledown: self._addAuthorMentionToChatbox}, packet.author),
                             document.createTextNode(': '),
                             contentSpan,

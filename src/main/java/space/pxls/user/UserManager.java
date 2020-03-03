@@ -5,8 +5,10 @@ import space.pxls.data.DBUser;
 import space.pxls.util.Util;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Predicate;
 
 public class UserManager {
     private Map<String, User> usersByToken = new ConcurrentHashMap<>();

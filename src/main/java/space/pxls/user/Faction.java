@@ -1,12 +1,13 @@
 package space.pxls.user;
 
-import com.typesafe.config.Config;
 import space.pxls.App;
 import space.pxls.data.DBFaction;
 import space.pxls.util.TextFilter;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 public class Faction {
@@ -19,6 +20,7 @@ public class Faction {
     private transient List<User> _cachedMembers = null;
     private transient List<User> _cachedBans = null;
     private transient User _cachedOwner = null;
+    private transient AtomicBoolean dirty = new AtomicBoolean(false);
 
     public Faction(int id, String name, String tag, int color, int owner, Timestamp created) {
         this.id = id;
@@ -38,12 +40,40 @@ public class Faction {
         this.created = from.created;
     }
 
+    public static boolean ValidateTag(String tag) {
+        if (tag.length() < 1 || tag.length() > App.getConfig().getInt("factions.maxTagLength")) {
+            return false;
+        }
+        //noinspection RedundantIfStatement - leaving room for future checks.
+        if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(tag)) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean ValidateName(String name) {
+        if (name.length() < 1 || name.length() > App.getConfig().getInt("factions.maxNameLength")) {
+            return false;
+        }
+        //noinspection RedundantIfStatement - leaving room for future checks.
+        if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(name)) {
+            return false;
+        }
+        return true;
+    }
+
+    public static boolean ValidateColor(Integer color) {
+        return color != null && color >= 0x000000 && color <= 0xffffff;
+    }
+
     public void reloadFromDb() {
-        DBFaction dbf = App.getDatabase().getFactionByID(id);
-        this.id = dbf.id;
-        this.name = dbf.name;
-        this.owner = dbf.owner;
-        this.created = dbf.created;
+        Optional<Faction> dbf = FactionManager.getInstance().invalidate(this.id).getByID(this.id);
+        if (dbf.isPresent()) {
+            this.id = dbf.get().getId();
+            this.name = dbf.get().getName();
+            this.owner = dbf.get().getOwner();
+            this.created = dbf.get().getCreated();
+        }
     }
 
     public User fetchOwner() {
@@ -79,6 +109,7 @@ public class Faction {
     }
 
     public void setName(String name) {
+        if (!name.equals(this.name)) dirty.set(true);
         this.name = name;
     }
 
@@ -87,6 +118,7 @@ public class Faction {
     }
 
     public void setTag(String tag) {
+        if (!tag.equals(this.tag)) dirty.set(true);
         this.tag = tag;
     }
 
@@ -95,6 +127,7 @@ public class Faction {
     }
 
     public void setOwner(int owner) {
+        if (owner != this.owner) dirty.set(true);
         this.owner = owner;
     }
 
@@ -103,6 +136,7 @@ public class Faction {
     }
 
     public void setCreated(Timestamp created) {
+        if (!created.equals(this.created)) dirty.set(true);
         this.created = created;
     }
 
@@ -111,32 +145,27 @@ public class Faction {
     }
 
     public void setColor(int color) {
+        if (color != this.color) dirty.set(true);
         this.color = color;
     }
 
-    public static boolean ValidateTag(String tag) {
-        if (tag.length() < 1 || tag.length() > App.getConfig().getInt("factions.maxTagLength")) {
-            return false;
-        }
-        //noinspection RedundantIfStatement - leaving room for future checks.
-        if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(tag)) {
-            return false;
-        }
-        return true;
+    public AtomicBoolean isDirty() {
+        return dirty;
     }
 
-    public static boolean ValidateName(String name) {
-        if (name.length() < 1 || name.length() > App.getConfig().getInt("factions.maxNameLength")) {
-            return false;
-        }
-        //noinspection RedundantIfStatement - leaving room for future checks.
-        if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(name)) {
-            return false;
-        }
-        return true;
+    public void setDirty(boolean dirty) {
+        this.dirty.set(dirty);
     }
 
-    public static boolean ValidateColor(Integer color) {
-        return color != null && color >= 0x000000 && color <= 0xffffff;
+    @Override
+    public String toString() {
+        return "Faction{" +
+            "id=" + id +
+            ", name='" + name + '\'' +
+            ", tag='" + tag + '\'' +
+            ", color=" + color +
+            ", owner=" + owner +
+            ", created=" + created +
+            '}';
     }
 }

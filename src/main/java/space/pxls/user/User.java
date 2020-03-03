@@ -2,7 +2,6 @@ package space.pxls.user;
 
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
-import space.pxls.data.DBFaction;
 import space.pxls.data.DBUser;
 import space.pxls.server.packets.chat.Badge;
 import space.pxls.server.packets.chat.ServerChatUserUpdate;
@@ -46,8 +45,6 @@ public class User {
     // 0 = not banned
     private long banExpiryTime;
     private long chatbanExpiryTime;
-
-    private transient Faction _displayedFaction;
 
     private Set<WebSocketChannel> connections = new HashSet<>();
 
@@ -654,7 +651,6 @@ public class User {
     }
     public void setDisplayedFaction(Integer displayedFaction, boolean hitDB, boolean broadcast) {
         this.displayedFaction = displayedFaction;
-        this._displayedFaction = null;
         if (hitDB) {
             App.getDatabase().setDisplayedFactionForUID(id, displayedFaction);
         }
@@ -666,15 +662,7 @@ public class User {
     }
 
     public Faction fetchDisplayedFaction() {
-        if (displayedFaction == null || displayedFaction == 0) return null;
-        if (_displayedFaction == null) {
-            DBFaction dbFaction = App.getDatabase().getFactionByID(displayedFaction);
-            if (dbFaction != null) {
-                _displayedFaction = new Faction(App.getDatabase().getFactionByID(displayedFaction));
-            }
-        }
-
-        return _displayedFaction;
+        return FactionManager.getInstance().getByID(displayedFaction).orElse(null);
     }
 
     public static User fromDBUser(DBUser user) {

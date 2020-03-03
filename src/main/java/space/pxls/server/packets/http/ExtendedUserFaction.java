@@ -8,10 +8,19 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ExtendedUserFaction extends UserFaction {
-    public final List<String> members;
+    public List<String> members = null;
 
     public ExtendedUserFaction(DBFaction faction) {
         super(faction);
-        this.members = new Faction(faction).fetchMembers().stream().map(User::getName).collect(Collectors.toList());
+        _scaffold(new Faction(faction));
+    }
+
+    public ExtendedUserFaction(Faction faction) {
+        super(faction);
+        _scaffold(faction);
+    }
+
+    private void _scaffold(Faction f) {
+        this.members = f.fetchMembers().stream().map(User::getName).collect(Collectors.toList());
     }
 }

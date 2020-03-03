@@ -11,8 +11,10 @@ public class ChatMessage {
     public List<Badge> badges;
     public List<String> authorNameClass;
     public Number authorNameColor;
+    public Number authorFaction;
+    public Number factionColor;
 
-    public ChatMessage(String nonce, String author, String tag, Long date, String message_raw, List<Badge> badges, List<String> authorNameClass, Number authorNameColor) {
+    public ChatMessage(String nonce, String author, String tag, Long date, String message_raw, List<Badge> badges, List<String> authorNameClass, Number authorNameColor, Number authorFaction, Number factionColor) {
         this.nonce = nonce;
         this.author = author;
         this.tag = tag;
@@ -21,6 +23,8 @@ public class ChatMessage {
         this.badges = badges;
         this.authorNameClass = authorNameClass;
         this.authorNameColor = authorNameColor;
+        this.authorFaction = authorFaction;
+        this.factionColor = factionColor;
     }
 
     public String getNonce() {
@@ -53,5 +57,13 @@ public class ChatMessage {
 
     public Number getAuthorNameColor() {
         return authorNameColor;
+    }
+
+    public Number getAuthorFaction() {
+        return authorFaction;
+    }
+
+    public Number getFactionColor() {
+        return factionColor;
     }
 }
