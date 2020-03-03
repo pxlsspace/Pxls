@@ -12,8 +12,13 @@
         <script src="/jquery-3.4.1.min.js"></script>
         <script src="/profile/js/bootstrap.bundle.min.js"></script>
         <script src="/crel.min.js"></script>
+        {% if requested_self %}
+        {# no reason to add even more network bloat. we only need spectrum if we're modifying factions and factions are only modifiable on our own profile. #}
+        <link rel="stylesheet" href="/profile/css/spectrum.css">
+        <script src="/profile/js/spectrum-min.js"></script>
+        {% endif %}
     </head>
-    <body data-faction-max-tag="{{max_faction_tag_length|default(99999)}}" data-faction-max-name="{{max_faction_name_length|default(99999)}}">
+    <body data-palette="{% if palette is not null %}{{palette | join(',')}}{% endif %}" data-faction-max-tag="{{max_faction_tag_length|default(99999)}}" data-faction-max-name="{{max_faction_name_length|default(99999)}}">
         <nav class="navbar navbar-dark navbar-expand-md" role="nav">
             <ul class="navbar-nav mr-auto">
                 <li class="nav-item">
@@ -159,7 +164,7 @@
                             </div>
                             {% if factions|length > 0 %}
                             {% for faction in factions %}
-                            <div class="media mb-2 faction-media" data-faction-id="{{faction.id}}" data-faction-name="{{faction.name}}" data-faction-tag="{{faction.tag}}">
+                            <div class="media mb-2 faction-media" data-faction-id="{{faction.id}}" data-faction-name="{{faction.name}}" data-faction-tag="{{faction.tag}}" data-faction-color="{{faction.color|default(0)}}">
                                 <span class="media-text-icon mr-3">[{{faction.tag}}]</span>
                                 <div class="media-body">
                                     <h5 class="mt-0 mb-1">{% if profile_of.displayedFaction|default(-1) == faction.id %} <i class="fas fa-eye mr-1 text-success" style="font-size: 0.75em;" title="This is your currently displayed faction."></i>{% endif %}{{faction.name}} (members: {{faction.fetchMembers|length}}, ID: {{faction.id}})</h5>

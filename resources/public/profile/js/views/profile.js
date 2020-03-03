@@ -1,3 +1,16 @@
+window.DEFAULT_SPECTRUM_OPTIONS = window.DEFAULT_SPECTRUM_OPTIONS || {
+  showInput: true,
+  clickoutFiresChange: true,
+  flat: false,
+  allowEmpty: false,
+  showAlpha: false,
+  disabled: false,
+  showPalette: true,
+  showPaletteOnly: false,
+  preferredFormat: 'hex',
+  theme: 'sp-purple',
+};
+
 (() => {
 
   // hook up in-page tab navigation
@@ -27,6 +40,19 @@
   Array.from(document.querySelectorAll('.faction-media[data-faction-id] .faction-action[data-action]')).forEach(elAction => elAction.addEventListener('click', handleFactionAction));
   Array.from(document.querySelectorAll('.member-list-modal[data-faction-id] .member-row[data-member] .faction-subaction[data-action]')).forEach(elAction => elAction.addEventListener('click', handleFactionSubaction));
 
+  // hook up faction search/join interaction
+  initFactionSearch();
+
+  // hook up any existing color inputs if available
+  if ($ && $.spectrum) {
+    if (document.body.dataset.palette)
+      DEFAULT_SPECTRUM_OPTIONS.palette = document.body.dataset.palette.trim().split(',');
+
+    $('input[type="color"]').spectrum(DEFAULT_SPECTRUM_OPTIONS);
+  }
+})();
+
+async function initFactionSearch() {
   const frmSearch = document.getElementById('frmFactionSearch');
   const txtSearch = document.getElementById('txtFactionSearch');
   const btnSearch = document.getElementById('btnFactionSearch');
@@ -46,7 +72,7 @@
         if (Array.isArray(res.details)) {
           if (res.details.length > 0) {
             searchTarget.innerHTML = ``;
-            crel(searchTarget,
+            crel(searchTarget, //TODO the search endpoint supports basic id-based pagination
               crel('ul', {'class': 'list-group'},
                 res.details.map(x => {
                   const btnDetails = crel('button', {'class': 'btn btn-sm btn-info ml-1'},
@@ -107,7 +133,7 @@
                     if (await popConfirmDialog('Are you sure you want to join this faction?') === true) {
                       let res;
                       try {
-                        res = await putJSON(`/factions/${x.id}`, {joinState: true});;
+                        res = await putJSON(`/factions/${x.id}`, {joinState: true});
                       } catch (e) {}
                       if (res && res.success === true) {
                         alert('Faction joined. The page will now reload.');
@@ -140,9 +166,9 @@
       txtSearch.disabled = false;
     });
   }
-})();
+}
 
-async function handleFactionAction(e) {
+async function handleFactionAction() {
   const fmedia = this.closest('.faction-media[data-faction-id]');
   const fid = fmedia.dataset.factionId;
   const action = this.dataset.action.toLowerCase().trim();
@@ -150,7 +176,10 @@ async function handleFactionAction(e) {
   switch(action) {
     case 'factiondelete': {
       if (await popConfirmDialog('Are you sure you want to delete this faction? This cannot be undone!') === true) {
-        let res = await deleteJSON(`/factions/${fid}`);
+        let res;
+        try {
+          res = await deleteJSON(`/factions/${fid}`);
+        } catch (e) {}
         if (res && res.success === true) {
           alert('Faction deleted. The page will now reload.');
           document.location.href = document.location.href; //TODO replace with slidein
@@ -162,7 +191,10 @@ async function handleFactionAction(e) {
     }
     case 'factionremovedisplayed': {
       if (await popConfirmDialog('Are you sure you want to remove this from your displayed status? It will no longer show up next to your name in chat.') === true) {
-        let res = await putJSON(`/factions/${fid}`, {displayed: false});
+        let res;
+        try {
+          res = await putJSON(`/factions/${fid}`, {displayed: false});
+        } catch (e) {}
         if (res && res.success === true) {
           alert('Status updated. The page will now reload.');
           document.location.href = document.location.href; //TODO replace with slidein
@@ -174,7 +206,10 @@ async function handleFactionAction(e) {
     }
     case 'factionsetdisplayed': {
       if (await popConfirmDialog('Are you sure you want to set this as your displayed status? It will show up next to your name in chat.') === true) {
-        let res = await putJSON(`/factions/${fid}`, {displayed: true});
+        let res;
+        try {
+          res = await putJSON(`/factions/${fid}`, {displayed: true});
+        } catch (e) {}
         if (res && res.success === true) {
           alert('Status updated. The page will now reload.');
           document.location.href = document.location.href; //TODO replace with slidein
@@ -186,7 +221,10 @@ async function handleFactionAction(e) {
     }
     case 'factionleave': {
       if (await popConfirmDialog('Are you sure you want to leave this faction? You will have to find it again in the factions list if you want to rejoin.') === true) {
-        let res = await putJSON(`/factions/${fid}`, {joinState: false});
+        let res;
+        try {
+          res = await putJSON(`/factions/${fid}`, {joinState: false});
+        } catch (e) {}
         if (res && res.success === true) {
           alert('Faction left. The page will now reload.');
           document.location.href = document.location.href; //TODO replace with slidein
@@ -197,13 +235,13 @@ async function handleFactionAction(e) {
       break;
     }
     case 'factionedit': {
-      popFactionModal(true, {name: fmedia.dataset.factionName, tag: fmedia.dataset.factionTag, fid});
+      popFactionModal(true, {name: fmedia.dataset.factionName, tag: fmedia.dataset.factionTag, color: fmedia.dataset.factionColor >> 0, fid});
       break;
     }
   }
 }
 
-async function handleFactionSubaction(e) {
+async function handleFactionSubaction() {
   const fid = this.closest('[data-faction-id]').dataset.factionId;
   const action = this.dataset.action.toLowerCase().trim();
   const member = this.closest('[data-member]').dataset.member;
@@ -264,6 +302,7 @@ function popFactionModal(isEdit=false,data={}) {
 
   const txtFactionName = crel('input', {'type': 'text', 'autocomplete': 'disabled', 'class': 'form-control', 'maxLength': _nameMax, 'required': 'true', 'value': data.name || ''});
   const txtFactionTag = crel('input', {'type': 'text', 'autocomplete': 'disabled', 'class': 'form-control', 'maxLength': _tagMax, 'required': 'true', 'value': data.tag || ''});
+  const txtFactionColor = crel('input', {'type': 'color', 'autocomplete': 'disabled', 'class': 'form-control', 'required': 'true', 'value': isEdit ? intToHex(data.color >> 0) : '#000000'});
   const btnCancel = crel('button', {'class': 'btn btn-secondary ml-1', 'data-dismiss': 'modal', 'type': 'button'}, 'Cancel');
   const btnSave = crel('button', {'class': 'btn btn-primary ml-1', 'type': 'submit'}, isEdit ? 'Update' : 'Create');
   const frmMain = crel('form', {'action': '#', 'method': 'POST'}, // abusing forms for required input checks
@@ -283,12 +322,23 @@ function popFactionModal(isEdit=false,data={}) {
         txtFactionTag
       ),
       crel('small', {'class': 'text-muted'}, `Your tag is displayed next to your name in chat. Maximum of ${_tagMax} characters.`),
+      crel('div', {'class': 'input-group mt-3 mb-0'},
+        crel('div', {'class': 'input-group-prepend'},
+          crel('span', {'class': 'input-group-text'}, 'Faction Color:')
+        ),
+        txtFactionColor
+      ),
+      crel('small', {'class': 'text-muted'}, `Your faction color changes your tag color in chat.`),
       crel('div', {'class': 'mt-3 text-right'},
         btnCancel,
         btnSave
       )
     )
   );
+
+  if ($.spectrum) {
+    $(txtFactionColor).spectrum(DEFAULT_SPECTRUM_OPTIONS);
+  }
 
   frmMain.addEventListener('submit', async function(e) {
     e.preventDefault();
@@ -301,8 +351,11 @@ function popFactionModal(isEdit=false,data={}) {
 
     try {
       let endpoint = isEdit ? `/factions/${data.fid}` : `/factions`;
-      let _toPost = {name: txtFactionName.value, tag: txtFactionTag.value};
-      let res = await (isEdit ? putJSON : postJSON)(endpoint, _toPost);
+      let _toPost = {name: txtFactionName.value, tag: txtFactionTag.value, color: parseInt(txtFactionColor.value.substring(1), 16)};
+      let res;
+      try {
+        res = await (isEdit ? putJSON : postJSON)(endpoint, _toPost);
+      } catch (e) {}
       if (res && res.success === true) {
         alert(`Faction ${isEdit ? 'edit' : 'creat'}ed. The page will now reload`);
         document.location.href = document.location.href; //TODO replace with slideins
@@ -346,4 +399,8 @@ function handleGlobalFactionAction(e) {
       break;
     }
   }
+}
+
+function intToHex(int) {
+  return `#${('000000' + ((int) >>> 0).toString(16)).slice(-6)}`;
 }

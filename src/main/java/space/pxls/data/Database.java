@@ -1620,11 +1620,12 @@ public class Database {
      */
     public void updateFaction(Faction faction) {
         jdbi.useHandle(handle ->
-            handle.createUpdate("UPDATE faction SET name=:name,tag=:tag,owner=:owner WHERE id=:id")
+            handle.createUpdate("UPDATE faction SET name=:name,tag=:tag,owner=:owner,color=:color WHERE id=:id")
                 .bind("name", faction.getName())
                 .bind("tag", faction.getTag())
                 .bind("owner", faction.getOwner())
                 .bind("id", faction.getId())
+                .bind("color", faction.getColor())
                 .execute()
         );
     }

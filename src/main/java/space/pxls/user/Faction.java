@@ -13,16 +13,18 @@ public class Faction {
     private int id;
     private String name;
     private String tag;
+    private int color;
     private int owner;
     private Timestamp created;
     private transient List<User> _cachedMembers = null;
     private transient List<User> _cachedBans = null;
     private transient User _cachedOwner = null;
 
-    public Faction(int id, String name, String tag, int owner, Timestamp created) {
+    public Faction(int id, String name, String tag, int color, int owner, Timestamp created) {
         this.id = id;
         this.name = name;
         this.tag = tag;
+        this.color = color;
         this.owner = owner;
         this.created = created;
     }
@@ -31,6 +33,7 @@ public class Faction {
         this.id = from.id;
         this.name = from.name;
         this.tag = from.tag;
+        this.color = from.color;
         this.owner = from.owner;
         this.created = from.created;
     }
@@ -84,8 +87,6 @@ public class Faction {
     }
 
     public void setTag(String tag) {
-        if (tag.length() > 4) tag = tag.substring(0, 4);
-
         this.tag = tag;
     }
 
@@ -103,6 +104,14 @@ public class Faction {
 
     public void setCreated(Timestamp created) {
         this.created = created;
+    }
+
+    public int getColor() {
+        return color;
+    }
+
+    public void setColor(int color) {
+        this.color = color;
     }
 
     public static boolean ValidateTag(String tag) {
@@ -125,5 +134,9 @@ public class Faction {
             return false;
         }
         return true;
+    }
+
+    public static boolean ValidateColor(Integer color) {
+        return color != null && color >= 0x000000 && color <= 0xffffff;
     }
 }

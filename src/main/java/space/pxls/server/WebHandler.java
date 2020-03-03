@@ -260,7 +260,7 @@ public class WebHandler {
                 sendBadRequest(exchange, "Invalid faction ID");
                 return;
             }
-            Faction faction = new Faction(dbFaction.id, dbFaction.name, dbFaction.tag, dbFaction.owner, dbFaction.created);
+            Faction faction = new Faction(dbFaction.id, dbFaction.name, dbFaction.tag, dbFaction.color, dbFaction.owner, dbFaction.created);
 
             if (exchange.getRequestMethod().equals(Methods.GET)) { // serialize requested faction
                 exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
@@ -383,6 +383,22 @@ public class WebHandler {
                                 faction.setTag(dataObj.get("tag").getAsString());
                             } else {
                                 sendBadRequest(exchange, "Invalid/Disallowed Tag");
+                                return;
+                            }
+                        }
+                    }
+                    if (dataObj.has("color")) {
+                        Integer _color = null;
+                        try {
+                            _color = dataObj.get("color").getAsInt();
+                        } catch (Exception e) {
+                            int bp = 0;
+                        }
+                        if (_color != null && _color != faction.getColor()) {
+                            if (Faction.ValidateColor(_color)) {
+                                faction.setColor(_color);
+                            } else {
+                                sendBadRequest(exchange, "Invalid color");
                                 return;
                             }
                         }
