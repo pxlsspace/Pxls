@@ -207,6 +207,7 @@ public class Database {
                 "  id SERIAL NOT NULL PRIMARY KEY," +
                 "  name TEXT NOT NULL," +
                 "  tag VARCHAR(4) NOT NULL," +
+                "  color INT NOT NULL DEFAULT 0," +
                 "  owner INT NOT NULL REFERENCES users(id)," +
                 "  created TIMESTAMP NOT NULL DEFAULT NOW()" +
                 ");" +
@@ -1753,6 +1754,21 @@ public class Database {
                 .bind("after", after)
                 .map(new DBFaction.Mapper())
                 .list()
+        );
+    }
+
+    /**
+     * Sets the color for this faction. Expects an integer value of a color.
+     *
+     * @param fid The faction's ID
+     * @param color The integer value of a color.
+     */
+    public void setColorForFID(int fid, int color) {
+        jdbi.useHandle(handle ->
+            handle.createUpdate("UPDATE factions SET color = :color WHERE id = :fid")
+                .bind("fid", fid)
+                .bind("color", color)
+                .execute()
         );
     }
 
