@@ -4,9 +4,11 @@ import org.apache.commons.jcs.JCS;
 import org.apache.commons.jcs.access.CacheAccess;
 import space.pxls.App;
 import space.pxls.data.DBFaction;
+import space.pxls.server.packets.chat.ServerChatUserUpdate;
 import space.pxls.server.packets.chat.ServerFactionUpdate;
 import space.pxls.server.packets.http.UserFaction;
 
+import java.util.HashMap;
 import java.util.Optional;
 
 public class FactionManager {
@@ -116,11 +118,20 @@ public class FactionManager {
 
     public void banMemberFromFaction(int fid, int uid) {
         Faction f = getByID(fid).orElse(null);
+        User u = App.getUserManager().getByID(uid);
 
-        if (f != null) {
+        if (f != null && u != null) {
+            boolean wasDisplayed = false;
+            if (u.getDisplayedFaction() != null && u.getDisplayedFaction() == fid) {
+                wasDisplayed = true;
+            }
+
             App.getDatabase().addFactionBanForUID(uid, fid);
             f.invalidateBans();
             update(f, false);
+
+            if (wasDisplayed)
+                u.setDisplayedFaction(null, true, true);
         }
     }
 
