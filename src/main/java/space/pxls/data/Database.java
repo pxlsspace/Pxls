@@ -1187,25 +1187,22 @@ public class Database {
             String author = "CONSOLE";
             String tag = null;
             int nameColor = 0;
-            Integer faction = null;
-            Integer factionColor = null;
+            Faction faction = null;
             String parsedMessage = dbChatMessage.content; //TODO https://github.com/atlassian/commonmark-java
             List<String> nameClass = null;
             if (dbChatMessage.author_uid > 0) {
                 author = "$Unknown";
                 User temp = App.getUserManager().getByID(dbChatMessage.author_uid);
                 if (temp != null) {
-                    Faction tempFaction = temp.fetchDisplayedFaction();
                     author = temp.getName();
                     tag = temp.getTag();
                     badges = temp.getChatBadges();
                     nameColor = temp.getChatNameColor();
                     nameClass = temp.getChatNameClasses();
-                    faction = tempFaction != null ? tempFaction.getId() : null;
-                    factionColor = tempFaction != null ? tempFaction.getColor() : null;
+                    faction = temp.fetchDisplayedFaction();
                 }
             }
-            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, tag, dbChatMessage.sent, App.getConfig().getBoolean("textFilter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameClass, nameColor, faction, factionColor));
+            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, tag, dbChatMessage.sent, App.getConfig().getBoolean("textFilter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameClass, nameColor, faction));
         }
         return toReturn;
     }

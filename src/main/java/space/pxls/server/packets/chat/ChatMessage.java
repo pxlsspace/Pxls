@@ -1,5 +1,7 @@
 package space.pxls.server.packets.chat;
 
+import space.pxls.user.Faction;
+
 import java.util.List;
 
 public class ChatMessage {
@@ -11,10 +13,9 @@ public class ChatMessage {
     public List<Badge> badges;
     public List<String> authorNameClass;
     public Number authorNameColor;
-    public Number authorFaction;
-    public Number factionColor;
+    public StrippedFaction strippedFaction;
 
-    public ChatMessage(String nonce, String author, String tag, Long date, String message_raw, List<Badge> badges, List<String> authorNameClass, Number authorNameColor, Number authorFaction, Number factionColor) {
+    public ChatMessage(String nonce, String author, String tag, Long date, String message_raw, List<Badge> badges, List<String> authorNameClass, Number authorNameColor, Faction faction) {
         this.nonce = nonce;
         this.author = author;
         this.tag = tag;
@@ -23,8 +24,7 @@ public class ChatMessage {
         this.badges = badges;
         this.authorNameClass = authorNameClass;
         this.authorNameColor = authorNameColor;
-        this.authorFaction = authorFaction;
-        this.factionColor = factionColor;
+        this.strippedFaction = faction != null ? new StrippedFaction(faction) : null;
     }
 
     public String getNonce() {
@@ -59,11 +59,21 @@ public class ChatMessage {
         return authorNameColor;
     }
 
-    public Number getAuthorFaction() {
-        return authorFaction;
+    public StrippedFaction getStrippedFaction() {
+        return strippedFaction;
     }
 
-    public Number getFactionColor() {
-        return factionColor;
+    public static class StrippedFaction {
+        private int id;
+        private String name;
+        private String tag;
+        private int color;
+
+        public StrippedFaction(Faction f) {
+            this.id = f.getId();
+            this.name = f.getName();
+            this.tag = f.getTag();
+            this.color = f.getColor();
+        }
     }
 }

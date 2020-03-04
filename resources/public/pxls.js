@@ -4662,8 +4662,8 @@ window.App = (function () {
                 _updateAuthorDisplayedFaction: (author, faction) => {
                     self.elements.body.find(`.chat-line[data-author="${author}"]`).each(function() {
                         const tag = (faction && faction.tag) || '';
-                        const color = faction ? `#${('000000' + (faction.color >>> 0).toString(16)).slice(-6)}` : null;
-                        const tagStr = (faction && faction.tag) ? `[${faction.tag}] ` : ``;
+                        const color = faction ? self.intToHex(faction && faction.color) : null;
+                        const tagStr = (faction && faction.tag) ? `[${faction.tag}]` : ``;
 
                         this.dataset.faction = (faction && faction.id) || '';
                         this.dataset.tag = tag;
@@ -4679,7 +4679,7 @@ window.App = (function () {
                     const colorHex = `#${('000000' + (faction.color >>> 0).toString(16)).slice(-6)}`;
                     self.elements.body.find(`.chat-line[data-faction="${faction.id}"]`).each(function() {
                         this.dataset.tag = faction.tag;
-                        $(this).find('.faction-tag').attr('data-tag', faction.tag).css('color', colorHex).html(`[${faction.tag}] `);
+                        $(this).find('.faction-tag').attr('data-tag', faction.tag).attr('title', `${faction.name} (ID: ${faction.id})`).css('color', colorHex).html(`[${faction.tag}]`);
                     });
                 },
                 _process: (packet, isHistory = false) => {
@@ -4721,13 +4721,18 @@ window.App = (function () {
                     let nameClasses = `user`;
                     if (Array.isArray(packet.authorNameClass)) nameClasses += ` ${packet.authorNameClass.join(' ')}`;
 
+                    let _facTag = (packet.strippedFaction && packet.strippedFaction.tag) || '';
+                    let _facTitle = (packet.strippedFaction && packet.strippedFaction.id && packet.strippedFaction.name) ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : null;
+                    let _facColor = self.intToHex((packet.strippedFaction && packet.strippedFaction.color) || 0);
+
                     self.elements.body.append(
-                        crel('li', {'data-nonce': packet.nonce, 'data-tag': packet.tag || '', 'data-faction': packet.authorFaction || '', 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`},
+                        crel('li', {'data-nonce': packet.nonce, 'data-tag': _facTag, 'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '', 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`},
                             crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format(ls.get('chat.24h') === true ? 'HH:mm' : 'hh:mm A')),
                             document.createTextNode(' '),
                             badges,
                             document.createTextNode(' '),
-                            crel('span', {'class': 'faction-tag', 'data-tag': packet.tag || '', 'style': `color: #${('000000' + (packet.factionColor >>> 0).toString(16)).slice(-6)}`}, packet.tag ? `[${packet.tag}] ` : ''),
+                            crel('span', {'class': 'faction-tag', 'data-tag': _facTag, 'style': `color: ${_facColor}`, 'title': _facTitle}, _facTag ? `[${_facTag}]` : ``),
+                            document.createTextNode(' '),
                             crel('span', {'class': nameClasses, style: `color: ${place.getPaletteColor(packet.authorNameColor)}`, onclick: self._popUserPanel, onmousemiddledown: self._addAuthorMentionToChatbox}, packet.author),
                             document.createTextNode(': '),
                             contentSpan,
@@ -4754,6 +4759,7 @@ window.App = (function () {
                         }
                     }
                 },
+                intToHex: (i) => `#${('000000' + (i >>> 0).toString(16)).slice(-6)}`,
                 processMessage: (elem, elemClass, str) => {
                     let toReturn = crel(elem, {'class': elemClass}, str);
 
