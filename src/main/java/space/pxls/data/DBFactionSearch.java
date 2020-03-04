@@ -7,16 +7,17 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 
-public class DBFaction {
+public class DBFactionSearch {
     public final int id;
     public final String name;
     public final String tag;
     public final int color;
     public final int owner;
     public final int canvasCode;
+    public final int memberCount;
     public final Timestamp created;
 
-    public DBFaction(int id, String name, String tag, int color, int owner, Timestamp created, int canvasCode) {
+    public DBFactionSearch(int id, String name, String tag, int color, int owner, Timestamp created, int canvasCode, int memberCount) {
         this.id = id;
         this.name = name;
         this.tag = tag;
@@ -24,19 +25,21 @@ public class DBFaction {
         this.owner = owner;
         this.created = created;
         this.canvasCode = canvasCode;
+        this.memberCount = memberCount;
     }
 
-    public static class Mapper implements RowMapper<DBFaction> {
+    public static class Mapper implements RowMapper<DBFactionSearch> {
         @Override
-        public DBFaction map(ResultSet rs, StatementContext ctx) throws SQLException {
-            return new DBFaction(
+        public DBFactionSearch map(ResultSet rs, StatementContext ctx) throws SQLException {
+            return new DBFactionSearch(
                 rs.getInt("id"),
                 rs.getString("name"),
                 rs.getString("tag"),
                 rs.getInt("color"),
                 rs.getInt("owner"),
                 rs.getTimestamp("created"),
-                rs.getInt("canvasCode")
+                rs.getInt("canvasCode"),
+                rs.getInt("memberCount")
             );
         }
     }

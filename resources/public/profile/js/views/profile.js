@@ -73,86 +73,83 @@ async function initFactionSearch() {
           if (res.details.length > 0) {
             searchTarget.innerHTML = ``;
             crel(searchTarget, //TODO the search endpoint supports basic id-based pagination
-              crel('ul', {'class': 'list-group'},
-                res.details.map(x => {
-                  const btnDetails = crel('button', {'class': 'btn btn-sm btn-info ml-1'},
-                    crel('i', {'class': 'fas fa-list mr-1'}),
-                    'Details'
-                  );
-                  const btnJoin = crel('button', {'class': 'btn btn-sm btn-success ml-1'},
-                    crel('i', {'class': 'fas fa-user-plus mr-1'}),
-                    'Join'
-                  );
+              res.details.map(x => {
+                const btnCollapseToggle = crel('button', {'class': 'btn btn-sm mr-2 btn-info', 'data-action': 'collapse'},
+                  crel('i', {'class': 'fas fa-chevron-down'})
+                );
+                const btnJoin = crel('button', {'class': 'btn btn-sm btn-success ml-1'},
+                  crel('i', {'class': 'fas fa-user-plus mr-1'}),
+                  'Join'
+                );
 
-                  btnDetails.addEventListener('click', function() {
-                    popModal(
-                      crel('div', {'class': 'modal fade', 'tabindex': '-1'},
-                        crel('div', {'class': 'modal-dialog modal-md'},
-                          crel('div', {'class': 'modal-content'},
-                            crel('div', {'class': 'modal-header'},
-                              crel('h5', {'class': 'modal-title'}, `Create Faction`),
-                              crel('button', {'type': 'button', 'class': 'close', 'data-dismiss': 'modal', 'aria-label': 'Close'},
-                                crel('span', {'aria-hidden': 'true'}, '×')
-                              )
-                            ),
-                            crel('div', {'class': 'modal-body'},
-                              crel('table',
-                                crel('tbody',
-                                  crel('tr',
-                                    crel('th', {'class': 'text-right pr-3'}, 'ID'),
-                                    crel('td', {'class': 'text-left'}, x.id)
-                                  ),
-                                  crel('tr',
-                                    crel('th', {'class': 'text-right pr-3'}, 'Name'),
-                                    crel('td', {'class': 'text-left'}, x.name)
-                                  ),
-                                  crel('tr',
-                                    crel('th', {'class': 'text-right pr-3'}, 'Tag'),
-                                    crel('td', {'class': 'text-left'}, x.tag)
-                                  ),
-                                  crel('tr',
-                                    crel('th', {'class': 'text-right pr-3'}, 'Owner'),
-                                    crel('td', {'class': 'text-left'}, x.owner)
-                                  ),
-                                  crel('tr',
-                                    crel('th', {'class': 'text-right pr-3'}, 'Created'),
-                                    crel('td', {'class': 'text-left'}, new Date(x.creation_ms).toString())
-                                  ),
-                                )
-                              )
-                            ),
-                            crel('div', {'class': 'modal-footer'},
-                              crel('button', {'class': 'btn btn-primary', 'data-dismiss': 'modal'}, 'Close')
-                            )
-                          )
+                const card = crel('div', {'class': 'card collapseable mb-2'},
+                  crel('div', {'class': 'card-header d-flex align-items-center'},
+                    crel('div', {'class': 'flex-shrink-1'},
+                      btnCollapseToggle
+                    ),
+                    crel('div', {'class': 'd-flex flex-grow-1 justify-content-between align-items-center'},
+                      crel('span', {'class': 'faction-name'}, `(ID: ${x.id}) [${x.tag}] ${x.name}, from ${x.owner}`),
+                      crel('div', {'class': 'd-inline-block'},
+                        btnJoin
+                      )
+                    )
+                  ),
+                  crel('div', {'class': 'card-body p-0 body-collapse-target collapse'},
+                    crel('div', {'class': 'p-3'},
+                      crel('table',
+                        crel('tbody',
+                          crel('tr',
+                            crel('th', {'class': 'text-right pr-3'}, 'ID'),
+                            crel('td', {'class': 'text-left'}, x.id)
+                          ),
+                          crel('tr',
+                            crel('th', {'class': 'text-right pr-3'}, 'Name'),
+                            crel('td', {'class': 'text-left'}, x.name)
+                          ),
+                          crel('tr',
+                            crel('th', {'class': 'text-right pr-3'}, 'Tag'),
+                            crel('td', {'class': 'text-left'}, x.tag)
+                          ),
+                          crel('tr',
+                            crel('th', {'class': 'text-right pr-3'}, 'Owner'),
+                            crel('td', {'class': 'text-left'}, crel('a', {'href': `/profile/${x.owner}`, 'target': '_blank'}, x.owner))
+                          ),
+                          crel('tr',
+                            crel('th', {'class': 'text-right pr-3'}, 'Member Count'),
+                            crel('td', {'class': 'text-left'}, x.memberCount || -1)
+                          ),
+                          crel('tr',
+                            crel('th', {'class': 'text-right pr-3'}, 'Created Date'),
+                            crel('td', {'class': 'text-left'}, new Date(x.creation_ms).toString())
+                          ),
+                          crel('tr',
+                            crel('th', {'class': 'text-right pr-3'}, 'Created Canvas'),
+                            crel('td', {'class': 'text-left'}, x.canvasCode)
+                          ),
                         )
                       )
                     )
-                  });
-                  btnJoin.addEventListener('click', async function() {
-                    if (await popConfirmDialog('Are you sure you want to join this faction?') === true) {
-                      let res;
-                      try {
-                        res = await putJSON(`/factions/${x.id}`, {joinState: true});
-                      } catch (e) {}
-                      if (res && res.success === true) {
-                        alert('Faction joined. The page will now reload.');
-                        document.location.href = document.location.href; //TODO replace with slidein
-                      } else {
-                        alert((res && res.details) || 'An unknown error occurred. Please try again later.');
-                      }
+                  )
+                );
+                btnCollapseToggle.addEventListener('click', function() {
+                  handleCollapseIconToggle(card.querySelector('.body-collapse-target'), this.querySelector('.fas'))
+                });
+                btnJoin.addEventListener('click', async function() {
+                  if (await popConfirmDialog('Are you sure you want to join this faction?') === true) {
+                    let res;
+                    try {
+                      res = await putJSON(`/factions/${x.id}`, {joinState: true});
+                    } catch (e) {}
+                    if (res && res.success === true) {
+                      alert('Faction joined. The page will now reload.');
+                      document.location.href = document.location.href; //TODO replace with slidein
+                    } else {
+                      alert((res && res.details) || 'An unknown error occurred. Please try again later.');
                     }
-                  });
-
-                  return crel('li', {'class': 'list-group-item d-flex justify-content-between align-items-center'},
-                    crel('span', {'class': 'faction-name'}, `[${x.tag}] ${x.name} from ${x.owner}`),
-                    crel('div', {'class': 'd-inline-block'},
-                      btnDetails,
-                      btnJoin
-                    )
-                  );
-                })
-              )
+                  }
+                });
+                return card;
+              })
             );
           } else {
             searchTarget.innerHTML = `<p class="text-muted text-center">No results for this search term.</p>`

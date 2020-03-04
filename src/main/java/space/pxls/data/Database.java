@@ -209,7 +209,8 @@ public class Database {
                 "  tag TEXT NOT NULL," +
                 "  color INT NOT NULL DEFAULT 0," +
                 "  owner INT NOT NULL REFERENCES users(id)," +
-                "  created TIMESTAMP NOT NULL DEFAULT NOW()" +
+                "  created TIMESTAMP NOT NULL DEFAULT NOW()," +
+                "  canvasCode INT NOT NULL DEFAULT 0" +
                 ");" +
                 "CREATE INDEX IF NOT EXISTS _faction_name ON faction (\"name\");" +
                 "CREATE INDEX IF NOT EXISTS _faction_tag ON faction (tag);" +
@@ -1510,11 +1511,12 @@ public class Database {
         final Integer _color = color == null ? 0 : color;
 
         return jdbi.withHandle(handle -> {
-            DBFaction toRet = handle.createQuery("INSERT INTO faction (\"name\", \"tag\", \"owner\", \"created\", \"color\") VALUES (:name, :tag, :owner, now(), :color) RETURNING *")
+            DBFaction toRet = handle.createQuery("INSERT INTO faction (\"name\", \"tag\", \"owner\", \"created\", \"color\", \"canvasCode\") VALUES (:name, :tag, :owner, now(), :color, :canvasCode) RETURNING *")
                 .bind("name", factionName)
                 .bind("tag", factionTag)
                 .bind("owner", owner_uid)
                 .bind("color", _color)
+                .bind("canvasCode", App.getConfig().getInt("canvascode"))
                 .map(new DBFaction.Mapper())
                 .findFirst()
                 .orElse(null);
@@ -1762,15 +1764,15 @@ public class Database {
      *  faction ID.
      *
      * @param search The search term
-     * @param after The ID to search from. 0 to start from the beginning.
-     * @return A list of {@link DBFaction}s.
+     * @param offset The pagination offset.
+     * @return A list of {@link DBFactionSearch}s.
      */
-    public List<DBFaction> searchFactions(String search, int after) {
+    public List<DBFactionSearch> searchFactions(String search, int offset) {
         return jdbi.withHandle(handle ->
-            handle.createQuery("SELECT * FROM faction WHERE name ILIKE concat(:search, '%') AND id > :after ORDER BY id ASC LIMIT 50")
+            handle.createQuery("SELECT f.*,count(fm.fid) AS \"memberCount\" FROM faction f INNER JOIN faction_membership fm ON fm.fid = f.id WHERE f.name ILIKE concat(:search, '%') GROUP BY f.id ORDER BY \"memberCount\" DESC LIMIT 50 OFFSET :offset")
                 .bind("search", search)
-                .bind("after", after)
-                .map(new DBFaction.Mapper())
+                .bind("offset", offset)
+                .map(new DBFactionSearch.Mapper())
                 .list()
         );
     }

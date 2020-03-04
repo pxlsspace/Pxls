@@ -223,7 +223,7 @@
                                     {% if member.id != profile_of.id %}
                                     <div class="row member-row mb-1" data-member="{{member.name}}">
                                         <div class="col-md-6">
-                                            <span>{{member.name}}</span>
+                                            <span><a href="/profile/{{member.name}}" target="_blank">{{member.name}}</a></span>
                                         </div>
                                         <div class="col-md-6 text-right">
                                             <button class="btn btn-sm btn-success faction-subaction" data-action="transfer">Transfer Ownership</button>
