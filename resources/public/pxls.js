@@ -5011,8 +5011,8 @@ window.App = (function () {
 
                         crel(actionsList, actionReport);
                         crel(actionsList, actionMention);
-                        crel(actionsList, actionIgnore);
                         crel(actionsList, actionProfile);
+                        crel(actionsList, actionIgnore);
                         if (user.isStaff()) {
                             crel(actionsList, actionChatban);
                             crel(actionsList, actionDeleteMessage);
