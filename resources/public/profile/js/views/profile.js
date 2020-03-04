@@ -12,7 +12,6 @@ window.DEFAULT_SPECTRUM_OPTIONS = window.DEFAULT_SPECTRUM_OPTIONS || {
 };
 
 (() => {
-
   // hook up in-page tab navigation
   // document.querySelectorAll('#tabsTriggers a[data-action]').forEach(x => x.addEventListener('click', handleTabTrigger));
   initInPageTabNavigation(document.location.pathname);
@@ -371,7 +370,7 @@ function popFactionModal(isEdit=false,data={}) {
 
   });
 
-  popModal(crel('div', {'class': 'modal', 'tabindex': '-1', 'data-backdrop': 'static', 'data-keyboard': 'false'},
+  popModal(crel('div', {'class': 'modal', 'data-backdrop': 'static', 'data-keyboard': 'false'}, // tabindex is interfering with the color picker's inputs. see https://github.com/bgrins/spectrum/issues/161#issuecomment-118562439
     crel('div', {'class': 'modal-dialog'},
       crel('div', {'class': 'modal-content'},
         crel('div', {'class': 'modal-header'},
