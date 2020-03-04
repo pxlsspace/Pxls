@@ -1,3 +1,7 @@
+.dropdown-toggle::after {
+    vertical-align: initial;
+}
+
 .media-text-icon {
     width: 64px;
     height: 64px;
