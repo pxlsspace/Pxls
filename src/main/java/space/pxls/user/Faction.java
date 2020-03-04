@@ -114,6 +114,24 @@ public class Faction {
         return _cachedBans;
     }
 
+    public void invalidateMembers() {
+        _cachedMembers = null;
+    }
+
+    public void invalidateBans() {
+        _cachedBans = null;
+    }
+
+    public void invalidateOwner() {
+        _cachedOwner = null;
+    }
+
+    public void invalidate() {
+        invalidateBans();
+        invalidateMembers();
+        invalidateOwner();
+    }
+
     public int getId() {
         return id;
     }

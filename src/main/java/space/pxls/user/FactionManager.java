@@ -113,4 +113,24 @@ public class FactionManager {
             App.getServer().broadcast(new ServerFactionUpdate(new UserFaction(faction)));
         }
     }
+
+    public void banMemberFromFaction(int fid, int uid) {
+        Faction f = getByID(fid).orElse(null);
+
+        if (f != null) {
+            App.getDatabase().addFactionBanForUID(uid, fid);
+            f.invalidateBans();
+            update(f, false);
+        }
+    }
+
+    public void unbanMemberFromFaction(int fid, int uid) {
+        Faction f = getByID(fid).orElse(null);
+
+        if (f != null) {
+            App.getDatabase().removeFactionBanForUID(uid, fid);
+            f.invalidateBans();
+            update(f, false);
+        }
+    }
 }

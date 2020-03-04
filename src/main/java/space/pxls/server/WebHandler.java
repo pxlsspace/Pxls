@@ -311,13 +311,13 @@ public class WebHandler {
                                 } else {
                                     if (isBanned) { // we're attempting to ban a user. make sure they exist in the user list
                                         if (faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
-                                            App.getDatabase().addFactionBanForUID(userToModify.getId(), faction.getId());
+                                            FactionManager.getInstance().banMemberFromFaction(faction.getId(), userToModify.getId());
                                         } else {
                                             sendBadRequest(exchange, "The requested user is not a member of this faction.");
                                         }
                                     } else {
                                         if (faction.fetchBans().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
-                                            App.getDatabase().removeFactionBanForUID(userToModify.getId(), faction.getId());
+                                            FactionManager.getInstance().unbanMemberFromFaction(faction.getId(), userToModify.getId());
                                         } else {
                                             sendBadRequest(exchange, "The requested user is not banned from this faction.");
                                         }
