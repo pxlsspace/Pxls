@@ -276,15 +276,17 @@ public class WebHandler {
                                 joining = dataObj.get("joinState").getAsBoolean();
                             } catch (Exception ignored) {
                             }
-                            if (faction.getOwner() == user.getId()) {
-                                sendBadRequest(exchange, "You can not modify the joinState of a faction you own. Transfer ownership first.");
+                            if (joining) {
+                                if (faction.getOwner() == user.getId() || faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == user.getId())) { // attempt to short-circuit the left-hand if we own the place
+                                    sendBadRequest(exchange, "You are already a member of this faction.");
+                                } else if (faction.fetchBans().stream().anyMatch(fUser -> fUser.getId() == user.getId())) {
+                                    sendBadRequest(exchange, "You are banned from this faction. Please contact the owner and try again.");
+                                } else {
+                                    App.getDatabase().joinFaction(fid, user.getId());
+                                }
                             } else {
-                                if (joining) {
-                                    if (faction.fetchBans().stream().anyMatch(fUser -> fUser.getId() == user.getId())) {
-                                        sendBadRequest(exchange, "You are banned from this faction. Please contact the owner and try again.");
-                                    } else {
-                                        App.getDatabase().joinFaction(fid, user.getId());
-                                    }
+                                if (faction.getOwner() == user.getId()) {
+                                    sendBadRequest(exchange, "You can not leave a faction you own. Transfer ownership first.");
                                 } else {
                                     App.getDatabase().leaveFaction(fid, user.getId());
                                     if (user.getDisplayedFaction() != null && user.getDisplayedFaction() == fid) {
