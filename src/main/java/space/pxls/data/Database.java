@@ -1771,7 +1771,7 @@ public class Database {
         // note (socc): there was no performance boost by indexing name and performing lower() searches rather than using ilike, regardless of where the anchor was.
         //              if something changes in future psql versions, we should reconfirm.
         return jdbi.withHandle(handle ->
-            handle.createQuery("SELECT f.*,count(fm.fid) AS \"memberCount\" FROM faction f INNER JOIN faction_membership fm ON fm.fid = f.id WHERE f.name ILIKE concat(:search, '%') GROUP BY f.id ORDER BY \"memberCount\" DESC, \"canvasCode\" DESC, \"id\" DESC LIMIT 50 OFFSET :offset")
+            handle.createQuery("SELECT f.*,count(fm.fid) AS \"memberCount\" FROM faction f INNER JOIN faction_membership fm ON fm.fid = f.id WHERE f.name ILIKE concat('%', :search, '%') GROUP BY f.id ORDER BY \"memberCount\" DESC, \"canvasCode\" DESC, \"id\" DESC LIMIT 50 OFFSET :offset")
                 .bind("search", search)
                 .bind("offset", offset)
                 .map(new DBFactionSearch.Mapper())
