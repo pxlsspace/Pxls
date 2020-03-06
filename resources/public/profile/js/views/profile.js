@@ -56,22 +56,35 @@ async function initFactionSearch() {
   const txtSearch = document.getElementById('txtFactionSearch');
   const btnSearch = document.getElementById('btnFactionSearch');
   const searchTarget = document.getElementById('searchTarget');
-  if (frmSearch && txtSearch && btnSearch && searchTarget) {
-    frmSearch.addEventListener('submit', async function(e) {
-      e.preventDefault();
+  let btnLoadMore = document.getElementById('btnFactionSearchLoadMore');
+  if (frmSearch && txtSearch && btnSearch && searchTarget && btnLoadMore) {
+    let offset = 0;
+    let lastQuery;
+    let handleSearch = async function(e) {
+      if (e)
+        e.preventDefault();
+      else if (typeof frmSearch.reportValidity === 'function' && !frmSearch.reportValidity())
+        return;
+
       const oldHtml = btnSearch.innerHTML;
       btnSearch.innerHTML = `<i class="fas fa-spinner fa-pulse"></i>`;
       btnSearch.disabled = true;
       txtSearch.disabled = true;
+      let curQuery = txtSearch.value.toLowerCase().trim();
       let res;
       try {
-        res = await getJSON(`/factions/search?term=${encodeURIComponent(txtSearch.value)}&after=0`);
+        if (curQuery !== lastQuery)
+          offset = 0;
+        res = await getJSON(`/factions/search?term=${encodeURIComponent(txtSearch.value)}&after=${offset}`);
       } catch (e) {}
       if (res && res.success === true) {
         if (Array.isArray(res.details)) {
           if (res.details.length > 0) {
-            searchTarget.innerHTML = ``;
-            crel(searchTarget, //TODO the search endpoint supports basic id-based pagination
+            if (offset === 0)
+              searchTarget.innerHTML = ``;
+            btnLoadMore.classList.toggle('d-none', res.details.length !== 50)
+            offset += res.details.length;
+            crel(searchTarget,
               res.details.map(x => {
                 const btnCollapseToggle = crel('button', {'class': 'btn btn-sm mr-2 btn-info', 'data-action': 'collapse'},
                   crel('i', {'class': 'fas fa-chevron-down'})
@@ -151,16 +164,24 @@ async function initFactionSearch() {
               })
             );
           } else {
-            searchTarget.innerHTML = `<p class="text-muted text-center">No results for this search term.</p>`
+            if (offset === 0) {
+              searchTarget.innerHTML = `<p class="text-muted text-center">No results for this search term.</p>`
+            } else {
+              if (btnLoadMore)
+                btnLoadMore.disabled = true;
+            }
           }
         }
       } else {
         alert((res && res.details) || 'An unknown error occurred. Please try again later.');
       }
+      lastQuery = curQuery;
       btnSearch.innerHTML = oldHtml;
       btnSearch.disabled = false;
       txtSearch.disabled = false;
-    });
+    };
+    frmSearch.addEventListener('submit', handleSearch);
+    btnLoadMore.addEventListener('click', () => handleSearch());
   }
 }
 
