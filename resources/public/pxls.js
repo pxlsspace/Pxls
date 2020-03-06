@@ -4660,17 +4660,22 @@ window.App = (function () {
                     });
                 },
                 _updateAuthorDisplayedFaction: (author, faction) => {
-                    self.elements.body.find(`.chat-line[data-author="${author}"]`).each(function() {
-                        const tag = (faction && faction.tag) || '';
-                        const color = faction ? self.intToHex(faction && faction.color) : null;
-                        const tagStr = (faction && faction.tag) ? `[${faction.tag}]` : ``;
+                    const tag = (faction && faction.tag) || '';
+                    const color = faction ? self.intToHex(faction && faction.color) : null;
+                    const tagStr = (faction && faction.tag) ? `[${faction.tag}]` : ``;
+                    let ttStr = '';
+                    if (faction && faction.name != null && faction.id != null) {
+                        ttStr = `${faction.name} (ID: ${faction.id})`;
+                    }
 
+                    self.elements.body.find(`.chat-line[data-author="${author}"]`).each(function() {
                         this.dataset.faction = (faction && faction.id) || '';
                         this.dataset.tag = tag;
                         $(this).find('.faction-tag').each(function() {
                             this.dataset.tag = tag;
                             this.style.color = color;
                             this.innerHTML = tagStr;
+                            this.setAttribute('title', ttStr);
                         });
                     });
                 },
