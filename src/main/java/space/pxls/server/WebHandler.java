@@ -36,6 +36,7 @@ public class WebHandler {
     private PebbleEngine engine;
     private Map<String, AuthService> services = new ConcurrentHashMap<>();
     public static final String TEMPLATE_PROFILE = "public/profile/views/profile.html";
+    public static final String TEMPLATE_404 = "public/profile/views/404.html";
 
     public WebHandler() {
         addServiceIfAvailable("reddit", new RedditAuthService("reddit"));
@@ -127,9 +128,21 @@ public class WebHandler {
             User profileUser = requested_self ? user : App.getUserManager().getByName(requested);
 
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
+
+            HashMap<String,Object> m = new HashMap<>();
+            m.put("requesting_user", user);
+
             if (profileUser == null) {
+                String toRet = "<p style=\"text-align: center;\">Socc broke the 404 page! Let someone know please :) <a href=\"/\">Home</a></p>";
+                try {
+                    Writer writer = new StringWriter();
+                    engine.getTemplate(TEMPLATE_404).evaluate(writer, m);
+                    toRet = writer.toString();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 exchange.setStatusCode(404);
-                exchange.getResponseSender().send("<p style=\"text-align: center;\">Socc forgot to add a 404 page :)</p>");
+                exchange.getResponseSender().send(toRet);
             } else {
                 String toRet = "<p style=\"text-align: center;\">Socc probably broke something... let someone know please.</p>";
                 try {
@@ -137,9 +150,7 @@ public class WebHandler {
                     List<DBCanvasReport> canvasReports = new ArrayList<>();
                     List<Faction> factions = App.getDatabase().getFactionsForUID(profileUser.getId()).stream().map(Faction::new).collect(Collectors.toList());
 
-                    HashMap<String,Object> m = new HashMap<>();
                     m.put("requested_self", requested_self);
-                    m.put("requesting_user", user);
                     m.put("profile_of", profileUser);
                     m.put("factions", factions);
                     m.put("palette", App.getConfig().getStringList("board.palette"));
