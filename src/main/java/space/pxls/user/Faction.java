@@ -9,6 +9,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class Faction {
@@ -55,7 +56,7 @@ public class Faction {
     }
 
     public static boolean ValidateTag(String tag) {
-        if (tag.length() < 1 || tag.length() > App.getConfig().getInt("factions.maxTagLength")) {
+        if (tag.trim().length() < 1 || tag.trim().length() > App.getConfig().getInt("factions.maxTagLength")) {
             return false;
         }
         //noinspection RedundantIfStatement - leaving room for future checks.
@@ -66,7 +67,7 @@ public class Faction {
     }
 
     public static boolean ValidateName(String name) {
-        if (name.length() < 1 || name.length() > App.getConfig().getInt("factions.maxNameLength")) {
+        if (name.trim().length() < 1 || name.trim().length() > App.getConfig().getInt("factions.maxNameLength")) {
             return false;
         }
         //noinspection RedundantIfStatement - leaving room for future checks.
