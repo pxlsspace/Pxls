@@ -300,13 +300,13 @@ public class WebHandler {
                                 } else if (faction.fetchBans().stream().anyMatch(fUser -> fUser.getId() == user.getId())) {
                                     sendBadRequest(exchange, "You are banned from this faction. Please contact the owner and try again.");
                                 } else {
-                                    App.getDatabase().joinFaction(fid, user.getId());
+                                    FactionManager.getInstance().joinFaction(fid, user.getId());
                                 }
                             } else {
                                 if (faction.getOwner() == user.getId()) {
                                     sendBadRequest(exchange, "You can not leave a faction you own. Transfer ownership first.");
                                 } else {
-                                    App.getDatabase().leaveFaction(fid, user.getId());
+                                    FactionManager.getInstance().leaveFaction(fid, user.getId());
                                     if (user.getDisplayedFaction() != null && user.getDisplayedFaction() == fid) {
                                         user.setDisplayedFaction(null, false, true); // displayed_faction is updated by #leaveFaction() already. we just need to invalidate the memcache.
                                     }
@@ -357,6 +357,7 @@ public class WebHandler {
                                 if (userToModify != null) {
                                     if (faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
                                         App.getDatabase().setFactionOwnerForFID(faction.getId(), userToModify.getId());
+                                        FactionManager.getInstance().invalidate(faction.getId());
                                     } else {
                                         sendBadRequest(exchange, "The requested user is not a member of the specified faction.");
                                     }

@@ -144,4 +144,14 @@ public class FactionManager {
             update(f, false);
         }
     }
+
+    public void joinFaction(int fid, int uid) {
+        App.getDatabase().joinFaction(fid, uid);
+        invalidate(fid);
+    }
+
+    public void leaveFaction(int fid, int uid) {
+        App.getDatabase().leaveFaction(fid, uid);
+        invalidate(fid);
+    }
 }
