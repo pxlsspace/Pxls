@@ -16,8 +16,9 @@ public class DBFactionSearch {
     public final int canvasCode;
     public final int memberCount;
     public final Timestamp created;
+    public final boolean userJoined;
 
-    public DBFactionSearch(int id, String name, String tag, int color, int owner, Timestamp created, int canvasCode, int memberCount) {
+    public DBFactionSearch(int id, String name, String tag, int color, int owner, Timestamp created, int canvasCode, int memberCount, boolean memberJoined) {
         this.id = id;
         this.name = name;
         this.tag = tag;
@@ -26,6 +27,7 @@ public class DBFactionSearch {
         this.created = created;
         this.canvasCode = canvasCode;
         this.memberCount = memberCount;
+        this.userJoined = memberJoined;
     }
 
     public static class Mapper implements RowMapper<DBFactionSearch> {
@@ -39,7 +41,8 @@ public class DBFactionSearch {
                 rs.getInt("owner"),
                 rs.getTimestamp("created"),
                 rs.getInt("canvasCode"),
-                rs.getInt("memberCount")
+                rs.getInt("memberCount"),
+                rs.getBoolean("userJoined")
             );
         }
     }

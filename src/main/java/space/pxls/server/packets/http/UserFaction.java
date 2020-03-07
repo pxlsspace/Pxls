@@ -13,20 +13,24 @@ public class UserFaction {
     public int canvasCode;
     public long creation_ms;
     public Integer memberCount;
+    public Boolean userJoined;
 
     public UserFaction(DBFaction faction) {
         _scaffold(new Faction(faction));
         this.memberCount = null;
+        this.userJoined = null;
     }
 
     public UserFaction(DBFactionSearch dbFactionSearch) {
         _scaffold(new Faction(dbFactionSearch));
         this.memberCount = dbFactionSearch.memberCount;
+        this.userJoined = dbFactionSearch.userJoined;
     }
 
     public UserFaction(Faction faction) {
         _scaffold(faction);
         this.memberCount = null;
+        this.userJoined = null;
     }
 
     private void _scaffold(Faction faction) {

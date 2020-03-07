@@ -91,8 +91,9 @@ async function initFactionSearch() {
                 );
                 const btnJoin = crel('button', {'class': 'btn btn-sm btn-success ml-1'},
                   crel('i', {'class': 'fas fa-user-plus mr-1'}),
-                  'Join'
+                  x.userJoined === true ? 'Already Joined' : 'Join'
                 );
+                btnJoin.disabled = x.userJoined === true;
 
                 const card = crel('div', {'class': 'card collapseable mb-2'},
                   crel('div', {'class': 'card-header d-flex align-items-center'},

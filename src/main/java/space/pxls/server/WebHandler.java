@@ -461,7 +461,7 @@ public class WebHandler {
             try {
                 after = Integer.parseInt(_after);
             } catch (Exception ignored) {}
-            toReturn = App.getDatabase().searchFactions(search, after).stream().map(UserFaction::new).collect(Collectors.toList());
+            toReturn = App.getDatabase().searchFactions(search, after, exchange.getAttachment(AuthReader.USER)).stream().map(UserFaction::new).collect(Collectors.toList());
         }
         sendObj(200, exchange, toReturn);
     }
@@ -1167,6 +1167,7 @@ public class WebHandler {
         toSend.addProperty("details", details);
 
         exchange.setStatusCode(statusCode);
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
         exchange.getResponseSender().send(App.getGson().toJson(toSend));
         exchange.endExchange();
     }
@@ -1180,6 +1181,7 @@ public class WebHandler {
         toSend.add("details", App.getGson().toJsonTree(o));
 
         exchange.setStatusCode(statusCode);
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
         exchange.getResponseSender().send(App.getGson().toJson(toSend));
         exchange.endExchange();
     }

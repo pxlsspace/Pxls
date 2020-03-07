@@ -1781,15 +1781,18 @@ public class Database {
      *
      * @param search The search term
      * @param offset The pagination offset.
+     * @param searchContext The user to add context from (currently,
+     *                      "memberJoined"), or null for none.
      * @return A list of {@link DBFactionSearch}s.
      */
-    public List<DBFactionSearch> searchFactions(String search, int offset) {
+    public List<DBFactionSearch> searchFactions(String search, int offset, User searchContext) {
         // note (socc): there was no performance boost by indexing name and performing lower() searches rather than using ilike, regardless of where the anchor was.
         //              if something changes in future psql versions, we should reconfirm.
         return jdbi.withHandle(handle ->
-            handle.createQuery("SELECT f.*,count(fm.fid) AS \"memberCount\" FROM faction f INNER JOIN faction_membership fm ON fm.fid = f.id WHERE f.name ILIKE concat('%', :search, '%') GROUP BY f.id ORDER BY \"memberCount\" DESC, \"canvasCode\" DESC, \"id\" DESC LIMIT 50 OFFSET :offset")
+            handle.createQuery("SELECT f.*,count(fm.fid) AS \"memberCount\",(case when :userCtx is null then false else exists(select fm1.fid from faction_membership fm1 where fm1.fid=f.id and fm1.uid=:userCtx) end) as \"userJoined\" FROM faction f INNER JOIN faction_membership fm ON fm.fid = f.id WHERE f.name ILIKE concat('%', :search, '%') GROUP BY f.id ORDER BY \"memberCount\" DESC, \"canvasCode\" DESC, \"id\" DESC LIMIT 50 OFFSET :offset")
                 .bind("search", search)
                 .bind("offset", offset)
+                .bind("userCtx", searchContext == null ? null : searchContext.getId())
                 .map(new DBFactionSearch.Mapper())
                 .list()
         );
