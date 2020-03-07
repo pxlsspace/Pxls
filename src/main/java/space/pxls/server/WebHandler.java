@@ -251,7 +251,8 @@ public class WebHandler {
                     } else {
                         Optional<Faction> faction = FactionManager.getInstance().create(name, tag, user.getId(), color);
                         if (faction.isPresent()) {
-                            sendObj(200, exchange, faction);
+                            user.setDisplayedFactionMaybe(faction.get().getId());
+                            sendObj(200, exchange, faction.get());
                         } else {
                             send(500, exchange, "Failed to create faction.");
                         }
@@ -301,6 +302,7 @@ public class WebHandler {
                                     sendBadRequest(exchange, "You are banned from this faction. Please contact the owner and try again.");
                                 } else {
                                     FactionManager.getInstance().joinFaction(fid, user.getId());
+                                    user.setDisplayedFactionMaybe(fid);
                                 }
                             } else {
                                 if (faction.getOwner() == user.getId()) {

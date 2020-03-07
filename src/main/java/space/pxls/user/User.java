@@ -646,6 +646,12 @@ public class User {
         return displayedFaction;
     }
 
+    public void setDisplayedFactionMaybe(Integer displayedFaction) {
+        if (App.getDatabase().getFactionsForUID(getId()).size() == 1) {
+            setDisplayedFaction(displayedFaction, true, true);
+        }
+    }
+
     public void setDisplayedFaction(Integer displayedFaction) {
         setDisplayedFaction(displayedFaction, true, true);
     }
