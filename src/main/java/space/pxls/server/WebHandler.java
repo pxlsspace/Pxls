@@ -152,6 +152,9 @@ public class WebHandler {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+                        m.put("requesting_user_canvas_pixels", user.getPixels());
+                        m.put("requesting_user_alltime_pixels", user.getPixelsAllTime());
+                        m.put("new_fac_min_pixels", App.getConfig().getInt("factions.minPixelsToCreate"));
                         m.put("max_faction_tag_length", App.getConfig().getInt("factions.maxTagLength"));
                         m.put("max_faction_name_length", App.getConfig().getInt("factions.maxNameLength"));
                         m.put("chat_reports", chatReports);
@@ -230,6 +233,8 @@ public class WebHandler {
                         sendBadRequest(exchange, "Invalid/Disallowed Tag");
                     } else if (!Faction.ValidateName(name)) {
                         sendBadRequest(exchange, "Invalid/Disallowed Name");
+                    } else if (App.getConfig().getInt("factions.minPixelsToCreate") > user.getPixelsAllTime()) {
+                        send(403, exchange, String.format("You do not meet the minimum all-time pixel requirements to create a faction. The current minimum is %d.", App.getConfig().getInt("chat.minPixelsToCreate")));
                     } else {
                         Optional<Faction> faction = FactionManager.getInstance().create(name, tag, user.getId(), color);
                         if (faction.isPresent()) {

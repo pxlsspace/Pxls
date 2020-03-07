@@ -1613,6 +1613,22 @@ public class Database {
         );
     }
 
+    /**
+     * Gets the number of factions this user owns.
+     *
+     * @param uid The user's ID
+     * @return The number of factions
+     */
+    public Integer getOwnedFactionCountForUID(int uid) {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("SELECT count(id) FROM faction WHERE owner = :uid")
+                .bind("uid", uid)
+                .mapTo(Integer.TYPE)
+                .findFirst()
+                .orElse(0)
+        );
+    }
+
     public List<DBUser> getBansForFID(int fid) {
         return jdbi.withHandle(handle ->
             handle.createQuery("SELECT * FROM users WHERE id IN (SELECT uid FROM faction_ban WHERE fid = :fid)")
