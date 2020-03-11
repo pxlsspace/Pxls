@@ -2979,6 +2979,11 @@ window.App = (function () {
                             board.setAllowDrag(this.checked === false); // updates localStorage for us
                         });
 
+                    const _chatPanel = document.querySelector('aside.panel[data-panel="chat"]');
+                    if (_chatPanel) {
+                        _chatPanel.classList.toggle('horizontal', ls.get('chat.horizontal') === true);
+                    }
+
                     const numOrDefault = (n, def) => isNaN(n) ? def : n;
                     const colorBrightnessLevel = numOrDefault(parseFloat(ls.get("colorBrightness")), 1);
                     const colorBrightnessSlider = $("#color-brightness");
@@ -3489,12 +3494,15 @@ window.App = (function () {
                             document.body.classList.toggle(`panel-${panelPosition}`, true);
                             if (panel.classList.contains('half-width')) {
                                 document.body.classList.toggle(`panel-${panelPosition}-halfwidth`, true);
+                            } else if (panel.classList.contains('horizontal')) {
+                                document.body.classList.toggle('panel-horizontal', true);
                             }
                         } else {
                             $(window).trigger("pxls:panel:closed", panelDescriptor);
                             document.body.classList.toggle("panel-open", document.querySelectorAll('.panel.open').length - 1 > 0);
                             document.body.classList.toggle(`panel-${panelPosition}`, false);
                             document.body.classList.toggle(`panel-${panelPosition}-halfwidth`, false);
+                            document.body.classList.toggle('panel-horizontal', false);
                         }
                         panel.classList.toggle('open', state);
                     }
@@ -4393,6 +4401,9 @@ window.App = (function () {
                     let _btnFontSizeConfirm = crel('button', {'class': 'buton'}, crel('i', {'class': 'fas fa-check'}));
                     let lblFontSize = crel('label', 'Font Size: ', _txtFontSize, _btnFontSizeConfirm);
 
+                    let _cbHorizontal = crel('input', {'type': 'checkbox'});
+                    let lblHorizontal = crel('label', _cbHorizontal, 'Enable horizontal chat');
+
                     let _selInternalClick = crel('select',
                         Object.values(self.TEMPLATE_ACTIONS).map(action =>
                             crel('option', {'value': action.id}, action.pretty)
@@ -4484,6 +4495,18 @@ window.App = (function () {
                         ls.set('chat.use-template-urls', this.checked === true);
                     });
 
+                    _cbHorizontal.checked = ls.get('chat.horizontal') === true;
+                    _cbHorizontal.addEventListener('change', function() {
+                        ls.set('chat.horizontal', this.checked === true);
+                        const _chatPanel = document.querySelector('aside.panel[data-panel="chat"]');
+                        if (_chatPanel) {
+                            _chatPanel.classList.toggle('horizontal', this.checked === true);
+                            if (_chatPanel.classList.contains('open')) {
+                                document.body.classList.toggle('panel-horizontal', this.checked === true);
+                            }
+                        }
+                    });
+
                     _btnUnignore.addEventListener('click', function() {
                         if (self.removeIgnore(_selIgnores.value)) {
                             _selIgnores.querySelector(`option[value="${_selIgnores.value}"]`).remove();
@@ -4510,6 +4533,7 @@ window.App = (function () {
                             lbl24hTimestamps,
                             lblPixelPlaceBadges,
                             lblPings,
+                            lblHorizontal,
                             lblPingAudio,
                             lblPingAudioVol,
                             lblBanner,

@@ -1073,12 +1073,9 @@ header h1, header h2, header h3, header h4, header h5, header h6 {
 aside.panel {
     position: fixed;
     top: 0;
-    max-width: 50%;
-    min-width: 30%;
-    width: 30%;
-    height: 100%;
-    max-height: 100%;
-    min-height: 100%;
+    max-width: 50vw;
+    min-width: 30vw;
+    height: 100vh;
     box-shadow: 0 0 10px 5px #0009;
     background-color: #dfdfdf;
     z-index: 21;
@@ -1089,6 +1086,13 @@ aside.panel {
     width: 50% !important;
 }
 
+.panel.horizontal {
+    width: 100vw;
+    height: 50vh;
+    max-width: initial;
+    min-height: initial;
+}
+
 .panel header {
     border-bottom: 1px solid #000;
 }
@@ -1096,7 +1100,11 @@ aside.panel {
 .panel.left {
     right: initial;
     transition: left ease-in-out .25s;
-    left: -55%;
+    left: -55vw;
+}
+
+.panel.left.horizontal {
+    left: -105vw;
 }
 
 .panel.left.open, .panel.left[data-state=open] {
@@ -1106,7 +1114,11 @@ aside.panel {
 .panel.right {
     left: initial;
     transition: right ease-in-out .25s;
-    right: -55%;
+    right: -55vw;
+}
+
+.panel.right.horizontal {
+    right: -105vw;
 }
 
 .panel.right.open, .panel.right[data-state=open] {
@@ -1198,36 +1210,36 @@ article .body {
     margin: 0 !important;
 }
 
-body.panel-open #ui {
+body.panel-open:not(.panel-horizontal) #ui {
     width: 70vw;
 }
 
-body.panel-open.panel-left #ui {
+body.panel-open.panel-left:not(.panel-horizontal) #ui {
     left: 30vw;
     right: 0;
 }
 
-body.panel-open.panel-left.panel-left-halfwidth #ui {
+body.panel-open.panel-left:not(.panel-horizontal).panel-left-halfwidth #ui {
     left: 50vw;
     width: 50vw;
 }
 
-body.panel-open.panel-right.panel-right-halfwidth #ui {
+body.panel-open.panel-right:not(.panel-horizontal).panel-right-halfwidth #ui {
     right: 50vw;
     width: 50vw;
 }
 
-body.panel-left.panel-right #ui {
+body.panel-left.panel-right:not(.panel-horizontal) #ui {
     left: 30vw;
     width: 40vw;
 }
 
-body.panel-left.panel-left-halfwidth.panel-right #ui {
+body.panel-left.panel-left-halfwidth.panel-right:not(.panel-horizontal) #ui {
     left: 50vw;
     width: 20vw;
 }
 
-body.panel-left.panel-right.panel-right-halfwidth #ui {
+body.panel-left.panel-right:not(.panel-horizontal).panel-right-halfwidth #ui {
     right: 50vw;
     width: 20vw;
 }
