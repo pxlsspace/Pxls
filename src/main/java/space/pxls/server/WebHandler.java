@@ -16,10 +16,7 @@ import space.pxls.auth.*;
 import space.pxls.data.*;
 import space.pxls.server.packets.http.Error;
 import space.pxls.server.packets.http.*;
-import space.pxls.server.packets.socket.ServerNotification;
-import space.pxls.server.packets.socket.ServerRenameSuccess;
-import space.pxls.server.packets.socket.ServerUserInfo;
-import space.pxls.server.packets.socket.ServerUsers;
+import space.pxls.server.packets.socket.*;
 import space.pxls.user.*;
 import space.pxls.util.*;
 
