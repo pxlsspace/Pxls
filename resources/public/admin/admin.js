@@ -196,6 +196,8 @@
                         ["Username", genUserInfoLink(data.username)],
                         ["Login", data.login],
                         ["Role", data.role],
+                        ["Pixels", data.pixels],
+                        ["All Time Pixels", data.pixelsAllTime],
                         ["Rename Requested", data.renameRequested ? "Yes" : "No"],
                         ["Discord Name", data.discordName || "(not set)"],
                         ["Banned", bannedStr],
