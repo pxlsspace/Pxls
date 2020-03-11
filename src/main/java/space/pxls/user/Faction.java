@@ -6,6 +6,7 @@ import space.pxls.data.DBFactionSearch;
 import space.pxls.util.TextFilter;
 
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -55,22 +56,30 @@ public class Faction {
         this.canvasCode = from.canvasCode;
     }
 
+    @SuppressWarnings("RedundantIfStatement") // validation blocks have been left separate for future expansion.
     public static boolean ValidateTag(String tag) {
         if (tag.trim().length() < 1 || tag.trim().length() > App.getConfig().getInt("factions.maxTagLength")) {
             return false;
         }
-        //noinspection RedundantIfStatement - leaving room for future checks.
+        tag = tag.trim();
+        if (!checkCodepoints(tag)) {
+            return false;
+        }
         if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(tag)) {
             return false;
         }
         return true;
     }
 
+    @SuppressWarnings("RedundantIfStatement") // validation blocks have been left separate for future expansion.
     public static boolean ValidateName(String name) {
         if (name.trim().length() < 1 || name.trim().length() > App.getConfig().getInt("factions.maxNameLength")) {
             return false;
         }
-        //noinspection RedundantIfStatement - leaving room for future checks.
+        name = name.trim();
+        if (!checkCodepoints(name)) {
+            return false;
+        }
         if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(name)) {
             return false;
         }
@@ -217,5 +226,18 @@ public class Faction {
             ", owner=" + owner +
             ", created=" + created +
             '}';
+    }
+
+    private static List<int[]> _codepoints = Arrays.asList(
+        new int[] {0x0000, 0x007F}, // basic latin
+        new int[] {0x00A1, 0x024F}, // subset of latin-1 supplement (printables, no controls)
+        new int[] {0x0400, 0x04FF}, // cyrillic
+        new int[] {0x500, 0x052F}, // cyrillic supplement
+        new int[] {0x2122}, // (tm)
+        new int[] {0x2600, 0x26FF}, // misc symbols (♥)
+        new int[] {0x1F000, 0x1FAFF} // emoji
+    );
+    private static boolean checkCodepoints(String input) {
+        return input.codePoints().allMatch(i -> _codepoints.stream().anyMatch(pair -> (pair.length == 1) ? (i == pair[0]) : ((i >= pair[0]) && (i <= pair[1]))));
     }
 }
