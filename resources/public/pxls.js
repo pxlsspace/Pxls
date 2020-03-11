@@ -5172,13 +5172,17 @@ window.App = (function () {
                             let _selBanReason = crel('select',
                                 crel('option', 'Rule 3: Spam'),
                                 crel('option', 'Rule 1: Chat civility'),
+                                crel('option', 'Rule 2: Hate Speech'),
                                 crel('option', 'Rule 5/6: NSFW'),
                                 crel('option', 'Rule 4: Copy/pastas'),
-                                crel('option', {'value': '0'}, 'Custom')
+                                crel('option', 'Custom')
                             );
 
-                            let _customReasonWrap = crel('div', {'style': 'display: none; margin-top: .5rem;'});
-                            let _txtCustomBanReason = crel('input', {'type': 'text', 'name': 'txtCustomReason', 'style': 'display: inline-block; width: auto;'});
+                            let _additionalReasonInfoWrap = crel('div', {'style': 'margin-top: .5rem;'});
+                            let _txtAdditionalReason = crel('textarea', {
+                                'type': 'text',
+                                'name': 'txtAdditionalReasonInfo'
+                            });
 
                             let _purgeWrap = crel('div', {'style': 'display: block;'});
                             let _rbPurgeYes = crel('input', {'type': 'radio', 'name': 'rbPurge', 'checked': 'true'});
@@ -5201,9 +5205,7 @@ window.App = (function () {
                                 crel(_reasonWrap,
                                     crel('h5', 'Reason'),
                                     _selBanReason,
-                                    crel(_customReasonWrap,
-                                        crel('label', 'Reason: ', _txtCustomBanReason)
-                                    )
+                                    crel(_additionalReasonInfoWrap, _txtAdditionalReason)
                                 ),
                                 crel(_purgeWrap,
                                     crel('h5', 'Purge Messages'),
@@ -5230,12 +5232,12 @@ window.App = (function () {
                             _selCustomLength.selectedIndex = 1; //minutes
 
                             _selBanReason.addEventListener('change', function() {
-                                let isCustom = this.value === '0';
-                                _customReasonWrap.style.display = isCustom ? 'block' : 'none';
-                                _txtCustomBanReason.required = isCustom;
+                                const isCustom = this.value === 'Custom';
+                                _txtAdditionalReason.placeholder = isCustom ? 'Custom reason' : 'Additional information (if applicable)';
+                                _txtAdditionalReason.required = isCustom;
                             });
 
-                            _txtCustomBanReason.onkeydown = e => e.stopPropagation();
+                            _txtAdditionalReason.onkeydown = e => e.stopPropagation();
                             _txtCustomLength.onkeydown = e => e.stopPropagation();
 
                             chatbanContainer.onsubmit = e => {
@@ -5247,10 +5249,14 @@ window.App = (function () {
                                     banLength: 0
                                 };
 
-                                if (_selBanReason.value === '0') { //custom
-                                    postData.reason = _txtCustomBanReason.value;
+
+                                if (_selBanReason.value === 'Custom') {
+                                    postData.reason = _txtAdditionalReason.value
                                 } else {
                                     postData.reason = _selBanReason.value;
+                                    if (_txtAdditionalReason.value) {
+                                        postData.reason += `. Additional information: ${_txtAdditionalReason.value}`;
+                                    }
                                 }
 
                                 if (_selBanLength.value === '-3') { //unban
