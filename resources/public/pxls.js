@@ -2909,6 +2909,9 @@ window.App = (function () {
                             crel('span', {'style': 'font-style: italic'}, `Sent from ${data.sender || '$Unknown'}`)
                         ), {closeExisting: false});
                     });
+                    socket.on('received_report', (data) => {
+                        new SLIDEIN.Slidein(`A new ${data.report_type.toLowerCase()} report has been received.`, 'info-circle').show().closeAfter(3000);
+                    });
 
                     var useMono = ls.get("monospace_lookup");
                     if (typeof useMono === 'undefined') {
@@ -6271,7 +6274,7 @@ window.App = (function () {
                         elem[0].remove();
                 }
             };
-        })();
+        })()
     // init progress
     query.init();
     board.init();
@@ -6295,6 +6298,9 @@ window.App = (function () {
     chromeOffsetWorkaround.init();
     // and here we finally go...
     board.start();
+
+
+    window.TH = window.TH || TH;
 
 
     return {
@@ -6348,6 +6354,6 @@ window.App = (function () {
             ban.me(4);
         },
         chat,
-        typeahead: chat.typeahead
+        typeahead: chat.typeahead,
     };
 })();

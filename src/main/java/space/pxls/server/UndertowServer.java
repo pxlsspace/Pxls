@@ -26,6 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 public class UndertowServer {
     private int port;
@@ -189,21 +190,22 @@ public class UndertowServer {
     }
 
     public void broadcastNoShadow(Object obj) {
+        broadcastToUserPredicate(obj, user -> user.getRole() != Role.SHADOWBANNED);
+    }
+
+    public void broadcastToStaff(Object obj) {
+        broadcastToUserPredicate(obj, user -> user.getRole().greaterEqual(Role.TRIALMOD));
+    }
+
+    public void broadcastToUserPredicate(Object obj, Predicate<User> predicate) {
         String json = App.getGson().toJson(obj);
-        Map<String, User> users = App.getUserManager().getAllUsersByToken();
-        List<WebSocketChannel> shadowbannedConnection = new ArrayList<>();
-        for (User u : users.values()) {
-            if (u.getRole() == Role.SHADOWBANNED) {
-                shadowbannedConnection.addAll(u.getConnections());
-            }
-        }
-        if (connections != null) {
-            for (WebSocketChannel channel : connections){
-                if (!shadowbannedConnection.contains(channel)){
-                    sendRaw(channel, json);
-                }
-            }
-        }
+        getAuthedUsers()
+                .values()
+                .stream()
+                .filter(predicate)
+                .forEach(user -> user.getConnections()
+                        .forEach(con -> WebSockets.sendText(json, con, null))
+                );
     }
 
     private void sendRaw(WebSocketChannel channel, String str) {
