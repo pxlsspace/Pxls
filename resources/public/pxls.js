@@ -5186,11 +5186,13 @@ window.App = (function () {
                             });
                             _selCustomLength.selectedIndex = 1; //minutes
 
-                            _selBanReason.addEventListener('change', function() {
-                                const isCustom = this.value === 'Custom';
+                            function updateAdditionalTextarea() {
+                                const isCustom = _selBanReason.value === 'Custom';
                                 _txtAdditionalReason.placeholder = isCustom ? 'Custom reason' : 'Additional information (if applicable)';
                                 _txtAdditionalReason.required = isCustom;
-                            });
+                            }
+                            updateAdditionalTextarea();
+                            _selBanReason.addEventListener('change', updateAdditionalTextarea);
 
                             _txtAdditionalReason.onkeydown = e => e.stopPropagation();
                             _txtCustomLength.onkeydown = e => e.stopPropagation();
