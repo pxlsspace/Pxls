@@ -868,10 +868,14 @@ window.App = (function () {
                             case 82:            // R
                             case "r":
                             case "R":
-                                var tempOpts = template.getOptions();
-                                var tempElem = $("#board-template");
+                                if (!self.allowDrag) {
+                                    break;
+                                }
+
+                                const tempOpts = template.getOptions();
                                 if (tempOpts.use) {
-                                  board.centerOn(tempOpts.x + (tempElem.width() / 2), tempOpts.y + (tempElem.height() / 2));
+                                    const tempElem = $("#board-template");
+                                    self.centerOn(tempOpts.x + (tempElem.width() / 2), tempOpts.y + (tempElem.height() / 2));
                                 }
                                 break;
                             case "KeyJ":
