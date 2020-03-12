@@ -210,7 +210,7 @@ public class Database {
                 "  color INT NOT NULL DEFAULT 0," +
                 "  owner INT NOT NULL REFERENCES users(id)," +
                 "  created TIMESTAMP NOT NULL DEFAULT NOW()," +
-                "  canvasCode INT NOT NULL DEFAULT 0" +
+                "  \"canvasCode\" INT NOT NULL DEFAULT 0" +
                 ");" +
                 "CREATE INDEX IF NOT EXISTS _faction_name ON faction (\"name\");" +
                 "CREATE INDEX IF NOT EXISTS _faction_tag ON faction (tag);" +
