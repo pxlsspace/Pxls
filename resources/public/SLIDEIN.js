@@ -26,7 +26,7 @@ window.SLIDEIN = window.SLIDEIN || (() => {
     this.content = content;
     this.closeable = closeable === true;
     this.icon = icon || false;
-    this.type = type || SLIDEIN_TYPES.DARK;
+    this.type = type || SLIDEIN_TYPES.INFO;
     this._dom = _buildSlideinDom(this);
     this._delayClose = 0;
     this.show = () => {
@@ -80,17 +80,17 @@ window.SLIDEIN = window.SLIDEIN || (() => {
     const _class = (() => {
       switch (slidein.type.toLowerCase().trim()) {
         case SLIDEIN_TYPES.SUCCESS: {
-          return `slidein-${SLIDEIN_TYPES.SUCCESS}`;
+          return `slidein-${SLIDEIN_TYPES.SUCCESS} bg-gradient-${SLIDEIN_TYPES.SUCCESS}`;
         }
         case SLIDEIN_TYPES.DANGER: {
-          return `slidein-${SLIDEIN_TYPES.DANGER}`;
+          return `slidein-${SLIDEIN_TYPES.DANGER} bg-gradient-${SLIDEIN_TYPES.DANGER}`;
         }
         case SLIDEIN_TYPES.WARNING: {
-          return `slidein-${SLIDEIN_TYPES.WARNING}`;
+          return `slidein-${SLIDEIN_TYPES.WARNING} bg-gradient-${SLIDEIN_TYPES.WARNING}`;
         }
         case SLIDEIN_TYPES.INFO:
         default: {
-          return `slidein-${SLIDEIN_TYPES.INFO}`;
+          return `slidein-${SLIDEIN_TYPES.INFO} bg-gradient-${SLIDEIN_TYPES.INFO}`;
         }
       }
     })();
