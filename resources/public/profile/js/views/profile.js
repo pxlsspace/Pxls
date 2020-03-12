@@ -154,8 +154,7 @@ async function initFactionSearch() {
                       res = await putJSON(`/factions/${x.id}`, {joinState: true});
                     } catch (e) {}
                     if (res && res.success === true) {
-                      alert('Faction joined. The page will now reload.');
-                      document.location.href = document.location.href; //TODO replace with slidein
+                      new SLIDEIN.Slidein(crel('p', 'Faction joined! Click ', crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), 'user-plus', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
                     } else {
                       alert((res && res.details) || 'An unknown error occurred. Please try again later.');
                     }
@@ -199,8 +198,7 @@ async function handleFactionAction() {
           res = await deleteJSON(`/factions/${fid}`);
         } catch (e) {}
         if (res && res.success === true) {
-          alert('Faction deleted. The page will now reload.');
-          document.location.href = document.location.href; //TODO replace with slidein
+          new SLIDEIN.Slidein(crel('p', 'Faction deleted. Click ', crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), 'users', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
         } else {
           alert((res && res.details) || 'An unknown error occurred. Please try again later.');
         }
@@ -214,8 +212,7 @@ async function handleFactionAction() {
           res = await putJSON(`/factions/${fid}`, {displayed: false});
         } catch (e) {}
         if (res && res.success === true) {
-          alert('Status updated. The page will now reload.');
-          document.location.href = document.location.href; //TODO replace with slidein
+          new SLIDEIN.Slidein(crel('p', 'Status updated. Click ', crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), '', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
         } else {
           alert((res && res.details) || 'An unknown error occurred. Please try again later.');
         }
@@ -229,8 +226,7 @@ async function handleFactionAction() {
           res = await putJSON(`/factions/${fid}`, {displayed: true});
         } catch (e) {}
         if (res && res.success === true) {
-          alert('Status updated. The page will now reload.');
-          document.location.href = document.location.href; //TODO replace with slidein
+          new SLIDEIN.Slidein(crel('p', 'Status updated. Click ', crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), '', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
         } else {
           alert((res && res.details) || 'An unknown error occurred. Please try again later.');
         }
@@ -244,8 +240,7 @@ async function handleFactionAction() {
           res = await putJSON(`/factions/${fid}`, {joinState: false});
         } catch (e) {}
         if (res && res.success === true) {
-          alert('Faction left. The page will now reload.');
-          document.location.href = document.location.href; //TODO replace with slidein
+          new SLIDEIN.Slidein(crel('p', 'Faction left. Click ', crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), 'user-minus', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
         } else {
           alert((res && res.details) || 'An unknown error occurred. Please try again later.');
         }
@@ -272,8 +267,7 @@ async function handleFactionSubaction() {
           res = await putJSON(`/factions/${fid}`, {newOwner: member});
         } catch (e) {}
         if (res && res.success === true) {
-          alert('Faction updated. The page will now reload.');
-          document.location.href = document.location.href; //TODO replace with slidein
+          new SLIDEIN.Slidein(crel('p', 'Faction updated. Click ', crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), '', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
         } else {
           alert((res && res.details) || 'An unknown error occurred. Please try again later.');
         }
@@ -287,8 +281,7 @@ async function handleFactionSubaction() {
           res = await putJSON(`/factions/${fid}`, {user: member, banState: true});
         } catch (e) {}
         if (res && res.success === true) {
-          alert('Faction updated. The page will now reload.');
-          document.location.href = document.location.href; //TODO replace with slidein
+          new SLIDEIN.Slidein(crel('p', 'Faction updated. Click ', crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), '', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
         } else {
           alert((res && res.details) || 'An unknown error occurred. Please try again later.');
         }
@@ -302,8 +295,7 @@ async function handleFactionSubaction() {
           res = await putJSON(`/factions/${fid}`, {user: member, banState: false});
         } catch (e) {}
         if (res && res.success === true) {
-          alert('Faction updated. The page will now reload.');
-          document.location.href = document.location.href; //TODO replace with slidein
+          new SLIDEIN.Slidein(crel('p', 'Faction updated. Click ', crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), '', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
         } else {
           alert((res && res.details) || 'An unknown error occurred. Please try again later.');
         }
@@ -375,8 +367,7 @@ function popFactionModal(isEdit=false,data={}) {
         res = await (isEdit ? putJSON : postJSON)(endpoint, _toPost);
       } catch (e) {}
       if (res && res.success === true) {
-        alert(`Faction ${isEdit ? 'edit' : 'creat'}ed. The page will now reload`);
-        document.location.href = document.location.href; //TODO replace with slideins
+        new SLIDEIN.Slidein(crel('p', `Faction ${isEdit ? 'edit' : 'creat'}ed. Click `, crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), '', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
       } else {
         alert((res && res.details) || `An error ocurred while ${isEdit ? 'edit' : 'creat'}ing the faction. Please try again later.`);
         btnCancel.disabled = false;
