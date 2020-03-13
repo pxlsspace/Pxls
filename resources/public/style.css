@@ -1073,9 +1073,9 @@ header h1, header h2, header h3, header h4, header h5, header h6 {
 aside.panel {
     position: fixed;
     top: 0;
-    max-width: 50vw;
-    min-width: 30vw;
-    height: 100vh;
+    max-width: 50%;
+    min-width: 30%;
+    height: 100%;
     box-shadow: 0 0 10px 5px #0009;
     background-color: #dfdfdf;
     z-index: 21;
@@ -1087,8 +1087,8 @@ aside.panel {
 }
 
 .panel.horizontal {
-    width: 100vw;
-    height: 50vh;
+    width: 100%;
+    height: 50%;
     max-width: initial;
     min-height: initial;
 }
@@ -1100,11 +1100,11 @@ aside.panel {
 .panel.left {
     right: initial;
     transition: left ease-in-out .25s;
-    left: -55vw;
+    left: -55%;
 }
 
 .panel.left.horizontal {
-    left: -105vw;
+    left: -105%;
 }
 
 .panel.left.open, .panel.left[data-state=open] {
@@ -1114,11 +1114,11 @@ aside.panel {
 .panel.right {
     left: initial;
     transition: right ease-in-out .25s;
-    right: -55vw;
+    right: -55%;
 }
 
 .panel.right.horizontal {
-    right: -105vw;
+    right: -105%;
 }
 
 .panel.right.open, .panel.right[data-state=open] {
