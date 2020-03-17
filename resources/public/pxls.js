@@ -868,10 +868,16 @@ window.App = (function () {
                             case 82:            // R
                             case "r":
                             case "R":
-                                var tempOpts = template.getOptions();
-                                var tempElem = $("#board-template");
+                                if (!self.allowDrag) {
+                                    break;
+                                }
+
+                                const tempOpts = template.getOptions();
                                 if (tempOpts.use) {
-                                  board.centerOn(tempOpts.x + (tempElem.width() / 2), tempOpts.y + (tempElem.height() / 2));
+                                    const tempElem = $("#board-template");
+                                    self.centerOn(tempOpts.x + (tempElem.width() / 2), tempOpts.y + (tempElem.height() / 2));
+                                } else if (place.lastPixel) {
+                                    self.centerOn(place.lastPixel.x, place.lastPixel.y);
                                 }
                                 break;
                             case "KeyJ":
@@ -2167,11 +2173,7 @@ window.App = (function () {
                 },
                 audio: new Audio('place.wav'),
                 color: -1,
-                pendingPixel: {
-                    x: 0,
-                    y: 0,
-                    color: -1
-                },
+                lastPixel: null,
                 autoreset: true,
                 setAutoReset: function (v) {
                     self.autoreset = !!v;
@@ -2215,9 +2217,11 @@ window.App = (function () {
                     self._place(x, y);
                 },
                 _place: function (x, y) {
-                    self.pendingPixel.x = x;
-                    self.pendingPixel.y = y;
-                    self.pendingPixel.color = self.color;
+                    self.lastPixel = {
+                        x,
+                        y,
+                        color: self.color
+                    };
                     socket.send({
                         type: "pixel",
                         x: x,
@@ -2387,9 +2391,8 @@ window.App = (function () {
                     });
                     socket.on("captcha_status", function (data) {
                         if (data.success) {
-                            var pending = self.pendingPixel;
-                            self.switch(pending.color);
-                            self._place(pending.x, pending.y);
+                            self.switch(self.lastPixel.color);
+                            self._place(self.lastPixel.x, self.lastPixel.y);
 
                             analytics("send", "event", "Captcha", "Accepted")
                         } else {
@@ -2454,6 +2457,9 @@ window.App = (function () {
                 setNumberedPaletteEnabled: self.setNumberedPaletteEnabled,
                 get color() {
                     return self.color;
+                },
+                get lastPixel() {
+                    return self.lastPixel;
                 },
                 toggleReticule: self.toggleReticule,
                 toggleCursor: self.toggleCursor
