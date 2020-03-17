@@ -324,7 +324,7 @@ public class User {
         App.getDatabase().updateChatBanExpiry(getId(), chatbanExpiryTime);
 
         if (chatban.purge && chatban.purgeAmount > 0) {
-            App.getDatabase().purgeChat(chatban.target, chatban.initiator, chatban.purgeAmount, "$automated chatban purge$", true);
+            App.getDatabase().purgeChat(chatban.target, chatban.initiator, chatban.purgeAmount, "Chatban purge: " + chatban.reason, true);
         }
 
         if (doLog) {
