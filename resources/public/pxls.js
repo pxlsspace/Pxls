@@ -4559,6 +4559,7 @@ window.App = (function () {
                             lblBanner,
                             lblFontSize,
                             lblUsernameColor,
+                            lblIgnores,
                             lblIgnoresFeedback
                         ].map(x => crel('div', {'class': 'd-block'}, x))
                     )
