@@ -18,6 +18,42 @@ const ConfirmDialogStyles = Object.freeze({
       })
     }
   });
+
+  // ensure our current action is selected, and show slideins if necessary
+  if (location.search) {
+    const _search = location.search.substr(location.search.startsWith('?') ? 1 : 0).split('&').map(x => x.split('='));
+    let action = _search.find(x => x[0].toLowerCase().trim() === 'action');
+    if (Array.isArray(action) && action[1] != null) {
+      Array.from(document.querySelectorAll('.tab-pane.active')).forEach(x => x.classList.remove('active'));
+      Array.from(document.querySelectorAll('.list-group-item[data-action].active')).forEach(x => x.classList.remove('active'));
+      let elPane = document.querySelector(`.tab-pane[data-tab="${action[1].toLowerCase()}"]`);
+      let elAction = document.querySelector(`.list-group-item[data-action="${action[1].toLowerCase()}"]`);
+      if (elPane && elAction) {
+        elPane.classList.add('active');
+        elAction.classList.add('active');
+      }
+    }
+
+    let detailsIndex = _search.findIndex(x => x[0].toLowerCase().trim() === 'details');
+    let _details = (Array.isArray(_search[detailsIndex]) && _search[detailsIndex][1] != null) ? _search[detailsIndex][1] : false;
+    if (_details !== false) {
+      _details = decodeURIComponent(_details).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      _search.splice(detailsIndex, 1);
+    }
+
+    let successIndex = _search.findIndex(x => x[0].toLowerCase().trim() === 'success');
+    if (Array.isArray(_search[successIndex]) && _search[successIndex][1] != null) {
+      let wasSuccessful = _search[successIndex][1] === '1';
+      new SLIDEIN.Slidein(wasSuccessful ? `${_details === false ? 'Operation completed successfully.' : _details}` : `${_details === false ? 'Operation failed. No additional information was provided by the sever.' : _details}`, null, wasSuccessful ? SLIDEIN.SLIDEIN_TYPES.SUCCESS : SLIDEIN.SLIDEIN_TYPES.DANGER, true).show().closeAfter(5e3);
+
+      _search.splice(successIndex, 1);
+    }
+
+    // update our search in the URL in case we added or removed elements
+    if (typeof history.replaceState === 'function') {
+      history.replaceState(null, document.title, `${document.location.protocol}//${document.location.host}${document.location.pathname}?${_search.map(x => `${x[0]}=${x[1]}`).join('&')}${document.location.hash}`);
+    }
+  }
 })();
 
 function initInPageTabNavigation(page) {
@@ -146,4 +182,18 @@ async function _doPostLike(url, type, data = {}) {
     req.setRequestHeader('Accept', 'application/json;q=1.0, */*;q=0.5');
     req.send(JSON.stringify(data));
   });
+}
+
+function _reloadPageWithStatus(success, details=null) {
+  let arr = [['success', (!!success) ? 1 : 0]];
+  if (details != null) {
+    arr.push(['details', encodeURIComponent(details)]);
+  }
+  let _search = document.location.search || '';
+  _search += `${_search ? '&' : '?'}${arr.map(x => `${x[0]}=${x[1]}`).join('&')}`;
+  document.location.href = `${document.location.protocol}//${document.location.host}${document.location.pathname}${_search}${document.location.hash}`;
+}
+
+function _reloadPage() {
+  document.location.href = document.location.href.substring(0, document.location.href.indexOf('#'));
 }

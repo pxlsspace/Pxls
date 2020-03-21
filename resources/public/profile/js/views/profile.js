@@ -16,22 +16,6 @@ window.DEFAULT_SPECTRUM_OPTIONS = window.DEFAULT_SPECTRUM_OPTIONS || {
   // document.querySelectorAll('#tabsTriggers a[data-action]').forEach(x => x.addEventListener('click', handleTabTrigger));
   initInPageTabNavigation(document.location.pathname);
 
-  // ensure our current action is selected
-  if (location.search) {
-    const _search = location.search.substr(location.search.startsWith('?') ? 1 : 0).split('&').map(x => x.split('='));
-    let action = _search.find(x => x[0].toLowerCase().trim() === 'action');
-    if (Array.isArray(action) && action[1] != null) {
-      Array.from(document.querySelectorAll('.tab-pane.active')).forEach(x => x.classList.remove('active'));
-      Array.from(document.querySelectorAll('.list-group-item[data-action].active')).forEach(x => x.classList.remove('active'));
-      let elPane = document.querySelector(`.tab-pane[data-tab="${action[1].toLowerCase()}"]`);
-      let elAction = document.querySelector(`.list-group-item[data-action="${action[1].toLowerCase()}"]`);
-      if (elPane && elAction) {
-        elPane.classList.add('active');
-        elAction.classList.add('active');
-      }
-    }
-  }
-
   // hook up global faction actions
   Array.from(document.querySelectorAll('.global-faction-action[data-action]')).forEach(elAction => elAction.addEventListener('click', handleGlobalFactionAction));
 
@@ -154,9 +138,9 @@ async function initFactionSearch() {
                       res = await putJSON(`/factions/${x.id}`, {joinState: true});
                     } catch (e) {}
                     if (res && res.success === true) {
-                      new SLIDEIN.Slidein(crel('p', 'Faction joined! Click ', crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), 'user-plus', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
+                      _reloadPageWithStatus(true, 'Faction Joined');
                     } else {
-                      alert((res && res.details) || 'An unknown error occurred. Please try again later.');
+                      new SLIDEIN.Slidein((res && res.details) || 'An unknown error occurred. Please try again later.', null, SLIDEIN.SLIDEIN_TYPES.DANGER).show().closeAfter(10e3);
                     }
                   }
                 });
@@ -198,9 +182,9 @@ async function handleFactionAction() {
           res = await deleteJSON(`/factions/${fid}`);
         } catch (e) {}
         if (res && res.success === true) {
-          new SLIDEIN.Slidein(crel('p', 'Faction deleted. Click ', crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), 'users', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
+          _reloadPageWithStatus(true, 'Faction Deleted');
         } else {
-          alert((res && res.details) || 'An unknown error occurred. Please try again later.');
+          new SLIDEIN.Slidein((res && res.details) || 'An unknown error occurred. Please try again later.', null, SLIDEIN.SLIDEIN_TYPES.DANGER).show().closeAfter(10e3);
         }
       }
       break;
@@ -212,9 +196,9 @@ async function handleFactionAction() {
           res = await putJSON(`/factions/${fid}`, {displayed: false});
         } catch (e) {}
         if (res && res.success === true) {
-          new SLIDEIN.Slidein(crel('p', 'Status updated. Click ', crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), '', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
+          _reloadPageWithStatus(true, 'Displayed faction updated');
         } else {
-          alert((res && res.details) || 'An unknown error occurred. Please try again later.');
+          new SLIDEIN.Slidein((res && res.details) || 'An unknown error occurred. Please try again later.', null, SLIDEIN.SLIDEIN_TYPES.DANGER).show().closeAfter(10e3);
         }
       }
       break;
@@ -226,9 +210,9 @@ async function handleFactionAction() {
           res = await putJSON(`/factions/${fid}`, {displayed: true});
         } catch (e) {}
         if (res && res.success === true) {
-          new SLIDEIN.Slidein(crel('p', 'Status updated. Click ', crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), '', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
+          _reloadPageWithStatus(true, 'Displayed faction updated');
         } else {
-          alert((res && res.details) || 'An unknown error occurred. Please try again later.');
+          new SLIDEIN.Slidein((res && res.details) || 'An unknown error occurred. Please try again later.', null, SLIDEIN.SLIDEIN_TYPES.DANGER).show().closeAfter(10e3);
         }
       }
       break;
@@ -240,9 +224,9 @@ async function handleFactionAction() {
           res = await putJSON(`/factions/${fid}`, {joinState: false});
         } catch (e) {}
         if (res && res.success === true) {
-          new SLIDEIN.Slidein(crel('p', 'Faction left. Click ', crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), 'user-minus', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
+          _reloadPageWithStatus(true, 'Left Faction');
         } else {
-          alert((res && res.details) || 'An unknown error occurred. Please try again later.');
+          new SLIDEIN.Slidein((res && res.details) || 'An unknown error occurred. Please try again later.', null, SLIDEIN.SLIDEIN_TYPES.DANGER).show().closeAfter(10e3);
         }
       }
       break;
@@ -267,9 +251,9 @@ async function handleFactionSubaction() {
           res = await putJSON(`/factions/${fid}`, {newOwner: member});
         } catch (e) {}
         if (res && res.success === true) {
-          new SLIDEIN.Slidein(crel('p', 'Faction updated. Click ', crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), '', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
+          _reloadPageWithStatus(true, 'Faction ownership transfered');
         } else {
-          alert((res && res.details) || 'An unknown error occurred. Please try again later.');
+          new SLIDEIN.Slidein((res && res.details) || 'An unknown error occurred. Please try again later.', null, SLIDEIN.SLIDEIN_TYPES.DANGER).show().closeAfter(10e3);
         }
       }
       break;
@@ -281,9 +265,9 @@ async function handleFactionSubaction() {
           res = await putJSON(`/factions/${fid}`, {user: member, banState: true});
         } catch (e) {}
         if (res && res.success === true) {
-          new SLIDEIN.Slidein(crel('p', 'Faction updated. Click ', crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), '', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
+          _reloadPageWithStatus(true, `${member} has been banned from the faction`)
         } else {
-          alert((res && res.details) || 'An unknown error occurred. Please try again later.');
+          new SLIDEIN.Slidein((res && res.details) || 'An unknown error occurred. Please try again later.', null, SLIDEIN.SLIDEIN_TYPES.DANGER).show().closeAfter(10e3);
         }
       }
       break;
@@ -295,9 +279,9 @@ async function handleFactionSubaction() {
           res = await putJSON(`/factions/${fid}`, {user: member, banState: false});
         } catch (e) {}
         if (res && res.success === true) {
-          new SLIDEIN.Slidein(crel('p', 'Faction updated. Click ', crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), '', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
+          _reloadPageWithStatus(true, `${member} was unbanned from the faction`);
         } else {
-          alert((res && res.details) || 'An unknown error occurred. Please try again later.');
+          new SLIDEIN.Slidein((res && res.details) || 'An unknown error occurred. Please try again later.', null, SLIDEIN.SLIDEIN_TYPES.DANGER).show().closeAfter(10e3);
         }
       }
       break;
@@ -367,9 +351,9 @@ function popFactionModal(isEdit=false,data={}) {
         res = await (isEdit ? putJSON : postJSON)(endpoint, _toPost);
       } catch (e) {}
       if (res && res.success === true) {
-        new SLIDEIN.Slidein(crel('p', `Faction ${isEdit ? 'edit' : 'creat'}ed. Click `, crel('a', {'href': document.location, onclick: () => document.location.href = document.location.href}, 'here'), ' to reload.'), '', SLIDEIN.SLIDEIN_TYPES.SUCCESS, false).show();
+        _reloadPageWithStatus(true, `Faction ${isEdit ? 'edit' : 'creat'}ed`);
       } else {
-        alert((res && res.details) || `An error ocurred while ${isEdit ? 'edit' : 'creat'}ing the faction. Please try again later.`);
+        new SLIDEIN.Slidein((res && res.details) || 'An unknown error occurred. Please try again later.', null, SLIDEIN.SLIDEIN_TYPES.DANGER).show().closeAfter(10e3);
         btnCancel.disabled = false;
         btnSave.innerHTML = `Create`;
       }
