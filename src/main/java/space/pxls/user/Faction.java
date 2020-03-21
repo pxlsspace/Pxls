@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Faction {
     private int id;
@@ -234,7 +235,8 @@ public class Faction {
         new int[] {0x0400, 0x04FF}, // cyrillic
         new int[] {0x500, 0x052F}, // cyrillic supplement
         new int[] {0x2122}, // (tm)
-        new int[] {0x2600, 0x26FF}, // misc symbols (♥)
+        new int[] {0x2600, 0x27BF}, // misc symbols (♥), dingbats (sparkle, heavy heart)
+        new int[] {0xFE00, 0xFE0F}, // variation selectors (heart color)
         new int[] {0x1F000, 0x1FAFF} // emoji
     );
     private static boolean checkCodepoints(String input) {
