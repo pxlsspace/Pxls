@@ -127,7 +127,7 @@ public class FactionManager {
             }
 
             App.getDatabase().addFactionBanForUID(uid, fid);
-            f.invalidateBans();
+            f.invalidate();
             update(f, false);
 
             if (wasDisplayed)
@@ -140,7 +140,7 @@ public class FactionManager {
 
         if (f != null) {
             App.getDatabase().removeFactionBanForUID(uid, fid);
-            f.invalidateBans();
+            f.invalidate();
             update(f, false);
         }
     }
