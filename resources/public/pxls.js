@@ -3642,9 +3642,8 @@ window.App = (function () {
                             }
                         } else console.warn('Malformed chat_user_update: %o', e);
                     });
-                    socket.on('faction_update', e => {
-                        self._updateFaction(e.faction);
-                    });
+                    socket.on('faction_update', e => self._updateFaction(e.faction));
+                    socket.on('faction_clear', e => self._clearFaction(e.fid));
                     socket.on('chat_history', e => {
                         if (self.seenHistory) return;
                         for (let packet of e.messages.reverse()) {
@@ -4693,6 +4692,17 @@ window.App = (function () {
                         this.dataset.tag = faction.tag;
                         $(this).find('.faction-tag').attr('data-tag', faction.tag).attr('title', `${faction.name} (ID: ${faction.id})`).css('color', colorHex).html(`[${faction.tag}]`);
                     });
+                },
+                _clearFaction: (fid) => {
+                    if (fid == null) return;
+                    self.elements.body.find(`.chat-line[data-faction="${fid}"]`).each(function() {
+                        let _ft = $(this).find('.faction-tag')[0];
+                        ['tag', 'faction', 'title'].forEach(x => {
+                            this.dataset[x] = '';
+                            _ft.dataset[x] = '';
+                        });
+                        _ft.innerHTML = '';
+                    })
                 },
                 _process: (packet, isHistory = false) => {
                     if (packet.nonce) {

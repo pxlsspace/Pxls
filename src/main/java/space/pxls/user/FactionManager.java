@@ -5,6 +5,7 @@ import org.apache.commons.jcs.access.CacheAccess;
 import space.pxls.App;
 import space.pxls.data.DBFaction;
 import space.pxls.server.packets.chat.ServerChatUserUpdate;
+import space.pxls.server.packets.chat.ServerFactionClear;
 import space.pxls.server.packets.chat.ServerFactionUpdate;
 import space.pxls.server.packets.http.UserFaction;
 
@@ -80,6 +81,7 @@ public class FactionManager {
     public void deleteByID(int fid) {
         invalidate(fid);
         App.getDatabase().deleteFactionByFID(fid);
+        App.getServer().broadcast(new ServerFactionClear(fid));
     }
 
     /**
