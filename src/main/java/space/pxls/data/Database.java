@@ -88,7 +88,7 @@ public class Database {
                     "is_rename_requested BOOL NOT NULL DEFAULT false," +
                     "discord_name VARCHAR(37)," +
                     "chat_name_color INT NOT NULL," +
-                    "displayed_faction INT REFERENCES faction(id))")
+                    "displayed_faction INT)")
                     .execute();
             // sessions
             handle.createUpdate("CREATE TABLE IF NOT EXISTS sessions ("+
