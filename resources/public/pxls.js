@@ -1468,7 +1468,9 @@ window.App = (function () {
                 getHeight: () => self.height,
                 refresh: self.refresh,
                 updateViewport: self.updateViewport,
-                allowDrag: self.allowDrag,
+                get allowDrag() {
+                    return self.allowDrag;
+                },
                 setAllowDrag: (allowDrag) => {
                     self.allowDrag = allowDrag === true;
                     if (self.allowDrag)
@@ -2997,7 +2999,7 @@ window.App = (function () {
                         });
 
                     board.setAllowDrag(ls.get('canvas.unlocked') !== false); // false check for new connections
-                    $('#lockCanvasToggle').prop('checked', board.allowDrag)
+                    $('#lockCanvasToggle').prop('checked', !board.allowDrag)
                         .change(function() {
                             board.setAllowDrag(this.checked === false); // updates localStorage for us
                         });
