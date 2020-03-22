@@ -827,7 +827,9 @@ window.App = (function () {
                             case 87:            // W
                             case "w":
                             case "W":
-                                self.pan.y += 100 / self.scale;
+                                if (self.allowDrag) {
+                                    self.pan.y += 100 / self.scale;
+                                }
                                 break;
                             case "KeyD":        // D
                             case "ArrowRight":
@@ -835,7 +837,9 @@ window.App = (function () {
                             case 68:            // D
                             case "d":
                             case "D":
-                                self.pan.x -= 100 / self.scale;
+                                if (self.allowDrag) {
+                                    self.pan.x -= 100 / self.scale;
+                                }
                                 break;
                             case "KeyS":        // S
                             case "ArrowDown":
@@ -843,7 +847,9 @@ window.App = (function () {
                             case 83:            // S
                             case "s":
                             case "S":
-                                self.pan.y -= 100 / self.scale;
+                                if (self.allowDrag) {
+                                    self.pan.y -= 100 / self.scale;
+                                }
                                 break;
                             case "KeyA":        // A
                             case "ArrowLeft":
@@ -851,7 +857,9 @@ window.App = (function () {
                             case 65:            // A
                             case "a":
                             case "A":
-                                self.pan.x += 100 / self.scale;
+                                if (self.allowDrag) {
+                                    self.pan.x += 100 / self.scale;
+                                }
                                 break;
                             case "KeyP":
                             case 80:            // P
@@ -913,7 +921,9 @@ window.App = (function () {
                             case "=":
                             case "e":
                             case "E":
-                                self.nudgeScale(1);
+                                if (self.allowDrag) {
+                                    self.nudgeScale(1);
+                                }
                                 break;
                             case "KeyQ":             // Q
                             case "Minus":            // -
@@ -925,7 +935,9 @@ window.App = (function () {
                             case "q":
                             case "Q":
                             case "-":
-                                self.nudgeScale(-1);
+                                if (self.allowDrag) {
+                                    self.nudgeScale(-1);
+                                }
                                 break;
                             case "t":
                             case "T":
