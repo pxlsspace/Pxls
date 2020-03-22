@@ -807,7 +807,9 @@ window.App = (function () {
                         onmove: handleMove
                     }).gesturable({
                         onmove: function (evt) {
-                            self.scale *= (1 + evt.ds);
+                            if (self.allowDrag) {
+                                self.scale *= (1 + evt.ds);
+                            }
                             handleMove(evt);
                         }
                     });
