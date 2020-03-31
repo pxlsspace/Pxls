@@ -141,7 +141,16 @@ public class PacketHandler {
 
     private void handleChatLookup(WebSocketChannel channel, User user, ClientChatLookup obj) {
         if (user.getRole().greaterEqual(Role.TRIALMOD)) {
-            ServerChatLookup scl = App.getDatabase().runChatLookupForUsername(obj.getWho(), App.getConfig().getInt("chat.chatLookupScrollbackAmount"));
+            ServerChatLookup scl;
+            String username = obj.getArg();
+            if (obj.getMode().equalsIgnoreCase("nonce")) {
+                DBChatMessage chatMessage = App.getDatabase().getChatMessageByNonce(obj.getArg());
+                if (chatMessage != null) {
+                    User fromChatMessage = App.getUserManager().getByID(chatMessage.author_uid);
+                    username = fromChatMessage != null ? fromChatMessage.getName() : null;
+                }
+            }
+            scl = username != null ? App.getDatabase().runChatLookupForUsername(username, App.getConfig().getInt("chat.chatLookupScrollbackAmount")) : null;
             server.send(channel, scl == null ? new ServerError("User doesn't exist") : scl);
         } else {
             server.send(channel, new ServerError("Missing Permissions"));
@@ -387,7 +396,7 @@ public class PacketHandler {
             }
         }
 
-        if (toBroadcast.size() > 0) {
+        if (!App.getConfig().getBoolean("oauth.snipMode") && toBroadcast.size() > 0) {
             server.broadcast(new ServerChatUserUpdate(user.getName(), toBroadcast));
         }
     }
