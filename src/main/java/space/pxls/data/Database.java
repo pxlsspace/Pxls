@@ -1186,7 +1186,6 @@ public class Database {
         for (DBChatMessage dbChatMessage : fromDB) {
             List<Badge> badges = new ArrayList<>();
             String author = "CONSOLE";
-            String tag = null;
             int nameColor = 0;
             Faction faction = null;
             String parsedMessage = dbChatMessage.content; //TODO https://github.com/atlassian/commonmark-java
@@ -1196,14 +1195,13 @@ public class Database {
                 User temp = App.getUserManager().getByID(dbChatMessage.author_uid);
                 if (temp != null) {
                     author = temp.getName();
-                    tag = temp.getTag();
                     badges = temp.getChatBadges();
                     nameColor = temp.getChatNameColor();
                     nameClass = temp.getChatNameClasses();
                     faction = temp.fetchDisplayedFaction();
                 }
             }
-            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, tag, dbChatMessage.sent, App.getConfig().getBoolean("textFilter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameClass, nameColor, faction));
+            toReturn.add(new ChatMessage(dbChatMessage.nonce, author, dbChatMessage.sent, App.getConfig().getBoolean("textFilter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameClass, nameColor, faction));
         }
         return toReturn;
     }
