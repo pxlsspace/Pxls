@@ -13,7 +13,6 @@ window.DEFAULT_SPECTRUM_OPTIONS = window.DEFAULT_SPECTRUM_OPTIONS || {
 
 (() => {
   // hook up in-page tab navigation
-  // document.querySelectorAll('#tabsTriggers a[data-action]').forEach(x => x.addEventListener('click', handleTabTrigger));
   initInPageTabNavigation(document.location.pathname);
 
   // hook up global faction actions
