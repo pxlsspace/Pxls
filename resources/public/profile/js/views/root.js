@@ -50,9 +50,7 @@ const ConfirmDialogStyles = Object.freeze({
     }
 
     // update our search in the URL in case we added or removed elements
-    if (typeof history.replaceState === 'function') {
-      history.replaceState(null, document.title, `${document.location.protocol}//${document.location.host}${document.location.pathname}?${_search.map(x => `${x[0]}=${x[1]}`).join('&')}${document.location.hash}`);
-    }
+    history.replaceState(null, document.title, `${document.location.protocol}//${document.location.host}${document.location.pathname}?${_search.map(x => `${x[0]}=${x[1]}`).join('&')}${document.location.hash}`);
   }
 })();
 
