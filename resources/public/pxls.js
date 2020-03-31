@@ -5717,14 +5717,11 @@ window.App = (function () {
                  * @param {number} y The Y coordinate for the link to have.
                  */
                 getLinkToCoords: (x = 0, y = 0, scale = 20) => {
-                    var append = "";
-                    query.has("template") ? append += "&template=" + query.get("template") : 0;
-                    query.has("tw") ? append += "&tw=" + query.get("tw") : 0;
-                    query.has("oo") ? append += "&oo=" + query.get("oo") : 0;
-                    query.has("ox") ? append += "&ox=" + query.get("ox") : 0;
-                    query.has("oy") ? append += "&oy=" + query.get("oy") : 0;
-                    query.has("title") ? append += "&title=" + query.get("title") : "";
-                    return `${location.origin}/#x=${Math.floor(x)}&y=${Math.floor(y)}&scale=${scale}${append}`;
+                    const templateConfig = ['template', 'tw', 'oo', 'ox', 'oy', 'title']
+                        .filter(query.has)
+                        .map((conf) => `${conf}=${encodeURIComponent(query.get(conf))}`)
+                        .join('&')
+                    return `${location.origin}/#x=${Math.floor(x)}&y=${Math.floor(y)}&scale=${scale}&${templateConfig}`;
                 }
             };
             return {
