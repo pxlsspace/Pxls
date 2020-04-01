@@ -1472,8 +1472,21 @@ public class Database {
      * @param who The ID of the {@link User}.
      */
     private void decreasePixelCount(int who) {
-        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET pixel_count = pixel_count - 1, pixel_count_alltime = pixel_count_alltime - 1 WHERE id = :who")
-                .bind("who", who)
-                .execute());
+        if (!App.shouldIncreaseSomePixelCount()) return;
+        Config config = App.getConfig();
+        boolean increaseAllTime = config.getBoolean("pixelCounts.countTowardsAlltime");
+        boolean increaseCanvas = config.getBoolean("pixelCounts.countTowardsCurrent");
+        jdbi.useHandle(handle -> {
+            if (increaseAllTime) {
+                handle.createUpdate("UPDATE users SET pixel_count_alltime = pixel_count_alltime - 1 WHERE id = :who")
+                    .bind("who", who)
+                    .execute();
+            }
+            if (increaseCanvas) {
+                handle.createUpdate("UPDATE users SET pixel_count = pixel_count - 1 WHERE id = :who")
+                    .bind("who", who)
+                    .execute();
+            }
+        });
     }
 }
