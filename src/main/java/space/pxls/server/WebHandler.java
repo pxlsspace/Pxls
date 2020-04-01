@@ -819,29 +819,42 @@ public class WebHandler {
     }
 
     public void check(HttpServerExchange exchange) {
-        User user = parseUserFromForm(exchange);
-        if (user != null) {
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-            exchange.getResponseSender().send(App.getGson().toJson(
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+        if (data != null) {
+            // lookups are only nonce when in snip mode, which is typically only going to happen once or twice a year (at the time of writing). we'll short circuit on username most of the time.
+            User user = null;
+            if (data.contains("username")) {
+                user = App.getUserManager().getByName(data.getFirst("username").getValue());
+            } else if (data.contains("nonce")) {
+                DBChatMessage chatMessage = App.getDatabase().getChatMessageByNonce(data.getFirst("nonce").getValue());
+                if (chatMessage != null) {
+                    user = App.getUserManager().getByID(chatMessage.author_uid);
+                }
+            }
+
+            if (user != null) {
+                exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+                exchange.getResponseSender().send(App.getGson().toJson(
                     new ServerUserPixelInfo(user.getName(),
-                            user.getRole().name(),
-                            user.isBanned(),
-                            user.getBanExpiryTime(),
-                            user.getBanReason(),
-                            user.getPixels(),
-                            user.getPixelsAllTime(),
-                            user.getLogin().split(":")[0],
-                            user.isOverridingCooldown(),
-                            !user.canChat(),
-                            App.getDatabase().getChatBanReason(user.getId()),
-                            user.isPermaChatbanned(),
-                            user.getChatbanExpiryTime(),
-                            user.isRenameRequested(true),
-                            user.getDiscordName(),
-                            user.getChatNameColor()
+                        user.getRole().name(),
+                        user.isBanned(),
+                        user.getBanExpiryTime(),
+                        user.getBanReason(),
+                        user.getPixels(),
+                        user.getPixelsAllTime(),
+                        user.getLogin().split(":")[0],
+                        user.isOverridingCooldown(),
+                        !user.canChat(),
+                        App.getDatabase().getChatBanReason(user.getId()),
+                        user.isPermaChatbanned(),
+                        user.getChatbanExpiryTime(),
+                        user.isRenameRequested(true),
+                        user.getDiscordName(),
+                        user.getChatNameColor()
                     )));
-        } else {
-            exchange.setStatusCode(400);
+            } else {
+                exchange.setStatusCode(400);
+            }
         }
     }
 
@@ -1061,7 +1074,8 @@ public class WebHandler {
             services,
             App.getRegistrationEnabled(),
             Math.min(App.getConfig().getInt("chat.characterLimit"), 2048),
-            App.getConfig().getBoolean("chat.canvasBanRespected")
+            App.getConfig().getBoolean("chat.canvasBanRespected"),
+            App.getConfig().getBoolean("oauth.snipMode")
         )));
     }
 
@@ -1146,13 +1160,7 @@ public class WebHandler {
             App.getDatabase().insertLookup(user.getId(), exchange.getAttachment(IPReader.IP));
         }
 
-        if (user == null || user.getRole().lessThan(Role.TRIALMOD)) {
-            Optional<DBPixelPlacementUser> pp = App.getDatabase().getPixelAtUser(x, y);
-            exchange.getResponseSender().send(App.getGson().toJson(pp.orElse(null)));
-        } else {
-            Optional<DBPixelPlacement> pp = App.getDatabase().getPixelAt(x, y);
-            exchange.getResponseSender().send(App.getGson().toJson(pp.orElse(null)));
-        }
+        exchange.getResponseSender().send(App.getGson().toJson(((user == null) || user.getRole().lessThan(Role.TRIALMOD)) ? Lookup.fromDB(App.getDatabase().getPixelAtUser(x, y).orElse(null)) : ExtendedLookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null))));
     }
 
     public void report(HttpServerExchange exchange) {

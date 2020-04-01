@@ -1,5 +1,7 @@
 package space.pxls.server.packets.chat;
 
+import space.pxls.App;
+
 import java.util.List;
 
 public class ChatMessage {
@@ -13,7 +15,7 @@ public class ChatMessage {
 
     public ChatMessage(String nonce, String author, Long date, String message_raw, List<Badge> badges, List<String> authorNameClass, Number authorNameColor) {
         this.nonce = nonce;
-        this.author = author;
+        this.author = App.getConfig().getBoolean("oauth.snipMode") ? "-snip-" : author;
         this.date = date;
         this.message_raw = message_raw;
         this.badges = badges;
