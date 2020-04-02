@@ -2408,6 +2408,7 @@ window.App = (function () {
                             modal.showText("Failed captcha verification");
                             analytics("send", "event", "Captcha", "Failed");
                         }
+                        uiHelper.toggleCaptchaLoading(false);
                     });
                     socket.on("can_undo", function (data) {
                         document.body.classList.add("undo-visible");
@@ -2427,7 +2428,6 @@ window.App = (function () {
                             type: "captcha",
                             token: token
                         });
-                        uiHelper.toggleCaptchaLoading(false);
                         analytics("send", "event", "Captcha", "Sent")
                     };
                     self.elements.palette.on("wheel", e => {
