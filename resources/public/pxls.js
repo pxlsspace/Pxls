@@ -2219,23 +2219,23 @@ window.App = (function () {
                         }
                     }
                 },
-                place: function (x, y) {
+                place: function (x, y, color = null) {
                     if (!timer.cooledDown() || self.color === -1) { // nope can't place yet
                         return;
                     }
-                    self._place(x, y);
+                    self._place(x, y, color);
                 },
-                _place: function (x, y) {
-                    self.lastPixel = {
-                        x,
-                        y,
-                        color: self.color
-                    };
+                _place: function (x, y, color = null) {
+                    if (color == null) {
+                        color = self.color;
+                    }
+
+                    self.lastPixel = { x, y, color };
                     socket.send({
                         type: "pixel",
-                        x: x,
-                        y: y,
-                        color: self.color
+                        x,
+                        y,
+                        color
                     });
 
                     analytics("send", "event", "Pixels", "Place");
@@ -2406,8 +2406,7 @@ window.App = (function () {
                     });
                     socket.on("captcha_status", function (data) {
                         if (data.success) {
-                            self.switch(self.lastPixel.color);
-                            self._place(self.lastPixel.x, self.lastPixel.y);
+                            self._place(self.lastPixel.x, self.lastPixel.y, self.lastPixel.color);
 
                             analytics("send", "event", "Captcha", "Accepted");
                         } else {
