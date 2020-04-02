@@ -131,7 +131,8 @@ public class User {
         if (flaggedForCaptcha) return true;
 
         // Don't show captcha if we *just* had one and haven't had the chance to place yet
-        if (justShowedCaptcha) {
+        // or if the user is placing a stack
+        if (justShowedCaptcha || stacked > 1) {
             flaggedForCaptcha = false;
             justShowedCaptcha = false;
             return false;
