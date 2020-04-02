@@ -2181,6 +2181,7 @@ window.App = (function () {
                 },
                 audio: new Audio('place.wav'),
                 color: -1,
+                isDoingCaptcha: false,
                 lastPixel: null,
                 autoreset: true,
                 setAutoReset: function (v) {
@@ -2392,9 +2393,14 @@ window.App = (function () {
                             uiHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
                     });
                     socket.on("captcha_required", function (data) {
-                        uiHelper.toggleCaptchaLoading(true);
-                        grecaptcha.reset();
+                        if (!self.isDoingCaptcha) {
+                            uiHelper.toggleCaptchaLoading(true);
+                            grecaptcha.reset();
+                        }
+                        // always execute captcha in case the user closed a captcha popup
+                        // and couldn't bring it back up.
                         grecaptcha.execute();
+                        self.isDoingCaptcha = true;
 
                         analytics("send", "event", "Captcha", "Execute")
                     });
@@ -2424,6 +2430,7 @@ window.App = (function () {
                     });
                     self.elements.undo.click(self.undo);
                     window.recaptchaCallback = function (token) {
+                        self.isDoingCaptcha = false;
                         socket.send({
                             type: "captcha",
                             token: token
