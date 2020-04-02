@@ -48,18 +48,6 @@ kbd {
     border: 1px solid #333;
 }
 
-.drawer button {
-    border: 2px solid #333;
-    background-color: #555;
-    color: #eee;
-}
-
-.drawer select {
-    border: 2px solid #333;
-    background-color: #222;
-    color: #eee;
-}
-
 .palette-overlay {
     background-color: rgba(0, 0, 0, 0.9);
     color: #eee;
@@ -308,12 +296,4 @@ li.chat-line .user {
 
 .modal .modal-header, .modal .modal-footer {
     background-color: #292929;
-}
-
-/* Mobile */
-
-@media (max-width: 768px) {
-    .drawer-content > div:not(.close) {
-        border: 1px solid #444;
-    }
 }
