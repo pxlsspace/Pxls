@@ -756,6 +756,7 @@ window.App = (function () {
                         lookup.runLookup(args.x, args.y);
                     }
                 },
+                webInfo: false,
                 updateViewport: function (data) {
                     if (!isNaN(data.scale)) self.scale = parseFloat(data.scale);
                     self.centerOn(data.x, data.y);
@@ -1127,6 +1128,7 @@ window.App = (function () {
                         uiHelper.setMax(data.maxStacked);
                         chat.webinit(data);
                         chromeOffsetWorkaround.update();
+                        self.webInfo = data;
                         if (data.captchaKey) {
                             $(".g-recaptcha").attr("data-sitekey", data.captchaKey);
 
@@ -1463,7 +1465,13 @@ window.App = (function () {
                         coords.lockIcon.fadeIn(200);
                     ls.set('canvas.unlocked', self.allowDrag);
                 },
-                validateCoordinates: self.validateCoordinates
+                validateCoordinates: self.validateCoordinates,
+                get webInfo() {
+                    return self.webInfo;
+                },
+                get snipMode() {
+                    return self.webInfo && self.webInfo.snipMode === true;
+                }
             };
         })(),
         // heatmap init stuff
@@ -4717,7 +4725,7 @@ window.App = (function () {
                     }
                     self.typeahead.helper.getDatabase('users').addEntry(packet.author, packet.author);
                     if (self.ignored.indexOf(packet.author) >= 0) return;
-                    let hasPing = ls.get('chat.pings-enabled') === true && user.isLoggedIn() && packet.message_raw
+                    let hasPing = !board.snipMode && ls.get('chat.pings-enabled') === true && user.isLoggedIn() && packet.message_raw
                         .toLowerCase()
                         .split(' ')
                         .some((s) => s.search(new RegExp(`@${user.getUsername().toLowerCase()}(?![a-zA-Z0-9_\-])`)) == 0);
@@ -5202,7 +5210,7 @@ window.App = (function () {
                             });
 
                             let _purgeWrap = crel('div', {'style': 'display: block;'});
-                            let _rbPurgeYes = crel('input', {'type': 'radio', 'name': 'rbPurge', 'checked': 'true'});
+                            let _rbPurgeYes = crel('input', {'type': 'radio', 'name': 'rbPurge', 'checked': String(!board.snipMode)});
                             let _rbPurgeNo = crel('input', {'type': 'radio', 'name': 'rbPurge'});
 
                             let _reasonWrap = crel('div', {'style': 'display: block;'});
@@ -5224,7 +5232,7 @@ window.App = (function () {
                                     _selBanReason,
                                     crel(_additionalReasonInfoWrap, _txtAdditionalReason)
                                 ),
-                                crel(_purgeWrap,
+                                board.snipMode ? null : crel(_purgeWrap,
                                     crel('h5', 'Purge Messages'),
                                     crel('label', {'style': 'display: inline;'}, _rbPurgeYes, 'Yes'),
                                     crel('label', {'style': 'display: inline;'}, _rbPurgeNo, 'No')
@@ -5264,7 +5272,7 @@ window.App = (function () {
                                 let postData = {
                                     type: 'temp',
                                     reason: 'none provided',
-                                    removalAmount: _rbPurgeYes.checked ? -1 : 0,
+                                    removalAmount: !board.snipMode ? (_rbPurgeYes.checked ? -1 : 0) : 0, // message purges are based on username, so if we purge when everyone in chat is -snip-, we aren't gonna have a good time
                                     banLength: 0
                                 };
 
@@ -5321,7 +5329,6 @@ window.App = (function () {
                                 nonce: this.dataset.nonce,
                                 reason: _txtReason.value
                             }, () => {
-                                deleteWrapper.remove();
                                 modal.closeAll();
                             }).fail(() => {
                                 modal.showText('Failed to delete');
@@ -5423,12 +5430,18 @@ window.App = (function () {
                         }
                         case 'lookup-mod': {
                             if (user.admin && user.admin.checkUser && user.admin.checkUser.check) {
-                                user.admin.checkUser.check(reportingTarget);
+                                let type = board.snipMode ? 'nonce' : 'username';
+                                let arg = board.snipMode ? this.dataset.nonce : reportingTarget;
+                                user.admin.checkUser.check(arg, type);
                             }
                             break;
                         }
                         case 'lookup-chat': {
-                            socket.send({type: 'ChatLookup', who: reportingTarget});
+                            socket.send({
+                                type: 'ChatLookup',
+                                arg: board.snipMode ? this.dataset.nonce : reportingTarget,
+                                mode: board.snipMode ? 'nonce' : 'username'
+                            });
                             break;
                         }
                         case 'request-rename': {
@@ -5784,14 +5797,11 @@ window.App = (function () {
                  * @param {number} y The Y coordinate for the link to have.
                  */
                 getLinkToCoords: (x = 0, y = 0, scale = 20) => {
-                    var append = "";
-                    query.has("template") ? append += "&template=" + query.get("template") : 0;
-                    query.has("tw") ? append += "&tw=" + query.get("tw") : 0;
-                    query.has("oo") ? append += "&oo=" + query.get("oo") : 0;
-                    query.has("ox") ? append += "&ox=" + query.get("ox") : 0;
-                    query.has("oy") ? append += "&oy=" + query.get("oy") : 0;
-                    query.has("title") ? append += "&title=" + query.get("title") : "";
-                    return `${location.origin}/#x=${Math.floor(x)}&y=${Math.floor(y)}&scale=${scale}${append}`;
+                    const templateConfig = ['template', 'tw', 'oo', 'ox', 'oy', 'title']
+                        .filter(query.has)
+                        .map((conf) => `${conf}=${encodeURIComponent(query.get(conf))}`)
+                        .join('&')
+                    return `${location.origin}/#x=${Math.floor(x)}&y=${Math.floor(y)}&scale=${scale}&${templateConfig}`;
                 }
             };
             return {
@@ -6437,5 +6447,6 @@ window.App = (function () {
         },
         chat,
         typeahead: chat.typeahead,
+        modal,
     };
 })();

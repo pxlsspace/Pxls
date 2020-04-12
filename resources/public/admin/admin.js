@@ -275,11 +275,11 @@
                 deinit: function () {
                     self.elements.check.remove();
                 },
-                check: function (username) {
-                    $.post("/admin/check", {
-                        username: username
-                    }, self.callback).fail(function () {
-                        admin.modal.showText(`User ${username} not found.`);
+                check: function (arg, type='username') {
+                    let toPost = {};
+                    toPost[type] = arg;
+                    $.post("/admin/check", toPost, self.callback).fail(function () {
+                        admin.modal.showText(`${type} ${arg} not found.`);
                     });
                 },
                 popUnban: username => {
