@@ -32,8 +32,8 @@ import java.util.stream.Collectors;
 public class WebHandler {
     private PebbleEngine engine;
     private Map<String, AuthService> services = new ConcurrentHashMap<>();
-    public static final String TEMPLATE_PROFILE = "public/profile/views/profile.html";
-    public static final String TEMPLATE_404 = "public/profile/views/404.html";
+    public static final String TEMPLATE_PROFILE = "public/pebble_templates/profile.html";
+    public static final String TEMPLATE_404 = "public/pebble_templates/404.html";
 
     public WebHandler() {
         addServiceIfAvailable("reddit", new RedditAuthService("reddit"));
