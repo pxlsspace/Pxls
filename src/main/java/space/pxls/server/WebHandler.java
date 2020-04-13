@@ -33,7 +33,7 @@ public class WebHandler {
     private PebbleEngine engine;
     private Map<String, AuthService> services = new ConcurrentHashMap<>();
     public static final String TEMPLATE_PROFILE = "public/pebble_templates/profile.html";
-    public static final String TEMPLATE_404 = "public/pebble_templates/404.html";
+    public static final String TEMPLATE_40X = "public/pebble_templates/40x.html";
 
     public WebHandler() {
         addServiceIfAvailable("reddit", new RedditAuthService("reddit"));
@@ -113,11 +113,29 @@ public class WebHandler {
         }
     }
 
+    public void view40x(HttpServerExchange exchange, int x, User user) {
+        if (x < 100) x = x + 400;
+        Map<String,Object> m = new HashMap<>();
+        m.put("err", x);
+        if (user != null) {
+            m.put("requesting_user", x);
+        }
+        String toRet = String.format("<p style=\"text-align: center;\">Socc broke the %d page! Let someone know please :) <a href=\"/\">Back to Root</a></p>", x);
+        try {
+            Writer writer = new StringWriter();
+            engine.getTemplate(TEMPLATE_40X).evaluate(writer, m);
+            toRet = writer.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        exchange.setStatusCode(x);
+        exchange.getResponseSender().send(toRet);
+    }
+
     public void profileView(HttpServerExchange exchange) {
         final User user = exchange.getAttachment(AuthReader.USER);
         if (user == null) {
-            exchange.setStatusCode(403);
-            exchange.getResponseSender().send("<p style=\"text-align: center;\">Socc forgot to add a 403 page :)</p>");
+            view40x(exchange, 403, null);
         } else {
             PathTemplateMatch match = exchange.getAttachment(PathTemplateMatch.ATTACHMENT_KEY);
             String requested = match.getParameters().computeIfAbsent("who", s -> user.getName());
@@ -130,16 +148,7 @@ public class WebHandler {
             m.put("requesting_user", user);
 
             if (profileUser == null) {
-                String toRet = "<p style=\"text-align: center;\">Socc broke the 404 page! Let someone know please :) <a href=\"/\">Home</a></p>";
-                try {
-                    Writer writer = new StringWriter();
-                    engine.getTemplate(TEMPLATE_404).evaluate(writer, m);
-                    toRet = writer.toString();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                exchange.setStatusCode(404);
-                exchange.getResponseSender().send(toRet);
+                view40x(exchange, 404, user);
             } else {
                 String toRet = "<p style=\"text-align: center;\">Socc probably broke something... let someone know please.</p>";
                 try {
