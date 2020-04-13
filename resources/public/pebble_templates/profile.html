@@ -227,6 +227,8 @@
                             <div class="card-body p-0 body-collapse-target collapse">
                                 <div class="p-3">
                                     {# This loop only fires when on our own profile. We can't leave a faction we own, we can only transfer ownership, so no point in showing ourselves in the member list. #}
+                                    {# since we can't leave the faction until we transfer, if there's only one member in the list it's assumed to be the owner. we don't want to show ourself in the list #}
+                                    {% if faction.fetchMembers|length > 1 %}
                                     {% for member in faction.fetchMembers %}
                                     {% if member.id != profile_of.id %}
                                     <div class="row member-row mb-1" data-member="{{member.name}}">
@@ -239,9 +241,10 @@
                                         </div>
                                     </div>
                                     {% endif %}
+                                    {% endfor %}
                                     {% else %}
                                     <p class="text-muted text-center mb-0">Nothing to see here!</p>
-                                    {% endfor %}
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -262,7 +265,7 @@
                                         </div>
                                     </div>
                                     {% else %}
-                                    <p class="text-muted text-center">Nothing to see here!</p>
+                                    <p class="text-muted text-center mb-0">Nothing to see here!</p>
                                     {% endfor %}
                                 </div>
                             </div>
