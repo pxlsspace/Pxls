@@ -6,8 +6,8 @@ public class ExtendedLookup extends Lookup {
     public final String login;
     public final String userAgent;
 
-    public ExtendedLookup(int id, int x, int y, int pixel_count, int pixel_count_alltime, long time, String username, String discordName, String login, String userAgent) {
-        super(id, x, y, pixel_count, pixel_count_alltime, time, username, discordName);
+    public ExtendedLookup(int id, int x, int y, int pixel_count, int pixel_count_alltime, long time, String username, String discordName, String faction, String login, String userAgent) {
+        super(id, x, y, pixel_count, pixel_count_alltime, time, username, discordName, faction);
         this.login = login;
         this.userAgent = userAgent;
 
@@ -20,6 +20,6 @@ public class ExtendedLookup extends Lookup {
 
     public static ExtendedLookup fromDB(DBPixelPlacement pixelPlacement) {
         if (pixelPlacement == null) return null;
-        return new ExtendedLookup(pixelPlacement.id, pixelPlacement.x, pixelPlacement.y, pixelPlacement.pixel_count, pixelPlacement.pixel_count_alltime, pixelPlacement.time, pixelPlacement.username, pixelPlacement.discordName, pixelPlacement.login, pixelPlacement.userAgent);
+        return new ExtendedLookup(pixelPlacement.id, pixelPlacement.x, pixelPlacement.y, pixelPlacement.pixel_count, pixelPlacement.pixel_count_alltime, pixelPlacement.time, pixelPlacement.username, pixelPlacement.discordName, pixelPlacement.faction, pixelPlacement.login, pixelPlacement.userAgent);
     }
 }
