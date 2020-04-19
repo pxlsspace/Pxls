@@ -104,7 +104,7 @@ An example CAPTCHA section could look like this:
 
 Commands are entered directly into the running instance (stdin):
 
-- `reload` - Reloads the main configuration, applying _most_ changes immediately.
+- `reload` - Reloads the main configuration, applying _most_ changes immediately. Also reloads the user and faction cache.
 - `save` - Saves the map.
 - `role <user> <role>` - Changes the role of the user. The role can be either `USER`, `TRIALMOD`, `MODERATOR`, `DEVELOPER`, or `ADMIN`.
 - `alert <text>` - Sends an popup-like alert to all users on the canvas.
@@ -131,6 +131,7 @@ Commands are entered directly into the running instance (stdin):
 - `senduserdata` - Broadcasts the non-idle user count in chat
 - `addnotification <title> <expiry> <body>` - Adds a notification to the notification panel. A "+x" on the `expiry` makes the expiry now + x in seconds.
 - `bp <json packet>` broadcast a raw packet to everyone online.
+- `f <faction_id> [delete|tag|name [<new_value>]]` updates a faction. if <new_value> is omitted, then the console will print the current values.
 
 ## Contributors
 
