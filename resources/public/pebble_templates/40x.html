@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport"
+              content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Pxls</title>
+        <script src="/jquery-3.4.1.min.js"></script>
+        <script src="/profile/js/bootstrap.bundle.min.js"></script>
+        <link rel="stylesheet" href="/profile/css/theme-purple.min.css">
+        <link rel="stylesheet" href="/fontawesome-all.min.css">
+    </head>
+    <body data-palette="{% if palette is not null %}{{palette | join(',')}}{% endif %}" data-faction-max-tag="{{max_faction_tag_length|default(99999)}}" data-faction-max-name="{{max_faction_name_length|default(99999)}}">
+        <nav class="navbar navbar-dark navbar-expand-md" role="nav">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a href="/" class="nav-link">Pxls</a>
+                </li>
+            </ul>
+            {% if requesting_user is not null %}
+            <div class="my-2 my-lg-0">
+                <div class="dropdown">
+                    <button class="navbar-text btn btn-link dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false" aria-haspopup="true" id="btnNavUserDropdown">
+                        <i class="fas fa-user-alt mr-1"></i>{{requesting_user.name}}
+                    </button>
+                    <div class="dropdown-menu dropdown-menu-right" id="navUserDropdown" aria-labelledby="btnNavUserDropdown">
+                        <a href="/profile?action=details" class="dropdown-item">My Profile</a>
+                        <a href="/profile?action=factions" class="dropdown-item">My Factions</a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </nav>
+        <main role="main" class="mb-3">
+            <div class="container">
+                {% if err == 404 %}
+                <h1>Not Found</h1>
+                <hr>
+                <p>The content you requested could not be found at this URL. If you believe this is an error, please contact a developer.</p>
+                <div class="d-block">
+                    <a href="/" class="btn btn-primary mr-1"><i class="fas fa-arrow-left"></i> Back to Pxls</a>
+                    <a href="/profile" class="btn btn-primary mr-1"><i class="fas fa-user"></i> My Profile</a>
+                </div>
+                {% elseif err == 403 %}
+                <h1>Not Authenticated</h1>
+                <hr>
+                <p>You must be logged in to access this data. Please go back to pxls and go through the authentication process.</p>
+                <div class="d-block">
+                    <a href="/" class="btn btn-primary mr-1"><i class="fas fa-arrow-left"></i> Back to Pxls</a>
+                </div>
+                {% else %}
+                <h1>Not Allowed</h1>
+                <hr>
+                <p>The action you attempted to perform is not allowed or resulted in an error. Please ensure you have access to the endpoint and try again later.</p>
+                <div class="d-block">
+                    <a href="/" class="btn btn-primary mr-1"><i class="fas fa-arrow-left"></i> Back to Pxls</a>
+                    <a href="/profile" class="btn btn-primary mr-1"><i class="fas fa-user"></i> My Profile</a>
+                </div>
+                {% endif %}
+            </div>
+        </main>
+        <script src="/profile/js/views/root.js"></script>
+    </body>
+</html>

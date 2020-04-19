@@ -15,11 +15,14 @@ import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBPixelPlacement;
 import space.pxls.server.packets.chat.*;
 import space.pxls.server.packets.socket.*;
+import space.pxls.user.Faction;
 import space.pxls.user.Role;
 import space.pxls.user.User;
-import space.pxls.util.ChatFilter;
+import space.pxls.util.TextFilter;
 import space.pxls.util.RateLimitFactory;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -141,7 +144,24 @@ public class PacketHandler {
 
     private void handleChatLookup(WebSocketChannel channel, User user, ClientChatLookup obj) {
         if (user.getRole().greaterEqual(Role.TRIALMOD)) {
-            ServerChatLookup scl = App.getDatabase().runChatLookupForUsername(obj.getWho());
+            ServerChatLookup scl;
+            String username = obj.getArg();
+            if (obj.getMode().equalsIgnoreCase("cmid")) {
+                Integer i = null;
+                try {
+                    i = Integer.parseInt(obj.getArg());
+                } catch (NumberFormatException nfe) {
+                    server.send(channel, new ServerError("Invalid message ID supplied"));
+                }
+                if (i != null) {
+                    DBChatMessage chatMessage = App.getDatabase().getChatMessageByID(i);
+                    if (chatMessage != null) {
+                        User fromChatMessage = App.getUserManager().getByID(chatMessage.author_uid);
+                        username = fromChatMessage != null ? fromChatMessage.getName() : null;
+                    }
+                }
+            }
+            scl = username != null ? App.getDatabase().runChatLookupForUsername(username, App.getConfig().getInt("chat.chatLookupScrollbackAmount")) : null;
             server.send(channel, scl == null ? new ServerError("User doesn't exist") : scl);
         } else {
             server.send(channel, new ServerError("Missing Permissions"));
@@ -365,7 +385,7 @@ public class PacketHandler {
 
     public void handleClientUserUpdate(WebSocketChannel channel, User user, ClientUserUpdate clientUserUpdate) {
         Map<String,String> map = clientUserUpdate.getUpdates();
-        Map<String,String> toBroadcast = new HashMap<>();
+        Map<String,Object> toBroadcast = new HashMap<>();
 
         String nameColor = map.get("NameColor");
         if (nameColor != null && !nameColor.trim().isEmpty()) {
@@ -387,7 +407,7 @@ public class PacketHandler {
             }
         }
 
-        if (toBroadcast.size() > 0) {
+        if (!App.getConfig().getBoolean("oauth.snipMode") && toBroadcast.size() > 0) {
             server.broadcast(new ServerChatUserUpdate(user.getName(), toBroadcast));
         }
     }
@@ -413,7 +433,7 @@ public class PacketHandler {
         if (message.length() > charLimit) message = message.substring(0, charLimit);
         if (user == null) { //console
             Integer cmid = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "");
-            server.broadcast(new ServerChatMessage(new ChatMessage(cmid, "CONSOLE", nowMS / 1000L, message, null, null, 0)));
+            server.broadcast(new ServerChatMessage(new ChatMessage(cmid, "CONSOLE", nowMS / 1000L, message, null, null, 0, null)));
         } else {
             if (!user.canChat()) return;
             if (message.trim().length() == 0) return;
@@ -426,14 +446,15 @@ public class PacketHandler {
                     String toSend = bracketTranslator.translate(message); //filter out brackets before we do anything else so it's filtered in db
                     if (App.getConfig().getBoolean("chat.trimInput"))
                         toSend = toSend.trim();
-                    if (App.getConfig().getBoolean("chat.filter.enabled")) {
-                        ChatFilter.FilterResult result = ChatFilter.getInstance().filter(toSend);
+                    Faction usersFaction = user.fetchDisplayedFaction();
+                    if (App.getConfig().getBoolean("textFilter.enabled")) {
+                        TextFilter.FilterResult result = TextFilter.getInstance().filter(toSend);
                         toSend = result.filterHit ? result.filtered : result.original;
                         Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toSend);
-                        server.broadcast(new ServerChatMessage(new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor())));
+                        server.broadcast(new ServerChatMessage(new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction)));
                     } else {
                         Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, "");
-                        server.broadcast(new ServerChatMessage(new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor())));
+                        server.broadcast(new ServerChatMessage(new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction)));
                     }
                 } catch (UnableToExecuteStatementException utese) {
                     utese.printStackTrace();

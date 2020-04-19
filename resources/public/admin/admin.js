@@ -23,10 +23,6 @@
 				evt.stopPropagation();
 			});
         },
-        genUserInfoLink = function(username) {
-            const userInfoURL = "https://admin." + location.host + "/userinfo/" + username;
-            return $("<a>").text(username).attr("href", userInfoURL).attr("target", "_blank");
-        },
         ban = (function() {
             var self = {
                 elements: {
@@ -193,9 +189,12 @@
                     }
                     chatbannedStr = data.chatbanIsPerma ? `Yes (permanent)` : (data.chatBanned ? `Yes` : `No`);
                     var items = [
-                        ["Username", genUserInfoLink(data.username)],
+                        ["Username", crel('a', {'href': `https://admin.${location.host}/userinfo/${data.username}`, 'target': '_blank'}, data.username)],
+                        ["Profile", crel('a', {'href': `/profile/${data.username}`, 'target': '_blank'}, data.username)],
                         ["Login", data.login],
                         ["Role", data.role],
+                        ["Pixels", data.pixels],
+                        ["All Time Pixels", data.pixelsAllTime],
                         ["Rename Requested", data.renameRequested ? "Yes" : "No"],
                         ["Discord Name", data.discordName || "(not set)"],
                         ["Banned", bannedStr],
@@ -276,11 +275,11 @@
                 deinit: function () {
                     self.elements.check.remove();
                 },
-                check: function (username) {
-                    $.post("/admin/check", {
-                        username: username
-                    }, self.callback).fail(function () {
-                        admin.modal.showText(`User ${username} not found.`);
+                check: function (arg, type='username') {
+                    let toPost = {};
+                    toPost[type] = arg;
+                    $.post("/admin/check", toPost, self.callback).fail(function () {
+                        admin.modal.showText(`${type} ${arg} not found.`);
                     });
                 },
                 popUnban: username => {
@@ -393,7 +392,7 @@
                  */
                 init: function () {
                     App.lookup.replaceHook("username", {
-                        get: data => genUserInfoLink(data.username)
+                        get: data => crel('span', crel('a', {'href': `https://admin.${location.host}/userinfo/${data.username}`, 'target': '_blank'}, data.username), ' (', crel('a', {'href': `/profile/${data.username}`, 'target': '_blank'}, 'profile'), ')')
                     });
                     App.lookup.registerHook({
                         id: "login",

@@ -10,6 +10,7 @@ import space.pxls.server.packets.chat.Badge;
 import space.pxls.server.packets.chat.ChatMessage;
 import space.pxls.server.packets.chat.ServerChatLookup;
 import space.pxls.user.Chatban;
+import space.pxls.user.Faction;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 
@@ -24,7 +25,7 @@ import static java.lang.Math.toIntExact;
 
 public class Database {
     private final Jdbi jdbi;
-    private static final String SQL_USER_BY_NAME = "SELECT id, stacked, username, login, signup_time, cooldown_expiry, role, ban_expiry, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color FROM users WHERE username = :username";
+    private static final String SQL_USER_BY_NAME = "SELECT id, stacked, username, login, signup_time, cooldown_expiry, role, ban_expiry, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color, displayed_faction FROM users WHERE username = :username";
 
     public Database() {
         try {
@@ -86,7 +87,8 @@ public class Database {
                     "stacked INT DEFAULT 0," +
                     "is_rename_requested BOOL NOT NULL DEFAULT false," +
                     "discord_name VARCHAR(37)," +
-                    "chat_name_color INT NOT NULL)")
+                    "chat_name_color INT NOT NULL," +
+                    "displayed_faction INT)")
                     .execute();
             // sessions
             handle.createUpdate("CREATE TABLE IF NOT EXISTS sessions ("+
@@ -165,7 +167,7 @@ public class Database {
             handle.createUpdate("CREATE TABLE IF NOT EXISTS chat_reports (" +
                     "id SERIAL NOT NULL PRIMARY KEY," +
                     "time INT DEFAULT NULL," +
-                    "cmid BIGSERIAL NOT NULL," +
+                    "cmid BIGINT NOT NULL," +
                     "report_message TEXT NOT NULL," +
                     "target INT NOT NULL," +
                     "initiator INT NOT NULL," +
@@ -200,6 +202,36 @@ public class Database {
                     "reason TEXT NOT NULL," +
                     "purged BOOL NOT NULL);")
                     .execute();
+            // factions
+            handle.createUpdate("CREATE TABLE IF NOT EXISTS faction (" +
+                "  id SERIAL NOT NULL PRIMARY KEY," +
+                "  name TEXT NOT NULL," +
+                "  tag TEXT NOT NULL," +
+                "  color INT NOT NULL DEFAULT 0," +
+                "  owner INT NOT NULL REFERENCES users(id)," +
+                "  created TIMESTAMP NOT NULL DEFAULT NOW()," +
+                "  \"canvasCode\" INT NOT NULL DEFAULT 0" +
+                ");" +
+                "CREATE INDEX IF NOT EXISTS _faction_name ON faction (\"name\");" +
+                "CREATE INDEX IF NOT EXISTS _faction_tag ON faction (tag);" +
+                "CREATE INDEX IF NOT EXISTS _owner ON faction (owner);")
+                .execute();
+            handle.createUpdate("CREATE TABLE IF NOT EXISTS faction_membership (" +
+                "  fid INT NOT NULL REFERENCES faction(id)," +
+                "  uid INT NOT NULL REFERENCES users(id)" +
+                ");" +
+                "CREATE INDEX IF NOT EXISTS _faction_membership_fid ON faction_membership(fid);" +
+                "CREATE INDEX IF NOT EXISTS _faction_membership_uuid ON faction_membership(uid);" +
+                "CREATE UNIQUE INDEX IF NOT EXISTS _faction_membership_uid_fid_pair ON faction_membership(uid, fid);")
+                .execute();
+            handle.createUpdate("CREATE TABLE IF NOT EXISTS faction_ban (" +
+                "  fid INT NOT NULL REFERENCES faction(id)," +
+                "  uid INT NOT NULL REFERENCES users(id)" +
+                ");" +
+                "CREATE INDEX IF NOT EXISTS _faction_ban_fid ON faction_ban(fid);" +
+                "CREATE INDEX IF NOT EXISTS _faction_ban_uuid ON faction_ban(uid);" +
+                "CREATE UNIQUE INDEX IF NOT EXISTS _faction_ban_uid_fid_pair ON faction_ban(uid, fid);")
+                .execute();
         });
     }
 
@@ -257,7 +289,7 @@ public class Database {
     public Optional<DBPixelPlacement> getPixelAt(int x, int y) {
         Optional<DBPixelPlacement> pp;
         try {
-            pp = jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.secondary_id, p.time, p.undo_action, u.id as u_id, u.username, u.login, u.role, u.ban_expiry, u.pixel_count, u.pixel_count_alltime, u.ban_reason, u.user_agent, u.discord_name FROM pixels p LEFT JOIN users u ON p.who = u.id WHERE p.x = :x AND p.y = :y AND p.most_recent ORDER BY p.time DESC LIMIT 1")
+            pp = jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.secondary_id, p.time, p.undo_action, u.id as u_id, u.username, u.login, u.role, u.ban_expiry, u.pixel_count, u.pixel_count_alltime, u.ban_reason, u.user_agent, u.discord_name, f.name as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.x = :x AND p.y = :y AND p.most_recent ORDER BY p.time DESC LIMIT 1")
                     .bind("x", x)
                     .bind("y", y)
                     .map(new DBPixelPlacement.Mapper())
@@ -280,7 +312,7 @@ public class Database {
     public Optional<DBPixelPlacementUser> getPixelAtUser(int x, int y) {
         Optional<DBPixelPlacementUser> pp;
         try {
-            pp = jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.time, u.id as u_id, u.username, u.ban_expiry, u.pixel_count, u.pixel_count_alltime, u.login as u_login, u.discord_name FROM pixels p LEFT JOIN users u ON p.who = u.id WHERE p.x = :x AND p.y = :y AND p.most_recent ORDER BY p.time DESC LIMIT 1")
+            pp = jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.time, u.id as u_id, u.username, u.ban_expiry, u.pixel_count, u.pixel_count_alltime, u.login as u_login, u.discord_name, f.name as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.x = :x AND p.y = :y AND p.most_recent ORDER BY p.time DESC LIMIT 1")
                     .bind("x", x)
                     .bind("y", y)
                     .map(new DBPixelPlacementUser.Mapper())
@@ -304,12 +336,12 @@ public class Database {
         Optional<DBPixelPlacement> pp;
         try {
             if (handle == null)
-                pp = jdbi.withHandle(handle2 -> handle2.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.undo_action, u.id as u_id, u.username, u.login, u.role, u.ban_expiry, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.discord_name FROM pixels p LEFT JOIN users u ON p.who = u.id WHERE p.id = :id")
+                pp = jdbi.withHandle(handle2 -> handle2.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.undo_action, u.id as u_id, u.username, u.login, u.role, u.ban_expiry, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.discord_name, f.name as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.id = :id")
                         .bind("id", id)
                         .map(new DBPixelPlacement.Mapper())
                         .findFirst());
             else
-                pp = handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.undo_action, u.id as u_id, u.username, u.login, u.role, u.ban_expiry, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.discord_name FROM pixels p LEFT JOIN users u ON p.who = u.id WHERE p.id = :id")
+                pp = handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.undo_action, u.id as u_id, u.username, u.login, u.role, u.ban_expiry, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.discord_name, f.name as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.id = :id")
                         .bind("id", id)
                         .map(new DBPixelPlacement.Mapper())
                         .findFirst();
@@ -585,7 +617,7 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> getUserByLogin(String login) {
-        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, login, signup_time, cooldown_expiry, role, ban_expiry, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color FROM users WHERE login = :login")
+        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, login, signup_time, cooldown_expiry, role, ban_expiry, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color, displayed_faction FROM users WHERE login = :login")
                 .bind("login", login)
                 .map(new DBUser.Mapper())
                 .findFirst());
@@ -609,7 +641,7 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> getUserByID(int who) {
-        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, login, signup_time, cooldown_expiry, role, ban_expiry, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color FROM users WHERE id = :who")
+        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, login, signup_time, cooldown_expiry, role, ban_expiry, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color, displayed_faction FROM users WHERE id = :who")
                 .bind("who", who)
                 .map(new DBUser.Mapper())
                 .findFirst());
@@ -621,7 +653,7 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> getUserByToken(String token) {
-        return jdbi.withHandle(handle -> handle.select("SELECT u.id, u.stacked, u.username, u.login, u.signup_time, u.cooldown_expiry, u.role, u.ban_expiry, u.signup_ip, u.last_ip, u.last_ip_alert, u.perma_chat_banned, u.chat_ban_expiry, u.chat_ban_reason, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.discord_name, u.chat_name_color FROM users u INNER JOIN sessions s ON u.id = s.who WHERE s.token = :token")
+        return jdbi.withHandle(handle -> handle.select("SELECT u.id, u.stacked, u.username, u.login, u.signup_time, u.cooldown_expiry, u.role, u.ban_expiry, u.signup_ip, u.last_ip, u.last_ip_alert, u.perma_chat_banned, u.chat_ban_expiry, u.chat_ban_reason, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.discord_name, u.chat_name_color, u.displayed_faction FROM users u INNER JOIN sessions s ON u.id = s.who WHERE s.token = :token")
                 .bind("token", token)
                 .map(new DBUser.Mapper())
                 .findFirst());
@@ -934,7 +966,27 @@ public class Database {
                 .bind("x", x)
                 .bind("y", y)
                 .bind("message", message)
-                .execute());
+                .executeAndReturnGeneratedKeys("id")
+                .mapTo(Integer.TYPE)
+                .first());
+    }
+
+    public List<DBChatReport> getChatReportsFromUser(int uid) {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("SELECT * FROM chat_reports WHERE initiator = :uid ORDER BY time DESC")
+                .bind("uid", uid)
+                .map(new DBChatReport.Mapper())
+                .list()
+        );
+    }
+
+    public List<DBCanvasReport> getCanvasReportsFromUser(int uid) {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("SELECT * FROM reports WHERE who = :uid ORDER BY time DESC")
+                .bind("uid", uid)
+                .map(new DBCanvasReport.Mapper())
+                .list()
+        );
     }
 
     /**
@@ -942,11 +994,13 @@ public class Database {
      * @param reported The banned {@link User}'s ID.
      * @param message The report message.
      */
-    public void insertServerReport(int reported, String message) {
-        jdbi.useHandle(handle -> handle.createUpdate("INSERT INTO reports (who, pixel_id, x, y, message, reported, time) VALUES (0, 0, 0, 0, :message, :reported, (SELECT EXTRACT(EPOCH FROM NOW())))")
+    public Integer insertServerReport(int reported, String message) {
+        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO reports (who, pixel_id, x, y, message, reported, time) VALUES (0, 0, 0, 0, :message, :reported, (SELECT EXTRACT(EPOCH FROM NOW())))")
                 .bind("message", message)
                 .bind("reported", reported)
-                .execute());
+                .executeAndReturnGeneratedKeys("id")
+                .mapTo(Integer.TYPE)
+                .first());
     }
 
     /**
@@ -1132,6 +1186,7 @@ public class Database {
             List<Badge> badges = new ArrayList<>();
             String author = "CONSOLE";
             int nameColor = 0;
+            Faction faction = null;
             String parsedMessage = dbChatMessage.content; //TODO https://github.com/atlassian/commonmark-java
             List<String> nameClass = null;
             if (dbChatMessage.author_uid > 0) {
@@ -1142,9 +1197,10 @@ public class Database {
                     badges = temp.getChatBadges();
                     nameColor = temp.getChatNameColor();
                     nameClass = temp.getChatNameClasses();
+                    faction = temp.fetchDisplayedFaction();
                 }
             }
-            toReturn.add(new ChatMessage(dbChatMessage.id, author, dbChatMessage.sent, App.getConfig().getBoolean("chat.filter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameClass, nameColor));
+            toReturn.add(new ChatMessage(dbChatMessage.id, author, dbChatMessage.sent, App.getConfig().getBoolean("textFilter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameClass, nameColor, faction));
         }
         return toReturn;
     }
@@ -1205,7 +1261,9 @@ public class Database {
                 .bind("target", targetID)
                 .bind("initiator", initiatorID)
                 .bind("report_message", reportMessage)
-                .execute());
+                .executeAndReturnGeneratedKeys("id")
+                    .mapTo(Integer.TYPE)
+                    .first());
     }
 
     /**
@@ -1229,7 +1287,7 @@ public class Database {
      */
     public void purgeChat(User target, User initiator, int amount, String reason, boolean broadcast) {
         jdbi.useHandle(handle -> handle.createUpdate("UPDATE chat_messages SET purged = true, purged_by = :initiator WHERE author = :who")
-                .bind("initiator", initiator.getId())
+                .bind("initiator", initiator == null ? 0 : initiator.getId())
                 .bind("who", target.getId())
                 .execute());
         String initiatorName = initiator == null ? "CONSOLE" : initiator.getName();
@@ -1291,9 +1349,10 @@ public class Database {
      * Returns the requested user's last 100 messages and chatbans.
      *
      * @param username The {@link User}'s name to look up.
+     * @param history_limit The maximum number of chat message history to fetch.
      * @return The requested user's last 100 messages and chatbans.
      */
-    public ServerChatLookup runChatLookupForUsername(String username) {
+    public ServerChatLookup runChatLookupForUsername(String username, int history_limit) {
         // we want to run all these queries with their own handle so we don't hit the pool x times.
         return jdbi.withHandle(handle -> {
             Optional<DBUser> dbu = handle.createQuery(SQL_USER_BY_NAME)
@@ -1308,8 +1367,9 @@ public class Database {
                     .map(new DBExtendedChatban.Mapper())
                     .list();
 
-            List<DBChatMessage> messages = handle.createQuery("SELECT * FROM chat_messages WHERE author = :uid ORDER BY sent DESC LIMIT 100")
+            List<DBChatMessage> messages = handle.createQuery("SELECT * FROM chat_messages WHERE author = :uid ORDER BY sent DESC LIMIT :lim")
                     .bind("uid", dbUser.id)
+                    .bind("lim", history_limit)
                     .map(new DBChatMessage.Mapper())
                     .list();
 
@@ -1433,6 +1493,324 @@ public class Database {
     }
 
     /**
+     * Creates a new faction.<br>
+     * Note: This is included for db access, but most faction operations should
+     *       be done in the {@link space.pxls.user.FactionManager}.
+     *
+     * @param factionName The name of the faction.
+     * @param factionTag The faction's tag.
+     * @param owner_uid The owner's ID.
+     * @param color The faction's color, or null for default.
+     * @return The ID of the newly created faction, or null on insertion error.
+     * @see space.pxls.user.FactionManager#create
+     */
+    public DBFaction createFaction(String factionName, String factionTag, int owner_uid, Integer color) {
+        final Integer _color = color == null ? 0 : color;
+
+        return jdbi.withHandle(handle -> {
+            DBFaction toRet = handle.createQuery("INSERT INTO faction (\"name\", \"tag\", \"owner\", \"created\", \"color\", \"canvasCode\") VALUES (:name, :tag, :owner, now(), :color, :canvasCode) RETURNING *")
+                .bind("name", factionName)
+                .bind("tag", factionTag)
+                .bind("owner", owner_uid)
+                .bind("color", _color)
+                .bind("canvasCode", App.getConfig().getInt("canvascode"))
+                .map(new DBFaction.Mapper())
+                .findFirst()
+                .orElse(null);
+            if (toRet != null) {
+                handle.createUpdate("INSERT INTO faction_membership (\"fid\", \"uid\") VALUES (:fid, :uid)")
+                    .bind("fid", toRet.id)
+                    .bind("uid", owner_uid)
+                    .execute();
+            }
+            return toRet;
+        });
+    }
+
+    /**
+     * Gets the requested faction by ID.<br>
+     * Note: This is included for db access, but most faction operations should
+     *       be done in the {@link space.pxls.user.FactionManager}.
+     *
+     * @param fid The faction ID
+     * @return The faction
+     * @see space.pxls.user.FactionManager#getByID(Integer)
+     */
+    public DBFaction getFactionByID(int fid) {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("SELECT * FROM faction WHERE id = :fid")
+                .bind("fid", fid)
+                .map(new DBFaction.Mapper())
+                .findFirst()
+                .orElse(null)
+        );
+    }
+
+    /**
+     * Creates a new faction membership specified by (faction.id, user.id)
+     *
+     * @param fid The faction ID
+     * @param uid The user ID
+     */
+    public void joinFaction(int fid, int uid) {
+        jdbi.useHandle(handle ->
+            handle.createUpdate("INSERT INTO faction_membership (\"fid\", \"uid\") VALUES (:fid, :uid) ON CONFLICT DO NOTHING")
+                .bind("fid", fid)
+                .bind("uid", uid)
+                .execute()
+        );
+    }
+
+    /**
+     * Removes the faction membership specified by (faction.id, user.id)
+     *
+     * @param fid The faction ID
+     * @param uid The user ID
+     */
+    public void leaveFaction(int fid, int uid) {
+        jdbi.useHandle(handle -> {
+            handle.createUpdate("UPDATE users SET displayed_faction=null WHERE id=:uid AND displayed_faction=:fid")
+                .bind("uid", uid)
+                .bind("fid", fid)
+                .execute();
+            handle.createUpdate("DELETE FROM faction_membership WHERE fid = :fid AND uid = :uid")
+                .bind("fid", fid)
+                .bind("uid", uid)
+                .execute();
+        });
+    }
+
+    /**
+     * Gets factions that this user belongs to.
+     *
+     * @param uid The user's ID
+     * @return The factions that this user belongs to.
+     */
+    public List<DBFaction> getFactionsForUID(int uid) {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("SELECT * FROM faction WHERE id IN (SELECT fid FROM faction_membership WHERE uid = :uid)")
+                .bind("uid", uid)
+                .map(new DBFaction.Mapper())
+                .list()
+        );
+    }
+
+    /**
+     * Gets users that belong to the given faction.
+     *
+     * @param fid The faction's ID
+     * @return A list of users that belong to the given faction
+     */
+    public List<DBUser> getUsersForFID(int fid) {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("SELECT * FROM users WHERE id IN (SELECT uid FROM faction_membership WHERE fid = :fid)")
+                .bind("fid", fid)
+                .map(new DBUser.Mapper())
+                .list()
+        );
+    }
+
+    /**
+     * Gets the number of factions this user owns.
+     *
+     * @param uid The user's ID
+     * @return The number of factions
+     */
+    public Integer getOwnedFactionCountForUID(int uid) {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("SELECT count(id) FROM faction WHERE owner = :uid")
+                .bind("uid", uid)
+                .mapTo(Integer.TYPE)
+                .findFirst()
+                .orElse(0)
+        );
+    }
+
+    public List<DBUser> getBansForFID(int fid) {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("SELECT * FROM users WHERE id IN (SELECT uid FROM faction_ban WHERE fid = :fid)")
+                .bind("fid", fid)
+                .map(new DBUser.Mapper())
+                .list()
+        );
+    }
+
+    /**
+     * Updates an existing faction in the database with the provided Faction
+     * object.<br>
+     * Note: This is included for db access, but most faction operations should
+     *       be done in the {@link space.pxls.user.FactionManager}.
+     *
+     * @param faction The faction to update.
+     *                Updates where `faction.id` = {@link Faction#getId()} and
+     *                uses faction values where appropriate.
+     * @see space.pxls.user.FactionManager#update(Faction, boolean)
+     */
+    public void updateFaction(Faction faction) {
+        jdbi.useHandle(handle ->
+            handle.createUpdate("UPDATE faction SET name=:name,tag=:tag,owner=:owner,color=:color WHERE id=:id")
+                .bind("name", faction.getName())
+                .bind("tag", faction.getTag())
+                .bind("owner", faction.getOwner())
+                .bind("id", faction.getId())
+                .bind("color", faction.getColor())
+                .execute()
+        );
+    }
+
+    /**
+     * Deletes the faction and removes all faction memberships.<br>
+     * Note: This is included for db access, but most faction operations should
+     *       be done in the {@link space.pxls.user.FactionManager}.
+     *
+     * @param fid The ID of the faction.
+     *
+     * @see space.pxls.user.FactionManager#deleteByID(int)
+     */
+    public void deleteFactionByFID(int fid) {
+        jdbi.useHandle(handle -> { // only consume a single connection for these ops.
+            handle.createUpdate("UPDATE users SET displayed_faction=null WHERE displayed_faction=:fid") // can't delete fid if there's a dependent present.
+                .bind("fid", fid)
+                .execute();
+            handle.createUpdate("DELETE FROM faction_membership WHERE fid=:fid")
+                .bind("fid", fid)
+                .execute();
+            handle.createUpdate("DELETE FROM faction WHERE id=:fid")
+                .bind("fid", fid)
+                .execute();
+        });
+    }
+
+    /**
+     * Deletes factions that do not have any members.
+     *
+     * @return A list of deleted orphaned factions.
+     */
+    public List<DBFaction> pruneOrphanedFactions() {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("DELETE FROM faction WHERE id NOT IN (SELECT fid FROM faction_membership GROUP BY fid) RETURNING *")
+                .map(new DBFaction.Mapper())
+                .list()
+        );
+    }
+
+    /**
+     * Gets factions that do not currently have any members.
+     *
+     * @return A list of orphaned factions.
+     */
+    public List<DBFaction> getOrphanedFactions() {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("SELECT * FROM faction WHERE id NOT IN (SELECT fid FROM faction_membership GROUP BY fid)")
+                .map(new DBFaction.Mapper())
+                .list()
+        );
+    }
+
+    /**
+     * Updates the user's displayed faction.
+     *
+     * @param uid The user's ID
+     * @param fid The faction's ID, or null to unset.
+     */
+    public void setDisplayedFactionForUID(int uid, Integer fid) {
+        jdbi.useHandle(handle ->
+            handle.createUpdate("UPDATE users SET displayed_faction=:fid WHERE id=:uid")
+                .bind("fid", fid)
+                .bind("uid", uid)
+                .execute()
+        );
+    }
+
+    /**
+     * Removes a faction ban for the given uid.
+     *
+     * @param uid The user's ID to remove
+     * @param fid The faction ID to modify
+     */
+    public void removeFactionBanForUID(int uid, int fid) {
+        jdbi.useHandle(handle -> handle.createUpdate("DELETE FROM faction_ban WHERE uid=:uid AND fid=:fid")
+            .bind("uid", uid)
+            .bind("fid", fid)
+            .execute()
+        );
+    }
+
+    /**
+     * Adds a faction ban for the given uid. Will also remove an active
+     *  faction_membership.
+     *
+     * @param uid The user's ID to add
+     * @param fid The faction ID to modify
+     */
+    public void addFactionBanForUID(int uid, int fid) {
+        jdbi.useHandle(handle -> {
+            handle.createUpdate("DELETE FROM faction_membership WHERE uid=:uid AND fid=:fid")
+                .bind("uid", uid)
+                .bind("fid", fid)
+                .execute();
+            handle.createUpdate("INSERT INTO faction_ban (\"uid\", \"fid\") VALUES (:uid, :fid) ON CONFLICT DO NOTHING")
+                .bind("uid", uid)
+                .bind("fid", fid)
+                .execute();
+        });
+    }
+
+    /**
+     * Sets a new owner for the faction. Does not verify faction_member state.
+     *
+     * @param fid The ID of the faction to modify
+     * @param uid The ID of the user to set as owner
+     */
+    public void setFactionOwnerForFID(int fid, int uid) {
+        jdbi.useHandle(handle ->
+            handle.createUpdate("UPDATE faction SET owner = :uid WHERE id = :fid")
+                .bind("fid", fid)
+                .bind("uid", uid)
+                .execute()
+        );
+    }
+
+    /**
+     * Performs a left-anchored case insensitive search with the given input.
+     *  Supports basic pagination using the `after` param, which maps to a
+     *  faction ID.
+     *
+     * @param search The search term
+     * @param offset The pagination offset.
+     * @param searchContext The user to add context from (currently,
+     *                      "memberJoined"), or null for none.
+     * @return A list of {@link DBFactionSearch}s.
+     */
+    public List<DBFactionSearch> searchFactions(String search, int offset, User searchContext) {
+        // note (socc): there was no performance boost by indexing name and performing lower() searches rather than using ilike, regardless of where the anchor was.
+        //              if something changes in future psql versions, we should reconfirm.
+        return jdbi.withHandle(handle ->
+            handle.createQuery("SELECT f.*,count(fm.fid) AS \"memberCount\",(case when :userCtx is null then false else exists(select fm1.fid from faction_membership fm1 where fm1.fid=f.id and fm1.uid=:userCtx) end) as \"userJoined\" FROM faction f INNER JOIN faction_membership fm ON fm.fid = f.id WHERE f.name ILIKE concat('%', :search, '%') GROUP BY f.id ORDER BY \"memberCount\" DESC, \"canvasCode\" DESC, \"id\" DESC LIMIT 50 OFFSET :offset")
+                .bind("search", search)
+                .bind("offset", offset)
+                .bind("userCtx", searchContext == null ? null : searchContext.getId())
+                .map(new DBFactionSearch.Mapper())
+                .list()
+        );
+    }
+
+    /**
+     * Sets the color for this faction. Expects an integer value of a color.
+     *
+     * @param fid The faction's ID
+     * @param color The integer value of a color.
+     */
+    public void setColorForFID(int fid, int color) {
+        jdbi.useHandle(handle ->
+            handle.createUpdate("UPDATE factions SET color = :color WHERE id = :fid")
+                .bind("fid", fid)
+                .bind("color", color)
+                .execute()
+        );
+    }
+
+    /**
      * Increases the specified user's pixel count if the pixel isn't caused by a mod action, and the configuration allows such.
      * @param modAction Whether the pixel was caused by a mod action.
      * @param who The ID of the {@link User}.
@@ -1463,8 +1841,21 @@ public class Database {
      * @param who The ID of the {@link User}.
      */
     private void decreasePixelCount(int who) {
-        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET pixel_count = pixel_count - 1, pixel_count_alltime = pixel_count_alltime - 1 WHERE id = :who")
-                .bind("who", who)
-                .execute());
+        if (!App.shouldIncreaseSomePixelCount()) return;
+        Config config = App.getConfig();
+        boolean increaseAllTime = config.getBoolean("pixelCounts.countTowardsAlltime");
+        boolean increaseCanvas = config.getBoolean("pixelCounts.countTowardsCurrent");
+        jdbi.useHandle(handle -> {
+            if (increaseAllTime) {
+                handle.createUpdate("UPDATE users SET pixel_count_alltime = pixel_count_alltime - 1 WHERE id = :who")
+                    .bind("who", who)
+                    .execute();
+            }
+            if (increaseCanvas) {
+                handle.createUpdate("UPDATE users SET pixel_count = pixel_count - 1 WHERE id = :who")
+                    .bind("who", who)
+                    .execute();
+            }
+        });
     }
 }

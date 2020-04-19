@@ -1,0 +1,29 @@
+# use a memcache
+jcs.default=
+jcs.default.cacheattributes=org.apache.commons.jcs.engine.CompositeCacheAttributes
+jcs.default.cacheattributes.MaxObjects=500
+jcs.default.cacheattributes.MemoryCacheName=org.apache.commons.jcs.engine.memory.lru.LRUMemoryCache
+# ensure the LRU drops out
+## elements go stale after 1800 seconds (30 minutes), with a check interval of 60 seconds (1 minute)
+jcs.default.cacheattributes.UseMemoryShrinker=true
+jcs.default.cacheattributes.MaxMemoryIdleTimeSeconds=1800
+jcs.default.cacheattributes.ShrinkerIntervalSeconds=60
+jcs.default.cacheattributes.MaxSpoolPerRun=500
+
+jcs.region.factions=
+jcs.region.factions.cacheattributes=org.apache.commons.jcs.engine.CompositeCacheAttributes
+jcs.region.factions.cacheattributes.MaxObjects=100
+jcs.region.factions.cacheattributes.MemoryCacheName=org.apache.commons.jcs.engine.memory.lru.LRUMemoryCache
+jcs.region.factions.cacheattributes.UseMemoryShrinker=true
+jcs.region.factions.cacheattributes.MaxMemoryIdleTimeSeconds=1800
+jcs.region.factions.cacheattributes.ShrinkerIntervalSeconds=60
+jcs.region.factions.cacheattributes.MaxSpoolPerRun=500
+
+jcs.region.users=
+jcs.region.users.cacheattributes=org.apache.commons.jcs.engine.CompositeCacheAttributes
+jcs.region.users.cacheattributes.MaxObjects=250
+jcs.region.users.cacheattributes.MemoryCacheName=org.apache.commons.jcs.engine.memory.lru.LRUMemoryCache
+jcs.region.users.cacheattributes.UseMemoryShrinker=true
+jcs.region.users.cacheattributes.MaxMemoryIdleTimeSeconds=3600
+jcs.region.users.cacheattributes.ShrinkerIntervalSeconds=60
+jcs.region.users.cacheattributes.MaxSpoolPerRun=500

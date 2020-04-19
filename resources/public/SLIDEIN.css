@@ -1,0 +1,108 @@
+@keyframes slidein-slide {
+    0% {
+        transform: translateY(-2em);
+    }
+    100% {
+        transform: translateY(0em);
+    }
+}
+
+.slidein {
+    position: fixed;
+    width: 45em;
+    top: 0;
+    left: calc((100% / 2) - (45em / 2));
+    background-color: #333333;
+    display: flex;
+    flex-flow: row;
+    padding: .25em;
+    border-radius: 0 0 5px 5px;
+    height: 2em;
+    overflow: hidden;
+    user-select: none;
+    transform: translateY(-2em);
+    z-index: 30000;
+}
+
+.slidein.showing {
+    animation: slidein-slide 100ms linear;
+}
+
+.slidein.hiding {
+    animation: slidein-slide 100ms linear reverse;
+}
+
+.slidein.shown {
+    transform: translateY(0em);
+}
+
+.slidein .slidein-icon, .slidein-body {
+    display: flex;
+    flex-flow: column;
+    align-content: center;
+    justify-content: center;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.slidein.slidein-success {
+    background: #55e11e linear-gradient(180deg, #67de38, #55e11e) repeat-x;
+    color: #fff;
+}
+.slidein.slidein-danger {
+    background: #e1251c linear-gradient(180deg, #de3e37, #e1251c) repeat-x;
+    color: #fff;
+}
+.slidein.slidein-warning {
+    background: #fff339 linear-gradient(180deg, #ded649, #e1d732) repeat-x;
+    color: #000;
+}
+.slidein.slidein-info {
+    background: #3db7ff linear-gradient(180deg, #50a3de, #3a9ce1) repeat-x;
+    color: #fff;
+}
+
+.slidein.slidein-warning a, .slidein.slidein-success a {
+    color: #000;
+    text-decoration: underline;
+}
+.slidein.slidein-warning a:hover {
+    color: #333;
+}
+
+.slidein.slidein-info a, .slidein.slidein-danger a, .slidein.slidein-success a {
+    color: #fff;
+    text-decoration: underline;
+}
+.slidein.slidein-info a:hover, .slidein.slidein-danger a:hover, .slidein.slidein-success a:hover {
+    color: #ddd;
+}
+
+.slidein .slidein-icon {
+    flex: 0 1 2em;
+}
+
+.slidein .slidein-body {
+    flex: 1 0 27em;
+    margin-left: -2em; /* compensate for .slidein-icon positioning so that the `text-align: center;` is true center */
+}
+
+.slidein .close-button {
+    display: block;
+    position: absolute;
+    right: 1em;
+    cursor: pointer;
+    text-shadow: 0 1px 2px #414141;
+}
+
+.slidein p {
+    margin: 0;
+    padding: 0;
+}
+
+@media (max-width: 768px) {
+    .slidein {
+        width: 97vw;
+        left: 1vw;
+    }
+}

@@ -17,8 +17,9 @@ public class DBPixelPlacementUser {
     public final int pixel_count;
     public final int pixel_count_alltime;
     public final String discordName;
+    public final String faction;
 
-    public DBPixelPlacementUser(int id, int x, int y, int color, long time, String username, int pixel_count, int pixel_count_alltime, String discordName) {
+    public DBPixelPlacementUser(int id, int x, int y, int color, long time, String username, int pixel_count, int pixel_count_alltime, String discordName, String faction) {
         this.id = id;
         this.x = x;
         this.y = y;
@@ -28,12 +29,17 @@ public class DBPixelPlacementUser {
         this.pixel_count = pixel_count;
         this.pixel_count_alltime = pixel_count_alltime;
         this.discordName = discordName;
+        this.faction = faction;
     }
 
     public static class Mapper implements RowMapper<DBPixelPlacementUser> {
         @Override
         public DBPixelPlacementUser map(ResultSet r, StatementContext ctx) throws SQLException {
             Timestamp time = r.getTimestamp("time");
+            String faction = null;
+            try {
+                faction = r.getString("faction");
+            } catch (Exception ignored) {}
 
             return new DBPixelPlacementUser(
                     r.getInt("p_id"),
@@ -44,7 +50,8 @@ public class DBPixelPlacementUser {
                     r.getString("u_login").startsWith("ip:") ? "-snip-" : r.getString("username"),
                     r.getInt("pixel_count"),
                     r.getInt("pixel_count_alltime"),
-                    r.getString("discord_name")
+                    r.getString("discord_name"),
+                    faction
             );
         }
     }

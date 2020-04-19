@@ -1,5 +1,7 @@
 package space.pxls.server.packets.chat;
 
+import space.pxls.App;
+
 public class ServerChatPurge {
     public String type = "chat_purge";
     public String target;
@@ -8,7 +10,7 @@ public class ServerChatPurge {
     public String reason;
 
     public ServerChatPurge(String target, String initiator, Integer amount, String reason) {
-        this.target = target;
+        this.target = App.getConfig().getBoolean("oauth.snipMode") ? "-snip-" : target;
         this.initiator = initiator;
         this.amount = amount;
         this.reason = reason;

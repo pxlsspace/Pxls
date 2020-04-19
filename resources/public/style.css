@@ -1075,10 +1075,7 @@ aside.panel {
     top: 0;
     max-width: 50%;
     min-width: 30%;
-    width: 30%;
     height: 100%;
-    max-height: 100%;
-    min-height: 100%;
     box-shadow: 0 0 10px 5px #0009;
     background-color: #dfdfdf;
     z-index: 21;
@@ -1087,6 +1084,13 @@ aside.panel {
 
 .panel.half-width {
     width: 50% !important;
+}
+
+.panel.horizontal {
+    width: 100%;
+    height: 50%;
+    max-width: initial;
+    min-height: initial;
 }
 
 .panel header {
@@ -1099,6 +1103,10 @@ aside.panel {
     left: -55%;
 }
 
+.panel.left.horizontal {
+    left: -105%;
+}
+
 .panel.left.open, .panel.left[data-state=open] {
     left: 0;
 }
@@ -1107,6 +1115,10 @@ aside.panel {
     left: initial;
     transition: right ease-in-out .25s;
     right: -55%;
+}
+
+.panel.right.horizontal {
+    right: -105%;
 }
 
 .panel.right.open, .panel.right[data-state=open] {
@@ -1198,36 +1210,36 @@ article .body {
     margin: 0 !important;
 }
 
-body.panel-open #ui {
+body.panel-open:not(.panel-horizontal) #ui {
     width: 70vw;
 }
 
-body.panel-open.panel-left #ui {
+body.panel-open.panel-left:not(.panel-horizontal) #ui {
     left: 30vw;
     right: 0;
 }
 
-body.panel-open.panel-left.panel-left-halfwidth #ui {
+body.panel-open.panel-left:not(.panel-horizontal).panel-left-halfwidth #ui {
     left: 50vw;
     width: 50vw;
 }
 
-body.panel-open.panel-right.panel-right-halfwidth #ui {
+body.panel-open.panel-right:not(.panel-horizontal).panel-right-halfwidth #ui {
     right: 50vw;
     width: 50vw;
 }
 
-body.panel-left.panel-right #ui {
+body.panel-left.panel-right:not(.panel-horizontal) #ui {
     left: 30vw;
     width: 40vw;
 }
 
-body.panel-left.panel-left-halfwidth.panel-right #ui {
+body.panel-left.panel-left-halfwidth.panel-right:not(.panel-horizontal) #ui {
     left: 50vw;
     width: 20vw;
 }
 
-body.panel-left.panel-right.panel-right-halfwidth #ui {
+body.panel-left.panel-right:not(.panel-horizontal).panel-right-halfwidth #ui {
     right: 50vw;
     width: 20vw;
 }
@@ -1846,7 +1858,7 @@ ul.chat-history, ul.chatban-history {
 
 /* Chat settings tweaks */
 .chat-settings-wrapper label {
-    display: block;
+    display: inline-block;
     cursor: pointer;
     user-select: none;
     margin: 6px 0;
@@ -1854,6 +1866,10 @@ ul.chat-history, ul.chatban-history {
 
 .chat-settings-wrapper input:not([type=checkbox]) {
     border: 1px solid #888;
+}
+
+.d-block {
+    display: block !important;
 }
 
 /* Notifications */
@@ -1924,6 +1940,23 @@ ul.chat-history, ul.chatban-history {
     background-color: #f5f5f5;
     padding: 0;
     outline: 0;
+}
+
+.modal a.close-modal {
+    position: absolute;
+    font-size: 1.25em;
+    top: 0;
+    right: 0;
+    background: #660000;
+    width: 1.5em;
+    height: 1.5em;
+    line-height: 1.5em;
+    text-align: center;
+    color: #eee;
+    text-decoration: none;
+    text-indent: 0;
+    border-radius: 0 6px 0 12px;
+    box-shadow: 1px 1px 5px #660000aa;
 }
 
 .modal .modal-footer {
@@ -2047,17 +2080,6 @@ ul.chat-history, ul.chatban-history {
         max-height: 100%;
         overflow: auto;
         width: 95%;
-    }
-
-    #ui #main-bubble {
-        top: 4rem;
-        bottom: initial;
-        left: 1rem;
-        right: initial;
-    }
-
-    #bubble-position {
-        opacity: .5;
     }
 
     #chat-hint {
