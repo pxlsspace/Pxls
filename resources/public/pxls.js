@@ -3685,7 +3685,9 @@ window.App = (function () {
                     });
                     socket.on('message_cooldown', e => {
                         self.timeout.ends = (new Date >> 0) + ((e.diff >> 0) * 1e3) + 1e3; //add 1 second so that we're 1-based instead of 0-based
-                        self.elements.input.val(e.message);
+                        if (uiHelper.tabHasFocus()) {
+                            self.elements.input.val(e.message);
+                        }
                         if ((new Date >> 0) > self.timeout.ends) {
                             self.elements.rate_limit_overlay.fadeOut();
                         } else {
