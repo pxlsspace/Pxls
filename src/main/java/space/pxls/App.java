@@ -15,10 +15,7 @@ import space.pxls.data.Database;
 import space.pxls.server.UndertowServer;
 import space.pxls.server.packets.chat.ClientChatMessage;
 import space.pxls.server.packets.socket.*;
-import space.pxls.user.Chatban;
-import space.pxls.user.Role;
-import space.pxls.user.User;
-import space.pxls.user.UserManager;
+import space.pxls.user.*;
 import space.pxls.util.*;
 
 import java.io.File;
@@ -147,6 +144,7 @@ public class App {
                 try {
                     cachedWhoamiOrigin = null;
                     loadConfig();
+                    FactionManager.getInstance().invalidateAll();
                     System.out.println("Success!");
                 } catch (Exception x) {
                     x.printStackTrace();
@@ -468,6 +466,82 @@ public class App {
                     return;
                 }
                 App.getServer().broadcastRaw(line.substring(token[0].length() + 1).trim());
+            } else if (token[0].equalsIgnoreCase("f")) {
+                // f $FID [$ACTION[ $VALUE]]
+                String subcommand;
+                if (token.length == 1) {
+                    subcommand = "help";
+                } else {
+                    subcommand = token[1].toLowerCase().trim();
+                }
+                switch(subcommand) {
+                    case "reload": {
+                        FactionManager.getInstance().invalidateAll();
+                        System.out.println("Invalidated factions");
+                        return;
+                    }
+                    case "mc": {
+                        System.out.println(FactionManager.getInstance().getCachedFactions().getStats());
+                        return;
+                    }
+                    case "help": {
+                        System.out.println("f $FID [delete|tag|name[ $VALUE]]");
+                        return;
+                    }
+                }
+                int i;
+                try {
+                    i = Integer.parseInt(token[1]);
+                } catch (NumberFormatException nfe) {
+                    System.out.printf("Invalid ID: %s%n", token[1]);
+                    return;
+                }
+                Optional<Faction> f = FactionManager.getInstance().getByID(i);
+                if (f.isPresent()) {
+                    Faction faction = f.get();
+                    String _action = "list";
+                    String _value = null;
+                    if (token.length > 2) {
+                        _action = token[2].toLowerCase().trim();
+                        if (token.length > 3) {
+                            _value = line.substring(token[0].length() + token[1].length() + token[2].length() + 3).toLowerCase().trim();
+                        }
+                    }
+                    switch(_action) {
+                        case "delete": {
+                            FactionManager.getInstance().deleteByID(i);
+                            System.out.printf("Delete invoked for faction %d%n", i);
+                            break;
+                        }
+                        case "tag": {
+                            if (_value == null) {
+                                System.out.printf("Faction %d's tag: %s%n", i, faction.getTag());
+                            } else {
+                                faction.setTag(_value);
+                                FactionManager.getInstance().update(faction, true);
+                                System.out.println("Faction updated");
+                            }
+                            break;
+                        }
+                        case "name": {
+                            if (_value == null) {
+                                System.out.printf("Faction %d's name: %s%n", i, faction.getName());
+                            } else {
+                                faction.setName(_value);
+                                FactionManager.getInstance().update(faction, true);
+                                System.out.println("Faction updated");
+                            }
+                            break;
+                        }
+                        // TODO: ban, unban, owner, color
+                        default: {
+                            System.out.println(faction.toString());
+                            break;
+                        }
+                    }
+                } else {
+                    System.out.printf("The faction %s does not exist.%n", i);
+                }
             }
         } catch (RuntimeException e) {
             e.printStackTrace();

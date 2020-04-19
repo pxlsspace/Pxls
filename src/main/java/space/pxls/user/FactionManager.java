@@ -14,7 +14,7 @@ import java.util.Optional;
 
 public class FactionManager {
     private static FactionManager _instance;
-    private CacheAccess<Integer, Faction> cachedFactions;
+    private final CacheAccess<Integer, Faction> cachedFactions;
 
     private FactionManager() {
         cachedFactions = JCS.getInstance("factions");
@@ -97,6 +97,16 @@ public class FactionManager {
     }
 
     /**
+     * Removes all factions from our cache.
+     *
+     * @return The {@link FactionManager} for chaining.
+     */
+    public FactionManager invalidateAll() {
+        cachedFactions.clear();
+        return this;
+    }
+
+    /**
      * Updates the faction in our cache and optionally updates the
      * database/broadcasts the update.
      *
@@ -155,5 +165,9 @@ public class FactionManager {
     public void leaveFaction(int fid, int uid) {
         App.getDatabase().leaveFaction(fid, uid);
         invalidate(fid);
+    }
+
+    public CacheAccess<Integer, Faction> getCachedFactions() {
+        return cachedFactions;
     }
 }
