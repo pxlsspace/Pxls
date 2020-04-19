@@ -23,10 +23,6 @@
 				evt.stopPropagation();
 			});
         },
-        genUserInfoLink = function(username) {
-            const userInfoURL = "https://admin." + location.host + "/userinfo/" + username;
-            return $("<a>").text(username).attr("href", userInfoURL).attr("target", "_blank");
-        },
         ban = (function() {
             var self = {
                 elements: {
@@ -193,7 +189,8 @@
                     }
                     chatbannedStr = data.chatbanIsPerma ? `Yes (permanent)` : (data.chatBanned ? `Yes` : `No`);
                     var items = [
-                        ["Username", genUserInfoLink(data.username)],
+                        ["Username", crel('a', {'href': `https://admin.${location.host}/userinfo/${data.username}`, 'target': '_blank'}, data.username)],
+                        ["Profile", crel('a', {'href': `/profile/${data.username}`, 'target': '_blank'}, data.username)],
                         ["Login", data.login],
                         ["Role", data.role],
                         ["Pixels", data.pixels],
@@ -395,7 +392,7 @@
                  */
                 init: function () {
                     App.lookup.replaceHook("username", {
-                        get: data => genUserInfoLink(data.username)
+                        get: data => crel('span', crel('a', {'href': `https://admin.${location.host}/userinfo/${data.username}`, 'target': '_blank'}, data.username), ' (', crel('a', {'href': `/profile/${data.username}`, 'target': '_blank'}, 'profile'), ')')
                     });
                     App.lookup.registerHook({
                         id: "login",

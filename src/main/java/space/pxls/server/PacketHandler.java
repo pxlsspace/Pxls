@@ -15,11 +15,14 @@ import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBPixelPlacement;
 import space.pxls.server.packets.chat.*;
 import space.pxls.server.packets.socket.*;
+import space.pxls.user.Faction;
 import space.pxls.user.Role;
 import space.pxls.user.User;
-import space.pxls.util.ChatFilter;
+import space.pxls.util.TextFilter;
 import space.pxls.util.RateLimitFactory;
 
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -374,7 +377,7 @@ public class PacketHandler {
 
     public void handleClientUserUpdate(WebSocketChannel channel, User user, ClientUserUpdate clientUserUpdate) {
         Map<String,String> map = clientUserUpdate.getUpdates();
-        Map<String,String> toBroadcast = new HashMap<>();
+        Map<String,Object> toBroadcast = new HashMap<>();
 
         String nameColor = map.get("NameColor");
         if (nameColor != null && !nameColor.trim().isEmpty()) {
@@ -422,7 +425,7 @@ public class PacketHandler {
         if (message.length() > charLimit) message = message.substring(0, charLimit);
         if (user == null) { //console
             String nonce = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "");
-            server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS / 1000L, message, null, null, 0)));
+            server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS / 1000L, message, null, null, 0, null)));
         } else {
             if (!user.canChat()) return;
             if (message.trim().length() == 0) return;
@@ -435,14 +438,15 @@ public class PacketHandler {
                     String toSend = bracketTranslator.translate(message); //filter out brackets before we do anything else so it's filtered in db
                     if (App.getConfig().getBoolean("chat.trimInput"))
                         toSend = toSend.trim();
-                    if (App.getConfig().getBoolean("chat.filter.enabled")) {
-                        ChatFilter.FilterResult result = ChatFilter.getInstance().filter(toSend);
+                    Faction usersFaction = user.fetchDisplayedFaction();
+                    if (App.getConfig().getBoolean("textFilter.enabled")) {
+                        TextFilter.FilterResult result = TextFilter.getInstance().filter(toSend);
                         toSend = result.filterHit ? result.filtered : result.original;
                         String nonce = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toSend);
-                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor())));
+                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction)));
                     } else {
                         String nonce = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, "");
-                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor())));
+                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction)));
                     }
                 } catch (UnableToExecuteStatementException utese) {
                     utese.printStackTrace();

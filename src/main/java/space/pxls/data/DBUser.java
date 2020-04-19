@@ -12,6 +12,7 @@ public class DBUser {
     public int id;
     public int stacked;
     public int chatNameColor;
+    public Timestamp signup_time;
     public String username;
     public String login;
     public long cooldownExpiry;
@@ -22,12 +23,14 @@ public class DBUser {
     public boolean isRenameRequested;
     public String discordName;
     public String chatbanReason;
+    public Integer displayedFaction;
 
-    public DBUser(int id, int stacked, String username, String login, long cooldownExpiry, Role role, long banExpiry, boolean isPermaChatbanned, long chatbanExpiry, boolean isRenameRequested, String discordName, String chatbanReason, int chatNameColor) {
+    public DBUser(int id, int stacked, String username, String login, Timestamp signup, long cooldownExpiry, Role role, long banExpiry, boolean isPermaChatbanned, long chatbanExpiry, boolean isRenameRequested, String discordName, String chatbanReason, int chatNameColor, Integer displayedFaction) {
         this.id = id;
         this.stacked = stacked;
         this.username = username;
         this.login = login;
+        this.signup_time = signup;
         this.cooldownExpiry = cooldownExpiry;
         this.role = role;
         this.banExpiry = banExpiry;
@@ -37,6 +40,7 @@ public class DBUser {
         this.discordName = discordName;
         this.chatbanReason = chatbanReason;
         this.chatNameColor = chatNameColor;
+        this.displayedFaction = displayedFaction;
     }
 
     public static class Mapper implements RowMapper<DBUser> {
@@ -45,11 +49,16 @@ public class DBUser {
             Timestamp stamp = r.getTimestamp("cooldown_expiry");
             Timestamp ban = r.getTimestamp("ban_expiry");
             Timestamp chatban = r.getTimestamp("chat_ban_expiry");
+            Integer df = null;
+            try {
+                df = r.getInt("displayed_faction");
+            } catch (Exception ignored) {}
             return new DBUser(
                     r.getInt("id"),
                     r.getInt("stacked"),
                     r.getString("username"),
                     r.getString("login"),
+                    r.getTimestamp("signup_time"),
                     stamp == null ? 0 : stamp.getTime(),
                     Role.valueOf(r.getString("role")),
                     ban == null ? 0 : ban.getTime(),
@@ -58,7 +67,8 @@ public class DBUser {
                     r.getBoolean("is_rename_requested"),
                     r.getString("discord_name"),
                     r.getString("chat_ban_reason"),
-                    r.getInt("chat_name_color")
+                    r.getInt("chat_name_color"),
+                    df
             );
         }
     }

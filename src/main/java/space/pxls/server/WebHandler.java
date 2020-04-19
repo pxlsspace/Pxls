@@ -1,32 +1,24 @@
 package space.pxls.server;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mashape.unirest.http.exceptions.UnirestException;
+import com.mitchellbosecke.pebble.PebbleEngine;
+import com.mitchellbosecke.pebble.loader.ClasspathLoader;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
-import io.undertow.server.handlers.resource.ClassPathResourceManager;
-import io.undertow.util.Headers;
-import io.undertow.util.HttpString;
-import io.undertow.util.StatusCodes;
+import io.undertow.util.*;
 import space.pxls.App;
 import space.pxls.auth.*;
-import space.pxls.data.DBChatMessage;
-import space.pxls.data.DBNotification;
-import space.pxls.data.DBPixelPlacement;
-import space.pxls.data.DBPixelPlacementUser;
-import space.pxls.server.packets.http.*;
+import space.pxls.data.*;
 import space.pxls.server.packets.http.Error;
+import space.pxls.server.packets.http.*;
 import space.pxls.server.packets.socket.*;
-import space.pxls.user.Chatban;
-import space.pxls.user.Role;
-import space.pxls.user.User;
-import space.pxls.util.AuthReader;
-import space.pxls.util.IPReader;
-import space.pxls.util.RateLimitFactory;
-import space.pxls.util.SimpleDiscordWebhook;
+import space.pxls.user.*;
+import space.pxls.util.*;
 
 import java.io.*;
 import java.net.URLEncoder;
@@ -35,9 +27,25 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 public class WebHandler {
-    private String fileToString (File f) {
+    private PebbleEngine engine;
+    private Map<String, AuthService> services = new ConcurrentHashMap<>();
+    public static final String TEMPLATE_PROFILE = "public/pebble_templates/profile.html";
+    public static final String TEMPLATE_40X = "public/pebble_templates/40x.html";
+
+    public WebHandler() {
+        addServiceIfAvailable("reddit", new RedditAuthService("reddit"));
+        addServiceIfAvailable("google", new GoogleAuthService("google"));
+        addServiceIfAvailable("discord", new DiscordAuthService("discord"));
+        addServiceIfAvailable("vk", new VKAuthService("vk"));
+        addServiceIfAvailable("tumblr", new TumblrAuthService("tumblr"));
+
+        engine = new PebbleEngine.Builder().loader(new ClasspathLoader(getClass().getClassLoader())).build();
+    }
+
+    private String fileToString(File f) {
         try {
             BufferedReader br = new BufferedReader(new FileReader(f));
             String s = "";
@@ -51,10 +59,12 @@ public class WebHandler {
             return "";
         }
     }
-    private String fileToString (String s) {
+
+    private String fileToString(String s) {
         return fileToString(new File(s));
     }
-    private String resourceToString (String r) {
+
+    private String resourceToString(String r) {
         try {
             InputStream in = getClass().getResourceAsStream(r);
             BufferedReader br = new BufferedReader(new InputStreamReader(in));
@@ -68,6 +78,7 @@ public class WebHandler {
             return "";
         }
     }
+
     public void index(HttpServerExchange exchange) {
         File index_cache = new File(App.getStorageDir().resolve("index_cache.html").toString());
         if (index_cache.exists()) {
@@ -75,7 +86,6 @@ public class WebHandler {
             exchange.getResponseSender().send(fileToString(index_cache));
             return;
         }
-        ClassPathResourceManager cprm = new ClassPathResourceManager(App.class.getClassLoader(), "public/");
         String s = resourceToString("/public/index.html");
         String[] replacements = {"title", "head", "info", "faq"};
         for (String p : replacements) {
@@ -103,21 +113,372 @@ public class WebHandler {
         }
     }
 
+    public void view40x(HttpServerExchange exchange, int x, User user) {
+        if (x < 100) x = x + 400;
+        Map<String,Object> m = new HashMap<>();
+        m.put("err", x);
+        if (user != null) {
+            m.put("requesting_user", x);
+        }
+        String toRet = String.format("<p style=\"text-align: center;\">Socc broke the %d page! Let someone know please :) <a href=\"/\">Back to Root</a></p>", x);
+        try {
+            Writer writer = new StringWriter();
+            engine.getTemplate(TEMPLATE_40X).evaluate(writer, m);
+            toRet = writer.toString();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        exchange.setStatusCode(x);
+        exchange.getResponseSender().send(toRet);
+    }
 
-    private Map<String, AuthService> services = new ConcurrentHashMap<>();
+    public void profileView(HttpServerExchange exchange) {
+        final User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null) {
+            view40x(exchange, 403, null);
+        } else {
+            PathTemplateMatch match = exchange.getAttachment(PathTemplateMatch.ATTACHMENT_KEY);
+            String requested = match.getParameters().computeIfAbsent("who", s -> user.getName());
+            boolean requested_self = user.getName().equals(requested); // usernames are case-sensitive, we can use #equals relatively safely.
+            User profileUser = requested_self ? user : App.getUserManager().getByName(requested);
+
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
+
+            HashMap<String,Object> m = new HashMap<>();
+            m.put("requesting_user", user);
+
+            if (profileUser == null) {
+                view40x(exchange, 404, user);
+            } else {
+                String toRet = "<p style=\"text-align: center;\">Socc probably broke something... let someone know please.</p>";
+                try {
+                    List<DBChatReport> chatReports = new ArrayList<>();
+                    List<DBCanvasReport> canvasReports = new ArrayList<>();
+                    List<Faction> factions = App.getDatabase().getFactionsForUID(profileUser.getId()).stream().map(Faction::new).collect(Collectors.toList());
+
+                    m.put("requested_self", requested_self);
+                    m.put("profile_of", profileUser);
+                    m.put("factions", factions);
+                    m.put("palette", App.getConfig().getStringList("board.palette"));
+                    m.put("route_root", requested_self ? "/profile" : String.format("/profile/%s", requested));
+
+                    if (requested_self) {
+                        try {
+                            chatReports = App.getDatabase().getChatReportsFromUser(profileUser.getId());
+                            canvasReports = App.getDatabase().getCanvasReportsFromUser(profileUser.getId());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        m.put("requesting_user_canvas_pixels", user.getPixels());
+                        m.put("requesting_user_alltime_pixels", user.getPixelsAllTime());
+                        m.put("new_fac_min_pixels", App.getConfig().getInt("factions.minPixelsToCreate"));
+                        m.put("max_faction_tag_length", App.getConfig().getInt("factions.maxTagLength"));
+                        m.put("max_faction_name_length", App.getConfig().getInt("factions.maxNameLength"));
+                        m.put("chat_reports", chatReports);
+                        m.put("chat_reports_open_count", chatReports.stream().filter(dbChatReport -> !dbChatReport.closed).count());
+                        m.put("canvas_reports", canvasReports);
+                        m.put("canvas_reports_open_count", canvasReports.stream().filter(dbCanvasReport -> !dbCanvasReport.closed).count());
+                    }
+
+                    Writer writer = new StringWriter();
+                    engine.getTemplate(TEMPLATE_PROFILE).evaluate(writer, m);
+                    toRet = writer.toString();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                exchange.setStatusCode(200);
+                exchange.getResponseSender().send(toRet);
+            }
+
+        }
+    }
+
+    public void getRequestingUserFactions(HttpServerExchange exchange) throws Exception {
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null) {
+            send(StatusCodes.UNAUTHORIZED, exchange, "Not Authorized");
+        } else {
+            exchange.setStatusCode(StatusCodes.OK);
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+            exchange.getResponseSender().send(App.getGson().toJson(App.getDatabase().getFactionsForUID(user.getId()).stream().map(dbf -> dbf.owner == user.getId() ? new ExtendedUserFaction(dbf) : new UserFaction(dbf)).collect(Collectors.toList())));
+        }
+    }
+
+    public void manageFactions(HttpServerExchange exchange) throws Exception {
+        if (exchange.getRelativePath().toLowerCase().trim().endsWith("/search")) { // eugh
+            factionSearch(exchange);
+            return;
+        }
+        User user = exchange.getAttachment(AuthReader.USER);
+        JsonElement _data = exchange.getAttachment(JsonReader.ATTACHMENT_KEY);
+        JsonObject dataObj = null;
+
+        if (_data != null) {
+            if (!_data.isJsonNull()) {
+                if (!_data.isJsonObject()) {
+                    sendBadRequest(exchange, "Invalid data");
+                    return;
+                }
+                dataObj = _data.getAsJsonObject();
+            }
+        } // we don't require data for fetch/delete, so don't throw here.
+
+        if (user == null) { // This is not a fetch endpoint, if the user doesn't exist we can't continue.
+            send(StatusCodes.UNAUTHORIZED, exchange, "Not Authorized");
+        } else if (exchange.getRequestMethod().equals(Methods.POST)) { // create a new faction
+            if (dataObj != null) {
+                String name = null;
+                String tag = null;
+                Integer color = null;
+                try {
+                    name = dataObj.get("name").getAsString();
+                } catch (Exception ignored) {
+                }
+                try {
+                    tag = dataObj.get("tag").getAsString();
+                } catch (Exception ignored) {
+                }
+                try {
+                    color = dataObj.get("color").getAsInt();
+                } catch (Exception ignored) {
+                }
+                if (name == null || tag == null) {
+                    sendBadRequest(exchange, "Invalid/Missing name/tag");
+                } else {
+                    if (!Faction.ValidateTag(tag)) {
+                        sendBadRequest(exchange, "Invalid/Disallowed Tag");
+                    } else if (!Faction.ValidateName(name)) {
+                        sendBadRequest(exchange, "Invalid/Disallowed Name");
+                    } else if (App.getDatabase().getOwnedFactionCountForUID(user.getId()) >= App.getConfig().getInt("factions.maxOwned")) {
+                        sendBadRequest(exchange, String.format("You've reached the maximum number of owned factions (%d).", App.getConfig().getInt("factions.maxOwned")));
+                    } else if (App.getConfig().getInt("factions.minPixelsToCreate") > user.getPixelsAllTime()) {
+                        send(403, exchange, String.format("You do not meet the minimum all-time pixel requirements to create a faction. The current minimum is %d.", App.getConfig().getInt("chat.minPixelsToCreate")));
+                    } else {
+                        Optional<Faction> faction = FactionManager.getInstance().create(name, tag, user.getId(), color);
+                        if (faction.isPresent()) {
+                            user.setDisplayedFactionMaybe(faction.get().getId());
+                            sendObj(200, exchange, faction.get());
+                        } else {
+                            send(500, exchange, "Failed to create faction.");
+                        }
+                    }
+                }
+            } else {
+                sendBadRequest(exchange, "Missing data");
+            }
+        } else {
+            int fid;
+            try {
+                fid = Integer.parseInt(exchange.getQueryParameters().get("fid").getFirst());
+            } catch (Exception e) {
+                sendBadRequest(exchange, "Invalid/Missing Faction ID");
+                return;
+            }
+
+            Optional<Faction> _optFaction = FactionManager.getInstance().getByID(fid);
+            if (!_optFaction.isPresent()) {
+                sendBadRequest(exchange, "Invalid faction ID");
+            } else {
+                Faction faction = _optFaction.get();
+                if (exchange.getRequestMethod().equals(Methods.GET)) { // serialize requested faction
+                    exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+                    exchange.getResponseSender().send(App.getGson().toJson((user.getId() == faction.getOwner()) ? new ExtendedUserFaction(faction) : new UserFaction(faction)));
+                } else if (exchange.getRequestMethod().equals(Methods.PUT)) { // update requested faction
+                    if (dataObj == null) {
+                        sendBadRequest(exchange, "Missing data");
+                    } else {
+                        if (dataObj.has("displayed")) { // user is attempting to update displayed status
+                            boolean displaying = false;
+                            try {
+                                displaying = dataObj.get("displayed").getAsBoolean();
+                            } catch (Exception ignored) {
+                            }
+                            user.setDisplayedFaction(displaying ? faction.getId() : null);
+                        } else if (dataObj.has("joinState")) { // user is attempting to leave/join
+                            boolean joining = false;
+                            try {
+                                joining = dataObj.get("joinState").getAsBoolean();
+                            } catch (Exception ignored) {
+                            }
+                            if (joining) {
+                                if (faction.getOwner() == user.getId() || faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == user.getId())) { // attempt to short-circuit the left-hand if we own the place
+                                    sendBadRequest(exchange, "You are already a member of this faction.");
+                                } else if (faction.fetchBans().stream().anyMatch(fUser -> fUser.getId() == user.getId())) {
+                                    sendBadRequest(exchange, "You are banned from this faction. Please contact the owner and try again.");
+                                } else {
+                                    FactionManager.getInstance().joinFaction(fid, user.getId());
+                                    user.setDisplayedFactionMaybe(fid);
+                                }
+                            } else {
+                                if (faction.getOwner() == user.getId()) {
+                                    sendBadRequest(exchange, "You can not leave a faction you own. Transfer ownership first.");
+                                } else {
+                                    FactionManager.getInstance().leaveFaction(fid, user.getId());
+                                    if (user.getDisplayedFaction() != null && user.getDisplayedFaction() == fid) {
+                                        user.setDisplayedFaction(null, false, true); // displayed_faction is updated by #leaveFaction() already. we just need to invalidate the memcache.
+                                    }
+                                }
+                            }
+                        } else if (dataObj.has("banState") && dataObj.has("user")) {
+                            boolean isBanned;
+                            String opUser;
+                            try {
+                                isBanned = dataObj.get("banState").getAsBoolean();
+                                opUser = dataObj.get("user").getAsString();
+                            } catch (ClassCastException | IllegalStateException e) {
+                                sendBadRequest(exchange, "Invalid banState and/or user supplied");
+                                return;
+                            }
+                            if (opUser.trim().isEmpty()) {
+                                sendBadRequest(exchange, "Invalid user supplied");
+                            } else {
+                                User userToModify = App.getUserManager().getByName(opUser);
+                                if (userToModify == null || userToModify.getId() == user.getId()) {
+                                    sendBadRequest(exchange, "Invalid user supplied");
+                                } else {
+                                    if (isBanned) { // we're attempting to ban a user. make sure they exist in the user list
+                                        if (faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
+                                            FactionManager.getInstance().banMemberFromFaction(faction.getId(), userToModify.getId());
+                                        } else {
+                                            sendBadRequest(exchange, "The requested user is not a member of this faction.");
+                                        }
+                                    } else {
+                                        if (faction.fetchBans().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
+                                            FactionManager.getInstance().unbanMemberFromFaction(faction.getId(), userToModify.getId());
+                                        } else {
+                                            sendBadRequest(exchange, "The requested user is not banned from this faction.");
+                                        }
+                                    }
+                                }
+                            }
+                        } else if (dataObj.has("newOwner")) {
+                            String newOwner;
+                            try {
+                                newOwner = dataObj.get("newOwner").getAsString();
+                            } catch (ClassCastException | IllegalStateException e) {
+                                sendBadRequest(exchange, "Invalid newOwner supplied");
+                                return;
+                            }
+                            if (user.getId() == faction.getOwner()) {
+                                User userToModify = App.getUserManager().getByName(newOwner);
+                                if (userToModify != null) {
+                                    if (faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
+                                        App.getDatabase().setFactionOwnerForFID(faction.getId(), userToModify.getId());
+                                        FactionManager.getInstance().invalidate(faction.getId());
+                                    } else {
+                                        sendBadRequest(exchange, "The requested user is not a member of the specified faction.");
+                                    }
+                                } else {
+                                    sendBadRequest(exchange, "The requested user does not exist.");
+                                }
+                            } else {
+                                send(StatusCodes.FORBIDDEN, exchange, "You do not own this resource.");
+                            }
+                        } else { // user is attempting to update faction details
+                            if (user.getId() != faction.getOwner()) {
+                                send(StatusCodes.FORBIDDEN, exchange, "You do not own this resource");
+                                return;
+                            }
+                            if (dataObj.has("name")) {
+                                String _name = null;
+                                try {
+                                    _name = dataObj.get("name").getAsString();
+                                } catch (Exception ignored) {}
+                                if (_name != null && !_name.equals(faction.getName())) {
+                                    if (Faction.ValidateName(_name)) {
+                                        faction.setName(_name);
+                                    } else {
+                                        sendBadRequest(exchange, "Invalid/Disallowed Name");
+                                        return;
+                                    }
+                                }
+                            }
+                            if (dataObj.has("tag")) {
+                                String _tag = null;
+                                try {
+                                    _tag = dataObj.get("tag").getAsString();
+                                } catch (Exception ignored) {}
+                                if (_tag != null && !_tag.equals(faction.getTag())) {
+                                    if (Faction.ValidateTag(_tag)) {
+                                        faction.setTag(dataObj.get("tag").getAsString());
+                                    } else {
+                                        sendBadRequest(exchange, "Invalid/Disallowed Tag");
+                                        return;
+                                    }
+                                }
+                            }
+                            if (dataObj.has("color")) {
+                                Integer _color = null;
+                                try {
+                                    _color = dataObj.get("color").getAsInt();
+                                } catch (Exception ignored) {}
+                                if (_color != null && _color != faction.getColor()) {
+                                    if (Faction.ValidateColor(_color)) {
+                                        faction.setColor(_color);
+                                    } else {
+                                        sendBadRequest(exchange, "Invalid color");
+                                        return;
+                                    }
+                                }
+                            }
+                            if (dataObj.has("owner")) {
+                                String _owner = null;
+                                try {
+                                    _owner = dataObj.get("owner").getAsString();
+                                } catch (Exception ignored) {}
+                                if (_owner != null) {
+                                    String final_owner = _owner;
+                                    // verify that the member we're setting to owner actually exists in this faction.
+                                    //  usernames are case-sensitive so we can safely use #equals
+                                    User toSet = faction.fetchMembers().stream()
+                                        .filter(n -> n.getName().equals(final_owner))
+                                        .findFirst()
+                                        .orElse(null);
+                                    if (toSet != null) {
+                                        faction.setOwner(toSet.getId());
+                                    } else {
+                                        sendBadRequest(exchange, "Invalid owner specified");
+                                        return;
+                                    }
+                                }
+                            }
+                            FactionManager.getInstance().update(faction, true);
+                        }
+                    }
+                    if (!exchange.isResponseStarted())
+                        send(200, exchange, "OK");
+                } else if (exchange.getRequestMethod().equals(Methods.DELETE)) { // remove requested faction
+                    if (user.getId() != faction.getOwner()) {
+                        send(StatusCodes.FORBIDDEN, exchange, "You do not own this resource");
+                    } else {
+                        FactionManager.getInstance().deleteByID(fid);
+                        send(200, exchange, "OK");
+                    }
+                }
+            }
+        }
+    }
+
+    public void factionSearch(HttpServerExchange exchange) {
+        Deque<String> _search = exchange.getQueryParameters().get("term");
+        List<UserFaction> toReturn = new ArrayList<>();
+        if (_search != null) {
+            String search = _search.getFirst();
+            String _after = exchange.getQueryParameters().getOrDefault("after", new ArrayDeque<>(Collections.singleton("0"))).getFirst();
+            int after = 0;
+            try {
+                after = Integer.parseInt(_after);
+            } catch (Exception ignored) {}
+            toReturn = App.getDatabase().searchFactions(search, after, exchange.getAttachment(AuthReader.USER)).stream().map(UserFaction::new).collect(Collectors.toList());
+        }
+        sendObj(200, exchange, toReturn);
+    }
 
     private void addServiceIfAvailable(String key, AuthService service) {
         if (service.use()) {
             services.put(key, service);
         }
-    }
-
-    {
-        addServiceIfAvailable("reddit", new RedditAuthService("reddit"));
-        addServiceIfAvailable("google", new GoogleAuthService("google"));
-        addServiceIfAvailable("discord", new DiscordAuthService("discord"));
-        addServiceIfAvailable("vk", new VKAuthService("vk"));
-        addServiceIfAvailable("tumblr", new TumblrAuthService("tumblr"));
     }
 
     private String getBanReason(HttpServerExchange exchange) {
@@ -801,6 +1162,7 @@ public class WebHandler {
     private void sendBadRequest(HttpServerExchange exchange) {
         sendBadRequest(exchange, "");
     }
+
     private void sendBadRequest(HttpServerExchange exchange, String details) {
         send(StatusCodes.BAD_REQUEST, exchange, details);
     }
@@ -814,6 +1176,21 @@ public class WebHandler {
         toSend.addProperty("details", details);
 
         exchange.setStatusCode(statusCode);
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+        exchange.getResponseSender().send(App.getGson().toJson(toSend));
+        exchange.endExchange();
+    }
+
+    private void sendObj(int statusCode, HttpServerExchange exchange, Object o) {
+        boolean isSuccess = statusCode >= 200 && statusCode < 300;
+
+        JsonObject toSend = new JsonObject();
+        toSend.addProperty("success", isSuccess);
+        toSend.addProperty("message", StatusCodes.getReason(statusCode));
+        toSend.add("details", App.getGson().toJsonTree(o));
+
+        exchange.setStatusCode(statusCode);
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
         exchange.getResponseSender().send(App.getGson().toJson(toSend));
         exchange.endExchange();
     }
@@ -900,7 +1277,7 @@ public class WebHandler {
         if (reports.size() > 0) {
             String msg = "Potential dupe user. Reasons:\n\n";
             for (String r : reports) {
-                msg += r+"\n";
+                msg += r + "\n";
             }
             App.getDatabase().insertServerReport(user.getId(), msg);
         }
@@ -1050,9 +1427,9 @@ public class WebHandler {
             String state = service.generateState();
             if (redirect) {
                 exchange.setResponseCookie(new CookieImpl("pxls-auth-redirect", "1").setPath("/"));
-                redirect(exchange, service.getRedirectUrl(state+"|redirect"));
+                redirect(exchange, service.getRedirectUrl(state + "|redirect"));
             } else {
-                respond(exchange, StatusCodes.OK, new SignInResponse(service.getRedirectUrl(state+"|json")));
+                respond(exchange, StatusCodes.OK, new SignInResponse(service.getRedirectUrl(state + "|json")));
             }
         } else {
             respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_service", "No auth method named " + id));

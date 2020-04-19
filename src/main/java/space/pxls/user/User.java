@@ -4,24 +4,26 @@ import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
 import space.pxls.data.DBUser;
 import space.pxls.server.packets.chat.Badge;
+import space.pxls.server.packets.chat.ServerChatUserUpdate;
 import space.pxls.server.packets.socket.ClientUndo;
 import space.pxls.server.packets.chat.ServerChatBan;
 import space.pxls.server.packets.socket.ServerRename;
 import space.pxls.util.RateLimitFactory;
 
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class User {
     private int id;
-    private int stacked = 0;
-    private int chatNameColor = 0;
+    private int stacked;
+    private int chatNameColor;
     private String name;
     private String login;
     private String useragent;
 
-    private Role role = Role.USER;
+    private Role role;
     private boolean overrideCooldown;
     private boolean flaggedForCaptcha = true;
     private boolean justShowedCaptcha;
@@ -37,6 +39,8 @@ public class User {
     private long lastPixelTime = 0;
     private long lastUndoTime = 0;
     private long initialAuthTime = 0L;
+    private Timestamp signup_time;
+    private Integer displayedFaction;
 
     // 0 = not banned
     private long banExpiryTime;
@@ -44,11 +48,12 @@ public class User {
 
     private Set<WebSocketChannel> connections = new HashSet<>();
 
-    public User(int id, int stacked, String name, String login, long cooldownExpiry, Role role, long banExpiryTime, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor) {
+    public User(int id, int stacked, String name, String login, Timestamp signup, long cooldownExpiry, Role role, long banExpiryTime, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor, Integer displayedFaction, String discordName) {
         this.id = id;
         this.stacked = stacked;
         this.name = name;
         this.login = login;
+        this.signup_time = signup;
         this.cooldownExpiry = cooldownExpiry;
         this.role = role;
         this.banExpiryTime = banExpiryTime;
@@ -56,25 +61,29 @@ public class User {
         this.chatbanExpiryTime = chatbanExpiryTime;
         this.chatbanReason = chatbanReason;
         this.chatNameColor = chatNameColor;
+        this.displayedFaction = displayedFaction;
+        this.discordName = discordName;
     }
 
     public void reloadFromDatabase() {
-        Optional<DBUser> optionalUser = App.getDatabase().getUserByID(id);
-        if (!optionalUser.isPresent()) return;
-        DBUser user = optionalUser.get();
-        this.id = user.id;
-        this.stacked = user.stacked;
-        this.name = user.username;
-        this.login = user.login;
-        this.cooldownExpiry = user.cooldownExpiry;
-        this.role = user.role;
-        this.banExpiryTime = user.banExpiry;
-        this.isPermaChatbanned = user.isPermaChatbanned;
-        this.chatbanExpiryTime = user.chatbanExpiry;
-        this.isRenameRequested = user.isRenameRequested;
-        this.discordName = user.discordName;
-        this.chatbanReason = user.chatbanReason;
-        this.chatNameColor = user.chatNameColor;
+        DBUser user = App.getDatabase().getUserByID(id).orElse(null);
+        if (user != null) {
+            this.id = user.id;
+            this.stacked = user.stacked;
+            this.name = user.username;
+            this.login = user.login;
+            this.signup_time = user.signup_time;
+            this.cooldownExpiry = user.cooldownExpiry;
+            this.role = user.role;
+            this.banExpiryTime = user.banExpiry;
+            this.isPermaChatbanned = user.isPermaChatbanned;
+            this.chatbanExpiryTime = user.chatbanExpiry;
+            this.isRenameRequested = user.isRenameRequested;
+            this.discordName = user.discordName;
+            this.chatbanReason = user.chatbanReason;
+            this.chatNameColor = user.chatNameColor;
+            this.displayedFaction = user.displayedFaction;
+        }
     }
 
     public int getId() {
@@ -207,6 +216,14 @@ public class User {
 
     public String getName() {
         return name;
+    }
+
+    public String getTag() {
+        Faction f = fetchDisplayedFaction();
+        if (f != null) {
+            return f.getTag();
+        }
+        return null;
     }
 
     public List<Badge> getChatBadges() {
@@ -621,5 +638,40 @@ public class User {
 
     public void setIdled(boolean idled) {
         isIdled = idled;
+    }
+
+    public Timestamp getSignupTime() {
+        return signup_time;
+    }
+
+    public Integer getDisplayedFaction() {
+        return displayedFaction;
+    }
+
+    public void setDisplayedFactionMaybe(Integer displayedFaction) {
+        if (App.getDatabase().getFactionsForUID(getId()).size() == 1) {
+            setDisplayedFaction(displayedFaction, true, true);
+        }
+    }
+
+    public void setDisplayedFaction(Integer displayedFaction) {
+        setDisplayedFaction(displayedFaction, true, true);
+    }
+    public void setDisplayedFaction(Integer displayedFaction, boolean hitDB, boolean broadcast) {
+        this.displayedFaction = displayedFaction;
+        if (hitDB) {
+            App.getDatabase().setDisplayedFactionForUID(id, displayedFaction);
+        }
+        if (broadcast) {
+            App.getServer().broadcast(new ServerChatUserUpdate(getName(), new HashMap<String, Object>() {{put("DisplayedFaction", (displayedFaction == null || displayedFaction == 0) ? "" : fetchDisplayedFaction());}}));
+        }
+    }
+
+    public Faction fetchDisplayedFaction() {
+        return FactionManager.getInstance().getByID(displayedFaction).orElse(null);
+    }
+
+    public static User fromDBUser(DBUser user) {
+        return new User(user.id, user.stacked, user.username, user.login, user.signup_time, user.cooldownExpiry, user.role, user.banExpiry, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName);
     }
 }

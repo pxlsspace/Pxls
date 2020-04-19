@@ -193,5 +193,17 @@
             <artifactId>commons-text</artifactId>
             <version>1.8</version>
         </dependency>
+
+        <dependency>
+            <groupId>io.pebbletemplates</groupId>
+            <artifactId>pebble</artifactId>
+            <version>3.1.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-jcs-jcache</artifactId>
+            <version>2.2.1</version>
+        </dependency>
     </dependencies>
 </project>

@@ -3,6 +3,7 @@ package space.pxls;
 import com.google.gson.Gson;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import org.apache.commons.jcs.JCS;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,7 +12,7 @@ import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBPixelPlacement;
 import space.pxls.data.DBRollbackPixel;
 import space.pxls.data.Database;
-import space.pxls.server.*;
+import space.pxls.server.UndertowServer;
 import space.pxls.server.packets.chat.ClientChatMessage;
 import space.pxls.server.packets.socket.*;
 import space.pxls.user.Chatban;
@@ -23,7 +24,6 @@ import space.pxls.util.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.lang.Error;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
@@ -55,16 +55,24 @@ public class App {
     private static UndertowServer server;
 
     private static String cachedWhoamiOrigin = null;
+    private static int stackMultiplier;
+    private static int stackMaxStacked;
+    private static long userIdleTimeout;
+
     public static void main(String[] args) {
         gson = new Gson();
 
         loadConfig();
 
+        // ensure JCS reads our configs
+        JCS.getInstance("factions");
+        JCS.getInstance("users");
+
         pixelLogger = LogManager.getLogger("Pixels");
         shadowbannedPixelLogger = LogManager.getLogger("ShadowbannedPixels");
         appLogger = LogManager.getLogger("App");
 
-	    canvasCode = config.getString("canvascode");
+        canvasCode = config.getString("canvascode");
 
         width = config.getInt("board.width");
         height = config.getInt("board.height");
@@ -103,7 +111,7 @@ public class App {
         server = new UndertowServer(config.getInt("server.port"));
         server.start();
 
-        new Timer().schedule(new TimerTask(){
+        new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
                 tickStackedPixels();
@@ -157,7 +165,7 @@ public class App {
                     Role role = Role.valueOf(token[2].toUpperCase());
                     user.setRole(role);
                     database.setUserRole(user, role);
-                    database.insertServerAdminLog("Set "+user.getName()+"'s role to "+role.name());
+                    database.insertServerAdminLog("Set " + user.getName() + "'s role to " + role.name());
                     System.out.println("Set " + user.getName() + "'s role to " + role.name());
                 } else {
                     System.out.println("Cannot find user " + token[1]);
@@ -216,7 +224,7 @@ public class App {
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
                     user.unban(null, line.substring(token[0].length() + token[1].length() + 2).trim());
-                    database.insertServerAdminLog("unban "+user.getName());
+                    database.insertServerAdminLog("unban " + user.getName());
                     System.out.println("Unbanned " + user.getName() + ".");
                 } else {
                     System.out.println("Cannot find user " + token[1]);
@@ -226,7 +234,7 @@ public class App {
                 int fromY = Integer.parseInt(token[2]);
                 int toX = Integer.parseInt(token[3]);
                 int toY = Integer.parseInt(token[4]);
-                byte toColor = (byte)(token.length >= 6 ? Integer.parseInt(token[5]) : 0xFF);
+                byte toColor = (byte) (token.length >= 6 ? Integer.parseInt(token[5]) : 0xFF);
                 nuke(fromX, fromY, toX, toY, (byte) 0xFF, toColor);
             } else if (token[0].equalsIgnoreCase("replace")) {
                 int fromX = Integer.parseInt(token[1]);
@@ -385,7 +393,7 @@ public class App {
                 }
             } else if (token[0].equalsIgnoreCase("cf")) {
                 String z = line.substring(token[0].length() + 1);
-                System.out.printf("running chat filter against '%s'%nResult: %s%n", z, ChatFilter.getInstance().filter(z, true));
+                System.out.printf("running chat filter against '%s'%nResult: %s%n", z, TextFilter.getInstance().filter(z, true));
             } else if (token[0].equalsIgnoreCase("reloadUsers")) {
                 System.out.println("Working... (may cause some lag)");
                 userManager.reload();
@@ -454,15 +462,17 @@ public class App {
                 int id = App.getDatabase().createNotification(-1, title, body, expiry);
                 App.getServer().broadcast(new ServerNotification(App.getDatabase().getNotification(id)));
                 System.out.println("Notification sent");
+            } else if (token[0].equalsIgnoreCase("bp")) {
+                if (token.length == 1) {
+                    System.out.printf("%s raw_packet%n", token[0]);
+                    return;
+                }
+                App.getServer().broadcastRaw(line.substring(token[0].length() + 1).trim());
             }
         } catch (RuntimeException e) {
             e.printStackTrace();
         }
     }
-
-    private static int stackMultiplier;
-    private static int stackMaxStacked;
-    private static long userIdleTimeout;
 
     private static void loadConfig() {
         config = ConfigFactory.parseFile(new File("pxls.conf")).withFallback(ConfigFactory.load());
@@ -478,7 +488,7 @@ public class App {
         stackMaxStacked = App.getConfig().getInt("stacking.maxStacked");
         userIdleTimeout = App.getConfig().getDuration("userIdleTimeout", TimeUnit.MILLISECONDS);
 
-        ChatFilter.getInstance().reload();
+        TextFilter.getInstance().reload();
 
         if (server != null) {
             server.getWebHandler().reloadServicesEnabledState();
@@ -569,7 +579,9 @@ public class App {
         return virginmap[x + y * width];
     }
 
-    public static boolean getRegistrationEnabled() { return getConfig().getBoolean("oauth.enableRegistration"); }
+    public static boolean getRegistrationEnabled() {
+        return getConfig().getBoolean("oauth.enableRegistration");
+    }
 
     public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase, String action) {
         if (x < 0 || x >= width || y < 0 || y >= height || (color >= getPalette().size() && !(color == 0xFF || color == -1))) return;
@@ -786,8 +798,8 @@ public class App {
             if (user.isIdled()) continue;
 
             Long toUse = user.getLastPixelTime() == 0L ? user.getInitialAuthTime() : user.getLastPixelTime();
-            Long delta = loopStart-toUse;
-            boolean isIdled = userIdleTimeout-delta <= 0;
+            Long delta = loopStart - toUse;
+            boolean isIdled = userIdleTimeout - delta <= 0;
 
             if (isIdled) {
                 anyIdled = true;

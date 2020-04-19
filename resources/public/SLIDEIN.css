@@ -47,17 +47,35 @@
 
 .slidein.slidein-success {
     background: #55e11e linear-gradient(180deg, #67de38, #55e11e) repeat-x;
+    color: #fff;
 }
 .slidein.slidein-danger {
     background: #e1251c linear-gradient(180deg, #de3e37, #e1251c) repeat-x;
-    color: #ffffff;
+    color: #fff;
 }
 .slidein.slidein-warning {
     background: #fff339 linear-gradient(180deg, #ded649, #e1d732) repeat-x;
+    color: #000;
 }
 .slidein.slidein-info {
     background: #3db7ff linear-gradient(180deg, #50a3de, #3a9ce1) repeat-x;
     color: #fff;
+}
+
+.slidein.slidein-warning a, .slidein.slidein-success a {
+    color: #000;
+    text-decoration: underline;
+}
+.slidein.slidein-warning a:hover {
+    color: #333;
+}
+
+.slidein.slidein-info a, .slidein.slidein-danger a, .slidein.slidein-success a {
+    color: #fff;
+    text-decoration: underline;
+}
+.slidein.slidein-info a:hover, .slidein.slidein-danger a:hover, .slidein.slidein-success a:hover {
+    color: #ddd;
 }
 
 .slidein .slidein-icon {

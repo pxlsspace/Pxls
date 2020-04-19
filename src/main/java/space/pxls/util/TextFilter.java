@@ -7,35 +7,35 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class ChatFilter {
-    private static ChatFilter _instance;
-    public static ChatFilter getInstance() {
-        if (_instance == null) _instance = new ChatFilter();
+public class TextFilter {
+    private static TextFilter _instance;
+    public static TextFilter getInstance() {
+        if (_instance == null) _instance = new TextFilter();
         return _instance;
     }
     private List<String> staticNeedle = new ArrayList<>();
     private List<Pattern> regexNeedle = new ArrayList<>();
 
-    private ChatFilter() {
+    private TextFilter() {
         reload();
     }
 
     public void reload() {
         try {
-            staticNeedle = App.getConfig().getStringList("chat.filter.static");
+            staticNeedle = App.getConfig().getStringList("textFilter.static");
 
             regexNeedle.clear();
-            for (String s : App.getConfig().getStringList("chat.filter.regex")) {
+            for (String s : App.getConfig().getStringList("textFilter.regex")) {
                 try {
                     regexNeedle.add(Pattern.compile(s, Pattern.CASE_INSENSITIVE));
                 } catch (Exception e) {
                     e.printStackTrace();
-                    System.err.println("Failed to parse chat filter regex: " + s);
+                    System.err.println("Failed to parse textFilter regex: " + s);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.err.println("Failed to reload ChatFilter needles");
+            System.err.println("Failed to reload TextFilter needles");
         }
     }
 

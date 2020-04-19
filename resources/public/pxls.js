@@ -2687,7 +2687,11 @@ window.App = (function () {
                         }, {
                             id: "username",
                             name: "Username",
-                            get: data => data.username,
+                            get: data => crel('a', {'href': `/profile/${data.username}`, 'target': '_blank', 'title': 'View Profile'}, data.username),
+                        }, {
+                            id: "faction",
+                            name: "Faction",
+                            get: data => data.faction || 'None Displayed',
                         }, {
                             id: "time",
                             name: "Time",
@@ -3634,6 +3638,10 @@ window.App = (function () {
                                         self._updateAuthorNameColor(e.who, Math.floor(update[1]));
                                         break;
                                     }
+                                    case 'DisplayedFaction': {
+                                        self._updateAuthorDisplayedFaction(e.who, update[1]);
+                                        break;
+                                    }
                                     default: {
                                         console.warn('Got an unknown chat_user_update from %o: %o (%o)', e.who, update, e);
                                         break;
@@ -3642,6 +3650,8 @@ window.App = (function () {
                             }
                         } else console.warn('Malformed chat_user_update: %o', e);
                     });
+                    socket.on('faction_update', e => self._updateFaction(e.faction));
+                    socket.on('faction_clear', e => self._clearFaction(e.fid));
                     socket.on('chat_history', e => {
                         if (self.seenHistory) return;
                         for (let packet of e.messages.reverse()) {
@@ -4663,6 +4673,45 @@ window.App = (function () {
                         uiHelper.styleElemWithChatNameColor(this, colorIdx, 'color');
                     });
                 },
+                _updateAuthorDisplayedFaction: (author, faction) => {
+                    const tag = (faction && faction.tag) || '';
+                    const color = faction ? self.intToHex(faction && faction.color) : null;
+                    const tagStr = (faction && faction.tag) ? `[${faction.tag}]` : ``;
+                    let ttStr = '';
+                    if (faction && faction.name != null && faction.id != null) {
+                        ttStr = `${faction.name} (ID: ${faction.id})`;
+                    }
+
+                    self.elements.body.find(`.chat-line[data-author="${author}"]`).each(function() {
+                        this.dataset.faction = (faction && faction.id) || '';
+                        this.dataset.tag = tag;
+                        $(this).find('.faction-tag').each(function() {
+                            this.dataset.tag = tag;
+                            this.style.color = color;
+                            this.innerHTML = tagStr;
+                            this.setAttribute('title', ttStr);
+                        });
+                    });
+                },
+                _updateFaction: (faction) => {
+                    if (faction == null || faction.id == null) return;
+                    const colorHex = `#${('000000' + (faction.color >>> 0).toString(16)).slice(-6)}`;
+                    self.elements.body.find(`.chat-line[data-faction="${faction.id}"]`).each(function() {
+                        this.dataset.tag = faction.tag;
+                        $(this).find('.faction-tag').attr('data-tag', faction.tag).attr('title', `${faction.name} (ID: ${faction.id})`).css('color', colorHex).html(`[${faction.tag}]`);
+                    });
+                },
+                _clearFaction: (fid) => {
+                    if (fid == null) return;
+                    self.elements.body.find(`.chat-line[data-faction="${fid}"]`).each(function() {
+                        let _ft = $(this).find('.faction-tag')[0];
+                        ['tag', 'faction', 'title'].forEach(x => {
+                            this.dataset[x] = '';
+                            _ft.dataset[x] = '';
+                        });
+                        _ft.innerHTML = '';
+                    })
+                },
                 _process: (packet, isHistory = false) => {
                     if (packet.nonce) {
                         if (self.nonceLog.includes(packet.nonce)) {
@@ -4702,14 +4751,17 @@ window.App = (function () {
                     let nameClasses = `user`;
                     if (Array.isArray(packet.authorNameClass)) nameClasses += ` ${packet.authorNameClass.join(' ')}`;
 
+                    let _facTag = (packet.strippedFaction && packet.strippedFaction.tag) || '';
+                    let _facTitle = (packet.strippedFaction && packet.strippedFaction.id && packet.strippedFaction.name) ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : null;
+                    let _facColor = self.intToHex((packet.strippedFaction && packet.strippedFaction.color) || 0);
+
                     self.elements.body.append(
-                        crel('li', {'data-nonce': packet.nonce, 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`},
-                            crel('span', {'class': 'actions'},
-                                crel('i', {'class': 'fas fa-cog', 'data-action': 'actions-panel', 'title': 'Actions', onclick: self._popUserPanel})
-                            ),
+                        crel('li', {'data-nonce': packet.nonce, 'data-tag': _facTag, 'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '', 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`},
                             crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format(ls.get('chat.24h') === true ? 'HH:mm' : 'hh:mm A')),
                             document.createTextNode(' '),
                             badges,
+                            document.createTextNode(' '),
+                            crel('span', {'class': 'faction-tag', 'data-tag': _facTag, 'style': `color: ${_facColor}`, 'title': _facTitle}, _facTag ? `[${_facTag}]` : ``),
                             document.createTextNode(' '),
                             crel('span', {'class': nameClasses, style: `color: ${place.getPaletteColor(packet.authorNameColor)}`, onclick: self._popUserPanel, onmousemiddledown: self._addAuthorMentionToChatbox}, packet.author),
                             document.createTextNode(': '),
@@ -4737,6 +4789,7 @@ window.App = (function () {
                         }
                     }
                 },
+                intToHex: (i) => `#${('000000' + (i >>> 0).toString(16)).slice(-6)}`,
                 processMessage: (elem, elemClass, str) => {
                     let toReturn = crel(elem, {'class': elemClass}, str);
 
@@ -4965,7 +5018,7 @@ window.App = (function () {
                         let panelHeader = crel('header',
                             {'style': 'text-align: center;'},
                             crel('div', {'class': 'left'}, crel('i', {'class': 'fas fa-times text-red', onclick: closeHandler})),
-                            crel('span', closest.dataset.author, badges),
+                            crel('span', (closest.dataset.tag ? `[${closest.dataset.tag}] ` : null), closest.dataset.author, badges),
                             crel('div', {'class': 'right'})
                         );
                         let leftPanel = crel('div', {'class': 'pane details-wrapper'});
@@ -4976,6 +5029,7 @@ window.App = (function () {
                         let actionReport = crel('li', {'class': 'text-red', 'data-action': 'report', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Report');
                         let actionMention = crel('li', {'data-action': 'mention', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Mention');
                         let actionIgnore = crel('li', {'data-action': 'ignore', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Ignore');
+                        let actionProfile = crel('li', {'data-action': 'profile', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Profile');
                         let actionChatban = crel('li', {'data-action': 'chatban', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Chat (un)ban');
                         let actionPurgeUser = crel('li', {'data-action': 'purge', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Purge User');
                         let actionDeleteMessage = crel('li', {'data-action': 'delete', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Delete');
@@ -4987,6 +5041,7 @@ window.App = (function () {
 
                         crel(actionsList, actionReport);
                         crel(actionsList, actionMention);
+                        crel(actionsList, actionProfile);
                         crel(actionsList, actionIgnore);
                         if (user.isStaff()) {
                             crel(actionsList, actionChatban);
@@ -5480,6 +5535,18 @@ window.App = (function () {
                             ));
                             break;
                         }
+                        case 'profile': {
+                            if (!window.open(`/profile/${reportingTarget}`, '_blank')) {
+                                modal.show(modal.buildDom(
+                                  crel('h2', {'class': 'modal-title'}, 'Open Failed'),
+                                  crel('div',
+                                    crel('h3', 'Failed to automatically open in a new tab'),
+                                    crel('a', {href: `/profile/${reportingTarget}`, target: '_blank'}, 'Click here to open in a new tab instead')
+                                  )
+                                ));
+                            }
+                            break;
+                        }
                     }
                 },
                 _doScroll: elem => {
@@ -5896,7 +5963,7 @@ window.App = (function () {
                         self.renameRequested = data.renameRequested;
                         uiHelper.setDiscordName(data.discordName || "");
                         self.elements.loginOverlay.fadeOut(200);
-                        self.elements.userInfo.find("span#username").text(data.username);
+                        self.elements.userInfo.find("span#username").html(crel('a', {'href': `/profile/${data.username}`, 'target': '_blank', 'title': 'My Profile'}, data.username).outerHTML);
                         if (data.method == 'ip') {
                             self.elements.userInfo.hide();
                         } else {
