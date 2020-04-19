@@ -11,17 +11,17 @@ import java.sql.SQLException;
 public class DBChatReport {
     public final Integer id;
     public final Integer time;
-    public final String chat_message;
+    public final Integer cmid;
     public final String report_message;
     public final Integer target;
     public final Integer initiator;
     public final Integer claimed_by;
     public final Boolean closed;
 
-    public DBChatReport(Integer id, Integer time, String chat_message, String report_message, Integer target, Integer initiator, Integer claimed_by, Boolean closed) {
+    public DBChatReport(Integer id, Integer time, Integer cmid, String report_message, Integer target, Integer initiator, Integer claimed_by, Boolean closed) {
         this.id = id;
         this.time = time;
-        this.chat_message = chat_message;
+        this.cmid = cmid;
         this.report_message = report_message;
         this.target = target;
         this.initiator = initiator;
@@ -47,7 +47,7 @@ public class DBChatReport {
             return new DBChatReport(
                 rs.getInt("id"),
                 rs.getInt("time"),
-                rs.getString("chat_message"),
+                rs.getInt("cmid"),
                 rs.getString("report_message"),
                 rs.getInt("target"),
                 rs.getInt("initiator"),

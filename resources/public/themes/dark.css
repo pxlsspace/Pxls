@@ -155,7 +155,7 @@ hr {
     background-image: linear-gradient(0,#2a2a2a,#3a3a3a,#2a2a2a);
 }
 
-ul.chat-body .chat-line[data-nonce].has-ping {
+ul.chat-body .chat-line[data-id].has-ping {
     background-color: #5b5345;
 }
 

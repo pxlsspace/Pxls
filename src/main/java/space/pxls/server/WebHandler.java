@@ -606,37 +606,43 @@ public class WebHandler {
         }
 
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-        FormData.FormValue chatNonce = null;
-        FormData.FormValue reportMessage = null;
+        FormData.FormValue messageId;
+        FormData.FormValue reportMessage;
 
         try {
-            chatNonce = data.getFirst("nonce");
+            messageId = data.getFirst("cmid");
             reportMessage = data.getFirst("report_message");
         } catch (NullPointerException npe) {
-            sendBadRequest(exchange);
+            sendBadRequest(exchange, "Missing params");
             return;
         }
 
-        if (chatNonce == null) {
-            sendBadRequest(exchange);
+        if (messageId == null) {
+            sendBadRequest(exchange, "Missing cmid");
             return;
         }
 
-        DBChatMessage chatMessage = App.getDatabase().getChatMessageByNonce(chatNonce.getValue());
+        int cmid;
+        try {
+            cmid = Integer.parseInt(messageId.getValue());
+        } catch (NumberFormatException nfe) {
+            sendBadRequest(exchange, "Invalid cmid");
+            return;
+        }
+
+        DBChatMessage chatMessage = App.getDatabase().getChatMessageByID(cmid);
         if (chatMessage == null || reportMessage == null) {
-            sendBadRequest(exchange);
+            sendBadRequest(exchange, "Missing params");
             return;
         }
 
         String _reportMessage = reportMessage.getValue().trim();
         if (_reportMessage.length() > 2048) _reportMessage = _reportMessage.substring(0, 2048);
-        Integer rid = App.getDatabase().insertChatReport(chatMessage.nonce, chatMessage.author_uid, user.getId(), _reportMessage);
+        Integer rid = App.getDatabase().insertChatReport(chatMessage.id, chatMessage.author_uid, user.getId(), _reportMessage);
         if (rid != null)
             App.getServer().broadcastToStaff(new ServerReceivedReport(rid, ServerReceivedReport.REPORT_TYPE_CHAT));
 
-        exchange.setStatusCode(200);
-        exchange.getResponseSender().send("{}");
-        exchange.endExchange();
+        send(200, exchange, null);
     }
 
     public void chatban(HttpServerExchange exchange) {
@@ -651,25 +657,25 @@ public class WebHandler {
         }
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
 
-        FormData.FormValue nonceData;
+        FormData.FormValue cmidData;
         FormData.FormValue whoData;
         FormData.FormValue typeData;
         FormData.FormValue reasonData;
         FormData.FormValue removalData;
         FormData.FormValue banlengthData;
 
-        String nonce = "";
-        String who = "";
-        String type = "";
-        String reason = "";
-        Integer removal = 0;
-        Integer banLength = 0;
+        String who;
+        String type;
+        String reason;
+        Integer cmid;
+        Integer removal;
+        Integer banLength;
 
         boolean isPerma = false,
                 isUnban = false;
 
         try {
-            nonceData = data.getFirst("nonce");
+            cmidData = data.getFirst("cmid");
             whoData = data.getFirst("who");
             typeData = data.getFirst("type");
             reasonData = data.getFirst("reason");
@@ -680,7 +686,7 @@ public class WebHandler {
             return;
         }
 
-        if (nonceData == null && whoData == null) {
+        if (cmidData == null && whoData == null) {
             sendBadRequest(exchange);
             return;
         }
@@ -691,10 +697,10 @@ public class WebHandler {
         }
 
         try {
-            nonce = nonceData == null ? null : nonceData.getValue();
             who = whoData == null ? null : whoData.getValue();
             type = typeData.getValue();
             reason = reasonData.getValue();
+            cmid = cmidData == null ? null : Integer.parseInt(cmidData.getValue());
             removal = Integer.parseInt(removalData.getValue());
             banLength = Integer.parseInt(banlengthData.getValue());
         } catch (Exception e) {
@@ -706,8 +712,8 @@ public class WebHandler {
         isUnban = type.trim().equalsIgnoreCase("unban");
         User target = null;
 
-        if (nonce != null) {
-            DBChatMessage chatMessage = App.getDatabase().getChatMessageByNonce(nonce);
+        if (cmid != null) {
+            DBChatMessage chatMessage = App.getDatabase().getChatMessageByID(cmid);
             if (chatMessage == null) {
                 sendBadRequest(exchange);
                 return;
@@ -757,22 +763,30 @@ public class WebHandler {
         }
 
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-        FormData.FormValue chatNonce = null;
+        FormData.FormValue chatId = null;
         String reason = null;
 
         try {
-            chatNonce = data.getFirst("nonce");
+            chatId = data.getFirst("cmid");
         } catch (NullPointerException npe) {
-            sendBadRequest(exchange, "Message nonce invalid/missing");
+            sendBadRequest(exchange, "Message cmid invalid/missing");
             return;
         }
 
-        if (chatNonce == null) {
-            sendBadRequest(exchange, "Message nonce missing");
+        if (chatId == null) {
+            sendBadRequest(exchange, "Message cmid missing");
             return;
         }
 
-        DBChatMessage chatMessage = App.getDatabase().getChatMessageByNonce(chatNonce.getValue());
+        int cmid;
+        try {
+            cmid = Integer.parseInt(chatId.getValue());
+        } catch (NumberFormatException nfe) {
+            sendBadRequest(exchange, "Bad CMID");
+            return;
+        }
+
+        DBChatMessage chatMessage = App.getDatabase().getChatMessageByID(cmid);
         if (chatMessage == null) {
             sendBadRequest(exchange, "Message didn't exist");
             return;
@@ -791,7 +805,7 @@ public class WebHandler {
             reason = "";
         }
 
-        App.getDatabase().purgeChat(author, user, chatMessage.nonce, reason, true);
+        App.getDatabase().purgeChatID(author, user, chatMessage.id, reason, true);
 
         send(StatusCodes.OK, exchange, "");
     }
@@ -1173,7 +1187,7 @@ public class WebHandler {
         JsonObject toSend = new JsonObject();
         toSend.addProperty("success", isSuccess);
         toSend.addProperty("message", StatusCodes.getReason(statusCode));
-        toSend.addProperty("details", details);
+        toSend.addProperty("details", details == null ? "" : details);
 
         exchange.setStatusCode(statusCode);
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
@@ -1202,10 +1216,20 @@ public class WebHandler {
             User user = null;
             if (data.contains("username")) {
                 user = App.getUserManager().getByName(data.getFirst("username").getValue());
-            } else if (data.contains("nonce")) {
-                DBChatMessage chatMessage = App.getDatabase().getChatMessageByNonce(data.getFirst("nonce").getValue());
-                if (chatMessage != null) {
-                    user = App.getUserManager().getByID(chatMessage.author_uid);
+            } else if (data.contains("cmid")) {
+                Integer i = null;
+                try {
+                    i = Integer.parseInt(data.getFirst("cmid").getValue());
+                } catch (NullPointerException npe) {
+                    sendBadRequest(exchange, "Missing CMID");
+                } catch (NumberFormatException nfe) {
+                    sendBadRequest(exchange, "Bad CMID");
+                }
+                if (i != null) {
+                    DBChatMessage chatMessage = App.getDatabase().getChatMessageByID(i);
+                    if (chatMessage != null) {
+                        user = App.getUserManager().getByID(chatMessage.author_uid);
+                    }
                 }
             }
 

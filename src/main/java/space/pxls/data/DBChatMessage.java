@@ -7,7 +7,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class DBChatMessage {
-    public final String nonce;
+    public final int id;
     public final int author_uid;
     public final Long sent;
     public final String content;
@@ -15,8 +15,8 @@ public class DBChatMessage {
     public final boolean purged;
     public final int purged_by_uid;
 
-    public DBChatMessage(String nonce, int author_uid, Long sent, String content, String filtered_content, boolean purged, int purged_by_uid) {
-        this.nonce = nonce;
+    public DBChatMessage(int id, int author_uid, Long sent, String content, String filtered_content, boolean purged, int purged_by_uid) {
+        this.id = id;
         this.author_uid = author_uid;
         this.sent = sent;
         this.content = content;
@@ -29,7 +29,7 @@ public class DBChatMessage {
         @Override
         public DBChatMessage map(ResultSet r, StatementContext ctx) throws SQLException {
             return new DBChatMessage(
-                    r.getString("nonce"),
+                    r.getInt("id"),
                     r.getInt("author"),
                     r.getLong("sent"),
                     r.getString("content"),

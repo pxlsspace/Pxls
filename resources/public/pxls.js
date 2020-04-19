@@ -3547,7 +3547,7 @@ window.App = (function () {
                 pingAudio: new Audio('chatnotify.wav'),
                 lastPingAudioTimestamp: 0,
                 last_opened_panel: ls.get('chat.last_opened_panel') >> 0,
-                nonceLog: [],
+                idLog: [],
                 typeahead: {
                     helper: null,
                     suggesting: false,
@@ -3657,10 +3657,10 @@ window.App = (function () {
                         for (let packet of e.messages.reverse()) {
                             self._process(packet, true);
                         }
-                        let last = self.elements.body.find("li[data-nonce]").last()[0];
+                        let last = self.elements.body.find("li[data-id]").last()[0];
                         if (last) {
                             self._doScroll(last);
-                            if (last.dataset.nonce && last.dataset.nonce !== ls.get("chat-last_seen_nonce")) {
+                            if (last.dataset.id && last.dataset.id !== ls.get("chat-last_seen_id")) {
                                 self.elements.message_icon.addClass('has-notification');
                             }
                         }
@@ -3674,10 +3674,10 @@ window.App = (function () {
                             self.elements.message_icon.addClass('has-notification');
                         }
                         if (self.stickToBottom) {
-                            let chatLine = self.elements.body.find(`[data-nonce="${e.message.nonce}"]`)[0];
+                            let chatLine = self.elements.body.find(`[data-id="${e.message.id}"]`)[0];
                             if (chatLine) {
                                 if (self.elements.chat_panel.hasClass('open')) {
-                                    ls.set('chat-last_seen_nonce', e.message.nonce);
+                                    ls.set('chat-last_seen_id', e.message.id);
                                 }
                                 self._doScroll(chatLine);
                             }
@@ -3853,16 +3853,16 @@ window.App = (function () {
                     });
                     socket.on('chat_purge_specific', e => {
                         let lines = [];
-                        if (e.nonces && e.nonces.length) {
-                            e.nonces.forEach(x => {
-                                let line = self.elements.body.find(`.chat-line[data-nonce="${x}"]`)[0];
+                        if (e.IDs && e.IDs.length) {
+                            e.IDs.forEach(x => {
+                                let line = self.elements.body.find(`.chat-line[data-id="${x}"]`)[0];
                                 if (line) lines.push(line);
                             });
                         }
                         if (lines.length) {
                             lines.forEach(x => _doPurge(x, e));
                             if (user.getUsername().toLowerCase().trim() === e.target.toLowerCase().trim()) {
-                                self.addServerAction(`${e.nonces.length} message${e.nonces.length !== 1 ? 's were' : ' was'} purged by ${e.initiator}`);
+                                self.addServerAction(`${e.IDs.length} message${e.IDs.length !== 1 ? 's were' : ' was'} purged by ${e.initiator}`);
                             }
                         }
                     });
@@ -4063,9 +4063,9 @@ window.App = (function () {
                         if (which === "chat") {
                             ls.set('chat.last_opened_panel', new Date/1e3 >> 0);
                             self.clearPings();
-                            let lastN = self.elements.body.find("[data-nonce]").last()[0];
+                            let lastN = self.elements.body.find("[data-id]").last()[0];
                             if (lastN) {
-                                ls.set("chat-last_seen_nonce", lastN.dataset.nonce);
+                                ls.set("chat-last_seen_id", lastN.dataset.id);
                             }
 
                             if (user.isLoggedIn()) {
@@ -4103,7 +4103,7 @@ window.App = (function () {
                     $(window).on("resize", e => {
                         let popup = document.querySelector('.popup.panels[data-popup-for]');
                         if (!popup) return;
-                        let cog = document.querySelector(`.chat-line[data-nonce="${popup.dataset.popupFor}"] [data-action="actions-panel"]`);
+                        let cog = document.querySelector(`.chat-line[data-id="${popup.dataset.popupFor}"] [data-action="actions-panel"]`);
                         if (!cog) return console.warn('no cog');
 
                         if (self.repositionTimer) clearTimeout(self.repositionTimer);
@@ -4145,7 +4145,7 @@ window.App = (function () {
 
                         const pingsList = crel('ul', {'class': 'pings-list'}, self.pingsList.map(packet => {
                             let _processed = self.processMessage('span', '', packet.message_raw);
-                            return crel('li', {'title': _processed.textContent}, crel('i', {'class': 'fas fa-external-link-alt fa-is-left', 'style': 'font-size: .65rem; cursor: pointer;', 'data-nonce': packet.nonce, onclick: self._handlePingJumpClick}), `${packet.author}: `, _processed);
+                            return crel('li', {'title': _processed.textContent}, crel('i', {'class': 'fas fa-external-link-alt fa-is-left', 'style': 'font-size: .65rem; cursor: pointer;', 'data-id': packet.id, onclick: self._handlePingJumpClick}), `${packet.author}: `, _processed);
                         }));
                         let popup = crel(popupWrapper, panelHeader, crel('div', {'class': 'pane pane-full'}, pingsList));
                         document.body.appendChild(popup);
@@ -4576,16 +4576,16 @@ window.App = (function () {
                     ));
                 },
                 _handlePingJumpClick: function() { //must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
-                    if (this && this.dataset && this.dataset.nonce) {
-                        self.scrollToNonce(this.dataset.nonce);
+                    if (this && this.dataset && this.dataset.id) {
+                        self.scrollToCMID(this.dataset.id);
                     }
                 },
                 updateStickToBottom() {
                     const obj = self.elements.body[0];
                     self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
                 },
-                scrollToNonce(nonce) {
-                    let elem = self.elements.body[0].querySelector(`.chat-line[data-nonce="${nonce}"]`);
+                scrollToCMID(cmid) {
+                    let elem = self.elements.body[0].querySelector(`.chat-line[data-cmid="${cmid}"]`);
                     if (elem) {
                         self._doScroll(elem);
                         const ripAnim = function() {
@@ -4713,13 +4713,13 @@ window.App = (function () {
                     })
                 },
                 _process: (packet, isHistory = false) => {
-                    if (packet.nonce) {
-                        if (self.nonceLog.includes(packet.nonce)) {
+                    if (packet.id) {
+                        if (self.idLog.includes(packet.id)) {
                             return;
                         } else {
-                            self.nonceLog.unshift(packet.nonce); //sit this nonce in front so we short circuit sooner
-                            if (self.nonceLog.length > 50) {
-                                self.nonceLog.pop(); //ensure we pop off back instead of shift off front
+                            self.idLog.unshift(packet.id); //sit this id in front so we short circuit sooner
+                            if (self.idLog.length > 50) {
+                                self.idLog.pop(); //ensure we pop off back instead of shift off front
                             }
                         }
                     }
@@ -4756,7 +4756,7 @@ window.App = (function () {
                     let _facColor = self.intToHex((packet.strippedFaction && packet.strippedFaction.color) || 0);
 
                     self.elements.body.append(
-                        crel('li', {'data-nonce': packet.nonce, 'data-tag': _facTag, 'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '', 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`},
+                        crel('li', {'data-id': packet.id, 'data-tag': _facTag, 'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '', 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`},
                             crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format(ls.get('chat.24h') === true ? 'HH:mm' : 'hh:mm A')),
                             document.createTextNode(' '),
                             badges,
@@ -4977,7 +4977,7 @@ window.App = (function () {
                 _addAuthorMentionToChatbox: function(e) {
                     e.preventDefault();
                     if (this && this.closest) {
-                        const chatLineEl = this.closest('.chat-line[data-nonce]');
+                        const chatLineEl = this.closest('.chat-line[data-id]');
                         if (!chatLineEl) return console.warn('no closets chat-line on self: %o', this);
 
                         self.elements.input.val(self.elements.input.val() + '@' + chatLineEl.dataset.author + ' ');
@@ -4986,10 +4986,10 @@ window.App = (function () {
                 },
                 _popUserPanel: function(e) {
                     if (this && this.closest) {
-                        let closest = this.closest('.chat-line[data-nonce]');
+                        let closest = this.closest('.chat-line[data-id]');
                         if (!closest) return console.warn('no closets chat-line on self: %o', this);
 
-                        let nonce = closest.dataset.nonce;
+                        let id = closest.dataset.id;
 
                         let badgesArray = [];
                         try {
@@ -5014,7 +5014,7 @@ window.App = (function () {
                             }
                         };
 
-                        let popupWrapper = crel('div', {'class': 'popup panels', 'data-popup-for': nonce});
+                        let popupWrapper = crel('div', {'class': 'popup panels', 'data-popup-for': id});
                         let panelHeader = crel('header',
                             {'style': 'text-align: center;'},
                             crel('div', {'class': 'left'}, crel('i', {'class': 'fas fa-times text-red', onclick: closeHandler})),
@@ -5026,15 +5026,15 @@ window.App = (function () {
                         let actionsList = crel('ul', {'class': 'actions-list'});
 
                         let popupActions = crel('ul', {'class': 'popup-actions'});
-                        let actionReport = crel('li', {'class': 'text-red', 'data-action': 'report', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Report');
-                        let actionMention = crel('li', {'data-action': 'mention', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Mention');
-                        let actionIgnore = crel('li', {'data-action': 'ignore', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Ignore');
-                        let actionProfile = crel('li', {'data-action': 'profile', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Profile');
-                        let actionChatban = crel('li', {'data-action': 'chatban', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Chat (un)ban');
-                        let actionPurgeUser = crel('li', {'data-action': 'purge', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Purge User');
-                        let actionDeleteMessage = crel('li', {'data-action': 'delete', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Delete');
-                        let actionModLookup = crel('li', {'data-action': 'lookup-mod', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Mod Lookup');
-                        let actionChatLookup = crel('li', {'data-action': 'lookup-chat', 'data-nonce': nonce, onclick: self._handleActionClick}, 'Chat Lookup');
+                        let actionReport = crel('li', {'class': 'text-red', 'data-action': 'report', 'data-id': id, onclick: self._handleActionClick}, 'Report');
+                        let actionMention = crel('li', {'data-action': 'mention', 'data-id': id, onclick: self._handleActionClick}, 'Mention');
+                        let actionIgnore = crel('li', {'data-action': 'ignore', 'data-id': id, onclick: self._handleActionClick}, 'Ignore');
+                        let actionProfile = crel('li', {'data-action': 'profile', 'data-id': id, onclick: self._handleActionClick}, 'Profile');
+                        let actionChatban = crel('li', {'data-action': 'chatban', 'data-id': id, onclick: self._handleActionClick}, 'Chat (un)ban');
+                        let actionPurgeUser = crel('li', {'data-action': 'purge', 'data-id': id, onclick: self._handleActionClick}, 'Purge User');
+                        let actionDeleteMessage = crel('li', {'data-action': 'delete', 'data-id': id, onclick: self._handleActionClick}, 'Delete');
+                        let actionModLookup = crel('li', {'data-action': 'lookup-mod', 'data-id': id, onclick: self._handleActionClick}, 'Mod Lookup');
+                        let actionChatLookup = crel('li', {'data-action': 'lookup-chat', 'data-id': id, onclick: self._handleActionClick}, 'Chat Lookup');
 
                         crel(leftPanel, crel('p', {'class': 'popup-timestamp-header'}, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(ls.get('chat.24h') === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
                         crel(leftPanel, crel('p', {'style': 'margin-top: 3px; margin-left: 3px; text-align: left;'}, closest.querySelector('.content').textContent));
@@ -5092,8 +5092,8 @@ window.App = (function () {
                 _handleActionClick: function(e) { //must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
                     if (!this.dataset) return console.trace('onClick attached to invalid object');
 
-                    let chatLine = self.elements.body.find(`.chat-line[data-nonce="${this.dataset.nonce}"]`)[0];
-                    if (!chatLine && !this.dataset.target) return console.warn('no chatLine/target? searched for nonce %o', this.dataset.nonce);
+                    let chatLine = self.elements.body.find(`.chat-line[data-id="${this.dataset.id}"]`)[0];
+                    if (!chatLine && !this.dataset.target) return console.warn('no chatLine/target? searched for id %o', this.dataset.id);
                     let mode = !!chatLine;
 
                     let reportingMessage = mode ? chatLine.querySelector('.content').textContent : '';
@@ -5106,7 +5106,7 @@ window.App = (function () {
                             let textArea = crel('textarea', {'placeholder': 'Enter a reason for your report', 'style': 'width: 100%; border: 1px solid #999;', 'required': 'true', onkeydown: e => e.stopPropagation()});
 
                             let chatReport =
-                                crel('form', {'class': 'report chat-report', 'data-chat-nonce': this.dataset.nonce},
+                                crel('form', {'class': 'report chat-report', 'data-chat-id': this.dataset.id},
                                     crel('p', {'style': 'font-size: 1rem !important;'},
                                         `You are reporting a chat message from `,
                                         crel('span', {'style': 'font-weight: bold'}, reportingTarget),
@@ -5121,9 +5121,9 @@ window.App = (function () {
                             chatReport.onsubmit = e => {
                                 e.preventDefault();
                                 reportButton.disabled = true;
-                                if (!this.dataset.nonce) return console.error('!! No nonce to report? !!', this);
+                                if (!this.dataset.id) return console.error('!! No id to report? !!', this);
                                 $.post("/reportChat", {
-                                    nonce: this.dataset.nonce,
+                                    cmid: this.dataset.id,
                                     report_message: textArea.value
                                 }, function () {
                                     chatReport.remove();
@@ -5159,8 +5159,8 @@ window.App = (function () {
                             let messageTable = mode
                                 ? crel('table', {'class': 'chatmod-table'},
                                     crel('tr',
-                                        crel('th', 'Nonce: '),
-                                        crel('td', this.dataset.nonce)
+                                        crel('th', 'ID: '),
+                                        crel('td', this.dataset.id)
                                     ),
                                     crel('tr',
                                         crel('th', 'Message: '),
@@ -5218,7 +5218,7 @@ window.App = (function () {
                             let _btnCancel = crel('button', {'class': 'button', 'type': 'button', onclick: () => {chatbanContainer.remove(); modal.closeAll();}}, 'Cancel');
                             let _btnOK = crel('button', {'class': 'button', 'type': 'submit'}, 'Ban');
 
-                            let chatbanContainer = crel('form', {'class': 'chatmod-container', 'data-chat-nonce': this.dataset.nonce},
+                            let chatbanContainer = crel('form', {'class': 'chatmod-container', 'data-chat-id': this.dataset.id},
                                 crel('h5', mode ? 'Banning:' : 'Message:'),
                                 messageTable,
                                 crel('h5', 'Ban Length'),
@@ -5300,7 +5300,7 @@ window.App = (function () {
                                 }
 
                                 if (mode)
-                                    postData.nonce = this.dataset.nonce;
+                                    postData.cmid = this.dataset.id;
                                 else
                                     postData.who = reportingTarget;
 
@@ -5326,7 +5326,7 @@ window.App = (function () {
                             });
 
                             const doDelete = () => $.post('/admin/delete', {
-                                nonce: this.dataset.nonce,
+                                cmid: this.dataset.id,
                                 reason: _txtReason.value
                             }, () => {
                                 modal.closeAll();
@@ -5342,8 +5342,8 @@ window.App = (function () {
                             let deleteWrapper = crel('div', {'class': 'chatmod-container'},
                                 crel('table',
                                     crel('tr',
-                                        crel('th', 'Nonce: '),
-                                        crel('td', this.dataset.nonce)
+                                        crel('th', 'ID: '),
+                                        crel('td', this.dataset.id)
                                     ),
                                     crel('tr',
                                         crel('th', 'User: '),
@@ -5380,8 +5380,8 @@ window.App = (function () {
                             let messageTable = mode
                                 ? crel('table',
                                     crel('tr',
-                                        crel('th', 'Nonce: '),
-                                        crel('td', this.dataset.nonce)
+                                        crel('th', 'ID: '),
+                                        crel('td', this.dataset.id)
                                     ),
                                     crel('tr',
                                         crel('th', 'Message: '),
@@ -5430,8 +5430,8 @@ window.App = (function () {
                         }
                         case 'lookup-mod': {
                             if (user.admin && user.admin.checkUser && user.admin.checkUser.check) {
-                                let type = board.snipMode ? 'nonce' : 'username';
-                                let arg = board.snipMode ? this.dataset.nonce : reportingTarget;
+                                let type = board.snipMode ? 'cmid' : 'username';
+                                let arg = board.snipMode ? this.dataset.id : reportingTarget;
                                 user.admin.checkUser.check(arg, type);
                             }
                             break;
@@ -5439,8 +5439,8 @@ window.App = (function () {
                         case 'lookup-chat': {
                             socket.send({
                                 type: 'ChatLookup',
-                                arg: board.snipMode ? this.dataset.nonce : reportingTarget,
-                                mode: board.snipMode ? 'nonce' : 'username'
+                                arg: board.snipMode ? this.dataset.id : reportingTarget,
+                                mode: board.snipMode ? 'cmid' : 'username'
                             });
                             break;
                         }

@@ -1535,11 +1535,11 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     }
 }
 
-ul.chat-body .chat-line[data-nonce].has-ping {
+ul.chat-body .chat-line[data-id].has-ping {
     background-color: #feedd1;
 }
 
-ul.chat-body .chat-line[data-nonce].has-ping.-scrolled-to {
+ul.chat-body .chat-line[data-id].has-ping.-scrolled-to {
     animation: -scrolled-flash 150ms linear 1ms 4 alternate;
 }
 

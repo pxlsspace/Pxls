@@ -146,11 +146,19 @@ public class PacketHandler {
         if (user.getRole().greaterEqual(Role.TRIALMOD)) {
             ServerChatLookup scl;
             String username = obj.getArg();
-            if (obj.getMode().equalsIgnoreCase("nonce")) {
-                DBChatMessage chatMessage = App.getDatabase().getChatMessageByNonce(obj.getArg());
-                if (chatMessage != null) {
-                    User fromChatMessage = App.getUserManager().getByID(chatMessage.author_uid);
-                    username = fromChatMessage != null ? fromChatMessage.getName() : null;
+            if (obj.getMode().equalsIgnoreCase("cmid")) {
+                Integer i = null;
+                try {
+                    i = Integer.parseInt(obj.getArg());
+                } catch (NumberFormatException nfe) {
+                    server.send(channel, new ServerError("Invalid message ID supplied"));
+                }
+                if (i != null) {
+                    DBChatMessage chatMessage = App.getDatabase().getChatMessageByID(i);
+                    if (chatMessage != null) {
+                        User fromChatMessage = App.getUserManager().getByID(chatMessage.author_uid);
+                        username = fromChatMessage != null ? fromChatMessage.getName() : null;
+                    }
                 }
             }
             scl = username != null ? App.getDatabase().runChatLookupForUsername(username, App.getConfig().getInt("chat.chatLookupScrollbackAmount")) : null;
@@ -424,8 +432,8 @@ public class PacketHandler {
         if (message.endsWith("\n")) message = message.replaceFirst("\n$", "");
         if (message.length() > charLimit) message = message.substring(0, charLimit);
         if (user == null) { //console
-            String nonce = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "");
-            server.broadcast(new ServerChatMessage(new ChatMessage(nonce, "CONSOLE", nowMS / 1000L, message, null, null, 0, null)));
+            Integer cmid = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "");
+            server.broadcast(new ServerChatMessage(new ChatMessage(cmid, "CONSOLE", nowMS / 1000L, message, null, null, 0, null)));
         } else {
             if (!user.canChat()) return;
             if (message.trim().length() == 0) return;
@@ -442,11 +450,11 @@ public class PacketHandler {
                     if (App.getConfig().getBoolean("textFilter.enabled")) {
                         TextFilter.FilterResult result = TextFilter.getInstance().filter(toSend);
                         toSend = result.filterHit ? result.filtered : result.original;
-                        String nonce = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toSend);
-                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction)));
+                        Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toSend);
+                        server.broadcast(new ServerChatMessage(new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction)));
                     } else {
-                        String nonce = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, "");
-                        server.broadcast(new ServerChatMessage(new ChatMessage(nonce, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction)));
+                        Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, "");
+                        server.broadcast(new ServerChatMessage(new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction)));
                     }
                 } catch (UnableToExecuteStatementException utese) {
                     utese.printStackTrace();
@@ -464,12 +472,12 @@ public class PacketHandler {
         server.broadcast(new ServerChatPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), amount, reason));
     }
 
-    public void sendSpecificPurge(User target, User initiator, String nonce, String reason) {
-        sendSpecificPurge(target, initiator, Collections.singletonList(nonce), reason);
+    public void sendSpecificPurge(User target, User initiator, Integer cmid, String reason) {
+        sendSpecificPurge(target, initiator, Collections.singletonList(cmid), reason);
     }
 
-    public void sendSpecificPurge(User target, User initiator, List<String> nonces, String reason) {
-        server.broadcast(new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), nonces, reason));
+    public void sendSpecificPurge(User target, User initiator, List<Integer> cmids, String reason) {
+        server.broadcast(new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), cmids, reason));
     }
 
     public void updateUserData() {

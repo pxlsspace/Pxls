@@ -6,7 +6,7 @@ import space.pxls.App;
 import java.util.List;
 
 public class ChatMessage {
-    public String nonce;
+    public int id;
     public String author;
     public Long date;
     public String message_raw;
@@ -15,8 +15,8 @@ public class ChatMessage {
     public Number authorNameColor;
     public StrippedFaction strippedFaction;
 
-    public ChatMessage(String nonce, String author, Long date, String message_raw, List<Badge> badges, List<String> authorNameClass, Number authorNameColor, Faction faction) {
-        this.nonce = nonce;
+    public ChatMessage(int id, String author, Long date, String message_raw, List<Badge> badges, List<String> authorNameClass, Number authorNameColor, Faction faction) {
+        this.id = id;
         this.author = App.getConfig().getBoolean("oauth.snipMode") ? "-snip-" : author;
         this.date = date;
         this.message_raw = message_raw;
@@ -26,8 +26,8 @@ public class ChatMessage {
         this.strippedFaction = faction != null ? new StrippedFaction(faction) : null;
     }
 
-    public String getNonce() {
-        return nonce;
+    public int getId() {
+        return id;
     }
 
     public String getAuthor() {

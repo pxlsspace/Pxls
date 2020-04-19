@@ -6,13 +6,13 @@ public class ServerChatSpecificPurge {
     public String type = "chat_purge_specific";
     public String target;
     public String initiator;
-    public List<String> nonces;
+    public List<Integer> IDs;
     public String reason;
 
-    public ServerChatSpecificPurge(String target, String initiator, List<String> nonces, String reason) {
+    public ServerChatSpecificPurge(String target, String initiator, List<Integer> IDs, String reason) {
         this.target = target;
         this.initiator = initiator;
-        this.nonces = nonces;
+        this.IDs = IDs;
         this.reason = reason;
     }
 
@@ -28,8 +28,8 @@ public class ServerChatSpecificPurge {
         return initiator;
     }
 
-    public List<String> getNonces() {
-        return nonces;
+    public List<Integer> getIDs() {
+        return IDs;
     }
 
     public String getReason() {
