@@ -1,5 +1,6 @@
 package space.pxls.server;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mashape.unirest.http.exceptions.UnirestException;
@@ -473,6 +474,134 @@ public class WebHandler {
             toReturn = App.getDatabase().searchFactions(search, after, exchange.getAttachment(AuthReader.USER)).stream().map(UserFaction::new).collect(Collectors.toList());
         }
         sendObj(200, exchange, toReturn);
+    }
+
+    public void adminDeleteFaction(HttpServerExchange exchange) {
+        if (!exchange.getRequestMethod().equals(Methods.POST)) {
+            send(StatusCodes.METHOD_NOT_ALLOWED, exchange, StatusCodes.METHOD_NOT_ALLOWED_STRING);
+            return;
+        }
+
+        Deque<String> _fid = exchange.getQueryParameters().get("fid");
+        if (_fid == null) {
+            sendBadRequest(exchange, "Missing faction ID (fid)");
+            return;
+        }
+
+        int fid;
+        try {
+            fid = Integer.parseInt(_fid.getFirst());
+        } catch (NumberFormatException ex) {
+            sendBadRequest(exchange, "Faction ID is not a number");
+            return;
+        }
+
+        Optional<Faction> _faction = FactionManager.getInstance().getByID(fid);
+        if (!_faction.isPresent()) {
+            sendBadRequest(exchange, "Faction with that ID doesn't exist");
+            return;
+        }
+
+        FactionManager.getInstance().deleteByID(fid);
+        send(200, exchange, "OK");
+    }
+
+    public void adminEditFaction(HttpServerExchange exchange) {
+        if (!exchange.getRequestMethod().equals(Methods.POST)) {
+            send(StatusCodes.METHOD_NOT_ALLOWED, exchange, StatusCodes.METHOD_NOT_ALLOWED_STRING);
+            return;
+        }
+
+        Deque<String> _fid = exchange.getQueryParameters().get("fid");
+        if (_fid == null) {
+            sendBadRequest(exchange, "Missing faction ID (fid)");
+            return;
+        }
+
+        int fid;
+        try {
+            fid = Integer.parseInt(_fid.getFirst());
+        } catch (NumberFormatException ex) {
+            sendBadRequest(exchange, "Faction ID is not a number");
+            return;
+        }
+
+        Optional<Faction> _faction = FactionManager.getInstance().getByID(fid);
+        if (!_faction.isPresent()) {
+            sendBadRequest(exchange, "Faction with that ID doesn't exist");
+            return;
+        }
+
+        Faction faction = _faction.get();
+
+        JsonElement _editQuery = exchange.getAttachment(JsonReader.ATTACHMENT_KEY);
+        JsonObject editQuery;
+        if (_editQuery == null || _editQuery.isJsonNull() || !_editQuery.isJsonObject()) {
+            sendBadRequest(exchange, "Missing edit query object attachment");
+            return;
+        }
+        editQuery = _editQuery.getAsJsonObject();
+
+        ArrayList<String> responseChanged = new ArrayList<>();
+        HashMap<String, String> responseFailed = new HashMap<>();
+
+        if (editQuery.has("name") && editQuery.get("name").isJsonPrimitive()) {
+            String name = editQuery.get("name").getAsString();
+            if (Faction.ValidateName(name)) {
+                faction.setName(name);
+                responseChanged.add("name");
+            } else {
+                responseFailed.put("name", "Invalid name");
+            }
+        }
+        if (editQuery.has("tag") && editQuery.get("tag").isJsonPrimitive()) {
+            String tag = editQuery.get("tag").getAsString();
+            if (Faction.ValidateTag(tag)) {
+                faction.setTag(tag);
+                responseChanged.add("tag");
+            } else {
+                responseFailed.put("tag", "Invalid tag");
+            }
+        }
+        if (editQuery.has("color") && editQuery.get("color").isJsonPrimitive()) {
+            try {
+                int color = editQuery.get("color").getAsInt();
+                if (Faction.ValidateColor(color)) {
+                    faction.setColor(color);
+                    responseChanged.add("color");
+                } else {
+                    responseFailed.put("color", "Invalid color");
+                }
+            } catch (Exception ex) {
+                responseFailed.put("color", "Invalid RGB int color");
+            }
+        }
+        if (editQuery.has("owner") && editQuery.get("owner").isJsonPrimitive()) {
+            try {
+                int ownerUID = editQuery.get("owner").getAsInt();
+                User user = App.getUserManager().getByID(ownerUID);
+                if (user != null) {
+                    faction.setOwner(ownerUID);
+                    responseChanged.add("owner");
+
+                    // Make new owner join the faction if not there already
+                    App.getDatabase().joinFaction(fid, ownerUID);
+                } else {
+                    responseFailed.put("owner", "User not found");
+                }
+            } catch (Exception ex) {
+                responseFailed.put("owner", "Invalid number");
+            }
+        }
+
+        if (faction.isDirty().get()) {
+            FactionManager.getInstance().update(faction, true);
+        }
+
+        JsonObject response = new JsonObject();
+        response.add("changed", App.getGson().toJsonTree(responseChanged));
+        response.add("failed", App.getGson().toJsonTree(responseFailed));
+        sendObj(responseChanged.size() > 0 ? StatusCodes.OK : StatusCodes.BAD_REQUEST, exchange, response);
     }
 
     private void addServiceIfAvailable(String key, AuthService service) {

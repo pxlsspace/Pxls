@@ -80,6 +80,8 @@ public class UndertowServer {
                 .addPrefixPath("/execNameChange", new RoleGate(Role.USER, webHandler::execNameChange))
                 .addPrefixPath("/admin/flagNameChange", new RoleGate(Role.MODERATOR, webHandler::flagNameChange))
                 .addPrefixPath("/admin/forceNameChange", new RoleGate(Role.DEVELOPER, webHandler::forceNameChange))
+                .addPrefixPath("/admin/faction/edit", new RoleGate(Role.TRIALMOD, new JsonReader(webHandler::adminEditFaction)))
+                .addPrefixPath("/admin/faction/delete", new RoleGate(Role.TRIALMOD, new JsonReader(webHandler::adminDeleteFaction)))
                 .addPrefixPath("/admin", new RoleGate(Role.TRIALMOD, Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/"))
                         .setCacheTime(10)))
                 .addPrefixPath("/whoami", webHandler::whoami)
