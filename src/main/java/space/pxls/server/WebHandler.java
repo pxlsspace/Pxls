@@ -229,45 +229,49 @@ public class WebHandler {
         if (user == null) { // This is not a fetch endpoint, if the user doesn't exist we can't continue.
             send(StatusCodes.UNAUTHORIZED, exchange, "Not Authorized");
         } else if (exchange.getRequestMethod().equals(Methods.POST)) { // create a new faction
-            if (dataObj != null) {
-                String name = null;
-                String tag = null;
-                Integer color = null;
-                try {
-                    name = dataObj.get("name").getAsString();
-                } catch (Exception ignored) {
-                }
-                try {
-                    tag = dataObj.get("tag").getAsString();
-                } catch (Exception ignored) {
-                }
-                try {
-                    color = dataObj.get("color").getAsInt();
-                } catch (Exception ignored) {
-                }
-                if (name == null || tag == null) {
-                    sendBadRequest(exchange, "Invalid/Missing name/tag");
-                } else {
-                    if (!Faction.ValidateTag(tag)) {
-                        sendBadRequest(exchange, "Invalid/Disallowed Tag");
-                    } else if (!Faction.ValidateName(name)) {
-                        sendBadRequest(exchange, "Invalid/Disallowed Name");
-                    } else if (App.getDatabase().getOwnedFactionCountForUID(user.getId()) >= App.getConfig().getInt("factions.maxOwned")) {
-                        sendBadRequest(exchange, String.format("You've reached the maximum number of owned factions (%d).", App.getConfig().getInt("factions.maxOwned")));
-                    } else if (App.getConfig().getInt("factions.minPixelsToCreate") > user.getPixelsAllTime()) {
-                        send(403, exchange, String.format("You do not meet the minimum all-time pixel requirements to create a faction. The current minimum is %d.", App.getConfig().getInt("chat.minPixelsToCreate")));
+            if (user.isBanned()) {
+                send(StatusCodes.FORBIDDEN, exchange, "Cannot create factions while banned");
+            } else {
+                if (dataObj != null) {
+                    String name = null;
+                    String tag = null;
+                    Integer color = null;
+                    try {
+                        name = dataObj.get("name").getAsString();
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        tag = dataObj.get("tag").getAsString();
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        color = dataObj.get("color").getAsInt();
+                    } catch (Exception ignored) {
+                    }
+                    if (name == null || tag == null) {
+                        sendBadRequest(exchange, "Invalid/Missing name/tag");
                     } else {
-                        Optional<Faction> faction = FactionManager.getInstance().create(name, tag, user.getId(), color);
-                        if (faction.isPresent()) {
-                            user.setDisplayedFactionMaybe(faction.get().getId());
-                            sendObj(200, exchange, faction.get());
+                        if (!Faction.ValidateTag(tag)) {
+                            sendBadRequest(exchange, "Invalid/Disallowed Tag");
+                        } else if (!Faction.ValidateName(name)) {
+                            sendBadRequest(exchange, "Invalid/Disallowed Name");
+                        } else if (App.getDatabase().getOwnedFactionCountForUID(user.getId()) >= App.getConfig().getInt("factions.maxOwned")) {
+                            sendBadRequest(exchange, String.format("You've reached the maximum number of owned factions (%d).", App.getConfig().getInt("factions.maxOwned")));
+                        } else if (App.getConfig().getInt("factions.minPixelsToCreate") > user.getPixelsAllTime()) {
+                            send(403, exchange, String.format("You do not meet the minimum all-time pixel requirements to create a faction. The current minimum is %d.", App.getConfig().getInt("chat.minPixelsToCreate")));
                         } else {
-                            send(500, exchange, "Failed to create faction.");
+                            Optional<Faction> faction = FactionManager.getInstance().create(name, tag, user.getId(), color);
+                            if (faction.isPresent()) {
+                                user.setDisplayedFactionMaybe(faction.get().getId());
+                                sendObj(200, exchange, faction.get());
+                            } else {
+                                send(500, exchange, "Failed to create faction.");
+                            }
                         }
                     }
+                } else {
+                    sendBadRequest(exchange, "Missing data");
                 }
-            } else {
-                sendBadRequest(exchange, "Missing data");
             }
         } else {
             int fid;
