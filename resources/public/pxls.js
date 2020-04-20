@@ -4162,6 +4162,10 @@ window.App = (function () {
                         ls.set("chat.font-size", 16);
                     }
 
+                    if (ls.get('chat.faction-tags-enabled') == null) {
+                        ls.set('chat.faction-tags-enabled', true);
+                    }
+
                     let cbChatSettingsFontSize = $("#cbChatSettingsFontSize");
                     let notifBody = document.querySelector('.panel[data-panel="notifications"] .panel-body');
                     cbChatSettingsFontSize.val(ls.get("chat.font-size") || 16);
@@ -4400,6 +4404,9 @@ window.App = (function () {
                     let _cbPixelPlaceBadges = crel('input', {'type': 'checkbox'});
                     let lblPixelPlaceBadges = crel('label', _cbPixelPlaceBadges, 'Show pixel-placed badges');
 
+                    let _cbFactionTagBadges = crel('input', {'type': 'checkbox'});
+                    let lblFactionTagBadges = crel('label', _cbFactionTagBadges, 'Show faction tags');
+
                     let _cbPings = crel('input', {'type': 'checkbox'});
                     let lblPings = crel('label', _cbPings, 'Enable pings');
 
@@ -4497,6 +4504,11 @@ window.App = (function () {
                         ls.set('chat.text-icons-enabled', this.checked === true);
                     });
 
+                    _cbFactionTagBadges.checked = ls.get('chat.faction-tags-enabled');
+                    _cbFactionTagBadges.addEventListener('change', function() {
+                        ls.set('chat.faction-tags-enabled', this.checked === true);
+                    });
+
                     _cbPings.checked = ls.get('chat.pings-enabled') === true;
                     _cbPings.addEventListener('change', function() {
                         ls.set('chat.pings-enabled', this.checked === true);
@@ -4562,11 +4574,14 @@ window.App = (function () {
                         [
                             lbl24hTimestamps,
                             lblPixelPlaceBadges,
+                            lblFactionTagBadges,
                             lblPings,
                             lblHorizontal,
+                            lblInternalAction,
                             lblPingAudio,
                             lblPingAudioVol,
                             lblBanner,
+                            lblTemplateTitles,
                             lblFontSize,
                             lblUsernameColor,
                             lblIgnores,
@@ -4748,24 +4763,24 @@ window.App = (function () {
                         });
                     }
 
+                    let _facTag = packet.strippedFaction ? packet.strippedFaction.tag : '';
+                    if (packet.strippedFaction && ls.get('chat.faction-tags-enabled') === true) {
+                        let _facTitle = `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})`;
+                        let _facColor = self.intToHex(packet.strippedFaction.color);
+                        crel(badges, crel('span', {'class': 'faction-tag', 'data-tag': _facTag, 'style': `color: ${_facColor}`, 'title': _facTitle}, `[${_facTag}]`), document.createTextNode(' '))
+                    }
+
                     let contentSpan = self.processMessage('span', 'content', packet.message_raw);
                     twemoji.parse(contentSpan);
                     //TODO basic markdown
                     let nameClasses = `user`;
                     if (Array.isArray(packet.authorNameClass)) nameClasses += ` ${packet.authorNameClass.join(' ')}`;
 
-                    let _facTag = (packet.strippedFaction && packet.strippedFaction.tag) || '';
-                    let _facTitle = (packet.strippedFaction && packet.strippedFaction.id && packet.strippedFaction.name) ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : null;
-                    let _facColor = self.intToHex((packet.strippedFaction && packet.strippedFaction.color) || 0);
-
                     self.elements.body.append(
                         crel('li', {'data-id': packet.id, 'data-tag': _facTag, 'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '', 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`},
                             crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format(ls.get('chat.24h') === true ? 'HH:mm' : 'hh:mm A')),
                             document.createTextNode(' '),
                             badges,
-                            document.createTextNode(' '),
-                            crel('span', {'class': 'faction-tag', 'data-tag': _facTag, 'style': `color: ${_facColor}`, 'title': _facTitle}, _facTag ? `[${_facTag}]` : ``),
-                            document.createTextNode(' '),
                             crel('span', {'class': nameClasses, style: `color: ${place.getPaletteColor(packet.authorNameColor)}`, onclick: self._popUserPanel, onmousemiddledown: self._addAuthorMentionToChatbox}, packet.author),
                             document.createTextNode(': '),
                             contentSpan,

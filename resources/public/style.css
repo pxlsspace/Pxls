@@ -1325,10 +1325,6 @@ li.chat-line .text-badge:not(:last-child):not(:only-of-type) {
     margin-right: .25rem;
 }
 
-li.chat-line .badges {
-    margin-right: .25rem;
-}
-
 li.chat-line .user {
     font-weight: bold;
     cursor: pointer;
