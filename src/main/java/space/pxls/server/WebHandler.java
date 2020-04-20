@@ -3,6 +3,7 @@ package space.pxls.server;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.loader.ClasspathLoader;
@@ -534,8 +535,14 @@ public class WebHandler {
 
         Faction faction = _faction.get();
 
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         JsonElement _editQuery = exchange.getAttachment(JsonReader.ATTACHMENT_KEY);
         JsonObject editQuery;
+        if ((_editQuery == null || _editQuery.isJsonNull() || !_editQuery.isJsonObject()) && data != null && data.contains("payload")) {
+            try {
+                _editQuery = new JsonParser().parse(data.getFirst("payload").getValue());
+            } catch (Exception ignored) {}
+        }
         if (_editQuery == null || _editQuery.isJsonNull() || !_editQuery.isJsonObject()) {
             sendBadRequest(exchange, "Missing edit query object attachment");
             return;
