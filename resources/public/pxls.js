@@ -3805,6 +3805,7 @@ window.App = (function () {
                                         self.elements.rate_limit_overlay.hide();
                                         self.elements.rate_limit_counter.text('');
                                         self.elements.emoji_button.show();
+                                        self._handleChatbanVisualState(true);
                                     }
                                 }, 150);
                             } else if (e.permanent) {
