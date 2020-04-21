@@ -808,7 +808,9 @@ window.App = (function () {
                         onmove: handleMove
                     }).gesturable({
                         onmove: function (evt) {
-                            self.scale *= (1 + evt.ds);
+                            if (self.allowDrag) {
+                                self.scale *= (1 + evt.ds);
+                            }
                             handleMove(evt);
                         }
                     });
@@ -869,10 +871,6 @@ window.App = (function () {
                             case 82:            // R
                             case "r":
                             case "R":
-                                if (!self.allowDrag) {
-                                    break;
-                                }
-
                                 const tempOpts = template.getOptions();
                                 if (tempOpts.use) {
                                     const tempElem = $("#board-template");
@@ -1456,7 +1454,9 @@ window.App = (function () {
                 getHeight: () => self.height,
                 refresh: self.refresh,
                 updateViewport: self.updateViewport,
-                allowDrag: self.allowDrag,
+                get allowDrag() {
+                    return self.allowDrag;
+                },
                 setAllowDrag: (allowDrag) => {
                     self.allowDrag = allowDrag === true;
                     if (self.allowDrag)
@@ -2995,7 +2995,7 @@ window.App = (function () {
                         });
 
                     board.setAllowDrag(ls.get('canvas.unlocked') !== false); // false check for new connections
-                    $('#lockCanvasToggle').prop('checked', board.allowDrag)
+                    $('#lockCanvasToggle').prop('checked', !board.allowDrag)
                         .change(function() {
                             board.setAllowDrag(this.checked === false); // updates localStorage for us
                         });
