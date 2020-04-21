@@ -3601,7 +3601,7 @@ window.App = (function () {
                         let last = self.elements.body.find("li[data-id]").last()[0];
                         if (last) {
                             self._doScroll(last);
-                            if (last.dataset.id && last.dataset.id !== ls.get("chat-last_seen_id")) {
+                            if (last.dataset.id && last.dataset.id > ls.get("chat-last_seen_id")) {
                                 self.elements.message_icon.addClass('has-notification');
                             }
                         }
