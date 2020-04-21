@@ -4748,16 +4748,16 @@ window.App = (function () {
                         .split(' ')
                         .some((s) => s.search(new RegExp(`@${user.getUsername().toLowerCase()}(?![a-zA-Z0-9_\-])`)) == 0);
                     let when = moment.unix(packet.date);
-                    let badges = crel('span', {'class': 'badges'});
+                    let flairs = crel('span', {'class': 'flairs'});
                     if (Array.isArray(packet.badges)) {
                         packet.badges.forEach(badge => {
                             switch(badge.type) {
                                 case 'text':
                                     if (ls.get('chat.text-icons-enabled') !== true) return;
-                                    crel(badges, crel('span', {'class': 'text-badge', 'title': badge.tooltip || ''}, badge.displayName || ''), document.createTextNode(' '));
+                                    crel(flairs, crel('span', {'class': 'text-badge', 'title': badge.tooltip || ''}, badge.displayName || ''), document.createTextNode(' '));
                                     break;
                                 case 'icon':
-                                    crel(badges, crel('i', {'class': (badge.cssIcon || '') + ' icon-badge', 'title': badge.tooltip || ''}, document.createTextNode(' ')), document.createTextNode(' '));
+                                    crel(flairs, crel('i', {'class': (badge.cssIcon || '') + ' icon-badge', 'title': badge.tooltip || ''}, document.createTextNode(' ')), document.createTextNode(' '));
                                     break;
                             }
                         });
@@ -4767,7 +4767,7 @@ window.App = (function () {
                     if (packet.strippedFaction && ls.get('chat.faction-tags-enabled') === true) {
                         let _facTitle = `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})`;
                         let _facColor = self.intToHex(packet.strippedFaction.color);
-                        crel(badges, crel('span', {'class': 'faction-tag', 'data-tag': _facTag, 'style': `color: ${_facColor}`, 'title': _facTitle}, `[${_facTag}]`), document.createTextNode(' '))
+                        crel(flairs, crel('span', {'class': 'faction-tag', 'data-tag': _facTag, 'style': `color: ${_facColor}`, 'title': _facTitle}, `[${_facTag}]`), document.createTextNode(' '))
                     }
 
                     let contentSpan = self.processMessage('span', 'content', packet.message_raw);
@@ -4780,7 +4780,7 @@ window.App = (function () {
                         crel('li', {'data-id': packet.id, 'data-tag': _facTag, 'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '', 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`},
                             crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format(ls.get('chat.24h') === true ? 'HH:mm' : 'hh:mm A')),
                             document.createTextNode(' '),
-                            badges,
+                            flairs,
                             crel('span', {'class': nameClasses, style: `color: ${place.getPaletteColor(packet.authorNameColor)}`, onclick: self._popUserPanel, onmousemiddledown: self._addAuthorMentionToChatbox}, packet.author),
                             document.createTextNode(': '),
                             contentSpan,
