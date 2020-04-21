@@ -1321,8 +1321,12 @@ li.chat-line.server-action {
     cursor: default;
 }
 
-li.chat-line .text-badge:not(:last-child):not(:only-of-type) {
+li.chat-line .icon-badge, li.chat-line .text-badge {
     margin-right: .25rem;
+}
+
+li.chat-line .flairs .faction-tag::after {
+    content: " ";
 }
 
 li.chat-line .user {

@@ -4502,11 +4502,13 @@ window.App = (function () {
                     _cbPixelPlaceBadges.checked = ls.get('chat.text-icons-enabled');
                     _cbPixelPlaceBadges.addEventListener('change', function() {
                         ls.set('chat.text-icons-enabled', this.checked === true);
+                        self._toggleTextIconFlairs()
                     });
 
                     _cbFactionTagBadges.checked = ls.get('chat.faction-tags-enabled');
                     _cbFactionTagBadges.addEventListener('change', function() {
                         ls.set('chat.faction-tags-enabled', this.checked === true);
+                        self._toggleFactionTagFlairs()
                     });
 
                     _cbPings.checked = ls.get('chat.pings-enabled') === true;
@@ -4706,6 +4708,7 @@ window.App = (function () {
                         $(this).find('.faction-tag').each(function() {
                             this.dataset.tag = tag;
                             this.style.color = color;
+                            this.style.display = ls.get('chat.faction-tags-enabled') === true ? 'initial' : 'none';
                             this.innerHTML = tagStr;
                             this.setAttribute('title', ttStr);
                         });
@@ -4730,6 +4733,16 @@ window.App = (function () {
                         _ft.innerHTML = '';
                     })
                 },
+                _toggleTextIconFlairs: (enabled = ls.get('chat.text-icons-enabled') === true) => {
+                    self.elements.body.find('.chat-line .flairs .text-badge').each(function() {
+                        this.style.display = enabled ? 'initial' : 'none';
+                    });
+                },
+                _toggleFactionTagFlairs: (enabled = ls.get('chat.faction-tags-enabled') === true) => {
+                    self.elements.body.find('.chat-line:not([data-faction=""]) .flairs .faction-tag').each(function() {
+                        this.style.display = enabled ? 'initial' : 'none';
+                    });
+                },
                 _process: (packet, isHistory = false) => {
                     if (packet.id) {
                         if (self.idLog.includes(packet.id)) {
@@ -4753,22 +4766,21 @@ window.App = (function () {
                         packet.badges.forEach(badge => {
                             switch(badge.type) {
                                 case 'text':
-                                    if (ls.get('chat.text-icons-enabled') !== true) return;
-                                    crel(flairs, crel('span', {'class': 'text-badge', 'title': badge.tooltip || ''}, badge.displayName || ''), document.createTextNode(' '));
+                                    let _countBadgeShow = ls.get('chat.text-icons-enabled') === true ? 'initial' : 'none';
+                                    crel(flairs, crel('span', {'class': 'text-badge', 'style': `display: ${_countBadgeShow}`, 'title': badge.tooltip || ''}, badge.displayName || ''));
                                     break;
                                 case 'icon':
-                                    crel(flairs, crel('i', {'class': (badge.cssIcon || '') + ' icon-badge', 'title': badge.tooltip || ''}, document.createTextNode(' ')), document.createTextNode(' '));
+                                    crel(flairs, crel('span', crel('i', {'class': (badge.cssIcon || '') + ' icon-badge', 'title': badge.tooltip || ''}, document.createTextNode(' '))));
                                     break;
                             }
                         });
                     }
 
                     let _facTag = packet.strippedFaction ? packet.strippedFaction.tag : '';
-                    if (packet.strippedFaction && ls.get('chat.faction-tags-enabled') === true) {
-                        let _facTitle = `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})`;
-                        let _facColor = self.intToHex(packet.strippedFaction.color);
-                        crel(flairs, crel('span', {'class': 'faction-tag', 'data-tag': _facTag, 'style': `color: ${_facColor}`, 'title': _facTitle}, `[${_facTag}]`), document.createTextNode(' '))
-                    }
+                    let _facColor = packet.strippedFaction ? self.intToHex(packet.strippedFaction.color) : 0;
+                    let _facTagShow = packet.strippedFaction && ls.get('chat.faction-tags-enabled') === true ? 'initial' : 'none';
+                    let _facTitle = packet.strippedFaction ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : '';
+                    crel(flairs, crel('span', {'class': 'faction-tag', 'data-tag': _facTag, 'style': `color: ${_facColor}; display: ${_facTagShow}`, 'title': _facTitle}, `[${_facTag}]`))
 
                     let contentSpan = self.processMessage('span', 'content', packet.message_raw);
                     twemoji.parse(contentSpan);
@@ -5013,6 +5025,7 @@ window.App = (function () {
                         try {
                             badgesArray = JSON.parse(closest.dataset.badges);
                         } catch (ignored) {}
+                        // TODO(netux): display faction tag
                         let badges = crel('span', {'class': 'badges'});
                         badgesArray.forEach(badge => {
                             switch(badge.type) {
@@ -5043,7 +5056,6 @@ window.App = (function () {
                         let rightPanel = crel('div', {'class': 'pane actions-wrapper'});
                         let actionsList = crel('ul', {'class': 'actions-list'});
 
-                        let popupActions = crel('ul', {'class': 'popup-actions'});
                         let actionReport = crel('li', {'class': 'text-red', 'data-action': 'report', 'data-id': id, onclick: self._handleActionClick}, 'Report');
                         let actionMention = crel('li', {'data-action': 'mention', 'data-id': id, onclick: self._handleActionClick}, 'Mention');
                         let actionIgnore = crel('li', {'data-action': 'ignore', 'data-id': id, onclick: self._handleActionClick}, 'Ignore');
