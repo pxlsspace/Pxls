@@ -1502,10 +1502,10 @@ window.App = (function () {
                 },
                 lazy_init: () => {
                     if (self.lazy_inited) {
-                        uiHelper.setLoadingState("heatmap", false);
+                        uiHelper.setLoadingBubbleState("heatmap", false);
                         return;
                     }
-                    uiHelper.setLoadingState("heatmap", true);
+                    uiHelper.setLoadingBubbleState("heatmap", true);
                     self.lazy_inited = true;
                     // we use xhr directly because of jquery being weird on raw binary
                     self.fetchRequest = binary_ajax("/heatmap" + "?_" + (new Date()).getTime(), function (data) {
@@ -1520,7 +1520,7 @@ window.App = (function () {
                         }
                         self.ctx.putImageData(self.id, 0, 0);
                         self.elements.heatmap.fadeIn(200);
-                        uiHelper.setLoadingState("heatmap", false);
+                        uiHelper.setLoadingBubbleState("heatmap", false);
                         setTimeout(self.loop, self.seconds * 1000 / 256);
                         socket.on("pixel", function (data) {
                             self.ctx.fillStyle = "#CD5C5C";
@@ -1590,7 +1590,7 @@ window.App = (function () {
                     $("#heatmaptoggle")[0].checked = self.is_shown;
                     if (self.fetchRequest) {
                        self.fetchRequest.abort();
-                       uiHelper.setLoadingState("heatmap", false);
+                       uiHelper.setLoadingBubbleState("heatmap", false);
                        self.lazy_inited = false;
                        self.fetchRequest = null;
                        return;
@@ -1664,10 +1664,10 @@ window.App = (function () {
                 is_shown: false,
                 lazy_init: function () {
                     if (self.lazy_inited) {
-                        uiHelper.setLoadingState("virginmap", false);
+                        uiHelper.setLoadingBubbleState("virginmap", false);
                         return;
                     }
-                    uiHelper.setLoadingState("virginmap", true);
+                    uiHelper.setLoadingBubbleState("virginmap", true);
                     self.lazy_inited = true;
                     // we use xhr directly because of jquery being weird on raw binary
                     self.fetchRequest = binary_ajax("/virginmap" + "?_" + (new Date()).getTime(), (data) => {
@@ -1688,7 +1688,7 @@ window.App = (function () {
                             }
                         }
                         self.elements.virginmap.fadeIn(200);
-                        uiHelper.setLoadingState("virginmap", false);
+                        uiHelper.setLoadingBubbleState("virginmap", false);
                         socket.on("pixel", function (data) {
                             $.map(data.pixels, function (px) {
                                 self.ctx.fillStyle = "#000000";
@@ -1751,7 +1751,7 @@ window.App = (function () {
                     $("#virginmaptoggle")[0].checked = self.is_shown;
                     if (self.fetchRequest) {
                        self.fetchRequest.abort();
-                       uiHelper.setLoadingState("virginmap", false);
+                       uiHelper.setLoadingBubbleState("virginmap", false);
                        self.lazy_inited = false;
                        self.fetchRequest = null;
                        return;
@@ -2181,6 +2181,7 @@ window.App = (function () {
                 },
                 audio: new Audio('place.wav'),
                 color: -1,
+                isDoingCaptcha: false,
                 lastPixel: null,
                 autoreset: true,
                 setAutoReset: function (v) {
@@ -2218,23 +2219,23 @@ window.App = (function () {
                         }
                     }
                 },
-                place: function (x, y) {
+                place: function (x, y, color = null) {
                     if (!timer.cooledDown() || self.color === -1) { // nope can't place yet
                         return;
                     }
-                    self._place(x, y);
+                    self._place(x, y, color);
                 },
-                _place: function (x, y) {
-                    self.lastPixel = {
-                        x,
-                        y,
-                        color: self.color
-                    };
+                _place: function (x, y, color = null) {
+                    if (color == null) {
+                        color = self.color;
+                    }
+
+                    self.lastPixel = { x, y, color };
                     socket.send({
                         type: "pixel",
-                        x: x,
-                        y: y,
-                        color: self.color
+                        x,
+                        y,
+                        color
                     });
 
                     analytics("send", "event", "Pixels", "Place");
@@ -2392,21 +2393,27 @@ window.App = (function () {
                             uiHelper.setPlaceableText(data.ackFor === "PLACE" ? 0 : 1);
                     });
                     socket.on("captcha_required", function (data) {
-                        grecaptcha.reset();
+                        if (!self.isDoingCaptcha) {
+                            uiHelper.toggleCaptchaLoading(true);
+                            grecaptcha.reset();
+                        }
+                        // always execute captcha in case the user closed a captcha popup
+                        // and couldn't bring it back up.
                         grecaptcha.execute();
+                        self.isDoingCaptcha = true;
 
                         analytics("send", "event", "Captcha", "Execute")
                     });
                     socket.on("captcha_status", function (data) {
                         if (data.success) {
-                            self.switch(self.lastPixel.color);
-                            self._place(self.lastPixel.x, self.lastPixel.y);
+                            self._place(self.lastPixel.x, self.lastPixel.y, self.lastPixel.color);
 
-                            analytics("send", "event", "Captcha", "Accepted")
+                            analytics("send", "event", "Captcha", "Accepted");
                         } else {
                             modal.showText("Failed captcha verification");
-                            analytics("send", "event", "Captcha", "Failed")
+                            analytics("send", "event", "Captcha", "Failed");
                         }
+                        uiHelper.toggleCaptchaLoading(false);
                     });
                     socket.on("can_undo", function (data) {
                         document.body.classList.add("undo-visible");
@@ -2422,6 +2429,7 @@ window.App = (function () {
                     });
                     self.elements.undo.click(self.undo);
                     window.recaptchaCallback = function (token) {
+                        self.isDoingCaptcha = false;
                         socket.send({
                             type: "captcha",
                             token: token
@@ -2885,6 +2893,7 @@ window.App = (function () {
                     mainBubble: $("#main-bubble"),
                     loadingBubble: $("#loading-bubble"),
                     stackCount: $("#placeable-count, #placeableCount-cursor"),
+                    captchaLoadingIcon: $('.captcha-loading-icon'),
                     coords: $("#coords-info .coords"),
                     txtAlertLocation: $("#txtAlertLocation"),
                     rangeAlertVolume: $("#rangeAlertVolume"),
@@ -3389,7 +3398,7 @@ window.App = (function () {
                         elem.classList.add(self.specialChatColorClasses[-colorIdx - 1]);
                     }
                 },
-                setLoadingState: (process, state) => {
+                setLoadingBubbleState: (process, state) => {
                     self.loadingStates[process] = state;
                     const processItem = self.elements.loadingBubble.children(`.loading-bubble-item[data-process="${process}"]`);
 
@@ -3404,6 +3413,9 @@ window.App = (function () {
                     } else {
                         processItem.toggle(state);
                     }
+                },
+                toggleCaptchaLoading: (display) => {
+                    self.elements.captchaLoadingIcon.css('display', display ? 'inline-block' : 'none');
                 }
             };
 
@@ -3430,7 +3442,8 @@ window.App = (function () {
 
                     return `${prepend ? prepend + ' ' : ''}${decodeURIComponent(append)}`;
                 },
-                setLoadingState: self.setLoadingState,
+                setLoadingBubbleState: self.setLoadingBubbleState,
+                toggleCaptchaLoading: self.toggleCaptchaLoading,
                 tabHasFocus: () => ls.get('tabs.has-focus') === self.tabId,
                 windowHasFocus: () => self.focus
             };

@@ -743,7 +743,7 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     display: none;
 }
 
-#placeableCount-cursor {
+#cursor-text {
     position: absolute;
     min-width: 24px;
     height: 24px;
@@ -754,6 +754,7 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     background-color: white;
     border: 1px solid black;
     padding: 0 8px;
+    white-space: nowrap;
     user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -840,6 +841,10 @@ input[type="text"] {
 
 .grecaptcha-badge {
     bottom: 64px !important;
+}
+
+.captcha-loading-icon {
+    display: none;
 }
 
 /*//////////////////////////*\
@@ -1276,10 +1281,6 @@ ul.chat-body li.chat-line:not(:last-child):not(:only-of-type) {
     padding: 5px 0;
 }
 
-ul.chat-body li.chat-line:nth-child(odd) {
-    /*background-image: linear-gradient(to bottom, #0000, #0005, #0000);*/
-}
-
 li.chat-line span[title]:not(.text-badge) {
     border-bottom: 1px dashed #aaa;
     cursor: default;
@@ -1655,6 +1656,7 @@ ul.chat-history, ul.chatban-history {
 .user.rainbow {
     display: inline-block;
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent !important;
     color: transparent !important;
     text-shadow: none !important;
