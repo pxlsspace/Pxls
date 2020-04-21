@@ -1903,7 +1903,7 @@ window.App = (function () {
                     }
                     board.getRenderBoard().parent().prepend(self.elements.template);
                 },
-                updateDrawer: function () {
+                updateSettings: function () {
                     self.elements.useCheckbox.prop("checked", self.options.use);
                     self.elements.urlInput.val(self.options.url ? self.options.url : "");
 
@@ -1963,7 +1963,7 @@ window.App = (function () {
                         self.queueTimer = 0;
                     }, 200);
                 },
-                _update: function (options, updateDrawer = true) {
+                _update: function (options, updateSettings = true) {
                     if (!Object.keys(options).length) {
                         return;
                     }
@@ -2019,8 +2019,8 @@ window.App = (function () {
                             query.set(x[1], self.options[x[0]], true);
                         });
                     }
-                    if (updateDrawer) {
-                        self.updateDrawer();
+                    if (updateSettings) {
+                        self.updateSettings();
                     }
                     document.title = uiHelper.getTitle();
                 },
@@ -2043,7 +2043,6 @@ window.App = (function () {
                 },
                 init: function () {
                     self.elements.imageErrorWarning.hide();
-                    drawer.create("#template-control", 84, "template_open", false);
 
                     self.elements.useCheckbox.change((e) => self._update({ use: e.target.checked }));
                     self.elements.titleInput.change((e) => self._update({ title: e.target.value }, false));
@@ -2060,7 +2059,7 @@ window.App = (function () {
                     self.elements.widthInput.on("change input", (e) => self._update({ width: parseFloat(e.target.value) }, false));
                     self.elements.widthResetBtn.on("click", (e) => self._update({ width: -1 }));
 
-                    self.updateDrawer();
+                    self.updateSettings();
 
                     $(window).keydown(function (evt) {
                         if (["INPUT", "TEXTAREA"].includes(evt.target.nodeName)) {
@@ -2765,81 +2764,10 @@ window.App = (function () {
                 clearHandle: self.clearHandle
             };
         })(),
-        // helper object for drawers
-        drawer = (function () {
-            var self = {
-                elements: {
-                    container: $("#drawers"),
-                    opener: $("#drawers-opener")
-                },
-                create: function (html_class, keycode, localstorage, open) {
-                    var elem = $(html_class);
-                    $(html_class + " > .open").click(function () {
-                        elem.toggleClass("open");
-                        doTrigger();
-                        ls.set(localstorage, elem.hasClass("open") ^ open);
-                    });
-                    $(html_class + " .close").click(function () {
-                        elem.removeClass("open");
-                        doTrigger();
-                        ls.set(localstorage, false ^ open);
-                    });
-                    if (ls.get(localstorage) ^ open) {
-                        elem.addClass("open");
-                        doTrigger();
-                    }
-                    $(document.body).keydown(function (evt) {
-                        if (["INPUT", "TEXTAREA"].includes(evt.target.nodeName)) {
-                            // prevent inputs from triggering shortcuts
-                            return;
-                        }
-
-                        if (evt.keyCode === keycode) {
-                            elem.toggleClass("open");
-                            ls.set(localstorage, elem.hasClass("open") ^ open);
-                            doTrigger();
-                        }
-                    });
-
-                    function doTrigger() {
-                        elem.trigger("drawer-state-change", { isOpen: elem.hasClass("open") });
-                    }
-                },
-                updateDropdown: function () {
-                    $("#drawers-opener-content").empty().append(
-                        $("#drawers > .drawer").map(function () {
-                            var _self = $(this);
-                            return $("<div>").text(_self.find(".open").text()).click(function (evt) {
-                                evt.stopPropagation();
-                                _self.toggleClass("open");
-                                self.elements.opener.removeClass("open");
-                                _self.trigger("drawer-state-change", { isOpen: _self.hasClass("open") });
-                            });
-                        }).get()
-                    );
-                },
-                init: function () {
-                    self.elements.opener.find(".open").click(function (evt) {
-                        self.elements.opener.toggleClass("open");
-                    });
-                    self.elements.container.on("DOMNodeInserted", function (evt) {
-                        if ($(evt.target).hasClass("drawer")) {
-                            self.updateDropdown();
-                        }
-                    });
-                    self.updateDropdown();
-                }
-            };
-            return {
-                create: self.create,
-                init: self.init
-            };
-        })(),
         // this takes care of the info slidedown and some settings (audio)
         info = (function () {
             var self = {
                 init: function () {
-                    drawer.create("#info", 73, "info_closed", true);
                     $("#audiotoggle")
                         .prop("checked", ls.get("audio_muted"))
                         .change(function() {
@@ -5750,7 +5678,7 @@ window.App = (function () {
                 elements: {
                     coordsWrapper: $("#coords-info"),
                     coords: $("#coords-info .coords"),
-                    lockIcon: $("#coords-info .icon-lock")
+                    lockIcon: $("#canvas-lock-icon")
                 },
                 mouseCoords: null,
                 init: function () {
@@ -6385,7 +6313,6 @@ window.App = (function () {
     board.init();
     heatmap.init();
     virginmap.init();
-    drawer.init();
     lookup.init();
     template.init();
     ban.init();

@@ -9,11 +9,7 @@ z-index:
  8 - login overlay
  9 - ui blobs
 10 - admin boxes
-11 - drawer openers
-12 - drawer
 
-19 - drawer opener in mobile
-20 - drawer in mobile mode
 21 - panels
 22 - lookup, emoji-picker
 22 - admin-check popup
@@ -130,12 +126,6 @@ input:disabled {
 
 .useMono {
     font-family: monospace;
-}
-
-.icon-lock {
-    max-height: .95em;
-    position: relative;
-    top: 2px;
 }
 
 dt:not(:first-of-type) {
@@ -372,183 +362,6 @@ button.button.dark:disabled {
     font-family: monospace;
     font-size: 1.5rem;
     border-radius: 3px;
-}
-
-/*//////////////////////////*\
-| Info / Template Drawer
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
-
-.drawer {
-    position: fixed;
-    left: 0;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-    z-index: 12;
-
-    transform: translateY(-100%);
-    transition: transform 0.3s ease-in-out;
-    display: none !important;
-}
-
-.drawer-content {
-    transform: translateZ(+1em);
-    transform-style: preserve-3d;
-    margin: 0;
-    padding: 5px 10px 75px 10px;
-    width: 100%;
-    background: #333;
-    display: none;
-    max-height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    text-align: center;
-}
-
-.drawer.open {
-    transform: translateY(0);
-}
-
-.drawer.open > .drawer-content {
-    display: flex;
-    flex-wrap: wrap;
-}
-
-.drawer > .open {
-    position: fixed;
-    transform: translateZ(-1em);
-    transform-style: preserve-3d;
-    z-index: 11;
-    top: 99.9%; /* I hate it, but it works. */
-    background: #333;
-    padding: 10px;
-    margin: 0;
-    text-align: center;
-    cursor: pointer;
-    font-weight: 700;
-}
-
-.drawer-content > div:not(.close) {
-    position: initial;
-    flex: 1 1 auto;
-    padding: 3px;
-    margin: 3px;
-}
-
-#info > .open {
-    left: 0;
-    width: 50px;
-    border-radius: 0 0 5px 0;
-}
-
-#template-control > .open {
-    right: 0;
-    width: 100px;
-    border-radius: 0 0 0 5px;
-}
-
-.drawer div {
-    display: inline-block;
-    color: #fff;
-    vertical-align: top;
-}
-
-.drawer-content > .close {
-    font-weight: 800;
-    padding: 5px;
-    cursor: pointer;
-    color: #7BCDFC;
-    display:block;
-    width: 100%;
-}
-
-.drawer-content > div {
-    text-align: left;
-}
-
-.drawer-content > div h1 {
-    margin: 0 0 10px 0;
-    font-size: 25px;
-    border-bottom: 2px solid #fff;
-    position: relative;
-    font-weight: bolder;
-    padding: 5px;
-}
-
-.drawer-content > div p,
-.drawer-content > div a,
-.drawer-content > div ol {
-    margin-top: 0;
-    margin-bottom: 0;
-    display: block;
-    max-width: 350px;
-}
-
-.drawer-content > div > * {
-    margin-left: 1px;
-}
-
-.drawer-content form {
-    margin-top: 10px;
-    display: inline-block;
-}
-
-#info .drawer-content div[id*="bitcoin"] {
-    margin-top: 7px;
-    margin-left: 10px;
-    display: inline-block;
-}
-
-#info .drawer-content div[id*="bitcoin"] a {
-    display: inline-block;
-}
-
-#donate, #donate > * {
-    max-width: 600px;
-}
-
-/* menu-style drawer */
-#drawers-opener {
-    display: none;
-    position: fixed;
-    right: 0;
-    z-index: 19;
-    margin: 0;
-    padding: 0;
-    color: #fff;
-    transform: translateY(-100%);
-    transition: transform 0.3s ease-in-out;
-}
-
-#drawers-opener.open {
-    transform: translateY(0);
-}
-
-#drawers-opener-content {
-    margin: 0;
-    padding: 10px;
-    background: #333;
-    border-radius: 0 0 0 5px;
-}
-
-#drawers-opener-content > div {
-    cursor: pointer;
-    font-weight: 700;
-    padding: 2px;
-}
-
-#drawers-opener > .open {
-    position: fixed;
-    z-index: 19;
-    top: 100%;
-    background: #333;
-    padding: 10px;
-    cursor: pointer;
-    right: 0;
-    width: 32px;
-    height: 32px;
-    background: url("menu.png") #333;
-    border-radius: 0 0 0 5px;
 }
 
 
@@ -797,6 +610,10 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
 
 .coords {
     transition: 0.2s;
+}
+
+#canvas-lock-icon {
+    display: none;
 }
 
 .copyPulse {
@@ -2051,30 +1868,6 @@ ul.chat-history, ul.chatban-history {
 
     .palette {
         width: 100%;
-    }
-
-    #drawers-opener {
-        display: inline-block;
-    }
-
-    .drawer > .open {
-        display: none;
-    }
-
-    .drawer, .drawer > .drawer-content {
-        z-index: 20;
-        width: 100vw;
-        height: 100vh;
-    }
-
-    .drawer.open, .drawer.open > .drawer-content {
-        position: fixed;
-        left: 0;
-        top: 0;
-    }
-
-    .drawer-content > div:not(.close) {
-        border: 1px solid #fff;
     }
 
     .message {
