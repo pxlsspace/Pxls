@@ -4767,10 +4767,10 @@ window.App = (function () {
                             switch(badge.type) {
                                 case 'text':
                                     let _countBadgeShow = ls.get('chat.text-icons-enabled') === true ? 'initial' : 'none';
-                                    crel(flairs, crel('span', {'class': 'text-badge', 'style': `display: ${_countBadgeShow}`, 'title': badge.tooltip || ''}, badge.displayName || ''));
+                                    crel(flairs, crel('span', {'class': 'flair text-badge', 'style': `display: ${_countBadgeShow}`, 'title': badge.tooltip || ''}, badge.displayName || ''));
                                     break;
                                 case 'icon':
-                                    crel(flairs, crel('span', crel('i', {'class': (badge.cssIcon || '') + ' icon-badge', 'title': badge.tooltip || ''}, document.createTextNode(' '))));
+                                    crel(flairs, crel('span', {'class': 'flair icon-badge'}, crel('i', {'class': badge.cssIcon || '', 'title': badge.tooltip || ''}, document.createTextNode(' '))));
                                     break;
                             }
                         });
@@ -4780,7 +4780,7 @@ window.App = (function () {
                     let _facColor = packet.strippedFaction ? self.intToHex(packet.strippedFaction.color) : 0;
                     let _facTagShow = packet.strippedFaction && ls.get('chat.faction-tags-enabled') === true ? 'initial' : 'none';
                     let _facTitle = packet.strippedFaction ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : '';
-                    crel(flairs, crel('span', {'class': 'faction-tag', 'data-tag': _facTag, 'style': `color: ${_facColor}; display: ${_facTagShow}`, 'title': _facTitle}, `[${_facTag}]`))
+                    crel(flairs, crel('span', {'class': 'flair faction-tag', 'data-tag': _facTag, 'style': `color: ${_facColor}; display: ${_facTagShow}`, 'title': _facTitle}, `[${_facTag}]`))
 
                     let contentSpan = self.processMessage('span', 'content', packet.message_raw);
                     twemoji.parse(contentSpan);
@@ -5025,7 +5025,6 @@ window.App = (function () {
                         try {
                             badgesArray = JSON.parse(closest.dataset.badges);
                         } catch (ignored) {}
-                        // TODO(netux): display faction tag
                         let badges = crel('span', {'class': 'badges'});
                         badgesArray.forEach(badge => {
                             switch(badge.type) {

@@ -1321,7 +1321,7 @@ li.chat-line.server-action {
     cursor: default;
 }
 
-li.chat-line .flairs > * {
+li.chat-line .flairs .flair {
     margin-right: .25rem;
 }
 
