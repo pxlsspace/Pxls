@@ -3626,7 +3626,9 @@ window.App = (function () {
                     });
                     socket.on('message_cooldown', e => {
                         self.timeout.ends = (new Date >> 0) + ((e.diff >> 0) * 1e3) + 1e3; //add 1 second so that we're 1-based instead of 0-based
-                        self.elements.input.val(e.message);
+                        if (uiHelper.tabHasFocus()) {
+                            self.elements.input.val(e.message);
+                        }
                         if ((new Date >> 0) > self.timeout.ends) {
                             self.elements.rate_limit_overlay.fadeOut();
                         } else {
@@ -3744,6 +3746,7 @@ window.App = (function () {
                                         self.elements.rate_limit_overlay.hide();
                                         self.elements.rate_limit_counter.text('');
                                         self.elements.emoji_button.show();
+                                        self._handleChatbanVisualState(true);
                                     }
                                 }, 150);
                             } else if (e.permanent) {
@@ -4100,6 +4103,10 @@ window.App = (function () {
                         ls.set("chat.font-size", 16);
                     }
 
+                    if (ls.get('chat.faction-tags-enabled') == null) {
+                        ls.set('chat.faction-tags-enabled', true);
+                    }
+
                     let cbChatSettingsFontSize = $("#cbChatSettingsFontSize");
                     let notifBody = document.querySelector('.panel[data-panel="notifications"] .panel-body');
                     cbChatSettingsFontSize.val(ls.get("chat.font-size") || 16);
@@ -4338,6 +4345,9 @@ window.App = (function () {
                     let _cbPixelPlaceBadges = crel('input', {'type': 'checkbox'});
                     let lblPixelPlaceBadges = crel('label', _cbPixelPlaceBadges, 'Show pixel-placed badges');
 
+                    let _cbFactionTagBadges = crel('input', {'type': 'checkbox'});
+                    let lblFactionTagBadges = crel('label', _cbFactionTagBadges, 'Show faction tags');
+
                     let _cbPings = crel('input', {'type': 'checkbox'});
                     let lblPings = crel('label', _cbPings, 'Enable pings');
 
@@ -4433,6 +4443,13 @@ window.App = (function () {
                     _cbPixelPlaceBadges.checked = ls.get('chat.text-icons-enabled');
                     _cbPixelPlaceBadges.addEventListener('change', function() {
                         ls.set('chat.text-icons-enabled', this.checked === true);
+                        self._toggleTextIconFlairs()
+                    });
+
+                    _cbFactionTagBadges.checked = ls.get('chat.faction-tags-enabled');
+                    _cbFactionTagBadges.addEventListener('change', function() {
+                        ls.set('chat.faction-tags-enabled', this.checked === true);
+                        self._toggleFactionTagFlairs()
                     });
 
                     _cbPings.checked = ls.get('chat.pings-enabled') === true;
@@ -4500,11 +4517,14 @@ window.App = (function () {
                         [
                             lbl24hTimestamps,
                             lblPixelPlaceBadges,
+                            lblFactionTagBadges,
                             lblPings,
                             lblHorizontal,
+                            lblInternalAction,
                             lblPingAudio,
                             lblPingAudioVol,
                             lblBanner,
+                            lblTemplateTitles,
                             lblFontSize,
                             lblUsernameColor,
                             lblIgnores,
@@ -4629,6 +4649,7 @@ window.App = (function () {
                         $(this).find('.faction-tag').each(function() {
                             this.dataset.tag = tag;
                             this.style.color = color;
+                            this.style.display = ls.get('chat.faction-tags-enabled') === true ? 'initial' : 'none';
                             this.innerHTML = tagStr;
                             this.setAttribute('title', ttStr);
                         });
@@ -4653,6 +4674,16 @@ window.App = (function () {
                         _ft.innerHTML = '';
                     })
                 },
+                _toggleTextIconFlairs: (enabled = ls.get('chat.text-icons-enabled') === true) => {
+                    self.elements.body.find('.chat-line .flairs .text-badge').each(function() {
+                        this.style.display = enabled ? 'initial' : 'none';
+                    });
+                },
+                _toggleFactionTagFlairs: (enabled = ls.get('chat.faction-tags-enabled') === true) => {
+                    self.elements.body.find('.chat-line:not([data-faction=""]) .flairs .faction-tag').each(function() {
+                        this.style.display = enabled ? 'initial' : 'none';
+                    });
+                },
                 _process: (packet, isHistory = false) => {
                     if (packet.id) {
                         if (self.idLog.includes(packet.id)) {
@@ -4671,20 +4702,26 @@ window.App = (function () {
                         .split(' ')
                         .some((s) => s.search(new RegExp(`@${user.getUsername().toLowerCase()}(?![a-zA-Z0-9_\-])`)) == 0);
                     let when = moment.unix(packet.date);
-                    let badges = crel('span', {'class': 'badges'});
+                    let flairs = crel('span', {'class': 'flairs'});
                     if (Array.isArray(packet.badges)) {
                         packet.badges.forEach(badge => {
                             switch(badge.type) {
                                 case 'text':
-                                    if (ls.get('chat.text-icons-enabled') !== true) return;
-                                    crel(badges, crel('span', {'class': 'text-badge', 'title': badge.tooltip || ''}, badge.displayName || ''), document.createTextNode(' '));
+                                    let _countBadgeShow = ls.get('chat.text-icons-enabled') === true ? 'initial' : 'none';
+                                    crel(flairs, crel('span', {'class': 'flair text-badge', 'style': `display: ${_countBadgeShow}`, 'title': badge.tooltip || ''}, badge.displayName || ''));
                                     break;
                                 case 'icon':
-                                    crel(badges, crel('i', {'class': (badge.cssIcon || '') + ' icon-badge', 'title': badge.tooltip || ''}, document.createTextNode(' ')), document.createTextNode(' '));
+                                    crel(flairs, crel('span', {'class': 'flair icon-badge'}, crel('i', {'class': badge.cssIcon || '', 'title': badge.tooltip || ''}, document.createTextNode(' '))));
                                     break;
                             }
                         });
                     }
+
+                    let _facTag = packet.strippedFaction ? packet.strippedFaction.tag : '';
+                    let _facColor = packet.strippedFaction ? self.intToHex(packet.strippedFaction.color) : 0;
+                    let _facTagShow = packet.strippedFaction && ls.get('chat.faction-tags-enabled') === true ? 'initial' : 'none';
+                    let _facTitle = packet.strippedFaction ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : '';
+                    crel(flairs, crel('span', {'class': 'flair faction-tag', 'data-tag': _facTag, 'style': `color: ${_facColor}; display: ${_facTagShow}`, 'title': _facTitle}, `[${_facTag}]`))
 
                     let contentSpan = self.processMessage('span', 'content', packet.message_raw);
                     twemoji.parse(contentSpan);
@@ -4692,18 +4729,11 @@ window.App = (function () {
                     let nameClasses = `user`;
                     if (Array.isArray(packet.authorNameClass)) nameClasses += ` ${packet.authorNameClass.join(' ')}`;
 
-                    let _facTag = (packet.strippedFaction && packet.strippedFaction.tag) || '';
-                    let _facTitle = (packet.strippedFaction && packet.strippedFaction.id && packet.strippedFaction.name) ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : null;
-                    let _facColor = self.intToHex((packet.strippedFaction && packet.strippedFaction.color) || 0);
-
                     self.elements.body.append(
                         crel('li', {'data-id': packet.id, 'data-tag': _facTag, 'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '', 'data-author': packet.author, 'data-date': packet.date, 'data-badges': JSON.stringify(packet.badges || []), 'class': `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`},
                             crel('span', {'title': when.format('MMM Do YYYY, hh:mm:ss A')}, when.format(ls.get('chat.24h') === true ? 'HH:mm' : 'hh:mm A')),
                             document.createTextNode(' '),
-                            badges,
-                            document.createTextNode(' '),
-                            crel('span', {'class': 'faction-tag', 'data-tag': _facTag, 'style': `color: ${_facColor}`, 'title': _facTitle}, _facTag ? `[${_facTag}]` : ``),
-                            document.createTextNode(' '),
+                            flairs,
                             crel('span', {'class': nameClasses, style: `color: ${place.getPaletteColor(packet.authorNameColor)}`, onclick: self._popUserPanel, onmousemiddledown: self._addAuthorMentionToChatbox}, packet.author),
                             document.createTextNode(': '),
                             contentSpan,
@@ -4966,7 +4996,6 @@ window.App = (function () {
                         let rightPanel = crel('div', {'class': 'pane actions-wrapper'});
                         let actionsList = crel('ul', {'class': 'actions-list'});
 
-                        let popupActions = crel('ul', {'class': 'popup-actions'});
                         let actionReport = crel('li', {'class': 'text-red', 'data-action': 'report', 'data-id': id, onclick: self._handleActionClick}, 'Report');
                         let actionMention = crel('li', {'data-action': 'mention', 'data-id': id, onclick: self._handleActionClick}, 'Mention');
                         let actionIgnore = crel('li', {'data-action': 'ignore', 'data-id': id, onclick: self._handleActionClick}, 'Ignore');

@@ -1139,11 +1139,7 @@ li.chat-line.server-action {
     cursor: default;
 }
 
-li.chat-line .text-badge:not(:last-child):not(:only-of-type) {
-    margin-right: .25rem;
-}
-
-li.chat-line .badges {
+li.chat-line .flairs .flair {
     margin-right: .25rem;
 }
 
