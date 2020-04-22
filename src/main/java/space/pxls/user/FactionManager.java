@@ -4,12 +4,10 @@ import org.apache.commons.jcs.JCS;
 import org.apache.commons.jcs.access.CacheAccess;
 import space.pxls.App;
 import space.pxls.data.DBFaction;
-import space.pxls.server.packets.chat.ServerChatUserUpdate;
 import space.pxls.server.packets.chat.ServerFactionClear;
 import space.pxls.server.packets.chat.ServerFactionUpdate;
 import space.pxls.server.packets.http.UserFaction;
 
-import java.util.HashMap;
 import java.util.Optional;
 
 public class FactionManager {

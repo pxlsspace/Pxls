@@ -1,6 +1,5 @@
 package space.pxls.auth;
 
-import com.google.gson.annotations.Expose;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import space.pxls.App;
 

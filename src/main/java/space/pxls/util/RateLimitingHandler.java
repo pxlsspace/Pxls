@@ -3,15 +3,10 @@ package space.pxls.util;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
-import io.undertow.server.handlers.RedirectHandler;
-import io.undertow.server.handlers.ResponseCodeHandler;
 import io.undertow.util.StatusCodes;
 import space.pxls.App;
 import space.pxls.user.Role;
 import space.pxls.user.User;
-
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class RateLimitingHandler implements HttpHandler {
     private HttpHandler next;

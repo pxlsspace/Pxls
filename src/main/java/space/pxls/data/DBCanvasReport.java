@@ -1,6 +1,5 @@
 package space.pxls.data;
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import space.pxls.App;
