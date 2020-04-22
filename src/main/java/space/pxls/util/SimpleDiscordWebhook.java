@@ -1,10 +1,7 @@
 package space.pxls.util;
 
 import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
-import org.json.JSONObject;
 
 /**
  * A simple Discord webhook builder. Used for basic text webhooks, doesn't provide support for more advanced things like file uploads.
