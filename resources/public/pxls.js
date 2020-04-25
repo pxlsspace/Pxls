@@ -37,8 +37,8 @@ window.App = (function() {
       support: function() {
         if (this.haveSupport == null) {
           try {
-            storageType.setItem('test', 1);
-            this.haveSupport = (storageType.getItem('test') === 1);
+            storageType.setItem('test', '1');
+            this.haveSupport = storageType.getItem('test') === '1';
             storageType.removeItem('test');
           } catch (e) {
             this.haveSupport = false;
