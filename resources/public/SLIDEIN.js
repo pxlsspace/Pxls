@@ -3,13 +3,13 @@ window.SLIDEIN = window.SLIDEIN || (() => {
     SUCCESS: 'success',
     DANGER: 'danger',
     WARNING: 'warning',
-    INFO: 'info',
+    INFO: 'info'
   });
 
   { // ensure our fa-times is loaded into dom at least once so that the font is fetched and loaded by the browser. Fixes the close button not displaying on network drop.
-    const icon = crel('div', {'style': 'transform: translateX(-99999em);'}, crel('i', {'class': 'fas fa-times'}));
+    const icon = crel('div', { style: 'transform: translateX(-99999em);' }, crel('i', { class: 'fas fa-times' }));
     crel(document.body, icon);
-    setTimeout(() => icon.remove(), 5);
+    setTimeout(icon.remove, 5);
   }
 
   /**
@@ -22,7 +22,7 @@ window.SLIDEIN = window.SLIDEIN || (() => {
    * @constructor
    */
   function Slidein(content, icon = '', type = SLIDEIN_TYPES.INFO, closeable = true) {
-    if (!content || !((typeof content === 'string' && content.trim().length > 0) || content instanceof HTMLElement)) throw new Error("Invalid argument: text");
+    if (!content || !((typeof content === 'string' && content.trim().length > 0) || content instanceof HTMLElement)) throw new Error('Invalid argument: text');
     this.content = content;
     this.closeable = closeable === true;
     this.icon = icon || false;
@@ -94,10 +94,10 @@ window.SLIDEIN = window.SLIDEIN || (() => {
         }
       }
     })();
-    const _close = crel('i', {'class': 'fas fa-times close-button'});
-    const _dom = crel('div', {'class': `slidein ${_class}`, 'data-icon': slidein.icon, 'data-type': slidein.type, 'data-closeable': slidein.closeable},
-      crel('div', {'class': 'slidein-icon'}, !slidein.icon ? null : crel('i', {'class': `fas fa-${slidein.icon}`})),
-      crel('div', {'class': 'slidein-body'},
+    const _close = crel('i', { class: 'fas fa-times close-button' });
+    const _dom = crel('div', { class: `slidein ${_class}`, 'data-icon': slidein.icon, 'data-type': slidein.type, 'data-closeable': slidein.closeable },
+      crel('div', { class: 'slidein-icon' }, !slidein.icon ? null : crel('i', { class: `fas fa-${slidein.icon}` })),
+      crel('div', { class: 'slidein-body' },
         slidein.content instanceof HTMLElement ? slidein.content : crel('p', slidein.content),
         slidein.closeable ? _close : null
       )
@@ -114,6 +114,6 @@ window.SLIDEIN = window.SLIDEIN || (() => {
 
   return {
     Slidein,
-    SLIDEIN_TYPES,
+    SLIDEIN_TYPES
   };
 })();
