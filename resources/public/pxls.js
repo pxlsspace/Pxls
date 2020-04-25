@@ -2606,7 +2606,7 @@ window.App = (function() {
         });
       },
       create: function(data) {
-        const sensitive = localStorage.getItem('hide_sensitive') === 'true';
+        const sensitive = ls.getItem('hide_sensitive') === 'true';
         const sensitiveElems = [];
         self._makeShell(data).find('.content').first().append(() => {
           if (!data.bg) {
