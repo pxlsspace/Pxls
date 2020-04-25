@@ -9,7 +9,7 @@ window.SLIDEIN = window.SLIDEIN || (() => {
   { // ensure our fa-times is loaded into dom at least once so that the font is fetched and loaded by the browser. Fixes the close button not displaying on network drop.
     const icon = crel('div', { style: 'transform: translateX(-99999em);' }, crel('i', { class: 'fas fa-times' }));
     crel(document.body, icon);
-    setTimeout(icon.remove, 5);
+    setTimeout(() => icon.remove, 5);
   }
 
   /**
