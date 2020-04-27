@@ -280,6 +280,10 @@ public class User {
         return toReturn;
     }
 
+    public boolean isPermaBanned() {
+        return this.role == Role.BANNED;
+    }
+
     public boolean isShadowBanned() {
         return this.role == Role.SHADOWBANNED;
     }
