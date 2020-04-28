@@ -2280,7 +2280,6 @@ window.App = (function() {
         }
       },
       setNumberedPaletteEnabled: function(shouldBeNumbered) {
-        console.debug('Should be numbered: ' + shouldBeNumbered);
         self.elements.palette[0].classList.toggle('no-pills', !shouldBeNumbered);
       },
       toggleReticule: (show) => {
