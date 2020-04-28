@@ -1,0 +1,299 @@
+/* TODO: Add sections, like in style.css */
+
+html, body {
+    background-color: #018cfd;
+}
+
+kbd {
+    border: 1px solid #0a04a2;
+    background-color: #1b73f4;
+    color: #fff;
+}
+
+.message {
+    background-color: #0251fb;
+    color: #09d5ec;
+}
+
+.modal select, .modal textarea, .modal input {
+    border: 2px solid #1600fd;
+    background-color: #107ff9;
+    color: #eee;
+}
+
+.button {
+    background-color: #1b12e8;
+}
+
+.button:hover {
+    border: 1px solid #44886e;
+}
+
+#lookup {
+    border: 1px solid #0026ff;
+    background-color: #00a2ff;
+}
+
+#lookup .content {
+    color: #eee;
+}
+
+#lookup .content input {
+    border: 1px solid #0400ff;
+    background-color: #0079ff;
+    color: #eee;
+}
+
+#lookup .report-button {
+    border: 1px solid #3906ff;
+}
+
+.palette-overlay {
+    background-color: rgba(0, 174, 255, .9);
+    color: #eee;
+}
+
+#palette {
+    background-color: rgba(76, 161, 247, .5);
+}
+
+.palette-color.deselect-button {
+    color: #DDD;
+}
+
+#undo {
+    background-image: linear-gradient(to top, #59a9ea7f, #134ad0);
+    color: #fff;
+}
+
+input[type="text"], input[type="number"], textarea, select {
+    border: 1px solid #618ddb;
+    background-color: #0008ff;
+    color: #eee;
+}
+
+/* Text Colors */
+
+.text-red {
+    color: #f44;
+}
+
+.text-yellow {
+    color: #cc0;
+}
+
+/* Panels */
+
+header {
+    background-image: linear-gradient(to bottom, #004cff, #00c2ee);
+}
+
+aside.panel {
+    background-color: #025fff;
+    color: #eee;
+}
+
+#bubble-position label input:checked ~ div {
+    background-color: #03f;
+}
+
+/* Chat */
+
+ul.chat-body li.chat-line {
+    border-bottom: 1px solid #145fd0;
+}
+
+ul.chat-body li.chat-line:nth-child(odd) {
+    background-color: #2646ff;
+}
+
+ul.chat-body li.chat-line.server-action {
+    color: #0f4edd;
+}
+
+.chatban-history li {
+    background-color: rgba(88, 179, 213, .3);
+    border: 1px solid #2612cc;
+}
+
+.chatban-history h4 {
+    background-color: #7281aa33;
+    border-bottom: 1px solid #0059f2;
+}
+
+.popup {
+    background-color: #4859f4;
+    color: #3e88f9;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #1237c1;
+}
+
+.pane .chat-timestamp-header {
+    color: #1124dd;
+}
+
+.pane ul.actions-list li[data-action] {
+    background-image: linear-gradient(0,#020df0,#0069ff,#00cdf9);
+}
+
+.pane ul.actions-list li[data-action]:hover {
+    background-image: linear-gradient(0,#020df0,#0069ff,#00cdf9);
+}
+
+ul.chat-body .chat-line[data-id].has-ping {
+    background-color: #8e7f63;
+}
+
+li.chat-line .user {
+    text-shadow: 1px 1px 0 #0945ec, -1px 1px 0 #0945ec, 1px -1px 0 #0945ec, -1px -1px 0 #0945ec, 0 1px 0 #0945ec, 0 -1px 0 #0945ec, -1px 0 0 #0945ec, 1px 0 0 #0945ec;
+}
+
+@keyframes -scrolled-flash {
+    from {
+        background-color: #1fa2df;
+    }
+    to {
+        background-color: #50f2e5;
+    }
+}
+
+.emoji-picker {
+    border: 1px solid #312ef9;
+    box-shadow: 0px 0px 3px 1px #094fb5;
+    background: #07b0ff;
+}
+
+.emoji-picker__preview {
+    border-top: 1px solid #093bac;
+}
+
+.emoji-picker__preview-name {
+    color: #54bcf2;
+}
+
+.emoji-picker__tab {
+    color: #54bcf2;
+}
+
+.emoji-picker__tab.active {
+    border-bottom: 3px solid #6fd1ff;
+    color: #6fd1ff;
+}
+
+.emoji-picker__tab-body h2 {
+    color: #36b5f7;
+}
+
+.emoji-picker__emojis.search-results {
+    height: 21rem;
+}
+
+.emoji-picker__emoji {
+    background: transparent;
+    color: white;
+}
+
+.emoji-picker__emoji:hover {
+    background: #0b84ff;
+}
+
+.emoji-picker__search-container input {
+    border: 1px solid #20f;
+    background-color: #00359f;
+    color: #ddd;
+}
+
+.emoji-picker__search-icon {
+    color: #aaa;
+}
+
+.emoji-picker__search-not-found {
+    color: #39466a;
+}
+
+.emoji-picker__variant-overlay {
+    background: rgba(99, 109, 159, .7);
+}
+
+.emoji-picker__variant-popup {
+    background: #027ef2;
+}
+
+.emoji-picker__variant-popup-close-button {
+    background: transparent;
+}
+
+#typeahead {
+    background-color: #0a009d;
+}
+#typeahead ul li {
+    background-color: #081095;
+}
+
+#typeahead ul li:hover {
+    background-color: #2314bf;
+}
+
+#typeahead ul li.active {
+    background-color: #0079ff;
+}
+
+/* Admin */
+
+.admin input {
+    border: 1px solid #0d15ff;
+    background-color: #1d8ce6;
+}
+
+.admin-check {
+    border: 1px solid #2413db !important;
+    background-color: #1b7ad9 !important;
+}
+
+.admin-check div:not(.button) {
+    color: #eee;
+}
+
+.admin-check input {
+    border: 1px solid #0002ff;
+    background-color: #0091ff;
+    color: #eee;
+}
+
+/* Notifications */
+.notification {
+    background-color: #0073ff;
+    border: 1px solid #0a00ff;
+}
+
+.notification .notification-title {
+    background-color: #008bff;
+    border-bottom: 1px solid #02f;
+}
+
+.notification .notification-footer {
+    color: #2ea7c6;
+    background-color: #2e83f4;
+    border-top: 1px solid #001fff;
+}
+
+.notification-footer .notification-expiry {
+    color: #995050;
+}
+
+/*//////////////////////////*\
+| Modal
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
+/* https://github.com/kylefox/jquery-modal/blob/a8b9c9b01961c0a3c6676fcc8fe6cc5b8c74cb5c/jquery.modal.css */
+
+.modal {
+    color: #ddd;
+    background-color: #387fea;
+}
+
+.modal .modal-header, .modal .modal-footer {
+    background-color: #2e73f0;
+}
