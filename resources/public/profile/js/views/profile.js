@@ -1,4 +1,15 @@
-/* eslint-disable no-undef */
+/* globals
+  DEFAULT_SPECTRUM_OPTIONS,
+  initInPageTabNavigation,
+  handleCollapseIconToggle,
+  _reloadPageWithStatus,
+  popConfirmDialog,
+  popModal,
+  getJSON,
+  putJSON,
+  deleteJSON,
+  postJSON
+ */
 window.DEFAULT_SPECTRUM_OPTIONS = window.DEFAULT_SPECTRUM_OPTIONS || {
   showInput: true,
   clickoutFiresChange: true,

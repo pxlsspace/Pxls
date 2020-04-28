@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 const ConfirmDialogStyles = Object.freeze({
   OK_CANCEL: 0,
   YES_NO: 1
@@ -55,6 +54,7 @@ const ConfirmDialogStyles = Object.freeze({
   }
 })();
 
+// eslint-disable-next-line no-unused-vars
 function initInPageTabNavigation(page) {
   if (page.startsWith('/')) page = page.substr(1);
   document.querySelectorAll('#tabsTriggers a[data-action]').forEach(x => x.addEventListener('click', handleTabTrigger));
@@ -80,6 +80,7 @@ function initInPageTabNavigation(page) {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 async function popConfirmDialog(text, style = ConfirmDialogStyles.YES_NO) {
   return new Promise(function(resolve) {
     const noButton = crel('button', { class: 'btn btn-secondary', 'data-dismiss': 'modal' }, style === ConfirmDialogStyles.YES_NO ? 'No' : 'Cancel');
@@ -124,10 +125,12 @@ function popModal(modalDom, focusInput) {
   $(modalDom).on('shown.bs.modal', () => focusInput && focusInput.focus && focusInput.focus()).on('hidden.bs.modal', () => $(modalDom).modal('dispose').remove()).modal({ keyboard: false, backdrop: 'static', focus: true, show: true });
 }
 
+// eslint-disable-next-line no-unused-vars
 async function getJSON(url) {
   return _doGetLike(url, 'GET');
 }
 
+// eslint-disable-next-line no-unused-vars
 async function deleteJSON(url, body = null) {
   if (body != null) {
     return _doPostLike(url, 'DELETE', body);
@@ -136,14 +139,17 @@ async function deleteJSON(url, body = null) {
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 async function putJSON(url, data = {}) {
   return _doPostLike(url, 'PUT', data);
 }
 
+// eslint-disable-next-line no-unused-vars
 async function postJSON(url, data = {}) {
   return _doPostLike(url, 'POST', data);
 }
 
+// eslint-disable-next-line no-unused-vars
 async function patchJSON(url, data = {}) {
   return _doPostLike(url, 'PATCH', data);
 }
@@ -183,6 +189,7 @@ async function _doPostLike(url, type, data = {}) {
   });
 }
 
+// eslint-disable-next-line no-unused-vars
 function _reloadPageWithStatus(success, details = null) {
   const arr = [['success', (success) ? 1 : 0]];
   if (details != null) {
@@ -193,6 +200,7 @@ function _reloadPageWithStatus(success, details = null) {
   document.location.href = `${document.location.protocol}//${document.location.host}${document.location.pathname}${_search}${document.location.hash}`;
 }
 
+// eslint-disable-next-line no-unused-vars
 function _reloadPage() {
   document.location.href = document.location.href.substring(0, document.location.href.indexOf('#'));
 }
