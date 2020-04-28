@@ -746,7 +746,7 @@ window.App = (function() {
       },
       allowDrag: true,
       pannedWithKeys: false,
-      rgbpalette: [],
+      rgbPalette: [],
       loaded: false,
       pixelBuffer: [],
       holdTimer: {
@@ -779,13 +779,13 @@ window.App = (function() {
         self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
 
         self.intView = new Uint32Array(self.id.data.buffer);
-        self.rgbpalette = place.getpaletteRGB();
+        self.rgbPalette = place.getPaletteRGB();
 
         for (let i = 0; i < self.width * self.height; i++) {
           if (data[i] === 0xFF) {
             self.intView[i] = 0x00000000; // transparent pixel!
           } else {
-            self.intView[i] = self.rgbpalette[data[i]];
+            self.intView[i] = self.rgbPalette[data[i]];
           }
         }
 
@@ -886,7 +886,7 @@ window.App = (function() {
             case 'j':
             case 'J':
               if (place.color < 1) {
-                place.switch(place.getpaletteRGB().length - 1);
+                place.switch(place.getPaletteRGB().length - 1);
               } else {
                 place.switch(place.color - 1);
               }
@@ -895,7 +895,7 @@ window.App = (function() {
             case 75: // K
             case 'k':
             case 'K':
-              if (place.color + 1 >= place.getpaletteRGB().length) {
+              if (place.color + 1 >= place.getPaletteRGB().length) {
                 place.switch(0);
               } else {
                 place.switch(place.color + 1);
@@ -1131,7 +1131,7 @@ window.App = (function() {
           user.webinit(data);
           self.width = data.width;
           self.height = data.height;
-          place.setpalette(data.palette);
+          place.setPalette(data.palette);
           uiHelper.setMax(data.maxStacked);
           chat.webinit(data);
           chromeOffsetWorkaround.update();
@@ -1335,7 +1335,7 @@ window.App = (function() {
         x = Math.floor(x);
         y = Math.floor(y);
         const colorInt = self.intView[y * self.width + x];
-        const index = self.rgbpalette.indexOf(colorInt);
+        const index = self.rgbPalette.indexOf(colorInt);
         return index;
       },
       setPixel: function(x, y, c, refresh) {
@@ -1353,7 +1353,7 @@ window.App = (function() {
         if (c === -1 || c === 0xFF) {
           self.intView[y * self.width + x] = 0x00000000;
         } else {
-          self.intView[y * self.width + x] = self.rgbpalette[c];
+          self.intView[y * self.width + x] = self.rgbPalette[c];
         }
         if (refresh) {
           self.ctx.putImageData(self.id, 0, 0);
@@ -2279,7 +2279,8 @@ window.App = (function() {
           self.toggleCursor(true);
         }
       },
-      setNumberedpaletteEnabled: function(shouldBeNumbered) {
+      setNumberedPaletteEnabled: function(shouldBeNumbered) {
+        console.debug('Should be numbered: ' + shouldBeNumbered);
         self.elements.palette[0].classList.toggle('no-pills', !shouldBeNumbered);
       },
       toggleReticule: (show) => {
@@ -2296,7 +2297,7 @@ window.App = (function() {
           self.elements.cursor.hide();
         }
       },
-      setpalette: function(palette) {
+      setPalette: function(palette) {
         self.palette = palette;
         self.elements.palette.find('.palette-color').remove().end().append(
           $.map(self.palette, function(p, idx) {
@@ -2458,7 +2459,7 @@ window.App = (function() {
           b: parseInt(result[3], 16)
         } : null;
       },
-      getpaletteRGB: function() {
+      getPaletteRGB: function() {
         const a = new Uint32Array(self.palette.length);
         $.map(self.palette, function(c, i) {
           const rgb = self.hexToRgb(c);
@@ -2472,12 +2473,12 @@ window.App = (function() {
       update: self.update,
       place: self.place,
       switch: self.switch,
-      setpalette: self.setpalette,
-      getpalette: () => self.palette,
-      getpaletteColor: (n, def = '#000000') => self.palette[n] || def,
-      getpaletteRGB: self.getpaletteRGB,
+      setPalette: self.setPalette,
+      getPalette: () => self.palette,
+      getPaletteColor: (n, def = '#000000') => self.palette[n] || def,
+      getPaletteRGB: self.getPaletteRGB,
       setAutoReset: self.setAutoReset,
-      setNumberedpaletteEnabled: self.setNumberedpaletteEnabled,
+      setNumberedPaletteEnabled: self.setNumberedPaletteEnabled,
       get color() {
         return self.color;
       },
@@ -2944,11 +2945,11 @@ window.App = (function() {
             ls.set('enableMiddleMouseSelect', this.checked === true);
           });
 
-        place.setNumberedpaletteEnabled(ls.get('enableNumberedpalette') === true);
-        $('#cbNumberedpalette').prop('checked', ls.get('enableNumberedpalette') === true)
+        place.setNumberedPaletteEnabled(ls.get('enableNumberedPalette') === true);
+        $('#cbNumberedPalette').prop('checked', ls.get('enableNumberedPalette') === true)
           .change(function() {
-            ls.set('enableNumberedpalette', this.checked === true);
-            place.setNumberedpaletteEnabled(this.checked === true);
+            ls.set('enableNumberedPalette', this.checked === true);
+            place.setNumberedPaletteEnabled(this.checked === true);
           });
 
         board.setAllowDrag(ls.get('canvas.unlocked') !== false); // false check for new connections
@@ -3334,10 +3335,10 @@ window.App = (function() {
         if (colorIdx >= 0) {
           switch (layer) {
             case 'bg':
-              elem.style.backgroundColor = place.getpaletteColor(colorIdx);
+              elem.style.backgroundColor = place.getPaletteColor(colorIdx);
               break;
             case 'color':
-              elem.style.color = place.getpaletteColor(colorIdx);
+              elem.style.color = place.getPaletteColor(colorIdx);
               break;
           }
         } else {
@@ -4426,7 +4427,7 @@ window.App = (function() {
 
         const _selUsernameColor = crel('select', { class: 'username-color-picker' },
           user.isStaff() ? crel('option', { value: -1, class: 'rainbow' }, 'rainbow') : null,
-          place.getpalette().map((x, i) => crel('option', {
+          place.getPalette().map((x, i) => crel('option', {
             value: i,
             'data-idx': i,
             style: `background-color: ${x}`
@@ -4793,7 +4794,7 @@ window.App = (function() {
           flairs,
           crel('span', {
             class: nameClasses,
-            style: `color: ${place.getpaletteColor(packet.authorNameColor)}`,
+            style: `color: ${place.getPaletteColor(packet.authorNameColor)}`,
             onclick: self._popUserPanel,
             onmousemiddledown: self._addAuthorMentionToChatbox
           }, packet.author),
