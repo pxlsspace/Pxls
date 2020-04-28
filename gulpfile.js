@@ -29,7 +29,7 @@ function js () {
   const min = src('resources/public/*.min.js')
     .pipe(dest('target/classes/public'));
 
-  const source = src(['resources/public/*.js', '!resources/public/*.min.js'])
+  const source = src(['resources/public/**/*.js', '!resources/public/**/*.min.js', '!resources/public/**/*-min.js'])
     .pipe(eslint())
     .pipe(eslint.failAfterError())
     .pipe(gulpIf(isDevEnvironment, sourcemaps.init()))
