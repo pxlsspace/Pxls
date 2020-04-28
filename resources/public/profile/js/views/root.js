@@ -1,10 +1,11 @@
+/* eslint-disable no-unused-vars */
 const ConfirmDialogStyles = Object.freeze({
   OK_CANCEL: 0,
-  YES_NO: 1,
+  YES_NO: 1
 });
 
 (async () => {
-  console.log('%csocc dindu nuffin. probably.', 'font-size: 16px;background-color: #000; color: #000; padding: 5px;');
+  console.debug('%csocc dindu nuffin. probably.', 'font-size: 16px;background-color: #000; color: #000; padding: 5px;');
 
   $('[data-toggle="tooltip"]').tooltip();
   $('[data-toggle="popover"]').popover();
@@ -15,35 +16,35 @@ const ConfirmDialogStyles = Object.freeze({
     if (collapseButton) {
       collapseButton.addEventListener('click', function() {
         handleCollapseIconToggle(this.closest('.collapseable').querySelector('.body-collapse-target'), this.querySelector('.fas'));
-      })
+      });
     }
   });
 
   // ensure our current action is selected, and show slideins if necessary
   if (location.search) {
     const _search = location.search.substr(location.search.startsWith('?') ? 1 : 0).split('&').map(x => x.split('='));
-    let action = _search.find(x => x[0].toLowerCase().trim() === 'action');
+    const action = _search.find(x => x[0].toLowerCase().trim() === 'action');
     if (Array.isArray(action) && action[1] != null) {
       Array.from(document.querySelectorAll('.tab-pane.active')).forEach(x => x.classList.remove('active'));
       Array.from(document.querySelectorAll('.list-group-item[data-action].active')).forEach(x => x.classList.remove('active'));
-      let elPane = document.querySelector(`.tab-pane[data-tab="${action[1].toLowerCase()}"]`);
-      let elAction = document.querySelector(`.list-group-item[data-action="${action[1].toLowerCase()}"]`);
+      const elPane = document.querySelector(`.tab-pane[data-tab="${action[1].toLowerCase()}"]`);
+      const elAction = document.querySelector(`.list-group-item[data-action="${action[1].toLowerCase()}"]`);
       if (elPane && elAction) {
         elPane.classList.add('active');
         elAction.classList.add('active');
       }
     }
 
-    let detailsIndex = _search.findIndex(x => x[0].toLowerCase().trim() === 'details');
+    const detailsIndex = _search.findIndex(x => x[0].toLowerCase().trim() === 'details');
     let _details = (Array.isArray(_search[detailsIndex]) && _search[detailsIndex][1] != null) ? _search[detailsIndex][1] : false;
     if (_details !== false) {
-      _details = decodeURIComponent(_details).replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      _details = decodeURIComponent(_details).replace(/</g, '&lt;').replace(/>/g, '&gt;');
       _search.splice(detailsIndex, 1);
     }
 
-    let successIndex = _search.findIndex(x => x[0].toLowerCase().trim() === 'success');
+    const successIndex = _search.findIndex(x => x[0].toLowerCase().trim() === 'success');
     if (Array.isArray(_search[successIndex]) && _search[successIndex][1] != null) {
-      let wasSuccessful = _search[successIndex][1] === '1';
+      const wasSuccessful = _search[successIndex][1] === '1';
       new SLIDEIN.Slidein(wasSuccessful ? `${_details === false ? 'Operation completed successfully.' : _details}` : `${_details === false ? 'Operation failed. No additional information was provided by the sever.' : _details}`, null, wasSuccessful ? SLIDEIN.SLIDEIN_TYPES.SUCCESS : SLIDEIN.SLIDEIN_TYPES.DANGER, true).show().closeAfter(5e3);
 
       _search.splice(successIndex, 1);
@@ -61,15 +62,15 @@ function initInPageTabNavigation(page) {
   function handleTabTrigger(e) {
     e.preventDefault();
 
-    let oldTarget = document.querySelector(`#tabsWrapper .tab-pane[data-tab].active`);
+    let oldTarget = document.querySelector('#tabsWrapper .tab-pane[data-tab].active');
     oldTarget = oldTarget ? (oldTarget.dataset.tab || false) : false;
 
     if (oldTarget === this.dataset.action) return;
 
-    let targetTab = document.querySelector(`#tabsWrapper .tab-pane[data-tab="${this.dataset.action}"]`);
+    const targetTab = document.querySelector(`#tabsWrapper .tab-pane[data-tab="${this.dataset.action}"]`);
     if (!targetTab) return;
 
-    history.replaceState(null, document.title, `/${page}?action=${this.dataset.action}`); //updates the URL in-place without triggering a navigation
+    history.replaceState(null, document.title, `/${page}?action=${this.dataset.action}`); // updates the URL in-place without triggering a navigation
 
     document.querySelectorAll('#tabsTriggers a[data-action].active').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('#tabsWrapper .tab-pane[data-tab].active').forEach(el => el.classList.remove('active'));
@@ -79,25 +80,25 @@ function initInPageTabNavigation(page) {
   }
 }
 
-async function popConfirmDialog(text, style=ConfirmDialogStyles.YES_NO) {
+async function popConfirmDialog(text, style = ConfirmDialogStyles.YES_NO) {
   return new Promise(function(resolve) {
-    const noButton = crel('button', {'class': 'btn btn-secondary', 'data-dismiss': 'modal'}, style === ConfirmDialogStyles.YES_NO ? 'No' : 'Cancel');
-    const yesButton = crel('button', {'class': 'btn btn-primary', 'data-dismiss': 'modal'}, style === ConfirmDialogStyles.YES_NO ? 'Yes' : 'OK');
+    const noButton = crel('button', { class: 'btn btn-secondary', 'data-dismiss': 'modal' }, style === ConfirmDialogStyles.YES_NO ? 'No' : 'Cancel');
+    const yesButton = crel('button', { class: 'btn btn-primary', 'data-dismiss': 'modal' }, style === ConfirmDialogStyles.YES_NO ? 'Yes' : 'OK');
     noButton.addEventListener('click', () => resolve(false));
     yesButton.addEventListener('click', () => resolve(true));
     popModal(
-      crel('div', {'class': 'modal', 'tabindex': '-1', 'role': 'dialog'},
-        crel('div', {'class': 'modal-dialog', 'role': 'document'},
-          crel('div', {'class': 'modal-content'},
-            crel('div', {'class': 'modal-header'},
-              crel('h5', {'class': 'modal-title'}, 'Confirmation')
+      crel('div', { class: 'modal', tabindex: '-1', role: 'dialog' },
+        crel('div', { class: 'modal-dialog', role: 'document' },
+          crel('div', { class: 'modal-content' },
+            crel('div', { class: 'modal-header' },
+              crel('h5', { class: 'modal-title' }, 'Confirmation')
             ),
-            crel('div', {'class': 'modal-body'},
+            crel('div', { class: 'modal-body' },
               crel('div',
                 crel('p', text)
               )
             ),
-            crel('div', {'class': 'modal-footer'},
+            crel('div', { class: 'modal-footer' },
               noButton,
               yesButton
             )
@@ -109,18 +110,18 @@ async function popConfirmDialog(text, style=ConfirmDialogStyles.YES_NO) {
 }
 
 function handleCollapseIconToggle(colTarget, elIcon) {
-  let wasCollapsed = colTarget.classList.contains('collapse') && !colTarget.classList.contains('show');
+  const wasCollapsed = colTarget.classList.contains('collapse') && !colTarget.classList.contains('show');
   elIcon.classList.toggle('fa-chevron-down', !wasCollapsed);
-  elIcon.classList.toggle('fa-chevron-up', wasCollapsed); //update icons immediately so that they don't wait for the animation to complete
-  $(colTarget).collapse('toggle').one(wasCollapsed ? 'shown.bs.collapse' : 'hidden.bs.collapse', function() { //bind to ensure we show the correct icon once collapse fires
-    let isCollapsed = colTarget.classList.contains('collapse') && !colTarget.classList.contains('show');
+  elIcon.classList.toggle('fa-chevron-up', wasCollapsed); // update icons immediately so that they don't wait for the animation to complete
+  $(colTarget).collapse('toggle').one(wasCollapsed ? 'shown.bs.collapse' : 'hidden.bs.collapse', function() { // bind to ensure we show the correct icon once collapse fires
+    const isCollapsed = colTarget.classList.contains('collapse') && !colTarget.classList.contains('show');
     elIcon.classList.toggle('fa-chevron-down', isCollapsed);
     elIcon.classList.toggle('fa-chevron-up', !isCollapsed);
   });
 }
 
 function popModal(modalDom, focusInput) {
-  $(modalDom).on('shown.bs.modal', () => focusInput && focusInput.focus && focusInput.focus()).on('hidden.bs.modal', () => $(modalDom).modal('dispose').remove()).modal({keyboard: false, backdrop: 'static', focus: true, show: true});
+  $(modalDom).on('shown.bs.modal', () => focusInput && focusInput.focus && focusInput.focus()).on('hidden.bs.modal', () => $(modalDom).modal('dispose').remove()).modal({ keyboard: false, backdrop: 'static', focus: true, show: true });
 }
 
 async function getJSON(url) {
@@ -149,7 +150,7 @@ async function patchJSON(url, data = {}) {
 
 async function _doGetLike(url, type) {
   return new Promise((resolve, reject) => {
-    let req = new XMLHttpRequest();
+    const req = new XMLHttpRequest();
     req.onload = function() {
       try {
         resolve(JSON.parse(this.responseText));
@@ -166,7 +167,7 @@ async function _doGetLike(url, type) {
 
 async function _doPostLike(url, type, data = {}) {
   return new Promise((resolve, reject) => {
-    let req = new XMLHttpRequest();
+    const req = new XMLHttpRequest();
     req.onload = function() {
       try {
         resolve(JSON.parse(this.responseText));
@@ -182,8 +183,8 @@ async function _doPostLike(url, type, data = {}) {
   });
 }
 
-function _reloadPageWithStatus(success, details=null) {
-  let arr = [['success', (!!success) ? 1 : 0]];
+function _reloadPageWithStatus(success, details = null) {
+  const arr = [['success', (success) ? 1 : 0]];
   if (details != null) {
     arr.push(['details', encodeURIComponent(details)]);
   }
