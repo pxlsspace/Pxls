@@ -5126,7 +5126,7 @@ window.App = (function() {
             'data-action': 'delete',
             'data-id': id,
             onclick: self._handleActionClick
-          }, 'delete');
+          }, 'Delete');
           const actionModLookup = crel('li', {
             'data-action': 'lookup-mod',
             'data-id': id,
@@ -5477,7 +5477,7 @@ window.App = (function() {
             if (e.shiftKey === true) {
               return dodelete();
             }
-            const btndelete = crel('button', { class: 'button' }, 'delete');
+            const btndelete = crel('button', { class: 'button' }, 'Delete');
             btndelete.onclick = () => dodelete();
             const deleteWrapper = crel('div', { class: 'chatmod-container' },
               crel('table',
@@ -5511,7 +5511,7 @@ window.App = (function() {
               )
             );
             modal.show(modal.buildDom(
-              crel('h2', { class: 'modal-title' }, 'delete Message'),
+              crel('h2', { class: 'modal-title' }, 'Delete Message'),
               deleteWrapper
             ));
             break;
