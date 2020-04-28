@@ -2030,7 +2030,7 @@ window.App = (function() {
         }
         document.title = uiHelper.getTitle();
       },
-      disabconstemplate: function() {
+      disableTemplate: function() {
         self._update({ url: null });
       },
       draw: function(ctx2, pxlX, pxlY) {
@@ -2398,7 +2398,7 @@ window.App = (function() {
               break;
           }
 
-          if (uiHelper.getAvailable() === 0) { uiHelper.setPlaceabconstext(data.ackFor === 'PLACE' ? 0 : 1); }
+          if (uiHelper.getAvailable() === 0) { uiHelper.setPlaceableText(data.ackFor === 'PLACE' ? 0 : 1); }
         });
         socket.on('captcha_required', function(data) {
           if (!self.isDoingCaptcha) {
@@ -3005,7 +3005,7 @@ window.App = (function() {
           initialShowReticule = !possiblyMobile;
           ls.set('ui.show-reticule', initialShowReticule);
         }
-        $('#showReticuconstoggle')
+        $('#showReticuleToggle')
           .prop('checked', initialShowReticule)
           .change(function() {
             ls.set('ui.show-reticule', this.checked === true);
@@ -3301,12 +3301,12 @@ window.App = (function() {
       },
       updateAvailable: function(count, cause) {
         if (count > 0 && cause === 'stackGain') timer.playAudio();
-        self.setPlaceabconstext(count);
+        self.setPlaceableText(count);
       },
       setMax(maxStacked) {
         self.maxStacked = maxStacked + 1;
       },
-      setPlaceabconstext(placeable) {
+      setPlaceableText(placeable) {
         self.elements.stackCount.text(`${placeable}/${self.maxStacked}`);
       },
       setDiscordName(name) {
@@ -3373,7 +3373,7 @@ window.App = (function() {
       updateTimer: self.updateTimer,
       updateAvailable: self.updateAvailable,
       getAvailable: self.getAvailable,
-      setPlaceabconstext: self.setPlaceabconstext,
+      setPlaceableText: self.setPlaceableText,
       setMax: self.setMax,
       setDiscordName: self.setDiscordName,
       updateAudio: self.updateAudio,
@@ -4284,11 +4284,11 @@ window.App = (function() {
                 event.stopImmediatePropagation();
                 const selected = self.elements.typeahead_list[0].querySelector('li:not(.no-results).active');
                 if (selected) {
-                  self._handconstypeaheadInsert(selected);
+                  self._handleTypeaheadInsert(selected);
                 } else {
                   const topResult = self.elements.typeahead_list[0].querySelector('li:not(.no-results):first-child');
                   if (topResult) {
-                    self._handconstypeaheadInsert(topResult);
+                    self._handleTypeaheadInsert(topResult);
                   }
                 }
                 return;
@@ -4317,7 +4317,7 @@ window.App = (function() {
                   'data-insert': `${x} `,
                   'data-start': scanRes.start,
                   'data-end': scanRes.end,
-                  onclick: self._handconstypeaheadInsert
+                  onclick: self._handleTypeaheadInsert
                 }, x)
               );
               LIs[0].classList.add('active');
@@ -4328,9 +4328,9 @@ window.App = (function() {
           document.body.classList.toggle('typeahead-open', self.typeahead.suggesting);
         }
       },
-      _handconstypeaheadInsert: function(elem) {
+      _handleTypeaheadInsert: function(elem) {
         if (this instanceof HTMLElement) elem = this;
-        else if (!(elem instanceof HTMLElement)) return console.warn('Got non-elem on handconstypeaheadInsert: %o', elem);
+        else if (!(elem instanceof HTMLElement)) return console.warn('Got non-elem on handleTypeaheadInsert: %o', elem);
         const start = parseInt(elem.dataset.start);
         const end = parseInt(elem.dataset.end);
         const toInsert = elem.dataset.insert || '';
@@ -4485,7 +4485,7 @@ window.App = (function() {
         _cbPixelPlaceBadges.checked = ls.get('chat.text-icons-enabled');
         _cbPixelPlaceBadges.addEventListener('change', function() {
           ls.set('chat.text-icons-enabled', this.checked === true);
-          self._toggconstextIconFlairs();
+          self._toggleTextIconFlairs();
         });
 
         _cbFactionTagBadges.checked = ls.get('chat.faction-tags-enabled');
@@ -4711,7 +4711,7 @@ window.App = (function() {
           _ft.innerHTML = '';
         });
       },
-      _toggconstextIconFlairs: (enabled = ls.get('chat.text-icons-enabled') === true) => {
+      _toggleTextIconFlairs: (enabled = ls.get('chat.text-icons-enabled') === true) => {
         self.elements.body.find('.chat-line .flairs .text-badge').each(function() {
           this.style.display = enabled ? 'initial' : 'none';
         });
@@ -4942,10 +4942,10 @@ window.App = (function() {
                 if (internalClickDefault === 0) {
                   self._popTemplateOverwriteConfirm(x).then(action => {
                     modal.closeAll();
-                    self._handconstemplateOverwriteAction(action, x);
+                    self._handleTemplateOverwriteAction(action, x);
                   });
                 } else {
-                  self._handconstemplateOverwriteAction(internalClickDefault, x);
+                  self._handleTemplateOverwriteAction(internalClickDefault, x);
                 }
               } else {
                 self.jump(parseFloat(x.dataset.x), parseFloat(x.dataset.y), parseFloat(x.dataset.scale));
@@ -4958,7 +4958,7 @@ window.App = (function() {
 
         return toReturn;
       },
-      _handconstemplateOverwriteAction: (action, linkElem) => {
+      _handleTemplateOverwriteAction: (action, linkElem) => {
         switch (action) {
           case false:
             break;
@@ -5008,7 +5008,7 @@ window.App = (function() {
                   action.pretty
                 )
               ),
-              crel('span', { class: 'text-muted' }, 'Note: You can set a default action in the settings menu which bypasses this popup compconstely')
+              crel('span', { class: 'text-muted' }, 'Note: You can set a default action in the settings menu which bypasses this popup completely.')
             ),
             [
               ['Cancel', () => resolve(false)],
@@ -5816,7 +5816,7 @@ window.App = (function() {
             notif = nativeNotifications.maybeShow(`Your next pixel will be available in ${Math.abs(alertDelay)} seconds!`);
           }
           setTimeout(() => {
-            uiHelper.setPlaceabconstext(1);
+            uiHelper.setPlaceableText(1);
             if (notif) {
               $(window).one('pxls:ack:place', () => notif.close());
             }
@@ -5869,7 +5869,7 @@ window.App = (function() {
                 $(window).one('pxls:ack:place', () => notif.close());
               }
             }
-            uiHelper.setPlaceabconstext(1);
+            uiHelper.setPlaceableText(1);
             self.hasFiredNotification = true;
           }, alertDelay * 1000);
           return;
@@ -5883,7 +5883,7 @@ window.App = (function() {
               $(window).one('pxls:ack:place', () => notif.close());
             }
           }
-          uiHelper.setPlaceabconstext(1);
+          uiHelper.setPlaceableText(1);
           self.hasFiredNotification = true;
         }
       },
@@ -5897,7 +5897,7 @@ window.App = (function() {
 
         setTimeout(function() {
           if (self.cooledDown() && uiHelper.getAvailable() === 0) {
-            uiHelper.setPlaceabconstext(1);
+            uiHelper.setPlaceableText(1);
           }
         }, 250);
         socket.on('cooldown', function(data) {
