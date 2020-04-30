@@ -2,12 +2,12 @@
 (function () {
   let admin = null;
   const genButton = function(s) {
-    return $('<div>').css({
+    return $('<button>').css({
       position: 'initial',
       right: 'auto',
       left: 'auto',
       bottom: 'auto'
-    }).addClass('button').text(s);
+    }).text(s);
   };
   const sendAlert = function(username) {
     if (admin.user.getRole() === 'TRIALMOD') return '';
@@ -245,21 +245,18 @@
             crel('button', {
               'data-action': 'chatban',
               'data-target': data.username,
-              class: 'button',
               style: 'position: initial; right: auto; left: auto; bottom: auto;',
               onclick: admin.chat._handleActionClick
             }, 'Chat (un)ban'),
             crel('button', {
               'data-action': 'purge',
               'data-target': data.username,
-              class: 'button',
               style: 'position: initial; right: auto; left: auto; bottom: auto;',
               onclick: admin.chat._handleActionClick
             }, 'Chat purge'),
             crel('button', {
               'data-action': 'lookup-chat',
               'data-target': data.username,
-              class: 'button',
               style: 'position: initial; right: auto; left: auto; bottom: auto;',
               onclick: admin.chat._handleActionClick
             }, 'Chat lookup')
@@ -269,14 +266,12 @@
               crel('button', {
                 'data-action': 'request-rename',
                 'data-target': data.username,
-                class: 'button',
                 style: 'position: initial; right: auto; left: auto; bottom: auto;',
                 onclick: admin.chat._handleActionClick
               }, 'Request Rename'),
               (admin.user.getRole() === 'ADMIN' || admin.user.getRole() === 'DEVELOPER' ? crel('button', {
                 'data-action': 'force-rename',
                 'data-target': data.username,
-                class: 'button',
                 style: 'position: initial; right: auto; left: auto; bottom: auto;',
                 onclick: admin.chat._handleActionClick
               }, 'Force Rename') : '')
@@ -314,7 +309,7 @@
         });
       },
       popUnban: username => {
-        const btnSubmit = crel('button', { type: 'submit', class: 'button' }, 'Unban');
+        const btnSubmit = crel('button', { type: 'submit' }, 'Unban');
         const txtUnbanReason = crel('input', { type: 'text', required: 'true' });
         const lblUnbanReason = crel('label', 'Unban Reason: ', txtUnbanReason);
 
@@ -325,7 +320,6 @@
           lblUnbanReason,
           crel('div', { class: 'buttons' },
             crel('button', {
-              class: 'button',
               type: 'button',
               onclick: () => { admin.modal.closeAll(); }
             }, 'Cancel'),

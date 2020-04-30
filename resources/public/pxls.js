@@ -2505,7 +2505,7 @@ window.App = (function() {
       },
       handle: null,
       report: function(id, x, y) {
-        const reportButton = crel('button', { class: 'button' }, 'Report');
+        const reportButton = crel('button', {}, 'Report');
         reportButton.addEventListener('click', function() {
           this.disabled = true;
           this.textContent = 'Sending...';
@@ -2552,7 +2552,7 @@ window.App = (function() {
             })
           ),
           [ // crel will inject the array as fragments
-            crel('button', { class: 'button', onclick: () => modal.closeAll() }, 'Cancel'),
+            crel('button', { onclick: () => modal.closeAll() }, 'Cancel'),
             reportButton
           ]
         ));
@@ -2672,14 +2672,14 @@ window.App = (function() {
         return self.elements.lookup.empty().append(
           $('<div>').addClass('content'),
           (!data.bg && user.isLoggedIn()
-            ? $('<div>').addClass('button').css('float', 'left').addClass('report-button').text('Report').click(function() {
+            ? $('<button>').css('float', 'left').addClass('report-button').text('Report').click(function() {
               self.report(data.id, data.x, data.y);
             })
             : ''),
-          $('<div>').addClass('button').css('float', 'right').text('Close').click(function() {
+          $('<button>').css('float', 'right').text('Close').click(function() {
             self.elements.lookup.fadeOut(200);
           }),
-          (template.getOptions().use ? $('<div>').addClass('button').css('float', 'right').text('Move Template Here').click(function() {
+          (template.getOptions().use ? $('<button>').addClass('button').css('float', 'right').text('Move Template Here').click(function() {
             template.queueUpdate({
               ox: data.x,
               oy: data.y
@@ -4452,7 +4452,7 @@ window.App = (function() {
           crel('option', { value: x }, x)
         )
         );
-        const _btnUnignore = crel('button', { class: 'button', style: 'margin-left: .5rem' }, 'Unignore');
+        const _btnUnignore = crel('button', { style: 'margin-left: .5rem' }, 'Unignore');
         const lblIgnores = crel('label', 'Ignores: ', _selIgnores, _btnUnignore);
         const lblIgnoresFeedback = crel('label', { style: 'display: none; margin-left: 1rem;' }, '');
 
@@ -5024,7 +5024,6 @@ window.App = (function() {
               ['OK', () => resolve(bodyWrapper.querySelector('input[type=radio]:checked').dataset.actionId >> 0)]
             ].map(x =>
               crel('button', {
-                class: 'button',
                 style: 'margin-left: 3px; position: initial !important; bottom: initial !important; right: initial !important;',
                 onclick: x[1]
               }, x[0])
@@ -5215,7 +5214,6 @@ window.App = (function() {
         switch (this.dataset.action.toLowerCase().trim()) {
           case 'report': {
             const reportButton = crel('button', {
-              class: 'button',
               style: 'position: initial;',
               type: 'submit'
             }, 'Report');
@@ -5236,7 +5234,6 @@ window.App = (function() {
                   textArea,
                   crel('div', { style: 'text-align: right' },
                     crel('button', {
-                      class: 'button',
                       style: 'position: initial; margin-right: .25rem',
                       type: 'button',
                       onclick: () => {
@@ -5359,14 +5356,13 @@ window.App = (function() {
             const _reasonWrap = crel('div', { style: 'display: block;' });
 
             const _btnCancel = crel('button', {
-              class: 'button',
               type: 'button',
               onclick: () => {
                 chatbanContainer.remove();
                 modal.closeAll();
               }
             }, 'Cancel');
-            const _btnOK = crel('button', { class: 'button', type: 'submit' }, 'Ban');
+            const _btnOK = crel('button', { type: 'submit' }, 'Ban');
 
             const chatbanContainer = crel('form', {
               class: 'chatmod-container',
@@ -5487,7 +5483,7 @@ window.App = (function() {
             if (e.shiftKey === true) {
               return dodelete();
             }
-            const btndelete = crel('button', { class: 'button' }, 'Delete');
+            const btndelete = crel('button', {}, 'Delete');
             btndelete.onclick = () => dodelete();
             const deleteWrapper = crel('div', { class: 'chatmod-container' },
               crel('table',
@@ -5510,7 +5506,6 @@ window.App = (function() {
               ),
               crel('div', { class: 'buttons' },
                 crel('button', {
-                  class: 'button',
                   type: 'button',
                   onclick: () => {
                     deleteWrapper.remove();
@@ -5532,7 +5527,7 @@ window.App = (function() {
             const txtPurgeReason = crel('input', { type: 'text', onkeydown: e => e.stopPropagation() });
             const lblPurgeReasonError = crel('label', { class: 'hidden error-label' });
 
-            const btnPurge = crel('button', { class: 'button', type: 'submit' }, 'Purge');
+            const btnPurge = crel('button', { type: 'submit' }, 'Purge');
 
             const messageTable = mode
               ? crel('table',
@@ -5563,7 +5558,6 @@ window.App = (function() {
               ),
               crel('div', { class: 'buttons' },
                 crel('button', {
-                  class: 'button',
                   type: 'button',
                   onclick: () => {
                     purgeWrapper.remove();
@@ -5615,7 +5609,7 @@ window.App = (function() {
             const stateOn = crel('label', { style: 'display: inline-block' }, rbStateOn, ' On');
             const stateOff = crel('label', { style: 'display: inline-block' }, rbStateOff, ' Off');
 
-            const btnSetState = crel('button', { class: 'button', type: 'submit' }, 'Set');
+            const btnSetState = crel('button', { type: 'submit' }, 'Set');
 
             const renameError = crel('p', {
               style: 'display: none; color: #f00; font-weight: bold; font-size: .9rem',
@@ -5631,7 +5625,6 @@ window.App = (function() {
               renameError,
               crel('div', { class: 'buttons' },
                 crel('button', {
-                  class: 'button',
                   type: 'button',
                   onclick: () => {
                     renameWrapper.remove();
@@ -5679,7 +5672,7 @@ window.App = (function() {
             });
             const newNameWrapper = crel('label', 'New Name: ', newNameInput);
 
-            const btnSetState = crel('button', { class: 'button', type: 'submit' }, 'Set');
+            const btnSetState = crel('button', { type: 'submit' }, 'Set');
 
             const renameError = crel('p', {
               style: 'display: none; color: #f00; font-weight: bold; font-size: .9rem',
@@ -5692,7 +5685,6 @@ window.App = (function() {
               renameError,
               crel('div', { class: 'buttons' },
                 crel('button', {
-                  class: 'button',
                   type: 'button',
                   onclick: () => {
                     modal.closeAll();
@@ -6049,7 +6041,7 @@ window.App = (function() {
         self.elements.loginOverlay.find('a').click(function(evt) {
           evt.preventDefault();
 
-          const cancelButton = crel('button', { class: 'button' }, 'Cancel');
+          const cancelButton = crel('button', {}, 'Cancel');
           cancelButton.addEventListener('click', function() {
             self.elements.prompt.fadeOut(200);
           });
@@ -6280,8 +6272,8 @@ window.App = (function() {
             class: 'rename-error'
           }, ''),
           crel('div', { style: 'text-align: right' },
-            crel('button', { class: 'button', onclick: () => modal.closeAll() }, 'Not now'),
-            crel('button', { class: 'button rename-submit', type: 'submit' }, 'Change')
+            crel('button', { onclick: () => modal.closeAll() }, 'Not now'),
+            crel('button', { class: 'rename-submit', type: 'submit' }, 'Change')
           )
         );
         modal.show(modal.buildDom(

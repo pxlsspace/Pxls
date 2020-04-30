@@ -367,7 +367,7 @@ dd a {
     text-align: right;
 }
 
-.button {
+button {
     cursor: pointer;
     margin-top: 6px;
     margin-right: 4.5px;
@@ -383,13 +383,7 @@ dd a {
     color: var(--button-text-color);
 }
 
-.button.dark {
-    background-color: #444;
-    border: 1px solid #222;
-    color: #fff;
-}
-
-button.button:disabled {
+button:disabled {
     cursor: not-allowed;
     border: 1px solid #777;
     border: 1px solid var(--button-border-color-disabled);
@@ -399,11 +393,12 @@ button.button:disabled {
     color: var(--button-text-color-disabled);
 }
 
-button.button.dark:disabled {
-    cursor: not-allowed;
-    background-color: #222;
-    border: 1px solid #000;
-    color: #444;
+button:hover {
+    color: #fff;
+    color: var(--button-text-color-hover);
+    background: #ce4747;
+    background: var(--button-background-color-hover);
+    border-color: var(--button-border-color-hover);
 }
 
 #lookup {
@@ -439,14 +434,6 @@ button.button.dark:disabled {
 #lookup .report-button:hover {
     background-color: #f10;
     background-color: var(--report-button-background-color-hover);
-}
-
-.button:hover {
-    color: #fff;
-    color: var(--button-text-color-hover);
-    background: #ce4747;
-    background: var(--button-background-color-hover);
-    border-color: var(--button-border-color-hover);
 }
 
 .content {
@@ -2077,7 +2064,7 @@ body .emoji-picker {
     text-align: center;
 }
 
-.modal-footer .button {
+.modal-footer button {
     margin: 0 0 0 5px;
 }
 
