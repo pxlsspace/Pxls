@@ -29,10 +29,7 @@ html {
     --kbd-background-color: #eee;
     --kbd-border-color: #ddd;
     --kbd-text-color: black;
-    
-    --message-background-color: #fff;
-    --message-text-color: #333;
-    
+        
     --button-background-color: #ddd;
     --button-border-color: #999;
     --button-text-color: #000;
@@ -336,14 +333,9 @@ dd a {
     transform: translate(-50%, -50%);
 }
 
-.message {
+/* body preselector is to give more precident to .message than to .floating-panel */
+body .message {
     padding: 30px 30px 10px;
-    border-radius: 7px;
-    background-color: #fff;
-    background-color: var(--message-background-color);
-    color: #333;
-    color: var(--message-text-color);
-    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
     max-width: 40%;
     min-width: 20%;
     z-index: 99;
@@ -354,11 +346,6 @@ dd a {
     transform: translateX(-50%) translateY(-50%);
     word-wrap: break-word;
     overflow-wrap: break-word;
-}
-
-.message .buttons {
-    margin-top: 1em;
-    text-align: right;
 }
 
 button {
@@ -403,8 +390,13 @@ button:hover {
     background-color: var(--floating-panel-background-color);
     color: inherit;
     color: var(--floating-panel-text-color);
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
     padding: 16px;
     max-width: 300px;
+}
+
+.floating-panel .content {
+    margin-bottom: 10px;
 }
 
 .floating-panel .content > div:not(:first-of-type) {
@@ -430,11 +422,6 @@ button:hover {
 #lookup .report-button:hover {
     background-color: #f10;
     background-color: var(--report-button-background-color-hover);
-}
-
-.content {
-    margin-bottom: 10px;
-    white-space: pre-wrap;
 }
 
 .palette-number {
@@ -1300,6 +1287,10 @@ li.chat-line .text-badge, header .text-badge {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+}
+
+li.chat-line .content {
+    white-space: pre-wrap;
 }
 
 header .text-badge {

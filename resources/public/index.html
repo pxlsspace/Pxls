@@ -121,16 +121,16 @@
     <div id="cursor-text"><i class="fas fa-spinner fa-spin captcha-loading-icon"></i> <span id="placeableCount-cursor">N/A</span></div>
 </div>
 <div id="reticule"></div>
-<div id="prompt" class="message"></div>
-<div id="signup" class="message">
-    <h1>Sign up</h1>
-    <h4>Pick a username</h4>
+<div id="prompt" class="message floating-panel"></div>
+<div id="signup" class="message floating-panel">
+    <div class="content">
+      <h1>Sign up</h1>
+      <h4>Pick a username</h4>
 
-    <label>Username: <input type="text" maxlength="32"></label>
-    <div class="error" id="error"></div>
-    <div class="buttons">
-        <button id="signup-button">Sign up</button>
+      <label>Username: <input type="text" maxlength="32"></label>
+      <div class="error" id="error"></div>
     </div>
+    <button id="signup-button" class="float-right">Sign up</button>
 </div>
 
 
