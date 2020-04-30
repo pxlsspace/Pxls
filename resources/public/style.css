@@ -1210,14 +1210,6 @@ article .body {
     width:  100%;
 }
 
-/* NOTE: appears unused */
-.panel-body article hr {
-    height: 1px;
-    border: none;
-    margin: 0;
-    background-image: linear-gradient(to right, #000, #888, #000);
-}
-
 .panel-body article .pad-wrapper {
     padding: .5rem;
 }
@@ -1873,12 +1865,6 @@ body .emoji-picker {
     padding: 0 1em;
 }
 
-.pane .chat-timestamp-header {
-    margin: 8px 0;
-    text-align: center;
-    color: #aaa;
- }
-
 .pane ul.actions-list li[data-action]:hover {
     background-image: linear-gradient(0deg, #ddd, #bbb, #ddd);
     background: var(--pane-button-background-hover);
@@ -1890,53 +1876,6 @@ body .emoji-picker {
 
 .pane ul.actions-list li[data-action]:hover {
     cursor: pointer;
-}
-
-.popup ul.popup-actions {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.popup ul.popup-actions li:not(.separator) {
-    cursor: pointer;
-    padding: 3px 0;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
-/* NOTE: popup-actions seems unused */
-.popup ul.popup-actions li.separator {
-    border-radius: 0 !important;
-    height: 1px;
-    background-color: #fff0;
-    background-image: linear-gradient(to right, #000, #333, #000);
-}
-
-.popup ul.popup-actions li:not(:only-of-type) {
-    border-radius: 0;
-}
-
-.popup ul.popup-actions li:first-of-type {
-    border-radius: 5px 5px 0 0;
-}
-
-.popup ul.popup-actions li:last-of-type {
-    border-radius: 0 0 5px 5px;
-}
-
-.popup ul.popup-actions li:only-of-type {
-    border-radius: 5px;
-}
-
-.popup ul.popup-actions li:not(.separator):hover {
-    background-color: #fff;
-}
-
-.popup ul.popup-actions li:not(.separator):active {
-    background-color: #f8f8f8;
 }
 
 .popup-timestamp-header {

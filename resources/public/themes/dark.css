@@ -97,11 +97,6 @@ hr {
     border-top: 1px solid #000;
 }
 
-/* probably supposed to be .popup-timestamp-header (--popup-timestamp-text-color) */
-.pane .chat-timestamp-header {
-    color: #666;
-}
-
 @keyframes -scrolled-flash {
     from {
         background-color: #5b5345;
