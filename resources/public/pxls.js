@@ -4421,7 +4421,7 @@ window.App = (function() {
         const lblTemplateTitles = crel('label', _cbTemplateTitles, 'Replace template titles with URLs in chat where applicable');
 
         const _txtFontSize = crel('input', { type: 'number', min: '1', max: '72' });
-        const _btnFontSizeConfirm = crel('button', { class: 'buton' }, crel('i', { class: 'fas fa-check' }));
+        const _btnFontSizeConfirm = crel('button', {}, crel('i', { class: 'fas fa-check' }));
         const lblFontSize = crel('label', 'Font Size: ', _txtFontSize, _btnFontSizeConfirm);
 
         const _cbHorizontal = crel('input', { type: 'checkbox' });
