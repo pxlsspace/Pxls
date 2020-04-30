@@ -809,7 +809,7 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     text-decoration: underline;
 }
 
-input[type="text"], input[type="number"], textarea, select, button {
+input[type="text"], input[type="number"], textarea, select {
     padding: 0.5em;
     border: 1px solid #ccc;
     border: 1px solid var(--input-border-color);
