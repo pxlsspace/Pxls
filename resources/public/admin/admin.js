@@ -157,7 +157,7 @@
   const checkUser = (function () {
     const self = {
       elements: {
-        check: $('<div>').addClass('admin-check')
+        check: $('<div>').addClass('admin-check floating-panel')
       },
       callback: function (data) {
         const delta = (data.banExpiry - (new Date()).getTime()) / 1000;
@@ -212,87 +212,87 @@
           }
         }
         self.elements.check.empty().append(
-          $.map(items, function (o) {
-            return $('<div>').append(
-              $('<b>').text(o[0] + ': '),
-              typeof o[1] === 'string' ? $('<span>').text(o[1]) : o[1]
-            );
-          }),
-          $('<div>').append(sendAlert(data.username)),
-          $('<div>').append(
-            genButton('Ban (24h)').click(function () {
-              ban.ban_24h(data.username, function () {
-                self.elements.check.fadeOut(200);
-              });
+          $('<div>').addClass('content').append(
+            $.map(items, function (o) {
+              return $('<div>').append(
+                $('<b>').text(o[0] + ': '),
+                typeof o[1] === 'string' ? $('<span>').text(o[1]) : o[1]
+              );
             }),
-            (admin.user.getRole() !== 'TRIALMOD' ? genButton('Permaban').click(function () {
-              ban.perma(data.username, function () {
-                self.elements.check.fadeOut(200);
-              });
-            }) : '')
-          ),
-          $('<div>').append(
-            genButton('Unban').click(() => self.popUnban(data.username)),
-            (admin.user.getRole() === 'ADMIN'
-              ? genButton('Shadowban').click(function () {
-                ban.shadow(data.username, function () {
+            $('<div>').append(sendAlert(data.username)),
+            $('<div>').append(
+              genButton('Ban (24h)').click(function () {
+                ban.ban_24h(data.username, function () {
+                  self.elements.check.fadeOut(200);
+                });
+              }),
+              (admin.user.getRole() !== 'TRIALMOD' ? genButton('Permaban').click(function () {
+                ban.perma(data.username, function () {
+                  self.elements.check.fadeOut(200);
+                });
+              }) : '')
+            ),
+            $('<div>').append(
+              genButton('Unban').click(() => self.popUnban(data.username)),
+              (admin.user.getRole() === 'ADMIN'
+                ? genButton('Shadowban').click(function () {
+                  ban.shadow(data.username, function () {
+                    self.elements.check.fadeOut(200);
+                  });
+                })
+                : '')
+            ),
+            crel('div',
+              crel('button', {
+                'data-action': 'chatban',
+                'data-target': data.username,
+                style: 'position: initial; right: auto; left: auto; bottom: auto;',
+                onclick: admin.chat._handleActionClick
+              }, 'Chat (un)ban'),
+              crel('button', {
+                'data-action': 'purge',
+                'data-target': data.username,
+                style: 'position: initial; right: auto; left: auto; bottom: auto;',
+                onclick: admin.chat._handleActionClick
+              }, 'Chat purge'),
+              crel('button', {
+                'data-action': 'lookup-chat',
+                'data-target': data.username,
+                style: 'position: initial; right: auto; left: auto; bottom: auto;',
+                onclick: admin.chat._handleActionClick
+              }, 'Chat lookup')
+            ),
+            (admin.user.getRole() !== 'TRIALMOD'
+              ? crel('div',
+                crel('button', {
+                  'data-action': 'request-rename',
+                  'data-target': data.username,
+                  style: 'position: initial; right: auto; left: auto; bottom: auto;',
+                  onclick: admin.chat._handleActionClick
+                }, 'Request Rename'),
+                (admin.user.getRole() === 'ADMIN' || admin.user.getRole() === 'DEVELOPER' ? crel('button', {
+                  'data-action': 'force-rename',
+                  'data-target': data.username,
+                  style: 'position: initial; right: auto; left: auto; bottom: auto;',
+                  onclick: admin.chat._handleActionClick
+                }, 'Force Rename') : '')
+              )
+              : ''
+            ),
+            $('<div>').append(
+              $('<b>').text('Custom ban length: '), '<br>',
+              $('<input>').attr('type', 'number').attr('step', 'any').addClass('admin-bannumber').val(24),
+              ' hours ',
+              genButton('Ban').click(function () {
+                ban.ban(data.username, parseFloat($(this).parent().find('input').val()) * 3600, function () {
                   self.elements.check.fadeOut(200);
                 });
               })
-              : '')
-          ),
-          crel('div',
-            crel('button', {
-              'data-action': 'chatban',
-              'data-target': data.username,
-              style: 'position: initial; right: auto; left: auto; bottom: auto;',
-              onclick: admin.chat._handleActionClick
-            }, 'Chat (un)ban'),
-            crel('button', {
-              'data-action': 'purge',
-              'data-target': data.username,
-              style: 'position: initial; right: auto; left: auto; bottom: auto;',
-              onclick: admin.chat._handleActionClick
-            }, 'Chat purge'),
-            crel('button', {
-              'data-action': 'lookup-chat',
-              'data-target': data.username,
-              style: 'position: initial; right: auto; left: auto; bottom: auto;',
-              onclick: admin.chat._handleActionClick
-            }, 'Chat lookup')
-          ),
-          (admin.user.getRole() !== 'TRIALMOD'
-            ? crel('div',
-              crel('button', {
-                'data-action': 'request-rename',
-                'data-target': data.username,
-                style: 'position: initial; right: auto; left: auto; bottom: auto;',
-                onclick: admin.chat._handleActionClick
-              }, 'Request Rename'),
-              (admin.user.getRole() === 'ADMIN' || admin.user.getRole() === 'DEVELOPER' ? crel('button', {
-                'data-action': 'force-rename',
-                'data-target': data.username,
-                style: 'position: initial; right: auto; left: auto; bottom: auto;',
-                onclick: admin.chat._handleActionClick
-              }, 'Force Rename') : '')
             )
-            : ''
           ),
-          $('<div>').append(
-            $('<b>').text('Custom ban length: '), '<br>',
-            $('<input>').attr('type', 'number').attr('step', 'any').addClass('admin-bannumber').val(24),
-            ' hours ',
-            genButton('Ban').click(function () {
-              ban.ban(data.username, parseFloat($(this).parent().find('input').val()) * 3600, function () {
-                self.elements.check.fadeOut(200);
-              });
-            })
-          ),
-          $('<div>').addClass('buttons').append(
-            genButton('Close').click(function () {
-              self.elements.check.fadeOut(200);
-            })
-          )
+          genButton('Close').addClass('float-right').click(function () {
+            self.elements.check.fadeOut(200);
+          })
         ).fadeIn(200);
       },
       init: function () {
@@ -353,7 +353,7 @@
         panel: $('<div>')
       },
       init: function () {
-        self.elements.panel.hide().addClass('admin').append(
+        self.elements.panel.hide().addClass('admin bubble').append(
           $('<h1>').text('MOD'),
           $('<div>').append(
             // first do the checkboxes

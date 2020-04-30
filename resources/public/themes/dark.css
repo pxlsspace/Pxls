@@ -16,9 +16,9 @@ html {
     --button-background-color: #bbb;
     --button-border-color-hover: #844;
     
-    --lookup-border-color: #222;
-    --lookup-background-color: #333;
-    --lookup-text-color: #eee;
+    --floating-panel-border-color: #222;
+    --floating-panel-background-color: #333;
+    --floating-panel-text-color: #eee;
     
     --report-button-border-color: #333;
 
@@ -75,11 +75,7 @@ html {
     --chat-typeahead-item-background-color: #2c2c2c;
     --chat-typeahead-item-background-color-hover: #3b3b3b;
     --chat-typeahead-item-background-color-active: #595959;
-    
-    --admin-check-border-color: #222;
-    --admin-check-text-color: #eee;
-    --admin-check-background-color: #333;
-    
+        
     --notification-background-color: #3d3d3d;
     --notification-border-color: #111111;
     --notification-title-background-color: #292929;

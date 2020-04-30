@@ -48,9 +48,9 @@ html {
     --report-button-background-color-hover: #f10;
     --report-button-border-color: unset;
     
-    --lookup-text-color: inherit;
-    --lookup-border-color: #ccc;
-    --lookup-background-color: #eee;
+    --floating-panel-text-color: inherit;
+    --floating-panel-border-color: #ccc;
+    --floating-panel-background-color: #eee;
     
     --bubble-background-color: rgba(0, 0, 0, 0.7);
     --bubble-text-color: #fff;
@@ -150,12 +150,6 @@ html {
     --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
     --emoji-picker-variant-popup-background: #FFFFFF;
     --emoji-picker-variant-close-button-color: inherit;
-    
-    --admin-background: #333;
-    --admin-text-color: #fff;
-    --admin-check-border-color: #ccc;
-    --admin-check-text-color: inherit;
-    --admin-check-background-color: #eee;
 }
 
 /*//////////////////////////*\
@@ -401,25 +395,27 @@ button:hover {
     border-color: var(--button-border-color-hover);
 }
 
+.floating-panel {
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    border: 1px solid var(--floating-panel-border-color);
+    background-color: #eee;
+    background-color: var(--floating-panel-background-color);
+    color: inherit;
+    color: var(--floating-panel-text-color);
+    padding: 16px;
+    max-width: 300px;
+}
+
+.floating-panel .content > div:not(:first-of-type) {
+    margin-top: 10px;
+}
+
 #lookup {
+    position: fixed;
     top: 50px;
     right: 16px;
     z-index: 22;
-    border-radius: 8px;
-    border: 1px solid #ccc;
-    border: 1px solid var(--lookup-border-color);
-    background-color: #eee;
-    background-color: var(--lookup-background-color);
-    color: inherit;
-    color: var(--lookup-text-color);
-    padding: 16px;
-    max-width: 300px;
-
-    position: fixed;
-}
-
-#lookup .content > div:not(:first-of-type) {
-    margin-top: 10px;
 }
 
 #lookup .report-button {
