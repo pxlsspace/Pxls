@@ -120,7 +120,6 @@ html {
     --pane-button-background: linear-gradient(0deg, #eee, #ccc, #eee);
     --pane-button-background-hover: linear-gradient(0deg, #ddd, #bbb, #ddd);
     
-    /* [  ]: These should be implemented in some standard way rather than as an exception imo */
     --notification-background-color: #f5f5f5;
     --notification-border-color: #8f8f8f;
     --notification-title-text-color: inherit;
@@ -148,13 +147,10 @@ html {
     --emoji-picker-emoji-search-input-text-color: #000;
     --emoji-picker-search-icon-color: #CCCCCC;
     --emoji-picker-search-no-results-color: #666666;
-    /* variant doesn't seem to need styling - it's probably only included because it has styles in the inline which is presumably where the themes got their references from */
     --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
     --emoji-picker-variant-popup-background: #FFFFFF;
     --emoji-picker-variant-close-button-color: inherit;
     
-    /* NOTE: I don't think there's actually enough unique things in admin.css to justify another file - with some proper layout classes it could easilly be collapsed to a couple of rules in this file */
-    /*       If we insist on keeping another file, these declarations might be better suited there. */
     --admin-background: #333;
     --admin-text-color: #fff;
     --admin-check-border-color: #ccc;
@@ -1550,7 +1546,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 
 /* PINGS */
 
-/* NOTE: this seems to not respond to css vars (at least on firefox when I tested it) so I'm leaving it fixed for now */
+/* NOTE ([  ]): this seems to not respond to css vars (at least on firefox when I tested it) so I'm leaving it fixed for now */
 @keyframes -scrolled-flash {
     from {
         background-color: #feedd1;
