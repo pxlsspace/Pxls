@@ -19,6 +19,146 @@ z-index:
 */
 
 /*//////////////////////////*\
+| Themeing
+\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
+
+html {
+    --general-text-color: #000;
+    --general-background-color: #CDCDCD;
+    
+    --kbd-background-color: #eee;
+    --kbd-border-color: #ddd;
+    --kbd-text-color: black;
+    
+    --message-background-color: #fff;
+    --message-text-color: #333;
+    
+    --button-background-color: #ddd;
+    --button-border-color: #999;
+    --button-text-color: #000;
+    --button-text-color-disabled: #555;
+    --button-border-color-disabled: #777;
+    --button-background-color-disabled: #aaa;
+    --button-text-color-hover: #fff;
+    --button-border-color-hover: #999;
+    --button-background-color-hover: #ce4747;
+    
+    --report-button-text-color: #fff;
+    --report-button-background-color: #e20;
+    --report-button-background-color-hover: #f10;
+    --report-button-border-color: unset;
+    
+    --lookup-text-color: inherit;
+    --lookup-border-color: #ccc;
+    --lookup-background-color: #eee;
+    
+    --bubble-background-color: rgba(0, 0, 0, 0.7);
+    --bubble-text-color: #fff;
+    
+    --palette-background-color: rgba(255, 255, 255, 0.8);
+    --palette-item-border-color: black;
+    --palette-overlay-background-color: rgba(255, 255, 255, 0.9);
+    --palette-overlay-text-color: #000;
+    --palette-deselect-button-color: inherit;
+    
+    --undo-text-color: #000;
+    --undo-background: linear-gradient(to top, #FFFC, #FFF);
+    --undo-border-color: #000;
+    
+    --input-text-color: #000;
+    --input-background-color: #fff;
+    --input-border-color: #ccc;
+    
+    --text-blue-color:#00a;
+    --text-green-color:#0a0;
+    --text-red-color:#a00;
+    --text-muted-color:#8c8c8c;
+    --text-yellow-color:#f0ff27;
+    --text-orange-color:#e67700;
+    
+    --copypulse-color: rgba(0, 211, 221, 0.7);
+    --error-color: #cc3333;
+    --notification-color: #b20;
+    --ping-highlight-color: #feedd1;
+    --ping-flash-color: #8ef7d1;
+        
+    --panel-header-background: linear-gradient(to bottom, #ccc, #bbb);
+    --panel-background-color: #dfdfdf;
+    --panel-text-color: inherit;
+    --panel-borders-color: #000;
+    --panel-article-background-color: #0002;
+    
+    --panel-trigger-outline-color: #AAA;
+    
+    --option-bubble-position-border-color-hovered: #6495ED;
+    --option-bubble-position-background-color-hovered: rgba(0, 0, 0, 0);
+    --option-bubble-position-background-color-selected: #eee;
+    
+    --chat-separator-color: #bfbfbf;
+    --chat-odd-background-color: #d5d5d5;
+    --chat-abbr-underline-color: #aaa;
+    --chat-badge-background-color: #ccc;
+    --chat-badge-text-color: #770;
+    --chat-server-action-text-color: #555;
+    --chat-user-text-shadow-color: #ccc;
+    --chat-purged-text-color: #888;
+    
+    --chat-typeahead-menu-background-color: #b9b9b9;
+    --chat-typeahead-item-text-color: inherit;
+    --chat-typeahead-item-background-color: #a3a3a3;
+    --chat-typeahead-item-background-color-hover: #949494;
+    --chat-typeahead-item-background-color-active: #828282;
+    
+    --mod-lookup-chatban-history-item-background-color: rgba(177, 177, 177, 0.3);
+    --mod-lookup-chatban-history-item-border-color: #828282;
+    --mod-lookup-chatban-history-item-heading-background-color: #82828233;
+    
+    --popup-background-color: #eee;
+    --popup-border-color: #000;
+    --popup-text-color: inherit;
+    --popup-timestamp-text-color: #aaa;
+    --pane-button-background: linear-gradient(0deg, #eee, #ccc, #eee);
+    --pane-button-background-hover: linear-gradient(0deg, #ddd, #bbb, #ddd);
+    
+    --notification-background-color: #f5f5f5;
+    --notification-border-color: #8f8f8f;
+    --notification-title-text-color: inherit;
+    --notification-title-background-color: #b8b8b8;
+    --notification-footer-background-color: #d6d6d6;
+    --notification-footer-text-color: #666;
+    --notification-expiry-color: #b66;
+    
+    --modal-text-color: inherit;
+    --modal-background-color: #f5f5f5;
+    --modal-headfoot-background-color: #b8b8b8;
+    
+    --emoji-picker-border-color: #999999;
+    --emoji-picker-shadow-color: #CCCCCC;
+    --emoji-picker-background-color: #FFFFFF;
+    --emoji-picker-preview-name-text-color: #666666;
+    --emoji-picker-tab-icon-color: inherit;
+    --emoji-picker-tab-icon-color-selected: #4F81E5;
+    --emoji-picker-section-text-color: #333333;
+    --emoji-picker-emoji-color: #333333;
+    --emoji-picker-emoji-background: transparent;
+    --emoji-picker-emoji-background-hover: #E8F4F9;
+    --emoji-picker-emoji-search-input-border-color: #CCCCCC;
+    --emoji-picker-emoji-search-input-background-color: #fff;
+    --emoji-picker-emoji-search-input-text-color: #000;
+    --emoji-picker-search-icon-color: #CCCCCC;
+    --emoji-picker-search-no-results-color: #666666;
+    --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
+    --emoji-picker-variant-popup-background: #FFFFFF;
+    --emoji-picker-variant-close-button-color: inherit;
+    
+    --admin-background: #333;
+    --admin-text-color: #fff;
+    --admin-check-border-color: #ccc;
+    --admin-check-text-color: inherit;
+    --admin-check-background-color: #eee;
+}
+
+/*//////////////////////////*\
 | General Styles
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
 
@@ -26,7 +166,10 @@ html, body {
     margin: 0;
     width: 100%;
     height: 100%;
+    color: #000;
+    color: var(--general-text-color);
     background-color: #CDCDCD;
+    background-color: var(--general-background-color);
     overflow: hidden;
     position: relative;
     font-family: sans-serif;
@@ -64,9 +207,12 @@ a, a:hover, a:visited, a:active, .link, .link:hover, .link:active {
 
 kbd {
     background-color: #eee;
+    background-color: var(--kbd-background-color);
     border: 1px solid #ddd;
+    border: 1px solid var(--kbd-border-color);
     border-radius: 4px;
     color: black;
+    color: var(--kbd-text-color);
     display: inline-block;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 11px;
@@ -200,7 +346,9 @@ dd a {
     padding: 30px 30px 10px;
     border-radius: 7px;
     background-color: #fff;
+    background-color: var(--message-background-color);
     color: #333;
+    color: var(--message-text-color);
     box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
     max-width: 40%;
     min-width: 20%;
@@ -226,10 +374,13 @@ dd a {
     display: inline-block;
     font-size: 12px;
     border: 1px solid #999;
+    border: 1px solid var(--button-border-color);
     padding: 5px 10px;
     border-radius: 3px;
     background-color: #ddd;
+    background-color: var(--button-background-color);
     color: #000;
+    color: var(--button-text-color);
 }
 
 .button.dark {
@@ -241,8 +392,11 @@ dd a {
 button.button:disabled {
     cursor: not-allowed;
     border: 1px solid #777;
+    border: 1px solid var(--button-border-color-disabled);
     background-color: #aaa;
+    background-color: var(--button-background-color-disabled);
     color: #555;
+    color: var(--button-text-color-disabled);
 }
 
 button.button.dark:disabled {
@@ -258,7 +412,11 @@ button.button.dark:disabled {
     z-index: 22;
     border-radius: 8px;
     border: 1px solid #ccc;
+    border: 1px solid var(--lookup-border-color);
     background-color: #eee;
+    background-color: var(--lookup-background-color);
+    color: inherit;
+    color: var(--lookup-text-color);
     padding: 16px;
     max-width: 300px;
 
@@ -271,16 +429,24 @@ button.button.dark:disabled {
 
 #lookup .report-button {
     background-color: #e20;
+    background-color: var(--report-button-background-color);
     color: #fff;
+    color: var(--report-button-text-color);
+    border-color: unset;
+    border-color: var(--report-button-border-color);
 }
 
 #lookup .report-button:hover {
     background-color: #f10;
+    background-color: var(--report-button-background-color-hover);
 }
 
 .button:hover {
     color: #fff;
+    color: var(--button-text-color-hover);
     background: #ce4747;
+    background: var(--button-background-color-hover);
+    border-color: var(--button-border-color-hover);
 }
 
 .content {
@@ -293,6 +459,7 @@ button.button.dark:disabled {
     transform: translate(-50%, -50%);
     border-radius: 16px;
     text-align: center;
+    color: #000;
     background-color: #fff;
     border: 1px solid #000;
     width: 2em;
@@ -401,8 +568,10 @@ button.button.dark:disabled {
     display: inline-block;
     padding: 8px 16px;
     background-color: rgba(0, 0, 0, 0.7);
+    background-color: var(--bubble-background-color);
     border-radius: 5px;
     color: #fff;
+    color: var(--bubble-text-color);
 }
 
 #ui-top {
@@ -455,7 +624,9 @@ button.button.dark:disabled {
     width: 100%;
     height: 100%;
     background-color: rgba(255, 255, 255, 0.9);
+    background-color: var(--palette-overlay-background-color);
     color: #000;
+    color: var(--palette-overlay-text-color);
     font-weight: 700;
     z-index: 9;
 
@@ -474,6 +645,7 @@ button.button.dark:disabled {
     text-align: center;
     white-space: nowrap;
     background-color: rgba(255, 255, 255, 0.8);
+    background-color: var(--palette-background-color);
 
     /* Scrollbar, Firefox only */
     scrollbar-width: thin;
@@ -500,6 +672,7 @@ button.button.dark:disabled {
     min-width: 32px;
     min-height: 32px;
     border: 2px solid black;
+    border: 2px solid var(--palette-item-border-color);
     border-radius: 3px;
     margin-right: 10px;
     cursor: pointer;
@@ -521,6 +694,8 @@ button.button.dark:disabled {
     position: relative;
     bottom: 4px;
     left: 4px;
+    color: inherit;
+    color: var(--palette-deselect-button-color);
 }
 
 .palette-color.deselect-button.active {
@@ -564,6 +739,7 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     line-height: 24px;
     border-radius: 16px;
     text-align: center;
+    color: #000;
     background-color: white;
     border: 1px solid black;
     padding: 0 8px;
@@ -578,6 +754,7 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     width: 100%;
     text-align: center;
     background-image: linear-gradient(to top, #FFFC, #FFF);
+    background: var(--undo-background);
     transition: height .25s ease-in-out;
     height: 0px;
     flex-flow: column;
@@ -585,12 +762,14 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     cursor: pointer;
     display: flex;
     color: #000;
+    color: var(--undo-text-color);
     font-weight: bold;
     font-size: 1.25em;
 }
 
 #undo.open {
     border-top: 1px solid #000;
+    border-top: 1px solid var(--undo-border-color);
     height: 2em;
 }
 
@@ -618,6 +797,7 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
 
 .copyPulse {
     color: rgba(0, 211, 221, 0.7);
+    color: var(--copypulse-color);
 }
 
 .userinfo .logout {
@@ -625,15 +805,19 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     text-decoration: underline;
 }
 
-input[type="text"] {
+input[type="text"], input[type="number"], textarea, select {
     padding: 0.5em;
     border: 1px solid #ccc;
+    border: 1px solid var(--input-border-color);
     background-color: #fff;
+    background-color: var(--input-background-color);
     color: #000;
+    color: var(--input-text-color);
 }
 
 .error {
     color: #cc3333;
+    color: var(--error-color);
     font-weight: 700;
 }
 
@@ -800,6 +984,7 @@ header {
     border-bottom: 1px solid #000;
     padding: 0 1rem;
     background-image: linear-gradient(to bottom, #ccc, #bbb);
+    background: var(--panel-header-background);
     user-select: none;
     z-index: 18;
 }
@@ -870,26 +1055,32 @@ header h1, header h2, header h3, header h4, header h5, header h6 {
 
 .text-blue {
     color: #00a;
+    color: var(--text-blue-color);
 }
 
 .text-green {
     color: #0a0;
+    color: var(--text-green-color);
 }
 
 .text-red {
     color: #a00;
+    color: var(--text-red-color);
 }
 
 .text-muted {
     color: #8c8c8c;
+    color: var(--text-muted-color);
 }
 
 .text-yellow {
     color: #f0ff27;
+    color: var(--text-yellow-color);
 }
 
 .text-orange {
     color: #e67700;
+    color: var(--text-orange-color);
 }
 
 aside.panel {
@@ -900,6 +1091,9 @@ aside.panel {
     height: 100%;
     box-shadow: 0 0 10px 5px #0009;
     background-color: #dfdfdf;
+    background-color: var(--panel-background-color);
+    color: inherit;
+    color: var(--panel-text-color);
     z-index: 21;
     cursor: initial !important;
 }
@@ -917,6 +1111,7 @@ aside.panel {
 
 .panel header {
     border-bottom: 1px solid #000;
+    border-bottom: 1px solid var(--panel-borders-color);
 }
 
 .panel.left {
@@ -962,6 +1157,7 @@ aside.panel {
     position: relative;
     /* AAAAAAAAAAAAAAAAAAAAAAAAAAA */
     text-shadow: 1px 1px 0 #AAA, -1px 1px 0 #AAA, 1px -1px 0 #AAA, -1px -1px 0 #AAA, 0px 1px 0 #AAA, 0px -1px 0 #AAA, -1px 0px 0 #AAA, 1px 0px 0 #AAA;
+    text-shadow: 1px 1px 0 var(--panel-trigger-outline-color), -1px 1px 0 var(--panel-trigger-outline-color), 1px -1px 0 var(--panel-trigger-outline-color), -1px -1px 0 var(--panel-trigger-outline-color), 0px 1px 0 var(--panel-trigger-outline-color), 0px -1px 0 var(--panel-trigger-outline-color), -1px 0px 0 var(--panel-trigger-outline-color), 1px 0px 0 var(--panel-trigger-outline-color);
     display: inline-block;
     cursor: pointer;
 }
@@ -994,7 +1190,9 @@ article .body {
 
 .panel-body article:not(.naked) {
     border: 1px solid #000;
+    border: 1px solid var(--panel-borders-color);
     background-color: #0002;
+    background-color: var(--panel-article-background-color);
 }
 
 .panel-body article p {
@@ -1007,13 +1205,6 @@ article .body {
     padding: 0;
     text-align: center;
     width:  100%;
-}
-
-.panel-body article hr {
-    height: 1px;
-    border: none;
-    margin: 0;
-    background-image: linear-gradient(to right, #000, #888, #000);
 }
 
 .panel-body article .pad-wrapper {
@@ -1087,11 +1278,13 @@ ul.chat-body li.chat-line {
     /*border:1px solid #000;*/
     line-height: 1.5em;
     border-bottom: 1px solid #bfbfbf;
+    border-bottom: 1px solid var(--chat-separator-color);
     overflow: hidden;
 }
 
 ul.chat-body li.chat-line:nth-child(odd) {
     background-color: #d5d5d5;
+    background-color: var(--chat-odd-background-color);
 }
 
 ul.chat-body li.chat-line:not(:last-child):not(:only-of-type) {
@@ -1100,6 +1293,7 @@ ul.chat-body li.chat-line:not(:last-child):not(:only-of-type) {
 
 li.chat-line span[title]:not(.text-badge) {
     border-bottom: 1px dashed #aaa;
+    border-bottom: 1px dashed var(--chat-abbr-underline-color);
     cursor: default;
 }
 
@@ -1110,9 +1304,11 @@ li.chat-line i[title] {
 li.chat-line .text-badge, header .text-badge {
     line-height: 1em;
     background-color: #ccc;
+    background-color: var(--chat-badge-background-color);
     padding: .15em .5em;
     border-radius: 1em;
     color: #770;
+    color: var(--chat-badge-text-color);
     cursor: default;
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -1136,6 +1332,7 @@ li.chat-line.server-action {
     text-align: center;
     font-weight: bold;
     color: #555;
+    color: var(--chat-server-action-text-color);
     cursor: default;
 }
 
@@ -1147,6 +1344,7 @@ li.chat-line .user {
     font-weight: bold;
     cursor: pointer;
     text-shadow: 1px 1px 0 #ccc, -1px 1px 0 #ccc, 1px -1px 0 #ccc, -1px -1px 0 #ccc, 0 1px 0 #ccc, 0 -1px 0 #ccc, -1px 0 0 #ccc, 1px 0 0 #ccc;
+    text-shadow: 1px 1px 0 var(--chat-user-text-shadow-color), -1px 1px 0 var(--chat-user-text-shadow-color), 1px -1px 0 var(--chat-user-text-shadow-color), -1px -1px 0 var(--chat-user-text-shadow-color), 0 1px 0 var(--chat-user-text-shadow-color), 0 -1px 0 var(--chat-user-text-shadow-color), -1px 0 0 var(--chat-user-text-shadow-color), 1px 0 0 var(--chat-user-text-shadow-color);
 }
 
 li.chat-line [data-action] {
@@ -1230,6 +1428,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 
 .panel-trigger .has-notification, i.fas.has-notification, i.far.has-notification {
     color: #b20;
+    color: var(--notification-color);
 }
 
 .chat-ratelimit-overlay {
@@ -1261,6 +1460,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     font-style: italic;
     font-size: .9em;
     color: #888;
+    color: var(--chat-purged-text-color);
     text-decoration: line-through;
 }
 
@@ -1309,6 +1509,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     margin-bottom: -1px;
     padding: 5px;
     background-color: #b9b9b9;
+    background-color: var(--chat-typeahead-menu-background-color);
     border-radius: 5px 5px 0 0;
 }
 
@@ -1325,21 +1526,27 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     user-select: none;
     text-indent: .75em;
     background-color: #a3a3a3;
+    background-color: var(--chat-typeahead-item-background-color);
     border-radius: 4px;
     padding: 3px;
     margin: 4px 0;
+    color: inherit;
+    color: var(--chat-typeahead-item-text-color);
 }
 
 #typeahead ul li:hover {
     background-color: #949494;
+    background-color: var(--chat-typeahead-item-background-color-hover);
 }
 
 #typeahead ul li.active {
     background-color: #828282;
+    background-color: var(--chat-typeahead-item-background-color-active);
 }
 
 /* PINGS */
 
+/* NOTE ([  ]): this seems to not respond to css vars (at least on firefox when I tested it) so I'm leaving it fixed for now */
 @keyframes -scrolled-flash {
     from {
         background-color: #feedd1;
@@ -1351,6 +1558,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 
 ul.chat-body .chat-line[data-id].has-ping {
     background-color: #feedd1;
+    background-color: var(--ping-highlight-color);
 }
 
 ul.chat-body .chat-line[data-id].has-ping.-scrolled-to {
@@ -1371,17 +1579,21 @@ ul.chat-history, ul.chatban-history {
     margin: 7px;
     border-radius: 7px;
     background-color: rgba(177, 177, 177, 0.3);
+    background-color: var(--mod-lookup-chatban-history-item-background-color);
     border: 1px solid #828282;
+    border: 1px solid var(--mod-lookup-chatban-history-item-border-color);
 }
 
 .chatban-history h4 {
     margin: 0 0 1em 0;
     background-color: #82828233;
+    background-color: var(--mod-lookup-chatban-history-item-heading-background-color);
     border-radius: 7px 7px 0 0;
     text-align: center;
     font-size: 1.25em;
     line-height: 1.25em;
     border-bottom: 1px solid #828282;
+    border-bottom: 1px solid var(--mod-lookup-chatban-history-item-border-color);
 }
 
 .chatban-history table {
@@ -1475,8 +1687,16 @@ ul.chat-history, ul.chatban-history {
     text-shadow: none !important;
 }
 
-.emoji-picker {
+/* preselecting body makes this a more specific selector than the built-in one which would normally override this since it's inline */
+/* the same principle is why each of the following preselect .emoji-picker */
+body .emoji-picker {
     z-index: 22;
+    border: 1px solid #999999;
+    border: 1px solid var(--emoji-picker-border-color);
+    box-shadow: 0px 0px 3px 1px #CCCCCC;
+    box-shadow: 0px 0px 3px 1px var(--emoji-picker-shadow-color);
+    background: #FFFFFF;
+    background: var(--emoji-picker-background-color);
 }
 
 .emoji-picker img.emoji {
@@ -1489,6 +1709,76 @@ ul.chat-history, ul.chatban-history {
 
 .emoji-picker .emoji-picker__preview {
     padding-top: 1.75em;
+    border-top: 1px solid #999999;
+    border-top: 1px solid var(--emoji-picker-border-color);
+}
+
+.emoji-picker .emoji-picker__preview-name {
+    color: #666666;
+    color: var(--emoji-picker-preview-name-text-color);
+}
+
+.emoji-picker .emoji-picker__tab {
+    color: inherit;
+    color: var(--emoji-picker-tab-icon-color);
+}
+
+.emoji-picker .emoji-picker__tab.active {
+    color: #4F81E5;
+    color: var(--emoji-picker-tab-icon-color-selected);
+    border-bottom: 3px solid #4F81E5;
+    border-bottom: 3px solid var(--emoji-picker-tab-icon-color-selected);
+}
+
+.emoji-picker .emoji-picker__tab-body h2 {
+    color: #333333;
+    color: var(--emoji-picker-section-text-color);
+}
+
+.emoji-picker .emoji-picker__emoji {
+    color: inherit;
+    color: var(--emoji-picker-emoji-color);
+    background: transparent;
+    background: var(--emoji-picker-emoji-background);
+}
+
+.emoji-picker .emoji-picker__emoji:hover {
+    background: #E8F4F9;
+    background: var(--emoji-picker-emoji-background-hover);
+}
+
+.emoji-picker .emoji-picker__search-container input {
+    border: 1px solid #CCCCCC;
+    border: 1px solid var(--emoji-picker-search-input-border-color);
+    background-color: #fff;
+    background-color: var(--emoji-picker-emoji-search-input-background-color);
+    color: #000;
+    color: var(--emoji-picker-emoji-search-input-text-color);
+}
+
+.emoji-picker .emoji-picker__search-icon {
+    color: #CCCCCC;
+    color: var(--emoji-picker-search-icon-color);
+}
+
+.emoji-picker .emoji-picker__search-not-found {
+    color: #666666;
+    color: var(--emoji-picker-search-no-results-color);
+}
+
+.emoji-picker .emoji-picker__variant-overlay {
+    background: rgba(0, 0, 0, 0.7);
+    background: var(--emoji-picker-variant-overlay-background);
+}
+
+.emoji-picker .emoji-picker__variant-popup {
+    background: #FFFFFF;
+    background: var(--emoji-picker-variant-popup-background);
+}
+
+.emoji-picker .emoji-picker__variant-popup-close-button {
+    color: inherit;
+    color: var(--emoji-picker-variant-close-button-color)
 }
 
 /* CHAT ACTIONS POPUP */
@@ -1500,11 +1790,15 @@ ul.chat-history, ul.chatban-history {
     max-width: 200px;
     height: auto;
     background-color: #eee;
+    background-color: var(--popup-background-color);
     border-radius: 5px;
     border: 1px solid #000;
+    border: 1px solid var(--popup-border-color);
     font-size: 1rem !important;
     line-height: 1rem !important;
     overflow: hidden;
+    color: inherit;
+    color: var(--popup-text-color);
 }
 
 .popup.panels {
@@ -1557,22 +1851,20 @@ ul.chat-history, ul.chatban-history {
 
 .pane ul.actions-list li[data-action] {
     border-bottom: 1px solid #000;
+    border-bottom: 1px solid var(--popup-border-color);
     border-left: 1px solid #000;
+    border-left: 1px solid var(--popup-border-color);
     flex: 1 0 2em;
     line-height: 2em;
     text-align: center;
     background-image: linear-gradient(0deg, #eee, #ccc, #eee);
+    background: var(--pane-button-background);
     padding: 0 1em;
 }
 
-.pane .chat-timestamp-header {
-    margin: 8px 0;
-    text-align: center;
-    color: #aaa;
- }
-
 .pane ul.actions-list li[data-action]:hover {
     background-image: linear-gradient(0deg, #ddd, #bbb, #ddd);
+    background: var(--pane-button-background-hover);
 }
 
 .pane ul.actions-list li[data-action]:not(:only-of-type):last-child {
@@ -1583,58 +1875,14 @@ ul.chat-history, ul.chatban-history {
     cursor: pointer;
 }
 
-.popup ul.popup-actions {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.popup ul.popup-actions li:not(.separator) {
-    cursor: pointer;
-    padding: 3px 0;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    user-select: none;
-}
-
-.popup ul.popup-actions li.separator {
-    border-radius: 0 !important;
-    height: 1px;
-    background-color: #fff0;
-    background-image: linear-gradient(to right, #000, #333, #000);
-}
-
-.popup ul.popup-actions li:not(:only-of-type) {
-    border-radius: 0;
-}
-
-.popup ul.popup-actions li:first-of-type {
-    border-radius: 5px 5px 0 0;
-}
-
-.popup ul.popup-actions li:last-of-type {
-    border-radius: 0 0 5px 5px;
-}
-
-.popup ul.popup-actions li:only-of-type {
-    border-radius: 5px;
-}
-
-.popup ul.popup-actions li:not(.separator):hover {
-    background-color: #fff;
-}
-
-.popup ul.popup-actions li:not(.separator):active {
-    background-color: #f8f8f8;
-}
-
 .popup-timestamp-header {
     margin: 0;
     padding: 8px 0;
     border-bottom: 1px solid #000;
+    border-bottom: 1px solid var(--popup-border-color);
     text-align: center;
     color: #aaa;
+    color: var(--popup-timestamp-text-color);
 }
 
 /* Settings tweaks */
@@ -1665,10 +1913,14 @@ ul.chat-history, ul.chatban-history {
 
 #bubble-position label:hover > div {
     border: 2px solid #6495ED;
+    border: 2px solid var(--option-bubble-position-border-color-hovered);
+    background-color: rgba(0, 0, 0, 0);
+    background-color: var(--option-bubble-position-background-color-hovered);
 }
 
 #bubble-position label input:checked ~ div {
     background-color: #eee;
+    background-color: var(--option-bubble-position-background-color-selected);
 }
 
 /* Chat settings tweaks */
@@ -1692,7 +1944,9 @@ ul.chat-history, ul.chatban-history {
     margin: 15px 10px;
     border-radius: 5px;
     background-color: #f5f5f5;
+    background-color: var(--notification-background-color);
     border: 1px solid #8f8f8f;
+    border: 1px solid var(--notification-border-color);
 }
 
 .notification .notification-title {
@@ -1705,7 +1959,11 @@ ul.chat-history, ul.chatban-history {
     overflow: hidden;
     border-radius: 4px 4px 0 0;
     background-color: #b8b8b8;
+    background-color: var(--notification-title-background-color);
     border-bottom: 1px solid #8f8f8f;
+    border-bottom: 1px solid var(--notification-border-color);
+    color: inherit;
+    color: var(--notification-title-text-color);
 }
 
 .notification .notification-footer {
@@ -1716,11 +1974,14 @@ ul.chat-history, ul.chatban-history {
     font-style: italic;
     text-align: right;
     color: #666;
+    color: var(--notification-footer-text-color);
     white-space: pre;
     overflow: hidden;
     border-radius: 0 0 4px 4px;
     background-color: #d6d6d6;
+    background-color: var(--notification-footer-background-color);
     border-top: 1px solid #8f8f8f;
+    border-top: 1px solid var(--notification-border-color);
     padding-right: .5rem;
 }
 
@@ -1733,6 +1994,7 @@ ul.chat-history, ul.chatban-history {
 .notification-footer .notification-expiry {
     cursor: default;
     color: #b66;
+    color: var(--notification-expiry-color);
     float: left;
     margin-left: .5rem;
 }
@@ -1753,8 +2015,11 @@ ul.chat-history, ul.chatban-history {
     max-width: 96vw;
     max-height: 99vh;
     background-color: #f5f5f5;
+    background-color: var(--modal-background-color);
     padding: 0;
     outline: 0;
+    color: inherit;
+    color: var(--modal-text-color);
 }
 
 .modal a.close-modal {
@@ -1787,6 +2052,7 @@ ul.chat-history, ul.chatban-history {
     padding: 5px 7px;
     min-height: 2em;
     background-color: #b8b8b8;
+    background-color: var(--modal-headfoot-background-color);
 }
 
 .modal .modal-header {

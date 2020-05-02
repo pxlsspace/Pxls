@@ -10,7 +10,9 @@
     width: 210px;
     min-height: 62px;
     background: #333;
+    background: var(--admin-background);
     color: #fff;
+    color: var(--admin-text-color);
     padding: 10px;
     border-radius: 0 5px 5px 0;
     transition: left 0.2s ease-out;
@@ -43,7 +45,11 @@
 .admin-check {
     border-radius: 5px;
     border: 1px solid #ccc;
+    border: 1px solid var(--admin-check-border-color);
     background-color: #eee;
+    background-color: var(--admin-check-background-color);
+    color: inherit;
+    color: var(--admin-check-text-color);
     padding: 10px 10px 5px;
     position: fixed;
 
