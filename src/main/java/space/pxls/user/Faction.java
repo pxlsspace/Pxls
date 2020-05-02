@@ -231,10 +231,27 @@ public class Faction {
         new int[] {0x0000, 0x007F}, // basic latin
         new int[] {0x00A1, 0x024F}, // subset of latin-1 supplement (printables, no controls)
         new int[] {0x0400, 0x04FF}, // cyrillic
-        new int[] {0x500, 0x052F}, // cyrillic supplement
+        new int[] {0x0500, 0x052F}, // cyrillic supplement
         new int[] {0x2122}, // (tm)
+        new int[] {0x2010, 0x2014}, // various dashes
+        new int[] {0x2018, 0x201F}, // double and single quote marks
+        new int[] {0x2026}, // ellipsis
+        new int[] {0x203D}, // interrobang
+        new int[] {0x20AC}, // Euro symbol
+        new int[] {0x20BF}, // Bitcoin symbol
+        new int[] {0x2150, 0x215E}, // fractions such as 1/7 and 3/5
+        new int[] {0x2190, 0x2199}, // simple arrows
+        new int[] {0x2200, 0x22FF}, // mathematical operators
+        new int[] {0x2300, 0x23FF}, // misc technical
+        new int[] {0x2460, 0x2468}, // circled numbers up to 9
+        new int[] {0x24B6, 0x24EA}, // circled alphabet + circled zero
         new int[] {0x2600, 0x27BF}, // misc symbols (♥), dingbats (sparkle, heavy heart)
         new int[] {0xFE00, 0xFE0F}, // variation selectors (heart color)
+        new int[] {0xFF01, 0xFF5E}, // fullwidth latin characters
+        new int[] {0xFFE1}, // fullwidth pound
+        new int[] {0xFFE5, 0xFFE6}, // fullwidth yen + won
+        new int[] {0x1D11E}, // musical cleff
+        new int[] {0x1D15D, 0x1D164}, // musical notes (whole note to 1/128th)
         new int[] {0x1F000, 0x1FAFF} // emoji
     );
     private static boolean checkCodepoints(String input) {
