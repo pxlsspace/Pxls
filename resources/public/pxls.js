@@ -2863,6 +2863,11 @@ window.App = (function() {
           name: 'Darker',
           location: '/themes/darker.css',
           color: '#000'
+        },
+        {
+          name: 'Blue',
+          location: '/themes/blue.css',
+          color: '#0000FF'
         }
       ],
       specialChatColorClasses: ['rainbow'],
