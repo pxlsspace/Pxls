@@ -3080,17 +3080,14 @@ window.App = (function() {
             text: self.themes[i].name
           }));
         }
-        let currentTheme = ls.get('currentTheme');
-        if (currentTheme == null || (currentTheme > self.themes.length || currentTheme < -1)) {
+        const currentTheme = parseInt(ls.get('currentTheme'));
+        if (isNaN(currentTheme) || (currentTheme >= self.themes.length || currentTheme < -1)) {
           // If currentTheme hasn't been set, or it's out of bounds, reset it to default (-1)
           ls.set('currentTheme', -1);
-        } else {
-          currentTheme = parseInt(currentTheme);
-          if (currentTheme !== -1) {
-            self.themes[currentTheme].element.appendTo(document.head);
-            self.elements.themeColorMeta.attr('content', self.themes[currentTheme].color);
-            self.elements.themeSelect.val(currentTheme);
-          }
+        } else if (currentTheme !== -1) {
+          self.themes[currentTheme].element.appendTo(document.head);
+          self.elements.themeColorMeta.attr('content', self.themes[currentTheme].color);
+          self.elements.themeSelect.val(currentTheme);
         }
         self.elements.themeSelect.on('change', async function() {
           const themeIdx = parseInt(this.value);
