@@ -121,10 +121,6 @@ html {
     --chat-typeahead-item-background-color-hover: #949494;
     --chat-typeahead-item-background-color-active: #828282;
     
-    --mod-lookup-chatban-history-item-background-color: rgba(177, 177, 177, 0.3);
-    --mod-lookup-chatban-history-item-border-color: #828282;
-    --mod-lookup-chatban-history-item-heading-background-color: #82828233;
-    
     --popup-background-color: #eee;
     --popup-border-color: #000;
     --popup-text-color: inherit;
@@ -1248,9 +1244,8 @@ article .body {
     margin: .5rem 0;
 }
 
-.panel-body article h2 {
-    margin: 0;
-    padding: 0;
+.panel-body article > header h1, .panel-body article > header h2, .panel-body article > header h3, .panel-body article > header h4, .panel-body article > header h5, .panel-body article > header h6 {
+    font-size: x-large;
     text-align: center;
     width:  100%;
 }
@@ -1629,23 +1624,6 @@ ul.chat-history, ul.chatban-history {
 
 .chatban-history li {
     margin: 7px;
-    border-radius: 7px;
-    background-color: rgba(177, 177, 177, 0.3);
-    background-color: var(--mod-lookup-chatban-history-item-background-color);
-    border: 1px solid #828282;
-    border: 1px solid var(--mod-lookup-chatban-history-item-border-color);
-}
-
-.chatban-history h4 {
-    margin: 0 0 1em 0;
-    background-color: #82828233;
-    background-color: var(--mod-lookup-chatban-history-item-heading-background-color);
-    border-radius: 7px 7px 0 0;
-    text-align: center;
-    font-size: 1.25em;
-    line-height: 1.25em;
-    border-bottom: 1px solid #828282;
-    border-bottom: 1px solid var(--mod-lookup-chatban-history-item-border-color);
 }
 
 .chatban-history table {

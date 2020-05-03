@@ -49,10 +49,6 @@ html {
     --chat-server-action-text-color:#ccc;
     --chat-user-text-shadow-color: #111;
     
-    --mod-lookup-chatban-history-item-background-color: #000;
-    --mod-lookup-chatban-history-item-border-color: #464646;
-    --mod-lookup-chatban-history-item-heading-background-color: #46464633;
-    
     --popup-background-color: #111;
     --popup-text-color: #fff;
     --pane-button-background: linear-gradient(0,#111,#1f1f1f,#111);

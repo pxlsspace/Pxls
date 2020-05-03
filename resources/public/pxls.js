@@ -3714,32 +3714,38 @@ window.App = (function() {
                 crel('hr'),
                 crel('ul', { class: 'chatban-history' },
                   e.chatbans.map(chatban => {
-                    return crel('li', { class: 'chatban' },
-                      crel('h4', `${chatban.initiator_name} ${chatban.type === 'UNBAN' ? 'un' : ''}banned ${e.target.username}${chatban.type !== 'PERMA' ? '' : ''}`),
-                      crel('table',
-                        crel('tbody',
-                          crel('tr',
-                            crel('th', 'Reason:'),
-                            crel('td', chatban.reason || '$No reason provided$')
-                          ),
-                          crel('tr',
-                            crel('th', 'When:'),
-                            crel('td', moment(chatban.when * 1e3).format(longFormat))
-                          ),
-                          chatban.type !== 'UNBAN' ? ([
-                            crel('tr',
-                              crel('th', 'Length:'),
-                              crel('td', (chatban.type.toUpperCase().trim() === 'PERMA') ? 'Permanent' : `${chatban.expiry - chatban.when}s${(chatban.expiry - chatban.when) >= 60 ? ` (${moment.duration(chatban.expiry - chatban.when, 'seconds').humanize()})` : ''}`)
-                            ),
-                            (chatban.type.toUpperCase().trim() === 'PERMA') ? null : crel('tr',
-                              crel('th', 'Expiry:'),
-                              crel('td', moment(chatban.expiry * 1e3).format(longFormat))
-                            ),
-                            crel('tr',
-                              crel('th', 'Purged:'),
-                              crel('td', String(chatban.purged))
+                    return crel('li',
+                      crel('article', { class: 'chatban' },
+                        crel('header',
+                          crel('h4', `${chatban.initiator_name} ${chatban.type === 'UNBAN' ? 'un' : ''}banned ${e.target.username}${chatban.type !== 'PERMA' ? '' : ''}`)
+                        ),
+                        crel('div',
+                          crel('table',
+                            crel('tbody',
+                              crel('tr',
+                                crel('th', 'Reason:'),
+                                crel('td', chatban.reason || '$No reason provided$')
+                              ),
+                              crel('tr',
+                                crel('th', 'When:'),
+                                crel('td', moment(chatban.when * 1e3).format(longFormat))
+                              ),
+                              chatban.type !== 'UNBAN' ? ([
+                                crel('tr',
+                                  crel('th', 'Length:'),
+                                  crel('td', (chatban.type.toUpperCase().trim() === 'PERMA') ? 'Permanent' : `${chatban.expiry - chatban.when}s${(chatban.expiry - chatban.when) >= 60 ? ` (${moment.duration(chatban.expiry - chatban.when, 'seconds').humanize()})` : ''}`)
+                                ),
+                                (chatban.type.toUpperCase().trim() === 'PERMA') ? null : crel('tr',
+                                  crel('th', 'Expiry:'),
+                                  crel('td', moment(chatban.expiry * 1e3).format(longFormat))
+                                ),
+                                crel('tr',
+                                  crel('th', 'Purged:'),
+                                  crel('td', String(chatban.purged))
+                                )
+                              ]) : null
                             )
-                          ]) : null
+                          )
                         )
                       )
                     );
@@ -6572,7 +6578,7 @@ window.App = (function() {
               crel('div', { class: 'left' }),
               crel('div', { class: 'mid' }, headerContent),
               crel('div', { class: 'right' }, this.buildCloser())),
-            bodyContent == null ? null : crel('div', { class: 'modal-body' }, bodyContent),
+            bodyContent == null ? null : crel('div', { class: 'modal-body panel-body' }, bodyContent),
             footerContent == null ? null : crel('footer', { class: 'modal-footer panel-footer' }, footerContent)
           )
         );
