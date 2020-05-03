@@ -39,6 +39,8 @@ html {
     --panel-background-color: #000;
     --panel-text-color: #fff;
     --panel-close-button-color: #f00;
+    --panel-footer-background: #252525;
+    --panel-footer-text-color: #999;
     
     --option-bubble-position-background-color-selected: #fff;
     
@@ -85,12 +87,7 @@ html {
     --chat-typeahead-item-background-color: #1a1a1a;
     --chat-typeahead-item-background-color-hover: #2b2b2b;
     --chat-typeahead-item-background-color-active: #3b3b3b;
-        
-    --notification-background-color: #191919;
-    --notification-border-color: #111111;
-    --notification-footer-text-color: #999;
-    --notification-title-background-color: #232323;
-    --notification-footer-background-color: #252525;
+
     --notification-expiry-color: #c45454;
 }
 

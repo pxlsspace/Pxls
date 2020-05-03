@@ -79,15 +79,26 @@ html {
     --notification-color: #b20;
     --ping-highlight-color: #feedd1;
     --ping-flash-color: #8ef7d1;
+    --notification-expiry-color: #b66;
         
-    --panel-header-background: linear-gradient(to bottom, #ccc, #bbb);
     --panel-background-color: #dfdfdf;
     --panel-text-color: inherit;
-    --panel-borders-color: #000;
+    --panel-border-color: #000;
+    --panel-header-text-color: inherit;
+    --panel-header-background: linear-gradient(to bottom, #ccc, #bbb);
+    --panel-footer-text-color: #666;
+    --panel-footer-background: #d6d6d6;
     --panel-close-button-color: #a00;
     --panel-close-button-color-hover: var(--panel-close-button-color);
     --panel-close-button-color-active: var(--panel-close-button-color);
+    
     --panel-article-background-color: #0002;
+    --panel-article-text-color: var(--panel-text-color);
+    --panel-article-border-color: var(--panel-border-color);
+    --panel-article-header-text-color: inherit;
+    --panel-article-header-background: var(--panel-header-background);
+    --panel-article-footer-text-color: var(--panel-header-text-color);
+    --panel-article-footer-background: var(--panel-footer-background);
     
     --panel-trigger-outline-color: #AAA;
     
@@ -120,14 +131,6 @@ html {
     --popup-timestamp-text-color: #aaa;
     --pane-button-background: linear-gradient(0deg, #eee, #ccc, #eee);
     --pane-button-background-hover: linear-gradient(0deg, #ddd, #bbb, #ddd);
-    
-    --notification-background-color: #f5f5f5;
-    --notification-border-color: #8f8f8f;
-    --notification-title-text-color: inherit;
-    --notification-title-background-color: #b8b8b8;
-    --notification-footer-background-color: #d6d6d6;
-    --notification-footer-text-color: #666;
-    --notification-expiry-color: #b66;
         
     --emoji-picker-border-color: #999999;
     --emoji-picker-shadow-color: #CCCCCC;
@@ -1014,6 +1017,14 @@ header h1, header h2, header h3, header h4, header h5, header h6 {
     padding: 0;
 }
 
+footer {
+    font-size: .75rem;
+    font-weight: bold;
+    font-style: italic;
+    text-align: right;
+    padding: 0 1rem;
+}
+
 .fas.fa-is-left, .far.fa-is-left {
     margin-right: .25rem;
 }
@@ -1125,10 +1136,12 @@ aside.panel {
 }
 
 .panel-header {
+    color: inherit;
+    color: var(--panel-header-text-color);
     background-image: linear-gradient(to bottom, #ccc, #bbb);
     background: var(--panel-header-background);
     border-bottom: 1px solid #000;
-    border-bottom: 1px solid var(--panel-borders-color);
+    border-bottom: 1px solid var(--panel-border-color);
 }
 
 .panel-header button {
@@ -1136,8 +1149,12 @@ aside.panel {
 }
 
 .panel-footer {
+    color: inherit;
+    color: var(--panel-footer-text-color);
     border-top: 1px solid #000;
-    border-top: 1px solid var(--panel-borders-color);
+    border-top: 1px solid var(--panel-border-color);
+    background-image: #;
+    background: var(--panel-footer-background);
 }
 
 .panel-trigger {
@@ -1194,16 +1211,35 @@ article .body {
 }
 
 .panel-body article:not(.naked) {
+    color: inherit;
+    color: var(--panel-article-text-color);
     border: 1px solid #000;
-    border: 1px solid var(--panel-borders-color);
+    border-bottom: 1px solid var(--panel-article-border-color);
     background-color: #0002;
     background-color: var(--panel-article-background-color);
 }
 
 .panel-body article:not(.naked) > header {
-    border-bottom: 1px solid var(--panel-borders-color);
+    color: inherit;
+    color: var(--panel-article-header-text-color);
+    border-bottom: 1px solid #000;
+    border-bottom: 1px solid var(--panel-article-border-color);
     background: linear-gradient(to bottom, #ccc, #bbb);
-    background: var(--panel-header-background);
+    background: var(--panel-article-header-background);
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+}
+
+.panel-body article:not(.naked) > footer {
+    padding: 0.833em .5em;
+    color: #666;
+    color: var(--panel-article-footer-text-color);
+    border-top: 1px solid #000;
+    border-top: 1px solid var(--panel-article-border-color);
+    background: linear-gradient(to bottom, #ccc, #bbb);
+    background: var(--panel-article-footer-background);
+    border-bottom-left-radius: inherit;
+    border-bottom-right-radius: inherit;
 }
 
 .panel-body article p {
@@ -1957,50 +1993,9 @@ body .emoji-picker {
 /* Notifications */
 .notification {
     margin: 15px 10px;
-    border-radius: 5px;
-    background-color: #f5f5f5;
-    background-color: var(--notification-background-color);
-    border: 1px solid #8f8f8f;
-    border: 1px solid var(--notification-border-color);
 }
 
-.notification .notification-title {
-    height: 2rem;
-    line-height: 2rem;
-    font-size: 1.25rem;
-    font-weight: bold;
-    text-align: center;
-    white-space: pre;
-    overflow: hidden;
-    border-radius: 4px 4px 0 0;
-    background-color: #b8b8b8;
-    background-color: var(--notification-title-background-color);
-    border-bottom: 1px solid #8f8f8f;
-    border-bottom: 1px solid var(--notification-border-color);
-    color: inherit;
-    color: var(--notification-title-text-color);
-}
-
-.notification .notification-footer {
-    height: 2rem;
-    line-height: 2rem;
-    font-size: .75rem;
-    font-weight: bold;
-    font-style: italic;
-    text-align: right;
-    color: #666;
-    color: var(--notification-footer-text-color);
-    white-space: pre;
-    overflow: hidden;
-    border-radius: 0 0 4px 4px;
-    background-color: #d6d6d6;
-    background-color: var(--notification-footer-background-color);
-    border-top: 1px solid #8f8f8f;
-    border-top: 1px solid var(--notification-border-color);
-    padding-right: .5rem;
-}
-
-.notification .notification-body {
+.notification-body {
     padding: 10px 5px;
     word-break: break-word;
     white-space: pre-wrap;
@@ -2010,8 +2005,6 @@ body .emoji-picker {
     cursor: default;
     color: #b66;
     color: var(--notification-expiry-color);
-    float: left;
-    margin-left: .5rem;
 }
 
 /*//////////////////////////*\

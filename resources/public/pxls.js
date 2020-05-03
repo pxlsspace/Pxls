@@ -2896,7 +2896,7 @@ window.App = (function() {
           modal.show(modal.buildDom(
             crel('h2', { class: 'modal-title' }, 'Alert'),
             crel('p', { style: 'padding: 0; margin: 0;' }, data.message),
-            crel('span', { style: 'font-style: italic' }, `Sent from ${data.sender || '$Unknown'}`)
+            crel('span', `Sent from ${data.sender || '$Unknown'}`)
           ), { closeExisting: false });
         });
         socket.on('received_report', (data) => {
@@ -6438,12 +6438,12 @@ window.App = (function() {
         }
       },
       makeDomForNotification(notification) {
-        return crel('div', { class: 'notification', 'data-notification-id': notification.id },
-          crel('div', { class: 'notification-title' }, notification.title),
+        return crel('article', { class: 'notification', 'data-notification-id': notification.id },
+          crel('header', { class: 'notification-title' }, crel('h2', notification.title)),
           chat.processMessage('div', 'notification-body', notification.content),
-          crel('div', { class: 'notification-footer' },
+          crel('footer', { class: 'notification-footer' },
             notification.who ? document.createTextNode(`Posted by ${notification.who}`) : null,
-            notification.expiry !== 0 ? crel('span', { class: 'notification-expiry' },
+            notification.expiry !== 0 ? crel('span', { class: 'notification-expiry float-left' },
               crel('i', { class: 'far fa-clock fa-is-left' }),
               crel('span', { title: moment.unix(notification.expiry).format('MMMM DD, YYYY, hh:mm:ss A') }, `Expires ${moment.unix(notification.expiry).format('MMM DD YYYY')}`)
             ) : null

@@ -35,6 +35,8 @@ html {
     --panel-background-color: #333;
     --panel-text-color: #eee;
     --panel-close-button-color: #f44;
+    --panel-footer-background: #2e2e2e;
+    --panel-footer-text-color: #666;
     
     --option-bubble-position-background-color-selected: #9d9d9d;
     --chat-separator-color: #4f4f4f;
@@ -73,12 +75,7 @@ html {
     --chat-typeahead-item-background-color: #2c2c2c;
     --chat-typeahead-item-background-color-hover: #3b3b3b;
     --chat-typeahead-item-background-color-active: #595959;
-        
-    --notification-background-color: #3d3d3d;
-    --notification-border-color: #111111;
-    --notification-title-background-color: #292929;
-    --notification-footer-background-color: #2e2e2e;
-    --notification-footer-text-color: #666;
+
     --notification-expiry-color: #995050;
 }
 
