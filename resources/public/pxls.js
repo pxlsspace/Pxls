@@ -5105,7 +5105,7 @@ window.App = (function() {
             crel('span', (closest.dataset.tag ? `[${closest.dataset.tag}] ` : null), closest.dataset.author, badges),
             crel('div', { class: 'right' })
           );
-          const leftPanel = crel('div', { class: 'pane details-wrapper' });
+          const leftPanel = crel('div', { class: 'pane details-wrapper chat-line' });
           const rightPanel = crel('div', { class: 'pane actions-wrapper' });
           const actionsList = crel('ul', { class: 'actions-list' });
 
@@ -5157,7 +5157,7 @@ window.App = (function() {
           }, 'Chat Lookup');
 
           crel(leftPanel, crel('p', { class: 'popup-timestamp-header' }, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(ls.get('chat.24h') === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
-          crel(leftPanel, crel('p', { style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector('.content').textContent));
+          crel(leftPanel, crel('p', { class: 'content', style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector('.content').textContent));
 
           crel(actionsList, actionReport);
           crel(actionsList, actionMention);

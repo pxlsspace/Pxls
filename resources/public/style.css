@@ -1344,7 +1344,7 @@ li.chat-line i[title] {
     padding-bottom: 1px;
 }
 
-li.chat-line .text-badge, header .text-badge {
+.text-badge {
     line-height: 1em;
     background-color: #ccc;
     background-color: var(--chat-badge-background-color);
@@ -1359,7 +1359,7 @@ li.chat-line .text-badge, header .text-badge {
     user-select: none;
 }
 
-li.chat-line .content {
+.chat-line .content {
     white-space: pre-wrap;
 }
 
