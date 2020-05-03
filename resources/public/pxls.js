@@ -2308,7 +2308,8 @@ window.App = (function() {
         self.palette = palette;
         self.elements.palette.find('.palette-color').remove().end().append(
           $.map(self.palette, function(p, idx) {
-            return $('<div>')
+            return $('<button>')
+              .attr('type', 'button')
               .attr('data-idx', idx)
               .addClass('palette-color')
               .addClass('ontouchstart' in window ? 'touch' : 'no-touch')
@@ -2324,7 +2325,8 @@ window.App = (function() {
           })
         );
         self.elements.palette.prepend(
-          $('<div>')
+          $('<button>')
+            .attr('type', 'button')
             .attr('data-idx', -1)
             .addClass('palette-color no-border deselect-button')
             .addClass('ontouchstart' in window ? 'touch' : 'no-touch').css('background-color', 'transparent')
@@ -2505,7 +2507,7 @@ window.App = (function() {
       },
       handle: null,
       report: function(id, x, y) {
-        const reportButton = crel('button', {}, 'Report');
+        const reportButton = crel('button', { class: 'text-button' }, 'Report');
         reportButton.addEventListener('click', function() {
           this.disabled = true;
           this.textContent = 'Sending...';
@@ -2552,7 +2554,7 @@ window.App = (function() {
             })
           ),
           [ // crel will inject the array as fragments
-            crel('button', { onclick: () => modal.closeAll() }, 'Cancel'),
+            crel('button', { class: 'text-button', onclick: () => modal.closeAll() }, 'Cancel'),
             reportButton
           ]
         ));
@@ -2672,14 +2674,14 @@ window.App = (function() {
         return self.elements.lookup.empty().append(
           $('<div>').addClass('content'),
           (!data.bg && user.isLoggedIn()
-            ? $('<button>').css('float', 'left').addClass('report-button').text('Report').click(function() {
+            ? $('<button>').css('float', 'left').addClass('report-button text-button').text('Report').click(function() {
               self.report(data.id, data.x, data.y);
             })
             : ''),
-          $('<button>').css('float', 'right').text('Close').click(function() {
+          $('<button>').css('float', 'right').addClass('text-button').text('Close').click(function() {
             self.elements.lookup.fadeOut(200);
           }),
-          (template.getOptions().use ? $('<button>').addClass('button').css('float', 'right').text('Move Template Here').click(function() {
+          (template.getOptions().use ? $('<button>').css('float', 'right').addClass('text-button').text('Move Template Here').click(function() {
             template.queueUpdate({
               ox: data.x,
               oy: data.y
@@ -4113,9 +4115,9 @@ window.App = (function() {
           };
 
           const popupWrapper = crel('div', { class: 'popup panels' });
-          const panelHeader = crel('header', { style: 'text-align: center' },
-            crel('div', { class: 'left' }, crel('i', {
-              class: 'fas fa-times text-red',
+          const panelHeader = crel('header', { class: 'panel-header' },
+            crel('button', { class: 'left panel-closer' }, crel('i', {
+              class: 'fas fa-times',
               onclick: closeHandler
             })),
             crel('h2', 'Pings'),
@@ -4421,7 +4423,7 @@ window.App = (function() {
         const lblTemplateTitles = crel('label', _cbTemplateTitles, 'Replace template titles with URLs in chat where applicable');
 
         const _txtFontSize = crel('input', { type: 'number', min: '1', max: '72' });
-        const _btnFontSizeConfirm = crel('button', {}, crel('i', { class: 'fas fa-check' }));
+        const _btnFontSizeConfirm = crel('button', { class: 'text-button' }, crel('i', { class: 'fas fa-check' }));
         const lblFontSize = crel('label', 'Font Size: ', _txtFontSize, _btnFontSizeConfirm);
 
         const _cbHorizontal = crel('input', { type: 'checkbox' });
@@ -4452,7 +4454,7 @@ window.App = (function() {
           crel('option', { value: x }, x)
         )
         );
-        const _btnUnignore = crel('button', { style: 'margin-left: .5rem' }, 'Unignore');
+        const _btnUnignore = crel('button', { class: 'text-button', style: 'margin-left: .5rem' }, 'Unignore');
         const lblIgnores = crel('label', 'Ignores: ', _selIgnores, _btnUnignore);
         const lblIgnoresFeedback = crel('label', { style: 'display: none; margin-left: 1rem;' }, '');
 
@@ -5024,6 +5026,7 @@ window.App = (function() {
               ['OK', () => resolve(bodyWrapper.querySelector('input[type=radio]:checked').dataset.actionId >> 0)]
             ].map(x =>
               crel('button', {
+                class: 'text-button',
                 style: 'margin-left: 3px; position: initial !important; bottom: initial !important; right: initial !important;',
                 onclick: x[1]
               }, x[0])
@@ -5088,9 +5091,9 @@ window.App = (function() {
 
           const popupWrapper = crel('div', { class: 'popup panels', 'data-popup-for': id });
           const panelHeader = crel('header',
-            { style: 'text-align: center;' },
-            crel('div', { class: 'left' }, crel('i', {
-              class: 'fas fa-times text-red',
+            { class: 'panel-header' },
+            crel('button', { class: 'left panel-closer' }, crel('i', {
+              class: 'fas fa-times',
               onclick: closeHandler
             })),
             crel('span', (closest.dataset.tag ? `[${closest.dataset.tag}] ` : null), closest.dataset.author, badges),
@@ -5234,6 +5237,7 @@ window.App = (function() {
                   textArea,
                   crel('div', { style: 'text-align: right' },
                     crel('button', {
+                      class: 'text-button',
                       style: 'position: initial; margin-right: .25rem',
                       type: 'button',
                       onclick: () => {
@@ -5356,13 +5360,14 @@ window.App = (function() {
             const _reasonWrap = crel('div', { style: 'display: block;' });
 
             const _btnCancel = crel('button', {
+              class: 'text-button',
               type: 'button',
               onclick: () => {
                 chatbanContainer.remove();
                 modal.closeAll();
               }
             }, 'Cancel');
-            const _btnOK = crel('button', { type: 'submit' }, 'Ban');
+            const _btnOK = crel('button', { class: 'text-button', type: 'submit' }, 'Ban');
 
             const chatbanContainer = crel('form', {
               class: 'chatmod-container',
@@ -5483,7 +5488,7 @@ window.App = (function() {
             if (e.shiftKey === true) {
               return dodelete();
             }
-            const btndelete = crel('button', {}, 'Delete');
+            const btndelete = crel('button', { class: 'text-button' }, 'Delete');
             btndelete.onclick = () => dodelete();
             const deleteWrapper = crel('div', { class: 'chatmod-container' },
               crel('table',
@@ -5506,6 +5511,7 @@ window.App = (function() {
               ),
               crel('div', { class: 'buttons' },
                 crel('button', {
+                  class: 'text-button',
                   type: 'button',
                   onclick: () => {
                     deleteWrapper.remove();
@@ -5527,7 +5533,7 @@ window.App = (function() {
             const txtPurgeReason = crel('input', { type: 'text', onkeydown: e => e.stopPropagation() });
             const lblPurgeReasonError = crel('label', { class: 'hidden error-label' });
 
-            const btnPurge = crel('button', { type: 'submit' }, 'Purge');
+            const btnPurge = crel('button', { class: 'text-button', type: 'submit' }, 'Purge');
 
             const messageTable = mode
               ? crel('table',
@@ -5558,6 +5564,7 @@ window.App = (function() {
               ),
               crel('div', { class: 'buttons' },
                 crel('button', {
+                  class: 'text-button',
                   type: 'button',
                   onclick: () => {
                     purgeWrapper.remove();
@@ -5609,7 +5616,7 @@ window.App = (function() {
             const stateOn = crel('label', { style: 'display: inline-block' }, rbStateOn, ' On');
             const stateOff = crel('label', { style: 'display: inline-block' }, rbStateOff, ' Off');
 
-            const btnSetState = crel('button', { type: 'submit' }, 'Set');
+            const btnSetState = crel('button', { class: 'text-button', type: 'submit' }, 'Set');
 
             const renameError = crel('p', {
               style: 'display: none; color: #f00; font-weight: bold; font-size: .9rem',
@@ -5625,6 +5632,7 @@ window.App = (function() {
               renameError,
               crel('div', { class: 'buttons' },
                 crel('button', {
+                  class: 'text-button',
                   type: 'button',
                   onclick: () => {
                     renameWrapper.remove();
@@ -5672,7 +5680,7 @@ window.App = (function() {
             });
             const newNameWrapper = crel('label', 'New Name: ', newNameInput);
 
-            const btnSetState = crel('button', { type: 'submit' }, 'Set');
+            const btnSetState = crel('button', { class: 'text-button', type: 'submit' }, 'Set');
 
             const renameError = crel('p', {
               style: 'display: none; color: #f00; font-weight: bold; font-size: .9rem',
@@ -5685,6 +5693,7 @@ window.App = (function() {
               renameError,
               crel('div', { class: 'buttons' },
                 crel('button', {
+                  class: 'text-button',
                   type: 'button',
                   onclick: () => {
                     modal.closeAll();
@@ -6041,7 +6050,7 @@ window.App = (function() {
         self.elements.loginOverlay.find('a').click(function(evt) {
           evt.preventDefault();
 
-          const cancelButton = crel('button', { class: 'float-right' }, 'Cancel');
+          const cancelButton = crel('button', { class: 'float-right text-button' }, 'Cancel');
           cancelButton.addEventListener('click', function() {
             self.elements.prompt.fadeOut(200);
           });
@@ -6272,8 +6281,8 @@ window.App = (function() {
             class: 'rename-error'
           }, ''),
           crel('div', { style: 'text-align: right' },
-            crel('button', { onclick: () => modal.closeAll() }, 'Not now'),
-            crel('button', { class: 'rename-submit', type: 'submit' }, 'Change')
+            crel('button', { class: 'text-button', onclick: () => modal.closeAll() }, 'Not now'),
+            crel('button', { class: 'rename-submit text-button', type: 'submit' }, 'Change')
           )
         );
         modal.show(modal.buildDom(
@@ -6551,13 +6560,18 @@ window.App = (function() {
           });
         }
       },
+      buildCloser: function() {
+        const button = crel('button', { class: 'panel-closer' }, crel('i', { class: 'fas fa-times' }));
+        button.addEventListener('click', () => modal.closeTop());
+        return button;
+      },
       buildDom: function(headerContent, bodyContent, footerContent) {
         return crel('div', { class: 'modal panel', tabindex: '-1', role: 'dialog' },
           crel('div', { class: 'modal-wrapper', role: 'document' },
             headerContent == null ? null : crel('header', { class: 'modal-header panel-header' },
               crel('div', { class: 'left' }),
               crel('div', { class: 'mid' }, headerContent),
-              crel('div', { class: 'right' }, crel('a', { class: 'fas fa-times text-red', rel: 'modal:close' }))),
+              crel('div', { class: 'right' }, this.buildCloser())),
             bodyContent == null ? null : crel('div', { class: 'modal-body' }, bodyContent),
             footerContent == null ? null : crel('footer', { class: 'modal-footer panel-footer' }, footerContent)
           )

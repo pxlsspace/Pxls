@@ -39,26 +39,26 @@
 <body class="show-placeable-bubble">
 <header class="transparent controls">
     <div class="left">
-        <div class="panel-trigger" data-panel="info">
+        <button type="button" class="panel-trigger" data-panel="info">
             <i class="fas fa-info-circle"></i>
-        </div>
-        <div class="panel-trigger" data-panel="faq">
+        </button>
+        <button type="button" class="panel-trigger" data-panel="faq">
             <i class="fas fa-question-circle"></i>
-        </div>
-        <div class="panel-trigger" data-panel="notifications">
+        </button>
+        <button type="button" class="panel-trigger" data-panel="notifications">
             <i class="fas fa-bell" id="notifications-icon"></i>
             <i class="fas fa-circle ping-counter" id="notifications-ping-counter"></i>
-        </div>
+        </button>
     </div>
     <div class="mid"></div>
     <div class="right">
-        <div class="panel-trigger" data-panel="settings">
+        <button type="button" class="panel-trigger" data-panel="settings">
             <i class="fas fa-cog"></i>
-        </div>
-        <div class="panel-trigger" data-panel="chat">
+        </button>
+        <button type="button" class="panel-trigger" data-panel="chat">
             <i class="fas fa-comment-alt" id="message-icon"></i>
             <i class="fas fa-circle ping-counter" id="ping-counter"></i>
-        </div>
+        </button>
     </div>
 </header>
 
@@ -103,7 +103,7 @@
     </div>
 
     <div id="ui-bottom">
-        <div id="undo"><span>Undo</span></div>
+        <button type="button" id="undo"><span>Undo</span></button>
         <div id="login-overlay" class="palette-overlay">
             You are not signed in.&nbsp;<a href="#">Sign in with...</a>
         </div>
@@ -130,7 +130,7 @@
       <label>Username: <input type="text" maxlength="32"></label>
       <div class="error" id="error"></div>
     </div>
-    <button id="signup-button" class="float-right">Sign up</button>
+    <button id="signup-button" class="float-right text-button">Sign up</button>
 </div>
 
 
@@ -145,7 +145,7 @@
             <h2><i class="fas fa-info-circle fa-is-left fa-1_5x"></i>Info</h2>
         </div>
         <div class="right">
-            <i class="fas fa-times panel-closer text-red"></i>
+            <button type="button" class="panel-closer"><i class="fas fa-times"></i></button>
         </div>
     </header>
     <div class="panel-body">
@@ -155,11 +155,13 @@
 
 <aside id="chat" data-panel="chat" class="panel right">
     <header class="panel-header">
-        <div class="left"><i class="fas fa-times text-red panel-closer"></i></div>
+        <div class="left">
+            <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
+        </div>
         <h2><i class="fas fa-comment-alt fa-is-left fa-1_5x"></i>Chat <span class="mobile-only" id="txtMobileChatCooldown"></span></h2>
         <div class="right">
-            <i class="fas fa-at" id="btnPings" title="Pings"></i>
-            <i class="fas fa-cogs" id="btnChatSettings" title="Settings"></i>
+            <button type="button" title="Pings"><i class="fas fa-at" id="btnPings"></i></i></button>
+            <button type="button" title="Settings"><i class="fas fa-cogs" id="btnChatSettings"></i></button>
         </div>
     </header>
     <div class="panel-body">
@@ -190,7 +192,9 @@
 
 <aside id="settings" data-panel="settings" class="panel right">
     <header class="panel-header">
-        <div class="left"><i class="fas fa-times panel-closer text-red"></i></div>
+        <div class="left">
+            <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
+        </div>
         <div class="mid">
             <h2><i class="fas fa-cogs fa-is-left fa-1_5x"></i>Settings</h2>
         </div>
@@ -253,7 +257,7 @@
                         <label><input id="virginmaptoggle" type="checkbox"/>Turn on virginmap (toggle with <kbd>X</kbd>)</label>
                     </div>
                     <div class="d-block">
-                        <button id="hvmapClear">Clear heatmap and virginmap</button> (hotkey: <kbd>O</kbd>)
+                        <button class="text-button" id="hvmapClear">Clear heatmap and virginmap</button> (hotkey: <kbd>O</kbd>)
                     </div>
                     <div class="d-block">
                         <label><input id="gridtoggle" type="checkbox"/>Turn on grid (toggle with <kbd>G</kbd>)</label>
@@ -369,7 +373,7 @@
                 </div>
                 <div>
                     <label>Width: <input type="number" id="template-width" class="small-input" min="0"></label>
-                    <button id="template-width-reset">Reset</button>
+                    <button class="text-button" id="template-width-reset">Reset</button>
                 </div>
             </div>
         </article>
@@ -380,9 +384,9 @@
             <div class="pad-wrapper">
                 <p class="longTextInputWrapper"><label for="txtAlertLocation">Alert URL:</label><input type="text" placeholder="notify.wav" id="txtAlertLocation"></p>
                 <div class="ButtonBar">
-                    <button id="btnForceAudioUpdate">Update</button>
-                    <button id="btnAlertAudioTest">Test</button>
-                    <button id="btnAlertReset">Reset</button>
+                    <button class="text-button" id="btnForceAudioUpdate">Update</button>
+                    <button class="text-button" id="btnAlertAudioTest">Test</button>
+                    <button class="text-button" id="btnAlertReset">Reset</button>
                 </div>
                 <div>
                     <label for="rangeAlertVolume">Volume:</label>
@@ -399,8 +403,8 @@
             <div class="pad-wrapper">
                 <p class="longTextInputWrapper"><label for="txtDiscordName">Public Discord Name:</label><input type="text" placeholder="pxlslover#1337" id="txtDiscordName"></p>
                 <div class="ButtonBar">
-                    <button id="btnDiscordNameSet">Set</button>
-                    <button id="btnDiscordNameRemove">Remove</button>
+                    <button class="text-button" id="btnDiscordNameSet">Set</button>
+                    <button class="text-button" id="btnDiscordNameRemove">Remove</button>
                 </div>
             </div>
         </article>
@@ -411,7 +415,9 @@
     <header class="panel-header">
         <div class="left"></div>
         <h2><i class="fas fa-question-circle fa-is-left fa-1_5x"></i>Help</h2>
-        <div class="right"><i class="fas fa-times text-red panel-closer"></i></div>
+        <div class="right">
+            <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
+        </div>
     </header>
     <div class="panel-body">
         {{faq}}
@@ -422,7 +428,9 @@
     <header class="panel-header">
         <div class="left"></div>
         <h2><i class="fas fa-bell fa-is-left fa-1_5x"></i>Notifications</h2>
-        <div class="right"><i class="fas fa-times text-red panel-closer"></i></div>
+        <div class="right">
+            <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
+        </div>
     </header>
     <div class="panel-body"></div>
 </aside>

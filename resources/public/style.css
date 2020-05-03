@@ -84,6 +84,9 @@ html {
     --panel-background-color: #dfdfdf;
     --panel-text-color: inherit;
     --panel-borders-color: #000;
+    --panel-close-button-color: #a00;
+    --panel-close-button-color-hover: var(--panel-close-button-color);
+    --panel-close-button-color-active: var(--panel-close-button-color);
     --panel-article-background-color: #0002;
     
     --panel-trigger-outline-color: #AAA;
@@ -347,6 +350,16 @@ body .message {
 
 button {
     cursor: pointer;
+    display: inline-block;
+    color: inherit;
+    background: transparent;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    line-height: 1.1em;
+}
+
+button.text-button {
     margin-top: 6px;
     margin-right: 4.5px;
     display: inline-block;
@@ -361,7 +374,7 @@ button {
     color: var(--button-text-color);
 }
 
-button:disabled {
+button.text-button:disabled {
     cursor: not-allowed;
     border: 1px solid #777;
     border: 1px solid var(--button-border-color-disabled);
@@ -371,7 +384,7 @@ button:disabled {
     color: var(--button-text-color-disabled);
 }
 
-button:hover {
+button.text-button:hover {
     color: #fff;
     color: var(--button-text-color-hover);
     background: #ce4747;
@@ -423,7 +436,9 @@ button:hover {
 
 .palette-number {
     position: absolute;
-    transform: translate(-50%, -50%);
+    transform: translate(-50%, 50%);
+    left: 50%;
+    bottom: 100%;
     border-radius: 16px;
     text-align: center;
     color: #000;
@@ -635,6 +650,7 @@ button:hover {
 
 .palette-color {
     display: inline-block;
+    position: relative;
 
     min-width: 32px;
     min-height: 32px;
@@ -644,6 +660,8 @@ button:hover {
     margin-right: 10px;
     cursor: pointer;
     bottom: 0;
+    /* the default of `baseline` causes the deselect button to be raised on Firefox */
+    vertical-align: top;
 }
 
 .palette-color:first-child {
@@ -652,15 +670,11 @@ button:hover {
 
 .palette-color.active,
 .palette-color.no-touch:hover {
-    position: relative;
     bottom: 7px;
 }
 
 .palette-color.deselect-button {
     font-size: 1.75rem;
-    position: relative;
-    bottom: 4px;
-    left: 4px;
     color: inherit;
     color: var(--palette-deselect-button-color);
 }
@@ -964,12 +978,6 @@ header.controls {
     z-index: 18;
 }
 
-header .fas {
-    font-size: 2rem;
-    margin-top: .2rem;
-    cursor: pointer;
-}
-
 header.slim {
     height: 1.75rem;
     line-height: 1.75rem;
@@ -1012,14 +1020,6 @@ header h1, header h2, header h3, header h4, header h5, header h6 {
 
 .fas.fa-is-right, .far.fa-is-right {
     margin-left: .25rem;
-}
-
-.fa-1x {
-    font-size: 1rem !important;
-}
-
-.fa-1_5x {
-    font-size: 1.5rem !important;
 }
 
 .text-blue {
@@ -1131,6 +1131,10 @@ aside.panel {
     border-bottom: 1px solid var(--panel-borders-color);
 }
 
+.panel-header button {
+    font-size: 2rem;
+}
+
 .panel-footer {
     border-top: 1px solid #000;
     border-top: 1px solid var(--panel-borders-color);
@@ -1143,7 +1147,10 @@ aside.panel {
     text-shadow: 1px 1px 0 #AAA, -1px 1px 0 #AAA, 1px -1px 0 #AAA, -1px -1px 0 #AAA, 0px 1px 0 #AAA, 0px -1px 0 #AAA, -1px 0px 0 #AAA, 1px 0px 0 #AAA;
     text-shadow: 1px 1px 0 var(--panel-trigger-outline-color), -1px 1px 0 var(--panel-trigger-outline-color), 1px -1px 0 var(--panel-trigger-outline-color), -1px -1px 0 var(--panel-trigger-outline-color), 0px 1px 0 var(--panel-trigger-outline-color), 0px -1px 0 var(--panel-trigger-outline-color), -1px 0px 0 var(--panel-trigger-outline-color), 1px 0px 0 var(--panel-trigger-outline-color);
     display: inline-block;
-    cursor: pointer;
+    font-size: 2.5rem;
+    border: 0;
+    padding: 0;
+    margin: 0 .2rem 0 0;
 }
 
 .panel-trigger:hover {
@@ -1154,8 +1161,22 @@ aside.panel {
     color: #555;
 }
 
-.panel-trigger .fas, .panel-trigger .far, .panel-trigger .fal {
-    font-size: 2.5rem;
+.panel-closer {
+    color: #a00;
+    color: var(--panel-close-button-color);
+    border: 0;
+    padding: 0;
+    margin: .2rem 0 0 0;
+}
+
+.panel-closer:hover {
+    color: #a00;
+    color: var(--panel-close-button-color-hover);
+}
+
+.panel-closer:active {
+    color: #a00;
+    color: var(--panel-close-button-color-active);
 }
 
 article .body {

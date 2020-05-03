@@ -7,7 +7,7 @@
       right: 'auto',
       left: 'auto',
       bottom: 'auto'
-    }).text(s);
+    }).addClass('text-button').text(s);
   };
   const sendAlert = function(username) {
     if (admin.user.getRole() === 'TRIALMOD') return '';
@@ -244,18 +244,21 @@
             ),
             crel('div',
               crel('button', {
+                class: 'text-button',
                 'data-action': 'chatban',
                 'data-target': data.username,
                 style: 'position: initial; right: auto; left: auto; bottom: auto;',
                 onclick: admin.chat._handleActionClick
               }, 'Chat (un)ban'),
               crel('button', {
+                class: 'text-button',
                 'data-action': 'purge',
                 'data-target': data.username,
                 style: 'position: initial; right: auto; left: auto; bottom: auto;',
                 onclick: admin.chat._handleActionClick
               }, 'Chat purge'),
               crel('button', {
+                class: 'text-button',
                 'data-action': 'lookup-chat',
                 'data-target': data.username,
                 style: 'position: initial; right: auto; left: auto; bottom: auto;',
@@ -265,12 +268,14 @@
             (admin.user.getRole() !== 'TRIALMOD'
               ? crel('div',
                 crel('button', {
+                  class: 'text-button',
                   'data-action': 'request-rename',
                   'data-target': data.username,
                   style: 'position: initial; right: auto; left: auto; bottom: auto;',
                   onclick: admin.chat._handleActionClick
                 }, 'Request Rename'),
                 (admin.user.getRole() === 'ADMIN' || admin.user.getRole() === 'DEVELOPER' ? crel('button', {
+                  class: 'text-button',
                   'data-action': 'force-rename',
                   'data-target': data.username,
                   style: 'position: initial; right: auto; left: auto; bottom: auto;',
@@ -309,7 +314,7 @@
         });
       },
       popUnban: username => {
-        const btnSubmit = crel('button', { type: 'submit' }, 'Unban');
+        const btnSubmit = crel('button', { class: 'text-button', type: 'submit' }, 'Unban');
         const txtUnbanReason = crel('input', { type: 'text', required: 'true' });
         const lblUnbanReason = crel('label', 'Unban Reason: ', txtUnbanReason);
 
@@ -320,6 +325,7 @@
           lblUnbanReason,
           crel('div', { class: 'buttons' },
             crel('button', {
+              class: 'text-button',
               type: 'button',
               onclick: () => { admin.modal.closeAll(); }
             }, 'Cancel'),

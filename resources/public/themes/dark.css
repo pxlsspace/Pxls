@@ -34,6 +34,7 @@ html {
     --panel-header-background: linear-gradient(to bottom, #444, #333);
     --panel-background-color: #333;
     --panel-text-color: #eee;
+    --panel-close-button-color: #f44;
     
     --option-bubble-position-background-color-selected: #9d9d9d;
     --chat-separator-color: #4f4f4f;
