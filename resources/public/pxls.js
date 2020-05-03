@@ -6554,12 +6554,12 @@ window.App = (function() {
       buildDom: function(headerContent, bodyContent, footerContent) {
         return crel('div', { class: 'modal panel', tabindex: '-1', role: 'dialog' },
           crel('div', { class: 'modal-wrapper', role: 'document' },
-            headerContent == null ? null : crel('header', { class: 'modal-header' },
+            headerContent == null ? null : crel('header', { class: 'modal-header panel-header' },
               crel('div', { class: 'left' }),
               crel('div', { class: 'mid' }, headerContent),
               crel('div', { class: 'right' }, crel('a', { class: 'fas fa-times text-red', rel: 'modal:close' }))),
             bodyContent == null ? null : crel('div', { class: 'modal-body' }, bodyContent),
-            footerContent == null ? null : crel('footer', { class: 'modal-footer' }, footerContent)
+            footerContent == null ? null : crel('footer', { class: 'modal-footer panel-footer' }, footerContent)
           )
         );
       },

@@ -9,6 +9,7 @@ z-index:
  8 - login overlay
  9 - ui blobs
 10 - admin boxes
+18 - controls header
 
 21 - panels
 22 - lookup, emoji-picker
@@ -948,20 +949,19 @@ input[type="text"], input[type="number"], textarea, select {
 
 header {
     display: flex;
-    height: 2.5rem;
-    line-height: 2.5rem;
-    border-bottom: 1px solid #000;
     padding: 0 1rem;
-    background-image: linear-gradient(to bottom, #ccc, #bbb);
-    background: var(--panel-header-background);
-    user-select: none;
-    z-index: 18;
 }
 
 header.transparent {
     background-image: none;
     background-color: #fff0;
     border: 0;
+}
+
+header.controls {
+    user-select: none;
+    margin-top: 5px;
+    z-index: 18;
 }
 
 header .fas {
@@ -1081,16 +1081,6 @@ aside.panel {
     min-height: initial;
 }
 
-.panel > header, .panel > .modal-wrapper > header {
-    border-bottom: 1px solid #000;
-    border-bottom: 1px solid var(--panel-borders-color);
-}
-
-.panel > footer, .panel > .modal-wrapper > footer {
-    border-top: 1px solid #000;
-    border-top: 1px solid var(--panel-borders-color);
-}
-
 .panel.left {
     right: initial;
     transition: left ease-in-out .25s;
@@ -1127,6 +1117,23 @@ aside.panel {
     bottom: 0;
     word-wrap: break-word;
     width: 100%;
+}
+
+.panel-header, .panel-footer {
+    height: 2.5rem;
+    line-height: 2.5rem;
+}
+
+.panel-header {
+    background-image: linear-gradient(to bottom, #ccc, #bbb);
+    background: var(--panel-header-background);
+    border-bottom: 1px solid #000;
+    border-bottom: 1px solid var(--panel-borders-color);
+}
+
+.panel-footer {
+    border-top: 1px solid #000;
+    border-top: 1px solid var(--panel-borders-color);
 }
 
 .panel-trigger {
@@ -1170,6 +1177,12 @@ article .body {
     border: 1px solid var(--panel-borders-color);
     background-color: #0002;
     background-color: var(--panel-article-background-color);
+}
+
+.panel-body article:not(.naked) > header {
+    border-bottom: 1px solid var(--panel-borders-color);
+    background: linear-gradient(to bottom, #ccc, #bbb);
+    background: var(--panel-header-background);
 }
 
 .panel-body article p {
