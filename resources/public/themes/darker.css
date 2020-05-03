@@ -49,11 +49,6 @@ html {
     --chat-server-action-text-color:#ccc;
     --chat-user-text-shadow-color: #111;
     
-    --popup-background-color: #111;
-    --popup-text-color: #fff;
-    --pane-button-background: linear-gradient(0,#111,#1f1f1f,#111);
-    --pane-button-background-hover: linear-gradient(0,#000,#111,#000);
-    
     --panel-trigger-outline-color: #666;
     
     --ping-highlight-color: #5b5345;

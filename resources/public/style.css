@@ -120,14 +120,7 @@ html {
     --chat-typeahead-item-background-color: #a3a3a3;
     --chat-typeahead-item-background-color-hover: #949494;
     --chat-typeahead-item-background-color-active: #828282;
-    
-    --popup-background-color: #eee;
-    --popup-border-color: #000;
-    --popup-text-color: inherit;
-    --popup-timestamp-text-color: #aaa;
-    --pane-button-background: linear-gradient(0deg, #eee, #ccc, #eee);
-    --pane-button-background-hover: linear-gradient(0deg, #ddd, #bbb, #ddd);
-        
+
     --emoji-picker-border-color: #999999;
     --emoji-picker-shadow-color: #CCCCCC;
     --emoji-picker-background-color: #FFFFFF;
@@ -1823,16 +1816,10 @@ body .emoji-picker {
     width: 100px;
     max-width: 200px;
     height: auto;
-    background-color: #eee;
-    background-color: var(--popup-background-color);
     border-radius: 5px;
-    border: 1px solid #000;
-    border: 1px solid var(--popup-border-color);
     font-size: 1rem !important;
     line-height: 1rem !important;
     overflow: hidden;
-    color: inherit;
-    color: var(--popup-text-color);
 }
 
 .popup.panels {
@@ -1848,6 +1835,8 @@ body .emoji-picker {
 
 .popup.panels .actions-wrapper {
     width: 35%;
+    background-color: #0002;
+    background-color: var(--panel-article-background-color);
 }
 
 .popup.panels .pane {
@@ -1879,7 +1868,7 @@ body .emoji-picker {
     max-height: 100%;
     max-width: 100%;
     border-left: 1px solid #000;
-    border-left: 1px solid var(--popup-border-color);
+    border-left: 1px solid var(--panel-border-color);
 }
 
 .pane ul.actions-list li {
@@ -1891,10 +1880,8 @@ body .emoji-picker {
     margin: 0;
     padding: 8px 0;
     border-bottom: 1px solid #000;
-    border-bottom: 1px solid var(--popup-border-color);
+    border-bottom: 1px solid var(--panel-border-color);
     text-align: center;
-    color: #aaa;
-    color: var(--popup-timestamp-text-color);
 }
 
 /* Settings tweaks */

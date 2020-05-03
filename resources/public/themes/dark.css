@@ -44,12 +44,6 @@ html {
     --chat-server-action-text-color: #9f9f9f;
     --chat-user-text-shadow-color: #333;
     
-    --popup-background-color: #333;
-    --popup-border-color: #000;
-    --popup-text-color: #ccc;
-    --pane-button-background: linear-gradient(0,#333,#3f3f3f,#333);
-    --pane-button-background-hover: linear-gradient(0,#2a2a2a,#3a3a3a,#2a2a2a);
-    
     --emoji-picker-border-color: #515151;
     --emoji-picker-shadow-color: #1f1f1f;
     --emoji-picker-background-color: #333333;

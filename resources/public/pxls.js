@@ -5095,7 +5095,7 @@ window.App = (function() {
             }
           };
 
-          const popupWrapper = crel('div', { class: 'popup panels', 'data-popup-for': id });
+          const popupWrapper = crel('div', { class: 'popup panels panel', 'data-popup-for': id });
           const panelHeader = crel('header',
             { class: 'panel-header' },
             crel('button', { class: 'left panel-closer' }, crel('i', {
@@ -5121,7 +5121,7 @@ window.App = (function() {
             { label: 'Chat Lookup', action: 'lookup-chat', staffaction: true }
           ];
 
-          crel(leftPanel, crel('p', { class: 'popup-timestamp-header' }, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(ls.get('chat.24h') === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
+          crel(leftPanel, crel('p', { class: 'popup-timestamp-header text-muted' }, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(ls.get('chat.24h') === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
           crel(leftPanel, crel('p', { class: 'content', style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector('.content').textContent));
 
           crel(actionsList, actions
