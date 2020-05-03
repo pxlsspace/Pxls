@@ -1122,12 +1122,13 @@ aside.panel {
 
 .panel-body {
     padding: 0 .5rem;
-    overflow: auto;
-    position: absolute;
-    top: 2.65rem;
-    bottom: 0;
     word-wrap: break-word;
-    width: 100%;
+}
+
+aside.panel .panel-body {
+    overflow: auto;
+    height: 100%;
+    height: calc(100% - 2.75em);
 }
 
 .panel-header, .panel-footer {
