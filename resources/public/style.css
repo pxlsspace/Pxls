@@ -189,6 +189,10 @@ html, body {
     display: none !important;
 }
 
+.fullwidth {
+    width: 100%;
+}
+
 a, a:hover, a:visited, a:active, .link, .link:hover, .link:active {
     color: inherit;
     cursor: pointer;
@@ -419,7 +423,7 @@ button.text-button:hover {
     z-index: 22;
 }
 
-#lookup .report-button {
+button.report-button {
     background-color: #e20;
     background-color: var(--report-button-background-color);
     color: #fff;
@@ -428,7 +432,7 @@ button.text-button:hover {
     border-color: var(--report-button-border-color);
 }
 
-#lookup .report-button:hover {
+button.report-button:hover {
     background-color: #f10;
     background-color: var(--report-button-background-color-hover);
 }
@@ -1835,9 +1839,7 @@ body .emoji-picker {
     width: 99%;
     max-height: 99vh;
     max-width: 400px;
-    min-height: 200px;
     min-width: 300px;
-    padding-bottom: .5rem;
 }
 
 .popup.panels .details-wrapper {
@@ -1872,37 +1874,17 @@ body .emoji-picker {
 .pane ul.actions-list {
     margin: 0;
     padding: 0;
+    padding-bottom: .5em;
     list-style: none;
-    display: flex;
-    flex-flow: column;
     max-height: 100%;
     max-width: 100%;
-}
-
-.pane ul.actions-list li[data-action] {
-    border-bottom: 1px solid #000;
-    border-bottom: 1px solid var(--popup-border-color);
     border-left: 1px solid #000;
     border-left: 1px solid var(--popup-border-color);
-    flex: 1 0 2em;
+}
+
+.pane ul.actions-list li {
     line-height: 2em;
-    text-align: center;
-    background-image: linear-gradient(0deg, #eee, #ccc, #eee);
-    background: var(--pane-button-background);
-    padding: 0 1em;
-}
-
-.pane ul.actions-list li[data-action]:hover {
-    background-image: linear-gradient(0deg, #ddd, #bbb, #ddd);
-    background: var(--pane-button-background-hover);
-}
-
-.pane ul.actions-list li[data-action]:not(:only-of-type):last-child {
-    border-radius: 0 0 0 5px;
-}
-
-.pane ul.actions-list li[data-action]:hover {
-    cursor: pointer;
+    padding: 0 .5em;
 }
 
 .popup-timestamp-header {

@@ -5109,67 +5109,30 @@ window.App = (function() {
           const rightPanel = crel('div', { class: 'pane actions-wrapper' });
           const actionsList = crel('ul', { class: 'actions-list' });
 
-          const actionReport = crel('li', {
-            class: 'text-red',
-            'data-action': 'report',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Report');
-          const actionMention = crel('li', {
-            'data-action': 'mention',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Mention');
-          const actionIgnore = crel('li', {
-            'data-action': 'ignore',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Ignore');
-          const actionProfile = crel('li', {
-            'data-action': 'profile',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Profile');
-          const actionChatban = crel('li', {
-            'data-action': 'chatban',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Chat (un)ban');
-          const actionPurgeUser = crel('li', {
-            'data-action': 'purge',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Purge User');
-          const actiondeleteMessage = crel('li', {
-            'data-action': 'delete',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Delete');
-          const actionModLookup = crel('li', {
-            'data-action': 'lookup-mod',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Mod Lookup');
-          const actionChatLookup = crel('li', {
-            'data-action': 'lookup-chat',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Chat Lookup');
+          const actions = [
+            { label: 'Report', action: 'report', class: 'report-button' },
+            { label: 'Mention', action: 'mention' },
+            { label: 'Ignore', action: 'ignore' },
+            { label: 'Profile', action: 'profile' },
+            { label: 'Chat (un)ban', action: 'chatban', staffaction: true },
+            { label: 'Purge User', action: 'purge', staffaction: true },
+            { label: 'Delete', action: 'delete', staffaction: true },
+            { label: 'Mod Lookup', action: 'lookup-mod', staffaction: true },
+            { label: 'Chat Lookup', action: 'lookup-chat', staffaction: true }
+          ];
 
           crel(leftPanel, crel('p', { class: 'popup-timestamp-header' }, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(ls.get('chat.24h') === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
           crel(leftPanel, crel('p', { class: 'content', style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector('.content').textContent));
 
-          crel(actionsList, actionReport);
-          crel(actionsList, actionMention);
-          crel(actionsList, actionProfile);
-          crel(actionsList, actionIgnore);
-          if (user.isStaff()) {
-            crel(actionsList, actionChatban);
-            crel(actionsList, actiondeleteMessage);
-            crel(actionsList, actionPurgeUser);
-            crel(actionsList, actionModLookup);
-            crel(actionsList, actionChatLookup);
-          }
+          crel(actionsList, actions
+            .filter((action) => user.isStaff() || !action.staffaction)
+            .map((action) => crel('li', crel('button', {
+              type: 'button',
+              class: 'text-button fullwidth ' + (action.class || ''),
+              'data-action': action.action,
+              'data-id': id,
+              onclick: self._handleActionClick
+            }, action.label))));
           crel(rightPanel, actionsList);
 
           const popup = crel(popupWrapper, panelHeader, leftPanel, rightPanel);
