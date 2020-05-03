@@ -79,10 +79,6 @@ html {
     --notification-footer-background-color: #2e2e2e;
     --notification-footer-text-color: #666;
     --notification-expiry-color: #995050;
-    
-    --modal-text-color: #ddd;
-    --modal-background-color: #3d3d3d;
-    --modal-headfoot-background-color: #292929;
 }
 
 hr {

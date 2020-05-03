@@ -124,11 +124,7 @@ html {
     --notification-footer-background-color: #d6d6d6;
     --notification-footer-text-color: #666;
     --notification-expiry-color: #b66;
-    
-    --modal-text-color: inherit;
-    --modal-background-color: #f5f5f5;
-    --modal-headfoot-background-color: #b8b8b8;
-    
+        
     --emoji-picker-border-color: #999999;
     --emoji-picker-shadow-color: #CCCCCC;
     --emoji-picker-background-color: #FFFFFF;
@@ -1062,13 +1058,16 @@ aside.panel {
     max-width: 50%;
     min-width: 30%;
     height: 100%;
+    z-index: 21;
+    cursor: initial !important;
+}
+
+.panel {
     box-shadow: 0 0 10px 5px #0009;
     background-color: #dfdfdf;
     background-color: var(--panel-background-color);
     color: inherit;
     color: var(--panel-text-color);
-    z-index: 21;
-    cursor: initial !important;
 }
 
 .panel.half-width {
@@ -1082,9 +1081,14 @@ aside.panel {
     min-height: initial;
 }
 
-.panel header {
+.panel > header, .panel > .modal-wrapper > header {
     border-bottom: 1px solid #000;
     border-bottom: 1px solid var(--panel-borders-color);
+}
+
+.panel > footer, .panel > .modal-wrapper > footer {
+    border-top: 1px solid #000;
+    border-top: 1px solid var(--panel-borders-color);
 }
 
 .panel.left {
@@ -1991,45 +1995,17 @@ body .emoji-picker {
     min-width: 10vw;
     max-width: 96vw;
     max-height: 99vh;
-    background-color: #f5f5f5;
-    background-color: var(--modal-background-color);
     padding: 0;
     outline: 0;
-    color: inherit;
-    color: var(--modal-text-color);
-}
-
-.modal a.close-modal {
-    position: absolute;
-    font-size: 1.25em;
-    top: 0;
-    right: 0;
-    background: #660000;
-    width: 1.5em;
-    height: 1.5em;
-    line-height: 1.5em;
-    text-align: center;
-    color: #eee;
-    text-decoration: none;
-    text-indent: 0;
-    border-radius: 0 6px 0 12px;
-    box-shadow: 1px 1px 5px #660000aa;
 }
 
 .modal .modal-footer {
     text-align: right;
 }
 
-.modal .close-modal {
-    outline: none;
-}
-
 .modal .modal-header, .modal .modal-footer {
     margin: 0;
-    padding: 5px 7px;
     min-height: 2em;
-    background-color: #b8b8b8;
-    background-color: var(--modal-headfoot-background-color);
 }
 
 .modal .modal-header {

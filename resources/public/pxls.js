@@ -6538,7 +6538,7 @@ window.App = (function() {
           closeExisting: true,
           escapeClose: true,
           clickClose: true,
-          showClose: true,
+          showClose: false,
           closeText: '<i class="fas fa-times"></i>'
         }, { removeOnClose: true }, opts);
         if (!document.body.contains(modal)) {
@@ -6552,11 +6552,14 @@ window.App = (function() {
         }
       },
       buildDom: function(headerContent, bodyContent, footerContent) {
-        return crel('div', { class: 'modal', tabindex: '-1', role: 'dialog' },
+        return crel('div', { class: 'modal panel', tabindex: '-1', role: 'dialog' },
           crel('div', { class: 'modal-wrapper', role: 'document' },
-            headerContent == null ? null : crel('div', { class: 'modal-header' }, headerContent),
+            headerContent == null ? null : crel('header', { class: 'modal-header' },
+              crel('div', { class: 'left' }),
+              crel('div', { class: 'mid' }, headerContent),
+              crel('div', { class: 'right' }, crel('a', { class: 'fas fa-times text-red', rel: 'modal:close' }))),
             bodyContent == null ? null : crel('div', { class: 'modal-body' }, bodyContent),
-            footerContent == null ? null : crel('div', { class: 'modal-footer' }, footerContent)
+            footerContent == null ? null : crel('footer', { class: 'modal-footer' }, footerContent)
           )
         );
       },
