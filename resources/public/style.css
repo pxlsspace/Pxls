@@ -115,6 +115,11 @@ html {
     --chat-user-text-shadow-color: #ccc;
     --chat-purged-text-color: #888;
     
+    --chat-tobottom-text-color: #fff;
+    --chat-tobottom-background-color: #66a;
+    --chat-tobottom-text-color-hover: var(--chat-tobottom-text-color);
+    --chat-tobottom-background-color-hover: #5c5ca0;
+    
     --chat-typeahead-menu-background-color: #b9b9b9;
     --chat-typeahead-item-text-color: inherit;
     --chat-typeahead-item-background-color: #a3a3a3;
@@ -1511,11 +1516,13 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 #jump-to-bottom {
     text-align: center;
     color: #fff;
+    color: var(--chat-tobottom-text-color);
     line-height: 1.25rem;
     font-size: .8rem;
     font-weight: bold;
     border-radius: 5px 5px 0 0;
     background-color: #66a;
+    background-color: var(--chat-tobottom-background-color);
     cursor: pointer;
     position: absolute;
     top: -1.25rem;
@@ -1524,7 +1531,10 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 }
 
 #jump-to-bottom:hover {
+    color: #fff;
+    color: var(--chat-tobottom-text-color-hover);
     background-color: #5c5ca0;
+    background-color: var(--chat-tobottom-background-color-hover);
 }
 
 #emojiPanelTrigger {
