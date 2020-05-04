@@ -38,25 +38,9 @@
     left: 172px;
 }
 
-.admin-check {
-    position: fixed;
-
-    z-index: 22;
-    top: 45vh;
-    left: 50%;
-    transform: translateX(-50%) translateY(-50%);
-    max-height: 100vh;
-    overflow-y: auto;
-}
-
 .admin input[type=text] {
     width: 80%;
     margin-top: 4px;
-}
-
-.admin-lookup-msg {
-    width: 100%;
-    margin-top: 6px;
 }
 
 .admin-bannumber {

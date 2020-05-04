@@ -157,7 +157,7 @@
   const checkUser = (function () {
     const self = {
       elements: {
-        check: $('<div>').addClass('admin-check floating-panel')
+        check: $('<div>').addClass('message floating-panel')
       },
       callback: function (data) {
         const delta = (data.banExpiry - (new Date()).getTime()) / 1000;
