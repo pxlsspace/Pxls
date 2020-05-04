@@ -405,12 +405,16 @@ dt {
     transform: translate(-50%, -50%);
 }
 
+#prompt, #signup {
+    z-index: 99;
+}
+
 /* body preselector is to give more precident to .message than to .floating-panel */
 body .message {
     padding: 30px 30px 10px;
     max-width: 40%;
     min-width: 20%;
-    z-index: 99;
+    z-index: 22;
 
     position: fixed;
     top: 45vh;
