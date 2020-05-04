@@ -142,7 +142,7 @@
     <header class="panel-header">
         <div class="left"></div>
         <div class="mid">
-            <h2><i class="fas fa-info-circle fa-is-left fa-1_5x"></i>Info</h2>
+            <h2><i class="fas fa-info-circle fa-is-left"></i>Info</h2>
         </div>
         <div class="right">
             <button type="button" class="panel-closer"><i class="fas fa-times"></i></button>
@@ -158,7 +158,7 @@
         <div class="left">
             <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
         </div>
-        <h2><i class="fas fa-comment-alt fa-is-left fa-1_5x"></i>Chat <span class="mobile-only" id="txtMobileChatCooldown"></span></h2>
+        <h2><i class="fas fa-comment-alt fa-is-left"></i>Chat <span class="mobile-only" id="txtMobileChatCooldown"></span></h2>
         <div class="right">
             <button type="button" title="Pings"><i class="fas fa-at" id="btnPings"></i></i></button>
             <button type="button" title="Settings"><i class="fas fa-cogs" id="btnChatSettings"></i></button>
@@ -196,13 +196,13 @@
             <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
         </div>
         <div class="mid">
-            <h2><i class="fas fa-cogs fa-is-left fa-1_5x"></i>Settings</h2>
+            <h2><i class="fas fa-cogs fa-is-left"></i>Settings</h2>
         </div>
         <div class="right"></div>
     </header>
     <div class="panel-body">
         <article class="no-p-margin">
-            <header class="slim">
+            <header>
                 <h2>Keybinds</h2>
             </header>
             <div class="pad-wrapper">
@@ -235,7 +235,7 @@
             </div>
         </article>
         <article>
-            <header class="slim">
+            <header>
                 <h2>General Settings</h2>
             </header>
             <div class="pad-wrapper">
@@ -247,64 +247,64 @@
                             </select>
                         </label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="audiotoggle" type="checkbox"/>Mute sound</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="heatmaptoggle" type="checkbox"/>Turn on heatmap (toggle with <kbd>H</kbd>)</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="virginmaptoggle" type="checkbox"/>Turn on virginmap (toggle with <kbd>X</kbd>)</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <button class="text-button" id="hvmapClear">Clear heatmap and virginmap</button> (hotkey: <kbd>O</kbd>)
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="gridtoggle" type="checkbox"/>Turn on grid (toggle with <kbd>G</kbd>)</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input type="checkbox" id="lockCanvasToggle">Lock the canvas (disallow canvas drag/zoom with mouse/fingers)</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="native-notification-toggle" type="checkbox"/>Enable pixel available notification</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="stickyColorToggle" type="checkbox"/>Keep color selected</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="monospaceToggle" type="checkbox"/>Toggle monospace font for lookups</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="increasedZoomToggle" type="checkbox"/>Allow zoom values greater than 50x</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="scrollSwitchToggle" type="checkbox"/>Enable scrolling on the palette to switch colors</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label style="text-indent:1em"><input id="scrollDirectionToggle" type="checkbox"/>Invert scroll direction</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="showReticuleToggle" type="checkbox"/>Show Reticule</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="showCursorToggle" type="checkbox"/>Show Cursor</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="templateBeneathHeatmapToggle" type="checkbox"/>Layer Template Underneath Heatmap</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="cbEnableMiddleMouseSelect" type="checkbox"> Enable middle mouse button selecting color from board</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="cbNumberedPalette" type="checkbox"> Add numbers to palette entries</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label>Heatmap Background Opacity: <input type="range" min="0" max="1" step="0.01" id="heatmap-opacity"></label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label>Virginmap Background Opacity: <input type="range" min="0" max="1" step="0.01" id="virginmap-opacity"></label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label>
                             Snapshot (hotkey: <kbd>P</kbd>) image format
                             <select id="snapshotImageFormat">
@@ -347,7 +347,7 @@
             </div>
         </article>
         <article>
-            <header class="slim">
+            <header>
                 <h2>Template</h2>
             </header>
             <div class="pad-wrapper">
@@ -355,15 +355,15 @@
                     <label><input type="checkbox" id="template-use"> Use template</label>
                 </div>
                 <p>Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around</p>
-                <div class="longTextInputWrapper d-block">
+                <p>
                     <label>Title:</label>
-                    <input type="text" id="template-title">
-                </div>
-                <div class="longTextInputWrapper d-block">
+                    <input class="fullwidth" type="text" id="template-title">
+                </p>
+                <p>
                     <label>URL:</label>
-                    <input type="text" id="template-url">
+                    <input class="fullwidth" type="text" id="template-url">
                     <span id="template-image-error-warning" class="text-red">There was an error getting the image</span>
-                </div>
+                </p>
                 <div>
                     <label>Position: <input type="number" min="0" class="template-coords small-input" id="template-coords-x">, <input type="number" min="0" class="template-coords small-input" id="template-coords-y"></label>
                 </div>
@@ -378,12 +378,12 @@
             </div>
         </article>
         <article>
-            <header class="slim">
+            <header>
                 <h2>Pixel Ready Alert Settings</h2>
             </header>
             <div class="pad-wrapper">
-                <p class="longTextInputWrapper"><label for="txtAlertLocation">Alert URL:</label><input type="text" placeholder="notify.wav" id="txtAlertLocation"></p>
-                <div class="ButtonBar">
+                <p><label for="txtAlertLocation">Alert URL:</label><input class="fullwidth" type="text" placeholder="notify.wav" id="txtAlertLocation"></p>
+                <div class="button-bar">
                     <button class="text-button" id="btnForceAudioUpdate">Update</button>
                     <button class="text-button" id="btnAlertAudioTest">Test</button>
                     <button class="text-button" id="btnAlertReset">Reset</button>
@@ -397,12 +397,12 @@
             </div>
         </article>
         <article>
-            <header class="slim">
+            <header>
                 <h2>Account Settings</h2>
             </header>
             <div class="pad-wrapper">
-                <p class="longTextInputWrapper"><label for="txtDiscordName">Public Discord Name:</label><input type="text" placeholder="pxlslover#1337" id="txtDiscordName"></p>
-                <div class="ButtonBar">
+                <p><label for="txtDiscordName">Public Discord Name:</label><input class="fullwidth" type="text" placeholder="pxlslover#1337" id="txtDiscordName"></p>
+                <div class="button-bar">
                     <button class="text-button" id="btnDiscordNameSet">Set</button>
                     <button class="text-button" id="btnDiscordNameRemove">Remove</button>
                 </div>
@@ -411,10 +411,10 @@
     </div>
 </aside>
 
-<aside id="faq" data-panel="faq" class="panel half-width left">
+<aside id="faq" data-panel="faq" class="panel left">
     <header class="panel-header">
         <div class="left"></div>
-        <h2><i class="fas fa-question-circle fa-is-left fa-1_5x"></i>Help</h2>
+        <h2><i class="fas fa-question-circle fa-is-left"></i>Help</h2>
         <div class="right">
             <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
         </div>
@@ -427,7 +427,7 @@
 <aside id="notifications" data-panel="notifications" class="panel left">
     <header class="panel-header">
         <div class="left"></div>
-        <h2><i class="fas fa-bell fa-is-left fa-1_5x"></i>Notifications</h2>
+        <h2><i class="fas fa-bell fa-is-left"></i>Notifications</h2>
         <div class="right">
             <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
         </div>

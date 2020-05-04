@@ -3047,7 +3047,7 @@ window.App = (function() {
           switch (evt.key || evt.which) {
             case 'Escape':
             case 27: {
-              const selector = $('#lookup, #prompt, #alert, .popup.panels');
+              const selector = $('#lookup, #prompt, #alert, .popup');
               const openPanels = $('.panel.open');
               if (selector.is(':visible')) {
                 selector.fadeOut(200);
@@ -4083,7 +4083,7 @@ window.App = (function() {
         });
 
         $(window).on('resize', e => {
-          const popup = document.querySelector('.popup.panels[data-popup-for]');
+          const popup = document.querySelector('.popup[data-popup-for]');
           if (!popup) return;
           const cog = document.querySelector(`.chat-line[data-id="${popup.dataset.popupFor}"] [data-action="actions-panel"]`);
           if (!cog) return console.warn('no cog');
@@ -4096,7 +4096,7 @@ window.App = (function() {
         });
 
         self.elements.body[0].addEventListener('wheel', e => {
-          const popup = document.querySelector('.popup.panels');
+          const popup = document.querySelector('.popup');
           if (popup) popup.remove();
         });
 
@@ -4115,12 +4115,12 @@ window.App = (function() {
         self.elements.pings_button[0].addEventListener('click', function() {
           const closeHandler = function() {
             if (this && this.closest) {
-              const toClose = this.closest('.popup.panels');
+              const toClose = this.closest('.popup');
               if (toClose) toClose.remove();
             }
           };
 
-          const popupWrapper = crel('div', { class: 'popup panels' });
+          const popupWrapper = crel('div', { class: 'popup panel' });
           const panelHeader = crel('header', { class: 'panel-header' },
             crel('button', { class: 'left panel-closer' }, crel('i', {
               class: 'fas fa-times',
@@ -4588,7 +4588,7 @@ window.App = (function() {
             lblUsernameColor,
             lblIgnores,
             lblIgnoresFeedback
-          ].map(x => crel('div', { class: 'd-block' }, x))
+          ].map(x => crel('div', x))
         );
         modal.show(modal.buildDom(
           crel('h2', { class: 'modal-title' }, 'Chat Settings'),
@@ -5090,12 +5090,12 @@ window.App = (function() {
 
           const closeHandler = function() {
             if (this && this.closest) {
-              const toClose = this.closest('.popup.panels');
+              const toClose = this.closest('.popup');
               if (toClose) toClose.remove();
             }
           };
 
-          const popupWrapper = crel('div', { class: 'popup panels panel', 'data-popup-for': id });
+          const popupWrapper = crel('div', { class: 'popup panel', 'data-popup-for': id });
           const panelHeader = crel('header',
             { class: 'panel-header' },
             crel('button', { class: 'left panel-closer' }, crel('i', {
@@ -5497,10 +5497,7 @@ window.App = (function() {
             break;
           }
           case 'purge': {
-            // const lblPurgeAmountError = crel('label', { class: 'hidden error-label' });
-
             const txtPurgeReason = crel('input', { type: 'text', onkeydown: e => e.stopPropagation() });
-            const lblPurgeReasonError = crel('label', { class: 'hidden error-label' });
 
             const btnPurge = crel('button', { class: 'text-button', type: 'submit' }, 'Purge');
 
@@ -5527,9 +5524,7 @@ window.App = (function() {
               messageTable,
               crel('div',
                 crel('h5', 'Purge Reason'),
-                txtPurgeReason,
-                crel('br'),
-                lblPurgeReasonError
+                txtPurgeReason
               ),
               crel('div', { class: 'buttons' },
                 crel('button', {
