@@ -60,7 +60,7 @@
             genButton('Cancel').click(function () {
               self.elements.prompt.fadeOut(200);
             }),
-            genButton('OK').click(function () {
+            genButton('Ban').addClass('dangerous-button').click(function () {
               const selectedRule = self.elements.prompt.find('select').val();
               const textarea = self.elements.prompt.find('textarea').val().trim();
               let msg = selectedRule;

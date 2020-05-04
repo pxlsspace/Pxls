@@ -2507,7 +2507,7 @@ window.App = (function() {
       },
       handle: null,
       report: function(id, x, y) {
-        const reportButton = crel('button', { class: 'text-button' }, 'Report');
+        const reportButton = crel('button', { class: 'text-button dangerous-button' }, 'Report');
         reportButton.addEventListener('click', function() {
           this.disabled = true;
           this.textContent = 'Sending...';
@@ -5186,7 +5186,7 @@ window.App = (function() {
         switch (this.dataset.action.toLowerCase().trim()) {
           case 'report': {
             const reportButton = crel('button', {
-              style: 'position: initial;',
+              class: 'text-button dangerous-button',
               type: 'submit'
             }, 'Report');
             const textArea = crel('textarea', {
@@ -5336,7 +5336,7 @@ window.App = (function() {
                 modal.closeAll();
               }
             }, 'Cancel');
-            const _btnOK = crel('button', { class: 'text-button', type: 'submit' }, 'Ban');
+            const _btnOK = crel('button', { class: 'text-button dangerous-button', type: 'submit' }, 'Ban');
 
             const chatbanContainer = crel('form', {
               class: 'chatmod-container',
@@ -5457,7 +5457,7 @@ window.App = (function() {
             if (e.shiftKey === true) {
               return dodelete();
             }
-            const btndelete = crel('button', { class: 'text-button' }, 'Delete');
+            const btndelete = crel('button', { class: 'text-button dangerous-button' }, 'Delete');
             btndelete.onclick = () => dodelete();
             const deleteWrapper = crel('div', { class: 'chatmod-container' },
               crel('table',
@@ -5499,7 +5499,7 @@ window.App = (function() {
           case 'purge': {
             const txtPurgeReason = crel('input', { type: 'text', onkeydown: e => e.stopPropagation() });
 
-            const btnPurge = crel('button', { class: 'text-button', type: 'submit' }, 'Purge');
+            const btnPurge = crel('button', { class: 'text-button dangerous-button', type: 'submit' }, 'Purge');
 
             const messageTable = mode
               ? crel('table',
