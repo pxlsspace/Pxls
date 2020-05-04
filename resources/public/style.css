@@ -1039,8 +1039,7 @@ footer {
 aside.panel {
     position: fixed;
     top: 0;
-    max-width: 50%;
-    min-width: 30%;
+    max-width: 30%;
     height: 100%;
     z-index: 21;
     cursor: initial !important;
