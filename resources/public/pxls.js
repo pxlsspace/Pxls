@@ -952,11 +952,24 @@ window.App = (function() {
         self.elements.container[0].addEventListener('wheel', function(evt) {
           if (!self.allowDrag) return;
           const oldScale = self.scale;
-          if (evt.deltaY > 0) {
-            self.nudgeScale(-1);
-          } else {
-            self.nudgeScale(1);
+
+          let delta = evt.deltaY;
+
+          switch (evt.deltaMode) {
+            case WheelEvent.DOM_DELTA_PIXEL:
+              // 53 pixels is the default chrome gives for a wheel scroll.
+              delta /= 53;
+              break;
+            case WheelEvent.DOM_DELTA_LINE:
+              // default case on Firefox, three lines is default number.
+              delta /= 3;
+              break;
+            case WheelEvent.DOM_DELTA_PAGE:
+              delta = Math.sign(delta);
+              break;
           }
+
+          self.nudgeScale(delta);
 
           if (oldScale !== self.scale) {
             const dx = evt.clientX - self.elements.container.width() / 2;
@@ -1130,6 +1143,11 @@ window.App = (function() {
         $('#templateBeneathHeatmapToggle').on('change input', event => {
           ls.set('templateBeneathHeatmap', event.target.checked);
           self.elements.container.toggleClass('lower-template', event.target.checked);
+        });
+
+        $('#zoomBaseValue').val(self.getZoomBase());
+        $('#zoomBaseValue').on('change input', event => {
+          ls.set('zoomBaseValue', event.target.value);
         });
       },
       start: function() {
@@ -1310,33 +1328,16 @@ window.App = (function() {
         self.scale = scale;
         self.update();
       },
+      getZoomBase: function() {
+        return parseFloat(ls.get('zoomBaseValue')) || 1.5;
+      },
       nudgeScale: function(adj) {
-        const oldScale = Math.abs(self.scale);
-        const sign = Math.sign(self.scale);
         const maxUnlocked = ls.get('increased_zoom') === true;
-        if (adj === -1) {
-          if (oldScale <= 1) {
-            self.scale = 0.5;
-          } else if (oldScale <= 2) {
-            self.scale = 1;
-          } else {
-            self.scale = Math.round(Math.max(2, oldScale / 1.25));
-          }
-        } else {
-          if (oldScale === 0.5) {
-            self.scale = 1;
-          } else if (oldScale === 1) {
-            self.scale = 2;
-          } else {
-            let modifiedScale = oldScale * 1.25;
-            if (maxUnlocked && oldScale >= 50) {
-              modifiedScale = oldScale * 1.15;
-            }
-            modifiedScale = Math.ceil(modifiedScale);
-            self.scale = maxUnlocked ? modifiedScale : Math.round(Math.min(50, modifiedScale));
-          }
-        }
-        self.scale *= sign;
+        const maximumValue = maxUnlocked ? Infinity : 50;
+        const minimumValue = maxUnlocked ? 0 : 0.5;
+        const zoomBase = self.getZoomBase();
+
+        self.scale = Math.max(minimumValue, Math.min(maximumValue, self.scale * zoomBase ** -adj));
         self.update();
       },
       getPixel: function(x, y) {
