@@ -243,13 +243,8 @@ public class Faction {
         new int[] {0x2190, 0x2199}, // simple arrows
         new int[] {0x231A, 0x231B}, // watch, hourglass from misc technical
         new int[] {0x23EA, 0x23FA}, // more emoji from misc technical
-        new int[] {0x2460, 0x2468}, // circled numbers up to 9
-        new int[] {0x24B6, 0x24EA}, // circled alphabet + circled zero
         new int[] {0x2600, 0x27BF}, // misc symbols (♥), dingbats (sparkle, heavy heart)
         new int[] {0xFE00, 0xFE0F}, // variation selectors (heart color)
-        new int[] {0xFF01, 0xFF5E}, // fullwidth latin characters
-        new int[] {0xFFE1}, // fullwidth pound
-        new int[] {0xFFE5, 0xFFE6}, // fullwidth yen + won
         new int[] {0x1F000, 0x1FAFF} // emoji
     );
     private static boolean checkCodepoints(String input) {
