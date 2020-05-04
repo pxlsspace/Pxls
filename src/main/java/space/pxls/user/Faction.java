@@ -231,8 +231,18 @@ public class Faction {
         new int[] {0x0000, 0x007F}, // basic latin
         new int[] {0x00A1, 0x024F}, // subset of latin-1 supplement (printables, no controls)
         new int[] {0x0400, 0x04FF}, // cyrillic
-        new int[] {0x500, 0x052F}, // cyrillic supplement
+        new int[] {0x0500, 0x052F}, // cyrillic supplement
         new int[] {0x2122}, // (tm)
+        new int[] {0x2010, 0x2014}, // various dashes
+        new int[] {0x2018, 0x201F}, // double and single quote marks
+        new int[] {0x2026}, // ellipsis
+        new int[] {0x203D}, // interrobang
+        new int[] {0x20AC}, // Euro symbol
+        new int[] {0x20BF}, // Bitcoin symbol
+        new int[] {0x2150, 0x215E}, // fractions such as 1/7 and 3/5
+        new int[] {0x2190, 0x2199}, // simple arrows
+        new int[] {0x231A, 0x231B}, // watch, hourglass from misc technical
+        new int[] {0x23EA, 0x23FA}, // more emoji from misc technical
         new int[] {0x2600, 0x27BF}, // misc symbols (♥), dingbats (sparkle, heavy heart)
         new int[] {0xFE00, 0xFE0F}, // variation selectors (heart color)
         new int[] {0x1F000, 0x1FAFF} // emoji
