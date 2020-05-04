@@ -17,8 +17,9 @@ html {
     --floating-panel-border-color: #222;
     --floating-panel-background-color: #000;
     
-    --report-button-background-color: #d00;
-    --report-button-background-color-hover: #d50000;
+    --dangerous-button-background-color: #d00;
+    --dangerous-button-background-color-hover: #d50000;
+    --dangerous-button-border-color: var(--dangerous-button-background-color);
     
     --palette-background-color: #000;
     --palette-overlay-background-color: #000;
@@ -85,10 +86,6 @@ html {
 
 .message {
     border: 2px solid #333;
-}
-
-#lookup .report-button {
-    border: 1px solid var(--report-button-background-color);
 }
 
 hr {

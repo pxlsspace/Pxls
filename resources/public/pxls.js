@@ -2674,7 +2674,7 @@ window.App = (function() {
         return self.elements.lookup.empty().append(
           $('<div>').addClass('content'),
           (!data.bg && user.isLoggedIn()
-            ? $('<button>').css('float', 'left').addClass('report-button text-button').text('Report').click(function() {
+            ? $('<button>').css('float', 'left').addClass('dangerous-button text-button').text('Report').click(function() {
               self.report(data.id, data.x, data.y);
             })
             : ''),
@@ -5110,7 +5110,7 @@ window.App = (function() {
           const actionsList = crel('ul', { class: 'actions-list' });
 
           const actions = [
-            { label: 'Report', action: 'report', class: 'report-button' },
+            { label: 'Report', action: 'report', class: 'dangerous-button' },
             { label: 'Mention', action: 'mention' },
             { label: 'Ignore', action: 'ignore' },
             { label: 'Profile', action: 'profile' },

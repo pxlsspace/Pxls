@@ -41,10 +41,12 @@ html {
     --button-border-color-hover: #999;
     --button-background-color-hover: #ce4747;
     
-    --report-button-text-color: #fff;
-    --report-button-background-color: #e20;
-    --report-button-background-color-hover: #f10;
-    --report-button-border-color: unset;
+    --dangerous-button-text-color: #fff;
+    --dangerous-button-background-color: #e20;
+    --dangerous-button-border-color: unset;
+    --dangerous-button-text-color-hover: var(--dangerous-button-text-color);
+    --dangerous-button-background-color-hover: #f10;
+    --dangerous-button-border-color-hover: var(--dangerous-button-border-color);
     
     --floating-panel-text-color: inherit;
     --floating-panel-border-color: #ccc;
@@ -291,18 +293,22 @@ button.text-button:hover {
     border-color: var(--button-border-color-hover);
 }
 
-button.report-button {
+button.dangerous-button {
     background-color: #e20;
-    background-color: var(--report-button-background-color);
+    background-color: var(--dangerous-button-background-color);
     color: #fff;
-    color: var(--report-button-text-color);
+    color: var(--dangerous-button-text-color);
     border-color: unset;
-    border-color: var(--report-button-border-color);
+    border-color: var(--dangerous-button-border-color);
 }
 
-button.report-button:hover {
+button.dangerous-button:hover {
+    color: #fff;
+    color: var(--dangerous-button-text-color-hover);
     background-color: #f10;
-    background-color: var(--report-button-background-color-hover);
+    background-color: var(--dangerous-button-background-color-hover);
+    border-color: unset;
+    border-color: var(--dangerous-button-border-color-hover);
 }
 
 .use-mono {

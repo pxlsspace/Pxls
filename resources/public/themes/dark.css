@@ -17,7 +17,7 @@ html {
     --floating-panel-background-color: #333;
     --floating-panel-text-color: #eee;
     
-    --report-button-border-color: #333;
+    --dangerous-button-border-color: #333;
 
     --palette-background-color: rgba(0, 0, 0, 0.5);
     --palette-overlay-background-color: rgba(0, 0, 0, 0.9);
