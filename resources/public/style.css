@@ -470,15 +470,6 @@ body .message {
     margin-left: -1.25rem;
 }
 
-.chatmod-container .buttons {
-    text-align: right;
-}
-
-.chatmod-container .buttons button {
-    position: initial;
-    margin-right: .25rem;
-}
-
 .chatmod-container textarea {
     width: 100%;
     border: 1px solid #999;
@@ -502,6 +493,9 @@ body .message {
     border-radius: 3px;
 }
 
+.buttons {
+    text-align: right;
+}
 
 /*//////////////////////////*\
 | UI

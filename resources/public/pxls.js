@@ -2551,12 +2551,12 @@ window.App = (function() {
               placeholder: 'Additional information (if applicable)',
               style: 'width: 100%; height: 5em',
               onkeydown: e => e.stopPropagation()
-            })
-          ),
-          [ // crel will inject the array as fragments
-            crel('button', { class: 'text-button', onclick: () => modal.closeAll() }, 'Cancel'),
-            reportButton
-          ]
+            }),
+            crel('div', { class: 'buttons' },
+              crel('button', { class: 'text-button', onclick: () => modal.closeAll() }, 'Cancel'),
+              reportButton
+            )
+          )
         ));
       },
       /**
