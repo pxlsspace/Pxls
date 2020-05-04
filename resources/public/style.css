@@ -1518,11 +1518,14 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 
 #typeahead ul {
     list-style: none;
+}
+
+#typeahead ul, #typeahead ul li {
     margin: 0;
     padding: 0;
 }
 
-#typeahead ul li {
+#typeahead ul li button {
     font-size: 1em;
     line-height: 1.5em;
     cursor: pointer;
@@ -1535,14 +1538,16 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     margin: 4px 0;
     color: inherit;
     color: var(--chat-typeahead-item-text-color);
+    width: 100%;
+    text-align: left;
 }
 
-#typeahead ul li:hover {
+#typeahead ul li button:hover {
     background-color: #949494;
     background-color: var(--chat-typeahead-item-background-color-hover);
 }
 
-#typeahead ul li.active {
+#typeahead ul li button.active {
     background-color: #828282;
     background-color: var(--chat-typeahead-item-background-color-active);
 }

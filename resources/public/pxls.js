@@ -4330,12 +4330,12 @@ window.App = (function() {
             } else {
               self.elements.typeahead_list[0].innerHTML = '';
               const LIs = got.slice(0, 10).map(x =>
-                crel('li', {
+                crel('li', crel('button', {
                   'data-insert': `${x} `,
                   'data-start': scanRes.start,
                   'data-end': scanRes.end,
                   onclick: self._handleTypeaheadInsert
-                }, x)
+                }, x))
               );
               LIs[0].classList.add('active');
               crel(self.elements.typeahead_list[0], LIs);
