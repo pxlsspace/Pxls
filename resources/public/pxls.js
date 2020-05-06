@@ -4584,7 +4584,7 @@ window.App = (function() {
         self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
       },
       scrollToCMID(cmid) {
-        const elem = self.elements.body[0].querySelector(`.chat-line[data-cmid="${cmid}"]`);
+        const elem = self.elements.body[0].querySelector(`.chat-line[data-id="${cmid}"]`);
         if (elem) {
           self._doScroll(elem);
           const ripAnim = function() {
