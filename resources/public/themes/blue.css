@@ -55,18 +55,18 @@ html {
     --pane-button-background: linear-gradient(0,#020df0,#0069ff,#00cdf9);
     --pane-button-background-hover: linear-gradient(0,#020df0,#0069ff,#00cdf9);
     
-    --emoji-picker-border-color: #312ef9;
+     --emoji-picker-border-color: #312ef9;
     --emoji-picker-shadow-color: #094fb5;
     --emoji-picker-background-color: #07b0ff;
-    --emoji-picker-preview-name-text-color: #807d7d;
+    --emoji-picker-preview-name-text-color: #4a4949;
     --emoji-picker-tab-icon-color: #ccc;
     --emoji-picker-tab-icon-color-selected: #6fd1ff;
-    --emoji-picker-section-text-color: #807d7d;
+    --emoji-picker-section-text-color: #424040;
     --emoji-picker-emoji-color: white;
-    --emoji-picker-emoji-background-hover: #656565;
+    --emoji-picker-emoji-background-hover: #5279a8;
     --emoji-picker-emoji-search-input-border-color: #1a07ea;
     --emoji-picker-emoji-search-input-background-color: #25a6f0;
-    --emoji-picker-emoji-search-input-text-color: #807d7d;
+    --emoji-picker-emoji-search-input-text-color: #595757;
     --emoji-picker-search-icon-color: #aaa;
     --emoji-picker-search-no-results-color: #666666;
     --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
@@ -81,7 +81,7 @@ html {
     --admin-check-text-color: #eee;
     --admin-check-background-color: #1b7ad9;
     
-    --admin-background: #1b73f4;
+    --admin-background: ##0057ff;
     --admin-text-color: #fff;
     
     --notification-background-color: #0073ff;
