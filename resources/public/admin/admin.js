@@ -11,7 +11,7 @@
   };
   const sendAlert = function(username) {
     if (admin.user.getRole() === 'TRIALMOD') return '';
-    return $('<input>').attr('placeholder', 'Send alert...').keydown(function (evt) {
+    return $('<input>').attr('type', 'text').attr('placeholder', 'Send alert...').keydown(function (evt) {
       if (evt.which === 13) {
         admin.socket.send({
           type: 'admin_message',

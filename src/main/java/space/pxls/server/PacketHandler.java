@@ -61,6 +61,7 @@ public class PacketHandler {
         if (user != null) {
             server.send(channel, new ServerUserInfo(
                     user.getName(),
+                    user.getLogin(),
                     user.getRole().name().equals("SHADOWBANNED") ? "USER" : user.getRole().name(),
                     user.isBanned(),
                     user.isBanned() ? user.getBanExpiryTime() : 0,

@@ -3,6 +3,7 @@ package space.pxls.server.packets.socket;
 public class ServerUserInfo {
     public String type = "userinfo";
     public String username;
+    public String login;
     public String role;
     public Boolean banned;
     public Long banExpiry;
@@ -17,11 +18,12 @@ public class ServerUserInfo {
     public String discordName;
     public Number chatNameColor;
 
-    public ServerUserInfo(String username, String role, Boolean banned, Long banExpiry, String ban_reason,
+    public ServerUserInfo(String username, String login, String role, Boolean banned, Long banExpiry, String ban_reason,
                           String method, Boolean cdOverride, Boolean chatBanned, String chatbanReason,
                           Boolean chatbanIsPerma, Long chatbanExpiry, Boolean renameRequested, String discordName,
                           Number chatNameColor) {
         this.username = username;
+        this.login = login;
         this.role = role;
         this.banned = banned;
         this.banExpiry = banExpiry;
@@ -43,6 +45,10 @@ public class ServerUserInfo {
 
     public String getUsername() {
         return username;
+    }
+
+    public String getLogin() {
+        return login;
     }
 
     public String getRole() {
