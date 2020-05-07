@@ -143,6 +143,15 @@ hr {
     border-top: 1px solid #919191aa;
 }
 
+@keyframes -scrolled-flash {
+    from {
+        background-color: #860d82;
+    }
+    to {
+        background-color: #8ef7d1;
+    }
+}
+
 /* The purple looks a bit ridiculous on the bubble background */
 .admin input {
     background-color: #fff;
