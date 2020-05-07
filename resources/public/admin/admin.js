@@ -183,7 +183,7 @@
           banned = true;
           expiracyStr = 'never';
         } else {
-          bannedStr = banned ? 'yes' : 'no';
+          bannedStr = banned ? 'Yes' : 'No';
         }
         chatbannedStr = data.chatbanIsPerma ? 'Yes (permanent)' : (data.chatBanned ? 'Yes' : 'No');
         const items = [
