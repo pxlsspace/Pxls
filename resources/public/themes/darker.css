@@ -92,6 +92,9 @@ html {
     --admin-check-text-color: #fff;
     --admin-check-background-color: #000;
     
+    --admin-background: #0057ff;
+    --admin-text-color: #fff; 
+    
     --notification-background-color: #191919;
     --notification-border-color: #111111;
     --notification-footer-text-color: #999;
