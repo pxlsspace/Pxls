@@ -1123,6 +1123,14 @@ window.App = (function() {
         $('#snapshotImageFormat').on('change input', event => {
           ls.set('snapshotImageFormat', event.target.value);
         });
+
+        const templateBeneathHeatmap = ls.get('templateBeneathHeatmap') === true;
+        $('#templateBeneathHeatmapToggle').prop('checked', templateBeneathHeatmap);
+        self.elements.container.toggleClass('lower-template', templateBeneathHeatmap);
+        $('#templateBeneathHeatmapToggle').on('change input', event => {
+          ls.set('templateBeneathHeatmap', event.target.checked);
+          self.elements.container.toggleClass('lower-template', event.target.checked);
+        });
       },
       start: function() {
         $.get('/info', (data) => {
