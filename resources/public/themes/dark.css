@@ -14,7 +14,9 @@ html {
     --input-border-color: #333;
     
     --button-background-color: #bbb;
+    --button-text-color: #000;
     --button-border-color-hover: #844;
+    
     
     --lookup-border-color: #222;
     --lookup-background-color: #333;
@@ -79,6 +81,9 @@ html {
     --admin-check-border-color: #222;
     --admin-check-text-color: #eee;
     --admin-check-background-color: #333;
+    
+     --admin-background: #0057ff;
+     --admin-text-color: #fff; 
     
     --notification-background-color: #3d3d3d;
     --notification-border-color: #111111;
