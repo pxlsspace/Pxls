@@ -6,9 +6,6 @@ html {
     --kbd-border-color: #ddd;
     --kbd-text-color: #000;
 
-    --message-background-color: #5a2f71;
-    --message-text-color: inherit;
-
     --button-background-color: #f8f9fa;
     --button-border-color: #f8f9fa;
     --button-text-color: #212529;
@@ -19,14 +16,16 @@ html {
     --button-border-color-hover: #dae0e5;
     --button-background-color-hover: #e2e6ea;
 
-    --report-button-text-color: #fff;
-    --report-button-background-color: #ff5959;
-    --report-button-background-color-hover: #f33;
-    --report-button-border-color: #ff5959;
+    --dangerous-button-text-color: #fff;
+    --dangerous-button-background-color: #ff5959;
+    --dangerous-button-border-color: #ff5959;
+    --dangerous-button-text-color-hover: var(--dangerous-button-text-color);
+    --dangerous-button-background-color-hover: #f33;
+    --dangerous-button-border-color-hover: var(--dangerous-button-border-color);
 
-    --lookup-text-color: inherit;
-    --lookup-border-color: #000;
-    --lookup-background-color: var(--message-background-color);
+    --floating-panel-text-color: inherit;
+    --floating-panel-border-color: #000;
+    --floating-panel-background-color: #5a2f71;
 
     --bubble-background-color: rgba(0, 0, 0, 0.7);
     --bubble-text-color: #fff;
@@ -57,12 +56,27 @@ html {
     --notification-color: #b20;
     --ping-highlight-color: #860d82;
     --ping-flash-color: #8ef7d1;
+    --ping-counter-color: #ffa500;
+    --notification-expiry-color: var(--text-orange-color);
       
-    --panel-header-background: #320241;
     --panel-background-color: #3d204d;
     --panel-text-color: inherit;
-    --panel-borders-color: #000;
+    --panel-border-color: #000;
+    --panel-header-text-color: inherit;
+    --panel-header-background: #320241;
+    --panel-footer-text-color: var(--text-muted-color);
+    --panel-footer-background: var(--panel-header-background);
+    --panel-close-button-color: var(--text-red-color);
+    --panel-close-button-color-hover: var(--panel-close-button-color);
+    --panel-close-button-color-active: var(--panel-close-button-color);
+
     --panel-article-background-color: #5a2f71;
+    --panel-article-text-color: var(--panel-text-color);
+    --panel-article-border-color: var(--panel-border-color);
+    --panel-article-header-text-color: inherit;
+    --panel-article-header-background: var(--panel-header-background);
+    --panel-article-footer-text-color: var(--panel-footer-text-color);
+    --panel-article-footer-background: var(--panel-footer-background);
 
     --panel-trigger-outline-color: #AAA;
 
@@ -78,6 +92,11 @@ html {
     --chat-server-action-text-color: var(--text-muted-color);
     --chat-user-text-shadow-color: #555;
     --chat-purged-text-color: var(--text-muted-color);
+    
+    --chat-tobottom-text-color: #fff;
+    --chat-tobottom-background-color: #683683;
+    --chat-tobottom-text-color-hover: var(--chat-tobottom-text-color);
+    --chat-tobottom-background-color-hover: #8445a7;
 
     --chat-typeahead-menu-background-color: var(--panel-article-background-color);
     --chat-typeahead-item-text-color: inherit;
@@ -85,32 +104,9 @@ html {
     --chat-typeahead-item-background-color-hover: #683683;
     --chat-typeahead-item-background-color-active: #8445a7;
 
-    --mod-lookup-chatban-history-item-background-color: var(--panel-article-background-color);
-    --mod-lookup-chatban-history-item-border-color: var(--panel-borders-color);
-    --mod-lookup-chatban-history-item-heading-background-color: var(--panel-header-background);
-
-    --popup-background-color: var(--panel-background-color);
-    --popup-border-color: var(--panel-borders-color);
-    --popup-text-color: var(--panel-text-color);
-    --popup-timestamp-text-color: var(--text-muted-color);
-    --pane-button-background: #683683;
-    --pane-button-background-hover: #8445a7;
-
-    --notification-background-color: var(--panel-article-background-color);
-    --notification-border-color: var(--panel-borders-color);
-    --notification-title-text-color: inherit;
-    --notification-title-background-color: var(--panel-header-background);
-    --notification-footer-background-color: var(--panel-header-background);
-    --notification-footer-text-color: var(--text-muted-color);
-    --notification-expiry-color: var(--text-orange-color);
-
-    --modal-text-color: inherit;
-    --modal-background-color: var(--panel-background-color);
-    --modal-headfoot-background-color: var(--panel-header-background);
-
-    --emoji-picker-border-color: var(--lookup-border-color);
+    --emoji-picker-border-color: var(--floating-panel-border-color);
     --emoji-picker-shadow-color: #0009;
-    --emoji-picker-background-color: var(--lookup-background-color);
+    --emoji-picker-background-color: var(--floating-panel-background-color);
     --emoji-picker-preview-name-text-color: var(--text-muted-color);
     --emoji-picker-tab-icon-color: inherit;
     --emoji-picker-tab-icon-color-selected: #ae5cdb;
@@ -124,14 +120,8 @@ html {
     --emoji-picker-search-icon-color: var(--text-muted-color);
     --emoji-picker-search-no-results-color: var(--text-muted-color);
     --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
-    --emoji-picker-variant-popup-background: var(--lookup-background-color);
+    --emoji-picker-variant-popup-background: var(--floating-panel-background-color);
     --emoji-picker-variant-close-button-color: var(--text-red-color);
-
-    --admin-background: var(--bubble-background-color);
-    --admin-text-color: var(--bubble-text-color);
-    --admin-check-border-color: var(--lookup-border-color);
-    --admin-check-text-color: inherit;
-    --admin-check-background-color: var(--lookup-background-color);
 }
 
 .button:disabled {
