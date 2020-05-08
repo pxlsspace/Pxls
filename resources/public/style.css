@@ -100,7 +100,7 @@ html {
     --panel-article-border-color: var(--panel-border-color);
     --panel-article-header-text-color: inherit;
     --panel-article-header-background: var(--panel-header-background);
-    --panel-article-footer-text-color: var(--panel-header-text-color);
+    --panel-article-footer-text-color: var(--panel-footer-text-color);
     --panel-article-footer-background: var(--panel-footer-background);
     
     --panel-trigger-outline-color: #AAA;
