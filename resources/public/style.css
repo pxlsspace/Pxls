@@ -139,9 +139,9 @@ html {
     --emoji-picker-emoji-color: #333333;
     --emoji-picker-emoji-background: transparent;
     --emoji-picker-emoji-background-hover: #E8F4F9;
-    --emoji-picker-emoji-search-input-border-color: #CCCCCC;
-    --emoji-picker-emoji-search-input-background: #fff;
-    --emoji-picker-emoji-search-input-text-color: #000;
+    --emoji-picker-search-input-border-color: #CCCCCC;
+    --emoji-picker-search-input-background: #fff;
+    --emoji-picker-search-input-text-color: #000;
     --emoji-picker-search-icon-color: #CCCCCC;
     --emoji-picker-search-no-results-color: #666666;
     --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
@@ -1740,9 +1740,9 @@ body .emoji-picker {
     border: 1px solid #CCCCCC;
     border: 1px solid var(--emoji-picker-search-input-border-color);
     background: #fff;
-    background: var(--emoji-picker-emoji-search-input-background);
+    background: var(--emoji-picker-search-input-background);
     color: #000;
-    color: var(--emoji-picker-emoji-search-input-text-color);
+    color: var(--emoji-picker-search-input-text-color);
 }
 
 .emoji-picker .emoji-picker__search-icon {

@@ -114,9 +114,9 @@ html {
     --emoji-picker-emoji-color: var(--general-text-color);
     --emoji-picker-emoji-background: transparent;
     --emoji-picker-emoji-background-hover: rgba(0, 0, 0, 0.1);
-    --emoji-picker-emoji-search-input-border-color: var(--input-border-color);
-    --emoji-picker-emoji-search-input-background: var(--input-background);
-    --emoji-picker-emoji-search-input-text-color: var(--input-text-color);
+    --emoji-picker-search-input-border-color: var(--input-border-color);
+    --emoji-picker-search-input-background: var(--input-background);
+    --emoji-picker-search-input-text-color: var(--input-text-color);
     --emoji-picker-search-icon-color: var(--text-muted-color);
     --emoji-picker-search-no-results-color: var(--text-muted-color);
     --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);

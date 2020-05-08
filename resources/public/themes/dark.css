@@ -53,9 +53,9 @@ html {
     --emoji-picker-section-text-color: #ccc;
     --emoji-picker-emoji-color: white;
     --emoji-picker-emoji-background-hover: #656565;
-    --emoji-picker-emoji-search-input-border-color: #333;
-    --emoji-picker-emoji-search-input-background: #222;
-    --emoji-picker-emoji-search-input-text-color: #ddd;
+    --emoji-picker-search-input-border-color: #333;
+    --emoji-picker-search-input-background: #222;
+    --emoji-picker-search-input-text-color: #ddd;
     --emoji-picker-search-icon-color: #aaa;
     --emoji-picker-search-no-results-color: #666666;
     --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
