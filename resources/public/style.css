@@ -25,39 +25,39 @@ z-index:
 
 html {
     --general-text-color: #000;
-    --general-background-color: #CDCDCD;
+    --general-background: #CDCDCD;
     
-    --kbd-background-color: #eee;
+    --kbd-background: #eee;
     --kbd-border-color: #ddd;
     --kbd-text-color: black;
         
-    --button-background-color: #ddd;
+    --button-background: #ddd;
     --button-border-color: #999;
     --button-text-color: #000;
     --button-text-color-disabled: #555;
     --button-border-color-disabled: #777;
-    --button-background-color-disabled: #aaa;
+    --button-background-disabled: #aaa;
     --button-text-color-hover: #fff;
     --button-border-color-hover: #999;
-    --button-background-color-hover: #ce4747;
+    --button-background-hover: #ce4747;
     
     --dangerous-button-text-color: #fff;
-    --dangerous-button-background-color: #e20;
+    --dangerous-button-background: #e20;
     --dangerous-button-border-color: unset;
     --dangerous-button-text-color-hover: var(--dangerous-button-text-color);
-    --dangerous-button-background-color-hover: #f10;
+    --dangerous-button-background-hover: #f10;
     --dangerous-button-border-color-hover: var(--dangerous-button-border-color);
     
     --floating-panel-text-color: inherit;
     --floating-panel-border-color: #ccc;
-    --floating-panel-background-color: #eee;
+    --floating-panel-background: #eee;
     
-    --bubble-background-color: rgba(0, 0, 0, 0.7);
+    --bubble-background: rgba(0, 0, 0, 0.7);
     --bubble-text-color: #fff;
     
-    --palette-background-color: rgba(255, 255, 255, 0.8);
+    --palette-background: rgba(255, 255, 255, 0.8);
     --palette-item-border-color: black;
-    --palette-overlay-background-color: rgba(255, 255, 255, 0.9);
+    --palette-overlay-background: rgba(255, 255, 255, 0.9);
     --palette-overlay-text-color: #000;
     --palette-deselect-button-color: inherit;
     
@@ -66,7 +66,7 @@ html {
     --undo-border-color: #000;
     
     --input-text-color: #000;
-    --input-background-color: #fff;
+    --input-background: #fff;
     --input-border-color: #ccc;
     
     --text-blue-color:#00a;
@@ -84,7 +84,7 @@ html {
     --ping-counter-color: #ffa500;
     --notification-expiry-color: #b66;
         
-    --panel-background-color: #dfdfdf;
+    --panel-background: #dfdfdf;
     --panel-text-color: inherit;
     --panel-border-color: #000;
     --panel-header-text-color: inherit;
@@ -95,7 +95,7 @@ html {
     --panel-close-button-color-hover: var(--panel-close-button-color);
     --panel-close-button-color-active: var(--panel-close-button-color);
     
-    --panel-article-background-color: #0002;
+    --panel-article-background: #0002;
     --panel-article-text-color: var(--panel-text-color);
     --panel-article-border-color: var(--panel-border-color);
     --panel-article-header-text-color: inherit;
@@ -106,32 +106,32 @@ html {
     --panel-trigger-outline-color: #AAA;
     
     --option-bubble-position-border-color-hovered: #6495ED;
-    --option-bubble-position-background-color-hovered: rgba(0, 0, 0, 0);
-    --option-bubble-position-background-color-selected: #eee;
+    --option-bubble-position-background-hovered: rgba(0, 0, 0, 0);
+    --option-bubble-position-background-selected: #eee;
     
     --chat-separator-color: #bfbfbf;
-    --chat-odd-background-color: #d5d5d5;
+    --chat-odd-background: #d5d5d5;
     --chat-abbr-underline-color: #aaa;
-    --chat-badge-background-color: #ccc;
+    --chat-badge-background: #ccc;
     --chat-badge-text-color: #770;
     --chat-server-action-text-color: #555;
     --chat-user-text-shadow-color: #ccc;
     --chat-purged-text-color: #888;
     
     --chat-tobottom-text-color: #fff;
-    --chat-tobottom-background-color: #66a;
+    --chat-tobottom-background: #66a;
     --chat-tobottom-text-color-hover: var(--chat-tobottom-text-color);
-    --chat-tobottom-background-color-hover: #5c5ca0;
+    --chat-tobottom-background-hover: #5c5ca0;
     
-    --chat-typeahead-menu-background-color: #b9b9b9;
+    --chat-typeahead-menu-background: #b9b9b9;
     --chat-typeahead-item-text-color: inherit;
-    --chat-typeahead-item-background-color: #a3a3a3;
-    --chat-typeahead-item-background-color-hover: #949494;
-    --chat-typeahead-item-background-color-active: #828282;
+    --chat-typeahead-item-background: #a3a3a3;
+    --chat-typeahead-item-background-hover: #949494;
+    --chat-typeahead-item-background-active: #828282;
 
     --emoji-picker-border-color: #999999;
     --emoji-picker-shadow-color: #CCCCCC;
-    --emoji-picker-background-color: #FFFFFF;
+    --emoji-picker-background: #FFFFFF;
     --emoji-picker-preview-name-text-color: #666666;
     --emoji-picker-tab-icon-color: inherit;
     --emoji-picker-tab-icon-color-selected: #4F81E5;
@@ -140,7 +140,7 @@ html {
     --emoji-picker-emoji-background: transparent;
     --emoji-picker-emoji-background-hover: #E8F4F9;
     --emoji-picker-emoji-search-input-border-color: #CCCCCC;
-    --emoji-picker-emoji-search-input-background-color: #fff;
+    --emoji-picker-emoji-search-input-background: #fff;
     --emoji-picker-emoji-search-input-text-color: #000;
     --emoji-picker-search-icon-color: #CCCCCC;
     --emoji-picker-search-no-results-color: #666666;
@@ -159,8 +159,8 @@ html, body {
     height: 100%;
     color: #000;
     color: var(--general-text-color);
-    background-color: #CDCDCD;
-    background-color: var(--general-background-color);
+    background: #CDCDCD;
+    background: var(--general-background);
     overflow: hidden;
     position: relative;
     font-family: sans-serif;
@@ -201,8 +201,8 @@ a, a:hover, a:visited, a:active, .link, .link:hover, .link:active {
 }
 
 kbd {
-    background-color: #eee;
-    background-color: var(--kbd-background-color);
+    background: #eee;
+    background: var(--kbd-background);
     border: 1px solid #ddd;
     border: 1px solid var(--kbd-border-color);
     border-radius: 4px;
@@ -244,8 +244,8 @@ input[type="text"], input[type="number"], textarea, select {
     padding: 0.5em;
     border: 1px solid #ccc;
     border: 1px solid var(--input-border-color);
-    background-color: #fff;
-    background-color: var(--input-background-color);
+    background: #fff;
+    background: var(--input-background);
     color: #000;
     color: var(--input-text-color);
 }
@@ -270,8 +270,8 @@ button.text-button {
     border: 1px solid var(--button-border-color);
     padding: 5px 10px;
     border-radius: 3px;
-    background-color: #ddd;
-    background-color: var(--button-background-color);
+    background: #ddd;
+    background: var(--button-background);
     color: #000;
     color: var(--button-text-color);
 }
@@ -279,8 +279,8 @@ button.text-button {
 button.text-button:disabled {
     border: 1px solid #777;
     border: 1px solid var(--button-border-color-disabled);
-    background-color: #aaa;
-    background-color: var(--button-background-color-disabled);
+    background: #aaa;
+    background: var(--button-background-disabled);
     color: #555;
     color: var(--button-text-color-disabled);
 }
@@ -289,13 +289,13 @@ button.text-button:hover {
     color: #fff;
     color: var(--button-text-color-hover);
     background: #ce4747;
-    background: var(--button-background-color-hover);
+    background: var(--button-background-hover);
     border-color: var(--button-border-color-hover);
 }
 
 button.dangerous-button {
-    background-color: #e20;
-    background-color: var(--dangerous-button-background-color);
+    background: #e20;
+    background: var(--dangerous-button-background);
     color: #fff;
     color: var(--dangerous-button-text-color);
     border-color: unset;
@@ -305,8 +305,8 @@ button.dangerous-button {
 button.dangerous-button:hover {
     color: #fff;
     color: var(--dangerous-button-text-color-hover);
-    background-color: #f10;
-    background-color: var(--dangerous-button-background-color-hover);
+    background: #f10;
+    background: var(--dangerous-button-background-hover);
     border-color: unset;
     border-color: var(--dangerous-button-border-color-hover);
 }
@@ -428,8 +428,8 @@ body .message {
     border-radius: 8px;
     border: 1px solid #ccc;
     border: 1px solid var(--floating-panel-border-color);
-    background-color: #eee;
-    background-color: var(--floating-panel-background-color);
+    background: #eee;
+    background: var(--floating-panel-background);
     color: inherit;
     color: var(--floating-panel-text-color);
     box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
@@ -532,8 +532,8 @@ body .message {
     position: absolute;
     display: inline-block;
     padding: 8px 16px;
-    background-color: rgba(0, 0, 0, 0.7);
-    background-color: var(--bubble-background-color);
+    background: rgba(0, 0, 0, 0.7);
+    background: var(--bubble-background);
     border-radius: 5px;
     color: #fff;
     color: var(--bubble-text-color);
@@ -588,8 +588,8 @@ body .message {
     padding: 0 8px;
     width: 100%;
     height: 100%;
-    background-color: rgba(255, 255, 255, 0.9);
-    background-color: var(--palette-overlay-background-color);
+    background: rgba(255, 255, 255, 0.9);
+    background: var(--palette-overlay-background);
     color: #000;
     color: var(--palette-overlay-text-color);
     font-weight: 700;
@@ -609,8 +609,8 @@ body .message {
     overflow-x: auto;
     text-align: center;
     white-space: nowrap;
-    background-color: rgba(255, 255, 255, 0.8);
-    background-color: var(--palette-background-color);
+    background: rgba(255, 255, 255, 0.8);
+    background: var(--palette-background);
 
     /* Scrollbar, Firefox only */
     scrollbar-width: thin;
@@ -1073,8 +1073,8 @@ aside.panel .panel-body {
 
 .panel {
     box-shadow: 0 0 10px 5px #0009;
-    background-color: #dfdfdf;
-    background-color: var(--panel-background-color);
+    background: #dfdfdf;
+    background: var(--panel-background);
     color: inherit;
     color: var(--panel-text-color);
 }
@@ -1167,8 +1167,8 @@ aside.panel .panel-body {
     color: var(--panel-article-text-color);
     border: 1px solid #000;
     border-bottom: 1px solid var(--panel-article-border-color);
-    background-color: #0002;
-    background-color: var(--panel-article-background-color);
+    background: #0002;
+    background: var(--panel-article-background);
 }
 
 .panel-body article:not(.naked) > header {
@@ -1277,8 +1277,8 @@ ul.chat-body li.chat-line {
 }
 
 ul.chat-body li.chat-line:nth-child(odd) {
-    background-color: #d5d5d5;
-    background-color: var(--chat-odd-background-color);
+    background: #d5d5d5;
+    background: var(--chat-odd-background);
 }
 
 ul.chat-body li.chat-line:not(:last-child):not(:only-of-type) {
@@ -1297,8 +1297,8 @@ li.chat-line i[title] {
 
 .text-badge {
     line-height: 1em;
-    background-color: #ccc;
-    background-color: var(--chat-badge-background-color);
+    background: #ccc;
+    background: var(--chat-badge-background);
     padding: .15em .5em;
     border-radius: 1em;
     color: #770;
@@ -1468,8 +1468,8 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     font-size: .8rem;
     font-weight: bold;
     border-radius: 5px 5px 0 0;
-    background-color: #66a;
-    background-color: var(--chat-tobottom-background-color);
+    background: #66a;
+    background: var(--chat-tobottom-background);
     cursor: pointer;
     position: absolute;
     top: -1.25rem;
@@ -1480,8 +1480,8 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 #jump-to-bottom:hover {
     color: #fff;
     color: var(--chat-tobottom-text-color-hover);
-    background-color: #5c5ca0;
-    background-color: var(--chat-tobottom-background-color-hover);
+    background: #5c5ca0;
+    background: var(--chat-tobottom-background-hover);
 }
 
 #emojiPanelTrigger {
@@ -1510,8 +1510,8 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     bottom: 3rem;
     margin-bottom: -1px;
     padding: 5px;
-    background-color: #b9b9b9;
-    background-color: var(--chat-typeahead-menu-background-color);
+    background: #b9b9b9;
+    background: var(--chat-typeahead-menu-background);
     border-radius: 5px 5px 0 0;
 }
 
@@ -1530,8 +1530,8 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     cursor: pointer;
     user-select: none;
     text-indent: .75em;
-    background-color: #a3a3a3;
-    background-color: var(--chat-typeahead-item-background-color);
+    background: #a3a3a3;
+    background: var(--chat-typeahead-item-background);
     border-radius: 4px;
     padding: 3px;
     margin: 4px 0;
@@ -1542,13 +1542,13 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 }
 
 #typeahead ul li button:hover {
-    background-color: #949494;
-    background-color: var(--chat-typeahead-item-background-color-hover);
+    background: #949494;
+    background: var(--chat-typeahead-item-background-hover);
 }
 
 #typeahead ul li button.active {
-    background-color: #828282;
-    background-color: var(--chat-typeahead-item-background-color-active);
+    background: #828282;
+    background: var(--chat-typeahead-item-background-active);
 }
 
 /* PINGS */
@@ -1556,16 +1556,16 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 /* NOTE ([  ]): this seems to not respond to css vars (at least on firefox when I tested it) so I'm leaving it fixed for now */
 @keyframes -scrolled-flash {
     from {
-        background-color: #feedd1;
+        background: #feedd1;
     }
     to {
-        background-color: #8ef7d1;
+        background: #8ef7d1;
     }
 }
 
 ul.chat-body .chat-line[data-id].has-ping {
-    background-color: #feedd1;
-    background-color: var(--ping-highlight-color);
+    background: #feedd1;
+    background: var(--ping-highlight-color);
 }
 
 ul.chat-body .chat-line[data-id].has-ping.-scrolled-to {
@@ -1687,7 +1687,7 @@ body .emoji-picker {
     box-shadow: 0px 0px 3px 1px #CCCCCC;
     box-shadow: 0px 0px 3px 1px var(--emoji-picker-shadow-color);
     background: #FFFFFF;
-    background: var(--emoji-picker-background-color);
+    background: var(--emoji-picker-background);
 }
 
 .emoji-picker img.emoji {
@@ -1741,8 +1741,8 @@ body .emoji-picker {
 .emoji-picker .emoji-picker__search-container input {
     border: 1px solid #CCCCCC;
     border: 1px solid var(--emoji-picker-search-input-border-color);
-    background-color: #fff;
-    background-color: var(--emoji-picker-emoji-search-input-background-color);
+    background: #fff;
+    background: var(--emoji-picker-emoji-search-input-background);
     color: #000;
     color: var(--emoji-picker-emoji-search-input-text-color);
 }
@@ -1791,8 +1791,8 @@ body .emoji-picker {
 
 .popup .actions-wrapper {
     width: 35%;
-    background-color: #0002;
-    background-color: var(--panel-article-background-color);
+    background: #0002;
+    background: var(--panel-article-background);
 }
 
 .popup .pane {
@@ -1861,13 +1861,13 @@ body .emoji-picker {
 #bubble-position label:hover > div {
     border: 2px solid #6495ED;
     border: 2px solid var(--option-bubble-position-border-color-hovered);
-    background-color: rgba(0, 0, 0, 0);
-    background-color: var(--option-bubble-position-background-color-hovered);
+    background: rgba(0, 0, 0, 0);
+    background: var(--option-bubble-position-background-hovered);
 }
 
 #bubble-position label input:checked ~ div {
-    background-color: #eee;
-    background-color: var(--option-bubble-position-background-color-selected);
+    background: #eee;
+    background: var(--option-bubble-position-background-selected);
 }
 
 /* Chat settings tweaks */
