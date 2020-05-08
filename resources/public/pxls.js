@@ -4850,7 +4850,7 @@ window.App = (function() {
             if (isNaN(group1) || isNaN(group2)) return match;
             if (!board.validateCoordinates(parseFloat(group1), parseFloat(group2))) return match;
             const group3Str = !(parseFloat(group3)) ? '' : `, ${group3}x`;
-            return `<span class="link -internal-jump" data-x="${group1}" data-y="${group2}" data-scale="${group3}">(${group1}, ${group2}${group3Str})</span>`;
+            return `<a class="link -internal-jump" data-x="${group1}" data-y="${group2}" data-scale="${group3}">(${group1}, ${group2}${group3Str})</a>`;
           });
 
           // insert <a>'s
