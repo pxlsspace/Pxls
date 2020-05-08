@@ -79,27 +79,10 @@ window.App = (function() {
       }
     };
   };
-  const binaryAjax = function(url, fn, failfn) {
-    // TODO(netux): convert to use async/await (https://caniuse.com/#feat=async-functions)
-    // and possibly fetch (https://caniuse.com/#feat=fetch)
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.responseType = 'arraybuffer';
-    xhr.onload = function(event) {
-      if (xhr.readyState === 4) {
-        if (xhr.status === 200) {
-          if (xhr.response) {
-            const data = new Uint8Array(xhr.response);
-            fn(data);
-          }
-        } else if (failfn) {
-          failfn();
-        }
-      }
-    };
-    xhr.send(null);
-
-    return xhr;
+  const binaryAjax = async function(url) {
+    const response = await fetch(url);
+    const data = new Uint8Array(await response.arrayBuffer());
+    return data;
   };
   const createImageData = function(w, h) {
     try {
@@ -1159,7 +1142,14 @@ window.App = (function() {
           self.scale = query.get('scale') || self.scale;
           self.centerOn(cx, cy, true);
           socket.init();
-          binaryAjax('/boarddata' + '?_' + (new Date()).getTime(), self.draw, socket.reconnect);
+          
+          (async function() {
+            try {
+              self.draw(await binaryAjax('/boarddata' + '?_' + (new Date()).getTime()));
+            } catch (e) {
+              socket.reconnect();
+            }
+          })();
 
           if (self.use_js_render) {
             $(window).resize(function() {
@@ -1500,7 +1490,6 @@ window.App = (function() {
       width: 0,
       height: 0,
       lazy_inited: false,
-      fetchRequest: null,
       is_shown: false,
       color: 0x005C5CCD,
       loop: function() {
@@ -1514,7 +1503,7 @@ window.App = (function() {
         self.ctx.putImageData(self.id, 0, 0);
         setTimeout(self.loop, self.seconds * 1000 / 256);
       },
-      lazy_init: () => {
+      lazy_init: async () => {
         if (self.lazy_inited) {
           uiHelper.setLoadingBubbleState('heatmap', false);
           return;
@@ -1522,26 +1511,24 @@ window.App = (function() {
         uiHelper.setLoadingBubbleState('heatmap', true);
         self.lazy_inited = true;
         // we use xhr directly because of jquery being weird on raw binary
-        self.fetchRequest = binaryAjax('/heatmap' + '?_' + (new Date()).getTime(), function(data) {
-          self.fetchRequest = null;
-          self.ctx = self.elements.heatmap[0].getContext('2d');
-          self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
-          self.id = createImageData(self.width, self.height);
+        const data = await binaryAjax('/heatmap' + '?_' + (new Date()).getTime());
+        self.ctx = self.elements.heatmap[0].getContext('2d');
+        self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
+        self.id = createImageData(self.width, self.height);
 
-          self.intView = new Uint32Array(self.id.data.buffer);
-          for (let i = 0; i < self.width * self.height; i++) {
-            self.intView[i] = (data[i] << 24) | self.color;
-          }
-          self.ctx.putImageData(self.id, 0, 0);
-          self.elements.heatmap.fadeIn(200);
-          uiHelper.setLoadingBubbleState('heatmap', false);
-          setTimeout(self.loop, self.seconds * 1000 / 256);
-          socket.on('pixel', function(data) {
-            self.ctx.fillStyle = '#CD5C5C';
-            $.map(data.pixels, function(px) {
-              self.ctx.fillRect(px.x, px.y, 1, 1);
-              self.intView[px.y * self.width + px.x] = 0xFF000000 | self.color;
-            });
+        self.intView = new Uint32Array(self.id.data.buffer);
+        for (let i = 0; i < self.width * self.height; i++) {
+          self.intView[i] = (data[i] << 24) | self.color;
+        }
+        self.ctx.putImageData(self.id, 0, 0);
+        self.elements.heatmap.fadeIn(200);
+        uiHelper.setLoadingBubbleState('heatmap', false);
+        setTimeout(self.loop, self.seconds * 1000 / 256);
+        socket.on('pixel', function(data) {
+          self.ctx.fillStyle = '#CD5C5C';
+          $.map(data.pixels, function(px) {
+            self.ctx.fillRect(px.x, px.y, 1, 1);
+            self.intView[px.y * self.width + px.x] = 0xFF000000 | self.color;
           });
         });
       },
@@ -1674,9 +1661,8 @@ window.App = (function() {
       width: 0,
       height: 0,
       lazy_inited: false,
-      fetchRequest: null,
       is_shown: false,
-      lazy_init: function() {
+      lazy_init: async function() {
         if (self.lazy_inited) {
           uiHelper.setLoadingBubbleState('virginmap', false);
           return;
@@ -1684,30 +1670,28 @@ window.App = (function() {
         uiHelper.setLoadingBubbleState('virginmap', true);
         self.lazy_inited = true;
         // we use xhr directly because of jquery being weird on raw binary
-        self.fetchRequest = binaryAjax('/virginmap' + '?_' + (new Date()).getTime(), (data) => {
-          self.fetchRequest = null;
-          self.ctx = self.elements.virginmap[0].getContext('2d');
-          self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
-          self.id = createImageData(self.width, self.height);
+        const data = await binaryAjax('/virginmap' + '?_' + (new Date()).getTime());
+        self.ctx = self.elements.virginmap[0].getContext('2d');
+        self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
+        self.id = createImageData(self.width, self.height);
 
-          self.ctx.putImageData(self.id, 0, 0);
-          self.ctx.fillStyle = '#000000';
+        self.ctx.putImageData(self.id, 0, 0);
+        self.ctx.fillStyle = '#000000';
 
-          self.intView = new Uint32Array(self.id.data.buffer);
-          for (let i = 0; i < self.width * self.height; i++) {
-            const x = i % self.width;
-            const y = Math.floor(i / self.width);
-            if (data[i] === 0) {
-              self.ctx.fillRect(x, y, 1, 1);
-            }
+        self.intView = new Uint32Array(self.id.data.buffer);
+        for (let i = 0; i < self.width * self.height; i++) {
+          const x = i % self.width;
+          const y = Math.floor(i / self.width);
+          if (data[i] === 0) {
+            self.ctx.fillRect(x, y, 1, 1);
           }
-          self.elements.virginmap.fadeIn(200);
-          uiHelper.setLoadingBubbleState('virginmap', false);
-          socket.on('pixel', function(data) {
-            $.map(data.pixels, function(px) {
-              self.ctx.fillStyle = '#000000';
-              self.ctx.fillRect(px.x, px.y, 1, 1);
-            });
+        }
+        self.elements.virginmap.fadeIn(200);
+        uiHelper.setLoadingBubbleState('virginmap', false);
+        socket.on('pixel', function(data) {
+          $.map(data.pixels, function(px) {
+            self.ctx.fillStyle = '#000000';
+            self.ctx.fillRect(px.x, px.y, 1, 1);
           });
         });
       },
