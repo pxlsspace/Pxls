@@ -411,9 +411,7 @@ dt {
 
 /* body preselector is to give more precident to .message than to .floating-panel */
 body .message {
-    padding: 30px 30px 10px;
     max-width: 40%;
-    min-width: 20%;
     z-index: 22;
 
     position: fixed;
@@ -438,11 +436,11 @@ body .message {
 }
 
 .floating-panel .content {
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .floating-panel .content > div:not(:first-of-type) {
-    margin-top: 10px;
+    margin-top: 5px;
 }
 
 #lookup {
