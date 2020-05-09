@@ -610,6 +610,16 @@ button.button.dark:disabled {
     pointer-events: auto;
 }
 
+#main-bubble .fas {
+    width: 1.25em;
+    text-align: center;
+}
+
+#coords-info {
+    margin-top: 16px;
+    margin-bottom: 8px;
+}
+
 #ui-bottom {
     z-index: 6;
     width: 100%;
