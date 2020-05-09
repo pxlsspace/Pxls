@@ -914,6 +914,9 @@ input[type="text"], input[type="number"], textarea, select {
     top: 0;
     left: 0;
     margin: 0;
+}
+
+#board-container:not(.lower-template) #board-template {
     z-index: 3;
 }
 

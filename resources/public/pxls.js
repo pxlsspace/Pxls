@@ -952,11 +952,24 @@ window.App = (function() {
         self.elements.container[0].addEventListener('wheel', function(evt) {
           if (!self.allowDrag) return;
           const oldScale = self.scale;
-          if (evt.deltaY > 0) {
-            self.nudgeScale(-1);
-          } else {
-            self.nudgeScale(1);
+
+          let delta = evt.deltaY;
+
+          switch (evt.deltaMode) {
+            case WheelEvent.DOM_DELTA_PIXEL:
+              // 53 pixels is the default chrome gives for a wheel scroll.
+              delta /= 53;
+              break;
+            case WheelEvent.DOM_DELTA_LINE:
+              // default case on Firefox, three lines is default number.
+              delta /= 3;
+              break;
+            case WheelEvent.DOM_DELTA_PAGE:
+              delta = Math.sign(delta);
+              break;
           }
+
+          self.nudgeScale(delta);
 
           if (oldScale !== self.scale) {
             const dx = evt.clientX - self.elements.container.width() / 2;
@@ -1122,6 +1135,19 @@ window.App = (function() {
         $('#snapshotImageFormat').val(ls.get('snapshotImageFormat') || 'image/png');
         $('#snapshotImageFormat').on('change input', event => {
           ls.set('snapshotImageFormat', event.target.value);
+        });
+
+        const templateBeneathHeatmap = ls.get('templateBeneathHeatmap') === true;
+        $('#templateBeneathHeatmapToggle').prop('checked', templateBeneathHeatmap);
+        self.elements.container.toggleClass('lower-template', templateBeneathHeatmap);
+        $('#templateBeneathHeatmapToggle').on('change input', event => {
+          ls.set('templateBeneathHeatmap', event.target.checked);
+          self.elements.container.toggleClass('lower-template', event.target.checked);
+        });
+
+        $('#zoomBaseValue').val(self.getZoomBase());
+        $('#zoomBaseValue').on('change input', event => {
+          ls.set('zoomBaseValue', event.target.value);
         });
       },
       start: function() {
@@ -1302,33 +1328,16 @@ window.App = (function() {
         self.scale = scale;
         self.update();
       },
+      getZoomBase: function() {
+        return parseFloat(ls.get('zoomBaseValue')) || 1.5;
+      },
       nudgeScale: function(adj) {
-        const oldScale = Math.abs(self.scale);
-        const sign = Math.sign(self.scale);
         const maxUnlocked = ls.get('increased_zoom') === true;
-        if (adj === -1) {
-          if (oldScale <= 1) {
-            self.scale = 0.5;
-          } else if (oldScale <= 2) {
-            self.scale = 1;
-          } else {
-            self.scale = Math.round(Math.max(2, oldScale / 1.25));
-          }
-        } else {
-          if (oldScale === 0.5) {
-            self.scale = 1;
-          } else if (oldScale === 1) {
-            self.scale = 2;
-          } else {
-            let modifiedScale = oldScale * 1.25;
-            if (maxUnlocked && oldScale >= 50) {
-              modifiedScale = oldScale * 1.15;
-            }
-            modifiedScale = Math.ceil(modifiedScale);
-            self.scale = maxUnlocked ? modifiedScale : Math.round(Math.min(50, modifiedScale));
-          }
-        }
-        self.scale *= sign;
+        const maximumValue = maxUnlocked ? Infinity : 50;
+        const minimumValue = maxUnlocked ? 0 : 0.5;
+        const zoomBase = self.getZoomBase();
+
+        self.scale = Math.max(minimumValue, Math.min(maximumValue, self.scale * zoomBase ** -adj));
         self.update();
       },
       getPixel: function(x, y) {
@@ -2865,11 +2874,14 @@ window.App = (function() {
           color: '#000'
         },
         {
-          name: 'Blue',
+           name: 'Blue',
           location: '/themes/blue.css',
           color: '#0000FF'
-        }
-      ],
+        },
+          name: 'Purple',
+          location: '/themes/purple.css',
+          color: '#5a2f71'
+        ],
       specialChatColorClasses: ['rainbow'],
       init: function() {
         self.initTitle = document.title;
@@ -3085,17 +3097,14 @@ window.App = (function() {
             text: self.themes[i].name
           }));
         }
-        let currentTheme = ls.get('currentTheme');
-        if (currentTheme == null || (currentTheme > self.themes.length || currentTheme < -1)) {
+        const currentTheme = parseInt(ls.get('currentTheme'));
+        if (isNaN(currentTheme) || (currentTheme >= self.themes.length || currentTheme < -1)) {
           // If currentTheme hasn't been set, or it's out of bounds, reset it to default (-1)
           ls.set('currentTheme', -1);
-        } else {
-          currentTheme = parseInt(currentTheme);
-          if (currentTheme !== -1) {
-            self.themes[currentTheme].element.appendTo(document.head);
-            self.elements.themeColorMeta.attr('content', self.themes[currentTheme].color);
-            self.elements.themeSelect.val(currentTheme);
-          }
+        } else if (currentTheme !== -1) {
+          self.themes[currentTheme].element.appendTo(document.head);
+          self.elements.themeColorMeta.attr('content', self.themes[currentTheme].color);
+          self.elements.themeSelect.val(currentTheme);
         }
         self.elements.themeSelect.on('change', async function() {
           const themeIdx = parseInt(this.value);
@@ -4592,7 +4601,7 @@ window.App = (function() {
         self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
       },
       scrollToCMID(cmid) {
-        const elem = self.elements.body[0].querySelector(`.chat-line[data-cmid="${cmid}"]`);
+        const elem = self.elements.body[0].querySelector(`.chat-line[data-id="${cmid}"]`);
         if (elem) {
           self._doScroll(elem);
           const ripAnim = function() {
