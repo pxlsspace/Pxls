@@ -1050,7 +1050,7 @@ aside.panel.left {
 }
 
 aside.panel.left.open, .panel.left[data-state=open] {
-    left: 0;
+    left: 0 !important;
 }
 
 aside.panel.right {
@@ -1060,13 +1060,27 @@ aside.panel.right {
 }
 
 aside.panel.right.open, .panel.right[data-state=open] {
-    right: 0;
+    right: 0 !important;
 }
 
 aside.panel .panel-body {
     overflow: auto;
     height: 100%;
     height: calc(100% - 2.75em);
+}
+
+aside.panel.horizontal {
+    width: 100%;
+    max-width: 100%;
+    max-height: 50%;
+}
+
+aside.panel.horizontal.left {
+    left: -105%;
+}
+
+aside.panel.horizontal.right {
+    right: -105%;
 }
 
 .panel {
