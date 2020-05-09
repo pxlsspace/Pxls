@@ -2882,7 +2882,7 @@ window.App = (function() {
           location: '/themes/purple.css',
           color: '#5a2f71'
         }
-        ],
+      ],
       specialChatColorClasses: ['rainbow'],
       init: function() {
         self.initTitle = document.title;
