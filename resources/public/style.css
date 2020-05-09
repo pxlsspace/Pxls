@@ -501,11 +501,11 @@ body .message {
 
 #ui {
     position: fixed;
-    width: 100%;
-    height: 100%;
     top: 0;
+    bottom: 0;
     left: 0;
-    transition: width ease-in-out .25s, left ease-in-out .25s;
+    right: 0;
+    transition: left ease-in-out .25s, right ease-in-out .25s;
     user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
@@ -1037,7 +1037,10 @@ footer {
 aside.panel {
     position: fixed;
     top: 0;
-    max-width: 30%;
+    /* NOTE ([  ]): Ideally this would be max-width and we could set an overriding fixed min-width.
+                    This is just width because the main ui currently can't know how much of the min-with is used
+                    and can't adjust its own width accordingly. */
+    width: 30%;
     height: 100%;
     z-index: 21;
     cursor: initial !important;
@@ -1046,7 +1049,7 @@ aside.panel {
 aside.panel.left {
     right: initial;
     transition: left ease-in-out .25s;
-    left: -55%;
+    left: -35%;
 }
 
 aside.panel.left.open, .panel.left[data-state=open] {
@@ -1056,7 +1059,7 @@ aside.panel.left.open, .panel.left[data-state=open] {
 aside.panel.right {
     left: initial;
     transition: right ease-in-out .25s;
-    right: -55%;
+    right: -35%;
 }
 
 aside.panel.right.open, .panel.right[data-state=open] {
@@ -1067,6 +1070,19 @@ aside.panel .panel-body {
     overflow: auto;
     height: 100%;
     height: calc(100% - 2.75em);
+}
+
+aside.panel.half-width {
+    width: 50%;
+    max-width: 50%;
+}
+
+aside.panel.half-width.left {
+    left: -55%;
+}
+
+aside.panel.half-width.right {
+    right: -55%;
 }
 
 aside.panel.horizontal {
@@ -1229,38 +1245,28 @@ aside.panel.horizontal.right {
     margin: 0 !important;
 }
 
-body.panel-open:not(.panel-horizontal) #ui {
-    width: 70vw;
+body.panel-open.panel-left #ui {
+    left: 30%;
 }
 
-body.panel-open.panel-left:not(.panel-horizontal) #ui {
-    left: 30vw;
+body.panel-open.panel-right #ui {
+    right: 30%;
+}
+
+body.panel-open.panel-left.panel-left-halfwidth #ui {
+    left: 50%;
+}
+
+body.panel-open.panel-right.panel-right-halfwidth #ui {
+    right: 50%;
+}
+
+body.panel-open.panel-left.panel-left-horizontal #ui {
+    left: 0;
+}
+
+body.panel-open.panel-right.panel-right-horizontal #ui {
     right: 0;
-}
-
-body.panel-open.panel-left:not(.panel-horizontal).panel-left-halfwidth #ui {
-    left: 50vw;
-    width: 50vw;
-}
-
-body.panel-open.panel-right:not(.panel-horizontal).panel-right-halfwidth #ui {
-    right: 50vw;
-    width: 50vw;
-}
-
-body.panel-left.panel-right:not(.panel-horizontal) #ui {
-    left: 30vw;
-    width: 40vw;
-}
-
-body.panel-left.panel-left-halfwidth.panel-right:not(.panel-horizontal) #ui {
-    left: 50vw;
-    width: 20vw;
-}
-
-body.panel-left.panel-right:not(.panel-horizontal).panel-right-halfwidth #ui {
-    right: 50vw;
-    width: 20vw;
 }
 
 /* CHAT */

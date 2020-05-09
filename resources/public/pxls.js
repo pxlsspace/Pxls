@@ -3485,19 +3485,15 @@ window.App = (function() {
             $(window).trigger('pxls:panel:opened', panelDescriptor);
             document.body.classList.toggle('panel-open', true);
             document.body.classList.toggle(`panel-${panelPosition}`, true);
-            if (panel.classList.contains('half-width')) {
-              document.body.classList.toggle(`panel-${panelPosition}-halfwidth`, true);
-            } else if (panel.classList.contains('horizontal')) {
-              document.body.classList.toggle('panel-horizontal', true);
-            }
           } else {
             $(window).trigger('pxls:panel:closed', panelDescriptor);
             document.body.classList.toggle('panel-open', document.querySelectorAll('.panel.open').length - 1 > 0);
             document.body.classList.toggle(`panel-${panelPosition}`, false);
-            document.body.classList.toggle(`panel-${panelPosition}-halfwidth`, false);
-            document.body.classList.toggle('panel-horizontal', false);
           }
           panel.classList.toggle('open', state);
+
+          document.body.classList.toggle(`panel-${panelPosition}-halfwidth`, $(`.panel[data-panel].${panelPosition}.open.half-width`).length > 0);
+          document.body.classList.toggle(`panel-${panelPosition}-horizontal`, $(`.panel[data-panel].${panelPosition}.open.horizontal`).length > 0);
         }
       }
     };
@@ -4546,7 +4542,7 @@ window.App = (function() {
           if (_chatPanel) {
             _chatPanel.classList.toggle('horizontal', this.checked === true);
             if (_chatPanel.classList.contains('open')) {
-              document.body.classList.toggle('panel-horizontal', this.checked === true);
+              document.body.classList.toggle(`panel-${_chatPanel.classList.contains('right') ? 'right' : 'left'}-horizontal`, this.checked === true);
             }
           }
         });
