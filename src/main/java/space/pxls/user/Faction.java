@@ -1,5 +1,9 @@
 package space.pxls.user;
 
+import com.typesafe.config.Config;
+import com.typesafe.config.ConfigList;
+import com.typesafe.config.ConfigValueType;
+
 import space.pxls.App;
 import space.pxls.data.DBFaction;
 import space.pxls.data.DBFactionSearch;
@@ -227,27 +231,16 @@ public class Faction {
             '}';
     }
 
-    private static List<int[]> _codepoints = Arrays.asList(
-        new int[] {0x0000, 0x007F}, // basic latin
-        new int[] {0x00A1, 0x024F}, // subset of latin-1 supplement (printables, no controls)
-        new int[] {0x0400, 0x04FF}, // cyrillic
-        new int[] {0x0500, 0x052F}, // cyrillic supplement
-        new int[] {0x2122}, // (tm)
-        new int[] {0x2010, 0x2014}, // various dashes
-        new int[] {0x2018, 0x201F}, // double and single quote marks
-        new int[] {0x2026}, // ellipsis
-        new int[] {0x203D}, // interrobang
-        new int[] {0x20AC}, // Euro symbol
-        new int[] {0x20BF}, // Bitcoin symbol
-        new int[] {0x2150, 0x215E}, // fractions such as 1/7 and 3/5
-        new int[] {0x2190, 0x2199}, // simple arrows
-        new int[] {0x231A, 0x231B}, // watch, hourglass from misc technical
-        new int[] {0x23EA, 0x23FA}, // more emoji from misc technical
-        new int[] {0x2600, 0x27BF}, // misc symbols (♥), dingbats (sparkle, heavy heart)
-        new int[] {0xFE00, 0xFE0F}, // variation selectors (heart color)
-        new int[] {0x1F000, 0x1FAFF} // emoji
-    );
     private static boolean checkCodepoints(String input) {
-        return input.codePoints().allMatch(i -> _codepoints.stream().anyMatch(pair -> (pair.length == 1) ? (i == pair[0]) : ((i >= pair[0]) && (i <= pair[1]))));
+        List<List<Number>> codePoints = App.getConfig().getList("factions.allowedCharacterRanges").stream()
+          .map(sublist -> ((ConfigList) sublist).stream()
+              .map(value -> value.valueType() == ConfigValueType.STRING ? (Number) Integer.decode((String) value.unwrapped()) : (Number) value.unwrapped())
+              .collect(Collectors.toList())
+          ).collect(Collectors.toList());
+        
+        return input.codePoints().allMatch(i -> codePoints.stream()
+            .anyMatch(pair -> (pair.size() == 1)
+                ? (i == pair.get(0).intValue())
+                : ((i >= pair.get(0).intValue()) && (i <= pair.get(1).intValue()))));
     }
 }
