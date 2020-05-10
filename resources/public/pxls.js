@@ -2309,7 +2309,8 @@ window.App = (function() {
         self.palette = palette;
         self.elements.palette.find('.palette-color').remove().end().append(
           $.map(self.palette, function(p, idx) {
-            return $('<div>')
+            return $('<button>')
+              .attr('type', 'button')
               .attr('data-idx', idx)
               .addClass('palette-color')
               .addClass('ontouchstart' in window ? 'touch' : 'no-touch')
@@ -2325,7 +2326,8 @@ window.App = (function() {
           })
         );
         self.elements.palette.prepend(
-          $('<div>')
+          $('<button>')
+            .attr('type', 'button')
             .attr('data-idx', -1)
             .addClass('palette-color no-border deselect-button')
             .addClass('ontouchstart' in window ? 'touch' : 'no-touch').css('background-color', 'transparent')
@@ -2506,7 +2508,7 @@ window.App = (function() {
       },
       handle: null,
       report: function(id, x, y) {
-        const reportButton = crel('button', { class: 'button' }, 'Report');
+        const reportButton = crel('button', { class: 'text-button dangerous-button' }, 'Report');
         reportButton.addEventListener('click', function() {
           this.disabled = true;
           this.textContent = 'Sending...';
@@ -2550,12 +2552,12 @@ window.App = (function() {
               placeholder: 'Additional information (if applicable)',
               style: 'width: 100%; height: 5em',
               onkeydown: e => e.stopPropagation()
-            })
-          ),
-          [ // crel will inject the array as fragments
-            crel('button', { class: 'button', onclick: () => modal.closeAll() }, 'Cancel'),
-            reportButton
-          ]
+            }),
+            crel('div', { class: 'buttons' },
+              crel('button', { class: 'text-button', onclick: () => modal.closeAll() }, 'Cancel'),
+              reportButton
+            )
+          )
         ));
       },
       /**
@@ -2673,14 +2675,14 @@ window.App = (function() {
         return self.elements.lookup.empty().append(
           $('<div>').addClass('content'),
           (!data.bg && user.isLoggedIn()
-            ? $('<div>').addClass('button').css('float', 'left').addClass('report-button').text('Report').click(function() {
+            ? $('<button>').css('float', 'left').addClass('dangerous-button text-button').text('Report').click(function() {
               self.report(data.id, data.x, data.y);
             })
             : ''),
-          $('<div>').addClass('button').css('float', 'right').text('Close').click(function() {
+          $('<button>').css('float', 'right').addClass('text-button').text('Close').click(function() {
             self.elements.lookup.fadeOut(200);
           }),
-          (template.getOptions().use ? $('<div>').addClass('button').css('float', 'right').text('Move Template Here').click(function() {
+          (template.getOptions().use ? $('<button>').css('float', 'right').addClass('text-button').text('Move Template Here').click(function() {
             template.queueUpdate({
               ox: data.x,
               oy: data.y
@@ -2895,7 +2897,7 @@ window.App = (function() {
           modal.show(modal.buildDom(
             crel('h2', { class: 'modal-title' }, 'Alert'),
             crel('p', { style: 'padding: 0; margin: 0;' }, data.message),
-            crel('span', { style: 'font-style: italic' }, `Sent from ${data.sender || '$Unknown'}`)
+            crel('span', `Sent from ${data.sender || '$Unknown'}`)
           ), { closeExisting: false });
         });
         socket.on('received_report', (data) => {
@@ -3046,7 +3048,7 @@ window.App = (function() {
           switch (evt.key || evt.which) {
             case 'Escape':
             case 27: {
-              const selector = $('#lookup, #prompt, #alert, .popup.panels');
+              const selector = $('#lookup, #prompt, #alert, .popup');
               const openPanels = $('.panel.open');
               if (selector.is(':visible')) {
                 selector.fadeOut(200);
@@ -3484,19 +3486,15 @@ window.App = (function() {
             $(window).trigger('pxls:panel:opened', panelDescriptor);
             document.body.classList.toggle('panel-open', true);
             document.body.classList.toggle(`panel-${panelPosition}`, true);
-            if (panel.classList.contains('half-width')) {
-              document.body.classList.toggle(`panel-${panelPosition}-halfwidth`, true);
-            } else if (panel.classList.contains('horizontal')) {
-              document.body.classList.toggle('panel-horizontal', true);
-            }
           } else {
             $(window).trigger('pxls:panel:closed', panelDescriptor);
             document.body.classList.toggle('panel-open', document.querySelectorAll('.panel.open').length - 1 > 0);
             document.body.classList.toggle(`panel-${panelPosition}`, false);
-            document.body.classList.toggle(`panel-${panelPosition}-halfwidth`, false);
-            document.body.classList.toggle('panel-horizontal', false);
           }
           panel.classList.toggle('open', state);
+
+          document.body.classList.toggle(`panel-${panelPosition}-halfwidth`, $(`.panel[data-panel].${panelPosition}.open.half-width`).length > 0);
+          document.body.classList.toggle(`panel-${panelPosition}-horizontal`, $(`.panel[data-panel].${panelPosition}.open.horizontal`).length > 0);
         }
       }
     };
@@ -3713,32 +3711,38 @@ window.App = (function() {
                 crel('hr'),
                 crel('ul', { class: 'chatban-history' },
                   e.chatbans.map(chatban => {
-                    return crel('li', { class: 'chatban' },
-                      crel('h4', `${chatban.initiator_name} ${chatban.type === 'UNBAN' ? 'un' : ''}banned ${e.target.username}${chatban.type !== 'PERMA' ? '' : ''}`),
-                      crel('table',
-                        crel('tbody',
-                          crel('tr',
-                            crel('th', 'Reason:'),
-                            crel('td', chatban.reason || '$No reason provided$')
-                          ),
-                          crel('tr',
-                            crel('th', 'When:'),
-                            crel('td', moment(chatban.when * 1e3).format(longFormat))
-                          ),
-                          chatban.type !== 'UNBAN' ? ([
-                            crel('tr',
-                              crel('th', 'Length:'),
-                              crel('td', (chatban.type.toUpperCase().trim() === 'PERMA') ? 'Permanent' : `${chatban.expiry - chatban.when}s${(chatban.expiry - chatban.when) >= 60 ? ` (${moment.duration(chatban.expiry - chatban.when, 'seconds').humanize()})` : ''}`)
-                            ),
-                            (chatban.type.toUpperCase().trim() === 'PERMA') ? null : crel('tr',
-                              crel('th', 'Expiry:'),
-                              crel('td', moment(chatban.expiry * 1e3).format(longFormat))
-                            ),
-                            crel('tr',
-                              crel('th', 'Purged:'),
-                              crel('td', String(chatban.purged))
+                    return crel('li',
+                      crel('article', { class: 'chatban' },
+                        crel('header',
+                          crel('h4', `${chatban.initiator_name} ${chatban.type === 'UNBAN' ? 'un' : ''}banned ${e.target.username}${chatban.type !== 'PERMA' ? '' : ''}`)
+                        ),
+                        crel('div',
+                          crel('table',
+                            crel('tbody',
+                              crel('tr',
+                                crel('th', 'Reason:'),
+                                crel('td', chatban.reason || '$No reason provided$')
+                              ),
+                              crel('tr',
+                                crel('th', 'When:'),
+                                crel('td', moment(chatban.when * 1e3).format(longFormat))
+                              ),
+                              chatban.type !== 'UNBAN' ? ([
+                                crel('tr',
+                                  crel('th', 'Length:'),
+                                  crel('td', (chatban.type.toUpperCase().trim() === 'PERMA') ? 'Permanent' : `${chatban.expiry - chatban.when}s${(chatban.expiry - chatban.when) >= 60 ? ` (${moment.duration(chatban.expiry - chatban.when, 'seconds').humanize()})` : ''}`)
+                                ),
+                                (chatban.type.toUpperCase().trim() === 'PERMA') ? null : crel('tr',
+                                  crel('th', 'Expiry:'),
+                                  crel('td', moment(chatban.expiry * 1e3).format(longFormat))
+                                ),
+                                crel('tr',
+                                  crel('th', 'Purged:'),
+                                  crel('td', String(chatban.purged))
+                                )
+                              ]) : null
                             )
-                          ]) : null
+                          )
                         )
                       )
                     );
@@ -4076,7 +4080,7 @@ window.App = (function() {
         });
 
         $(window).on('resize', e => {
-          const popup = document.querySelector('.popup.panels[data-popup-for]');
+          const popup = document.querySelector('.popup[data-popup-for]');
           if (!popup) return;
           const cog = document.querySelector(`.chat-line[data-id="${popup.dataset.popupFor}"] [data-action="actions-panel"]`);
           if (!cog) return console.warn('no cog');
@@ -4089,7 +4093,7 @@ window.App = (function() {
         });
 
         self.elements.body[0].addEventListener('wheel', e => {
-          const popup = document.querySelector('.popup.panels');
+          const popup = document.querySelector('.popup');
           if (popup) popup.remove();
         });
 
@@ -4108,15 +4112,15 @@ window.App = (function() {
         self.elements.pings_button[0].addEventListener('click', function() {
           const closeHandler = function() {
             if (this && this.closest) {
-              const toClose = this.closest('.popup.panels');
+              const toClose = this.closest('.popup');
               if (toClose) toClose.remove();
             }
           };
 
-          const popupWrapper = crel('div', { class: 'popup panels' });
-          const panelHeader = crel('header', { style: 'text-align: center' },
-            crel('div', { class: 'left' }, crel('i', {
-              class: 'fas fa-times text-red',
+          const popupWrapper = crel('div', { class: 'popup panel' });
+          const panelHeader = crel('header', { class: 'panel-header' },
+            crel('button', { class: 'left panel-closer' }, crel('i', {
+              class: 'fas fa-times',
               onclick: closeHandler
             })),
             crel('h2', 'Pings'),
@@ -4323,12 +4327,12 @@ window.App = (function() {
             } else {
               self.elements.typeahead_list[0].innerHTML = '';
               const LIs = got.slice(0, 10).map(x =>
-                crel('li', {
+                crel('li', crel('button', {
                   'data-insert': `${x} `,
                   'data-start': scanRes.start,
                   'data-end': scanRes.end,
                   onclick: self._handleTypeaheadInsert
-                }, x)
+                }, x))
               );
               LIs[0].classList.add('active');
               crel(self.elements.typeahead_list[0], LIs);
@@ -4422,7 +4426,7 @@ window.App = (function() {
         const lblTemplateTitles = crel('label', _cbTemplateTitles, 'Replace template titles with URLs in chat where applicable');
 
         const _txtFontSize = crel('input', { type: 'number', min: '1', max: '72' });
-        const _btnFontSizeConfirm = crel('button', { class: 'buton' }, crel('i', { class: 'fas fa-check' }));
+        const _btnFontSizeConfirm = crel('button', { class: 'text-button' }, crel('i', { class: 'fas fa-check' }));
         const lblFontSize = crel('label', 'Font Size: ', _txtFontSize, _btnFontSizeConfirm);
 
         const _cbHorizontal = crel('input', { type: 'checkbox' });
@@ -4453,7 +4457,7 @@ window.App = (function() {
           crel('option', { value: x }, x)
         )
         );
-        const _btnUnignore = crel('button', { class: 'button', style: 'margin-left: .5rem' }, 'Unignore');
+        const _btnUnignore = crel('button', { class: 'text-button', style: 'margin-left: .5rem' }, 'Unignore');
         const lblIgnores = crel('label', 'Ignores: ', _selIgnores, _btnUnignore);
         const lblIgnoresFeedback = crel('label', { style: 'display: none; margin-left: 1rem;' }, '');
 
@@ -4539,7 +4543,7 @@ window.App = (function() {
           if (_chatPanel) {
             _chatPanel.classList.toggle('horizontal', this.checked === true);
             if (_chatPanel.classList.contains('open')) {
-              document.body.classList.toggle('panel-horizontal', this.checked === true);
+              document.body.classList.toggle(`panel-${_chatPanel.classList.contains('right') ? 'right' : 'left'}-horizontal`, this.checked === true);
             }
           }
         });
@@ -4581,7 +4585,7 @@ window.App = (function() {
             lblUsernameColor,
             lblIgnores,
             lblIgnoresFeedback
-          ].map(x => crel('div', { class: 'd-block' }, x))
+          ].map(x => crel('div', x))
         );
         modal.show(modal.buildDom(
           crel('h2', { class: 'modal-title' }, 'Chat Settings'),
@@ -5025,7 +5029,7 @@ window.App = (function() {
               ['OK', () => resolve(bodyWrapper.querySelector('input[type=radio]:checked').dataset.actionId >> 0)]
             ].map(x =>
               crel('button', {
-                class: 'button',
+                class: 'text-button',
                 style: 'margin-left: 3px; position: initial !important; bottom: initial !important; right: initial !important;',
                 onclick: x[1]
               }, x[0])
@@ -5083,86 +5087,49 @@ window.App = (function() {
 
           const closeHandler = function() {
             if (this && this.closest) {
-              const toClose = this.closest('.popup.panels');
+              const toClose = this.closest('.popup');
               if (toClose) toClose.remove();
             }
           };
 
-          const popupWrapper = crel('div', { class: 'popup panels', 'data-popup-for': id });
+          const popupWrapper = crel('div', { class: 'popup panel', 'data-popup-for': id });
           const panelHeader = crel('header',
-            { style: 'text-align: center;' },
-            crel('div', { class: 'left' }, crel('i', {
-              class: 'fas fa-times text-red',
+            { class: 'panel-header' },
+            crel('button', { class: 'left panel-closer' }, crel('i', {
+              class: 'fas fa-times',
               onclick: closeHandler
             })),
             crel('span', (closest.dataset.tag ? `[${closest.dataset.tag}] ` : null), closest.dataset.author, badges),
             crel('div', { class: 'right' })
           );
-          const leftPanel = crel('div', { class: 'pane details-wrapper' });
+          const leftPanel = crel('div', { class: 'pane details-wrapper chat-line' });
           const rightPanel = crel('div', { class: 'pane actions-wrapper' });
           const actionsList = crel('ul', { class: 'actions-list' });
 
-          const actionReport = crel('li', {
-            class: 'text-red',
-            'data-action': 'report',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Report');
-          const actionMention = crel('li', {
-            'data-action': 'mention',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Mention');
-          const actionIgnore = crel('li', {
-            'data-action': 'ignore',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Ignore');
-          const actionProfile = crel('li', {
-            'data-action': 'profile',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Profile');
-          const actionChatban = crel('li', {
-            'data-action': 'chatban',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Chat (un)ban');
-          const actionPurgeUser = crel('li', {
-            'data-action': 'purge',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Purge User');
-          const actiondeleteMessage = crel('li', {
-            'data-action': 'delete',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Delete');
-          const actionModLookup = crel('li', {
-            'data-action': 'lookup-mod',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Mod Lookup');
-          const actionChatLookup = crel('li', {
-            'data-action': 'lookup-chat',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Chat Lookup');
+          const actions = [
+            { label: 'Report', action: 'report', class: 'dangerous-button' },
+            { label: 'Mention', action: 'mention' },
+            { label: 'Ignore', action: 'ignore' },
+            { label: 'Profile', action: 'profile' },
+            { label: 'Chat (un)ban', action: 'chatban', staffaction: true },
+            { label: 'Purge User', action: 'purge', staffaction: true },
+            { label: 'Delete', action: 'delete', staffaction: true },
+            { label: 'Mod Lookup', action: 'lookup-mod', staffaction: true },
+            { label: 'Chat Lookup', action: 'lookup-chat', staffaction: true }
+          ];
 
-          crel(leftPanel, crel('p', { class: 'popup-timestamp-header' }, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(ls.get('chat.24h') === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
-          crel(leftPanel, crel('p', { style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector('.content').textContent));
+          crel(leftPanel, crel('p', { class: 'popup-timestamp-header text-muted' }, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(ls.get('chat.24h') === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
+          crel(leftPanel, crel('p', { class: 'content', style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector('.content').textContent));
 
-          crel(actionsList, actionReport);
-          crel(actionsList, actionMention);
-          crel(actionsList, actionProfile);
-          crel(actionsList, actionIgnore);
-          if (user.isStaff()) {
-            crel(actionsList, actionChatban);
-            crel(actionsList, actiondeleteMessage);
-            crel(actionsList, actionPurgeUser);
-            crel(actionsList, actionModLookup);
-            crel(actionsList, actionChatLookup);
-          }
+          crel(actionsList, actions
+            .filter((action) => user.isStaff() || !action.staffaction)
+            .map((action) => crel('li', crel('button', {
+              type: 'button',
+              class: 'text-button fullwidth ' + (action.class || ''),
+              'data-action': action.action,
+              'data-id': id,
+              onclick: self._handleActionClick
+            }, action.label))));
           crel(rightPanel, actionsList);
 
           const popup = crel(popupWrapper, panelHeader, leftPanel, rightPanel);
@@ -5216,8 +5183,7 @@ window.App = (function() {
         switch (this.dataset.action.toLowerCase().trim()) {
           case 'report': {
             const reportButton = crel('button', {
-              class: 'button',
-              style: 'position: initial;',
+              class: 'text-button dangerous-button',
               type: 'submit'
             }, 'Report');
             const textArea = crel('textarea', {
@@ -5237,7 +5203,7 @@ window.App = (function() {
                   textArea,
                   crel('div', { style: 'text-align: right' },
                     crel('button', {
-                      class: 'button',
+                      class: 'text-button',
                       style: 'position: initial; margin-right: .25rem',
                       type: 'button',
                       onclick: () => {
@@ -5360,14 +5326,14 @@ window.App = (function() {
             const _reasonWrap = crel('div', { style: 'display: block;' });
 
             const _btnCancel = crel('button', {
-              class: 'button',
+              class: 'text-button',
               type: 'button',
               onclick: () => {
                 chatbanContainer.remove();
                 modal.closeAll();
               }
             }, 'Cancel');
-            const _btnOK = crel('button', { class: 'button', type: 'submit' }, 'Ban');
+            const _btnOK = crel('button', { class: 'text-button dangerous-button', type: 'submit' }, 'Ban');
 
             const chatbanContainer = crel('form', {
               class: 'chatmod-container',
@@ -5488,7 +5454,7 @@ window.App = (function() {
             if (e.shiftKey === true) {
               return dodelete();
             }
-            const btndelete = crel('button', { class: 'button' }, 'Delete');
+            const btndelete = crel('button', { class: 'text-button dangerous-button' }, 'Delete');
             btndelete.onclick = () => dodelete();
             const deleteWrapper = crel('div', { class: 'chatmod-container' },
               crel('table',
@@ -5511,7 +5477,7 @@ window.App = (function() {
               ),
               crel('div', { class: 'buttons' },
                 crel('button', {
-                  class: 'button',
+                  class: 'text-button',
                   type: 'button',
                   onclick: () => {
                     deleteWrapper.remove();
@@ -5528,12 +5494,9 @@ window.App = (function() {
             break;
           }
           case 'purge': {
-            // const lblPurgeAmountError = crel('label', { class: 'hidden error-label' });
-
             const txtPurgeReason = crel('input', { type: 'text', onkeydown: e => e.stopPropagation() });
-            const lblPurgeReasonError = crel('label', { class: 'hidden error-label' });
 
-            const btnPurge = crel('button', { class: 'button', type: 'submit' }, 'Purge');
+            const btnPurge = crel('button', { class: 'text-button dangerous-button', type: 'submit' }, 'Purge');
 
             const messageTable = mode
               ? crel('table',
@@ -5558,13 +5521,11 @@ window.App = (function() {
               messageTable,
               crel('div',
                 crel('h5', 'Purge Reason'),
-                txtPurgeReason,
-                crel('br'),
-                lblPurgeReasonError
+                txtPurgeReason
               ),
               crel('div', { class: 'buttons' },
                 crel('button', {
-                  class: 'button',
+                  class: 'text-button',
                   type: 'button',
                   onclick: () => {
                     purgeWrapper.remove();
@@ -5616,7 +5577,7 @@ window.App = (function() {
             const stateOn = crel('label', { style: 'display: inline-block' }, rbStateOn, ' On');
             const stateOff = crel('label', { style: 'display: inline-block' }, rbStateOff, ' Off');
 
-            const btnSetState = crel('button', { class: 'button', type: 'submit' }, 'Set');
+            const btnSetState = crel('button', { class: 'text-button', type: 'submit' }, 'Set');
 
             const renameError = crel('p', {
               style: 'display: none; color: #f00; font-weight: bold; font-size: .9rem',
@@ -5632,7 +5593,7 @@ window.App = (function() {
               renameError,
               crel('div', { class: 'buttons' },
                 crel('button', {
-                  class: 'button',
+                  class: 'text-button',
                   type: 'button',
                   onclick: () => {
                     renameWrapper.remove();
@@ -5680,7 +5641,7 @@ window.App = (function() {
             });
             const newNameWrapper = crel('label', 'New Name: ', newNameInput);
 
-            const btnSetState = crel('button', { class: 'button', type: 'submit' }, 'Set');
+            const btnSetState = crel('button', { class: 'text-button', type: 'submit' }, 'Set');
 
             const renameError = crel('p', {
               style: 'display: none; color: #f00; font-weight: bold; font-size: .9rem',
@@ -5693,7 +5654,7 @@ window.App = (function() {
               renameError,
               crel('div', { class: 'buttons' },
                 crel('button', {
-                  class: 'button',
+                  class: 'text-button',
                   type: 'button',
                   onclick: () => {
                     modal.closeAll();
@@ -6050,34 +6011,34 @@ window.App = (function() {
         self.elements.loginOverlay.find('a').click(function(evt) {
           evt.preventDefault();
 
-          const cancelButton = crel('button', { class: 'button' }, 'Cancel');
+          const cancelButton = crel('button', { class: 'float-right text-button' }, 'Cancel');
           cancelButton.addEventListener('click', function() {
             self.elements.prompt.fadeOut(200);
           });
 
           self.elements.prompt[0].innerHTML = '';
           crel(self.elements.prompt[0],
-            crel('h1', 'Sign in with...'),
-            crel('ul',
-              Object.values(data.authServices).map(service => {
-                const anchor = crel('a', { href: `/signin/${service.id}?redirect=1` }, service.name);
-                anchor.addEventListener('click', function(e) {
-                  if (window.open(this.href, '_blank')) {
-                    e.preventDefault();
-                    return;
+            crel('div', { class: 'content' },
+              crel('h1', 'Sign in with...'),
+              crel('ul',
+                Object.values(data.authServices).map(service => {
+                  const anchor = crel('a', { href: `/signin/${service.id}?redirect=1` }, service.name);
+                  anchor.addEventListener('click', function(e) {
+                    if (window.open(this.href, '_blank')) {
+                      e.preventDefault();
+                      return;
+                    }
+                    ls.set('auth_same_window', true);
+                  });
+                  const toRet = crel('li', anchor);
+                  if (!service.registrationEnabled) {
+                    crel(toRet, crel('span', { style: 'font-style: italic; font-size: .75em; font-weight: bold; color: red; margin-left: .5em' }, 'New Accounts Disabled'));
                   }
-                  ls.set('auth_same_window', true);
-                });
-                const toRet = crel('li', anchor);
-                if (!service.registrationEnabled) {
-                  crel(toRet, crel('span', { style: 'font-style: italic; font-size: .75em; font-weight: bold; color: red; margin-left: .5em' }, 'New Accounts Disabled'));
-                }
-                return toRet;
-              })
+                  return toRet;
+                })
+              )
             ),
-            crel('div', { class: 'buttons' },
-              cancelButton
-            )
+            cancelButton
           );
           self.elements.prompt.fadeIn(200);
         });
@@ -6281,8 +6242,8 @@ window.App = (function() {
             class: 'rename-error'
           }, ''),
           crel('div', { style: 'text-align: right' },
-            crel('button', { class: 'button', onclick: () => modal.closeAll() }, 'Not now'),
-            crel('button', { class: 'button rename-submit', type: 'submit' }, 'Change')
+            crel('button', { class: 'text-button', onclick: () => modal.closeAll() }, 'Not now'),
+            crel('button', { class: 'rename-submit text-button', type: 'submit' }, 'Change')
           )
         );
         modal.show(modal.buildDom(
@@ -6438,12 +6399,12 @@ window.App = (function() {
         }
       },
       makeDomForNotification(notification) {
-        return crel('div', { class: 'notification', 'data-notification-id': notification.id },
-          crel('div', { class: 'notification-title' }, notification.title),
+        return crel('article', { class: 'notification', 'data-notification-id': notification.id },
+          crel('header', { class: 'notification-title' }, crel('h2', notification.title)),
           chat.processMessage('div', 'notification-body', notification.content),
-          crel('div', { class: 'notification-footer' },
+          crel('footer', { class: 'notification-footer' },
             notification.who ? document.createTextNode(`Posted by ${notification.who}`) : null,
-            notification.expiry !== 0 ? crel('span', { class: 'notification-expiry' },
+            notification.expiry !== 0 ? crel('span', { class: 'notification-expiry float-left' },
               crel('i', { class: 'far fa-clock fa-is-left' }),
               crel('span', { title: moment.unix(notification.expiry).format('MMMM DD, YYYY, hh:mm:ss A') }, `Expires ${moment.unix(notification.expiry).format('MMM DD YYYY')}`)
             ) : null
@@ -6547,7 +6508,7 @@ window.App = (function() {
           closeExisting: true,
           escapeClose: true,
           clickClose: true,
-          showClose: true,
+          showClose: false,
           closeText: '<i class="fas fa-times"></i>'
         }, { removeOnClose: true }, opts);
         if (!document.body.contains(modal)) {
@@ -6560,12 +6521,20 @@ window.App = (function() {
           });
         }
       },
+      buildCloser: function() {
+        const button = crel('button', { class: 'panel-closer' }, crel('i', { class: 'fas fa-times' }));
+        button.addEventListener('click', () => modal.closeTop());
+        return button;
+      },
       buildDom: function(headerContent, bodyContent, footerContent) {
-        return crel('div', { class: 'modal', tabindex: '-1', role: 'dialog' },
+        return crel('div', { class: 'modal panel', tabindex: '-1', role: 'dialog' },
           crel('div', { class: 'modal-wrapper', role: 'document' },
-            headerContent == null ? null : crel('div', { class: 'modal-header' }, headerContent),
-            bodyContent == null ? null : crel('div', { class: 'modal-body' }, bodyContent),
-            footerContent == null ? null : crel('div', { class: 'modal-footer' }, footerContent)
+            headerContent == null ? null : crel('header', { class: 'modal-header panel-header' },
+              crel('div', { class: 'left' }),
+              crel('div', { class: 'mid' }, headerContent),
+              crel('div', { class: 'right' }, this.buildCloser())),
+            bodyContent == null ? null : crel('div', { class: 'modal-body panel-body' }, bodyContent),
+            footerContent == null ? null : crel('footer', { class: 'modal-footer panel-footer' }, footerContent)
           )
         );
       },

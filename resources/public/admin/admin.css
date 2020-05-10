@@ -9,12 +9,8 @@
     left: -180px;
     width: 210px;
     min-height: 62px;
-    background: #333;
-    background: var(--admin-background);
-    color: #fff;
-    color: var(--admin-text-color);
-    padding: 10px;
-    border-radius: 0 5px 5px 0;
+    border-top-left-radius: 0px !important;
+    border-bottom-left-radius: 0px !important;
     transition: left 0.2s ease-out;
     transform: translateY(-50%);
 }
@@ -42,38 +38,9 @@
     left: 172px;
 }
 
-.admin-check {
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    border: 1px solid var(--admin-check-border-color);
-    background-color: #eee;
-    background-color: var(--admin-check-background-color);
-    color: inherit;
-    color: var(--admin-check-text-color);
-    padding: 10px 10px 5px;
-    position: fixed;
-
-    z-index: 22;
-    top: 45vh;
-    left: 50%;
-    transform: translateX(-50%) translateY(-50%);
-    max-height: 100vh;
-    overflow-y: auto;
-}
-
-.admin-check .buttons {
-    margin-top: 1rem;
-    text-align: right;
-}
-
 .admin input[type=text] {
     width: 80%;
     margin-top: 4px;
-}
-
-.admin-lookup-msg {
-    width: 100%;
-    margin-top: 6px;
 }
 
 .admin-bannumber {
