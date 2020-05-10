@@ -3584,6 +3584,26 @@ window.App = (function() {
         }
       },
       init: () => {
+        // Register default hooks
+        self.registerHook({
+          id: 'username-mention',
+          get: message => ({
+            pings: (() => {
+              const mentionRegExp = new RegExp(`(\\s|^)@${user.getUsername().replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&')}(?![a-zA-Z0-9_-])`, 'gi');
+              const matches = [];
+              let match;
+              while ((match = mentionRegExp.exec(message.message_raw)) !== null) {
+                matches.push(match);
+              }
+              return matches.map((match) => ({
+                start: match.index + match[1].length,
+                length: user.getUsername().length + 1,
+                highlight: true
+              }));
+            })()
+          })
+        });
+
         self.initTypeahead();
         self.reloadIgnores();
         socket.on('ack_client_update', e => {
@@ -4735,6 +4755,50 @@ window.App = (function() {
           this.style.display = enabled ? 'initial' : 'none';
         });
       },
+      /**
+         * All lookup hooks.
+         */
+      hooks: [],
+      /**
+         * Registers hooks.
+         * @param {...Object} hooks Information about the hook.
+         * @param {String} hooks.id An ID for the hook.
+         * @param {Function} hooks.get A function that returns an object representing message metadata.
+         */
+      registerHook: function(...hooks) {
+        return self.hooks.push(...$.map(hooks, function(hook) {
+          return {
+            id: hook.id || 'hook',
+            get: hook.get || function() {
+            }
+          };
+        }));
+      },
+      /**
+         * Replace a hook by its ID.
+         * @param {String} hookId The ID of the hook to replace.
+         * @param {Object} newHook Information about the hook.
+         * @param {Function} newHook.get A function that returns an object representing message metadata.
+         */
+      replaceHook: function(hookId, newHook) {
+        delete newHook.id;
+        for (const idx in self.hooks) {
+          const hook = self.hooks[idx];
+          if (hook.id === hookId) {
+            self.hooks[idx] = Object.assign(hook, newHook);
+            return;
+          }
+        }
+      },
+      /**
+         * Unregisters a hook by its ID.
+         * @param {string} hookId The ID of the hook to unregister.
+         */
+      unregisterHook: function(hookId) {
+        self.hooks = $.grep(self.hooks, function(hook) {
+          return hook.id !== hookId;
+        });
+      },
       _process: (packet, isHistory = false) => {
         if (packet.id) {
           if (self.idLog.includes(packet.id)) {
@@ -4746,12 +4810,12 @@ window.App = (function() {
             }
           }
         }
+
+        const hookDatas = self.hooks.map((hook) => Object.assign({}, { pings: [] }, hook.get(packet)));
+
         self.typeahead.helper.getDatabase('users').addEntry(packet.author, packet.author);
         if (self.ignored.indexOf(packet.author) >= 0) return;
-        const hasPing = !board.snipMode && ls.get('chat.pings-enabled') === true && user.isLoggedIn() && packet.message_raw
-          .toLowerCase()
-          .split(' ')
-          .some((s) => s.search(new RegExp(`@${user.getUsername().toLowerCase()}(?![a-zA-Z0-9_-])`)) === 0);
+        const hasPing = !board.snipMode && ls.get('chat.pings-enabled') === true && user.isLoggedIn() && hookDatas.some((data) => data.pings.length > 0);
         const when = moment.unix(packet.date);
         const flairs = crel('span', { class: 'flairs' });
         if (Array.isArray(packet.badges)) {
@@ -5744,7 +5808,11 @@ window.App = (function() {
       removeIgnore: self.removeIgnore,
       getIgnores: self.getIgnores,
       typeahead: self.typeahead,
-      updateCanvasBanState: self.updateCanvasBanState
+      updateCanvasBanState: self.updateCanvasBanState,
+      registerHook: self.registerHook,
+      replaceHook: self.replaceHook,
+      unregisterHook: self.unregisterHook,
+      runLookup: self.runLookup
     };
   })();
     // this takes care of the countdown timer
