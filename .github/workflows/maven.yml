@@ -22,3 +22,7 @@ jobs:
         java-version: 1.8
     - name: Build with Maven
       run: mvn -B package --file pom.xml
+    - name: Upload artifact
+      uses: actions/upload-artifact@v2
+      with:
+        path: target/pxls-1.0-SNAPSHOT.jar
