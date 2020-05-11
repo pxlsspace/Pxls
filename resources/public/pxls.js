@@ -356,25 +356,72 @@ window.App = (function() {
       return fallback;
     };
 
-    const setting = function(name, controls, type, defaultValue) {
+    const filterInput = function(controls, type) {
+      switch (type) {
+        case Type.TOGGLE:
+          return $('input[type=checkbox]').filter(controls);
+        case Type.RANGE:
+          return $('input[type=range]').filter(controls);
+        case Type.TEXT:
+          return $('input[type=text]').filter(controls);
+        case Type.NUMBER:
+          return $('input[type=number]').filter(controls);
+        case Type.SELECT:
+          return $('select').filter(controls);
+        case Type.RADIO:
+          return $('input[type=radio]').filter(controls);
+      }
+    };
+
+    const setting = function(name, type, defaultValue, initialControls = $()) {
       const listeners = [];
-      const toggle = type === Type.TOGGLE;
+      let controls = $();
+
+      const get = function() {
+        const value = ls.get(name);
+        return validate(value, defaultValue, type);
+      };
+      const set = function(value) {
+        const validValue = validate(value, defaultValue, type);
+        ls.set(name, validValue);
+
+        if (type === Type.RADIO) {
+          controls.each((_, e) => { e.checked = e.value === value; });
+        } else if (type === Type.TOGGLE) {
+          controls.prop('checked', validValue);
+        } else {
+          controls.prop('value', validValue);
+        }
+
+        listeners.forEach((f) => f(validValue));
+      };
+
+      // this is defined here and not higher up so that we have a specific instance to unbind events from
+      const keydownFunction = (evt) => {
+        if (evt.key === 'Enter' || evt.which === 13) {
+          $(this).blur();
+        }
+        // this prevents things like hotkey listeners picking up the events
+        evt.stopPropagation();
+      };
+      let changeFunction = (evt) => set(evt.target.value);
+      let changeEvents = 'change';
+
+      switch (type) {
+        case Type.RADIO:
+          changeEvents = 'click';
+          break;
+        case Type.RANGE:
+          changeEvents = 'input change';
+          break;
+        case Type.TOGGLE:
+          changeFunction = (evt) => self.set(evt.target.checked);
+          break;
+      }
 
       const self = {
-        get: function() {
-          const value = ls.get(name);
-          return validate(value, defaultValue, type);
-        },
-        set: function(value) {
-          const validValue = validate(value, defaultValue, type);
-          ls.set(name, validValue);
-          if (type === Type.RADIO) {
-            controls.each((_, e) => { e.checked = e.value === value; });
-          } else {
-            controls.prop(toggle ? 'checked' : 'value', validValue);
-          }
-          listeners.forEach((f) => f(validValue));
-        },
+        get: get,
+        set: set,
         reset: function() {
           self.set(defaultValue);
         },
@@ -383,37 +430,44 @@ window.App = (function() {
           // this makes the listener aware of the initial state since it may not be initialised to the correct value
           f(self.get());
         },
-        disable: function() {
-          controls.prop('disabled', true);
-        },
-        enable: function() {
-          controls.prop('disabled', false);
+        controls: {
+          add: function() {
+            const toAdd = filterInput($.apply($, arguments), type);
+            controls = controls.add(toAdd);
+
+            if (type === Type.TEXT || type === Type.NUMBER) {
+              toAdd.on('keydown', keydownFunction);
+            }
+
+            toAdd.on(changeEvents, changeFunction);
+
+            // update the new controls to have the correct value
+            self.set(self.get());
+          },
+          remove: function() {
+            const toRemove = controls.filter($.apply($, arguments));
+            controls = controls.not(toRemove);
+
+            if (type === Type.TEXT || type === Type.NUMBER) {
+              toRemove.off('keydown', keydownFunction);
+            }
+
+            toRemove.off(changeEvents, changeFunction);
+          },
+          disable: function() {
+            controls.prop('disabled', true);
+          },
+          enable: function() {
+            controls.prop('disabled', false);
+          }
         }
       };
 
-      if (toggle) {
+      if (type === Type.TOGGLE) {
         self.toggle = function() { self.set(!self.get()); };
       }
 
-      if (type === Type.TEXT || type === Type.NUMBER) {
-        controls.keydown(function(evt) {
-          if (evt.key === 'Enter' || evt.which === 13) {
-            $(this).blur();
-          }
-          evt.stopPropagation();
-        });
-      }
-
-      if (type === Type.RADIO) {
-        controls.click((evt) => self.set(evt.target.value));
-      } else if (type === Type.RANGE) {
-        controls.on('input change', (evt) => self.set(evt.target.value));
-      } else {
-        controls.change((evt) => self.set(toggle ? evt.target.checked : evt.target.value));
-      }
-
-      // this sets the controls to have the correct initial value as well as binds defaults to the localStorage
-      self.set(self.get());
+      self.controls.add(initialControls);
 
       return self;
     };
@@ -421,34 +475,34 @@ window.App = (function() {
     const possiblyMobile = window.innerWidth < 768 && nua.includes('Mobile');
 
     return {
-      themeSelect: setting('currentTheme', $('#themeSelect'), Type.SELECT, '0'),
-      audiotoggle: setting('audio_muted', $('#audiotoggle'), Type.TOGGLE, false),
-      heatmaptoggle: setting('heatmap', $('#heatmaptoggle'), Type.TOGGLE, false),
-      virginmaptoggle: setting('virgimap', $('#virginmaptoggle'), Type.TOGGLE, false),
-      gridtoggle: setting('view_grid', $('#gridtoggle'), Type.TOGGLE, false),
+      themeSelect: setting('currentTheme', Type.SELECT, '0', $('#themeSelect')),
+      audiotoggle: setting('audio_muted', Type.TOGGLE, false, $('#audiotoggle')),
+      heatmaptoggle: setting('heatmap', Type.TOGGLE, false, $('#heatmaptoggle')),
+      virginmaptoggle: setting('virgimap', Type.TOGGLE, false, $('#virginmaptoggle')),
+      gridtoggle: setting('view_grid', Type.TOGGLE, false, $('#gridtoggle')),
       // this actually represents the canvas being locked not unlocked.
-      lockCanvasToggle: setting('canvas.unlocked', $('#lockCanvasToggle'), Type.TOGGLE, false),
-      'native-notification-toggle': setting('nativenotifications.pixel-avail', $('#native-notification-toggle'), Type.TOGGLE, true),
-      stickyColorToggle: setting('autoReset', $('#stickyColorToggle'), Type.TOGGLE, false),
-      monospaceToggle: setting('monospace_lookup', $('#monospaceToggle'), Type.TOGGLE, false),
-      zoomBaseValue: setting('zoomBaseValue', $('#zoomBaseValue'), Type.RANGE, 1.5),
-      increasedZoomToggle: setting('increased_zoom', $('#increasedZoomToggle'), Type.TOGGLE, false),
-      scrollSwitchToggle: setting('scrollSwitchEnabled', $('#scrollSwitchToggle'), Type.TOGGLE, false),
-      scrollDirectionToggle: setting('scrollSwitchDirectionInverted', $('#scrollDirectionToggle'), Type.TOGGLE, false),
-      showReticuleToggle: setting('ui.show-reticule', $('#showReticuleToggle'), Type.TOGGLE, possiblyMobile),
-      showCursorToggle: setting('ui.show-cursor', $('#showCursorToggle'), Type.TOGGLE, possiblyMobile),
-      templateBeneathHeatmapToggle: setting('templateBeneathHeatmap', $('#templateBeneathHeatmapToggle'), Type.TOGGLE, false),
-      cbEnableMiddleMouseSelect: setting('enableMiddleMouseSelect', $('#cbEnableMiddleMouseSelect'), Type.TOGGLE, true),
-      cbNumberedPalette: setting('enableNumberedPalette', $('#cbNumberedPalette'), Type.TOGGLE, false),
-      'heatmap-opacity': setting('heatmap_background_opacity', $('#heatmap-opacity'), Type.RANGE, 0.5),
-      'virginmap-opacity': setting('virginmap_background_opacity', $('#virginmap-opacity'), Type.RANGE, 0.5),
-      snapshotImageFormat: setting('snapshotImageFormat', $('#snapshotImageFormat'), Type.SELECT, 'image/png'),
-      'bubble-position': setting('ui.bubble-position', $('[name=bubble-position]'), Type.RADIO, 'bottom left'),
-      'color-brightness-toggle': setting('brightness.enabled', $('#color-brightness-toggle'), Type.TOGGLE, false),
-      'color-brightness': setting('colorBrightness', $('#color-brightness'), Type.RANGE, 1),
-      txtAlertLocation: setting('alert.src', $('#txtAlertLocation'), Type.TEXT, ''),
-      rangeAlertVolume: setting('alert.volume', $('#rangeAlertVolume'), Type.RANGE, 1),
-      alertDelay: setting('alert_delay', $('#alertDelay'), Type.NUMBER, 0)
+      lockCanvasToggle: setting('canvas.unlocked', Type.TOGGLE, false, $('#lockCanvasToggle')),
+      'native-notification-toggle': setting('nativenotifications.pixel-avail', Type.TOGGLE, true, $('#native-notification-toggle')),
+      stickyColorToggle: setting('autoReset', Type.TOGGLE, false, $('#stickyColorToggle')),
+      monospaceToggle: setting('monospace_lookup', Type.TOGGLE, false, $('#monospaceToggle')),
+      zoomBaseValue: setting('zoomBaseValue', Type.RANGE, 1.5, $('#zoomBaseValue')),
+      increasedZoomToggle: setting('increased_zoom', Type.TOGGLE, false, $('#increasedZoomToggle')),
+      scrollSwitchToggle: setting('scrollSwitchEnabled', Type.TOGGLE, false, $('#scrollSwitchToggle')),
+      scrollDirectionToggle: setting('scrollSwitchDirectionInverted', Type.TOGGLE, false, $('#scrollDirectionToggle')),
+      showReticuleToggle: setting('ui.show-reticule', Type.TOGGLE, possiblyMobile, $('#showReticuleToggle')),
+      showCursorToggle: setting('ui.show-cursor', Type.TOGGLE, possiblyMobile, $('#showCursorToggle')),
+      templateBeneathHeatmapToggle: setting('templateBeneathHeatmap', Type.TOGGLE, false, $('#templateBeneathHeatmapToggle')),
+      cbEnableMiddleMouseSelect: setting('enableMiddleMouseSelect', Type.TOGGLE, true, $('#cbEnableMiddleMouseSelect')),
+      cbNumberedPalette: setting('enableNumberedPalette', Type.TOGGLE, false, $('#cbNumberedPalette')),
+      'heatmap-opacity': setting('heatmap_background_opacity', Type.RANGE, 0.5, $('#heatmap-opacity')),
+      'virginmap-opacity': setting('virginmap_background_opacity', Type.RANGE, 0.5, $('#virginmap-opacity')),
+      snapshotImageFormat: setting('snapshotImageFormat', Type.SELECT, 'image/png', $('#snapshotImageFormat')),
+      'bubble-position': setting('ui.bubble-position', Type.RADIO, 'bottom left', $('[name=bubble-position]')),
+      'color-brightness-toggle': setting('brightness.enabled', Type.TOGGLE, false, $('#color-brightness-toggle')),
+      'color-brightness': setting('colorBrightness', Type.RANGE, 1, $('#color-brightness')),
+      txtAlertLocation: setting('alert.src', Type.TEXT, '', $('#txtAlertLocation')),
+      rangeAlertVolume: setting('alert.volume', Type.RANGE, 1, $('#rangeAlertVolume')),
+      alertDelay: setting('alert_delay', Type.NUMBER, 0, $('#alertDelay'))
     };
   })();
   // this object is used to access the query parameters (and in the future probably to set them), it is prefered to use # now instead of ? as JS can change them
@@ -2286,7 +2340,6 @@ window.App = (function() {
       autoreset: true,
       setAutoReset: function(v) {
         self.autoreset = !!v;
-        ls.set('autoReset', self.autoreset);
       },
       switch: function(newColor) {
         self.color = newColor;
@@ -2979,9 +3032,9 @@ window.App = (function() {
 
         settings['color-brightness-toggle'].change(function(enabled) {
           if (enabled) {
-            settings['color-brightness'].enable();
+            settings['color-brightness'].controls.enable();
           } else {
-            settings['color-brightness'].disable();
+            settings['color-brightness'].controls.disable();
           }
           self.adjustColorBrightness(enabled ? numOrDefault(parseFloat(settings['color-brightness'].get()), 1) : null);
         });
