@@ -313,6 +313,144 @@ window.App = (function() {
   })();
   const ls = storageFactory(localStorage, 'ls_', 99);
   const ss = storageFactory(sessionStorage, 'ss_', null);
+
+  const settings = (function() {
+    const Type = {
+      TOGGLE: 0,
+      RANGE: 1,
+      TEXT: 2,
+      NUMBER: 3,
+      SELECT: 4,
+      RADIO: 5
+    };
+
+    const validate = function(value, fallback, type) {
+      switch (type) {
+        case Type.TOGGLE:
+          // valid if value is a boolean (either true or false)
+          if (value === true || value === false) {
+            return value;
+          }
+          break;
+        case Type.TEXT:
+          if (typeof value === 'string') {
+            return value;
+          }
+          break;
+        case Type.NUMBER:
+          /* falls through */
+        case Type.RANGE:
+          // valid if value is a number
+          if (!isNaN(parseFloat(value))) {
+            return value;
+          }
+          break;
+        case Type.SELECT:
+          /* falls through */
+        case Type.RADIO:
+          // select and radios can use practically any values: allow if not void
+          if (value != null) {
+            return value;
+          }
+      }
+      return fallback;
+    };
+
+    const setting = function(name, controls, type, defaultValue) {
+      const listeners = [];
+      const toggle = type === Type.TOGGLE;
+
+      const self = {
+        get: function() {
+          const value = ls.get(name);
+          return validate(value, defaultValue, type);
+        },
+        set: function(value) {
+          const validValue = validate(value, defaultValue, type);
+          ls.set(name, validValue);
+          if (type === Type.RADIO) {
+            controls.each((_, e) => { e.checked = e.value === value; });
+          } else {
+            controls.prop(toggle ? 'checked' : 'value', validValue);
+          }
+          listeners.forEach((f) => f(validValue));
+        },
+        reset: function() {
+          self.set(defaultValue);
+        },
+        change: function(f) {
+          listeners.push(f);
+          // this makes the listener aware of the initial state since it may not be initialised to the correct value
+          f(self.get());
+        },
+        disable: function() {
+          controls.prop('disabled', true);
+        },
+        enable: function() {
+          controls.prop('disabled', false);
+        }
+      };
+
+      if (toggle) {
+        self.toggle = function() { self.set(!self.get()); };
+      }
+
+      if (type === Type.TEXT || type === Type.NUMBER) {
+        controls.keydown(function(evt) {
+          if (evt.key === 'Enter' || evt.which === 13) {
+            $(this).blur();
+          }
+          evt.stopPropagation();
+        });
+      }
+
+      if (type === Type.RADIO) {
+        controls.click((evt) => self.set(evt.target.value));
+      } else if (type === Type.RANGE) {
+        controls.on('input change', (evt) => self.set(evt.target.value));
+      } else {
+        controls.change((evt) => self.set(toggle ? evt.target.checked : evt.target.value));
+      }
+
+      // this sets the controls to have the correct initial value as well as binds defaults to the localStorage
+      self.set(self.get());
+
+      return self;
+    };
+
+    const possiblyMobile = window.innerWidth < 768 && nua.includes('Mobile');
+
+    return {
+      themeSelect: setting('currentTheme', $('#themeSelect'), Type.SELECT, '0'),
+      audiotoggle: setting('audio_muted', $('#audiotoggle'), Type.TOGGLE, false),
+      heatmaptoggle: setting('heatmap', $('#heatmaptoggle'), Type.TOGGLE, false),
+      virginmaptoggle: setting('virgimap', $('#virginmaptoggle'), Type.TOGGLE, false),
+      gridtoggle: setting('view_grid', $('#gridtoggle'), Type.TOGGLE, false),
+      // this actually represents the canvas being locked not unlocked.
+      lockCanvasToggle: setting('canvas.unlocked', $('#lockCanvasToggle'), Type.TOGGLE, false),
+      'native-notification-toggle': setting('nativenotifications.pixel-avail', $('#native-notification-toggle'), Type.TOGGLE, true),
+      stickyColorToggle: setting('autoReset', $('#stickyColorToggle'), Type.TOGGLE, false),
+      monospaceToggle: setting('monospace_lookup', $('#monospaceToggle'), Type.TOGGLE, false),
+      zoomBaseValue: setting('zoomBaseValue', $('#zoomBaseValue'), Type.RANGE, 1.5),
+      increasedZoomToggle: setting('increased_zoom', $('#increasedZoomToggle'), Type.TOGGLE, false),
+      scrollSwitchToggle: setting('scrollSwitchEnabled', $('#scrollSwitchToggle'), Type.TOGGLE, false),
+      scrollDirectionToggle: setting('scrollSwitchDirectionInverted', $('#scrollDirectionToggle'), Type.TOGGLE, false),
+      showReticuleToggle: setting('ui.show-reticule', $('#showReticuleToggle'), Type.TOGGLE, possiblyMobile),
+      showCursorToggle: setting('ui.show-cursor', $('#showCursorToggle'), Type.TOGGLE, possiblyMobile),
+      templateBeneathHeatmapToggle: setting('templateBeneathHeatmap', $('#templateBeneathHeatmapToggle'), Type.TOGGLE, false),
+      cbEnableMiddleMouseSelect: setting('enableMiddleMouseSelect', $('#cbEnableMiddleMouseSelect'), Type.TOGGLE, true),
+      cbNumberedPalette: setting('enableNumberedPalette', $('#cbNumberedPalette'), Type.TOGGLE, false),
+      'heatmap-opacity': setting('heatmap_background_opacity', $('#heatmap-opacity'), Type.RANGE, 0.5),
+      'virginmap-opacity': setting('virginmap_background_opacity', $('#virginmap-opacity'), Type.RANGE, 0.5),
+      snapshotImageFormat: setting('snapshotImageFormat', $('#snapshotImageFormat'), Type.SELECT, 'image/png'),
+      'bubble-position': setting('ui.bubble-position', $('[name=bubble-position]'), Type.RADIO, 'bottom left'),
+      'color-brightness-toggle': setting('brightness.enabled', $('#color-brightness-toggle'), Type.TOGGLE, false),
+      'color-brightness': setting('colorBrightness', $('#color-brightness'), Type.RANGE, 1),
+      txtAlertLocation: setting('alert.src', $('#txtAlertLocation'), Type.TEXT, ''),
+      rangeAlertVolume: setting('alert.volume', $('#rangeAlertVolume'), Type.RANGE, 1),
+      alertDelay: setting('alert_delay', $('#alertDelay'), Type.NUMBER, 0)
+    };
+  })();
   // this object is used to access the query parameters (and in the future probably to set them), it is prefered to use # now instead of ? as JS can change them
   const query = (function() {
     const self = {
@@ -848,8 +986,7 @@ window.App = (function() {
             case 76: // L
             case 'l':
             case 'L':
-              board.setAllowDrag(!self.allowDrag);
-              $('#lockCanvasToggle').prop('checked', !self.allowDrag);
+              settings.lockCanvasToggle.toggle();
               break;
             case 'KeyR':
             case 82: // R
@@ -1055,7 +1192,7 @@ window.App = (function() {
           downDelta = 0;
           if (event.button != null) {
             // Is the button pressed the middle mouse button?
-            if (ls.get('enableMiddleMouseSelect') === true && event.button === 1 && dx < 15 && dy < 15) {
+            if (settings.cbEnableMiddleMouseSelect.get() === true && event.button === 1 && dx < 15 && dy < 15) {
               // If so, switch to the color at the location.
               const { x, y } = self.fromScreen(event.clientX, event.clientY);
               place.switch(self.getPixel(x, y));
@@ -1115,22 +1252,8 @@ window.App = (function() {
         self.ctx = self.elements.board[0].getContext('2d');
         self.initInteraction();
 
-        $('#snapshotImageFormat').val(ls.get('snapshotImageFormat') || 'image/png');
-        $('#snapshotImageFormat').on('change input', event => {
-          ls.set('snapshotImageFormat', event.target.value);
-        });
-
-        const templateBeneathHeatmap = ls.get('templateBeneathHeatmap') === true;
-        $('#templateBeneathHeatmapToggle').prop('checked', templateBeneathHeatmap);
-        self.elements.container.toggleClass('lower-template', templateBeneathHeatmap);
-        $('#templateBeneathHeatmapToggle').on('change input', event => {
-          ls.set('templateBeneathHeatmap', event.target.checked);
-          self.elements.container.toggleClass('lower-template', event.target.checked);
-        });
-
-        $('#zoomBaseValue').val(self.getZoomBase());
-        $('#zoomBaseValue').on('change input', event => {
-          ls.set('zoomBaseValue', event.target.value);
+        settings.templateBeneathHeatmapToggle.change(function(value) {
+          self.elements.container.toggleClass('lower-template', value);
         });
       },
       start: function() {
@@ -1313,16 +1436,16 @@ window.App = (function() {
         return Math.abs(self.scale);
       },
       setScale: function(scale) {
-        if (ls.get('increased_zoom') !== true && scale > 50) scale = 50;
+        if (settings.increasedZoomToggle.get() !== true && scale > 50) scale = 50;
         else if (scale <= 0) scale = 0.5; // enforce the [0.5, 50] limit without blindly resetting to 0.5 when the user was trying to zoom in farther than 50x
         self.scale = scale;
         self.update();
       },
       getZoomBase: function() {
-        return parseFloat(ls.get('zoomBaseValue')) || 1.5;
+        return parseFloat(settings.zoomBaseValue.get()) || 1.5;
       },
       nudgeScale: function(adj) {
-        const maxUnlocked = ls.get('increased_zoom') === true;
+        const maxUnlocked = settings.increasedZoomToggle.get() === true;
         const maximumValue = maxUnlocked ? Infinity : 50;
         const minimumValue = maxUnlocked ? 0 : 0.5;
         const zoomBase = self.getZoomBase();
@@ -1425,7 +1548,7 @@ window.App = (function() {
       },
       save: function() {
         const a = document.createElement('a');
-        const format = $('#snapshotImageFormat').val();
+        const format = settings.snapshotImageFormat.get();
 
         a.href = self.elements.board[0].toDataURL(format, 1);
         a.download = (new Date()).toISOString().replace(/^(\d+-\d+-\d+)T(\d+):(\d+):(\d).*$/, `pxls canvas $1 $2.$3.$4.${format.split('/')[1]}`);
@@ -1468,7 +1591,6 @@ window.App = (function() {
       setAllowDrag: (allowDrag) => {
         self.allowDrag = allowDrag === true;
         if (self.allowDrag) { coords.lockIcon.fadeOut(200); } else { coords.lockIcon.fadeIn(200); }
-        ls.set('canvas.unlocked', self.allowDrag);
       },
       validateCoordinates: self.validateCoordinates,
       get webInfo() {
@@ -1554,15 +1676,12 @@ window.App = (function() {
         if (opacity == null || opacity === undefined) opacity = 0.5;
         if (opacity < 0 || opacity > 1) opacity = 0.5;
 
-        ls.set('heatmap_background_opacity', opacity);
         self.elements.heatmap.css('background-color', 'rgba(0, 0, 0, ' + opacity + ')');
       },
       init: function() {
         self.elements.heatmap.hide();
-        self.setBackgroundOpacity(ls.get('heatmap_background_opacity'));
-        $('#heatmap-opacity').val(ls.get('heatmap_background_opacity')); // heatmap_background_opacity should always be valid after a call to self.setBackgroundOpacity.
-        $('#heatmap-opacity').on('change input', function() {
-          self.setBackgroundOpacity(parseFloat(this.value));
+        settings['heatmap-opacity'].change(function(value) {
+          self.setBackgroundOpacity(parseFloat(value));
         });
         $('#hvmapClear').click(function() {
           self.clear();
@@ -1586,10 +1705,9 @@ window.App = (function() {
         self.is_shown = true;
         self.toggle();
       },
+      // TODO ([  ]): this should be a "setVisible" function instead and toggle should just call that with the opposite of the current value.
       toggle: function() {
         self.is_shown = !self.is_shown;
-        ls.set('heatmap', self.is_shown);
-        $('#heatmaptoggle')[0].checked = self.is_shown;
         if (self.fetchRequest) {
           self.fetchRequest.abort();
           uiHelper.setLoadingBubbleState('heatmap', false);
@@ -1618,12 +1736,8 @@ window.App = (function() {
           width: self.width,
           height: self.height
         });
-        if (ls.get('heatmap')) {
-          self.show();
-        }
-        $('#heatmaptoggle')[0].checked = ls.get('heatmap');
-        $('#heatmaptoggle').change(function() {
-          if (this.checked) {
+        settings.heatmaptoggle.change(function(value) {
+          if (value) {
             self.show();
           } else {
             self.hide();
@@ -1637,8 +1751,7 @@ window.App = (function() {
           }
 
           if (e.key === 'h' || e.key === 'H' || e.which === 72) { // h key
-            self.toggle();
-            $('#heatmaptoggle')[0].checked = ls.get('heatmap');
+            settings.heatmaptoggle.toggle();
           }
         });
       }
@@ -1712,15 +1825,12 @@ window.App = (function() {
         if (opacity == null || opacity === undefined) opacity = 0.5;
         if (opacity < 0 || opacity > 1) opacity = 0.5;
 
-        ls.set('virginmap_background_opacity', opacity);
         self.elements.virginmap.css('background-color', 'rgba(0, 255, 0, ' + opacity + ')');
       },
       init: function() {
         self.elements.virginmap.hide();
-        self.setBackgroundOpacity(ls.get('virginmap_background_opacity'));
-        $('#virginmap-opacity').val(ls.get('virginmap_background_opacity')); // virginmap_background_opacity should always be valid after a call to self.setBackgroundOpacity.
-        $('#virginmap-opacity').on('change input', function() {
-          self.setBackgroundOpacity(parseFloat(this.value));
+        settings['virginmap-opacity'].change(function(value) {
+          self.setBackgroundOpacity(parseFloat(value));
         });
         $('#hvmapClear').click(function() {
           self.clear();
@@ -1747,7 +1857,6 @@ window.App = (function() {
       toggle: function() {
         self.is_shown = !self.is_shown;
         ls.set('virginmap', self.is_shown);
-        $('#virginmaptoggle')[0].checked = self.is_shown;
         if (self.fetchRequest) {
           self.fetchRequest.abort();
           uiHelper.setLoadingBubbleState('virginmap', false);
@@ -1776,12 +1885,8 @@ window.App = (function() {
           width: self.width,
           height: self.height
         });
-        if (ls.get('virginmap')) {
-          self.show();
-        }
-        $('#virginmaptoggle')[0].checked = ls.get('virginmap');
-        $('#virginmaptoggle').change(function() {
-          if (this.checked) {
+        settings.virginmaptoggle.change(function(value) {
+          if (value) {
             self.show();
           } else {
             self.hide();
@@ -1795,8 +1900,7 @@ window.App = (function() {
           }
 
           if (e.key === 'x' || e.key === 'X' || e.which === 88) { // x key
-            self.toggle();
-            $('#virginmaptoggle')[0].checked = ls.get('virginmap');
+            settings.virginmaptoggle.toggle();
           }
         });
       }
@@ -2127,14 +2231,13 @@ window.App = (function() {
       },
       init: function() {
         self.elements.grid.hide();
-        $('#gridtoggle')[0].checked = ls.get('view_grid');
-        $('#gridtoggle').change(function() {
-          ls.set('view_grid', this.checked);
-          self.elements.grid.fadeToggle({ duration: 100 });
+        settings.gridtoggle.change(function(value) {
+          if (value) {
+            self.elements.grid.fadeIn({ duration: 100 });
+          } else {
+            self.elements.grid.fadeOut({ duration: 100 });
+          }
         });
-        if (ls.get('view_grid')) {
-          self.elements.grid.fadeToggle({ duration: 100 });
-        }
         $(document.body).on('keydown', function(evt) {
           if (['INPUT', 'TEXTAREA'].includes(evt.target.nodeName)) {
             // prevent inputs from triggering shortcuts
@@ -2142,8 +2245,7 @@ window.App = (function() {
           }
 
           if (evt.key === 'g' || evt.key === 'G' || evt.keyCode === 71) {
-            $('#gridtoggle')[0].checked = !$('#gridtoggle')[0].checked;
-            $('#gridtoggle').trigger('change');
+            settings.gridtoggle.toggle();
           }
         });
       },
@@ -2257,7 +2359,7 @@ window.App = (function() {
           self.toggleCursor(false);
           return;
         }
-        if (ls.get('ui.show-reticule')) {
+        if (settings.showReticuleToggle.get()) {
           const screenPos = board.toScreen(self.reticule.x, self.reticule.y);
           const scale = board.getScale();
           self.elements.reticule.css({
@@ -2268,7 +2370,7 @@ window.App = (function() {
           });
           self.toggleReticule(true);
         }
-        if (ls.get('ui.show-cursor')) {
+        if (settings.showCursorToggle.get()) {
           self.toggleCursor(true);
         }
       },
@@ -2276,14 +2378,14 @@ window.App = (function() {
         self.elements.palette[0].classList.toggle('no-pills', !shouldBeNumbered);
       },
       toggleReticule: (show) => {
-        if (show && ls.get('ui.show-reticule')) {
+        if (show && settings.showReticuleToggle.get()) {
           self.elements.reticule.show();
         } else if (!show) {
           self.elements.reticule.hide();
         }
       },
       toggleCursor: (show) => {
-        if (show && ls.get('ui.show-cursor')) {
+        if (show && settings.showCursorToggle.get()) {
           self.elements.cursor.show();
         } else if (!show) {
           self.elements.cursor.hide();
@@ -2350,7 +2452,7 @@ window.App = (function() {
             y = evt.clientY;
           }
 
-          if (ls.get('ui.show-cursor') !== false) {
+          if (settings.showCursorToggle.get() !== false) {
             self.elements.cursor.css('transform', 'translate(' + x + 'px, ' + y + 'px)');
           }
           if (self.can_undo) {
@@ -2381,7 +2483,7 @@ window.App = (function() {
           switch (data.ackFor) {
             case 'PLACE':
               $(window).trigger('pxls:ack:place', [data.x, data.y]);
-              if (uiHelper.tabHasFocus() && !ls.get('audio_muted')) {
+              if (uiHelper.tabHasFocus() && !settings.audiotoggle.get()) {
                 const clone = self.audio.cloneNode(false);
                 clone.volume = parseFloat(ls.get('alert.volume'));
                 clone.play();
@@ -2439,10 +2541,14 @@ window.App = (function() {
           analytics('send', 'event', 'Captcha', 'Sent');
         };
         self.elements.palette.on('wheel', e => {
-          if (ls.get('scrollSwitchEnabled') !== true) return;
+          if (settings.scrollSwitchToggle.get() !== true) return;
           const delta = e.originalEvent.deltaY * -40;
-          const newVal = (self.color + ((delta > 0 ? 1 : -1) * (ls.get('scrollSwitchDirectionInverted') === true ? -1 : 1))) % self.palette.length;
+          const newVal = (self.color + ((delta > 0 ? 1 : -1) * (settings.scrollDirectionToggle.get() === true ? -1 : 1))) % self.palette.length;
           self.switch(newVal <= -1 ? self.palette.length - 1 : newVal);
+        });
+
+        settings.stickyColorToggle.change(function(value) {
+          self.setAutoReset(!value);
         });
       },
       hexToRgb: function(hex) {
@@ -2776,38 +2882,6 @@ window.App = (function() {
       clearHandle: self.clearHandle
     };
   })();
-    // this takes care of the info slidedown and some settings (audio)
-  const info = (function() {
-    const self = {
-      init: function() {
-        $('#audiotoggle')
-          .prop('checked', ls.get('audio_muted'))
-          .change(function() {
-            ls.set('audio_muted', this.checked);
-          });
-
-        // stickyColorToggle ("Keep color selected"). Checked = don't auto reset.
-        let autoReset = ls.get('autoReset');
-        if (autoReset == null) {
-          autoReset = false;
-        }
-        place.setAutoReset(autoReset);
-        $('#stickyColorToggle')
-          .prop('checked', !autoReset)
-          .change(function() {
-            place.setAutoReset(!this.checked);
-          });
-
-        $('#monospaceToggle').change(function() {
-          ls.set('monospace_lookup', this.checked);
-          $('.monoVal').toggleClass('useMono', this.checked);
-        });
-      }
-    };
-    return {
-      init: self.init
-    };
-  })();
   const uiHelper = (function() {
     const self = {
       tabId: null,
@@ -2838,8 +2912,6 @@ window.App = (function() {
         stackCount: $('#placeable-count, #placeableCount-cursor'),
         captchaLoadingIcon: $('.captcha-loading-icon'),
         coords: $('#coords-info .coords'),
-        txtAlertLocation: $('#txtAlertLocation'),
-        rangeAlertVolume: $('#rangeAlertVolume'),
         lblAlertVolume: $('#lblAlertVolume'),
         btnForceAudioUpdate: $('#btnForceAudioUpdate'),
         themeSelect: $('#themeSelect'),
@@ -2888,74 +2960,15 @@ window.App = (function() {
           new SLIDEIN.Slidein(`A new ${data.report_type.toLowerCase()} report has been received.`, 'info-circle').show().closeAfter(3000);
         });
 
-        let useMono = ls.get('monospace_lookup');
-        if (typeof useMono === 'undefined') {
-          ls.set('monospace_lookup', true);
-          useMono = true;
-        }
-        $('#monospaceToggle').prop('checked', useMono);
-        if (useMono) {
-          $('.monoVal').addClass('useMono');
-        }
-
-        let alertDelay = ls.get('alert_delay');
-        if (typeof alertDelay === 'undefined') {
-          ls.set('alert_delay', '0');
-          alertDelay = 0;
-        }
-        $('#alertDelay').val(alertDelay);
-        $('#alertDelay').change(function() {
-          if (!isNaN($(this).val())) {
-            ls.set('alert_delay', $(this).val());
-          }
-        });
-        $('#alertDelay').keydown(function(evt) {
-          switch (evt.code || evt.keyCode || evt.which || evt.key) {
-            case 'KeyT':
-            case 84:
-            case 'T':
-            case 't':
-            case 'KeyEnter':
-            case 13:
-              $(this).blur();
-              break;
-          }
+        settings.monospaceToggle.change(function(value) {
+          $('.monoVal').toggleClass('useMono', value);
         });
 
-        $('#increasedZoomToggle').prop('checked', ls.get('increased_zoom') === true);
-        $('#increasedZoomToggle').change(function() {
-          const checked = $(this).prop('checked') === true; // coerce to bool
-          ls.set('increased_zoom', checked);
+        settings.cbNumberedPalette.change(function(value) {
+          place.setNumberedPaletteEnabled(value);
         });
 
-        $('#scrollSwitchToggle').prop('checked', ls.get('scrollSwitchEnabled') === true);
-        $('#scrollSwitchToggle').change(function() {
-          ls.set('scrollSwitchEnabled', this.checked === true);
-        });
-
-        $('#scrollDirectionToggle').prop('checked', ls.get('scrollSwitchDirectionInverted') === true);
-        $('#scrollDirectionToggle').change(function() {
-          ls.set('scrollSwitchDirectionInverted', this.checked === true);
-        });
-
-        if (ls.get('enableMiddleMouseSelect') == null) ls.set('enableMiddleMouseSelect', true);
-        $('#cbEnableMiddleMouseSelect').prop('checked', ls.get('enableMiddleMouseSelect') === true)
-          .change(function() {
-            ls.set('enableMiddleMouseSelect', this.checked === true);
-          });
-
-        place.setNumberedPaletteEnabled(ls.get('enableNumberedPalette') === true);
-        $('#cbNumberedPalette').prop('checked', ls.get('enableNumberedPalette') === true)
-          .change(function() {
-            ls.set('enableNumberedPalette', this.checked === true);
-            place.setNumberedPaletteEnabled(this.checked === true);
-          });
-
-        board.setAllowDrag(ls.get('canvas.unlocked') !== false); // false check for new connections
-        $('#lockCanvasToggle').prop('checked', !board.allowDrag)
-          .change(function() {
-            board.setAllowDrag(this.checked === false); // updates localStorage for us
-          });
+        settings.lockCanvasToggle.change((value) => board.setAllowDrag(!value));
 
         const _chatPanel = document.querySelector('aside.panel[data-panel="chat"]');
         if (_chatPanel) {
@@ -2963,65 +2976,34 @@ window.App = (function() {
         }
 
         const numOrDefault = (n, def) => isNaN(n) ? def : n;
-        const colorBrightnessLevel = numOrDefault(parseFloat(ls.get('colorBrightness')), 1);
-        const colorBrightnessSlider = $('#color-brightness');
-        const colorBrightnessToggle = $('#color-brightness-toggle');
 
-        colorBrightnessToggle
-          .prop('checked', ls.get('brightness.enabled') === true)
-          .change(function(e) {
-            const isEnabled = !!this.checked;
-            ls.set('brightness.enabled', isEnabled);
-            colorBrightnessSlider.prop('disabled', !isEnabled);
-            self.adjustColorBrightness(isEnabled ? numOrDefault(parseFloat(ls.get('colorBrightness')), 1) : null);
-          });
+        settings['color-brightness-toggle'].change(function(enabled) {
+          if (enabled) {
+            settings['color-brightness'].enable();
+          } else {
+            settings['color-brightness'].disable();
+          }
+          self.adjustColorBrightness(enabled ? numOrDefault(parseFloat(settings['color-brightness'].get()), 1) : null);
+        });
 
-        colorBrightnessSlider
-          .val(colorBrightnessLevel)
-          .prop('disabled', ls.get('brightness.enabled') !== true)
-          .change((e) => {
-            if (ls.get('brightness.enabled') === true) {
-              const level = parseFloat(e.target.value);
-              ls.set('colorBrightness', level);
-              self.adjustColorBrightness(level);
-            }
-          });
-        self.adjustColorBrightness(ls.get('brightness.enabled') === true ? colorBrightnessLevel : null); // ensure we clear if it's disabled on init
+        settings['color-brightness'].change(function(value) {
+          if (settings['color-brightness-toggle'].get() === true) {
+            const level = numOrDefault(parseFloat(value), 1);
+            self.adjustColorBrightness(level);
+          }
+        });
 
-        const initialBubblePosition = ls.get('ui.bubble-position') || 'bottom left';
-        $(`#bubble-position input[value="${initialBubblePosition}"]`).prop('checked', true);
-        self.elements.mainBubble.attr('position', initialBubblePosition);
-        $('#bubble-position input')
-          .click((e) => {
-            ls.set('ui.bubble-position', e.target.value);
-            self.elements.mainBubble.attr('position', e.target.value);
-          });
+        settings['bubble-position'].change(function(value) {
+          self.elements.mainBubble.attr('position', value);
+        });
 
-        const possiblyMobile = window.innerWidth < 768 && nua.includes('Mobile');
+        settings.showReticuleToggle.change(function(value) {
+          place.toggleReticule(value && place.color !== -1);
+        });
 
-        let initialShowReticule = ls.get('ui.show-reticule');
-        if (initialShowReticule == null) {
-          initialShowReticule = !possiblyMobile;
-          ls.set('ui.show-reticule', initialShowReticule);
-        }
-        $('#showReticuleToggle')
-          .prop('checked', initialShowReticule)
-          .change(function() {
-            ls.set('ui.show-reticule', this.checked === true);
-            place.toggleReticule(this.checked);
-          });
-
-        let initialShowCursor = ls.get('ui.show-cursor');
-        if (initialShowCursor == null) {
-          initialShowCursor = !possiblyMobile;
-          ls.set('ui.show-cursor', initialShowCursor);
-        }
-        $('#showCursorToggle')
-          .prop('checked', initialShowCursor)
-          .change(function() {
-            ls.set('ui.show-cursor', this.checked === true);
-            place.toggleCursor(this.checked);
-          });
+        settings.showCursorToggle.change(function(value) {
+          place.toggleCursor(value && place.color !== -1);
+        });
 
         $(window).keydown((evt) => {
           if (['INPUT', 'TEXTAREA'].includes(evt.target.nodeName)) {
@@ -3080,21 +3062,13 @@ window.App = (function() {
             text: self.themes[i].name
           }));
         }
-        const currentTheme = parseInt(ls.get('currentTheme'));
-        if (isNaN(currentTheme) || (currentTheme >= self.themes.length || currentTheme < -1)) {
-          // If currentTheme hasn't been set, or it's out of bounds, reset it to default (-1)
-          ls.set('currentTheme', -1);
-        } else if (currentTheme !== -1) {
-          self.themes[currentTheme].element.appendTo(document.head);
-          self.elements.themeColorMeta.attr('content', self.themes[currentTheme].color);
-          self.elements.themeSelect.val(currentTheme);
-        }
-        self.elements.themeSelect.on('change', async function() {
-          const themeIdx = parseInt(this.value);
-          // If theme is -1, the user selected the default theme, so we should remove all other themes
-          if (themeIdx === -1) {
+        // since we just changed the options available, this will coerce the settings into making the control reflect the actual theme.
+        settings.themeSelect.set(settings.themeSelect.get());
+        settings.themeSelect.change(function(value) {
+          const themeIdx = parseInt(value);
+          // If there exists no particular theme for the themeIdx, reset it to default
+          if (!(themeIdx in self.themes)) {
             // Default theme
-            ls.set('currentTheme', -1);
             $('*[data-theme]').remove();
             self.elements.themeColorMeta.attr('content', null);
             return;
@@ -3106,8 +3080,6 @@ window.App = (function() {
             $(`*[data-theme]:not([data-theme=${themeIdx}])`).remove();
           });
           theme.element.appendTo(document.head);
-
-          ls.set('currentTheme', themeIdx);
         });
       },
       _initStack: function() {
@@ -3116,45 +3088,24 @@ window.App = (function() {
         });
       },
       _initAudio: function() {
-        let parsedVolume = parseFloat(ls.get('alert.volume'));
-        if (isNaN(parseFloat(ls.get('alert.volume')))) {
-          parsedVolume = 1;
-          ls.set('alert.volume', 1);
-        } else {
-          parsedVolume = parseFloat(ls.get('alert.volume'));
-          timer.audioElem.volume = parsedVolume;
-        }
-        self.elements.lblAlertVolume.text(`${parsedVolume * 100 >> 0}%`);
-        self.elements.rangeAlertVolume.val(parsedVolume);
-
-        if (ls.get('alert.src')) {
-          self.updateAudio(ls.get('alert.src'));
-          self.elements.txtAlertLocation.val(ls.get('alert.src'));
-        }
-
         timer.audioElem.addEventListener('error', err => {
           if (console.warn) console.warn('An error occurred on the audioElem node: %o', err);
         });
 
-        self.elements.txtAlertLocation.change(function() { // change should only fire on blur so we normally won't be calling updateAudio for each keystroke. just in case though, we'll lazy update.
+        settings.txtAlertLocation.change(function(url) { // change should only fire on blur so we normally won't be calling updateAudio for each keystroke. just in case though, we'll lazy update.
           if (self._alertUpdateTimer !== false) clearTimeout(self._alertUpdateTimer);
           self._alertUpdateTimer = setTimeout(function(url) {
             self.updateAudio(url);
             self._alertUpdateTimer = false;
-          }, 250, this.value);
-        }).keydown(function(evt) {
-          if (evt.key === 'Enter' || evt.which === 13) {
-            $(this).change();
-          }
-          evt.stopPropagation();
+          }, 250, url);
         });
-        self.elements.btnForceAudioUpdate.click(() => self.elements.txtAlertLocation.change());
+        self.elements.btnForceAudioUpdate.click(() => settings.txtAlertLocation.set(settings.txtAlertLocation.get()));
 
-        self.elements.rangeAlertVolume.change(function() {
-          const parsed = parseFloat(self.elements.rangeAlertVolume.val());
-          self.elements.lblAlertVolume.text(`${parsed * 100 >> 0}%`);
-          ls.set('alert.volume', parsed);
-          timer.audioElem.volume = parsed;
+        settings.rangeAlertVolume.change(function(value) {
+          const parsed = parseFloat(value);
+          const volume = isNaN(parsed) ? 1 : parsed;
+          self.elements.lblAlertVolume.text(`${volume * 100 >> 0}%`);
+          timer.audioElem.volume = volume;
         });
 
         $('#btnAlertAudioTest').click(() => timer.audioElem.play());
@@ -3162,7 +3113,7 @@ window.App = (function() {
         $('#btnAlertReset').click(() => {
           // TODO confirm with user
           self.updateAudio('notify.wav');
-          self.elements.txtAlertLocation.val('');
+          settings.txtAlertLocation.reset();
         });
       },
       _initAccount: function() {
@@ -4875,7 +4826,7 @@ window.App = (function() {
           }
 
           const pingAudioState = ls.get('chat.ping-audio-state');
-          const canPlayPingAudio = !isHistory && !ls.get('audio_muted') &&
+          const canPlayPingAudio = !isHistory && !settings.audiotoggle.get() &&
               pingAudioState !== 'off' && Date.now() - self.lastPingAudioTimestamp > 5000;
           if ((!panels.isOpen('chat') || !uiHelper.windowHasFocus() || pingAudioState === 'always') &&
               uiHelper.tabHasFocus() && canPlayPingAudio) {
@@ -5831,7 +5782,7 @@ window.App = (function() {
           self.elements.timer.text(self.status);
         }
 
-        const alertDelay = parseInt(ls.get('alert_delay'));
+        const alertDelay = settings.alertDelay.get();
         if (alertDelay < 0 && delta < Math.abs(alertDelay) && !self.hasFiredNotification) {
           self.playAudio();
           let notif;
@@ -5930,7 +5881,7 @@ window.App = (function() {
         });
       },
       playAudio: function() {
-        if (uiHelper.tabHasFocus() && !ls.get('audio_muted')) {
+        if (uiHelper.tabHasFocus() && !settings.audiotoggle.get()) {
           self.audio.play();
         }
       }
@@ -6339,20 +6290,10 @@ window.App = (function() {
     // this takes care of browser notifications
   const nativeNotifications = (function() {
     const self = {
-      elements: {
-        toggle: $('#native-notification-toggle')
-      },
+      elements: {},
       init: () => {
-        let pixelAvailEnabled = ls.get('nativenotifications.pixel-avail');
-        if (pixelAvailEnabled == null) {
-          pixelAvailEnabled = true;
-          ls.set('nativenotifications.pixel-avail', pixelAvailEnabled);
-          self.request();
-        }
-        self.elements.toggle.prop('checked', pixelAvailEnabled);
-        self.elements.toggle.on('change', (e) => {
-          ls.set('nativenotifications.pixel-avail', e.target.checked);
-          if (e.target.checked) {
+        settings['native-notification-toggle'].change(function(value) {
+          if (value) {
             self.request();
           }
         });
@@ -6390,7 +6331,7 @@ window.App = (function() {
         return null;
       },
       maybeShow: (body) => {
-        if (ls.get('nativenotifications.pixel-avail') &&
+        if (settings['native-notification-toggle'].get() &&
             uiHelper.tabHasFocus() &&
             Notification.permission === 'granted') {
           return self.show(body);
@@ -6610,7 +6551,6 @@ window.App = (function() {
   ban.init();
   grid.init();
   place.init();
-  info.init();
   timer.init();
   uiHelper.init();
   panels.init();
@@ -6628,6 +6568,7 @@ window.App = (function() {
   return {
     ls: ls,
     ss: ss,
+    settings: settings,
     query: query,
     heatmap: {
       clear: heatmap.clear
