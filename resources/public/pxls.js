@@ -1160,7 +1160,7 @@ window.App = (function() {
           self.scale = query.get('scale') || self.scale;
           self.centerOn(cx, cy, true);
           socket.init();
-          
+
           (async function() {
             try {
               self.draw(await binaryAjax('/boarddata' + '?_' + (new Date()).getTime()));
