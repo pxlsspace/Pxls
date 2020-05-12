@@ -1969,11 +1969,11 @@ body .emoji-picker {
     }
 
     aside.panel.left {
-        left: -105%;
+        left: -105% !important;
     }
 
     aside.panel.right {
-        right: -105%;
+        right: -105% !important;
     }
 
     body.panel-open #ui {
