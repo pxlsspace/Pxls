@@ -448,17 +448,17 @@ window.App = (function() {
             toAdd.on(changeEvents, changeFunction);
 
             if (disconnectOnRemove) {
-              // we don't want to leak memory if the code that adds controls is so inconsiderate as to not clean up after itself.
-              // so here we listen for the new controls being removed from DOM and remove them from the controls list at the same time.
+              // We don't want to leak memory if the code that adds controls is so inconsiderate as to not clean up after itself.
+              // So here we listen for changes in the DOM and remove them from the controls list if they are no longer attached.
               // JQuery UI has a remove event that we can listen for if we have JQuery UI - that would make this cleaner.
               toAdd.each((_, c) => {
-                const observer = new MutationObserver(function(mutations) {
-                  mutations.forEach((mutation) => {
-                    if (Array.from(mutation.removedNodes).some((removed) => removed === c || $.contains(removed, c))) {
-                      self.controls.remove(c);
-                      observer.disconnect();
-                    }
-                  });
+                const observer = new MutationObserver(function() {
+                  // NOTE ([  ]): Modal seems to fire many add/remove mutations for the panel itself when adding a new one.
+                  //              This means we can't just listen for remove mutations and filter accordingly.
+                  if (!$.contains(document.body, c)) {
+                    self.controls.remove(c);
+                    observer.disconnect();
+                  }
                 });
                 observer.observe(document, {
                   childList: true,
@@ -527,7 +527,18 @@ window.App = (function() {
       'alert.volume': 'audio.alert.volume',
       alert_delay: 'place.alert.delay',
       'chrome-canvas-offset-workaround': 'fix.chrome.offset.enable',
-      hide_sensitive: 'lookup.filter.sensitive.enable'
+      hide_sensitive: 'lookup.filter.sensitive.enable',
+      'chat.font-size': 'chat.font.size',
+      'chat.internalClickDefault': 'chat.links.internal.behavior',
+      'chat.24h': 'chat.timestamps.24h',
+      'chat.text-icons-enabled': 'chat.badges.enable',
+      'chat.faction-tags-enabled': 'chat.factiontags.enable',
+      'chat.pings-enabled': 'chat.pings.enable',
+      'chat.ping-audio-state': 'chat.pings.audio.when',
+      'chat.ping-audio-volume': 'chat.pings.audio.volume',
+      'chat.banner-enabled': 'ui.chat.banner.enable',
+      'chat.use-template-urls': 'chat.links.templates.preferurls',
+      'chat.horizontal': 'ui.chat.horizontal.enable'
     };
 
     // these are the settings which have gone from being toggle-off to toggle-on
@@ -538,9 +549,8 @@ window.App = (function() {
       // This is the best we can do to check existance without reacing into localStorage ourselves.
       // If there we were a ls.has function, that should be used here.
       if (ls.get(entry[0]) !== null) {
-        console.debug(`mapping ${entry[0]} (${ls.get(entry[0])}) to ${entry[1]}`);
         const oldvalue = ls.get(entry[0]);
-        ls.set(entry[1], entry[0] in flippedmappings ? !oldvalue : oldvalue);
+        ls.set(entry[1], flippedmappings.indexOf(entry[0]) === -1 ? oldvalue : !oldvalue);
         ls.remove(entry[0]);
       }
     });
@@ -569,6 +579,14 @@ window.App = (function() {
         palette: {
           numbers: {
             enable: setting('ui.palette.numbers.enable', Type.TOGGLE, false, $('#setting-ui-palette-numbers-enable'))
+          }
+        },
+        chat: {
+          banner: {
+            enable: setting('ui.chat.banner.enable', Type.TOGGLE, true)
+          },
+          horizontal: {
+            enable: setting('ui.chat.horizontal.enable', Type.TOGGLE, false)
           }
         }
       },
@@ -635,6 +653,35 @@ window.App = (function() {
           sensitive: {
             enable: setting('lookup.filter.sensitive.enable', Type.TOGGLE, false)
           }
+        }
+      },
+      chat: {
+        timestamps: {
+          '24h': setting('chat.timestamps.24h', Type.TOGGLE, false)
+        },
+        badges: {
+          enable: setting('chat.badges.enable', Type.TOGGLE, false)
+        },
+        factiontags: {
+          enable: setting('chat.factiontags.enable', Type.TOGGLE, true)
+        },
+        pings: {
+          enable: setting('chat.pings.enable', Type.TOGGLE, true),
+          audio: {
+            when: setting('chat.pings.audio.when', Type.SELECT, 'off'),
+            volume: setting('chat.pings.audio.volume', Type.RANGE, 0.5)
+          }
+        },
+        links: {
+          templates: {
+            preferurls: setting('chat.links.templates.preferurls', Type.TOGGLE, false)
+          },
+          internal: {
+            behavior: setting('chat.links.internal.behavior', Type.SELECT, 'ask')
+          }
+        },
+        font: {
+          size: setting('chat.font.size', Type.NUMBER, 16)
         }
       },
       fix: {
@@ -3164,10 +3211,19 @@ window.App = (function() {
 
         settings.board.lock.enable.listen((value) => board.setAllowDrag(!value));
 
-        const _chatPanel = document.querySelector('aside.panel[data-panel="chat"]');
-        if (_chatPanel) {
-          _chatPanel.classList.toggle('horizontal', ls.get('chat.horizontal') === true);
-        }
+        settings.ui.chat.banner.enable.listen(function(value) {
+          self.setBannerEnabled(value);
+        });
+
+        settings.ui.chat.horizontal.enable.listen(function(value) {
+          const _chatPanel = document.querySelector('aside.panel[data-panel="chat"]');
+          if (_chatPanel) {
+            _chatPanel.classList.toggle('horizontal', value === true);
+            if (_chatPanel.classList.contains('open')) {
+              document.body.classList.toggle(`panel-${_chatPanel.classList.contains('right') ? 'right' : 'left'}-horizontal`, value === true);
+            }
+          }
+        });
 
         const numOrDefault = (n, def) => isNaN(n) ? def : n;
 
@@ -3326,7 +3382,7 @@ window.App = (function() {
         });
       },
       _initBanner() {
-        self.banner.enabled = ls.get('chat.banner-enabled') !== false;
+        self.banner.enabled = settings.ui.chat.banner.enable.get() !== false;
         self._bannerIntervalTick();
       },
       _initMultiTabDetection() {
@@ -3696,19 +3752,19 @@ window.App = (function() {
       },
       TEMPLATE_ACTIONS: {
         ASK: {
-          id: 0,
+          id: 'ask',
           pretty: 'Ask'
         },
         NEW_TAB: {
-          id: 1,
+          id: 'new tab',
           pretty: 'Open in a new tab'
         },
         CURRENT_TAB: {
-          id: 2,
+          id: 'current tab',
           pretty: 'Open in current tab (replacing template)'
         },
         JUMP_ONLY: {
-          id: 3,
+          id: 'jump only',
           pretty: 'Jump to coordinates without replacing template'
         }
       },
@@ -3828,7 +3884,7 @@ window.App = (function() {
         socket.on('chat_lookup', e => {
           if (e.target && Array.isArray(e.history) && Array.isArray(e.chatbans)) {
             // const now = moment();
-            const is24h = ls.get('chat.24h') === true;
+            const is24h = settings.chat.timestamps['24h'].get() === true;
             const shortFormat = `MMM Do YYYY, ${is24h ? 'HH:mm' : 'hh:mm A'}`;
             const longFormat = `dddd, MMMM Do YYYY, ${is24h ? 'HH:mm:ss' : 'h:mm:ss a'}`;
             const dom = crel('div', { class: 'halves' },
@@ -4246,16 +4302,6 @@ window.App = (function() {
           if (popup) popup.remove();
         });
 
-        if (ls.get('chat.pings-enabled') == null) {
-          ls.set('chat.pings-enabled', true);
-        }
-        if (ls.get('chat.ping-audio-state') == null) {
-          ls.set('chat.ping-audio-state', 'off');
-        }
-        if (ls.get('chat.ping-audio-volume') == null) {
-          ls.set('chat.ping-audio-volume', 0.5);
-        }
-
         self.elements.chat_settings_button[0].addEventListener('click', () => self.popChatSettings());
 
         self.elements.pings_button[0].addEventListener('click', function() {
@@ -4294,19 +4340,10 @@ window.App = (function() {
 
         self.elements.jump_button[0].addEventListener('click', self.scrollToBottom);
 
-        if (ls.get('chat.font-size') == null) {
-          ls.set('chat.font-size', 16);
-        }
-
-        if (ls.get('chat.faction-tags-enabled') == null) {
-          ls.set('chat.faction-tags-enabled', true);
-        }
-
-        const cbChatSettingsFontSize = $('#cbChatSettingsFontSize');
         const notifBody = document.querySelector('.panel[data-panel="notifications"] .panel-body');
-        cbChatSettingsFontSize.val(ls.get('chat.font-size') || 16);
-        self.elements.body.css('font-size', `${ls.get('chat.font-size') >> 0 || 16}px`);
-        notifBody.style.fontSize = `${ls.get('chat.font-size') >> 0 || 16}px`;
+
+        self.elements.body.css('font-size', `${settings.chat.font.size.get() >> 0 || 16}px`);
+        notifBody.style.fontSize = `${settings.chat.font.size.get() >> 0 || 16}px`;
 
         self.elements.body.on('scroll', e => {
           self.updateStickToBottom();
@@ -4325,6 +4362,28 @@ window.App = (function() {
           self.picker.pickerVisible ? self.picker.hidePicker() : self.picker.showPicker(this);
           const searchEl = self.picker.pickerEl.querySelector('.emoji-picker__search'); // searchEl is destroyed every time the picker closes. have to re-attach
           if (searchEl) { searchEl.addEventListener('keydown', e => e.stopPropagation()); }
+        });
+
+        settings.chat.font.size.listen(function(value) {
+          if (isNaN(value)) {
+            modal.showText('Invalid value. Expected a number between 1 and 72');
+          } else {
+            const val = value >> 0;
+            if (val < 1 || val > 72) {
+              modal.showText('Invalid value. Expected a number between 1 and 72');
+            } else {
+              self.elements.body.css('font-size', `${val}px`);
+              document.querySelector('.panel[data-panel="notifications"] .panel-body').style.fontSize = `${val}px`;
+            }
+          }
+        });
+
+        settings.chat.badges.enable.listen(function() {
+          self._toggleTextIconFlairs();
+        });
+
+        settings.chat.factiontags.enable.listen(function() {
+          self._toggleFactionTagFlairs();
         });
       },
       _handleChatbanVisualState(canChat) {
@@ -4560,7 +4619,7 @@ window.App = (function() {
           _cbPingAudio
         );
 
-        const _rgPingAudioVol = crel('input', { type: 'range', min: 0, max: 100 });
+        const _rgPingAudioVol = crel('input', { type: 'range', min: 0, max: 1, step: 0.01 });
         const _txtPingAudioVol = crel('span');
         const lblPingAudioVol = crel('label',
           'Ping sound volume: ',
@@ -4617,84 +4676,24 @@ window.App = (function() {
           socket.send({ type: 'UserUpdate', updates: { NameColor: String(this.value >> 0) } });
         });
 
-        _txtFontSize.value = ls.get('chat.font-size') >> 0 || 16;
-        _txtFontSize.addEventListener('change', function() {
-        });
-        _btnFontSizeConfirm.addEventListener('click', function() {
-          if (isNaN(_txtFontSize.value)) {
-            modal.showText('Invalid value. Expected a number between 1 and 72');
-          } else {
-            const val = _txtFontSize.value >> 0;
-            if (val < 1 || val > 72) {
-              modal.showText('Invalid value. Expected a number between 1 and 72');
-            } else {
-              ls.set('chat.font-size', val);
-              self.elements.body.css('font-size', `${val}px`);
-              document.querySelector('.panel[data-panel="notifications"] .panel-body').style.fontSize = `${val}px`;
-            }
-          }
-        });
+        settings.chat.font.size.controls.add(_txtFontSize);
+        _btnFontSizeConfirm.click(() => settings.chat.font.size.set(settings.chat.font.size.get()));
 
-        _selInternalClick.selectedIndex = ls.get('chat.internalClickDefault') >> 0;
-        _selInternalClick.addEventListener('change', function() {
-          ls.set('chat.internalClickDefault', this.value >> 0);
-        });
+        settings.chat.links.internal.behavior.controls.add(_selInternalClick);
 
-        _cb24hTimestamps.checked = ls.get('chat.24h') === true;
-        _cb24hTimestamps.addEventListener('change', function() {
-          ls.set('chat.24h', this.checked === true);
-        });
+        settings.chat.timestamps['24h'].controls.add(_cb24hTimestamps);
+        settings.chat.badges.enable.controls.add(_cbPixelPlaceBadges);
+        settings.chat.factiontags.enable.controls.add(_cbFactionTagBadges);
+        settings.chat.pings.enable.controls.add(_cbPings);
+        settings.chat.pings.audio.when.controls.add(_cbPingAudio);
+        settings.chat.pings.audio.volume.controls.add(_rgPingAudioVol);
+        settings.ui.chat.banner.enable.controls.add(_cbBanner);
+        settings.chat.links.templates.preferurls.controls.add(_cbTemplateTitles);
+        settings.ui.chat.horizontal.enable.controls.add(_cbHorizontal);
 
-        _cbPixelPlaceBadges.checked = ls.get('chat.text-icons-enabled');
-        _cbPixelPlaceBadges.addEventListener('change', function() {
-          ls.set('chat.text-icons-enabled', this.checked === true);
-          self._toggleTextIconFlairs();
-        });
-
-        _cbFactionTagBadges.checked = ls.get('chat.faction-tags-enabled');
-        _cbFactionTagBadges.addEventListener('change', function() {
-          ls.set('chat.faction-tags-enabled', this.checked === true);
-          self._toggleFactionTagFlairs();
-        });
-
-        _cbPings.checked = ls.get('chat.pings-enabled') === true;
-        _cbPings.addEventListener('change', function() {
-          ls.set('chat.pings-enabled', this.checked === true);
-        });
-
-        _cbPingAudio.value = ls.get('chat.ping-audio-state');
-        _cbPingAudio.addEventListener('change', function() {
-          ls.set('chat.ping-audio-state', this.value);
-        });
-
-        _rgPingAudioVol.value = ls.get('chat.ping-audio-volume') * 100;
-        _txtPingAudioVol.innerText = `${_rgPingAudioVol.value}%`;
+        _txtPingAudioVol.innerText = `${(_rgPingAudioVol.value * 100) >> 0}%`;
         _rgPingAudioVol.addEventListener('change', function() {
-          ls.set('chat.ping-audio-volume', this.value / 100);
-          _txtPingAudioVol.innerText = `${this.value}%`;
-        });
-
-        _cbBanner.checked = ls.get('chat.banner-enabled') !== false;
-        _cbBanner.addEventListener('change', function() {
-          ls.set('chat.banner-enabled', this.checked === true);
-          uiHelper.setBannerEnabled(this.checked === true);
-        });
-
-        _cbTemplateTitles.checked = ls.get('chat.use-template-urls') === true;
-        _cbTemplateTitles.addEventListener('change', function() {
-          ls.set('chat.use-template-urls', this.checked === true);
-        });
-
-        _cbHorizontal.checked = ls.get('chat.horizontal') === true;
-        _cbHorizontal.addEventListener('change', function() {
-          ls.set('chat.horizontal', this.checked === true);
-          const _chatPanel = document.querySelector('aside.panel[data-panel="chat"]');
-          if (_chatPanel) {
-            _chatPanel.classList.toggle('horizontal', this.checked === true);
-            if (_chatPanel.classList.contains('open')) {
-              document.body.classList.toggle(`panel-${_chatPanel.classList.contains('right') ? 'right' : 'left'}-horizontal`, this.checked === true);
-            }
-          }
+          _txtPingAudioVol.innerText = `${(this.value * 100) >> 0}%`;
         });
 
         _btnUnignore.addEventListener('click', function() {
@@ -4805,7 +4804,7 @@ window.App = (function() {
         const when = moment();
         const toAppend =
             crel('li', { class: 'chat-line server-action' },
-              crel('span', { title: when.format('MMM Do YYYY, hh:mm:ss A') }, when.format(ls.get('chat.24h') === true ? 'HH:mm' : 'hh:mm A')),
+              crel('span', { title: when.format('MMM Do YYYY, hh:mm:ss A') }, when.format(settings.chat.timestamps['24h'].get() === true ? 'HH:mm' : 'hh:mm A')),
               document.createTextNode(' - '),
               crel('span', { class: 'content' }, msg)
             );
@@ -4849,7 +4848,7 @@ window.App = (function() {
           $(this).find('.faction-tag').each(function() {
             this.dataset.tag = tag;
             this.style.color = color;
-            this.style.display = ls.get('chat.faction-tags-enabled') === true ? 'initial' : 'none';
+            this.style.display = settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
             this.innerHTML = tagStr;
             this.setAttribute('title', ttStr);
           });
@@ -4874,12 +4873,12 @@ window.App = (function() {
           _ft.innerHTML = '';
         });
       },
-      _toggleTextIconFlairs: (enabled = ls.get('chat.text-icons-enabled') === true) => {
+      _toggleTextIconFlairs: (enabled = settings.chat.badges.enable.get() === true) => {
         self.elements.body.find('.chat-line .flairs .text-badge').each(function() {
           this.style.display = enabled ? 'initial' : 'none';
         });
       },
-      _toggleFactionTagFlairs: (enabled = ls.get('chat.faction-tags-enabled') === true) => {
+      _toggleFactionTagFlairs: (enabled = settings.chat.factiontags.enable.get() === true) => {
         self.elements.body.find('.chat-line:not([data-faction=""]) .flairs .faction-tag').each(function() {
           this.style.display = enabled ? 'initial' : 'none';
         });
@@ -4944,14 +4943,14 @@ window.App = (function() {
 
         self.typeahead.helper.getDatabase('users').addEntry(packet.author, packet.author);
         if (self.ignored.indexOf(packet.author) >= 0) return;
-        const hasPing = !board.snipMode && ls.get('chat.pings-enabled') === true && user.isLoggedIn() && hookDatas.some((data) => data.pings.length > 0);
+        const hasPing = !board.snipMode && settings.chat.pings.enable.get() === true && user.isLoggedIn() && hookDatas.some((data) => data.pings.length > 0);
         const when = moment.unix(packet.date);
         const flairs = crel('span', { class: 'flairs' });
         if (Array.isArray(packet.badges)) {
           packet.badges.forEach(badge => {
             switch (badge.type) {
               case 'text': {
-                const _countBadgeShow = ls.get('chat.text-icons-enabled') ? 'initial' : 'none';
+                const _countBadgeShow = settings.chat.badges.enable.get() ? 'initial' : 'none';
                 crel(flairs, crel('span', {
                   class: 'flair text-badge',
                   style: `display: ${_countBadgeShow}`,
@@ -4971,7 +4970,7 @@ window.App = (function() {
 
         const _facTag = packet.strippedFaction ? packet.strippedFaction.tag : '';
         const _facColor = packet.strippedFaction ? self.intToHex(packet.strippedFaction.color) : 0;
-        const _facTagShow = packet.strippedFaction && ls.get('chat.faction-tags-enabled') === true ? 'initial' : 'none';
+        const _facTagShow = packet.strippedFaction && settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
         const _facTitle = packet.strippedFaction ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : '';
         crel(flairs, crel('span', {
           class: 'flair faction-tag',
@@ -4996,7 +4995,7 @@ window.App = (function() {
             'data-badges': JSON.stringify(packet.badges || []),
             class: `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`
           },
-          crel('span', { title: when.format('MMM Do YYYY, hh:mm:ss A') }, when.format(ls.get('chat.24h') === true ? 'HH:mm' : 'hh:mm A')),
+          crel('span', { title: when.format('MMM Do YYYY, hh:mm:ss A') }, when.format(settings.chat.timestamps['24h'].get() === true ? 'HH:mm' : 'hh:mm A')),
           document.createTextNode(' '),
           flairs,
           crel('span', {
@@ -5019,12 +5018,12 @@ window.App = (function() {
             self.elements.pings_button.addClass('has-notification');
           }
 
-          const pingAudioState = ls.get('chat.ping-audio-state');
+          const pingAudioState = settings.chat.pings.audio.when.get();
           const canPlayPingAudio = !isHistory && settings.audio.enable.get() &&
               pingAudioState !== 'off' && Date.now() - self.lastPingAudioTimestamp > 5000;
           if ((!panels.isOpen('chat') || !uiHelper.windowHasFocus() || pingAudioState === 'always') &&
               uiHelper.tabHasFocus() && canPlayPingAudio) {
-            self.pingAudio.volume = parseFloat(ls.get('chat.ping-audio-volume'));
+            self.pingAudio.volume = parseFloat(settings.chat.pings.audio.volume.get());
             self.pingAudio.play();
             self.lastPingAudioTimestamp = Date.now();
           }
@@ -5101,7 +5100,7 @@ window.App = (function() {
                     }, params);
                     if (params.template != null && params.template.length >= 11) { // we have a template, should probably make that known
                       let title = decodeURIComponent(params.template);
-                      if (ls.get('chat.use-template-urls') !== true && params.title && params.title.trim()) { title = decodeURIComponent(params.title); }
+                      if (settings.chat.links.templates.preferurls.get() !== true && params.title && params.title.trim()) { title = decodeURIComponent(params.title); }
                       jumpTarget.displayText += ` (template: ${(title > 25) ? `${title.substr(0, 22)}...` : title})`;
                     }
                   }
@@ -5145,8 +5144,8 @@ window.App = (function() {
             x.onclick = e => {
               e.preventDefault();
               if (x.dataset.template) {
-                const internalClickDefault = ls.get('chat.internalClickDefault') >> 0;
-                if (internalClickDefault === 0) {
+                const internalClickDefault = settings.chat.links.internal.behavior.get();
+                if (internalClickDefault === self.TEMPLATE_ACTIONS.ASK.id) {
                   self._popTemplateOverwriteConfirm(x).then(action => {
                     modal.closeAll();
                     self._handleTemplateOverwriteAction(action, x);
@@ -5219,7 +5218,7 @@ window.App = (function() {
             ),
             [
               ['Cancel', () => resolve(false)],
-              ['OK', () => resolve(bodyWrapper.querySelector('input[type=radio]:checked').dataset.actionId >> 0)]
+              ['OK', () => resolve(bodyWrapper.querySelector('input[type=radio]:checked').dataset.actionId)]
             ].map(x =>
               crel('button', {
                 class: 'text-button',
@@ -5311,7 +5310,7 @@ window.App = (function() {
             { label: 'Chat Lookup', action: 'lookup-chat', staffaction: true }
           ];
 
-          crel(leftPanel, crel('p', { class: 'popup-timestamp-header text-muted' }, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(ls.get('chat.24h') === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
+          crel(leftPanel, crel('p', { class: 'popup-timestamp-header text-muted' }, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(settings.chat.timestamps['24h'].get() === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
           crel(leftPanel, crel('p', { class: 'content', style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector('.content').textContent));
 
           crel(actionsList, actions
