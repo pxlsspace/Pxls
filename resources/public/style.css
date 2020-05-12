@@ -236,6 +236,10 @@ kbd {
     margin-left:1.2rem;
 }
 
+.useMono {
+  font-family: monospace;
+}
+
 input:disabled, button:disabled {
     cursor: not-allowed;
 }
