@@ -561,13 +561,13 @@ window.App = (function() {
     return {
       ui: {
         theme: {
-          index: setting('ui.theme.index', Type.SELECT, '0', $('#setting-ui-theme-index'))
+          index: setting('ui.theme.index', Type.SELECT, '-1', $('#setting-ui-theme-index'))
         },
         reticule: {
-          enable: setting('ui.reticule.enable', Type.TOGGLE, possiblyMobile, $('#setting-ui-reticule-enable'))
+          enable: setting('ui.reticule.enable', Type.TOGGLE, !possiblyMobile, $('#setting-ui-reticule-enable'))
         },
         cursor: {
-          enable: setting('ui.cursor.enable', Type.TOGGLE, possiblyMobile, $('#setting-ui-cursor-enable'))
+          enable: setting('ui.cursor.enable', Type.TOGGLE, !possiblyMobile, $('#setting-ui-cursor-enable'))
         },
         bubble: {
           position: setting('ui.bubble.position', Type.RADIO, 'bottom left', $('[name=setting-ui-bubble-position]'))
