@@ -472,8 +472,6 @@ window.App = (function() {
       return self;
     };
 
-    const possiblyMobile = window.innerWidth < 768 && nua.includes('Mobile');
-
     const keymappings = {
       currentTheme: 'ui.theme.index',
       audio_muted: 'audio.enable',
@@ -501,7 +499,8 @@ window.App = (function() {
       colorBrightness: 'ui.brightness.value',
       'alert.src': 'audio.alert.src',
       'alert.volume': 'audio.alert.volume',
-      alert_delay: 'place.alert.delay'
+      alert_delay: 'place.alert.delay',
+      'chrome-canvas-offset-workaround': 'fix.chrome.offset.enable'
     };
 
     // these are the settings which have gone from being toggle-off to toggle-on
@@ -518,6 +517,9 @@ window.App = (function() {
         ls.remove(entry[0]);
       }
     });
+
+    const possiblyMobile = window.innerWidth < 768 && nua.includes('Mobile');
+    const webkitBased = nua.match(/AppleWebKit/);
 
     return {
       ui: {
@@ -601,6 +603,13 @@ window.App = (function() {
       lookup: {
         monospace: {
           enable: setting('lookup.monospace.enable', Type.TOGGLE, false, $('#setting-lookup-monospace-enable'))
+        }
+      },
+      fix: {
+        chrome: {
+          offset: {
+            enable: setting('fix.chrome.offset.enable', Type.TOGGLE, webkitBased, $('#setting-fix-chrome-offset-enable'))
+          }
         }
       }
     };
@@ -6572,8 +6581,7 @@ window.App = (function() {
       isEnabled: false,
       elements: {
         boardContainer: board.getContainer(),
-        setting: $('#chrome-canvas-offset-setting'),
-        checkbox: $('#chrome-canvas-offset-toggle')
+        setting: $('#chrome-canvas-offset-setting')
       },
       init: () => {
         if (!nua.match(/AppleWebKit/)) {
@@ -6581,22 +6589,8 @@ window.App = (function() {
           return;
         }
 
-        self.isEnabled = ls.get('chrome-canvas-offset-workaround');
-        if (self.isEnabled == null) {
-          // default to enabled
-          self.isEnabled = true;
-          ls.set('chrome-canvas-offset-workaround', self.isEnabled);
-        }
-
-        if (self.isEnabled) {
-          self.enable();
-        }
-
-        self.elements.checkbox.prop('checked', self.isEnabled);
-        self.elements.checkbox.on('change', (e) => {
-          self.isEnabled = e.target.checked;
-          ls.set('chrome-canvas-offset-workaround', self.isEnabled);
-          if (self.isEnabled) {
+        settings.fix.chrome.offset.enable.change((value) => {
+          if (value) {
             self.enable();
           } else {
             self.disable();
@@ -6604,7 +6598,6 @@ window.App = (function() {
         });
       },
       enable: () => {
-        self.isEnabled = true;
         window.addEventListener('resize', self.updateContainer);
         self.updateContainer();
       },
@@ -6616,7 +6609,6 @@ window.App = (function() {
         self.elements.boardContainer.css('height', `${window.innerHeight - offsetHeight}px`);
       },
       disable: () => {
-        self.isEnabled = false;
         window.removeEventListener('resize', self.updateContainer);
         self.elements.boardContainer.css('width', '');
         self.elements.boardContainer.css('height', '');
