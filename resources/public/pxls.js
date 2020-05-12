@@ -359,17 +359,17 @@ window.App = (function() {
     const filterInput = function(controls, type) {
       switch (type) {
         case Type.TOGGLE:
-          return $('input[type=checkbox]').filter(controls);
+          return controls.filter('input[type=checkbox]');
         case Type.RANGE:
-          return $('input[type=range]').filter(controls);
+          return controls.filter('input[type=range]');
         case Type.TEXT:
-          return $('input[type=text]').filter(controls);
+          return controls.filter('input[type=text]');
         case Type.NUMBER:
-          return $('input[type=number]').filter(controls);
+          return controls.filter('input[type=number]');
         case Type.SELECT:
-          return $('select').filter(controls);
+          return controls.filter('select');
         case Type.RADIO:
-          return $('input[type=radio]').filter(controls);
+          return controls.filter('input[type=radio]');
       }
     };
 
@@ -425,14 +425,20 @@ window.App = (function() {
         reset: function() {
           self.set(defaultValue);
         },
-        change: function(f) {
+        listen: function(f) {
           listeners.push(f);
           // this makes the listener aware of the initial state since it may not be initialised to the correct value
           f(self.get());
         },
+        unlisten: function(f) {
+          const index = listeners.indexOf(f);
+          if (index !== -1) {
+            listeners.splice(index, 1);
+          }
+        },
         controls: {
-          add: function() {
-            const toAdd = filterInput($.apply($, arguments), type);
+          add: function(control, disconnectOnRemove = true) {
+            const toAdd = filterInput($(control), type);
             controls = controls.add(toAdd);
 
             if (type === Type.TEXT || type === Type.NUMBER) {
@@ -441,11 +447,31 @@ window.App = (function() {
 
             toAdd.on(changeEvents, changeFunction);
 
+            if (disconnectOnRemove) {
+              // we don't want to leak memory if the code that adds controls is so inconsiderate as to not clean up after itself.
+              // so here we listen for the new controls being removed from DOM and remove them from the controls list at the same time.
+              // JQuery UI has a remove event that we can listen for if we have JQuery UI - that would make this cleaner.
+              toAdd.each((_, c) => {
+                const observer = new MutationObserver(function(mutations) {
+                  mutations.forEach((mutation) => {
+                    if (Array.from(mutation.removedNodes).some((removed) => removed === c || $.contains(removed, c))) {
+                      self.controls.remove(c);
+                      observer.disconnect();
+                    }
+                  });
+                });
+                observer.observe(document, {
+                  childList: true,
+                  subtree: true
+                });
+              });
+            }
+
             // update the new controls to have the correct value
             self.set(self.get());
           },
-          remove: function() {
-            const toRemove = controls.filter($.apply($, arguments));
+          remove: function(control) {
+            const toRemove = controls.filter($(control));
             controls = controls.not(toRemove);
 
             if (type === Type.TEXT || type === Type.NUMBER) {
@@ -500,7 +526,8 @@ window.App = (function() {
       'alert.src': 'audio.alert.src',
       'alert.volume': 'audio.alert.volume',
       alert_delay: 'place.alert.delay',
-      'chrome-canvas-offset-workaround': 'fix.chrome.offset.enable'
+      'chrome-canvas-offset-workaround': 'fix.chrome.offset.enable',
+      hide_sensitive: 'lookup.filter.sensitive.enable'
     };
 
     // these are the settings which have gone from being toggle-off to toggle-on
@@ -603,6 +630,11 @@ window.App = (function() {
       lookup: {
         monospace: {
           enable: setting('lookup.monospace.enable', Type.TOGGLE, false, $('#setting-lookup-monospace-enable'))
+        },
+        filter: {
+          sensitive: {
+            enable: setting('lookup.filter.sensitive.enable', Type.TOGGLE, false)
+          }
         }
       },
       fix: {
@@ -1415,7 +1447,7 @@ window.App = (function() {
         self.ctx = self.elements.board[0].getContext('2d');
         self.initInteraction();
 
-        settings.board.template.beneathoverlays.change(function(value) {
+        settings.board.template.beneathoverlays.listen(function(value) {
           self.elements.container.toggleClass('lower-template', value);
         });
       },
@@ -1843,7 +1875,7 @@ window.App = (function() {
       },
       init: function() {
         self.elements.heatmap.hide();
-        settings.board.heatmap.opacity.change(function(value) {
+        settings.board.heatmap.opacity.listen(function(value) {
           self.setBackgroundOpacity(parseFloat(value));
         });
         $('#hvmapClear').click(function() {
@@ -1899,7 +1931,7 @@ window.App = (function() {
           width: self.width,
           height: self.height
         });
-        settings.board.heatmap.enable.change(function(value) {
+        settings.board.heatmap.enable.listen(function(value) {
           if (value) {
             self.show();
           } else {
@@ -1992,7 +2024,7 @@ window.App = (function() {
       },
       init: function() {
         self.elements.virginmap.hide();
-        settings.board.virginmap.opacity.change(function(value) {
+        settings.board.virginmap.opacity.listen(function(value) {
           self.setBackgroundOpacity(parseFloat(value));
         });
         $('#hvmapClear').click(function() {
@@ -2048,7 +2080,7 @@ window.App = (function() {
           width: self.width,
           height: self.height
         });
-        settings.board.virginmap.enable.change(function(value) {
+        settings.board.virginmap.enable.listen(function(value) {
           if (value) {
             self.show();
           } else {
@@ -2394,7 +2426,7 @@ window.App = (function() {
       },
       init: function() {
         self.elements.grid.hide();
-        settings.board.grid.enable.change(function(value) {
+        settings.board.grid.enable.listen(function(value) {
           if (value) {
             self.elements.grid.fadeIn({ duration: 100 });
           } else {
@@ -2712,7 +2744,7 @@ window.App = (function() {
           self.switch(newVal <= -1 ? self.palette.length - 1 : newVal);
         });
 
-        settings.place.deselectonplace.enable.change(function(value) {
+        settings.place.deselectonplace.enable.listen(function(value) {
           self.setAutoReset(value);
         });
       },
@@ -2872,7 +2904,6 @@ window.App = (function() {
         });
       },
       create: function(data) {
-        const sensitive = ls.get('hide_sensitive') === true;
         const sensitiveElems = [];
         self._makeShell(data).find('.content').first().append(() => {
           if (!data.bg) {
@@ -2901,7 +2932,7 @@ window.App = (function() {
             ).attr('id', 'lookuphook_' + hook.id);
             if (hook.sensitive) {
               sensitiveElems.push(_retVal);
-              if (sensitive) {
+              if (settings.lookup.filter.sensitive.enable.get()) {
                 _retVal.css('display', 'none');
               }
             }
@@ -2915,13 +2946,7 @@ window.App = (function() {
           const label = $('<label>').text('Hide sensitive information');
           const checkbox = $('<input type="checkbox">').css('margin-top', '10px');
           label.prepend(checkbox);
-          checkbox.prop('checked', sensitive);
-          checkbox.change(function() {
-            ls.set('hide_sensitive', this.checked);
-            sensitiveElems.forEach(v => {
-              v.css('display', this.checked ? 'none' : '');
-            });
-          });
+          settings.lookup.filter.sensitive.enable.controls.add(checkbox);
           return label;
         });
         self.elements.lookup.fadeIn(200);
@@ -3020,6 +3045,10 @@ window.App = (function() {
             get: data => data.discordName
           }
         );
+
+        settings.lookup.filter.sensitive.enable.listen(function(value) {
+          $('[data-sensitive=true]').css('display', value ? 'none' : '');
+        });
 
         self.elements.lookup.hide();
         self.elements.prompt.hide();
@@ -3125,15 +3154,15 @@ window.App = (function() {
           new SLIDEIN.Slidein(`A new ${data.report_type.toLowerCase()} report has been received.`, 'info-circle').show().closeAfter(3000);
         });
 
-        settings.lookup.monospace.enable.change(function(value) {
+        settings.lookup.monospace.enable.listen(function(value) {
           $('.monoVal').toggleClass('useMono', value);
         });
 
-        settings.ui.palette.numbers.enable.change(function(value) {
+        settings.ui.palette.numbers.enable.listen(function(value) {
           place.setNumberedPaletteEnabled(value);
         });
 
-        settings.board.lock.enable.change((value) => board.setAllowDrag(!value));
+        settings.board.lock.enable.listen((value) => board.setAllowDrag(!value));
 
         const _chatPanel = document.querySelector('aside.panel[data-panel="chat"]');
         if (_chatPanel) {
@@ -3142,7 +3171,7 @@ window.App = (function() {
 
         const numOrDefault = (n, def) => isNaN(n) ? def : n;
 
-        settings.ui.brightness.enable.change(function(enabled) {
+        settings.ui.brightness.enable.listen(function(enabled) {
           if (enabled) {
             settings.ui.brightness.value.controls.enable();
           } else {
@@ -3151,22 +3180,22 @@ window.App = (function() {
           self.adjustColorBrightness(enabled ? numOrDefault(parseFloat(settings.ui.brightness.value.get()), 1) : null);
         });
 
-        settings.ui.brightness.value.change(function(value) {
+        settings.ui.brightness.value.listen(function(value) {
           if (settings.ui.brightness.enable.get() === true) {
             const level = numOrDefault(parseFloat(value), 1);
             self.adjustColorBrightness(level);
           }
         });
 
-        settings.ui.bubble.position.change(function(value) {
+        settings.ui.bubble.position.listen(function(value) {
           self.elements.mainBubble.attr('position', value);
         });
 
-        settings.ui.reticule.enable.change(function(value) {
+        settings.ui.reticule.enable.listen(function(value) {
           place.toggleReticule(value && place.color !== -1);
         });
 
-        settings.ui.reticule.enable.change(function(value) {
+        settings.ui.reticule.enable.listen(function(value) {
           place.toggleCursor(value && place.color !== -1);
         });
 
@@ -3229,7 +3258,7 @@ window.App = (function() {
         }
         // since we just changed the options available, this will coerce the settings into making the control reflect the actual theme.
         settings.ui.theme.index.set(settings.ui.theme.index.get());
-        settings.ui.theme.index.change(function(value) {
+        settings.ui.theme.index.listen(function(value) {
           const themeIdx = parseInt(value);
           // If there exists no particular theme for the themeIdx, reset it to default
           if (!(themeIdx in self.themes)) {
@@ -3257,7 +3286,7 @@ window.App = (function() {
           if (console.warn) console.warn('An error occurred on the audioElem node: %o', err);
         });
 
-        settings.audio.alert.src.change(function(url) { // change should only fire on blur so we normally won't be calling updateAudio for each keystroke. just in case though, we'll lazy update.
+        settings.audio.alert.src.listen(function(url) { // change should only fire on blur so we normally won't be calling updateAudio for each keystroke. just in case though, we'll lazy update.
           if (self._alertUpdateTimer !== false) clearTimeout(self._alertUpdateTimer);
           self._alertUpdateTimer = setTimeout(function(url) {
             self.updateAudio(url);
@@ -3266,7 +3295,7 @@ window.App = (function() {
         });
         self.elements.btnForceAudioUpdate.click(() => settings.audio.alert.src.set(settings.audio.alert.src.get()));
 
-        settings.audio.alert.volume.change(function(value) {
+        settings.audio.alert.volume.listen(function(value) {
           const parsed = parseFloat(value);
           const volume = isNaN(parsed) ? 1 : parsed;
           self.elements.lblAlertVolume.text(`${volume * 100 >> 0}%`);
@@ -6457,7 +6486,7 @@ window.App = (function() {
     const self = {
       elements: {},
       init: () => {
-        settings.place.notification.enable.change(function(value) {
+        settings.place.notification.enable.listen(function(value) {
           if (value) {
             self.request();
           }
@@ -6589,7 +6618,7 @@ window.App = (function() {
           return;
         }
 
-        settings.fix.chrome.offset.enable.change((value) => {
+        settings.fix.chrome.offset.enable.listen((value) => {
           if (value) {
             self.enable();
           } else {
