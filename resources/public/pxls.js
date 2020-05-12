@@ -315,7 +315,7 @@ window.App = (function() {
   const ss = storageFactory(sessionStorage, 'ss_', null);
 
   const settings = (function() {
-    const Type = {
+    const SettingType = {
       TOGGLE: 0,
       RANGE: 1,
       TEXT: 2,
@@ -326,28 +326,28 @@ window.App = (function() {
 
     const validate = function(value, fallback, type) {
       switch (type) {
-        case Type.TOGGLE:
+        case SettingType.TOGGLE:
           // valid if value is a boolean (either true or false)
           if (value === true || value === false) {
             return value;
           }
           break;
-        case Type.TEXT:
+        case SettingType.TEXT:
           if (typeof value === 'string') {
             return value;
           }
           break;
-        case Type.NUMBER:
+        case SettingType.NUMBER:
           /* falls through */
-        case Type.RANGE:
+        case SettingType.RANGE:
           // valid if value is a number
           if (!isNaN(parseFloat(value))) {
             return value;
           }
           break;
-        case Type.SELECT:
+        case SettingType.SELECT:
           /* falls through */
-        case Type.RADIO:
+        case SettingType.RADIO:
           // select and radios can use practically any values: allow if not void
           if (value != null) {
             return value;
@@ -358,21 +358,29 @@ window.App = (function() {
 
     const filterInput = function(controls, type) {
       switch (type) {
-        case Type.TOGGLE:
+        case SettingType.TOGGLE:
           return controls.filter('input[type=checkbox]');
-        case Type.RANGE:
+        case SettingType.RANGE:
           return controls.filter('input[type=range]');
-        case Type.TEXT:
+        case SettingType.TEXT:
           return controls.filter('input[type=text]');
-        case Type.NUMBER:
+        case SettingType.NUMBER:
           return controls.filter('input[type=number]');
-        case Type.SELECT:
+        case SettingType.SELECT:
           return controls.filter('select');
-        case Type.RADIO:
+        case SettingType.RADIO:
           return controls.filter('input[type=radio]');
       }
     };
 
+    /**
+     * Creates a new setting
+     * @param {String} name the key to use in localstorage for the setting .
+     * @param {SettingType} type the type of setting.
+     * @param defaultValue the default value of the setting.
+     * @param {JQuery|Element|selector} initialControls the inputs to bind as the controls of this setting.
+     * @returns {Object} the setting object with public access to certain functions.
+     */
     const setting = function(name, type, defaultValue, initialControls = $()) {
       const listeners = [];
       let controls = $();
@@ -385,9 +393,9 @@ window.App = (function() {
         const validValue = validate(value, defaultValue, type);
         ls.set(name, validValue);
 
-        if (type === Type.RADIO) {
+        if (type === SettingType.RADIO) {
           controls.each((_, e) => { e.checked = e.value === value; });
-        } else if (type === Type.TOGGLE) {
+        } else if (type === SettingType.TOGGLE) {
           controls.prop('checked', validValue);
         } else {
           controls.prop('value', validValue);
@@ -408,13 +416,13 @@ window.App = (function() {
       let changeEvents = 'change';
 
       switch (type) {
-        case Type.RADIO:
+        case SettingType.RADIO:
           changeEvents = 'click';
           break;
-        case Type.RANGE:
+        case SettingType.RANGE:
           changeEvents = 'input change';
           break;
-        case Type.TOGGLE:
+        case SettingType.TOGGLE:
           changeFunction = (evt) => self.set(evt.target.checked);
           break;
       }
@@ -441,7 +449,7 @@ window.App = (function() {
             const toAdd = filterInput($(control), type);
             controls = controls.add(toAdd);
 
-            if (type === Type.TEXT || type === Type.NUMBER) {
+            if (type === SettingType.TEXT || type === SettingType.NUMBER) {
               toAdd.on('keydown', keydownFunction);
             }
 
@@ -474,7 +482,7 @@ window.App = (function() {
             const toRemove = controls.filter($(control));
             controls = controls.not(toRemove);
 
-            if (type === Type.TEXT || type === Type.NUMBER) {
+            if (type === SettingType.TEXT || type === SettingType.NUMBER) {
               toRemove.off('keydown', keydownFunction);
             }
 
@@ -489,7 +497,7 @@ window.App = (function() {
         }
       };
 
-      if (type === Type.TOGGLE) {
+      if (type === SettingType.TOGGLE) {
         self.toggle = function() { self.set(!self.get()); };
       }
 
@@ -561,133 +569,133 @@ window.App = (function() {
     return {
       ui: {
         theme: {
-          index: setting('ui.theme.index', Type.SELECT, '-1', $('#setting-ui-theme-index'))
+          index: setting('ui.theme.index', SettingType.SELECT, '-1', $('#setting-ui-theme-index'))
         },
         reticule: {
-          enable: setting('ui.reticule.enable', Type.TOGGLE, !possiblyMobile, $('#setting-ui-reticule-enable'))
+          enable: setting('ui.reticule.enable', SettingType.TOGGLE, !possiblyMobile, $('#setting-ui-reticule-enable'))
         },
         cursor: {
-          enable: setting('ui.cursor.enable', Type.TOGGLE, !possiblyMobile, $('#setting-ui-cursor-enable'))
+          enable: setting('ui.cursor.enable', SettingType.TOGGLE, !possiblyMobile, $('#setting-ui-cursor-enable'))
         },
         bubble: {
-          position: setting('ui.bubble.position', Type.RADIO, 'bottom left', $('[name=setting-ui-bubble-position]'))
+          position: setting('ui.bubble.position', SettingType.RADIO, 'bottom left', $('[name=setting-ui-bubble-position]'))
         },
         brightness: {
-          enable: setting('ui.brightness.enable', Type.TOGGLE, false, $('#setting-ui-brightness-enable')),
-          value: setting('ui.brightness.value', Type.RANGE, 1, $('#setting-ui-brightness-value'))
+          enable: setting('ui.brightness.enable', SettingType.TOGGLE, false, $('#setting-ui-brightness-enable')),
+          value: setting('ui.brightness.value', SettingType.RANGE, 1, $('#setting-ui-brightness-value'))
         },
         palette: {
           numbers: {
-            enable: setting('ui.palette.numbers.enable', Type.TOGGLE, false, $('#setting-ui-palette-numbers-enable'))
+            enable: setting('ui.palette.numbers.enable', SettingType.TOGGLE, false, $('#setting-ui-palette-numbers-enable'))
           }
         },
         chat: {
           banner: {
-            enable: setting('ui.chat.banner.enable', Type.TOGGLE, true)
+            enable: setting('ui.chat.banner.enable', SettingType.TOGGLE, true)
           },
           horizontal: {
-            enable: setting('ui.chat.horizontal.enable', Type.TOGGLE, false)
+            enable: setting('ui.chat.horizontal.enable', SettingType.TOGGLE, false)
           }
         }
       },
       audio: {
-        enable: setting('audio.enable', Type.TOGGLE, true, $('#setting-audio-enable')),
+        enable: setting('audio.enable', SettingType.TOGGLE, true, $('#setting-audio-enable')),
         alert: {
-          src: setting('audio.alert.src', Type.TEXT, '', $('#setting-audio-alert-src')),
-          volume: setting('audio.alert.volume', Type.RANGE, 1, $('#setting-audio-alert-volume'))
+          src: setting('audio.alert.src', SettingType.TEXT, '', $('#setting-audio-alert-src')),
+          volume: setting('audio.alert.volume', SettingType.RANGE, 1, $('#setting-audio-alert-volume'))
         }
       },
       board: {
         heatmap: {
-          enable: setting('board.heatmap.enable', Type.TOGGLE, false, $('#setting-board-heatmap-enable')),
-          opacity: setting('board.heatmap.opacity', Type.RANGE, 0.5, $('#setting-board-heatmap-opacity'))
+          enable: setting('board.heatmap.enable', SettingType.TOGGLE, false, $('#setting-board-heatmap-enable')),
+          opacity: setting('board.heatmap.opacity', SettingType.RANGE, 0.5, $('#setting-board-heatmap-opacity'))
         },
         virginmap: {
-          enable: setting('board.virginmap.enable', Type.TOGGLE, false, $('#setting-board-virginmap-enable')),
-          opacity: setting('board.virginmap.opacity', Type.RANGE, 0.5, $('#setting-board-virginmap-opacity'))
+          enable: setting('board.virginmap.enable', SettingType.TOGGLE, false, $('#setting-board-virginmap-enable')),
+          opacity: setting('board.virginmap.opacity', SettingType.RANGE, 0.5, $('#setting-board-virginmap-opacity'))
         },
         grid: {
-          enable: setting('board.grid.enable', Type.TOGGLE, false, $('#setting-board-grid-enable'))
+          enable: setting('board.grid.enable', SettingType.TOGGLE, false, $('#setting-board-grid-enable'))
         },
         lock: {
-          enable: setting('board.lock.enable', Type.TOGGLE, false, $('#setting-board-lock-enable'))
+          enable: setting('board.lock.enable', SettingType.TOGGLE, false, $('#setting-board-lock-enable'))
         },
         zoom: {
-          sensitivity: setting('board.zoom.sensitivity', Type.RANGE, 1.5, $('#setting-board-zoom-sensitivity')),
+          sensitivity: setting('board.zoom.sensitivity', SettingType.RANGE, 1.5, $('#setting-board-zoom-sensitivity')),
           limit: {
-            enable: setting('board.zoom.limit.enable', Type.TOGGLE, true, $('#setting-board-zoom-limit-enable'))
+            enable: setting('board.zoom.limit.enable', SettingType.TOGGLE, true, $('#setting-board-zoom-limit-enable'))
           }
         },
         template: {
-          beneathoverlays: setting('board.template.beneathoverlays', Type.TOGGLE, false, $('#setting-board-template-beneathoverlays'))
+          beneathoverlays: setting('board.template.beneathoverlays', SettingType.TOGGLE, false, $('#setting-board-template-beneathoverlays'))
         },
         snapshot: {
-          format: setting('board.snapshot.format', Type.SELECT, 'image/png', $('#setting-board-snapshot-format'))
+          format: setting('board.snapshot.format', SettingType.SELECT, 'image/png', $('#setting-board-snapshot-format'))
         }
       },
       place: {
         notification: {
-          enable: setting('place.notification.enable', Type.TOGGLE, true, $('#setting-place-notification-enable'))
+          enable: setting('place.notification.enable', SettingType.TOGGLE, true, $('#setting-place-notification-enable'))
         },
         deselectonplace: {
-          enable: setting('place.deselectonplace.enable', Type.TOGGLE, true, $('#setting-place-deselectonplace-enable'))
+          enable: setting('place.deselectonplace.enable', SettingType.TOGGLE, true, $('#setting-place-deselectonplace-enable'))
         },
         palette: {
           scrolling: {
-            enable: setting('place.palette.scrolling.enable', Type.TOGGLE, false, $('#setting-place-palette-scrolling-enable')),
-            invert: setting('place.palette.scrolling.invert', Type.TOGGLE, false, $('#setting-place-palette-scrolling-invert'))
+            enable: setting('place.palette.scrolling.enable', SettingType.TOGGLE, false, $('#setting-place-palette-scrolling-enable')),
+            invert: setting('place.palette.scrolling.invert', SettingType.TOGGLE, false, $('#setting-place-palette-scrolling-invert'))
           }
         },
         picker: {
-          enable: setting('place.picker.enable', Type.TOGGLE, true, $('#setting-place-picker-enable'))
+          enable: setting('place.picker.enable', SettingType.TOGGLE, true, $('#setting-place-picker-enable'))
         },
         alert: {
-          delay: setting('place.alert.delay', Type.NUMBER, 0, $('#setting-place-alert-delay'))
+          delay: setting('place.alert.delay', SettingType.NUMBER, 0, $('#setting-place-alert-delay'))
         }
       },
       lookup: {
         monospace: {
-          enable: setting('lookup.monospace.enable', Type.TOGGLE, false, $('#setting-lookup-monospace-enable'))
+          enable: setting('lookup.monospace.enable', SettingType.TOGGLE, false, $('#setting-lookup-monospace-enable'))
         },
         filter: {
           sensitive: {
-            enable: setting('lookup.filter.sensitive.enable', Type.TOGGLE, false)
+            enable: setting('lookup.filter.sensitive.enable', SettingType.TOGGLE, false)
           }
         }
       },
       chat: {
         timestamps: {
-          '24h': setting('chat.timestamps.24h', Type.TOGGLE, false)
+          '24h': setting('chat.timestamps.24h', SettingType.TOGGLE, false)
         },
         badges: {
-          enable: setting('chat.badges.enable', Type.TOGGLE, false)
+          enable: setting('chat.badges.enable', SettingType.TOGGLE, false)
         },
         factiontags: {
-          enable: setting('chat.factiontags.enable', Type.TOGGLE, true)
+          enable: setting('chat.factiontags.enable', SettingType.TOGGLE, true)
         },
         pings: {
-          enable: setting('chat.pings.enable', Type.TOGGLE, true),
+          enable: setting('chat.pings.enable', SettingType.TOGGLE, true),
           audio: {
-            when: setting('chat.pings.audio.when', Type.SELECT, 'off'),
-            volume: setting('chat.pings.audio.volume', Type.RANGE, 0.5)
+            when: setting('chat.pings.audio.when', SettingType.SELECT, 'off'),
+            volume: setting('chat.pings.audio.volume', SettingType.RANGE, 0.5)
           }
         },
         links: {
           templates: {
-            preferurls: setting('chat.links.templates.preferurls', Type.TOGGLE, false)
+            preferurls: setting('chat.links.templates.preferurls', SettingType.TOGGLE, false)
           },
           internal: {
-            behavior: setting('chat.links.internal.behavior', Type.SELECT, 'ask')
+            behavior: setting('chat.links.internal.behavior', SettingType.SELECT, 'ask')
           }
         },
         font: {
-          size: setting('chat.font.size', Type.NUMBER, 16)
+          size: setting('chat.font.size', SettingType.NUMBER, 16)
         }
       },
       fix: {
         chrome: {
           offset: {
-            enable: setting('fix.chrome.offset.enable', Type.TOGGLE, webkitBased, $('#setting-fix-chrome-offset-enable'))
+            enable: setting('fix.chrome.offset.enable', SettingType.TOGGLE, webkitBased, $('#setting-fix-chrome-offset-enable'))
           }
         }
       }
