@@ -474,35 +474,135 @@ window.App = (function() {
 
     const possiblyMobile = window.innerWidth < 768 && nua.includes('Mobile');
 
+    const keymappings = {
+      currentTheme: 'ui.theme.index',
+      audio_muted: 'audio.enable',
+      heatmap: 'board.heatmap.enable',
+      virgimap: 'board.virginmap.enable',
+      view_grid: 'board.grid.enable',
+      'canvas.unlocked': 'board.lock.enable',
+      'nativenotifications.pixel-avail': 'place.notification.enable',
+      autoReset: 'place.deselectonplace.enable',
+      monospace_lookup: 'lookup.monospace.enable',
+      zoomBaseValue: 'board.zoom.sensitivity',
+      increased_zoom: 'board.zoom.limit.enable',
+      scrollSwitchEnabled: 'place.palette.scrolling.enable',
+      scrollSwitchDirectionInverted: 'place.palette.scrolling.invert',
+      'ui.show-reticule': 'ui.reticule.enable',
+      'ui.show-cursor': 'ui.cursor.enable',
+      templateBeneathHeatmap: 'board.template.beneathoverlays',
+      enableMiddleMouseSelect: 'place.picker.enable',
+      enableNumberedPalette: 'ui.palette.numbers.enable',
+      heatmap_background_opacity: 'board.heatmap.opacity',
+      virginmap_background_opacity: 'board.virginmap.opacity',
+      snapshotImageFormat: 'board.snapshot.format',
+      'bubble-position': 'ui.bubble.position',
+      'brightness.enabled': 'ui.brightness.enable',
+      colorBrightness: 'ui.brightness.value',
+      'alert.src': 'audio.alert.src',
+      'alert.volume': 'audio.alert.volume',
+      alert_delay: 'place.alert.delay'
+    };
+
+    // these are the settings which have gone from being toggle-off to toggle-on
+    const flippedmappings = ['audio_muted', 'increased_zoom', 'autoReset'];
+
+    // Convert old settings keys to new keys.
+    Object.entries(keymappings).forEach((entry) => {
+      // This is the best we can do to check existance without reacing into localStorage ourselves.
+      // If there we were a ls.has function, that should be used here.
+      if (ls.get(entry[0]) !== null) {
+        console.debug(`mapping ${entry[0]} (${ls.get(entry[0])}) to ${entry[1]}`);
+        const oldvalue = ls.get(entry[0]);
+        ls.set(entry[1], entry[0] in flippedmappings ? !oldvalue : oldvalue);
+        ls.remove(entry[0]);
+      }
+    });
+
     return {
-      themeSelect: setting('currentTheme', Type.SELECT, '0', $('#themeSelect')),
-      audiotoggle: setting('audio_muted', Type.TOGGLE, false, $('#audiotoggle')),
-      heatmaptoggle: setting('heatmap', Type.TOGGLE, false, $('#heatmaptoggle')),
-      virginmaptoggle: setting('virgimap', Type.TOGGLE, false, $('#virginmaptoggle')),
-      gridtoggle: setting('view_grid', Type.TOGGLE, false, $('#gridtoggle')),
-      // this actually represents the canvas being locked not unlocked.
-      lockCanvasToggle: setting('canvas.unlocked', Type.TOGGLE, false, $('#lockCanvasToggle')),
-      'native-notification-toggle': setting('nativenotifications.pixel-avail', Type.TOGGLE, true, $('#native-notification-toggle')),
-      stickyColorToggle: setting('autoReset', Type.TOGGLE, false, $('#stickyColorToggle')),
-      monospaceToggle: setting('monospace_lookup', Type.TOGGLE, false, $('#monospaceToggle')),
-      zoomBaseValue: setting('zoomBaseValue', Type.RANGE, 1.5, $('#zoomBaseValue')),
-      increasedZoomToggle: setting('increased_zoom', Type.TOGGLE, false, $('#increasedZoomToggle')),
-      scrollSwitchToggle: setting('scrollSwitchEnabled', Type.TOGGLE, false, $('#scrollSwitchToggle')),
-      scrollDirectionToggle: setting('scrollSwitchDirectionInverted', Type.TOGGLE, false, $('#scrollDirectionToggle')),
-      showReticuleToggle: setting('ui.show-reticule', Type.TOGGLE, possiblyMobile, $('#showReticuleToggle')),
-      showCursorToggle: setting('ui.show-cursor', Type.TOGGLE, possiblyMobile, $('#showCursorToggle')),
-      templateBeneathHeatmapToggle: setting('templateBeneathHeatmap', Type.TOGGLE, false, $('#templateBeneathHeatmapToggle')),
-      cbEnableMiddleMouseSelect: setting('enableMiddleMouseSelect', Type.TOGGLE, true, $('#cbEnableMiddleMouseSelect')),
-      cbNumberedPalette: setting('enableNumberedPalette', Type.TOGGLE, false, $('#cbNumberedPalette')),
-      'heatmap-opacity': setting('heatmap_background_opacity', Type.RANGE, 0.5, $('#heatmap-opacity')),
-      'virginmap-opacity': setting('virginmap_background_opacity', Type.RANGE, 0.5, $('#virginmap-opacity')),
-      snapshotImageFormat: setting('snapshotImageFormat', Type.SELECT, 'image/png', $('#snapshotImageFormat')),
-      'bubble-position': setting('ui.bubble-position', Type.RADIO, 'bottom left', $('[name=bubble-position]')),
-      'color-brightness-toggle': setting('brightness.enabled', Type.TOGGLE, false, $('#color-brightness-toggle')),
-      'color-brightness': setting('colorBrightness', Type.RANGE, 1, $('#color-brightness')),
-      txtAlertLocation: setting('alert.src', Type.TEXT, '', $('#txtAlertLocation')),
-      rangeAlertVolume: setting('alert.volume', Type.RANGE, 1, $('#rangeAlertVolume')),
-      alertDelay: setting('alert_delay', Type.NUMBER, 0, $('#alertDelay'))
+      ui: {
+        theme: {
+          index: setting('ui.theme.index', Type.SELECT, '0', $('#setting-ui-theme-index'))
+        },
+        reticule: {
+          enable: setting('ui.reticule.enable', Type.TOGGLE, possiblyMobile, $('#setting-ui-reticule-enable'))
+        },
+        cursor: {
+          enable: setting('ui.cursor.enable', Type.TOGGLE, possiblyMobile, $('#setting-ui-cursor-enable'))
+        },
+        bubble: {
+          position: setting('ui.bubble.position', Type.RADIO, 'bottom left', $('[name=setting-ui-bubble-position]'))
+        },
+        brightness: {
+          enable: setting('ui.brightness.enable', Type.TOGGLE, false, $('#setting-ui-brightness-enable')),
+          value: setting('ui.brightness.value', Type.RANGE, 1, $('#setting-ui-brightness-value'))
+        },
+        palette: {
+          numbers: {
+            enable: setting('ui.palette.numbers.enable', Type.TOGGLE, false, $('#setting-ui-palette-numbers-enable'))
+          }
+        }
+      },
+      audio: {
+        enable: setting('audio.enable', Type.TOGGLE, true, $('#setting-audio-enable')),
+        alert: {
+          src: setting('audio.alert.src', Type.TEXT, '', $('#setting-audio-alert-src')),
+          volume: setting('audio.alert.volume', Type.RANGE, 1, $('#setting-audio-alert-volume'))
+        }
+      },
+      board: {
+        heatmap: {
+          enable: setting('board.heatmap.enable', Type.TOGGLE, false, $('#setting-board-heatmap-enable')),
+          opacity: setting('board.heatmap.opacity', Type.RANGE, 0.5, $('#setting-board-heatmap-opacity'))
+        },
+        virginmap: {
+          enable: setting('board.virginmap.enable', Type.TOGGLE, false, $('#setting-board-virginmap-enable')),
+          opacity: setting('board.virginmap.opacity', Type.RANGE, 0.5, $('#setting-board-virginmap-opacity'))
+        },
+        grid: {
+          enable: setting('board.grid.enable', Type.TOGGLE, false, $('#setting-board-grid-enable'))
+        },
+        lock: {
+          enable: setting('board.lock.enable', Type.TOGGLE, false, $('#setting-board-lock-enable'))
+        },
+        zoom: {
+          sensitivity: setting('board.zoom.sensitivity', Type.RANGE, 1.5, $('#setting-board-zoom-sensitivity')),
+          limit: {
+            enable: setting('board.zoom.limit.enable', Type.TOGGLE, true, $('#setting-board-zoom-limit-enable'))
+          }
+        },
+        template: {
+          beneathoverlays: setting('board.template.beneathoverlays', Type.TOGGLE, false, $('#setting-board-template-beneathoverlays'))
+        },
+        snapshot: {
+          format: setting('board.snapshot.format', Type.SELECT, 'image/png', $('#setting-board-snapshot-format'))
+        }
+      },
+      place: {
+        notification: {
+          enable: setting('place.notification.enable', Type.TOGGLE, true, $('#setting-place-notification-enable'))
+        },
+        deselectonplace: {
+          enable: setting('place.deselectonplace.enable', Type.TOGGLE, true, $('#setting-place-deselectonplace-enable'))
+        },
+        palette: {
+          scrolling: {
+            enable: setting('place.palette.scrolling.enable', Type.TOGGLE, false, $('#setting-place-palette-scrolling-enable')),
+            invert: setting('place.palette.scrolling.invert', Type.TOGGLE, false, $('#setting-place-palette-scrolling-invert'))
+          }
+        },
+        picker: {
+          enable: setting('place.picker.enable', Type.TOGGLE, true, $('#setting-place-picker-enable'))
+        },
+        alert: {
+          delay: setting('place.alert.delay', Type.NUMBER, 0, $('#setting-place-alert-delay'))
+        }
+      },
+      lookup: {
+        monospace: {
+          enable: setting('lookup.monospace.enable', Type.TOGGLE, false, $('#setting-lookup-monospace-enable'))
+        }
+      }
     };
   })();
   // this object is used to access the query parameters (and in the future probably to set them), it is prefered to use # now instead of ? as JS can change them
@@ -1040,7 +1140,7 @@ window.App = (function() {
             case 76: // L
             case 'l':
             case 'L':
-              settings.lockCanvasToggle.toggle();
+              settings.board.lock.enable.toggle();
               break;
             case 'KeyR':
             case 82: // R
@@ -1246,7 +1346,7 @@ window.App = (function() {
           downDelta = 0;
           if (event.button != null) {
             // Is the button pressed the middle mouse button?
-            if (settings.cbEnableMiddleMouseSelect.get() === true && event.button === 1 && dx < 15 && dy < 15) {
+            if (settings.place.picker.enable.get() === true && event.button === 1 && dx < 15 && dy < 15) {
               // If so, switch to the color at the location.
               const { x, y } = self.fromScreen(event.clientX, event.clientY);
               place.switch(self.getPixel(x, y));
@@ -1306,7 +1406,7 @@ window.App = (function() {
         self.ctx = self.elements.board[0].getContext('2d');
         self.initInteraction();
 
-        settings.templateBeneathHeatmapToggle.change(function(value) {
+        settings.board.template.beneathoverlays.change(function(value) {
           self.elements.container.toggleClass('lower-template', value);
         });
       },
@@ -1490,16 +1590,16 @@ window.App = (function() {
         return Math.abs(self.scale);
       },
       setScale: function(scale) {
-        if (settings.increasedZoomToggle.get() !== true && scale > 50) scale = 50;
+        if (settings.board.zoom.limit.enable.get() !== false && scale > 50) scale = 50;
         else if (scale <= 0) scale = 0.5; // enforce the [0.5, 50] limit without blindly resetting to 0.5 when the user was trying to zoom in farther than 50x
         self.scale = scale;
         self.update();
       },
       getZoomBase: function() {
-        return parseFloat(settings.zoomBaseValue.get()) || 1.5;
+        return parseFloat(settings.board.zoom.sensitivity.get()) || 1.5;
       },
       nudgeScale: function(adj) {
-        const maxUnlocked = settings.increasedZoomToggle.get() === true;
+        const maxUnlocked = settings.board.zoom.limit.enable.get() === false;
         const maximumValue = maxUnlocked ? Infinity : 50;
         const minimumValue = maxUnlocked ? 0 : 0.5;
         const zoomBase = self.getZoomBase();
@@ -1602,7 +1702,7 @@ window.App = (function() {
       },
       save: function() {
         const a = document.createElement('a');
-        const format = settings.snapshotImageFormat.get();
+        const format = settings.board.snapshot.format.get();
 
         a.href = self.elements.board[0].toDataURL(format, 1);
         a.download = (new Date()).toISOString().replace(/^(\d+-\d+-\d+)T(\d+):(\d+):(\d).*$/, `pxls canvas $1 $2.$3.$4.${format.split('/')[1]}`);
@@ -1734,7 +1834,7 @@ window.App = (function() {
       },
       init: function() {
         self.elements.heatmap.hide();
-        settings['heatmap-opacity'].change(function(value) {
+        settings.board.heatmap.opacity.change(function(value) {
           self.setBackgroundOpacity(parseFloat(value));
         });
         $('#hvmapClear').click(function() {
@@ -1790,7 +1890,7 @@ window.App = (function() {
           width: self.width,
           height: self.height
         });
-        settings.heatmaptoggle.change(function(value) {
+        settings.board.heatmap.enable.change(function(value) {
           if (value) {
             self.show();
           } else {
@@ -1805,7 +1905,7 @@ window.App = (function() {
           }
 
           if (e.key === 'h' || e.key === 'H' || e.which === 72) { // h key
-            settings.heatmaptoggle.toggle();
+            settings.board.heatmap.enable.toggle();
           }
         });
       }
@@ -1883,7 +1983,7 @@ window.App = (function() {
       },
       init: function() {
         self.elements.virginmap.hide();
-        settings['virginmap-opacity'].change(function(value) {
+        settings.board.virginmap.opacity.change(function(value) {
           self.setBackgroundOpacity(parseFloat(value));
         });
         $('#hvmapClear').click(function() {
@@ -1939,7 +2039,7 @@ window.App = (function() {
           width: self.width,
           height: self.height
         });
-        settings.virginmaptoggle.change(function(value) {
+        settings.board.virginmap.enable.change(function(value) {
           if (value) {
             self.show();
           } else {
@@ -1954,7 +2054,7 @@ window.App = (function() {
           }
 
           if (e.key === 'x' || e.key === 'X' || e.which === 88) { // x key
-            settings.virginmaptoggle.toggle();
+            settings.board.virginmap.enable.toggle();
           }
         });
       }
@@ -2285,7 +2385,7 @@ window.App = (function() {
       },
       init: function() {
         self.elements.grid.hide();
-        settings.gridtoggle.change(function(value) {
+        settings.board.grid.enable.change(function(value) {
           if (value) {
             self.elements.grid.fadeIn({ duration: 100 });
           } else {
@@ -2299,7 +2399,7 @@ window.App = (function() {
           }
 
           if (evt.key === 'g' || evt.key === 'G' || evt.keyCode === 71) {
-            settings.gridtoggle.toggle();
+            settings.board.grid.enable.toggle();
           }
         });
       },
@@ -2412,7 +2512,7 @@ window.App = (function() {
           self.toggleCursor(false);
           return;
         }
-        if (settings.showReticuleToggle.get()) {
+        if (settings.ui.reticule.enable.get()) {
           const screenPos = board.toScreen(self.reticule.x, self.reticule.y);
           const scale = board.getScale();
           self.elements.reticule.css({
@@ -2423,7 +2523,7 @@ window.App = (function() {
           });
           self.toggleReticule(true);
         }
-        if (settings.showCursorToggle.get()) {
+        if (settings.ui.cursor.enable.get()) {
           self.toggleCursor(true);
         }
       },
@@ -2431,14 +2531,14 @@ window.App = (function() {
         self.elements.palette[0].classList.toggle('no-pills', !shouldBeNumbered);
       },
       toggleReticule: (show) => {
-        if (show && settings.showReticuleToggle.get()) {
+        if (show && settings.ui.reticule.enable.get()) {
           self.elements.reticule.show();
         } else if (!show) {
           self.elements.reticule.hide();
         }
       },
       toggleCursor: (show) => {
-        if (show && settings.showCursorToggle.get()) {
+        if (show && settings.ui.cursor.enable.get()) {
           self.elements.cursor.show();
         } else if (!show) {
           self.elements.cursor.hide();
@@ -2458,7 +2558,10 @@ window.App = (function() {
                 $('<span>').addClass('palette-number').text(idx)
               )
               .click(function() {
-                if (ls.get('autoReset') === false || timer.cooledDown()) {
+                // TODO ([  ]): This check should be in switch - not here.
+                //              It's actually not very helpful here because of mmb picker and scrolling.
+                //              These buttons are occluded by the timer anyway.
+                if (settings.place.deselectonplace.enable.get() === false || timer.cooledDown()) {
                   self.switch(idx);
                 }
               });
@@ -2505,7 +2608,7 @@ window.App = (function() {
             y = evt.clientY;
           }
 
-          if (settings.showCursorToggle.get() !== false) {
+          if (settings.ui.cursor.enable.get() !== false) {
             self.elements.cursor.css('transform', 'translate(' + x + 'px, ' + y + 'px)');
           }
           if (self.can_undo) {
@@ -2536,9 +2639,9 @@ window.App = (function() {
           switch (data.ackFor) {
             case 'PLACE':
               $(window).trigger('pxls:ack:place', [data.x, data.y]);
-              if (uiHelper.tabHasFocus() && !settings.audiotoggle.get()) {
+              if (uiHelper.tabHasFocus() && settings.audio.enable.get()) {
                 const clone = self.audio.cloneNode(false);
-                clone.volume = parseFloat(ls.get('alert.volume'));
+                clone.volume = parseFloat(settings.audio.alert.volume.get());
                 clone.play();
               }
               break;
@@ -2594,14 +2697,14 @@ window.App = (function() {
           analytics('send', 'event', 'Captcha', 'Sent');
         };
         self.elements.palette.on('wheel', e => {
-          if (settings.scrollSwitchToggle.get() !== true) return;
+          if (settings.place.palette.scrolling.enable.get() !== true) return;
           const delta = e.originalEvent.deltaY * -40;
-          const newVal = (self.color + ((delta > 0 ? 1 : -1) * (settings.scrollDirectionToggle.get() === true ? -1 : 1))) % self.palette.length;
+          const newVal = (self.color + ((delta > 0 ? 1 : -1) * (settings.place.palette.scrolling.invert.get() === true ? -1 : 1))) % self.palette.length;
           self.switch(newVal <= -1 ? self.palette.length - 1 : newVal);
         });
 
-        settings.stickyColorToggle.change(function(value) {
-          self.setAutoReset(!value);
+        settings.place.deselectonplace.enable.change(function(value) {
+          self.setAutoReset(value);
         });
       },
       hexToRgb: function(hex) {
@@ -2967,7 +3070,7 @@ window.App = (function() {
         coords: $('#coords-info .coords'),
         lblAlertVolume: $('#lblAlertVolume'),
         btnForceAudioUpdate: $('#btnForceAudioUpdate'),
-        themeSelect: $('#themeSelect'),
+        themeSelect: $('#setting-ui-theme-index'),
         themeColorMeta: $('meta[name="theme-color"]'),
         txtDiscordName: $('#txtDiscordName'),
         selUsernameColor: $('#selUsernameColor'),
@@ -3013,15 +3116,15 @@ window.App = (function() {
           new SLIDEIN.Slidein(`A new ${data.report_type.toLowerCase()} report has been received.`, 'info-circle').show().closeAfter(3000);
         });
 
-        settings.monospaceToggle.change(function(value) {
+        settings.lookup.monospace.enable.change(function(value) {
           $('.monoVal').toggleClass('useMono', value);
         });
 
-        settings.cbNumberedPalette.change(function(value) {
+        settings.ui.palette.numbers.enable.change(function(value) {
           place.setNumberedPaletteEnabled(value);
         });
 
-        settings.lockCanvasToggle.change((value) => board.setAllowDrag(!value));
+        settings.board.lock.enable.change((value) => board.setAllowDrag(!value));
 
         const _chatPanel = document.querySelector('aside.panel[data-panel="chat"]');
         if (_chatPanel) {
@@ -3030,31 +3133,31 @@ window.App = (function() {
 
         const numOrDefault = (n, def) => isNaN(n) ? def : n;
 
-        settings['color-brightness-toggle'].change(function(enabled) {
+        settings.ui.brightness.enable.change(function(enabled) {
           if (enabled) {
-            settings['color-brightness'].controls.enable();
+            settings.ui.brightness.value.controls.enable();
           } else {
-            settings['color-brightness'].controls.disable();
+            settings.ui.brightness.value.controls.disable();
           }
-          self.adjustColorBrightness(enabled ? numOrDefault(parseFloat(settings['color-brightness'].get()), 1) : null);
+          self.adjustColorBrightness(enabled ? numOrDefault(parseFloat(settings.ui.brightness.value.get()), 1) : null);
         });
 
-        settings['color-brightness'].change(function(value) {
-          if (settings['color-brightness-toggle'].get() === true) {
+        settings.ui.brightness.value.change(function(value) {
+          if (settings.ui.brightness.enable.get() === true) {
             const level = numOrDefault(parseFloat(value), 1);
             self.adjustColorBrightness(level);
           }
         });
 
-        settings['bubble-position'].change(function(value) {
+        settings.ui.bubble.position.change(function(value) {
           self.elements.mainBubble.attr('position', value);
         });
 
-        settings.showReticuleToggle.change(function(value) {
+        settings.ui.reticule.enable.change(function(value) {
           place.toggleReticule(value && place.color !== -1);
         });
 
-        settings.showCursorToggle.change(function(value) {
+        settings.ui.reticule.enable.change(function(value) {
           place.toggleCursor(value && place.color !== -1);
         });
 
@@ -3116,8 +3219,8 @@ window.App = (function() {
           }));
         }
         // since we just changed the options available, this will coerce the settings into making the control reflect the actual theme.
-        settings.themeSelect.set(settings.themeSelect.get());
-        settings.themeSelect.change(function(value) {
+        settings.ui.theme.index.set(settings.ui.theme.index.get());
+        settings.ui.theme.index.change(function(value) {
           const themeIdx = parseInt(value);
           // If there exists no particular theme for the themeIdx, reset it to default
           if (!(themeIdx in self.themes)) {
@@ -3145,16 +3248,16 @@ window.App = (function() {
           if (console.warn) console.warn('An error occurred on the audioElem node: %o', err);
         });
 
-        settings.txtAlertLocation.change(function(url) { // change should only fire on blur so we normally won't be calling updateAudio for each keystroke. just in case though, we'll lazy update.
+        settings.audio.alert.src.change(function(url) { // change should only fire on blur so we normally won't be calling updateAudio for each keystroke. just in case though, we'll lazy update.
           if (self._alertUpdateTimer !== false) clearTimeout(self._alertUpdateTimer);
           self._alertUpdateTimer = setTimeout(function(url) {
             self.updateAudio(url);
             self._alertUpdateTimer = false;
           }, 250, url);
         });
-        self.elements.btnForceAudioUpdate.click(() => settings.txtAlertLocation.set(settings.txtAlertLocation.get()));
+        self.elements.btnForceAudioUpdate.click(() => settings.audio.alert.src.set(settings.audio.alert.src.get()));
 
-        settings.rangeAlertVolume.change(function(value) {
+        settings.audio.alert.volume.change(function(value) {
           const parsed = parseFloat(value);
           const volume = isNaN(parsed) ? 1 : parsed;
           self.elements.lblAlertVolume.text(`${volume * 100 >> 0}%`);
@@ -3166,7 +3269,7 @@ window.App = (function() {
         $('#btnAlertReset').click(() => {
           // TODO confirm with user
           self.updateAudio('notify.wav');
-          settings.txtAlertLocation.reset();
+          settings.audio.alert.src.reset();
         });
       },
       _initAccount: function() {
@@ -4879,7 +4982,7 @@ window.App = (function() {
           }
 
           const pingAudioState = ls.get('chat.ping-audio-state');
-          const canPlayPingAudio = !isHistory && !settings.audiotoggle.get() &&
+          const canPlayPingAudio = !isHistory && settings.audio.enable.get() &&
               pingAudioState !== 'off' && Date.now() - self.lastPingAudioTimestamp > 5000;
           if ((!panels.isOpen('chat') || !uiHelper.windowHasFocus() || pingAudioState === 'always') &&
               uiHelper.tabHasFocus() && canPlayPingAudio) {
@@ -5826,7 +5929,7 @@ window.App = (function() {
         let delta = (self.cooldown - (new Date()).getTime() - 1) / 1000;
 
         if (self.runningTimer === false) {
-          self.isOverlay = ls.get('autoReset') === true;
+          self.isOverlay = settings.place.deselectonplace.enable.get() === true;
           self.elements.timer = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble;
           self.elements.timer_overlay.hide();
         }
@@ -5835,7 +5938,7 @@ window.App = (function() {
           self.elements.timer.text(self.status);
         }
 
-        const alertDelay = settings.alertDelay.get();
+        const alertDelay = settings.place.alert.delay.get();
         if (alertDelay < 0 && delta < Math.abs(alertDelay) && !self.hasFiredNotification) {
           self.playAudio();
           let notif;
@@ -5916,7 +6019,7 @@ window.App = (function() {
       },
       init: function() {
         self.title = document.title;
-        self.elements.timer = ls.get('autoReset') === true
+        self.elements.timer = settings.place.deselectonplace.enable.get() === false
           ? self.elements.timer_overlay
           : self.elements.timer_bubble;
         self.elements.timer.hide();
@@ -5934,7 +6037,7 @@ window.App = (function() {
         });
       },
       playAudio: function() {
-        if (uiHelper.tabHasFocus() && !settings.audiotoggle.get()) {
+        if (uiHelper.tabHasFocus() && settings.audio.enable.get()) {
           self.audio.play();
         }
       }
@@ -6345,7 +6448,7 @@ window.App = (function() {
     const self = {
       elements: {},
       init: () => {
-        settings['native-notification-toggle'].change(function(value) {
+        settings.place.notification.enable.change(function(value) {
           if (value) {
             self.request();
           }
@@ -6384,7 +6487,7 @@ window.App = (function() {
         return null;
       },
       maybeShow: (body) => {
-        if (settings['native-notification-toggle'].get() &&
+        if (settings.place.notification.enable.get() &&
             uiHelper.tabHasFocus() &&
             Notification.permission === 'granted') {
           return self.show(body);
