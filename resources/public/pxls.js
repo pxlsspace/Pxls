@@ -3075,6 +3075,7 @@ window.App = (function() {
       _initThemes: function() {
         for (let i = 0; i < self.themes.length; i++) {
           self.themes[i].element = $('<link data-theme="' + i + '" rel="stylesheet" href="' + self.themes[i].location + '">');
+          self.themes[i].loaded = false;
           self.elements.themeSelect.append($('<option>', {
             value: i,
             text: self.themes[i].name
@@ -3085,29 +3086,13 @@ window.App = (function() {
           // If currentTheme hasn't been set, or it's out of bounds, reset it to default (-1)
           ls.set('currentTheme', -1);
         } else if (currentTheme !== -1) {
-          self.themes[currentTheme].element.appendTo(document.head);
-          self.elements.themeColorMeta.attr('content', self.themes[currentTheme].color);
+          self.loadTheme(currentTheme);
           self.elements.themeSelect.val(currentTheme);
         }
         self.elements.themeSelect.on('change', async function() {
           const themeIdx = parseInt(this.value);
-          // If theme is -1, the user selected the default theme, so we should remove all other themes
-          if (themeIdx === -1) {
-            // Default theme
-            ls.set('currentTheme', -1);
-            $('*[data-theme]').remove();
-            self.elements.themeColorMeta.attr('content', null);
-            return;
-          }
-
-          const theme = self.themes[themeIdx];
-          theme.element.one('load', () => {
-            self.elements.themeColorMeta.attr('content', theme.color);
-            $(`*[data-theme]:not([data-theme=${themeIdx}])`).remove();
-          });
-          theme.element.appendTo(document.head);
-
           ls.set('currentTheme', themeIdx);
+          await self.loadTheme(themeIdx);
         });
       },
       _initStack: function() {
@@ -3361,6 +3346,45 @@ window.App = (function() {
       },
       toggleCaptchaLoading: (display) => {
         self.elements.captchaLoadingIcon.css('display', display ? 'inline-block' : 'none');
+      },
+      loadTheme: async (index) => {
+        // Default theme (-1) doesn't need to load anything special.
+        if (index === -1) {
+          self.enableTheme(-1);
+          return;
+        }
+        if (!(index in self.themes)) {
+          return console.warn(`Tried to load invalid theme "${index}"`);
+        }
+        const theme = self.themes[index];
+        if (theme.loaded) {
+          self.enableTheme(index);
+        } else {
+          await new Promise((resolve, reject) => {
+            theme.element.one('load', () => {
+              if (!theme.loaded) {
+                theme.loaded = true;
+                self.enableTheme(index);
+              }
+              resolve();
+            });
+            theme.element.appendTo(document.head);
+          });
+        }
+      },
+      enableTheme: (index) => {
+        // If theme is -1, the user selected the default theme.
+        if (index === -1) {
+          self.elements.themeColorMeta.attr('content', null);
+        } else {
+          if (!(index in self.themes)) {
+            return console.warn(`Tried to enable invalid theme "${index}"`);
+          }
+          const theme = self.themes[index];
+          theme.element.prop('disabled', false);
+          self.elements.themeColorMeta.attr('content', theme.color);
+        }
+        $(`*[data-theme]:not([data-theme=${index}])`).prop('disabled', true);
       }
     };
 
