@@ -6677,6 +6677,12 @@ window.App = (function() {
     },
     chat,
     typeahead: chat.typeahead,
+    user: {
+      getUsername: user.getUsername,
+      getRole: user.getRole,
+      isLoggedIn: user.isLoggedIn,
+      isStaff: user.isStaff
+    },
     modal
   };
 })();
