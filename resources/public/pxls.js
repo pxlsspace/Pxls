@@ -447,7 +447,7 @@ window.App = (function() {
           }
         },
         controls: {
-          add: function(control, disconnectOnRemove = true) {
+          add: function(control) {
             const toAdd = filterInput($(control), type);
             controls = controls.add(toAdd);
 
@@ -456,26 +456,6 @@ window.App = (function() {
             }
 
             toAdd.on(changeEvents, changeFunction);
-
-            if (disconnectOnRemove) {
-              // We don't want to leak memory if the code that adds controls is so inconsiderate as to not clean up after itself.
-              // So here we listen for changes in the DOM and remove them from the controls list if they are no longer attached.
-              // JQuery UI has a remove event that we can listen for if we have JQuery UI - that would make this cleaner.
-              toAdd.each((_, c) => {
-                const observer = new MutationObserver(function() {
-                  // NOTE ([  ]): Modal seems to fire many add/remove mutations for the panel itself when adding a new one.
-                  //              This means we can't just listen for remove mutations and filter accordingly.
-                  if (!$.contains(document.body, c)) {
-                    self.controls.remove(c);
-                    observer.disconnect();
-                  }
-                });
-                observer.observe(document, {
-                  childList: true,
-                  subtree: true
-                });
-              });
-            }
 
             // update the new controls to have the correct value
             self.set(self.get());
@@ -4742,10 +4722,34 @@ window.App = (function() {
             lblIgnoresFeedback
           ].map(x => crel('div', x))
         );
-        modal.show(modal.buildDom(
+        const chatModal = modal.show(modal.buildDom(
           crel('h2', { class: 'modal-title' }, 'Chat Settings'),
           body
-        ));
+        ))[0];
+        // NOTE ([  ]): We can't just listen for $.modal.AFTER_CLOSE since it's entirely possible the modal could be shown again.
+        //              While there's no code I'm currently aware of that does this, it would be a pain to have to know to edit *this* code when changing sucha  behaviour.
+        const observer = new MutationObserver(function() {
+          // NOTE ([  ]): Modal seems to fire many add/remove mutations for the panel itself when adding a new one.
+          //              This means we can't just listen for remove mutations and filter accordingly.
+          if (!$.contains(document.body, chatModal)) {
+            settings.chat.font.size.controls.remove(_txtFontSize);
+            settings.chat.links.internal.behavior.controls.remove(_selInternalClick);
+            settings.chat.timestamps['24h'].controls.remove(_cb24hTimestamps);
+            settings.chat.badges.enable.controls.remove(_cbPixelPlaceBadges);
+            settings.chat.factiontags.enable.controls.remove(_cbFactionTagBadges);
+            settings.chat.pings.enable.controls.remove(_cbPings);
+            settings.chat.pings.audio.when.controls.remove(_cbPingAudio);
+            settings.chat.pings.audio.volume.controls.remove(_rgPingAudioVol);
+            settings.ui.chat.banner.enable.controls.remove(_cbBanner);
+            settings.chat.links.templates.preferurls.controls.remove(_cbTemplateTitles);
+            settings.ui.chat.horizontal.enable.controls.remove(_cbHorizontal);
+            observer.disconnect();
+          }
+        });
+        observer.observe(document, {
+          childList: true,
+          subtree: true
+        });
       },
       _handlePingJumpClick: function() { // must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
         if (this && this.dataset && this.dataset.id) {
@@ -6673,7 +6677,7 @@ window.App = (function() {
             footer = crel('div', { class: 'modal-footer' }, validButtons);
           }
         } */
-        modal.show(modal.buildDom(
+        return modal.show(modal.buildDom(
           crel('h2', { class: 'modal-title' }, opts.title || 'Pxls'),
           crel('p', { style: 'margin: 0;' }, text)
         ), opts.modalOpts);
@@ -6696,6 +6700,7 @@ window.App = (function() {
             $(this).remove();
           });
         }
+        return modalObj;
       },
       buildCloser: function() {
         const button = crel('button', { class: 'panel-closer' }, crel('i', { class: 'fas fa-times' }));
