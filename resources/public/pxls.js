@@ -543,9 +543,7 @@ window.App = (function() {
 
     // Convert old settings keys to new keys.
     Object.entries(keymappings).forEach((entry) => {
-      // This is the best we can do to check existance without reacing into localStorage ourselves.
-      // If there we were a ls.has function, that should be used here.
-      if (ls.get(entry[0]) !== null) {
+      if (ls.has(entry[0])) {
         const oldvalue = ls.get(entry[0]);
         ls.set(entry[1], flippedmappings.indexOf(entry[0]) === -1 ? oldvalue : !oldvalue);
         ls.remove(entry[0]);
