@@ -236,6 +236,10 @@ kbd {
     margin-left:1.2rem;
 }
 
+.useMono {
+  font-family: monospace;
+}
+
 input:disabled, button:disabled {
     cursor: not-allowed;
 }
@@ -1969,11 +1973,11 @@ body .emoji-picker {
     }
 
     aside.panel.left {
-        left: -105%;
+        left: -105% !important;
     }
 
     aside.panel.right {
-        right: -105%;
+        right: -105% !important;
     }
 
     body.panel-open #ui {
