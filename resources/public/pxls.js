@@ -32,9 +32,9 @@ window.App = (function() {
       cookieValue += ((exdays == null) ? '' : '; expires=' + exdate.toUTCString());
       document.cookie = cookieName + '=' + cookieValue;
     };
-    const _get = function(name) {
+    const _get = function(name, haveSupport) {
       let s;
-      if (this.support()) {
+      if (haveSupport) {
         s = storageType.getItem(name);
       } else {
         s = getCookie(prefix + name);
@@ -59,7 +59,7 @@ window.App = (function() {
         return this.haveSupport;
       },
       get: function(name) {
-        const s = _get(name);
+        const s = _get(name, this.support());
         try {
           return JSON.parse(s);
         } catch (e) {
@@ -67,7 +67,7 @@ window.App = (function() {
         }
       },
       has: function(name) {
-        return _get(name) !== null;
+        return _get(name, this.support()) !== null;
       },
       set: function(name, value) {
         value = JSON.stringify(value);
