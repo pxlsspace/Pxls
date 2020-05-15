@@ -126,9 +126,11 @@ window.App = (function() {
     return checkImageRendering('', true, true, false) || checkImageRendering('-o-', true, false, false) || checkImageRendering('-moz-', true, false, false) || checkImageRendering('-webkit-', true, false, true);
   })();
   let haveZoomRendering = false;
-  const iOSSafari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i));
+  const webkitBased = nua.match(/AppleWebKit/i);
+  const iOSSafari = (nua.match(/(iPod|iPhone|iPad)/i) && webkitBased);
   const desktopSafari = (nua.match(/safari/i) && !nua.match(/chrome/i));
   const msEdge = nua.indexOf('Edge') > -1;
+  const possiblyMobile = window.innerWidth < 768 && nua.includes('Mobile');
   if (iOSSafari) {
     const iOS = parseFloat(
       ('' + (/CPU.*OS ([0-9_]{1,5})|(CPU like).*AppleWebKit.*Mobile/i.exec(navigator.userAgent) || [0, ''])[1])
@@ -562,9 +564,6 @@ window.App = (function() {
         ls.remove(entry[0]);
       }
     });
-
-    const possiblyMobile = window.innerWidth < 768 && nua.includes('Mobile');
-    const webkitBased = nua.match(/AppleWebKit/);
 
     return {
       ui: {
@@ -6620,7 +6619,7 @@ window.App = (function() {
         setting: $('#chrome-canvas-offset-setting')
       },
       init: () => {
-        if (!nua.match(/AppleWebKit/)) {
+        if (!webkitBased) {
           self.elements.setting.hide();
           return;
         }
