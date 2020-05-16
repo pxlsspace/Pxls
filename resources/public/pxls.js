@@ -6361,7 +6361,6 @@ window.App = (function() {
               window.initAdmin({
                 socket: socket,
                 user: user,
-                place: place,
                 modal: modal,
                 lookup: lookup,
                 chat: chat,

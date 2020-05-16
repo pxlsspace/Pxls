@@ -366,14 +366,6 @@
             $.map(
               [
                 {
-                  text: 'Disable hand reset',
-                  onChange: function () {
-                    admin.place.setAutoReset(!this.checked);
-                  },
-                  checkState: false,
-                  disabled: false
-                },
-                {
                   text: 'Override cooldown',
                   onChange: function () {
                     admin.socket.send({ type: 'admin_cdoverride', override: this.checked });
