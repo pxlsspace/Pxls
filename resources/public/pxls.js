@@ -539,7 +539,7 @@ window.App = (function() {
     };
 
     // these are the settings which have gone from being toggle-off to toggle-on
-    const flippedmappings = ['audio_muted', 'increased_zoom', 'autoReset'];
+    const flippedmappings = ['audio_muted', 'increased_zoom', 'autoReset', 'canvas.unlocked'];
 
     // Convert old settings keys to new keys.
     Object.entries(keymappings).forEach((entry) => {
