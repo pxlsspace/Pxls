@@ -4727,33 +4727,21 @@ window.App = (function() {
             lblIgnoresFeedback
           ].map(x => crel('div', x))
         );
-        const chatModal = modal.show(modal.buildDom(
+        modal.show(modal.buildDom(
           crel('h2', { class: 'modal-title' }, 'Chat Settings'),
           body
-        ))[0];
-        // NOTE ([  ]): We can't just listen for $.modal.AFTER_CLOSE since it's entirely possible the modal could be shown again.
-        //              While there's no code I'm currently aware of that does this, it would be a pain to have to know to edit *this* code when changing sucha  behaviour.
-        const observer = new MutationObserver(function() {
-          // NOTE ([  ]): Modal seems to fire many add/remove mutations for the panel itself when adding a new one.
-          //              This means we can't just listen for remove mutations and filter accordingly.
-          if (!$.contains(document.body, chatModal)) {
-            settings.chat.font.size.controls.remove(_txtFontSize);
-            settings.chat.links.internal.behavior.controls.remove(_selInternalClick);
-            settings.chat.timestamps['24h'].controls.remove(_cb24hTimestamps);
-            settings.chat.badges.enable.controls.remove(_cbPixelPlaceBadges);
-            settings.chat.factiontags.enable.controls.remove(_cbFactionTagBadges);
-            settings.chat.pings.enable.controls.remove(_cbPings);
-            settings.chat.pings.audio.when.controls.remove(_cbPingAudio);
-            settings.chat.pings.audio.volume.controls.remove(_rgPingAudioVol);
-            settings.ui.chat.banner.enable.controls.remove(_cbBanner);
-            settings.chat.links.templates.preferurls.controls.remove(_cbTemplateTitles);
-            settings.ui.chat.horizontal.enable.controls.remove(_cbHorizontal);
-            observer.disconnect();
-          }
-        });
-        observer.observe(document, {
-          childList: true,
-          subtree: true
+        )).one($.modal.AFTER_CLOSE, function() {
+          settings.chat.font.size.controls.remove(_txtFontSize);
+          settings.chat.links.internal.behavior.controls.remove(_selInternalClick);
+          settings.chat.timestamps['24h'].controls.remove(_cb24hTimestamps);
+          settings.chat.badges.enable.controls.remove(_cbPixelPlaceBadges);
+          settings.chat.factiontags.enable.controls.remove(_cbFactionTagBadges);
+          settings.chat.pings.enable.controls.remove(_cbPings);
+          settings.chat.pings.audio.when.controls.remove(_cbPingAudio);
+          settings.chat.pings.audio.volume.controls.remove(_rgPingAudioVol);
+          settings.ui.chat.banner.enable.controls.remove(_cbBanner);
+          settings.chat.links.templates.preferurls.controls.remove(_cbTemplateTitles);
+          settings.ui.chat.horizontal.enable.controls.remove(_cbHorizontal);
         });
       },
       _handlePingJumpClick: function() { // must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
