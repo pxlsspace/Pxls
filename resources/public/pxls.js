@@ -2974,10 +2974,22 @@ window.App = (function() {
         const colorBrightnessSlider = $('#color-brightness');
         const colorBrightnessToggle = $('#color-brightness-toggle');
 
+        const brightnessEnabled = ls.get('brightness.enabled') === true;
+        const brightnessFixElement = $('<canvas>').attr('id', 'brightness-fixer').addClass('noselect');
+
+        if (brightnessEnabled) {
+          $('#board-mover').prepend(brightnessFixElement);
+        }
+
         colorBrightnessToggle
-          .prop('checked', ls.get('brightness.enabled') === true)
+          .prop('checked', brightnessEnabled)
           .change(function(e) {
             const isEnabled = !!this.checked;
+            if (isEnabled) {
+              $('#board-mover').prepend(brightnessFixElement);
+            } else {
+              brightnessFixElement.remove();
+            }
             ls.set('brightness.enabled', isEnabled);
             colorBrightnessSlider.prop('disabled', !isEnabled);
             self.adjustColorBrightness(isEnabled ? numOrDefault(parseFloat(ls.get('colorBrightness')), 1) : null);
