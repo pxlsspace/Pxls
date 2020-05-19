@@ -1496,6 +1496,7 @@ window.App = (function() {
         width: null,
         height: null,
         isShown: false,
+        previouslyLazyInited: false,
         lazyInitStarted: false,
         lazyInitDone: false,
         lazyInit: async function() {
@@ -1516,7 +1517,8 @@ window.App = (function() {
           self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
           self.setImageData(imageData);
           self.lazyInitDone = true;
-          onLazyInit(self.width, self.height);
+          onLazyInit(self.width, self.height, self.previouslyLazyInited);
+          self.previouslyLazyInited = true;
           uiHelper.setLoadingBubbleState(self.name, false);
           self.setShown();
         },
@@ -1562,6 +1564,13 @@ window.App = (function() {
         },
         remove: function() {
           self.elements.overlay.remove();
+        },
+        reload: function() {
+          if (self.lazyInitStarted && !self.lazyInitDone) {
+            return;
+          }
+          self.lazyInitStarted = self.lazyInitDone = false;
+          self.lazyInit();
         }
       };
 
@@ -1590,7 +1599,8 @@ window.App = (function() {
           self.setShown(!self.isShown);
         },
         setShown: self.setShown,
-        remove: self.remove
+        remove: self.remove,
+        reload: self.reload
       };
     };
 
@@ -1632,9 +1642,11 @@ window.App = (function() {
         }
 
         // heatmap stuff
-        const heatmap = self.add('heatmap', () => createOverlayImageData('/heatmap', 0x005C5CCD), (width, height) => {
+        const heatmap = self.add('heatmap', () => createOverlayImageData('/heatmap', 0x005C5CCD), (width, height, isReload) => {
           // Ran when lazy init finshes
-
+          if (isReload) {
+            return;
+          }
           setInterval(() => {
             const imageData = heatmap.getImageData();
             const intView = new Uint32Array(imageData.data.buffer);
@@ -1715,7 +1727,10 @@ window.App = (function() {
         });
 
         // virginmap stuff
-        const virginmap = self.add('virginmap', () => createOverlayImageData('/virginmap', 0x00000000, 0xff), (width, height) => {
+        const virginmap = self.add('virginmap', () => createOverlayImageData('/virginmap', 0x00000000, 0xff), (width, height, isReload) => {
+          if (isReload) {
+            return;
+          }
           socket.on('pixel', (data) => {
             $.map(data.pixels, (px) => {
               virginmap.setPixel(px.x, px.y, '#000000');
@@ -6634,12 +6649,14 @@ window.App = (function() {
       remove: overlays.remove,
       get heatmap() {
         return {
-          clear: overlays.heatmap.clear
+          clear: overlays.heatmap.clear,
+          reload: overlays.heatmap.reload
         };
       },
       get virginmap() {
         return {
-          clear: overlays.virginmap.clear
+          clear: overlays.virginmap.clear,
+          reload: overlays.virginmap.reload
         };
       }
     },
