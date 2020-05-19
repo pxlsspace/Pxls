@@ -107,6 +107,7 @@ window.App = (function() {
     }
   };
   const nua = navigator.userAgent;
+  const supportsServiceWorkers = 'serviceWorker' in window.navigator;
   let haveImageRendering = (function() {
     const checkImageRendering = function(prefix, crisp, pixelated, optimizeContrast) {
       const d = document.createElement('div');
@@ -2818,7 +2819,7 @@ window.App = (function() {
   const uiHelper = (function() {
     const self = {
       tabId: null,
-      focus: false,
+      _isTabFocusedWorker: false,
       _available: -1,
       maxStacked: -1,
       _alertUpdateTimer: false,
@@ -3051,10 +3052,6 @@ window.App = (function() {
               break;
             }
           }
-        }).focus(() => {
-          self.focus = true;
-        }).blur(() => {
-          self.focus = false;
         });
 
         const _info = document.querySelector('.panel[data-panel="info"]');
@@ -3177,31 +3174,90 @@ window.App = (function() {
         self._bannerIntervalTick();
       },
       _initMultiTabDetection() {
-        const openTabIds = ls.get('tabs.open') || [];
-        while (self.tabId == null || openTabIds.includes(self.tabId)) {
-          self.tabId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
-        }
-        openTabIds.push(self.tabId);
-        ls.set('tabs.open', openTabIds);
-        ls.set('tabs.has-focus', self.tabId);
+        let handleUnload;
 
-        window.addEventListener('focus', () => {
-          ls.set('tabs.has-focus', self.tabId);
-        });
+        if (supportsServiceWorkers) {
+          navigator.serviceWorker.addEventListener('message', (ev) => {
+            if (ev.source.id !== self.focusWorker.id) {
+              return;
+            }
 
-        let unloadHandled = false;
-        const handleUnload = () => {
-          if (unloadHandled) {
-            // try to avoid race conditions
-            return;
-          }
-          unloadHandled = true;
+            if (typeof ev.data !== 'object' || !('type' in ev.data)) {
+              console.warn(`${self.tabId}: Received non-data message from ${ev.source.id} (${ev.source.type})`, ev.data);
+              return;
+            }
+
+            switch (ev.data.type) {
+              case 'request-id': {
+                self.tabId = ev.data.id;
+                if (document.hasFocus()) {
+                  ev.source.postMessage({ type: 'focus' });
+                }
+                break;
+              }
+              case 'focus': {
+                self._isTabFocusedWorker = self.tabId === ev.data.id;
+                break;
+              }
+            }
+          });
+
+          navigator.serviceWorker.register('/focusworker.js')
+            .then(async (reg) => {
+              self.focusWorker = reg.installing || reg.waiting || reg.active;
+              self.focusWorker.postMessage({ type: 'request-id' });
+            })
+            .catch((err) => {
+              self.tabHasFocus = true;
+              console.error('Failed to register focus worker:', err);
+            });
+
+          window.addEventListener('focus', () => {
+            if (!self.focusWorker) {
+              return;
+            }
+            self.focusWorker.postMessage({ type: 'focus' });
+          });
+
+          handleUnload = () => {
+            if (!self.focusWorker) {
+              return;
+            }
+            self.focusWorker.postMessage({ type: 'leave' });
+          };
+        } else {
           const openTabIds = ls.get('tabs.open') || [];
-          openTabIds.splice(openTabIds.indexOf(self.tabId), 1);
+          while (self.tabId == null || openTabIds.includes(self.tabId)) {
+            self.tabId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+          }
+          openTabIds.push(self.tabId);
           ls.set('tabs.open', openTabIds);
-        };
-        window.addEventListener('beforeunload', handleUnload, false);
-        window.addEventListener('unload', handleUnload, false);
+
+          const markSelfAsFocused = () => ls.set('tabs.has-focus', self.tabId);
+          if (document.hasFocus()) {
+            markSelfAsFocused();
+          }
+          window.addEventListener('focus', markSelfAsFocused);
+
+          handleUnload = () => {
+            const openTabIds = ls.get('tabs.open') || [];
+            openTabIds.splice(openTabIds.indexOf(self.tabId), 1);
+            ls.set('tabs.open', openTabIds);
+          };
+        }
+
+        if (handleUnload) {
+          let unloadHandled = false;
+          const secureHandleUnload = () => {
+            if (unloadHandled) {
+              return;
+            }
+            unloadHandled = true;
+            handleUnload();
+          };
+          window.addEventListener('beforeunload', secureHandleUnload, false);
+          window.addEventListener('unload', secureHandleUnload, false);
+        }
       },
       _bannerIntervalTick() {
         const nextElem = self.banner.HTMLs[self.banner.curElem++ % self.banner.HTMLs.length >> 0];
@@ -3407,7 +3463,9 @@ window.App = (function() {
       updateSelectedNameColor: self.updateSelectedNameColor,
       styleElemWithChatNameColor: self.styleElemWithChatNameColor,
       setBannerEnabled: self.setBannerEnabled,
-      getInitTitle: () => self.initTitle,
+      get initTitle() {
+        return self.initTitle;
+      },
       getTitle: (prepend) => {
         if (typeof prepend !== 'string') prepend = '';
         const tplOpts = template.getOptions();
@@ -3419,8 +3477,14 @@ window.App = (function() {
       },
       setLoadingBubbleState: self.setLoadingBubbleState,
       toggleCaptchaLoading: self.toggleCaptchaLoading,
-      tabHasFocus: () => ls.get('tabs.has-focus') === self.tabId,
-      windowHasFocus: () => self.focus
+      get tabId() {
+        return self.tabId;
+      },
+      tabHasFocus: () => {
+        return supportsServiceWorkers
+          ? self._isTabFocusedWorker
+          : ls.get('tabs.has-focus') === self.tabId;
+      }
     };
   })();
   const panels = (function() {
@@ -4908,7 +4972,7 @@ window.App = (function() {
           const pingAudioState = ls.get('chat.ping-audio-state');
           const canPlayPingAudio = !isHistory && !ls.get('audio_muted') &&
               pingAudioState !== 'off' && Date.now() - self.lastPingAudioTimestamp > 5000;
-          if ((!panels.isOpen('chat') || !uiHelper.windowHasFocus() || pingAudioState === 'always') &&
+          if ((!panels.isOpen('chat') || !document.hasFocus() || pingAudioState === 'always') &&
               uiHelper.tabHasFocus() && canPlayPingAudio) {
             self.pingAudio.volume = parseFloat(ls.get('chat.ping-audio-volume'));
             self.pingAudio.play();
@@ -5866,7 +5930,7 @@ window.App = (function() {
         if (alertDelay < 0 && delta < Math.abs(alertDelay) && !self.hasFiredNotification) {
           self.playAudio();
           let notif;
-          if (!uiHelper.windowHasFocus()) {
+          if (!document.hasFocus()) {
             notif = nativeNotifications.maybeShow(`Your next pixel will be available in ${Math.abs(alertDelay)} seconds!`);
           }
           setTimeout(() => {
@@ -5917,7 +5981,7 @@ window.App = (function() {
         if (alertDelay > 0) {
           setTimeout(() => {
             self.playAudio();
-            if (!uiHelper.windowHasFocus()) {
+            if (!document.hasFocus()) {
               const notif = nativeNotifications.maybeShow(`Your next pixel has been available for ${alertDelay} seconds!`);
               if (notif) {
                 $(window).one('pxls:ack:place', () => notif.close());
@@ -5931,7 +5995,7 @@ window.App = (function() {
 
         if (!self.hasFiredNotification) {
           self.playAudio();
-          if (!uiHelper.windowHasFocus()) {
+          if (!document.hasFocus()) {
             const notif = nativeNotifications.maybeShow('Your next pixel is available!');
             if (notif) {
               $(window).one('pxls:ack:place', () => notif.close());
@@ -6396,7 +6460,7 @@ window.App = (function() {
         }
       },
       show: (body) => {
-        let title = uiHelper.getInitTitle();
+        let title = uiHelper.initTitle;
         const templateOpts = template.getOptions();
         if (templateOpts.use && templateOpts.title) {
           title = `${templateOpts.title} - ${title}`;
@@ -6667,6 +6731,10 @@ window.App = (function() {
       clear: virginmap.clear
     },
     uiHelper: {
+      get tabId() {
+        return uiHelper.tabId;
+      },
+      tabHasFocus: uiHelper.tabHasFocus,
       updateAudio: uiHelper.updateAudio
     },
     template: {
