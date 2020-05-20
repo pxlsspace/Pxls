@@ -13,7 +13,7 @@ let lastFocusedClientId = null;
 self.addEventListener('message', async (ev) => {
   const { source, data } = ev;
   if (typeof data !== 'object' || !('type' in data)) {
-    console.warn(`focusworker: Received non-data message from ${source.id} (${source.type})`, data);
+    console.warn(`serviceWorker: Received non-data message from ${source.id} (${source.type})`, data);
     return;
   }
 

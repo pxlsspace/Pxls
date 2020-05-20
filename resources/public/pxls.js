@@ -107,7 +107,6 @@ window.App = (function() {
     }
   };
   const nua = navigator.userAgent;
-  const supportsServiceWorkers = 'serviceWorker' in window.navigator;
   let haveImageRendering = (function() {
     const checkImageRendering = function(prefix, crisp, pixelated, optimizeContrast) {
       const d = document.createElement('div');
@@ -2816,10 +2815,91 @@ window.App = (function() {
       init: self.init
     };
   })();
+  const serviceWorkerHelper = (() => {
+    const self = {
+      worker: null,
+      registrationPromise: null,
+      messageListeners: {},
+      hasSupport: 'serviceWorker' in window.navigator,
+      init() {
+        if (!self.hasSupport) {
+          return;
+        }
+
+        self.registrationPromise = navigator.serviceWorker.register('/serviceWorker.js').then((reg) => {
+          self.worker = reg.installing || reg.waiting || reg.active;
+        }).catch((err) => {
+          console.error('Failed to register Service Worker:', err);
+        });
+
+        navigator.serviceWorker.addEventListener('message', (ev) => {
+          if (typeof ev.data !== 'object' || !('type' in ev.data)) {
+            console.warn(`${self.tabId}: Received non-data message from ${ev.source.id} (${ev.source.type})`, ev.data);
+            return;
+          }
+
+          if (ev.data.type in self.messageListeners) {
+            for (const cb of self.messageListeners[ev.data.type]) {
+              cb(ev);
+            }
+          }
+          if ('*' in self.messageListeners) {
+            for (const cb of self.messageListeners['*']) {
+              cb(ev);
+            }
+          }
+        });
+      },
+      addMessageListener(type, callback) {
+        const callbacks = self.messageListeners[type] || [];
+        if (callbacks.includes(callback)) {
+          return;
+        }
+        callbacks.push(callback);
+        self.messageListeners[type] = callbacks;
+      },
+      removeMessageListener(type, callback) {
+        if (!(type in self.messageListeners)) {
+          return;
+        }
+
+        const callbacks = self.messageListeners[type];
+        const idx = callbacks.indexOf(callback);
+        if (idx === -1) {
+          return;
+        }
+
+        callbacks.splice(idx, 1);
+      },
+      postMessage(data) {
+        if (!self.worker) {
+          return;
+        }
+
+        self.worker.postMessage(data);
+      }
+    };
+
+    return {
+      get hasSupport() {
+        return self.hasSupport;
+      },
+      get worker() {
+        return self.worker;
+      },
+      get registrationPromise() {
+        return self.registrationPromise;
+      },
+      init: self.init,
+      addMessageListener: self.addMessageListener,
+      removeMessageListener: self.removeMessageListener,
+      postMessage: self.postMessage
+    };
+  })();
   const uiHelper = (function() {
     const self = {
       tabId: null,
-      _isTabFocusedWorker: false,
+      _workerIsTabFocused: false,
       _available: -1,
       maxStacked: -1,
       _alertUpdateTimer: false,
@@ -3176,55 +3256,28 @@ window.App = (function() {
       _initMultiTabDetection() {
         let handleUnload;
 
-        if (supportsServiceWorkers) {
-          navigator.serviceWorker.addEventListener('message', (ev) => {
-            if (ev.source.id !== self.focusWorker.id) {
-              return;
-            }
-
-            if (typeof ev.data !== 'object' || !('type' in ev.data)) {
-              console.warn(`${self.tabId}: Received non-data message from ${ev.source.id} (${ev.source.type})`, ev.data);
-              return;
-            }
-
-            switch (ev.data.type) {
-              case 'request-id': {
-                self.tabId = ev.data.id;
-                if (document.hasFocus()) {
-                  ev.source.postMessage({ type: 'focus' });
-                }
-                break;
-              }
-              case 'focus': {
-                self._isTabFocusedWorker = self.tabId === ev.data.id;
-                break;
-              }
+        if (serviceWorkerHelper.hasSupport) {
+          serviceWorkerHelper.addMessageListener('request-id', ({ source, data }) => {
+            self.tabId = data.id;
+            if (document.hasFocus()) {
+              source.postMessage({ type: 'focus' });
             }
           });
+          serviceWorkerHelper.addMessageListener('focus', ({ data }) => {
+            self._workerIsTabFocused = self.tabId === data.id;
+          });
 
-          navigator.serviceWorker.register('/focusworker.js')
-            .then(async (reg) => {
-              self.focusWorker = reg.installing || reg.waiting || reg.active;
-              self.focusWorker.postMessage({ type: 'request-id' });
-            })
-            .catch((err) => {
-              self.tabHasFocus = true;
-              console.error('Failed to register focus worker:', err);
-            });
+          serviceWorkerHelper.registrationPromise.then(async () => {
+            serviceWorkerHelper.postMessage({ type: 'request-id' });
+          }).catch(() => {
+            self.tabHasFocus = true;
+          });
 
           window.addEventListener('focus', () => {
-            if (!self.focusWorker) {
-              return;
-            }
-            self.focusWorker.postMessage({ type: 'focus' });
+            serviceWorkerHelper.postMessage({ type: 'focus' });
           });
 
-          handleUnload = () => {
-            if (!self.focusWorker) {
-              return;
-            }
-            self.focusWorker.postMessage({ type: 'leave' });
-          };
+          handleUnload = () => serviceWorkerHelper.postMessage({ type: 'leave' });
         } else {
           const openTabIds = ls.get('tabs.open') || [];
           while (self.tabId == null || openTabIds.includes(self.tabId)) {
@@ -3481,8 +3534,8 @@ window.App = (function() {
         return self.tabId;
       },
       tabHasFocus: () => {
-        return supportsServiceWorkers
-          ? self._isTabFocusedWorker
+        return serviceWorkerHelper.hasSupport
+          ? self._workerIsTabFocused
           : ls.get('tabs.has-focus') === self.tabId;
       }
     };
@@ -6717,6 +6770,7 @@ window.App = (function() {
   place.init();
   info.init();
   timer.init();
+  serviceWorkerHelper.init();
   uiHelper.init();
   panels.init();
   coords.init();
