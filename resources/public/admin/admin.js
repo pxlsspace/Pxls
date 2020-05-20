@@ -360,7 +360,7 @@
       },
       init: function () {
         self.elements.panel.hide().addClass('admin bubble').append(
-          $('<h1>').text('MOD'),
+          $('<h2>').text('MOD'),
           $('<div>').append(
             // first do the checkboxes
             $.map(
