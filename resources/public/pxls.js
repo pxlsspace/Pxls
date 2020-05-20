@@ -3219,11 +3219,15 @@ window.App = (function() {
 
         const numOrDefault = (n, def) => isNaN(n) ? def : n;
 
+        const brightnessFixElement = $('<canvas>').attr('id', 'brightness-fixer').addClass('noselect');
+
         settings.ui.brightness.enable.listen(function(enabled) {
           if (enabled) {
             settings.ui.brightness.value.controls.enable();
+            $('#board-mover').prepend(brightnessFixElement);
           } else {
             settings.ui.brightness.value.controls.disable();
+            brightnessFixElement.remove();
           }
           self.adjustColorBrightness(enabled ? numOrDefault(parseFloat(settings.ui.brightness.value.get()), 1) : null);
         });

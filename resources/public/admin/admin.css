@@ -27,7 +27,7 @@
     visibility: visible;
 }
 
-.admin > h1 {
+.admin > h2 {
     display: block;
     font-size: 20px;
     font-weight: 700;

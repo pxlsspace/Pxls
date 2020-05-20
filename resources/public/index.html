@@ -54,55 +54,57 @@
 
 <div id="reconnecting">Lost connection to server, reconnecting...</div>
 
-<div id="board-container" style="touch-action: none">
-    <div id="grid"></div>
-    <div id="board-zoomer">
-        <div id="board-mover">
-            <canvas id="heatmap" class="pixelate noselect"></canvas>
-            <canvas id="virginmap" class="pixelate noselect"></canvas>
-            <canvas id="board" class="pixelate noselect" width="100" height="100"></canvas>
-        </div>
-    </div>
-</div>
+<main>
+  <div id="board-container" style="touch-action: none">
+      <div id="grid"></div>
+      <div id="board-zoomer">
+          <div id="board-mover">
+              <canvas id="heatmap" class="pixelate noselect"></canvas>
+              <canvas id="virginmap" class="pixelate noselect"></canvas>
+              <canvas id="board" class="pixelate noselect" width="100" height="100"></canvas>
+          </div>
+      </div>
+  </div>
 
-<div id="ui">
-    <div id="ui-top">
-        <div id="loading-bubble" class="bubble">
-            <div class="loading-bubble-item" data-process="heatmap">Loading Heatmap (press <kbd>H</kbd> to cancel)</div>
-            <div class="loading-bubble-item" data-process="virginmap">Loading Virginmap (press <kbd>X</kbd> to cancel)</div>
-        </div>
-        <div id="main-bubble" class="bubble">
-            <div id="user-info">
-                <!-- TODO: link to position on stats page -->
-                <span id="username"></span>
-                <a href="/logout" class="logout"><i class="fas fa-sign-out-alt" id="logout-icon"></i></a>
-                <br>
-            </div>
-            <span id="online-count">Waiting for online count...</span>
-            <br><br>
-            <div id="coords-info">
-                <a class="coords"></a>
-                <i id="canvas-lock-icon" class="fas fa-lock"></i>
-            </div>
-            <div id="placement-info">
-                <span>Pixels available: </span><span id="placeable-count">N/A</span> <i class="fas fa-spinner fa-spin captcha-loading-icon"></i>
-                <br>
-                <span id="cooldown-timer"></span>
-            </div>
-        </div>
-    </div>
+  <div id="ui">
+      <div id="ui-top">
+          <div id="loading-bubble" class="bubble">
+              <div class="loading-bubble-item" data-process="heatmap">Loading Heatmap (press <kbd>H</kbd> to cancel)</div>
+              <div class="loading-bubble-item" data-process="virginmap">Loading Virginmap (press <kbd>X</kbd> to cancel)</div>
+          </div>
+          <div id="main-bubble" class="bubble">
+              <div id="user-info">
+                  <!-- TODO: link to position on stats page -->
+                  <span id="username"></span>
+                  <a href="/logout" class="logout"><i class="fas fa-sign-out-alt" id="logout-icon"></i></a>
+                  <br>
+              </div>
+              <span id="online-count">Waiting for online count...</span>
+              <br><br>
+              <div id="coords-info">
+                  <a class="coords"></a>
+                  <i id="canvas-lock-icon" class="fas fa-lock"></i>
+              </div>
+              <div id="placement-info">
+                  <span>Pixels available: </span><span id="placeable-count">N/A</span> <i class="fas fa-spinner fa-spin captcha-loading-icon"></i>
+                  <br>
+                  <span id="cooldown-timer"></span>
+              </div>
+          </div>
+      </div>
 
-    <div id="ui-bottom">
-        <button type="button" id="undo"><span>Undo</span></button>
-        <div id="login-overlay" class="palette-overlay">
-            You are not signed in.&nbsp;<a href="#">Sign in with...</a>
-        </div>
-        <div id="user-message" class="palette-overlay"></div>
-        <div id="palette">
-            <div id="cd-timer-overlay" class="palette-overlay"></div>
-        </div>
-    </div>
-</div>
+      <div id="ui-bottom">
+          <button type="button" id="undo"><span>Undo</span></button>
+          <div id="login-overlay" class="palette-overlay">
+              You are not signed in.&nbsp;<a href="#">Sign in with...</a>
+          </div>
+          <div id="user-message" class="palette-overlay"></div>
+          <div id="palette">
+              <div id="cd-timer-overlay" class="palette-overlay"></div>
+          </div>
+      </div>
+  </div>
+</main>
 
 
 <div id="lookup" class="floating-panel"></div>
@@ -193,10 +195,10 @@
     <div class="panel-body">
         <article class="no-p-margin">
             <header>
-                <h2>Keybinds</h2>
+                <h3>Keybinds</h3>
             </header>
             <div class="pad-wrapper">
-                <h3>General</h3>
+                <h4>General</h4>
                 <div class="indent-1">
                     <p>Mouse/arrows/wasd to pan</p>
                     <p>Scroll/pinch to zoom</p>
@@ -216,7 +218,7 @@
                     <p><kbd>ESC</kbd> to deselect current pixel</p>
                     <p><kbd>R</kbd> to center the board on the current template</p>
                 </div>
-                <h3>Template</h3>
+                <h4>Template</h4>
                 <div class="indent-1">
                     <p><kbd>Page Up</kbd> to increase opacity</p>
                     <p><kbd>Page Down</kbd> to decrease opacity</p>
@@ -226,7 +228,7 @@
         </article>
         <article>
             <header>
-                <h2>General Settings</h2>
+                <h3>General Settings</h3>
             </header>
             <div class="pad-wrapper">
                 <div class="settingToggles">
@@ -341,7 +343,7 @@
         </article>
         <article>
             <header>
-                <h2>Template</h2>
+                <h3>Template</h3>
             </header>
             <div class="pad-wrapper">
                 <div>
@@ -372,7 +374,7 @@
         </article>
         <article>
             <header>
-                <h2>Pixel Ready Alert Settings</h2>
+                <h3>Pixel Ready Alert Settings</h3>
             </header>
             <div class="pad-wrapper">
                 <p><label for="setting-audio-alert-src">Alert URL:</label><input class="fullwidth" type="text" placeholder="notify.wav" id="setting-audio-alert-src"></p>
@@ -391,7 +393,7 @@
         </article>
         <article>
             <header>
-                <h2>Account Settings</h2>
+                <h3>Account Settings</h3>
             </header>
             <div class="pad-wrapper">
                 <p><label for="txtDiscordName">Public Discord Name:</label><input class="fullwidth" type="text" placeholder="pxlslover#1337" id="txtDiscordName"></p>
@@ -407,7 +409,7 @@
 <aside id="faq" data-panel="faq" class="panel left half-width">
     <header class="panel-header">
         <div class="left"></div>
-        <h2><i class="fas fa-question-circle fa-is-left"></i>Help</h2>
+        <h3><i class="fas fa-question-circle fa-is-left"></i>Help</h3>
         <div class="right">
             <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
         </div>
@@ -420,7 +422,7 @@
 <aside id="notifications" data-panel="notifications" class="panel left">
     <header class="panel-header">
         <div class="left"></div>
-        <h2><i class="fas fa-bell fa-is-left"></i>Notifications</h2>
+        <h3><i class="fas fa-bell fa-is-left"></i>Notifications</h3>
         <div class="right">
             <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
         </div>
