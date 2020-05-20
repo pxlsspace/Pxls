@@ -827,6 +827,14 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     user-select: none;
 }
 
+#brightness-fixer {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+    /* actually just transparent but tricks chrome into thinking it has to render this element */
+    background: linear-gradient(#00000001, #00000000 0%);
+}
+
 #board-container {
     z-index: 0;
     position: fixed;
