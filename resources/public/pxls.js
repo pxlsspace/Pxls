@@ -4156,6 +4156,16 @@ window.App = (function() {
           }
         });
 
+        window.addEventListener('storage', (ev) => {
+          // value updated on another tab
+          if (ev.storageArea === window.localStorage && ev.key === 'chat-last_seen_id') {
+            const isLastChild = self.elements.body.find(`[data-id="${JSON.parse(ev.newValue)}"]`).is(':last-child');
+            if (isLastChild) {
+              self.clearPings();
+            }
+          }
+        });
+
         $(window).on('pxls:panel:closed', (e, which) => {
           if (which === 'chat') {
             if (document.querySelector('.chat-settings-title')) {
