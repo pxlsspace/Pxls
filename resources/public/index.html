@@ -6,16 +6,6 @@
     <meta name="keywords" content="pxls, pixels, place, art">
     <meta name="description" content="Place pixels with people to create art">
     <meta name="google-play-app" content="app-id=space.pxls.android">
-    <style type="text/css">
-        /** These MUST be here because the YUI compressor breaks calc() and is abandoned */
-        body.panel-open.panel-right #ui .right {
-            right: calc(30vw + 10px);
-        }
-
-        body.panel-open.panel-left #ui .left {
-            left: calc(30vw + 10px);
-        }
-    </style>
     <link rel="stylesheet" href="jquery.modal.min.css">
     <link rel="stylesheet" href="fontawesome-all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -37,106 +27,108 @@
     {{head}}
 </head>
 <body class="show-placeable-bubble">
-<header class="transparent" style="margin-top: 5px;">
+<header class="transparent controls">
     <div class="left">
-        <div class="panel-trigger" data-panel="info">
+        <button type="button" class="panel-trigger" data-panel="info">
             <i class="fas fa-info-circle"></i>
-        </div>
-        <div class="panel-trigger" data-panel="faq">
+        </button>
+        <button type="button" class="panel-trigger" data-panel="faq">
             <i class="fas fa-question-circle"></i>
-        </div>
-        <div class="panel-trigger" data-panel="notifications">
+        </button>
+        <button type="button" class="panel-trigger" data-panel="notifications">
             <i class="fas fa-bell" id="notifications-icon"></i>
             <i class="fas fa-circle ping-counter" id="notifications-ping-counter"></i>
-        </div>
+        </button>
     </div>
     <div class="mid"></div>
     <div class="right">
-        <div class="panel-trigger" data-panel="settings">
+        <button type="button" class="panel-trigger" data-panel="settings">
             <i class="fas fa-cog"></i>
-        </div>
-        <div class="panel-trigger" data-panel="chat">
+        </button>
+        <button type="button" class="panel-trigger" data-panel="chat">
             <i class="fas fa-comment-alt" id="message-icon"></i>
             <i class="fas fa-circle ping-counter" id="ping-counter"></i>
-        </div>
+        </button>
     </div>
 </header>
 
 <div id="reconnecting">Lost connection to server, reconnecting...</div>
 
-<div id="board-container" style="touch-action: none">
-    <div id="grid"></div>
-    <div id="board-zoomer">
-        <div id="board-mover">
-            <canvas id="heatmap" class="pixelate noselect"></canvas>
-            <canvas id="virginmap" class="pixelate noselect"></canvas>
-            <canvas id="board" class="pixelate noselect" width="100" height="100"></canvas>
-        </div>
-    </div>
-</div>
+<main>
+  <div id="board-container" style="touch-action: none">
+      <div id="grid"></div>
+      <div id="board-zoomer">
+          <div id="board-mover">
+              <canvas id="heatmap" class="pixelate noselect"></canvas>
+              <canvas id="virginmap" class="pixelate noselect"></canvas>
+              <canvas id="board" class="pixelate noselect" width="100" height="100"></canvas>
+          </div>
+      </div>
+  </div>
 
-<div id="ui">
-    <div id="ui-top">
-        <div id="loading-bubble" class="bubble">
-            <div class="loading-bubble-item" data-process="heatmap">Loading Heatmap (press <kbd>H</kbd> to cancel)</div>
-            <div class="loading-bubble-item" data-process="virginmap">Loading Virginmap (press <kbd>X</kbd> to cancel)</div>
-        </div>
-        <div id="main-bubble" class="bubble">
-            <div id="user-info">
-                <i class="fas fa-user"></i>
-                <!-- TODO: link to position on stats page -->
-                <span id="username"></span>
-                <a href="/logout" class="logout"><i title="Logout" class="fas fa-sign-out-alt" id="logout-icon"></i></a>
-            </div>
-            <div>
-              <i class="fas fa-users"></i>
-              <span id="online-count">Loading online user count&hellip;</span>
-            </div>
-            <div id="coords-info">
-                <a class="coords"></a>
-                <i id="canvas-lock-icon" class="fas fa-lock"></i>
-            </div>
-            <div id="placement-info">
-                <span id="placeable-count">N/A</span>
-                <span>Pixels</span>
-                <i class="fas fa-spinner fa-spin captcha-loading-icon"></i>
-            </div>
-            <div id="cooldown">
-                <i class="far fa-clock"></i>
-                <span id="cooldown-timer"></span>
-            </div>
-        </div>
-    </div>
+  <div id="ui">
+      <div id="ui-top">
+          <div id="loading-bubble" class="bubble">
+              <div class="loading-bubble-item" data-process="heatmap">Loading Heatmap (press <kbd>H</kbd> to cancel)</div>
+              <div class="loading-bubble-item" data-process="virginmap">Loading Virginmap (press <kbd>X</kbd> to cancel)</div>
+          </div>
+          <div id="main-bubble" class="bubble">
+              <div id="user-info">
+                  <i class="fas fa-user"></i>
+                  <!-- TODO: link to position on stats page -->
+                  <span id="username"></span>
+                  <a href="/logout" class="logout"><i title="Logout" class="fas fa-sign-out-alt" id="logout-icon"></i></a>
+              </div>
+              <div>
+                <i class="fas fa-users"></i>
+                <span id="online-count">Loading online user count&hellip;</span>
+              </div>
+              <div id="coords-info">
+                  <a class="coords"></a>
+                  <i id="canvas-lock-icon" class="fas fa-lock"></i>
+              </div>
+              <div id="placement-info">
+                  <span id="placeable-count">N/A</span>
+                  <span>Pixels</span>
+                  <i class="fas fa-spinner fa-spin captcha-loading-icon"></i>
+              </div>
+              <div id="cooldown">
+                  <i class="far fa-clock"></i>
+                  <span id="cooldown-timer"></span>
+              </div>
+          </div>
+      </div>
 
-    <div id="ui-bottom">
-        <div id="undo"><span>Undo</span></div>
-        <div id="login-overlay" class="palette-overlay">
-            You are not signed in.&nbsp;<a href="#">Sign in with...</a>
-        </div>
-        <div id="user-message" class="palette-overlay"></div>
-        <div id="palette">
-            <div id="cd-timer-overlay" class="palette-overlay"></div>
-        </div>
-    </div>
-</div>
+      <div id="ui-bottom">
+          <button type="button" id="undo"><span>Undo</span></button>
+          <div id="login-overlay" class="palette-overlay">
+              You are not signed in.&nbsp;<a href="#">Sign in with...</a>
+          </div>
+          <div id="user-message" class="palette-overlay"></div>
+          <div id="palette">
+              <div id="cd-timer-overlay" class="palette-overlay"></div>
+          </div>
+      </div>
+  </div>
+</main>
 
 
-<div id="lookup"></div>
+<div id="lookup" class="floating-panel"></div>
 <div id="loading"><span>Loading...</span></div>
 <div id="cursor">
     <div id="cursor-text"><i class="fas fa-spinner fa-spin captcha-loading-icon"></i> <span id="placeableCount-cursor">N/A</span></div>
 </div>
 <div id="reticule"></div>
-<div id="prompt" class="message"></div>
-<div id="signup" class="message">
-    <h1>Sign up</h1>
-    <h4>Pick a username</h4>
+<div id="prompt" class="message floating-panel"></div>
+<div id="signup" class="message floating-panel">
+    <div class="content">
+      <h1>Sign up</h1>
+      <h4>Pick a username</h4>
 
-    <label>Username: <input type="text" maxlength="32"></label>
-    <div class="error" id="error"></div>
-    <div class="buttons">
-        <span class="button" id="signup-button">Sign up</span>
+      <label>Username: <input type="text" maxlength="32"></label>
+      <div class="error" id="error"></div>
     </div>
+    <button id="signup-button" class="float-right text-button">Sign up</button>
 </div>
 
 
@@ -145,13 +137,13 @@
      data-size="invisible"></div>
 
 <aside class="panel left" data-panel="info">
-    <header class="panel-header darker">
+    <header class="panel-header">
         <div class="left"></div>
         <div class="mid">
-            <h2><i class="fas fa-info-circle fa-is-left fa-1_5x"></i>Info</h2>
+            <h2><i class="fas fa-info-circle fa-is-left"></i>Info</h2>
         </div>
         <div class="right">
-            <i class="fas fa-times panel-closer text-red"></i>
+            <button type="button" class="panel-closer"><i class="fas fa-times"></i></button>
         </div>
     </header>
     <div class="panel-body">
@@ -161,11 +153,13 @@
 
 <aside id="chat" data-panel="chat" class="panel right">
     <header class="panel-header">
-        <div class="left"><i class="fas fa-times text-red panel-closer"></i></div>
-        <h2><i class="fas fa-comment-alt fa-is-left fa-1_5x"></i>Chat <span class="mobile-only" id="txtMobileChatCooldown"></span></h2>
+        <div class="left">
+            <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
+        </div>
+        <h2><i class="fas fa-comment-alt fa-is-left"></i>Chat <span class="mobile-only" id="txtMobileChatCooldown"></span></h2>
         <div class="right">
-            <i class="fas fa-at" id="btnPings" title="Pings"></i>
-            <i class="fas fa-cogs" id="btnChatSettings" title="Settings"></i>
+            <button type="button" title="Pings"><i class="fas fa-at" id="btnPings"></i></i></button>
+            <button type="button" title="Settings"><i class="fas fa-cogs" id="btnChatSettings"></i></button>
         </div>
     </header>
     <div class="panel-body">
@@ -176,16 +170,16 @@
             </div>
             <div class="chat-controls">
                 <div class="chat-ratelimit-overlay"><span id="chat-ratelimit">3s</span></div>
-                <div id="jump-to-bottom" style="display: none;">
+                <button type="button" class="fullwidth" id="jump-to-bottom" style="display: none;">
                     <i class="fas fa-arrow-down fa-is-right" style="float: left; margin-top: 4px;"></i>
                     <span>Jump To Bottom</span>
                     <i class="fas fa-arrow-down fa-is-left" style="float: right; margin-top: 4px;"></i>
-                </div>
+                </button>
                 <div id="typeahead" style="display: none;">
-                    <p class="text-muted" data-dismiss="typeahead" style="cursor: pointer; padding-top: .25rem; padding-bottom: .25rem; margin: 0 0 .5rem 0rem; text-align: center; font-style: italic;">Tap here or press ESC to cancel</p>
+                    <button data-dismiss="typeahead" class="text-muted" style="width: 100%; font-size: inherit; display:block; padding-top: .25rem; padding-bottom: .25rem; margin: 0 0 .5rem 0rem; text-align: center; font-style: italic;">Tap here or press ESC to cancel</button>
                     <ul></ul>
                 </div>
-                <i class="far fa-grin" id="emojiPanelTrigger"></i>
+                <button type="button" title="Emoji" id="emojiPanelTrigger"><i class="far fa-grin"></i></button>
                 <label><textarea name="txtChatContent" id="txtChatContent" placeholder="Press ENTER to send..."></textarea></label>
                 <div class="bottom-banner" id="bottom-banner"></div>
             </div>
@@ -196,19 +190,21 @@
 
 <aside id="settings" data-panel="settings" class="panel right">
     <header class="panel-header">
-        <div class="left"><i class="fas fa-times panel-closer text-red"></i></div>
+        <div class="left">
+            <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
+        </div>
         <div class="mid">
-            <h2><i class="fas fa-cogs fa-is-left fa-1_5x"></i>Settings</h2>
+            <h2><i class="fas fa-cogs fa-is-left"></i>Settings</h2>
         </div>
         <div class="right"></div>
     </header>
     <div class="panel-body">
         <article class="no-p-margin">
-            <header class="slim darker">
-                <h2>Keybinds</h2>
+            <header>
+                <h3>Keybinds</h3>
             </header>
             <div class="pad-wrapper">
-                <h3>General</h3>
+                <h4>General</h4>
                 <div class="indent-1">
                     <p>Mouse/arrows/wasd to pan</p>
                     <p>Scroll/pinch to zoom</p>
@@ -228,7 +224,7 @@
                     <p><kbd>ESC</kbd> to deselect current pixel</p>
                     <p><kbd>R</kbd> to center the board on the current template</p>
                 </div>
-                <h3>Template</h3>
+                <h4>Template</h4>
                 <div class="indent-1">
                     <p><kbd>Page Up</kbd> to increase opacity</p>
                     <p><kbd>Page Down</kbd> to decrease opacity</p>
@@ -237,8 +233,8 @@
             </div>
         </article>
         <article>
-            <header class="slim darker">
-                <h2>General Settings</h2>
+            <header>
+                <h3>General Settings</h3>
             </header>
             <div class="pad-wrapper">
                 <div class="settingToggles">
@@ -249,64 +245,67 @@
                             </select>
                         </label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="audiotoggle" type="checkbox"/>Mute sound</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="heatmaptoggle" type="checkbox"/>Turn on heatmap (toggle with <kbd>H</kbd>)</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="virginmaptoggle" type="checkbox"/>Turn on virginmap (toggle with <kbd>X</kbd>)</label>
                     </div>
-                    <div class="d-block">
-                        <button id="hvmapClear">Clear heatmap and virginmap</button> (hotkey: <kbd>O</kbd>)
+                    <div>
+                        <button class="text-button" id="hvmapClear">Clear heatmap and virginmap</button> (hotkey: <kbd>O</kbd>)
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="gridtoggle" type="checkbox"/>Turn on grid (toggle with <kbd>G</kbd>)</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input type="checkbox" id="lockCanvasToggle">Lock the canvas (disallow canvas drag/zoom with mouse/fingers)</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="native-notification-toggle" type="checkbox"/>Enable pixel available notification</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="stickyColorToggle" type="checkbox"/>Keep color selected</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="monospaceToggle" type="checkbox"/>Toggle monospace font for lookups</label>
                     </div>
-                    <div class="d-block">
+                    <div>
+                      <label>Zoom Sensitivity: <input id="zoomBaseValue" type="range" min="1.01" max="3" step="0.01"/></label>
+                    </div>
+                    <div>
                         <label><input id="increasedZoomToggle" type="checkbox"/>Allow zoom values greater than 50x</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="scrollSwitchToggle" type="checkbox"/>Enable scrolling on the palette to switch colors</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label style="text-indent:1em"><input id="scrollDirectionToggle" type="checkbox"/>Invert scroll direction</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="showReticuleToggle" type="checkbox"/>Show Reticule</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="showCursorToggle" type="checkbox"/>Show Cursor</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="templateBeneathHeatmapToggle" type="checkbox"/>Layer Template Underneath Heatmap</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="cbEnableMiddleMouseSelect" type="checkbox"> Enable middle mouse button selecting color from board</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label><input id="cbNumberedPalette" type="checkbox"> Add numbers to palette entries</label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label>Heatmap Background Opacity: <input type="range" min="0" max="1" step="0.01" id="heatmap-opacity"></label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label>Virginmap Background Opacity: <input type="range" min="0" max="1" step="0.01" id="virginmap-opacity"></label>
                     </div>
-                    <div class="d-block">
+                    <div>
                         <label>
                             Snapshot (hotkey: <kbd>P</kbd>) image format
                             <select id="snapshotImageFormat">
@@ -349,23 +348,23 @@
             </div>
         </article>
         <article>
-            <header class="slim darker">
-                <h2>Template</h2>
+            <header>
+                <h3>Template</h3>
             </header>
             <div class="pad-wrapper">
                 <div>
                     <label><input type="checkbox" id="template-use"> Use template</label>
                 </div>
                 <p>Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around</p>
-                <div class="longTextInputWrapper d-block">
+                <p>
                     <label>Title:</label>
-                    <input type="text" id="template-title">
-                </div>
-                <div class="longTextInputWrapper d-block">
+                    <input class="fullwidth" type="text" id="template-title">
+                </p>
+                <p>
                     <label>URL:</label>
-                    <input type="text" id="template-url">
+                    <input class="fullwidth" type="text" id="template-url">
                     <span id="template-image-error-warning" class="text-red">There was an error getting the image</span>
-                </div>
+                </p>
                 <div>
                     <label>Position: <input type="number" min="0" class="template-coords small-input" id="template-coords-x">, <input type="number" min="0" class="template-coords small-input" id="template-coords-y"></label>
                 </div>
@@ -375,20 +374,20 @@
                 </div>
                 <div>
                     <label>Width: <input type="number" id="template-width" class="small-input" min="0"></label>
-                    <button id="template-width-reset">Reset</button>
+                    <button class="text-button" id="template-width-reset">Reset</button>
                 </div>
             </div>
         </article>
         <article>
-            <header class="slim darker">
-                <h2>Pixel Ready Alert Settings</h2>
+            <header>
+                <h3>Pixel Ready Alert Settings</h3>
             </header>
             <div class="pad-wrapper">
-                <p class="longTextInputWrapper"><label for="txtAlertLocation">Alert URL:</label><input type="text" placeholder="notify.wav" id="txtAlertLocation"></p>
-                <div class="ButtonBar">
-                    <button id="btnForceAudioUpdate" class="button">Update</button>
-                    <button id="btnAlertAudioTest" class="button">Test</button>
-                    <button id="btnAlertReset" class="button">Reset</button>
+                <p><label for="txtAlertLocation">Alert URL:</label><input class="fullwidth" type="text" placeholder="notify.wav" id="txtAlertLocation"></p>
+                <div class="button-bar">
+                    <button class="text-button" id="btnForceAudioUpdate">Update</button>
+                    <button class="text-button" id="btnAlertAudioTest">Test</button>
+                    <button class="text-button" id="btnAlertReset">Reset</button>
                 </div>
                 <div>
                     <label for="rangeAlertVolume">Volume:</label>
@@ -399,25 +398,27 @@
             </div>
         </article>
         <article>
-            <header class="slim darker">
-                <h2>Account Settings</h2>
+            <header>
+                <h3>Account Settings</h3>
             </header>
             <div class="pad-wrapper">
-                <p class="longTextInputWrapper"><label for="txtDiscordName">Public Discord Name:</label><input type="text" placeholder="pxlslover#1337" id="txtDiscordName"></p>
-                <div class="ButtonBar">
-                    <button id="btnDiscordNameSet" class="button">Set</button>
-                    <button id="btnDiscordNameRemove" class="button">Remove</button>
+                <p><label for="txtDiscordName">Public Discord Name:</label><input class="fullwidth" type="text" placeholder="pxlslover#1337" id="txtDiscordName"></p>
+                <div class="button-bar">
+                    <button class="text-button" id="btnDiscordNameSet">Set</button>
+                    <button class="text-button" id="btnDiscordNameRemove">Remove</button>
                 </div>
             </div>
         </article>
     </div>
 </aside>
 
-<aside id="faq" data-panel="faq" class="panel half-width left">
+<aside id="faq" data-panel="faq" class="panel left half-width">
     <header class="panel-header">
         <div class="left"></div>
-        <h2><i class="fas fa-question-circle fa-is-left fa-1_5x"></i>Help</h2>
-        <div class="right"><i class="fas fa-times text-red panel-closer"></i></div>
+        <h3><i class="fas fa-question-circle fa-is-left"></i>Help</h3>
+        <div class="right">
+            <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
+        </div>
     </header>
     <div class="panel-body">
         {{faq}}
@@ -427,8 +428,10 @@
 <aside id="notifications" data-panel="notifications" class="panel left">
     <header class="panel-header">
         <div class="left"></div>
-        <h2><i class="fas fa-bell fa-is-left fa-1_5x"></i>Notifications</h2>
-        <div class="right"><i class="fas fa-times text-red panel-closer"></i></div>
+        <h3><i class="fas fa-bell fa-is-left"></i>Notifications</h3>
+        <div class="right">
+            <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
+        </div>
     </header>
     <div class="panel-body"></div>
 </aside>

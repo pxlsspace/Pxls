@@ -32,6 +32,18 @@ window.App = (function() {
       cookieValue += ((exdays == null) ? '' : '; expires=' + exdate.toUTCString());
       document.cookie = cookieName + '=' + cookieValue;
     };
+    const _get = function(name, haveSupport) {
+      let s;
+      if (haveSupport) {
+        s = storageType.getItem(name);
+      } else {
+        s = getCookie(prefix + name);
+      }
+      if (s === undefined) {
+        s = null;
+      }
+      return s;
+    };
     return {
       haveSupport: null,
       support: function() {
@@ -47,20 +59,15 @@ window.App = (function() {
         return this.haveSupport;
       },
       get: function(name) {
-        let s;
-        if (this.support()) {
-          s = storageType.getItem(name);
-        } else {
-          s = getCookie(prefix + name);
-        }
-        if (s === undefined) {
-          s = null;
-        }
+        const s = _get(name, this.support());
         try {
           return JSON.parse(s);
         } catch (e) {
           return null;
         }
+      },
+      has: function(name) {
+        return _get(name, this.support()) !== null;
       },
       set: function(name, value) {
         value = JSON.stringify(value);
@@ -79,27 +86,10 @@ window.App = (function() {
       }
     };
   };
-  const binaryAjax = function(url, fn, failfn) {
-    // TODO(netux): convert to use async/await (https://caniuse.com/#feat=async-functions)
-    // and possibly fetch (https://caniuse.com/#feat=fetch)
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.responseType = 'arraybuffer';
-    xhr.onload = function(event) {
-      if (xhr.readyState === 4) {
-        if (xhr.status === 200) {
-          if (xhr.response) {
-            const data = new Uint8Array(xhr.response);
-            fn(data);
-          }
-        } else if (failfn) {
-          failfn();
-        }
-      }
-    };
-    xhr.send(null);
-
-    return xhr;
+  const binaryAjax = async function(url) {
+    const response = await fetch(url);
+    const data = new Uint8Array(await response.arrayBuffer());
+    return data;
   };
   const createImageData = function(w, h) {
     try {
@@ -952,11 +942,24 @@ window.App = (function() {
         self.elements.container[0].addEventListener('wheel', function(evt) {
           if (!self.allowDrag) return;
           const oldScale = self.scale;
-          if (evt.deltaY > 0) {
-            self.nudgeScale(-1);
-          } else {
-            self.nudgeScale(1);
+
+          let delta = evt.deltaY;
+
+          switch (evt.deltaMode) {
+            case WheelEvent.DOM_DELTA_PIXEL:
+              // 53 pixels is the default chrome gives for a wheel scroll.
+              delta /= 53;
+              break;
+            case WheelEvent.DOM_DELTA_LINE:
+              // default case on Firefox, three lines is default number.
+              delta /= 3;
+              break;
+            case WheelEvent.DOM_DELTA_PAGE:
+              delta = Math.sign(delta);
+              break;
           }
+
+          self.nudgeScale(delta);
 
           if (oldScale !== self.scale) {
             const dx = evt.clientX - self.elements.container.width() / 2;
@@ -1131,6 +1134,11 @@ window.App = (function() {
           ls.set('templateBeneathHeatmap', event.target.checked);
           self.elements.container.toggleClass('lower-template', event.target.checked);
         });
+
+        $('#zoomBaseValue').val(self.getZoomBase());
+        $('#zoomBaseValue').on('change input', event => {
+          ls.set('zoomBaseValue', event.target.value);
+        });
       },
       start: function() {
         $.get('/info', (data) => {
@@ -1159,7 +1167,14 @@ window.App = (function() {
           self.scale = query.get('scale') || self.scale;
           self.centerOn(cx, cy, true);
           socket.init();
-          binaryAjax('/boarddata' + '?_' + (new Date()).getTime(), self.draw, socket.reconnect);
+
+          (async function() {
+            try {
+              self.draw(await binaryAjax('/boarddata' + '?_' + (new Date()).getTime()));
+            } catch (e) {
+              socket.reconnect();
+            }
+          })();
 
           if (self.use_js_render) {
             $(window).resize(function() {
@@ -1310,33 +1325,16 @@ window.App = (function() {
         self.scale = scale;
         self.update();
       },
+      getZoomBase: function() {
+        return parseFloat(ls.get('zoomBaseValue')) || 1.5;
+      },
       nudgeScale: function(adj) {
-        const oldScale = Math.abs(self.scale);
-        const sign = Math.sign(self.scale);
         const maxUnlocked = ls.get('increased_zoom') === true;
-        if (adj === -1) {
-          if (oldScale <= 1) {
-            self.scale = 0.5;
-          } else if (oldScale <= 2) {
-            self.scale = 1;
-          } else {
-            self.scale = Math.round(Math.max(2, oldScale / 1.25));
-          }
-        } else {
-          if (oldScale === 0.5) {
-            self.scale = 1;
-          } else if (oldScale === 1) {
-            self.scale = 2;
-          } else {
-            let modifiedScale = oldScale * 1.25;
-            if (maxUnlocked && oldScale >= 50) {
-              modifiedScale = oldScale * 1.15;
-            }
-            modifiedScale = Math.ceil(modifiedScale);
-            self.scale = maxUnlocked ? modifiedScale : Math.round(Math.min(50, modifiedScale));
-          }
-        }
-        self.scale *= sign;
+        const maximumValue = maxUnlocked ? Infinity : 50;
+        const minimumValue = maxUnlocked ? 0 : 0.5;
+        const zoomBase = self.getZoomBase();
+
+        self.scale = Math.max(minimumValue, Math.min(maximumValue, self.scale * zoomBase ** -adj));
         self.update();
       },
       getPixel: function(x, y) {
@@ -1500,7 +1498,6 @@ window.App = (function() {
       width: 0,
       height: 0,
       lazy_inited: false,
-      fetchRequest: null,
       is_shown: false,
       color: 0x005C5CCD,
       loop: function() {
@@ -1514,7 +1511,7 @@ window.App = (function() {
         self.ctx.putImageData(self.id, 0, 0);
         setTimeout(self.loop, self.seconds * 1000 / 256);
       },
-      lazy_init: () => {
+      lazy_init: async () => {
         if (self.lazy_inited) {
           uiHelper.setLoadingBubbleState('heatmap', false);
           return;
@@ -1522,26 +1519,24 @@ window.App = (function() {
         uiHelper.setLoadingBubbleState('heatmap', true);
         self.lazy_inited = true;
         // we use xhr directly because of jquery being weird on raw binary
-        self.fetchRequest = binaryAjax('/heatmap' + '?_' + (new Date()).getTime(), function(data) {
-          self.fetchRequest = null;
-          self.ctx = self.elements.heatmap[0].getContext('2d');
-          self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
-          self.id = createImageData(self.width, self.height);
+        const data = await binaryAjax('/heatmap' + '?_' + (new Date()).getTime());
+        self.ctx = self.elements.heatmap[0].getContext('2d');
+        self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
+        self.id = createImageData(self.width, self.height);
 
-          self.intView = new Uint32Array(self.id.data.buffer);
-          for (let i = 0; i < self.width * self.height; i++) {
-            self.intView[i] = (data[i] << 24) | self.color;
-          }
-          self.ctx.putImageData(self.id, 0, 0);
-          self.elements.heatmap.fadeIn(200);
-          uiHelper.setLoadingBubbleState('heatmap', false);
-          setTimeout(self.loop, self.seconds * 1000 / 256);
-          socket.on('pixel', function(data) {
-            self.ctx.fillStyle = '#CD5C5C';
-            $.map(data.pixels, function(px) {
-              self.ctx.fillRect(px.x, px.y, 1, 1);
-              self.intView[px.y * self.width + px.x] = 0xFF000000 | self.color;
-            });
+        self.intView = new Uint32Array(self.id.data.buffer);
+        for (let i = 0; i < self.width * self.height; i++) {
+          self.intView[i] = (data[i] << 24) | self.color;
+        }
+        self.ctx.putImageData(self.id, 0, 0);
+        self.elements.heatmap.fadeIn(200);
+        uiHelper.setLoadingBubbleState('heatmap', false);
+        setTimeout(self.loop, self.seconds * 1000 / 256);
+        socket.on('pixel', function(data) {
+          self.ctx.fillStyle = '#CD5C5C';
+          $.map(data.pixels, function(px) {
+            self.ctx.fillRect(px.x, px.y, 1, 1);
+            self.intView[px.y * self.width + px.x] = 0xFF000000 | self.color;
           });
         });
       },
@@ -1674,9 +1669,8 @@ window.App = (function() {
       width: 0,
       height: 0,
       lazy_inited: false,
-      fetchRequest: null,
       is_shown: false,
-      lazy_init: function() {
+      lazy_init: async function() {
         if (self.lazy_inited) {
           uiHelper.setLoadingBubbleState('virginmap', false);
           return;
@@ -1684,30 +1678,28 @@ window.App = (function() {
         uiHelper.setLoadingBubbleState('virginmap', true);
         self.lazy_inited = true;
         // we use xhr directly because of jquery being weird on raw binary
-        self.fetchRequest = binaryAjax('/virginmap' + '?_' + (new Date()).getTime(), (data) => {
-          self.fetchRequest = null;
-          self.ctx = self.elements.virginmap[0].getContext('2d');
-          self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
-          self.id = createImageData(self.width, self.height);
+        const data = await binaryAjax('/virginmap' + '?_' + (new Date()).getTime());
+        self.ctx = self.elements.virginmap[0].getContext('2d');
+        self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
+        self.id = createImageData(self.width, self.height);
 
-          self.ctx.putImageData(self.id, 0, 0);
-          self.ctx.fillStyle = '#000000';
+        self.ctx.putImageData(self.id, 0, 0);
+        self.ctx.fillStyle = '#000000';
 
-          self.intView = new Uint32Array(self.id.data.buffer);
-          for (let i = 0; i < self.width * self.height; i++) {
-            const x = i % self.width;
-            const y = Math.floor(i / self.width);
-            if (data[i] === 0) {
-              self.ctx.fillRect(x, y, 1, 1);
-            }
+        self.intView = new Uint32Array(self.id.data.buffer);
+        for (let i = 0; i < self.width * self.height; i++) {
+          const x = i % self.width;
+          const y = Math.floor(i / self.width);
+          if (data[i] === 0) {
+            self.ctx.fillRect(x, y, 1, 1);
           }
-          self.elements.virginmap.fadeIn(200);
-          uiHelper.setLoadingBubbleState('virginmap', false);
-          socket.on('pixel', function(data) {
-            $.map(data.pixels, function(px) {
-              self.ctx.fillStyle = '#000000';
-              self.ctx.fillRect(px.x, px.y, 1, 1);
-            });
+        }
+        self.elements.virginmap.fadeIn(200);
+        uiHelper.setLoadingBubbleState('virginmap', false);
+        socket.on('pixel', function(data) {
+          $.map(data.pixels, function(px) {
+            self.ctx.fillStyle = '#000000';
+            self.ctx.fillRect(px.x, px.y, 1, 1);
           });
         });
       },
@@ -2308,7 +2300,8 @@ window.App = (function() {
         self.palette = palette;
         self.elements.palette.find('.palette-color').remove().end().append(
           $.map(self.palette, function(p, idx) {
-            return $('<div>')
+            return $('<button>')
+              .attr('type', 'button')
               .attr('data-idx', idx)
               .addClass('palette-color')
               .addClass('ontouchstart' in window ? 'touch' : 'no-touch')
@@ -2324,7 +2317,8 @@ window.App = (function() {
           })
         );
         self.elements.palette.prepend(
-          $('<div>')
+          $('<button>')
+            .attr('type', 'button')
             .attr('data-idx', -1)
             .addClass('palette-color no-border deselect-button')
             .addClass('ontouchstart' in window ? 'touch' : 'no-touch').css('background-color', 'transparent')
@@ -2505,7 +2499,7 @@ window.App = (function() {
       },
       handle: null,
       report: function(id, x, y) {
-        const reportButton = crel('button', { class: 'button' }, 'Report');
+        const reportButton = crel('button', { class: 'text-button dangerous-button' }, 'Report');
         reportButton.addEventListener('click', function() {
           this.disabled = true;
           this.textContent = 'Sending...';
@@ -2549,12 +2543,12 @@ window.App = (function() {
               placeholder: 'Additional information (if applicable)',
               style: 'width: 100%; height: 5em',
               onkeydown: e => e.stopPropagation()
-            })
-          ),
-          [ // crel will inject the array as fragments
-            crel('button', { class: 'button', onclick: () => modal.closeAll() }, 'Cancel'),
-            reportButton
-          ]
+            }),
+            crel('div', { class: 'buttons' },
+              crel('button', { class: 'text-button', onclick: () => modal.closeAll() }, 'Cancel'),
+              reportButton
+            )
+          )
         ));
       },
       /**
@@ -2672,14 +2666,14 @@ window.App = (function() {
         return self.elements.lookup.empty().append(
           $('<div>').addClass('content'),
           (!data.bg && user.isLoggedIn()
-            ? $('<div>').addClass('button').css('float', 'left').addClass('report-button').text('Report').click(function() {
+            ? $('<button>').css('float', 'left').addClass('dangerous-button text-button').text('Report').click(function() {
               self.report(data.id, data.x, data.y);
             })
             : ''),
-          $('<div>').addClass('button').css('float', 'right').text('Close').click(function() {
+          $('<button>').css('float', 'right').addClass('text-button').text('Close').click(function() {
             self.elements.lookup.fadeOut(200);
           }),
-          (template.getOptions().use ? $('<div>').addClass('button').css('float', 'right').text('Move Template Here').click(function() {
+          (template.getOptions().use ? $('<button>').css('float', 'right').addClass('text-button').text('Move Template Here').click(function() {
             template.queueUpdate({
               ox: data.x,
               oy: data.y
@@ -2894,7 +2888,7 @@ window.App = (function() {
           modal.show(modal.buildDom(
             crel('h2', { class: 'modal-title' }, 'Alert'),
             crel('p', { style: 'padding: 0; margin: 0;' }, data.message),
-            crel('span', { style: 'font-style: italic' }, `Sent from ${data.sender || '$Unknown'}`)
+            crel('span', `Sent from ${data.sender || '$Unknown'}`)
           ), { closeExisting: false });
         });
         socket.on('received_report', (data) => {
@@ -2980,10 +2974,22 @@ window.App = (function() {
         const colorBrightnessSlider = $('#color-brightness');
         const colorBrightnessToggle = $('#color-brightness-toggle');
 
+        const brightnessEnabled = ls.get('brightness.enabled') === true;
+        const brightnessFixElement = $('<canvas>').attr('id', 'brightness-fixer').addClass('noselect');
+
+        if (brightnessEnabled) {
+          $('#board-mover').prepend(brightnessFixElement);
+        }
+
         colorBrightnessToggle
-          .prop('checked', ls.get('brightness.enabled') === true)
+          .prop('checked', brightnessEnabled)
           .change(function(e) {
             const isEnabled = !!this.checked;
+            if (isEnabled) {
+              $('#board-mover').prepend(brightnessFixElement);
+            } else {
+              brightnessFixElement.remove();
+            }
             ls.set('brightness.enabled', isEnabled);
             colorBrightnessSlider.prop('disabled', !isEnabled);
             self.adjustColorBrightness(isEnabled ? numOrDefault(parseFloat(ls.get('colorBrightness')), 1) : null);
@@ -3045,7 +3051,7 @@ window.App = (function() {
           switch (evt.key || evt.which) {
             case 'Escape':
             case 27: {
-              const selector = $('#lookup, #prompt, #alert, .popup.panels');
+              const selector = $('#lookup, #prompt, #alert, .popup');
               const openPanels = $('.panel.open');
               if (selector.is(':visible')) {
                 selector.fadeOut(200);
@@ -3088,6 +3094,7 @@ window.App = (function() {
       _initThemes: function() {
         for (let i = 0; i < self.themes.length; i++) {
           self.themes[i].element = $('<link data-theme="' + i + '" rel="stylesheet" href="' + self.themes[i].location + '">');
+          self.themes[i].loaded = false;
           self.elements.themeSelect.append($('<option>', {
             value: i,
             text: self.themes[i].name
@@ -3098,29 +3105,13 @@ window.App = (function() {
           // If currentTheme hasn't been set, or it's out of bounds, reset it to default (-1)
           ls.set('currentTheme', -1);
         } else if (currentTheme !== -1) {
-          self.themes[currentTheme].element.appendTo(document.head);
-          self.elements.themeColorMeta.attr('content', self.themes[currentTheme].color);
+          self.loadTheme(currentTheme);
           self.elements.themeSelect.val(currentTheme);
         }
         self.elements.themeSelect.on('change', async function() {
           const themeIdx = parseInt(this.value);
-          // If theme is -1, the user selected the default theme, so we should remove all other themes
-          if (themeIdx === -1) {
-            // Default theme
-            ls.set('currentTheme', -1);
-            $('*[data-theme]').remove();
-            self.elements.themeColorMeta.attr('content', null);
-            return;
-          }
-
-          const theme = self.themes[themeIdx];
-          theme.element.one('load', () => {
-            self.elements.themeColorMeta.attr('content', theme.color);
-            $(`*[data-theme]:not([data-theme=${themeIdx}])`).remove();
-          });
-          theme.element.appendTo(document.head);
-
           ls.set('currentTheme', themeIdx);
+          await self.loadTheme(themeIdx);
         });
       },
       _initStack: function() {
@@ -3374,6 +3365,45 @@ window.App = (function() {
       },
       toggleCaptchaLoading: (display) => {
         self.elements.captchaLoadingIcon.css('display', display ? 'inline-block' : 'none');
+      },
+      loadTheme: async (index) => {
+        // Default theme (-1) doesn't need to load anything special.
+        if (index === -1) {
+          self.enableTheme(-1);
+          return;
+        }
+        if (!(index in self.themes)) {
+          return console.warn(`Tried to load invalid theme "${index}"`);
+        }
+        const theme = self.themes[index];
+        if (theme.loaded) {
+          self.enableTheme(index);
+        } else {
+          await new Promise((resolve, reject) => {
+            theme.element.one('load', () => {
+              if (!theme.loaded) {
+                theme.loaded = true;
+                self.enableTheme(index);
+              }
+              resolve();
+            });
+            theme.element.appendTo(document.head);
+          });
+        }
+      },
+      enableTheme: (index) => {
+        // If theme is -1, the user selected the default theme.
+        if (index === -1) {
+          self.elements.themeColorMeta.attr('content', null);
+        } else {
+          if (!(index in self.themes)) {
+            return console.warn(`Tried to enable invalid theme "${index}"`);
+          }
+          const theme = self.themes[index];
+          theme.element.prop('disabled', false);
+          self.elements.themeColorMeta.attr('content', theme.color);
+        }
+        $(`*[data-theme]:not([data-theme=${index}])`).prop('disabled', true);
       }
     };
 
@@ -3483,19 +3513,15 @@ window.App = (function() {
             $(window).trigger('pxls:panel:opened', panelDescriptor);
             document.body.classList.toggle('panel-open', true);
             document.body.classList.toggle(`panel-${panelPosition}`, true);
-            if (panel.classList.contains('half-width')) {
-              document.body.classList.toggle(`panel-${panelPosition}-halfwidth`, true);
-            } else if (panel.classList.contains('horizontal')) {
-              document.body.classList.toggle('panel-horizontal', true);
-            }
           } else {
             $(window).trigger('pxls:panel:closed', panelDescriptor);
             document.body.classList.toggle('panel-open', document.querySelectorAll('.panel.open').length - 1 > 0);
             document.body.classList.toggle(`panel-${panelPosition}`, false);
-            document.body.classList.toggle(`panel-${panelPosition}-halfwidth`, false);
-            document.body.classList.toggle('panel-horizontal', false);
           }
           panel.classList.toggle('open', state);
+
+          document.body.classList.toggle(`panel-${panelPosition}-halfwidth`, $(`.panel[data-panel].${panelPosition}.open.half-width`).length > 0);
+          document.body.classList.toggle(`panel-${panelPosition}-horizontal`, $(`.panel[data-panel].${panelPosition}.open.horizontal`).length > 0);
         }
       }
     };
@@ -3585,6 +3611,26 @@ window.App = (function() {
         }
       },
       init: () => {
+        // Register default hooks
+        self.registerHook({
+          id: 'username-mention',
+          get: message => ({
+            pings: (() => {
+              const mentionRegExp = new RegExp(`(\\s|^)@${user.getUsername().replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&')}(?![a-zA-Z0-9_-])`, 'gi');
+              const matches = [];
+              let match;
+              while ((match = mentionRegExp.exec(message.message_raw)) !== null) {
+                matches.push(match);
+              }
+              return matches.map((match) => ({
+                start: match.index + match[1].length,
+                length: user.getUsername().length + 1,
+                highlight: true
+              }));
+            })()
+          })
+        });
+
         self.initTypeahead();
         self.reloadIgnores();
         socket.on('ack_client_update', e => {
@@ -3712,32 +3758,38 @@ window.App = (function() {
                 crel('hr'),
                 crel('ul', { class: 'chatban-history' },
                   e.chatbans.map(chatban => {
-                    return crel('li', { class: 'chatban' },
-                      crel('h4', `${chatban.initiator_name} ${chatban.type === 'UNBAN' ? 'un' : ''}banned ${e.target.username}${chatban.type !== 'PERMA' ? '' : ''}`),
-                      crel('table',
-                        crel('tbody',
-                          crel('tr',
-                            crel('th', 'Reason:'),
-                            crel('td', chatban.reason || '$No reason provided$')
-                          ),
-                          crel('tr',
-                            crel('th', 'When:'),
-                            crel('td', moment(chatban.when * 1e3).format(longFormat))
-                          ),
-                          chatban.type !== 'UNBAN' ? ([
-                            crel('tr',
-                              crel('th', 'Length:'),
-                              crel('td', (chatban.type.toUpperCase().trim() === 'PERMA') ? 'Permanent' : `${chatban.expiry - chatban.when}s${(chatban.expiry - chatban.when) >= 60 ? ` (${moment.duration(chatban.expiry - chatban.when, 'seconds').humanize()})` : ''}`)
-                            ),
-                            (chatban.type.toUpperCase().trim() === 'PERMA') ? null : crel('tr',
-                              crel('th', 'Expiry:'),
-                              crel('td', moment(chatban.expiry * 1e3).format(longFormat))
-                            ),
-                            crel('tr',
-                              crel('th', 'Purged:'),
-                              crel('td', String(chatban.purged))
+                    return crel('li',
+                      crel('article', { class: 'chatban' },
+                        crel('header',
+                          crel('h4', `${chatban.initiator_name} ${chatban.type === 'UNBAN' ? 'un' : ''}banned ${e.target.username}${chatban.type !== 'PERMA' ? '' : ''}`)
+                        ),
+                        crel('div',
+                          crel('table',
+                            crel('tbody',
+                              crel('tr',
+                                crel('th', 'Reason:'),
+                                crel('td', chatban.reason || '$No reason provided$')
+                              ),
+                              crel('tr',
+                                crel('th', 'When:'),
+                                crel('td', moment(chatban.when * 1e3).format(longFormat))
+                              ),
+                              chatban.type !== 'UNBAN' ? ([
+                                crel('tr',
+                                  crel('th', 'Length:'),
+                                  crel('td', (chatban.type.toUpperCase().trim() === 'PERMA') ? 'Permanent' : `${chatban.expiry - chatban.when}s${(chatban.expiry - chatban.when) >= 60 ? ` (${moment.duration(chatban.expiry - chatban.when, 'seconds').humanize()})` : ''}`)
+                                ),
+                                (chatban.type.toUpperCase().trim() === 'PERMA') ? null : crel('tr',
+                                  crel('th', 'Expiry:'),
+                                  crel('td', moment(chatban.expiry * 1e3).format(longFormat))
+                                ),
+                                crel('tr',
+                                  crel('th', 'Purged:'),
+                                  crel('td', String(chatban.purged))
+                                )
+                              ]) : null
                             )
-                          ]) : null
+                          )
                         )
                       )
                     );
@@ -4075,7 +4127,7 @@ window.App = (function() {
         });
 
         $(window).on('resize', e => {
-          const popup = document.querySelector('.popup.panels[data-popup-for]');
+          const popup = document.querySelector('.popup[data-popup-for]');
           if (!popup) return;
           const cog = document.querySelector(`.chat-line[data-id="${popup.dataset.popupFor}"] [data-action="actions-panel"]`);
           if (!cog) return console.warn('no cog');
@@ -4088,7 +4140,7 @@ window.App = (function() {
         });
 
         self.elements.body[0].addEventListener('wheel', e => {
-          const popup = document.querySelector('.popup.panels');
+          const popup = document.querySelector('.popup');
           if (popup) popup.remove();
         });
 
@@ -4107,15 +4159,15 @@ window.App = (function() {
         self.elements.pings_button[0].addEventListener('click', function() {
           const closeHandler = function() {
             if (this && this.closest) {
-              const toClose = this.closest('.popup.panels');
+              const toClose = this.closest('.popup');
               if (toClose) toClose.remove();
             }
           };
 
-          const popupWrapper = crel('div', { class: 'popup panels' });
-          const panelHeader = crel('header', { style: 'text-align: center' },
-            crel('div', { class: 'left' }, crel('i', {
-              class: 'fas fa-times text-red',
+          const popupWrapper = crel('div', { class: 'popup panel' });
+          const panelHeader = crel('header', { class: 'panel-header' },
+            crel('button', { class: 'left panel-closer' }, crel('i', {
+              class: 'fas fa-times',
               onclick: closeHandler
             })),
             crel('h2', 'Pings'),
@@ -4322,12 +4374,12 @@ window.App = (function() {
             } else {
               self.elements.typeahead_list[0].innerHTML = '';
               const LIs = got.slice(0, 10).map(x =>
-                crel('li', {
+                crel('li', crel('button', {
                   'data-insert': `${x} `,
                   'data-start': scanRes.start,
                   'data-end': scanRes.end,
                   onclick: self._handleTypeaheadInsert
-                }, x)
+                }, x))
               );
               LIs[0].classList.add('active');
               crel(self.elements.typeahead_list[0], LIs);
@@ -4421,7 +4473,7 @@ window.App = (function() {
         const lblTemplateTitles = crel('label', _cbTemplateTitles, 'Replace template titles with URLs in chat where applicable');
 
         const _txtFontSize = crel('input', { type: 'number', min: '1', max: '72' });
-        const _btnFontSizeConfirm = crel('button', { class: 'buton' }, crel('i', { class: 'fas fa-check' }));
+        const _btnFontSizeConfirm = crel('button', { class: 'text-button' }, crel('i', { class: 'fas fa-check' }));
         const lblFontSize = crel('label', 'Font Size: ', _txtFontSize, _btnFontSizeConfirm);
 
         const _cbHorizontal = crel('input', { type: 'checkbox' });
@@ -4452,7 +4504,7 @@ window.App = (function() {
           crel('option', { value: x }, x)
         )
         );
-        const _btnUnignore = crel('button', { class: 'button', style: 'margin-left: .5rem' }, 'Unignore');
+        const _btnUnignore = crel('button', { class: 'text-button', style: 'margin-left: .5rem' }, 'Unignore');
         const lblIgnores = crel('label', 'Ignores: ', _selIgnores, _btnUnignore);
         const lblIgnoresFeedback = crel('label', { style: 'display: none; margin-left: 1rem;' }, '');
 
@@ -4538,7 +4590,7 @@ window.App = (function() {
           if (_chatPanel) {
             _chatPanel.classList.toggle('horizontal', this.checked === true);
             if (_chatPanel.classList.contains('open')) {
-              document.body.classList.toggle('panel-horizontal', this.checked === true);
+              document.body.classList.toggle(`panel-${_chatPanel.classList.contains('right') ? 'right' : 'left'}-horizontal`, this.checked === true);
             }
           }
         });
@@ -4580,7 +4632,7 @@ window.App = (function() {
             lblUsernameColor,
             lblIgnores,
             lblIgnoresFeedback
-          ].map(x => crel('div', { class: 'd-block' }, x))
+          ].map(x => crel('div', x))
         );
         modal.show(modal.buildDom(
           crel('h2', { class: 'modal-title' }, 'Chat Settings'),
@@ -4730,6 +4782,50 @@ window.App = (function() {
           this.style.display = enabled ? 'initial' : 'none';
         });
       },
+      /**
+         * All lookup hooks.
+         */
+      hooks: [],
+      /**
+         * Registers hooks.
+         * @param {...Object} hooks Information about the hook.
+         * @param {String} hooks.id An ID for the hook.
+         * @param {Function} hooks.get A function that returns an object representing message metadata.
+         */
+      registerHook: function(...hooks) {
+        return self.hooks.push(...$.map(hooks, function(hook) {
+          return {
+            id: hook.id || 'hook',
+            get: hook.get || function() {
+            }
+          };
+        }));
+      },
+      /**
+         * Replace a hook by its ID.
+         * @param {String} hookId The ID of the hook to replace.
+         * @param {Object} newHook Information about the hook.
+         * @param {Function} newHook.get A function that returns an object representing message metadata.
+         */
+      replaceHook: function(hookId, newHook) {
+        delete newHook.id;
+        for (const idx in self.hooks) {
+          const hook = self.hooks[idx];
+          if (hook.id === hookId) {
+            self.hooks[idx] = Object.assign(hook, newHook);
+            return;
+          }
+        }
+      },
+      /**
+         * Unregisters a hook by its ID.
+         * @param {string} hookId The ID of the hook to unregister.
+         */
+      unregisterHook: function(hookId) {
+        self.hooks = $.grep(self.hooks, function(hook) {
+          return hook.id !== hookId;
+        });
+      },
       _process: (packet, isHistory = false) => {
         if (packet.id) {
           if (self.idLog.includes(packet.id)) {
@@ -4741,12 +4837,12 @@ window.App = (function() {
             }
           }
         }
+
+        const hookDatas = self.hooks.map((hook) => Object.assign({}, { pings: [] }, hook.get(packet)));
+
         self.typeahead.helper.getDatabase('users').addEntry(packet.author, packet.author);
         if (self.ignored.indexOf(packet.author) >= 0) return;
-        const hasPing = !board.snipMode && ls.get('chat.pings-enabled') === true && user.isLoggedIn() && packet.message_raw
-          .toLowerCase()
-          .split(' ')
-          .some((s) => s.search(new RegExp(`@${user.getUsername().toLowerCase()}(?![a-zA-Z0-9_-])`)) === 0);
+        const hasPing = !board.snipMode && ls.get('chat.pings-enabled') === true && user.isLoggedIn() && hookDatas.some((data) => data.pings.length > 0);
         const when = moment.unix(packet.date);
         const flairs = crel('span', { class: 'flairs' });
         if (Array.isArray(packet.badges)) {
@@ -4850,7 +4946,7 @@ window.App = (function() {
             if (isNaN(group1) || isNaN(group2)) return match;
             if (!board.validateCoordinates(parseFloat(group1), parseFloat(group2))) return match;
             const group3Str = !(parseFloat(group3)) ? '' : `, ${group3}x`;
-            return `<span class="link -internal-jump" data-x="${group1}" data-y="${group2}" data-scale="${group3}">(${group1}, ${group2}${group3Str})</span>`;
+            return `<a class="link -internal-jump" href="#x=${group1}&y=${group2}&scale=${!(parseFloat(group3)) ? 1 : group3}" data-x="${group1}" data-y="${group2}" data-scale="${group3}">(${group1}, ${group2}${group3Str})</a>`;
           });
 
           // insert <a>'s
@@ -5024,7 +5120,7 @@ window.App = (function() {
               ['OK', () => resolve(bodyWrapper.querySelector('input[type=radio]:checked').dataset.actionId >> 0)]
             ].map(x =>
               crel('button', {
-                class: 'button',
+                class: 'text-button',
                 style: 'margin-left: 3px; position: initial !important; bottom: initial !important; right: initial !important;',
                 onclick: x[1]
               }, x[0])
@@ -5082,86 +5178,49 @@ window.App = (function() {
 
           const closeHandler = function() {
             if (this && this.closest) {
-              const toClose = this.closest('.popup.panels');
+              const toClose = this.closest('.popup');
               if (toClose) toClose.remove();
             }
           };
 
-          const popupWrapper = crel('div', { class: 'popup panels', 'data-popup-for': id });
+          const popupWrapper = crel('div', { class: 'popup panel', 'data-popup-for': id });
           const panelHeader = crel('header',
-            { style: 'text-align: center;' },
-            crel('div', { class: 'left' }, crel('i', {
-              class: 'fas fa-times text-red',
+            { class: 'panel-header' },
+            crel('button', { class: 'left panel-closer' }, crel('i', {
+              class: 'fas fa-times',
               onclick: closeHandler
             })),
             crel('span', (closest.dataset.tag ? `[${closest.dataset.tag}] ` : null), closest.dataset.author, badges),
             crel('div', { class: 'right' })
           );
-          const leftPanel = crel('div', { class: 'pane details-wrapper' });
+          const leftPanel = crel('div', { class: 'pane details-wrapper chat-line' });
           const rightPanel = crel('div', { class: 'pane actions-wrapper' });
           const actionsList = crel('ul', { class: 'actions-list' });
 
-          const actionReport = crel('li', {
-            class: 'text-red',
-            'data-action': 'report',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Report');
-          const actionMention = crel('li', {
-            'data-action': 'mention',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Mention');
-          const actionIgnore = crel('li', {
-            'data-action': 'ignore',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Ignore');
-          const actionProfile = crel('li', {
-            'data-action': 'profile',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Profile');
-          const actionChatban = crel('li', {
-            'data-action': 'chatban',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Chat (un)ban');
-          const actionPurgeUser = crel('li', {
-            'data-action': 'purge',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Purge User');
-          const actiondeleteMessage = crel('li', {
-            'data-action': 'delete',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Delete');
-          const actionModLookup = crel('li', {
-            'data-action': 'lookup-mod',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Mod Lookup');
-          const actionChatLookup = crel('li', {
-            'data-action': 'lookup-chat',
-            'data-id': id,
-            onclick: self._handleActionClick
-          }, 'Chat Lookup');
+          const actions = [
+            { label: 'Report', action: 'report', class: 'dangerous-button' },
+            { label: 'Mention', action: 'mention' },
+            { label: 'Ignore', action: 'ignore' },
+            { label: 'Profile', action: 'profile' },
+            { label: 'Chat (un)ban', action: 'chatban', staffaction: true },
+            { label: 'Purge User', action: 'purge', staffaction: true },
+            { label: 'Delete', action: 'delete', staffaction: true },
+            { label: 'Mod Lookup', action: 'lookup-mod', staffaction: true },
+            { label: 'Chat Lookup', action: 'lookup-chat', staffaction: true }
+          ];
 
-          crel(leftPanel, crel('p', { class: 'popup-timestamp-header' }, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(ls.get('chat.24h') === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
-          crel(leftPanel, crel('p', { style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector('.content').textContent));
+          crel(leftPanel, crel('p', { class: 'popup-timestamp-header text-muted' }, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(ls.get('chat.24h') === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
+          crel(leftPanel, crel('p', { class: 'content', style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector('.content').textContent));
 
-          crel(actionsList, actionReport);
-          crel(actionsList, actionMention);
-          crel(actionsList, actionProfile);
-          crel(actionsList, actionIgnore);
-          if (user.isStaff()) {
-            crel(actionsList, actionChatban);
-            crel(actionsList, actiondeleteMessage);
-            crel(actionsList, actionPurgeUser);
-            crel(actionsList, actionModLookup);
-            crel(actionsList, actionChatLookup);
-          }
+          crel(actionsList, actions
+            .filter((action) => user.isStaff() || !action.staffaction)
+            .map((action) => crel('li', crel('button', {
+              type: 'button',
+              class: 'text-button fullwidth ' + (action.class || ''),
+              'data-action': action.action,
+              'data-id': id,
+              onclick: self._handleActionClick
+            }, action.label))));
           crel(rightPanel, actionsList);
 
           const popup = crel(popupWrapper, panelHeader, leftPanel, rightPanel);
@@ -5215,8 +5274,7 @@ window.App = (function() {
         switch (this.dataset.action.toLowerCase().trim()) {
           case 'report': {
             const reportButton = crel('button', {
-              class: 'button',
-              style: 'position: initial;',
+              class: 'text-button dangerous-button',
               type: 'submit'
             }, 'Report');
             const textArea = crel('textarea', {
@@ -5236,7 +5294,7 @@ window.App = (function() {
                   textArea,
                   crel('div', { style: 'text-align: right' },
                     crel('button', {
-                      class: 'button',
+                      class: 'text-button',
                       style: 'position: initial; margin-right: .25rem',
                       type: 'button',
                       onclick: () => {
@@ -5359,14 +5417,14 @@ window.App = (function() {
             const _reasonWrap = crel('div', { style: 'display: block;' });
 
             const _btnCancel = crel('button', {
-              class: 'button',
+              class: 'text-button',
               type: 'button',
               onclick: () => {
                 chatbanContainer.remove();
                 modal.closeAll();
               }
             }, 'Cancel');
-            const _btnOK = crel('button', { class: 'button', type: 'submit' }, 'Ban');
+            const _btnOK = crel('button', { class: 'text-button dangerous-button', type: 'submit' }, 'Ban');
 
             const chatbanContainer = crel('form', {
               class: 'chatmod-container',
@@ -5487,7 +5545,7 @@ window.App = (function() {
             if (e.shiftKey === true) {
               return dodelete();
             }
-            const btndelete = crel('button', { class: 'button' }, 'Delete');
+            const btndelete = crel('button', { class: 'text-button dangerous-button' }, 'Delete');
             btndelete.onclick = () => dodelete();
             const deleteWrapper = crel('div', { class: 'chatmod-container' },
               crel('table',
@@ -5510,7 +5568,7 @@ window.App = (function() {
               ),
               crel('div', { class: 'buttons' },
                 crel('button', {
-                  class: 'button',
+                  class: 'text-button',
                   type: 'button',
                   onclick: () => {
                     deleteWrapper.remove();
@@ -5527,12 +5585,9 @@ window.App = (function() {
             break;
           }
           case 'purge': {
-            // const lblPurgeAmountError = crel('label', { class: 'hidden error-label' });
-
             const txtPurgeReason = crel('input', { type: 'text', onkeydown: e => e.stopPropagation() });
-            const lblPurgeReasonError = crel('label', { class: 'hidden error-label' });
 
-            const btnPurge = crel('button', { class: 'button', type: 'submit' }, 'Purge');
+            const btnPurge = crel('button', { class: 'text-button dangerous-button', type: 'submit' }, 'Purge');
 
             const messageTable = mode
               ? crel('table',
@@ -5557,13 +5612,11 @@ window.App = (function() {
               messageTable,
               crel('div',
                 crel('h5', 'Purge Reason'),
-                txtPurgeReason,
-                crel('br'),
-                lblPurgeReasonError
+                txtPurgeReason
               ),
               crel('div', { class: 'buttons' },
                 crel('button', {
-                  class: 'button',
+                  class: 'text-button',
                   type: 'button',
                   onclick: () => {
                     purgeWrapper.remove();
@@ -5615,7 +5668,7 @@ window.App = (function() {
             const stateOn = crel('label', { style: 'display: inline-block' }, rbStateOn, ' On');
             const stateOff = crel('label', { style: 'display: inline-block' }, rbStateOff, ' Off');
 
-            const btnSetState = crel('button', { class: 'button', type: 'submit' }, 'Set');
+            const btnSetState = crel('button', { class: 'text-button', type: 'submit' }, 'Set');
 
             const renameError = crel('p', {
               style: 'display: none; color: #f00; font-weight: bold; font-size: .9rem',
@@ -5631,7 +5684,7 @@ window.App = (function() {
               renameError,
               crel('div', { class: 'buttons' },
                 crel('button', {
-                  class: 'button',
+                  class: 'text-button',
                   type: 'button',
                   onclick: () => {
                     renameWrapper.remove();
@@ -5679,7 +5732,7 @@ window.App = (function() {
             });
             const newNameWrapper = crel('label', 'New Name: ', newNameInput);
 
-            const btnSetState = crel('button', { class: 'button', type: 'submit' }, 'Set');
+            const btnSetState = crel('button', { class: 'text-button', type: 'submit' }, 'Set');
 
             const renameError = crel('p', {
               style: 'display: none; color: #f00; font-weight: bold; font-size: .9rem',
@@ -5692,7 +5745,7 @@ window.App = (function() {
               renameError,
               crel('div', { class: 'buttons' },
                 crel('button', {
-                  class: 'button',
+                  class: 'text-button',
                   type: 'button',
                   onclick: () => {
                     modal.closeAll();
@@ -5782,7 +5835,11 @@ window.App = (function() {
       removeIgnore: self.removeIgnore,
       getIgnores: self.getIgnores,
       typeahead: self.typeahead,
-      updateCanvasBanState: self.updateCanvasBanState
+      updateCanvasBanState: self.updateCanvasBanState,
+      registerHook: self.registerHook,
+      replaceHook: self.replaceHook,
+      unregisterHook: self.unregisterHook,
+      runLookup: self.runLookup
     };
   })();
     // this takes care of the countdown timer
@@ -6051,34 +6108,34 @@ window.App = (function() {
         self.elements.loginOverlay.find('a').click(function(evt) {
           evt.preventDefault();
 
-          const cancelButton = crel('button', { class: 'button' }, 'Cancel');
+          const cancelButton = crel('button', { class: 'float-right text-button' }, 'Cancel');
           cancelButton.addEventListener('click', function() {
             self.elements.prompt.fadeOut(200);
           });
 
           self.elements.prompt[0].innerHTML = '';
           crel(self.elements.prompt[0],
-            crel('h1', 'Sign in with...'),
-            crel('ul',
-              Object.values(data.authServices).map(service => {
-                const anchor = crel('a', { href: `/signin/${service.id}?redirect=1` }, service.name);
-                anchor.addEventListener('click', function(e) {
-                  if (window.open(this.href, '_blank')) {
-                    e.preventDefault();
-                    return;
+            crel('div', { class: 'content' },
+              crel('h1', 'Sign in with...'),
+              crel('ul',
+                Object.values(data.authServices).map(service => {
+                  const anchor = crel('a', { href: `/signin/${service.id}?redirect=1` }, service.name);
+                  anchor.addEventListener('click', function(e) {
+                    if (window.open(this.href, '_blank')) {
+                      e.preventDefault();
+                      return;
+                    }
+                    ls.set('auth_same_window', true);
+                  });
+                  const toRet = crel('li', anchor);
+                  if (!service.registrationEnabled) {
+                    crel(toRet, crel('span', { style: 'font-style: italic; font-size: .75em; font-weight: bold; color: red; margin-left: .5em' }, 'New Accounts Disabled'));
                   }
-                  ls.set('auth_same_window', true);
-                });
-                const toRet = crel('li', anchor);
-                if (!service.registrationEnabled) {
-                  crel(toRet, crel('span', { style: 'font-style: italic; font-size: .75em; font-weight: bold; color: red; margin-left: .5em' }, 'New Accounts Disabled'));
-                }
-                return toRet;
-              })
+                  return toRet;
+                })
+              )
             ),
-            crel('div', { class: 'buttons' },
-              cancelButton
-            )
+            cancelButton
           );
           self.elements.prompt.fadeIn(200);
         });
@@ -6282,8 +6339,8 @@ window.App = (function() {
             class: 'rename-error'
           }, ''),
           crel('div', { style: 'text-align: right' },
-            crel('button', { class: 'button', onclick: () => modal.closeAll() }, 'Not now'),
-            crel('button', { class: 'button rename-submit', type: 'submit' }, 'Change')
+            crel('button', { class: 'text-button', onclick: () => modal.closeAll() }, 'Not now'),
+            crel('button', { class: 'rename-submit text-button', type: 'submit' }, 'Change')
           )
         );
         modal.show(modal.buildDom(
@@ -6439,12 +6496,12 @@ window.App = (function() {
         }
       },
       makeDomForNotification(notification) {
-        return crel('div', { class: 'notification', 'data-notification-id': notification.id },
-          crel('div', { class: 'notification-title' }, notification.title),
+        return crel('article', { class: 'notification', 'data-notification-id': notification.id },
+          crel('header', { class: 'notification-title' }, crel('h2', notification.title)),
           chat.processMessage('div', 'notification-body', notification.content),
-          crel('div', { class: 'notification-footer' },
+          crel('footer', { class: 'notification-footer' },
             notification.who ? document.createTextNode(`Posted by ${notification.who}`) : null,
-            notification.expiry !== 0 ? crel('span', { class: 'notification-expiry' },
+            notification.expiry !== 0 ? crel('span', { class: 'notification-expiry float-left' },
               crel('i', { class: 'far fa-clock fa-is-left' }),
               crel('span', { title: moment.unix(notification.expiry).format('MMMM DD, YYYY, hh:mm:ss A') }, `Expires ${moment.unix(notification.expiry).format('MMM DD YYYY')}`)
             ) : null
@@ -6548,7 +6605,7 @@ window.App = (function() {
           closeExisting: true,
           escapeClose: true,
           clickClose: true,
-          showClose: true,
+          showClose: false,
           closeText: '<i class="fas fa-times"></i>'
         }, { removeOnClose: true }, opts);
         if (!document.body.contains(modal)) {
@@ -6561,12 +6618,20 @@ window.App = (function() {
           });
         }
       },
+      buildCloser: function() {
+        const button = crel('button', { class: 'panel-closer' }, crel('i', { class: 'fas fa-times' }));
+        button.addEventListener('click', () => modal.closeTop());
+        return button;
+      },
       buildDom: function(headerContent, bodyContent, footerContent) {
-        return crel('div', { class: 'modal', tabindex: '-1', role: 'dialog' },
+        return crel('div', { class: 'modal panel', tabindex: '-1', role: 'dialog' },
           crel('div', { class: 'modal-wrapper', role: 'document' },
-            headerContent == null ? null : crel('div', { class: 'modal-header' }, headerContent),
-            bodyContent == null ? null : crel('div', { class: 'modal-body' }, bodyContent),
-            footerContent == null ? null : crel('div', { class: 'modal-footer' }, footerContent)
+            headerContent == null ? null : crel('header', { class: 'modal-header panel-header' },
+              crel('div', { class: 'left' }),
+              crel('div', { class: 'mid' }, headerContent),
+              crel('div', { class: 'right' }, this.buildCloser())),
+            bodyContent == null ? null : crel('div', { class: 'modal-body panel-body' }, bodyContent),
+            footerContent == null ? null : crel('footer', { class: 'modal-footer panel-footer' }, footerContent)
           )
         );
       },
@@ -6657,6 +6722,12 @@ window.App = (function() {
     },
     chat,
     typeahead: chat.typeahead,
+    user: {
+      getUsername: user.getUsername,
+      getRole: user.getRole,
+      isLoggedIn: user.isLoggedIn,
+      isStaff: user.isStaff
+    },
     modal
   };
 })();

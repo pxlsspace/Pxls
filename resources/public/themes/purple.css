@@ -1,39 +1,38 @@
 html {
     --general-text-color: #ddd;
-    --general-background-color: #111;
+    --general-background: #111;
 
-    --kbd-background-color: #eee;
+    --kbd-background: #eee;
     --kbd-border-color: #ddd;
     --kbd-text-color: #000;
 
-    --message-background-color: #5a2f71;
-    --message-text-color: inherit;
-
-    --button-background-color: #f8f9fa;
+    --button-background: #f8f9fa;
     --button-border-color: #f8f9fa;
     --button-text-color: #212529;
     --button-text-color-disabled: var(--button-text-color);
     --button-border-color-disabled: var(--button-border-color);
-    --button-background-color-disabled: var(--button-background-color);
+    --button-background-disabled: var(--button-background);
     --button-text-color-hover: var(--button-text-color);
     --button-border-color-hover: #dae0e5;
-    --button-background-color-hover: #e2e6ea;
+    --button-background-hover: #e2e6ea;
 
-    --report-button-text-color: #fff;
-    --report-button-background-color: #ff5959;
-    --report-button-background-color-hover: #f33;
-    --report-button-border-color: #ff5959;
+    --dangerous-button-text-color: #fff;
+    --dangerous-button-background: #ff5959;
+    --dangerous-button-border-color: #ff5959;
+    --dangerous-button-text-color-hover: var(--dangerous-button-text-color);
+    --dangerous-button-background-hover: #f33;
+    --dangerous-button-border-color-hover: var(--dangerous-button-border-color);
 
-    --lookup-text-color: inherit;
-    --lookup-border-color: #000;
-    --lookup-background-color: var(--message-background-color);
+    --floating-panel-text-color: inherit;
+    --floating-panel-border-color: #000;
+    --floating-panel-background: #5a2f71;
 
-    --bubble-background-color: rgba(0, 0, 0, 0.7);
+    --bubble-background: rgba(0, 0, 0, 0.7);
     --bubble-text-color: #fff;
 
-    --palette-background-color: #5a2f71cc;
+    --palette-background: #5a2f71cc;
     --palette-item-border-color: #000;
-    --palette-overlay-background-color: #5a2f71ee;
+    --palette-overlay-background: #5a2f71ee;
     --palette-overlay-text-color: inherit;
     --palette-deselect-button-color: #fff;
 
@@ -42,7 +41,7 @@ html {
     --undo-border-color: #000;
 
     --input-text-color: #ccc;
-    --input-background-color: #2d0c39;
+    --input-background: #2d0c39;
     --input-border-color: #16061c;
 
     --text-blue-color:#1ea1bb;
@@ -57,60 +56,57 @@ html {
     --notification-color: #b20;
     --ping-highlight-color: #860d82;
     --ping-flash-color: #8ef7d1;
+    --ping-counter-color: #ffa500;
+    --notification-expiry-color: var(--text-orange-color);
       
-    --panel-header-background: #320241;
-    --panel-background-color: #3d204d;
+    --panel-background: #3d204d;
     --panel-text-color: inherit;
-    --panel-borders-color: #000;
-    --panel-article-background-color: #5a2f71;
+    --panel-border-color: #000;
+    --panel-header-text-color: inherit;
+    --panel-header-background: #320241;
+    --panel-footer-text-color: var(--text-muted-color);
+    --panel-footer-background: var(--panel-header-background);
+    --panel-close-button-color: var(--text-red-color);
+    --panel-close-button-color-hover: var(--panel-close-button-color);
+    --panel-close-button-color-active: var(--panel-close-button-color);
+
+    --panel-article-background: #5a2f71;
+    --panel-article-text-color: var(--panel-text-color);
+    --panel-article-border-color: var(--panel-border-color);
+    --panel-article-header-text-color: inherit;
+    --panel-article-header-background: var(--panel-header-background);
+    --panel-article-footer-text-color: var(--panel-footer-text-color);
+    --panel-article-footer-background: var(--panel-footer-background);
 
     --panel-trigger-outline-color: #AAA;
 
     --option-bubble-position-border-color-hovered: #797979;
-    --option-bubble-position-background-color-hovered: #683683;
-    --option-bubble-position-background-color-selected: #8445a7;
+    --option-bubble-position-background-hovered: #683683;
+    --option-bubble-position-background-selected: #8445a7;
 
     --chat-separator-color: #000;
-    --chat-odd-background-color: rgba(0, 0, 0, 0.1);
+    --chat-odd-background: rgba(0, 0, 0, 0.1);
     --chat-abbr-underline-color: var(--general-text-color);
-    --chat-badge-background-color: #ccc;
+    --chat-badge-background: #ccc;
     --chat-badge-text-color: #770;
     --chat-server-action-text-color: var(--text-muted-color);
     --chat-user-text-shadow-color: #555;
     --chat-purged-text-color: var(--text-muted-color);
+    
+    --chat-tobottom-text-color: #fff;
+    --chat-tobottom-background: #683683;
+    --chat-tobottom-text-color-hover: var(--chat-tobottom-text-color);
+    --chat-tobottom-background-hover: #8445a7;
 
-    --chat-typeahead-menu-background-color: var(--panel-article-background-color);
+    --chat-typeahead-menu-background: var(--panel-article-background);
     --chat-typeahead-item-text-color: inherit;
-    --chat-typeahead-item-background-color: #5a2f71;
-    --chat-typeahead-item-background-color-hover: #683683;
-    --chat-typeahead-item-background-color-active: #8445a7;
+    --chat-typeahead-item-background: #5a2f71;
+    --chat-typeahead-item-background-hover: #683683;
+    --chat-typeahead-item-background-active: #8445a7;
 
-    --mod-lookup-chatban-history-item-background-color: var(--panel-article-background-color);
-    --mod-lookup-chatban-history-item-border-color: var(--panel-borders-color);
-    --mod-lookup-chatban-history-item-heading-background-color: var(--panel-header-background);
-
-    --popup-background-color: var(--panel-background-color);
-    --popup-border-color: var(--panel-borders-color);
-    --popup-text-color: var(--panel-text-color);
-    --popup-timestamp-text-color: var(--text-muted-color);
-    --pane-button-background: #683683;
-    --pane-button-background-hover: #8445a7;
-
-    --notification-background-color: var(--panel-article-background-color);
-    --notification-border-color: var(--panel-borders-color);
-    --notification-title-text-color: inherit;
-    --notification-title-background-color: var(--panel-header-background);
-    --notification-footer-background-color: var(--panel-header-background);
-    --notification-footer-text-color: var(--text-muted-color);
-    --notification-expiry-color: var(--text-orange-color);
-
-    --modal-text-color: inherit;
-    --modal-background-color: var(--panel-background-color);
-    --modal-headfoot-background-color: var(--panel-header-background);
-
-    --emoji-picker-border-color: var(--lookup-border-color);
+    --emoji-picker-border-color: var(--floating-panel-border-color);
     --emoji-picker-shadow-color: #0009;
-    --emoji-picker-background-color: var(--lookup-background-color);
+    --emoji-picker-background: var(--floating-panel-background);
     --emoji-picker-preview-name-text-color: var(--text-muted-color);
     --emoji-picker-tab-icon-color: inherit;
     --emoji-picker-tab-icon-color-selected: #ae5cdb;
@@ -118,20 +114,14 @@ html {
     --emoji-picker-emoji-color: var(--general-text-color);
     --emoji-picker-emoji-background: transparent;
     --emoji-picker-emoji-background-hover: rgba(0, 0, 0, 0.1);
-    --emoji-picker-emoji-search-input-border-color: var(--input-border-color);
-    --emoji-picker-emoji-search-input-background-color: var(--input-background-color);
-    --emoji-picker-emoji-search-input-text-color: var(--input-text-color);
+    --emoji-picker-search-input-border-color: var(--input-border-color);
+    --emoji-picker-search-input-background: var(--input-background);
+    --emoji-picker-search-input-text-color: var(--input-text-color);
     --emoji-picker-search-icon-color: var(--text-muted-color);
     --emoji-picker-search-no-results-color: var(--text-muted-color);
     --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
-    --emoji-picker-variant-popup-background: var(--lookup-background-color);
+    --emoji-picker-variant-popup-background: var(--floating-panel-background);
     --emoji-picker-variant-close-button-color: var(--text-red-color);
-
-    --admin-background: var(--bubble-background-color);
-    --admin-text-color: var(--bubble-text-color);
-    --admin-check-border-color: var(--lookup-border-color);
-    --admin-check-text-color: inherit;
-    --admin-check-background-color: var(--lookup-background-color);
 }
 
 .button:disabled {
@@ -145,16 +135,16 @@ hr {
 
 @keyframes -scrolled-flash {
     from {
-        background-color: #860d82;
+        background: #860d82;
     }
     to {
-        background-color: #8ef7d1;
+        background: #8ef7d1;
     }
 }
 
 /* The purple looks a bit ridiculous on the bubble background */
 .admin input {
-    background-color: #fff;
+    background: #fff;
     border-color: #ccc;
     color: #000;
 }

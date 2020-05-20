@@ -79,6 +79,33 @@ App.lookup.registerHook({
 
 Your function's return value can either be a jQuery object, a string (later wrapped in a `span`), or null (signaling the hook shouldn't be included).
 
+## Chat Hooks
+
+Similar to lookup hooks, hooks can also be used to intercept chat messages and highlight messages the same way a ping does.
+
+Below is an example of a hook that would make every message a ping.
+In it, `data` supplied to `get` would be message information.
+This data contains `message_raw` which is the raw text of the message as well as other values such as `author`, `date` and more.
+
+```js
+App.chat.registerHook({
+    id: "annoying_hook",
+    get: data => ({
+        pings: [
+            {
+                start: 0,
+                length: data.message_raw.length,
+                highlight: false
+            }
+        ]
+    })
+});
+```
+
+Your function's return value should be an object containing an array object in the key `pings` which contains one or more ping objects.
+A ping object contains three keys as shown in the example: `start`, `length`, and `highlight`.
+While not currently used, these values are used to indicate if a message should highlighted as a ping and what section if it if so.
+
 ## Global Events
 
 You can listen for various custom $(window) events triggered with the `pxls:` prefix. Note that these are only listen-able with jQuery.
