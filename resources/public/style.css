@@ -1914,6 +1914,15 @@ body .emoji-picker {
     white-space: pre-wrap;
 }
 
+.notification-footer {
+    /*
+        Fixes a dumb case where a footer containing only float content would have 0 height
+        despite being able to lay things out perfectly fine.
+        Nobody would even see this anyway - who would post a notification without an author?
+    */
+    overflow: auto;
+}
+
 .notification-footer .notification-expiry {
     cursor: default;
     color: #b66;

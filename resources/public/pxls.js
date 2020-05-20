@@ -3299,29 +3299,17 @@ window.App = (function() {
       _initThemes: function() {
         for (let i = 0; i < self.themes.length; i++) {
           self.themes[i].element = $('<link data-theme="' + i + '" rel="stylesheet" href="' + self.themes[i].location + '">');
+          self.themes[i].loaded = false;
           self.elements.themeSelect.append($('<option>', {
             value: i,
             text: self.themes[i].name
           }));
         }
+
         // since we just changed the options available, this will coerce the settings into making the control reflect the actual theme.
         settings.ui.theme.index.set(settings.ui.theme.index.get());
-        settings.ui.theme.index.listen(function(value) {
-          const themeIdx = parseInt(value);
-          // If there exists no particular theme for the themeIdx, reset it to default
-          if (!(themeIdx in self.themes)) {
-            // Default theme
-            $('*[data-theme]').remove();
-            self.elements.themeColorMeta.attr('content', null);
-            return;
-          }
-
-          const theme = self.themes[themeIdx];
-          theme.element.one('load', () => {
-            self.elements.themeColorMeta.attr('content', theme.color);
-            $(`*[data-theme]:not([data-theme=${themeIdx}])`).remove();
-          });
-          theme.element.appendTo(document.head);
+        settings.ui.theme.index.listen(async function(value) {
+          await self.loadTheme(parseInt(value));
         });
       },
       _initStack: function() {
@@ -3554,6 +3542,45 @@ window.App = (function() {
       },
       toggleCaptchaLoading: (display) => {
         self.elements.captchaLoadingIcon.css('display', display ? 'inline-block' : 'none');
+      },
+      loadTheme: async (index) => {
+        // Default theme (-1) doesn't need to load anything special.
+        if (index === -1) {
+          self.enableTheme(-1);
+          return;
+        }
+        if (!(index in self.themes)) {
+          return console.warn(`Tried to load invalid theme "${index}"`);
+        }
+        const theme = self.themes[index];
+        if (theme.loaded) {
+          self.enableTheme(index);
+        } else {
+          await new Promise((resolve, reject) => {
+            theme.element.one('load', () => {
+              if (!theme.loaded) {
+                theme.loaded = true;
+                self.enableTheme(index);
+              }
+              resolve();
+            });
+            theme.element.appendTo(document.head);
+          });
+        }
+      },
+      enableTheme: (index) => {
+        // If theme is -1, the user selected the default theme.
+        if (index === -1) {
+          self.elements.themeColorMeta.attr('content', null);
+        } else {
+          if (!(index in self.themes)) {
+            return console.warn(`Tried to enable invalid theme "${index}"`);
+          }
+          const theme = self.themes[index];
+          theme.element.prop('disabled', false);
+          self.elements.themeColorMeta.attr('content', theme.color);
+        }
+        $(`*[data-theme]:not([data-theme=${index}])`).prop('disabled', true);
       }
     };
 
