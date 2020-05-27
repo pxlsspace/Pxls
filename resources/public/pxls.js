@@ -3115,10 +3115,91 @@ window.App = (function() {
       clearHandle: self.clearHandle
     };
   })();
+  const serviceWorkerHelper = (() => {
+    const self = {
+      worker: null,
+      registrationPromise: null,
+      messageListeners: {},
+      hasSupport: 'serviceWorker' in window.navigator,
+      init() {
+        if (!self.hasSupport) {
+          return;
+        }
+
+        self.registrationPromise = navigator.serviceWorker.register('/serviceWorker.js').then((reg) => {
+          self.worker = reg.installing || reg.waiting || reg.active;
+        }).catch((err) => {
+          console.error('Failed to register Service Worker:', err);
+        });
+
+        navigator.serviceWorker.addEventListener('message', (ev) => {
+          if (typeof ev.data !== 'object' || !('type' in ev.data)) {
+            console.warn(`${self.tabId}: Received non-data message from ${ev.source.id} (${ev.source.type})`, ev.data);
+            return;
+          }
+
+          if (ev.data.type in self.messageListeners) {
+            for (const cb of self.messageListeners[ev.data.type]) {
+              cb(ev);
+            }
+          }
+          if ('*' in self.messageListeners) {
+            for (const cb of self.messageListeners['*']) {
+              cb(ev);
+            }
+          }
+        });
+      },
+      addMessageListener(type, callback) {
+        const callbacks = self.messageListeners[type] || [];
+        if (callbacks.includes(callback)) {
+          return;
+        }
+        callbacks.push(callback);
+        self.messageListeners[type] = callbacks;
+      },
+      removeMessageListener(type, callback) {
+        if (!(type in self.messageListeners)) {
+          return;
+        }
+
+        const callbacks = self.messageListeners[type];
+        const idx = callbacks.indexOf(callback);
+        if (idx === -1) {
+          return;
+        }
+
+        callbacks.splice(idx, 1);
+      },
+      postMessage(data) {
+        if (!self.worker) {
+          return;
+        }
+
+        self.worker.postMessage(data);
+      }
+    };
+
+    return {
+      get hasSupport() {
+        return self.hasSupport;
+      },
+      get worker() {
+        return self.worker;
+      },
+      get registrationPromise() {
+        return self.registrationPromise;
+      },
+      init: self.init,
+      addMessageListener: self.addMessageListener,
+      removeMessageListener: self.removeMessageListener,
+      postMessage: self.postMessage
+    };
+  })();
   const uiHelper = (function() {
     const self = {
       tabId: null,
-      focus: false,
+      _workerIsTabFocused: false,
       _available: -1,
       maxStacked: -1,
       _alertUpdateTimer: false,
@@ -3272,10 +3353,6 @@ window.App = (function() {
               break;
             }
           }
-        }).focus(() => {
-          self.focus = true;
-        }).blur(() => {
-          self.focus = false;
         });
 
         const _info = document.querySelector('.panel[data-panel="info"]');
@@ -3370,31 +3447,63 @@ window.App = (function() {
         self._bannerIntervalTick();
       },
       _initMultiTabDetection() {
-        const openTabIds = ls.get('tabs.open') || [];
-        while (self.tabId == null || openTabIds.includes(self.tabId)) {
-          self.tabId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
-        }
-        openTabIds.push(self.tabId);
-        ls.set('tabs.open', openTabIds);
-        ls.set('tabs.has-focus', self.tabId);
+        let handleUnload;
 
-        window.addEventListener('focus', () => {
-          ls.set('tabs.has-focus', self.tabId);
-        });
+        if (serviceWorkerHelper.hasSupport) {
+          serviceWorkerHelper.addMessageListener('request-id', ({ source, data }) => {
+            self.tabId = data.id;
+            if (document.hasFocus()) {
+              source.postMessage({ type: 'focus' });
+            }
+          });
+          serviceWorkerHelper.addMessageListener('focus', ({ data }) => {
+            self._workerIsTabFocused = self.tabId === data.id;
+          });
 
-        let unloadHandled = false;
-        const handleUnload = () => {
-          if (unloadHandled) {
-            // try to avoid race conditions
-            return;
-          }
-          unloadHandled = true;
+          serviceWorkerHelper.registrationPromise.then(async () => {
+            serviceWorkerHelper.postMessage({ type: 'request-id' });
+          }).catch(() => {
+            self.tabHasFocus = true;
+          });
+
+          window.addEventListener('focus', () => {
+            serviceWorkerHelper.postMessage({ type: 'focus' });
+          });
+
+          handleUnload = () => serviceWorkerHelper.postMessage({ type: 'leave' });
+        } else {
           const openTabIds = ls.get('tabs.open') || [];
-          openTabIds.splice(openTabIds.indexOf(self.tabId), 1);
+          while (self.tabId == null || openTabIds.includes(self.tabId)) {
+            self.tabId = Math.floor(Math.random() * Number.MAX_SAFE_INTEGER);
+          }
+          openTabIds.push(self.tabId);
           ls.set('tabs.open', openTabIds);
-        };
-        window.addEventListener('beforeunload', handleUnload, false);
-        window.addEventListener('unload', handleUnload, false);
+
+          const markSelfAsFocused = () => ls.set('tabs.has-focus', self.tabId);
+          if (document.hasFocus()) {
+            markSelfAsFocused();
+          }
+          window.addEventListener('focus', markSelfAsFocused);
+
+          handleUnload = () => {
+            const openTabIds = ls.get('tabs.open') || [];
+            openTabIds.splice(openTabIds.indexOf(self.tabId), 1);
+            ls.set('tabs.open', openTabIds);
+          };
+        }
+
+        if (handleUnload) {
+          let unloadHandled = false;
+          const secureHandleUnload = () => {
+            if (unloadHandled) {
+              return;
+            }
+            unloadHandled = true;
+            handleUnload();
+          };
+          window.addEventListener('beforeunload', secureHandleUnload, false);
+          window.addEventListener('unload', secureHandleUnload, false);
+        }
       },
       _bannerIntervalTick() {
         const nextElem = self.banner.HTMLs[self.banner.curElem++ % self.banner.HTMLs.length >> 0];
@@ -3600,7 +3709,9 @@ window.App = (function() {
       updateSelectedNameColor: self.updateSelectedNameColor,
       styleElemWithChatNameColor: self.styleElemWithChatNameColor,
       setBannerEnabled: self.setBannerEnabled,
-      getInitTitle: () => self.initTitle,
+      get initTitle() {
+        return self.initTitle;
+      },
       getTitle: (prepend) => {
         if (typeof prepend !== 'string') prepend = '';
         const tplOpts = template.getOptions();
@@ -3612,8 +3723,14 @@ window.App = (function() {
       },
       setLoadingBubbleState: self.setLoadingBubbleState,
       toggleCaptchaLoading: self.toggleCaptchaLoading,
-      tabHasFocus: () => ls.get('tabs.has-focus') === self.tabId,
-      windowHasFocus: () => self.focus
+      get tabId() {
+        return self.tabId;
+      },
+      tabHasFocus: () => {
+        return serviceWorkerHelper.hasSupport
+          ? self._workerIsTabFocused
+          : ls.get('tabs.has-focus') === self.tabId;
+      }
     };
   })();
   const panels = (function() {
@@ -4285,6 +4402,16 @@ window.App = (function() {
           }
         });
 
+        window.addEventListener('storage', (ev) => {
+          // value updated on another tab
+          if (ev.storageArea === window.localStorage && ev.key === 'chat-last_seen_id') {
+            const isLastChild = self.elements.body.find(`[data-id="${JSON.parse(ev.newValue)}"]`).is(':last-child');
+            if (isLastChild) {
+              self.clearPings();
+            }
+          }
+        });
+
         $(window).on('pxls:panel:closed', (e, which) => {
           if (which === 'chat') {
             if (document.querySelector('.chat-settings-title')) {
@@ -4470,7 +4597,7 @@ window.App = (function() {
                 event.stopPropagation();
                 event.stopImmediatePropagation();
                 let nextIndex = self.typeahead.highlightedIndex + (event.shiftKey ? -1 : 1); // if we're holding shift, walk backwards (up).
-                const children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
+                const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
                 if (event.shiftKey && nextIndex < 0) { // if we're holding shift, we're walking backwards and need to check underflow.
                   nextIndex = children.length - 1;
                 } else if (nextIndex >= children.length) {
@@ -4492,7 +4619,7 @@ window.App = (function() {
                 event.stopPropagation();
                 event.stopImmediatePropagation();
                 let nextIndex = self.typeahead.highlightedIndex - 1;
-                const children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
+                const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
                 if (nextIndex < 0) {
                   nextIndex = children.length - 1;
                 }
@@ -4510,7 +4637,7 @@ window.App = (function() {
                 event.stopPropagation();
                 event.stopImmediatePropagation();
                 let nextIndex = self.typeahead.highlightedIndex + 1;
-                const children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
+                const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
                 if (nextIndex >= children.length) {
                   nextIndex = 0;
                 }
@@ -4527,11 +4654,11 @@ window.App = (function() {
                 event.preventDefault();
                 event.stopPropagation();
                 event.stopImmediatePropagation();
-                const selected = self.elements.typeahead_list[0].querySelector('li:not(.no-results).active');
+                const selected = self.elements.typeahead_list[0].querySelector('button[data-insert].active');
                 if (selected) {
                   self._handleTypeaheadInsert(selected);
                 } else {
-                  const topResult = self.elements.typeahead_list[0].querySelector('li:not(.no-results):first-child');
+                  const topResult = self.elements.typeahead_list[0].querySelector('li:first-child > button[data-insert]');
                   if (topResult) {
                     self._handleTypeaheadInsert(topResult);
                   }
@@ -5056,7 +5183,7 @@ window.App = (function() {
           const pingAudioState = settings.chat.pings.audio.when.get();
           const canPlayPingAudio = !isHistory && settings.audio.enable.get() &&
               pingAudioState !== 'off' && Date.now() - self.lastPingAudioTimestamp > 5000;
-          if ((!panels.isOpen('chat') || !uiHelper.windowHasFocus() || pingAudioState === 'always') &&
+          if ((!panels.isOpen('chat') || !document.hasFocus() || pingAudioState === 'always') &&
               uiHelper.tabHasFocus() && canPlayPingAudio) {
             self.pingAudio.volume = parseFloat(settings.chat.pings.audio.volume.get());
             self.pingAudio.play();
@@ -5984,7 +6111,8 @@ window.App = (function() {
       elements: {
         palette: $('#palette'),
         timer_overlay: $('#cd-timer-overlay'),
-        timer_bubble: $('#cooldown-timer'),
+        timer_bubble_container: $('#cooldown'),
+        timer_bubble_countdown: $('#cooldown-timer'),
         timer_chat: $('#txtMobileChatCooldown')
       },
       isOverlay: false,
@@ -6002,19 +6130,20 @@ window.App = (function() {
 
         if (self.runningTimer === false) {
           self.isOverlay = settings.place.deselectonplace.enable.get() === true;
-          self.elements.timer = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble;
+          self.elements.timer_container = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble_container;
+          self.elements.timer_countdown = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble_countdown;
           self.elements.timer_overlay.hide();
         }
 
         if (self.status) {
-          self.elements.timer.text(self.status);
+          self.elements.timer_countdown.text(self.status);
         }
 
         const alertDelay = settings.place.alert.delay.get();
         if (alertDelay < 0 && delta < Math.abs(alertDelay) && !self.hasFiredNotification) {
           self.playAudio();
           let notif;
-          if (!uiHelper.windowHasFocus()) {
+          if (!document.hasFocus()) {
             notif = nativeNotifications.maybeShow(`Your next pixel will be available in ${Math.abs(alertDelay)} seconds!`);
           }
           setTimeout(() => {
@@ -6027,17 +6156,17 @@ window.App = (function() {
         }
 
         if (delta > 0) {
-          self.elements.timer.show();
+          self.elements.timer_container.show();
           if (self.isOverlay) {
             self.elements.palette.css('overflow-x', 'hidden');
-            self.elements.timer.css('left', `${self.elements.palette.scrollLeft()}px`);
+            self.elements.timer_container.css('left', `${self.elements.palette.scrollLeft()}px`);
           }
           delta++; // real people don't count seconds zero-based (programming is more awesome)
           const secs = Math.floor(delta % 60);
           const secsStr = secs < 10 ? '0' + secs : secs;
           const minutes = Math.floor(delta / 60);
           const minuteStr = minutes < 10 ? '0' + minutes : minutes;
-          self.elements.timer.text(`${minuteStr}:${secsStr}`);
+          self.elements.timer_countdown.text(`${minuteStr}:${secsStr}`);
           self.elements.timer_chat.text(`(${minuteStr}:${secsStr})`);
 
           document.title = uiHelper.getTitle(`[${minuteStr}:${secsStr}]`);
@@ -6057,15 +6186,15 @@ window.App = (function() {
         document.title = uiHelper.getTitle();
         if (self.isOverlay) {
           self.elements.palette.css('overflow-x', 'auto');
-          self.elements.timer.css('left', '0');
+          self.elements.timer_container.css('left', '0');
         }
-        self.elements.timer.hide();
+        self.elements.timer_container.hide();
         self.elements.timer_chat.text('');
 
         if (alertDelay > 0) {
           setTimeout(() => {
             self.playAudio();
-            if (!uiHelper.windowHasFocus()) {
+            if (!document.hasFocus()) {
               const notif = nativeNotifications.maybeShow(`Your next pixel has been available for ${alertDelay} seconds!`);
               if (notif) {
                 $(window).one('pxls:ack:place', () => notif.close());
@@ -6079,7 +6208,7 @@ window.App = (function() {
 
         if (!self.hasFiredNotification) {
           self.playAudio();
-          if (!uiHelper.windowHasFocus()) {
+          if (!document.hasFocus()) {
             const notif = nativeNotifications.maybeShow('Your next pixel is available!');
             if (notif) {
               $(window).one('pxls:ack:place', () => notif.close());
@@ -6091,10 +6220,10 @@ window.App = (function() {
       },
       init: function() {
         self.title = document.title;
-        self.elements.timer = settings.place.deselectonplace.enable.get() === false
+        self.elements.timer_container = settings.place.deselectonplace.enable.get() === false
           ? self.elements.timer_overlay
-          : self.elements.timer_bubble;
-        self.elements.timer.hide();
+          : self.elements.timer_bubble_container;
+        self.elements.timer_container.hide();
         self.elements.timer_chat.text('');
 
         setTimeout(function() {
@@ -6533,7 +6662,7 @@ window.App = (function() {
         }
       },
       show: (body) => {
-        let title = uiHelper.getInitTitle();
+        let title = uiHelper.initTitle;
         const templateOpts = template.getOptions();
         if (templateOpts.use && templateOpts.title) {
           title = `${templateOpts.title} - ${title}`;
@@ -6763,6 +6892,7 @@ window.App = (function() {
   grid.init();
   place.init();
   timer.init();
+  serviceWorkerHelper.init();
   uiHelper.init();
   panels.init();
   coords.init();
@@ -6788,6 +6918,10 @@ window.App = (function() {
       clear: virginmap.clear
     },
     uiHelper: {
+      get tabId() {
+        return uiHelper.tabId;
+      },
+      tabHasFocus: uiHelper.tabHasFocus,
       updateAudio: uiHelper.updateAudio
     },
     template: {

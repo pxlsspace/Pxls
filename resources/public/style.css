@@ -26,11 +26,11 @@ z-index:
 html {
     --general-text-color: #000;
     --general-background: #CDCDCD;
-    
+
     --kbd-background: #eee;
     --kbd-border-color: #ddd;
     --kbd-text-color: black;
-        
+
     --button-background: #ddd;
     --button-border-color: #999;
     --button-text-color: #000;
@@ -40,42 +40,42 @@ html {
     --button-text-color-hover: #fff;
     --button-border-color-hover: #999;
     --button-background-hover: #ce4747;
-    
+
     --dangerous-button-text-color: #fff;
     --dangerous-button-background: #e20;
     --dangerous-button-border-color: unset;
     --dangerous-button-text-color-hover: var(--dangerous-button-text-color);
     --dangerous-button-background-hover: #f10;
     --dangerous-button-border-color-hover: var(--dangerous-button-border-color);
-    
+
     --floating-panel-text-color: inherit;
     --floating-panel-border-color: #ccc;
     --floating-panel-background: #eee;
-    
+
     --bubble-background: rgba(0, 0, 0, 0.7);
     --bubble-text-color: #fff;
-    
+
     --palette-background: rgba(255, 255, 255, 0.8);
     --palette-item-border-color: black;
     --palette-overlay-background: rgba(255, 255, 255, 0.9);
     --palette-overlay-text-color: #000;
     --palette-deselect-button-color: inherit;
-    
+
     --undo-text-color: #000;
     --undo-background: linear-gradient(to top, #FFFC, #FFF);
     --undo-border-color: #000;
-    
+
     --input-text-color: #000;
     --input-background: #fff;
     --input-border-color: #ccc;
-    
+
     --text-blue-color:#00a;
     --text-green-color:#0a0;
     --text-red-color:#a00;
     --text-muted-color:#8c8c8c;
     --text-yellow-color:#f0ff27;
     --text-orange-color:#e67700;
-    
+
     --copypulse-color: rgba(0, 211, 221, 0.7);
     --error-color: #cc3333;
     --notification-color: #b20;
@@ -83,7 +83,7 @@ html {
     --ping-flash-color: #8ef7d1;
     --ping-counter-color: #ffa500;
     --notification-expiry-color: #b66;
-        
+
     --panel-background: #dfdfdf;
     --panel-text-color: inherit;
     --panel-border-color: #000;
@@ -94,7 +94,7 @@ html {
     --panel-close-button-color: #a00;
     --panel-close-button-color-hover: var(--panel-close-button-color);
     --panel-close-button-color-active: var(--panel-close-button-color);
-    
+
     --panel-article-background: #0002;
     --panel-article-text-color: var(--panel-text-color);
     --panel-article-border-color: var(--panel-border-color);
@@ -102,13 +102,13 @@ html {
     --panel-article-header-background: var(--panel-header-background);
     --panel-article-footer-text-color: var(--panel-footer-text-color);
     --panel-article-footer-background: var(--panel-footer-background);
-    
+
     --panel-trigger-outline-color: #AAA;
-    
+
     --option-bubble-position-border-color-hovered: #6495ED;
     --option-bubble-position-background-hovered: rgba(0, 0, 0, 0);
     --option-bubble-position-background-selected: #eee;
-    
+
     --chat-separator-color: #bfbfbf;
     --chat-odd-background: #d5d5d5;
     --chat-abbr-underline-color: #aaa;
@@ -117,12 +117,12 @@ html {
     --chat-server-action-text-color: #555;
     --chat-user-text-shadow-color: #ccc;
     --chat-purged-text-color: #888;
-    
+
     --chat-tobottom-text-color: #fff;
     --chat-tobottom-background: #66a;
     --chat-tobottom-text-color-hover: var(--chat-tobottom-text-color);
     --chat-tobottom-background-hover: #5c5ca0;
-    
+
     --chat-typeahead-menu-background: #b9b9b9;
     --chat-typeahead-item-text-color: inherit;
     --chat-typeahead-item-background: #a3a3a3;
@@ -234,6 +234,10 @@ kbd {
 
 .fake-indent {
     margin-left:1.2rem;
+}
+
+.d-block {
+    display: block !important;
 }
 
 .useMono {
@@ -575,6 +579,16 @@ body .message {
 
 #main-bubble a {
     pointer-events: auto;
+}
+
+#main-bubble .fas {
+    width: 1.25em;
+    text-align: center;
+}
+
+#coords-info {
+    margin-top: 16px;
+    margin-bottom: 8px;
 }
 
 #ui-bottom {
