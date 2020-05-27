@@ -5848,7 +5848,8 @@ window.App = (function() {
       elements: {
         palette: $('#palette'),
         timer_overlay: $('#cd-timer-overlay'),
-        timer_bubble: $('#cooldown-timer'),
+        timer_bubble_container: $('#cooldown'),
+        timer_bubble_countdown: $('#cooldown-timer'),
         timer_chat: $('#txtMobileChatCooldown')
       },
       isOverlay: false,
@@ -5866,12 +5867,13 @@ window.App = (function() {
 
         if (self.runningTimer === false) {
           self.isOverlay = ls.get('autoReset') === true;
-          self.elements.timer = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble;
+          self.elements.timer_container = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble_container;
+          self.elements.timer_countdown = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble_countdown;
           self.elements.timer_overlay.hide();
         }
 
         if (self.status) {
-          self.elements.timer.text(self.status);
+          self.elements.timer_countdown.text(self.status);
         }
 
         const alertDelay = parseInt(ls.get('alert_delay'));
@@ -5891,17 +5893,17 @@ window.App = (function() {
         }
 
         if (delta > 0) {
-          self.elements.timer.show();
+          self.elements.timer_container.show();
           if (self.isOverlay) {
             self.elements.palette.css('overflow-x', 'hidden');
-            self.elements.timer.css('left', `${self.elements.palette.scrollLeft()}px`);
+            self.elements.timer_container.css('left', `${self.elements.palette.scrollLeft()}px`);
           }
           delta++; // real people don't count seconds zero-based (programming is more awesome)
           const secs = Math.floor(delta % 60);
           const secsStr = secs < 10 ? '0' + secs : secs;
           const minutes = Math.floor(delta / 60);
           const minuteStr = minutes < 10 ? '0' + minutes : minutes;
-          self.elements.timer.text(`${minuteStr}:${secsStr}`);
+          self.elements.timer_countdown.text(`${minuteStr}:${secsStr}`);
           self.elements.timer_chat.text(`(${minuteStr}:${secsStr})`);
 
           document.title = uiHelper.getTitle(`[${minuteStr}:${secsStr}]`);
@@ -5921,9 +5923,9 @@ window.App = (function() {
         document.title = uiHelper.getTitle();
         if (self.isOverlay) {
           self.elements.palette.css('overflow-x', 'auto');
-          self.elements.timer.css('left', '0');
+          self.elements.timer_container.css('left', '0');
         }
-        self.elements.timer.hide();
+        self.elements.timer_container.hide();
         self.elements.timer_chat.text('');
 
         if (alertDelay > 0) {
@@ -5955,10 +5957,10 @@ window.App = (function() {
       },
       init: function() {
         self.title = document.title;
-        self.elements.timer = ls.get('autoReset') === true
+        self.elements.timer_container = ls.get('autoReset') === true
           ? self.elements.timer_overlay
-          : self.elements.timer_bubble;
-        self.elements.timer.hide();
+          : self.elements.timer_bubble_container;
+        self.elements.timer_container.hide();
         self.elements.timer_chat.text('');
 
         setTimeout(function() {

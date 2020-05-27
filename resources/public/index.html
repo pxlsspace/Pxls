@@ -74,20 +74,26 @@
           </div>
           <div id="main-bubble" class="bubble">
               <div id="user-info">
+                  <i class="fas fa-user"></i>
                   <!-- TODO: link to position on stats page -->
                   <span id="username"></span>
-                  <a href="/logout" class="logout"><i class="fas fa-sign-out-alt" id="logout-icon"></i></a>
-                  <br>
+                  <a href="/logout" class="logout"><i title="Logout" class="fas fa-sign-out-alt" id="logout-icon"></i></a>
               </div>
-              <span id="online-count">Waiting for online count...</span>
-              <br><br>
+              <div>
+                <i class="fas fa-users"></i>
+                <span id="online-count">Loading online user count&hellip;</span>
+              </div>
               <div id="coords-info">
                   <a class="coords"></a>
                   <i id="canvas-lock-icon" class="fas fa-lock"></i>
               </div>
               <div id="placement-info">
-                  <span>Pixels available: </span><span id="placeable-count">N/A</span> <i class="fas fa-spinner fa-spin captcha-loading-icon"></i>
-                  <br>
+                  <span id="placeable-count">N/A</span>
+                  <span>Pixels</span>
+                  <i class="fas fa-spinner fa-spin captcha-loading-icon"></i>
+              </div>
+              <div id="cooldown">
+                  <i class="far fa-clock"></i>
                   <span id="cooldown-timer"></span>
               </div>
           </div>
