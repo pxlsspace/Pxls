@@ -4286,7 +4286,7 @@ window.App = (function() {
                 event.stopPropagation();
                 event.stopImmediatePropagation();
                 let nextIndex = self.typeahead.highlightedIndex + (event.shiftKey ? -1 : 1); // if we're holding shift, walk backwards (up).
-                const children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
+                const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
                 if (event.shiftKey && nextIndex < 0) { // if we're holding shift, we're walking backwards and need to check underflow.
                   nextIndex = children.length - 1;
                 } else if (nextIndex >= children.length) {
@@ -4308,7 +4308,7 @@ window.App = (function() {
                 event.stopPropagation();
                 event.stopImmediatePropagation();
                 let nextIndex = self.typeahead.highlightedIndex - 1;
-                const children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
+                const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
                 if (nextIndex < 0) {
                   nextIndex = children.length - 1;
                 }
@@ -4326,7 +4326,7 @@ window.App = (function() {
                 event.stopPropagation();
                 event.stopImmediatePropagation();
                 let nextIndex = self.typeahead.highlightedIndex + 1;
-                const children = self.elements.typeahead_list[0].querySelectorAll('li:not(.no-results)');
+                const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
                 if (nextIndex >= children.length) {
                   nextIndex = 0;
                 }
@@ -4343,11 +4343,11 @@ window.App = (function() {
                 event.preventDefault();
                 event.stopPropagation();
                 event.stopImmediatePropagation();
-                const selected = self.elements.typeahead_list[0].querySelector('li:not(.no-results).active');
+                const selected = self.elements.typeahead_list[0].querySelector('button[data-insert].active');
                 if (selected) {
                   self._handleTypeaheadInsert(selected);
                 } else {
-                  const topResult = self.elements.typeahead_list[0].querySelector('li:not(.no-results):first-child');
+                  const topResult = self.elements.typeahead_list[0].querySelector('li:first-child > button[data-insert]');
                   if (topResult) {
                     self._handleTypeaheadInsert(topResult);
                   }
