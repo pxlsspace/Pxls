@@ -941,7 +941,7 @@ window.App = (function() {
 
         self.elements.container[0].addEventListener('wheel', function(evt) {
           if (!self.allowDrag) return;
-          const oldScale = self.scale;
+          const oldScale = self.getScale();
 
           let delta = evt.deltaY;
 
@@ -961,13 +961,14 @@ window.App = (function() {
 
           self.nudgeScale(delta);
 
-          if (oldScale !== self.scale) {
+          const scale = self.getScale();
+          if (oldScale !== scale) {
             const dx = evt.clientX - self.elements.container.width() / 2;
             const dy = evt.clientY - self.elements.container.height() / 2;
             self.pan.x -= dx / oldScale;
-            self.pan.x += dx / self.scale;
+            self.pan.x += dx / scale;
             self.pan.y -= dy / oldScale;
-            self.pan.y += dy / self.scale;
+            self.pan.y += dy / scale;
             self.update();
             place.update();
           }
@@ -1232,16 +1233,17 @@ window.App = (function() {
           y: Math.round((self.height / 2) - self.pan.y),
           scale: Math.round(self.scale * 100) / 100
         }, true);
+        const scale = self.getScale();
         if (self.use_js_render) {
           const ctx2 = self.elements.board_render[0].getContext('2d');
-          let pxlX = -self.pan.x + ((self.width - (window.innerWidth / self.scale)) / 2);
-          let pxlY = -self.pan.y + ((self.height - (window.innerHeight / self.scale)) / 2);
+          let pxlX = -self.pan.x + ((self.width - (window.innerWidth / scale)) / 2);
+          let pxlY = -self.pan.y + ((self.height - (window.innerHeight / scale)) / 2);
           let dx = 0;
           let dy = 0;
           let dw = 0;
           let dh = 0;
-          let pxlW = window.innerWidth / self.scale;
-          let pxlH = window.innerHeight / self.scale;
+          let pxlW = window.innerWidth / scale;
+          let pxlH = window.innerHeight / scale;
 
           if (pxlX < 0) {
             dx = -pxlX;
@@ -1269,7 +1271,7 @@ window.App = (function() {
 
           ctx2.canvas.width = window.innerWidth;
           ctx2.canvas.height = window.innerHeight;
-          ctx2.mozImageSmoothingEnabled = ctx2.webkitImageSmoothingEnabled = ctx2.msImageSmoothingEnabled = ctx2.imageSmoothingEnabled = (Math.abs(self.scale) < 1);
+          ctx2.mozImageSmoothingEnabled = ctx2.webkitImageSmoothingEnabled = ctx2.msImageSmoothingEnabled = ctx2.imageSmoothingEnabled = (scale < 1);
 
           ctx2.globalAlpha = 1;
           ctx2.fillStyle = '#CCCCCC';
@@ -1279,10 +1281,10 @@ window.App = (function() {
             pxlY,
             pxlW,
             pxlH,
-            0 + (dx * self.scale),
-            0 + (dy * self.scale),
-            window.innerWidth - (dw * self.scale),
-            window.innerHeight - (dh * self.scale)
+            0 + (dx * scale),
+            0 + (dy * scale),
+            window.innerWidth - (dw * scale),
+            window.innerHeight - (dh * scale)
           );
 
           template.draw(ctx2, pxlX, pxlY);
@@ -1294,7 +1296,7 @@ window.App = (function() {
         if (optional) {
           return false;
         }
-        if (Math.abs(self.scale) < 1) {
+        if (scale < 1) {
           self.elements.board.removeClass('pixelate');
         } else {
           self.elements.board.addClass('pixelate');
@@ -1303,13 +1305,13 @@ window.App = (function() {
           self.elements.mover.css({
             width: self.width,
             height: self.height,
-            transform: 'translate(' + (self.scale <= 1 ? Math.round(self.pan.x) : self.pan.x) + 'px, ' + (self.scale <= 1 ? Math.round(self.pan.y) : self.pan.y) + 'px)'
+            transform: 'translate(' + (scale <= 1 ? Math.round(self.pan.x) : self.pan.x) + 'px, ' + (scale <= 1 ? Math.round(self.pan.y) : self.pan.y) + 'px)'
           });
         }
         if (self.use_zoom) {
-          self.elements.zoomer.css('zoom', (self.scale * 100).toString() + '%');
+          self.elements.zoomer.css('zoom', (scale * 100).toString() + '%');
         } else {
-          self.elements.zoomer.css('transform', 'scale(' + self.scale + ')');
+          self.elements.zoomer.css('transform', 'scale(' + scale + ')');
         }
 
         place.update();
@@ -1317,7 +1319,10 @@ window.App = (function() {
         return true;
       },
       getScale: function() {
-        return Math.abs(self.scale);
+        if (self.scale < 1) {
+          return 2 ** Math.round(Math.log(self.scale) / Math.log(2));
+        }
+        return Math.abs(Math.round(self.scale));
       },
       setScale: function(scale) {
         if (ls.get('increased_zoom') !== true && scale > 50) scale = 50;
@@ -1379,23 +1384,24 @@ window.App = (function() {
           adjustY = self.height;
         }
 
+        const scale = self.getScale();
         if (self.use_js_render) {
           toRet = {
-            x: -self.pan.x + ((self.width - (window.innerWidth / self.scale)) / 2) + (screenX / self.scale) + adjustX,
-            y: -self.pan.y + ((self.height - (window.innerHeight / self.scale)) / 2) + (screenY / self.scale) + adjustY
+            x: -self.pan.x + ((self.width - (window.innerWidth / scale)) / 2) + (screenX / scale) + adjustX,
+            y: -self.pan.y + ((self.height - (window.innerHeight / scale)) / 2) + (screenY / scale) + adjustY
           };
         } else {
           // we scope these into the `else` so that we don't have to redefine `boardBox` twice. getBoundingClientRect() forces a redraw so we don't want to do it every call either if we can help it.
           const boardBox = self.elements.board[0].getBoundingClientRect();
           if (self.use_zoom) {
             toRet = {
-              x: (screenX / self.scale) - boardBox.left + adjustX,
-              y: (screenY / self.scale) - boardBox.top + adjustY
+              x: (screenX / scale) - boardBox.left + adjustX,
+              y: (screenY / scale) - boardBox.top + adjustY
             };
           } else {
             toRet = {
-              x: ((screenX - boardBox.left) / self.scale) + adjustX,
-              y: ((screenY - boardBox.top) / self.scale) + adjustY
+              x: ((screenX - boardBox.left) / scale) + adjustX,
+              y: ((screenY - boardBox.top) / scale) + adjustY
             };
           }
         }
@@ -1408,26 +1414,27 @@ window.App = (function() {
         return toRet;
       },
       toScreen: function(boardX, boardY) {
-        if (self.scale < 0) {
+        const scale = self.getScale();
+        if (scale < 0) {
           boardX -= self.width - 1;
           boardY -= self.height - 1;
         }
         if (self.use_js_render) {
           return {
-            x: (boardX + self.pan.x - ((self.width - (window.innerWidth / self.scale)) / 2)) * self.scale,
-            y: (boardY + self.pan.y - ((self.height - (window.innerHeight / self.scale)) / 2)) * self.scale
+            x: (boardX + self.pan.x - ((self.width - (window.innerWidth / scale)) / 2)) * scale,
+            y: (boardY + self.pan.y - ((self.height - (window.innerHeight / scale)) / 2)) * scale
           };
         }
         const boardBox = self.elements.board[0].getBoundingClientRect();
         if (self.use_zoom) {
           return {
-            x: (boardX + boardBox.left) * self.scale,
-            y: (boardY + boardBox.top) * self.scale
+            x: (boardX + boardBox.left) * scale,
+            y: (boardY + boardBox.top) * scale
           };
         }
         return {
-          x: boardX * self.scale + boardBox.left,
-          y: boardY * self.scale + boardBox.top
+          x: boardX * scale + boardBox.left,
+          y: boardY * scale + boardBox.top
         };
       },
       save: function() {
