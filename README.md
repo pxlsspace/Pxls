@@ -1,5 +1,7 @@
 # Pxls
 
+![Java CI with Maven](https://github.com/pxlsspace/Pxls/workflows/Java%20CI%20with%20Maven/badge.svg)
+
 Pxls is a collaborative image editor where you can place up to six pixels at a time, inspired by Reddit's [r/Place][place] experiment.
 
 **Note:** A Docker image is available at [aneurinprice/docker-pxls.space][docker] and on [Docker Hub][dockerhub].

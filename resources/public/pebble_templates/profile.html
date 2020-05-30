@@ -92,6 +92,18 @@
                                         <th class="text-right pr-3">Faction</th>
                                         <td class="text-left">{% if profile_of.displayedFaction | default(0) > 0 %}[{{profile_of.fetchDisplayedFaction.tag}}] {{profile_of.fetchDisplayedFaction.name}} (ID: {{profile_of.fetchDisplayedFaction.id}}){% else %}None{% endif %}</td>
                                     </tr>
+                                    {% if profile_of.isBanned() %}
+                                    <tr>
+                                        <th class="text-right pr-3">Canvas Ban Expiry</th>
+                                        <td class="text-left">{% if profile_of.isPermaBanned() %}Never{% else %}{{profile_of.getBanExpiryTime() | date("LLL d, y, hh:mm:s a (z)")}}{% endif %}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if profile_of.isChatbanned() %}
+                                    <tr>
+                                        <th class="text-right pr-3">Chat Ban Expiry</th>
+                                        <td class="text-left">{% if profile_of.isPermaChatbanned() %}Never{% else %}{{profile_of.getChatBanExpiryTime() | date("LLL d, y, hh:mm:s a (z)")}}{% endif %}</td>
+                                    </tr>
+                                    {% endif %}
                                 </tbody>
                             </table>
                             <div class="d-block mt-4">

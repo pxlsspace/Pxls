@@ -1690,6 +1690,9 @@ public class Database {
             handle.createUpdate("DELETE FROM faction_membership WHERE fid=:fid")
                 .bind("fid", fid)
                 .execute();
+            handle.createUpdate("DELETE FROM faction_ban WHERE fid=:fid")
+                .bind("fid", fid)
+                .execute();
             handle.createUpdate("DELETE FROM faction WHERE id=:fid")
                 .bind("fid", fid)
                 .execute();

@@ -21,8 +21,6 @@ import space.pxls.user.User;
 import space.pxls.util.TextFilter;
 import space.pxls.util.RateLimitFactory;
 
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -63,6 +61,7 @@ public class PacketHandler {
         if (user != null) {
             server.send(channel, new ServerUserInfo(
                     user.getName(),
+                    user.getLogin(),
                     user.getRole().name().equals("SHADOWBANNED") ? "USER" : user.getRole().name(),
                     user.isBanned(),
                     user.isBanned() ? user.getBanExpiryTime() : 0,

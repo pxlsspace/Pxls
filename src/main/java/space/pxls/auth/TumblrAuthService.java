@@ -10,8 +10,6 @@ import space.pxls.App;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import java.util.concurrent.TimeUnit;
-
 public class TumblrAuthService extends AuthService {
     public TumblrAuthService(String id) {
         super(id, App.getConfig().getBoolean("oauth.tumblr.enabled"), App.getConfig().getBoolean("oauth.tumblr.registrationEnabled"));

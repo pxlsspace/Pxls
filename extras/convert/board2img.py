@@ -112,7 +112,7 @@ if __name__ == '__main__':
 
 			if mode == 'board':
 				idx = int.from_bytes(b, 'big')
-				pixels[x, y] = palette[idx]
+				pixels[x, y] = palette[idx] if b != b'\xff' else (0, 0, 0, 0)
 			elif mode == 'placemap':
 				pixels[x, y] = (255, 255, 255, 255 if b == b'\xff' else 0)
 			elif mode == 'heatmap':

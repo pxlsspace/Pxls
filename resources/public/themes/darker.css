@@ -1,142 +1,91 @@
-/* TODO: Add sections, like in style.css */
-/* TODO: use CSS Variables: https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties */
+html {
+    --general-text-color: #fff;
+    --general-background: #000;
+    
+    --kbd-background: #444;
+    --kbd-border-color: #333;
+    --kbd-text-color: #fff;
+    
+    --button-background: #000;
+    --button-text-color: #fff;
+    --button-border-color-hover: transparent;
+    --button-background-hover: #252525;
+    
+    --bubble-background: #000;
+    
+    --floating-panel-text-color: #fff;
+    --floating-panel-border-color: #222;
+    --floating-panel-background: #000;
+    
+    --dangerous-button-background: #d00;
+    --dangerous-button-background-hover: #d50000;
+    --dangerous-button-border-color: var(--dangerous-button-background);
+    
+    --palette-background: #000;
+    --palette-overlay-background: #000;
+    --palette-overlay-text-color: #eee;
+    --palette-deselect-button-color: #c00;
+    
+    --undo-background: #000;
+    --undo-text-color: #fff;
+    
+    --input-text-color: #fff;
+    --input-background: #111;
+    --input-border-color: #2f2f2f;
+    
+    --text-red-color: #f00;
+    --text-yellow-color: #ee0;
+    
+    --panel-header-background: #222;
+    --panel-background: #000;
+    --panel-text-color: #fff;
+    --panel-close-button-color: #f00;
+    --panel-footer-background: #252525;
+    --panel-footer-text-color: #999;
+    
+    --option-bubble-position-background-selected: #fff;
+    
+    --chat-separator-color:#2f2f2f;
+    --chat-odd-background:#111;
+    --chat-server-action-text-color:#ccc;
+    --chat-user-text-shadow-color: #111;
+    
+    --panel-trigger-outline-color: #666;
+    
+    --ping-highlight-color: #5b5345;
+    --ping-flash-color: #2c5445;
+    
+    --emoji-picker-border-color: #383838;
+    --emoji-picker-shadow-color: #111;
+    --emoji-picker-background: #000;
+    --emoji-picker-preview-name-text-color: #fff;
+    --emoji-picker-tab-icon-color: #fff;
+    --emoji-picker-tab-icon-color-selected: #6fd1ff;
+    --emoji-picker-section-text-color: #fff;
+    --emoji-picker-emoji-color: #fff;
+    --emoji-picker-emoji-background: transparent;
+    --emoji-picker-emoji-background-hover: #656565;
+    --emoji-picker-search-input-border-color: #2f2f2f;
+    --emoji-picker-search-input-background: #111;
+    --emoji-picker-search-input-text-color: #fff;
+    --emoji-picker-search-icon-color: #bbb;
+    --emoji-picker-search-no-results-color: #bbb;
+    --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
+    --emoji-picker-variant-popup-background: #222;
+    --emoji-picker-variant-close-button-color: #fff;
+    
+    --chat-typeahead-menu-background: #000;
+    --chat-typeahead-item-text-color: #fff;
+    --chat-typeahead-item-background: #1a1a1a;
+    --chat-typeahead-item-background-hover: #2b2b2b;
+    --chat-typeahead-item-background-active: #3b3b3b;
 
-html, body {
-    background-color: #000;
+    --notification-expiry-color: #c45454;
 }
 
-kbd {
-    border: 1px solid #333;
-    background-color: #444;
-    color: #fff;
-}
 
 .message {
-    background-color: #000;
     border: 2px solid #333;
-    color: #fff;
-}
-
-.message select, .message textarea, .message input {
-    border: 2px solid #111;
-    background-color: #fff;
-    color: #000;
-}
-
-.button {
-    background-color: #000;
-    color: #fff;
-}
-
-.button:hover {
-    border: 1px solid transparent;
-    background-color: #252525;
-}
-
-#ui .bubble {
-    background-color: #000;
-}
-
-#lookup {
-    border: 1px solid #222;
-    background-color: #000;
-}
-
-#lookup .content {
-    color: #fff;
-}
-
-#lookup .content input {
-    background-color: #fff;
-    color: #000;
-}
-
-#lookup .report-button {
-    border: 1px solid #d00;
-    background-color: #d00;
-}
-#lookup .report-button:hover {
-    background-color: #d50000;
-}
-
-.palette-overlay {
-    background-color: #000;
-    color: #eee;
-}
-
-#palette {
-    background-color: #000;
-}
-
-.palette-color.deselect-button {
-    color: #c00;
-}
-
-#undo {
-    background-image: none;
-    background-color: #000;
-    color: #fff;
-}
-
-input[type="text"], textarea {
-    border: 1px solid #2f2f2f;
-    background-color: #111;
-    color: #fff;
-}
-
-/* Text Colors */
-
-.text-red {
-    color: #f00;
-}
-
-.text-yellow {
-    color: #ee0;
-}
-
-/* Panels */
-
-header {
-    background-image: none;
-    background-color: #222;
-}
-
-aside.panel {
-    background-color: #000;
-    color: #fff;
-}
-
-#bubble-position label input:checked ~ div {
-    background-color: #fff;
-}
-
-/* Chat */
-
-ul.chat-body li.chat-line {
-    border-bottom: 1px solid #2f2f2f;
-}
-
-ul.chat-body li.chat-line:nth-child(odd) {
-    background-color: #111;
-}
-
-ul.chat-body li.chat-line.server-action {
-    color: #ccc;
-}
-
-.chatban-history li {
-    background-color: #000;
-    border: 1px solid #464646;
-}
-
-.chatban-history h4 {
-    background-color: #46464633;
-    border-bottom: 1px solid #464646;
-}
-
-.popup {
-    background-color: #111;
-    color: #fff;
 }
 
 hr {
@@ -144,176 +93,11 @@ hr {
     border-top: 1px solid #000;
 }
 
-.panel-trigger {
-    text-shadow: 1px 1px 0 #666,-1px 1px 0 #666,1px -1px 0 #666,-1px -1px 0 #666,0 1px 0 #666,0 -1px 0 #666,-1px 0 0 #666,1px 0 0 #666;
-}
-
-.pane ul.actions-list li[data-action] {
-    background-image: linear-gradient(0,#111,#1f1f1f,#111);
-}
-
-.pane ul.actions-list li[data-action]:hover {
-    background-image: linear-gradient(0,#000,#111,#000);
-}
-
-ul.chat-body .chat-line[data-id].has-ping {
-    background-color: #5b5345;
-}
-
-li.chat-line .user {
-    text-shadow: 1px 1px 0 #111, -1px 1px 0 #111, 1px -1px 0 #111, -1px -1px 0 #111, 0 1px 0 #111, 0 -1px 0 #111, -1px 0 0 #111, 1px 0 0 #111;
-}
-
 @keyframes -scrolled-flash {
     from {
-        background-color: #3d382e;
+        background: #3d382e;
     }
     to {
-        background-color: #2c5445;
+        background: #2c5445;
     }
-}
-
-.message select.username-color-picker {
-    border: 1px solid #333;
-}
-
-.emoji-picker {
-    border: 1px solid #383838;
-    box-shadow: 0px 0px 3px 1px #111;
-    background: #000;
-}
-
-.emoji-picker__preview {
-    border-top: 1px solid #383838;
-}
-
-.emoji-picker__preview-name,
-.emoji-picker__tab {
-    color: #fff;
-}
-
-.emoji-picker__tab.active {
-    border-bottom: 3px solid #6fd1ff;
-    color: #6fd1ff;
-}
-
-.emoji-picker__tab-body h2 {
-    color: #fff;
-}
-
-.emoji-picker__emojis.search-results {
-    height: 21rem;
-}
-
-.emoji-picker__emoji {
-    background: transparent;
-    color: #fff;
-}
-
-.emoji-picker__emoji:hover {
-    background: #656565;
-}
-
-.emoji-picker__search-container input {
-    border: 1px solid transparent;
-    background-color: #fff;
-    color: #000;
-}
-
-.emoji-picker__search-icon {
-    color: #bbb;
-}
-
-.emoji-picker__search-not-found {
-    color: #bbb;
-}
-
-.emoji-picker__variant-overlay {
-    background: rgba(0, 0, 0, 0.7);
-}
-
-.emoji-picker__variant-popup {
-    background: #222;
-}
-
-.emoji-picker__variant-popup-close-button {
-    background-color: transparent;
-    color: #fff;
-}
-
-#typeahead {
-    background-color: #000;
-}
-#typeahead ul li {
-    background-color: #1a1a1a;
-    color: #fff;
-}
-
-#typeahead ul li:hover {
-    background-color: #2b2b2b;
-}
-
-#typeahead ul li.active {
-    background-color: #3b3b3b;
-}
-
-/* Admin */
-
-.admin input {
-    border: 1px solid #333;
-    background-color: #000;
-}
-
-.admin-check {
-    border: 1px solid #222 !important;
-    background-color: #000 !important;
-}
-
-.admin-check div:not(.button) {
-    color: #fff;
-}
-
-.admin-check input {
-    border: 2px solid #111;
-}
-
-/* Notifications */
-.notification {
-    background-color: #191919;
-    border: 1px solid #111111;
-}
-
-.notification .notification-title {
-    background-color: #232323;
-    border-bottom: 1px solid #111111;
-}
-
-.notification .notification-footer {
-    color: #999;
-    background-color: #252525;
-    border-top: 1px solid #111111;
-}
-
-.notification-footer .notification-expiry {
-    color: #c45454;
-}
-
-/*//////////////////////////*\
-| Modal
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
-/* https://github.com/kylefox/jquery-modal/blob/a8b9c9b01961c0a3c6676fcc8fe6cc5b8c74cb5c/jquery.modal.css */
-
-.modal {
-    color: #ddd;
-    background-color: #1a1a1a;
-}
-
-.modal .modal-header, .modal .modal-footer {
-    background-color: #000000;
-}
-
-/* Mobile */
-
-@media (max-width: 768px) {
-    /* Placeholder */
 }
