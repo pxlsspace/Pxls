@@ -1176,28 +1176,24 @@ public class WebHandler {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
         User user = exchange.getAttachment(AuthReader.USER);
         if (user != null) {
-            if (user.getRole().greaterEqual(Role.TRIALMOD)) {
-                FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-                if (data != null) {
-                    if (data.contains("username") && data.contains("faction_restricted")) {
-                        String username = data.getFirst("username").getValue();
-                        boolean isFactionBlocked = data.getFirst("faction_restricted").getValue().equalsIgnoreCase("true");
-                        User fromForm = App.getUserManager().getByName(username);
-                        if (fromForm != null) {
-                            fromForm.setFactionBlocked(isFactionBlocked, true);
-                            App.getDatabase().insertAdminLog(user.getId(), String.format("Set %s's faction_restricted state to %s", fromForm.getName(), isFactionBlocked));
-                            send(StatusCodes.OK, exchange, "OK");
-                        } else {
-                            sendBadRequest(exchange, "The user does not exist");
-                        }
+            FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+            if (data != null) {
+                if (data.contains("username") && data.contains("faction_restricted")) {
+                    String username = data.getFirst("username").getValue();
+                    boolean isFactionBlocked = data.getFirst("faction_restricted").getValue().equalsIgnoreCase("true");
+                    User fromForm = App.getUserManager().getByName(username);
+                    if (fromForm != null) {
+                        fromForm.setFactionBlocked(isFactionBlocked, true);
+                        App.getDatabase().insertAdminLog(user.getId(), String.format("Set %s's faction_restricted state to %s", fromForm.getName(), isFactionBlocked));
+                        send(StatusCodes.OK, exchange, "OK");
                     } else {
-                        sendBadRequest(exchange, "Missing params");
+                        sendBadRequest(exchange, "The user does not exist");
                     }
                 } else {
-                    sendBadRequest(exchange, "Missing form data");
+                    sendBadRequest(exchange, "Missing params");
                 }
             } else {
-                send(StatusCodes.FORBIDDEN, exchange, "Forbidden");
+                sendBadRequest(exchange, "Missing form data");
             }
         } else {
             sendBadRequest(exchange, "No authenticated users found");
