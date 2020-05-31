@@ -2027,7 +2027,7 @@ window.App = (function() {
         });
 
         settings.board.heatmap.opacity.listen(function(value) {
-          heatmap.setBackgroundColor(`rgba(0, 255, 0, ${value})`);
+          heatmap.setBackgroundColor(`rgba(0, 0, 0, ${value})`);
         });
         $('#hvmapClear').click(function() {
           heatmap.clear();
