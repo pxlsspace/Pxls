@@ -1492,8 +1492,7 @@ window.App = (function() {
       },
       start: function() {
         $.get('/info', (data) => {
-          heatmap.webinit(data);
-          virginmap.webinit(data);
+          overlays.webinit(data);
           user.webinit(data);
           self.width = data.width;
           self.height = data.height;
@@ -1835,146 +1834,209 @@ window.App = (function() {
       }
     };
   })();
-    // heatmap init stuff
-  const heatmap = (function() {
-    const self = {
-      elements: {
-        heatmap: $('#heatmap')
-      },
-      ctx: null,
-      id: null,
-      intView: null,
-      width: 0,
-      height: 0,
-      lazy_inited: false,
-      is_shown: false,
-      color: 0x005C5CCD,
-      loop: function() {
-        for (let i = 0; i < self.width * self.height; i++) {
-          let opacity = self.intView[i] >> 24;
-          if (opacity) {
-            opacity--;
-            self.intView[i] = (opacity << 24) | self.color;
-          }
-        }
-        self.ctx.putImageData(self.id, 0, 0);
-        setTimeout(self.loop, self.seconds * 1000 / 256);
-      },
-      lazy_init: async () => {
-        if (self.lazy_inited) {
-          uiHelper.setLoadingBubbleState('heatmap', false);
-          return;
-        }
-        uiHelper.setLoadingBubbleState('heatmap', true);
-        self.lazy_inited = true;
-        // we use xhr directly because of jquery being weird on raw binary
-        const data = await binaryAjax('/heatmap' + '?_' + (new Date()).getTime());
-        self.ctx = self.elements.heatmap[0].getContext('2d');
-        self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
-        self.id = createImageData(self.width, self.height);
-
-        self.intView = new Uint32Array(self.id.data.buffer);
-        for (let i = 0; i < self.width * self.height; i++) {
-          self.intView[i] = (data[i] << 24) | self.color;
-        }
-        self.ctx.putImageData(self.id, 0, 0);
-        self.elements.heatmap.fadeIn(200);
-        uiHelper.setLoadingBubbleState('heatmap', false);
-        setTimeout(self.loop, self.seconds * 1000 / 256);
-        socket.on('pixel', function(data) {
-          self.ctx.fillStyle = '#CD5C5C';
-          $.map(data.pixels, function(px) {
-            self.ctx.fillRect(px.x, px.y, 1, 1);
-            self.intView[px.y * self.width + px.x] = 0xFF000000 | self.color;
-          });
-        });
-      },
-      clear: function() {
-        self._clear();
-      },
-      _clear: function() {
-        // If the user hasn't opened the heatmap yet, we can't clear it!
-        if (self.intView == null) {
-          return;
-        }
-        for (let i = 0; i < self.width * self.height; i++) {
-          self.intView[i] = 0;
-        }
-        self.ctx.putImageData(self.id, 0, 0);
-      },
-      setBackgroundOpacity: function(opacity) {
-        if (typeof (opacity) === 'string') {
-          opacity = parseFloat(opacity);
-          if (isNaN(opacity)) opacity = 0.5;
-        }
-        if (opacity == null || opacity === undefined) opacity = 0.5;
-        if (opacity < 0 || opacity > 1) opacity = 0.5;
-
-        self.elements.heatmap.css('background-color', 'rgba(0, 0, 0, ' + opacity + ')');
-      },
-      init: function() {
-        self.elements.heatmap.hide();
-        settings.board.heatmap.opacity.listen(function(value) {
-          self.setBackgroundOpacity(parseFloat(value));
-        });
-        $('#hvmapClear').click(function() {
-          self.clear();
-        });
-        $(window).keydown((evt) => {
-          if (['INPUT', 'TEXTAREA'].includes(evt.target.nodeName)) {
-            // prevent inputs from triggering shortcuts
+  const overlays = (function() {
+    const overlay = function(name, fetchData, onLazyInit = () => {}) {
+      const self = {
+        name: name,
+        elements: {
+          overlay: crel('canvas', { id: name, class: 'pixelate noselect' })
+        },
+        ctx: null,
+        width: null,
+        height: null,
+        isShown: false,
+        previouslyLazyInited: false,
+        lazyInitStarted: false,
+        lazyInitDone: false,
+        lazyInit: async function() {
+          if (self.lazyInitStarted) {
             return;
           }
 
-          if (evt.key === 'o' || evt.key === 'O' || evt.which === 79) {
-            self.clear();
-          }
-        });
-      },
-      show: function() {
-        self.is_shown = false;
-        self.toggle();
-      },
-      hide: function() {
-        self.is_shown = true;
-        self.toggle();
-      },
-      // TODO ([  ]): this should be a "setVisible" function instead and toggle should just call that with the opposite of the current value.
-      toggle: function() {
-        self.is_shown = !self.is_shown;
-        if (self.fetchRequest) {
-          self.fetchRequest.abort();
-          uiHelper.setLoadingBubbleState('heatmap', false);
-          self.lazy_inited = false;
-          self.fetchRequest = null;
-          return;
-        }
+          self.lazyInitStarted = true;
 
-        if (self.lazy_inited) {
-          if (self.is_shown) {
-            this.elements.heatmap.fadeIn(200);
-          } else {
-            this.elements.heatmap.fadeOut(200);
+          const imageData = await fetchData();
+
+          $(self.elements.overlay).attr({
+            width: self.width = imageData.width,
+            height: self.height = imageData.height
+          });
+          self.ctx = self.elements.overlay.getContext('2d');
+          self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
+          self.setImageData(imageData);
+          self.lazyInitDone = true;
+          onLazyInit(self.width, self.height, self.previouslyLazyInited);
+          self.previouslyLazyInited = true;
+          uiHelper.setLoadingBubbleState(self.name, false);
+          self.setShown();
+        },
+        setPixel: function(x, y, color) {
+          if (self.ctx !== null) {
+            self.ctx.fillStyle = color;
+            self.ctx.fillRect(x, y, 1, 1);
           }
+        },
+        getImageData: function() {
+          return self.ctx && self.ctx.getImageData(0, 0, self.width, self.height);
+        },
+        setImageData: function(imageData) {
+          if (self.ctx !== null) {
+            self.ctx.putImageData(imageData, 0, 0);
+          }
+        },
+        clear: function() {
+          if (self.lazyInitDone) {
+            self.setImageData(createImageData(self.width, self.height));
+          }
+        },
+        setBackgroundColor: function(color) {
+          $(self.elements.overlay).css('background-color', color);
+        },
+        setShown: function(value = self.isShown, fadeTime = 200) {
+          self.isShown = value === true;
+
+          if (!self.lazyInitStarted) {
+            self.lazyInit();
+          }
+
+          if (!self.lazyInitDone) {
+            uiHelper.setLoadingBubbleState(self.name, self.isShown);
+            return;
+          }
+
+          if (self.isShown) {
+            $(self.elements.overlay).fadeIn(fadeTime);
+          } else {
+            $(self.elements.overlay).fadeOut(fadeTime);
+          }
+        },
+        remove: function() {
+          self.elements.overlay.remove();
+        },
+        reload: function() {
+          if (self.lazyInitStarted && !self.lazyInitDone) {
+            return;
+          }
+          self.lazyInitStarted = self.lazyInitDone = false;
+          self.lazyInit();
+        }
+      };
+
+      $(self.elements.overlay).hide();
+      $('#board-mover').prepend(self.elements.overlay);
+
+      return {
+        get name() {
+          return self.name;
+        },
+        get isShown() {
+          return self.isShown;
+        },
+        setPixel: self.setPixel,
+        getImageData: self.getImageData,
+        setImageData: self.setImageData,
+        clear: self.clear,
+        setBackgroundColor: self.setBackgroundColor,
+        show: function() {
+          self.setShown(true);
+        },
+        hide: function() {
+          self.setShown(false);
+        },
+        toggle: function() {
+          self.setShown(!self.isShown);
+        },
+        setShown: self.setShown,
+        remove: self.remove,
+        reload: self.reload
+      };
+    };
+
+    const self = {
+      overlays: {},
+      add: function(name, fetchData, onLazyInit) {
+        if (name in self.overlays) {
+          throw new Error(`Overlay '${name}' already exists.`);
+        }
+        const o = overlay(name, fetchData, onLazyInit);
+        self.overlays[name] = o;
+        return o;
+      },
+      remove: function(name) {
+        if (!(name in self.overlays)) {
           return;
         }
-        if (self.is_shown) {
-          self.lazy_init();
-        }
+        self.overlays[name].remove();
+        delete self.overlays[name];
       },
       webinit: function(data) {
-        self.width = data.width;
-        self.height = data.height;
-        self.seconds = data.heatmapCooldown;
-        self.elements.heatmap.attr({
-          width: self.width,
-          height: self.height
+        const width = data.width;
+        const height = data.height;
+
+        // create default overlays
+
+        async function createOverlayImageData(basepath, color, dataXOR = 0) {
+          // we use xhr directly because of jquery being weird on raw binary
+          const overlayData = await binaryAjax(basepath + '?_' + (new Date()).getTime());
+          const imageData = createImageData(width, height);
+
+          const intView = new Uint32Array(imageData.data.buffer);
+          for (let i = 0; i < width * height; i++) {
+            // this assignement uses the data as the alpha channel for the color
+            intView[i] = ((overlayData[i] ^ dataXOR) << 24) | color;
+          }
+
+          return imageData;
+        }
+
+        // heatmap stuff
+        const heatmap = self.add('heatmap', () => createOverlayImageData('/heatmap', 0x005C5CCD), (width, height, isReload) => {
+          // Ran when lazy init finshes
+          if (isReload) {
+            return;
+          }
+          setInterval(() => {
+            const imageData = heatmap.getImageData();
+            const intView = new Uint32Array(imageData.data.buffer);
+            for (let i = 0; i < width * height; i++) {
+              let opacity = intView[i] >> 24;
+              if (opacity) {
+                opacity--;
+                intView[i] = (opacity << 24) | 0x005C5CCD;
+              }
+            }
+            heatmap.setImageData(imageData);
+          }, data.heatmapCooldown * 1000 / 256);
+
+          socket.on('pixel', (data) => {
+            $.map(data.pixels, (px) => {
+              heatmap.setPixel(px.x, px.y, '#CD5C5C');
+            });
+          });
+
+          $(window).keydown((evt) => {
+            if (['INPUT', 'TEXTAREA'].includes(evt.target.nodeName)) {
+              // prevent inputs from triggering shortcuts
+              return;
+            }
+
+            if (evt.key === 'o' || evt.key === 'O' || evt.which === 79) {
+              heatmap.clear();
+            }
+          });
+        });
+
+        settings.board.heatmap.opacity.listen(function(value) {
+          heatmap.setBackgroundColor(`rgba(0, 0, 0, ${value})`);
+        });
+        $('#hvmapClear').click(function() {
+          heatmap.clear();
         });
         settings.board.heatmap.enable.listen(function(value) {
           if (value) {
-            self.show();
+            heatmap.show();
           } else {
-            self.hide();
+            heatmap.hide();
           }
         });
 
@@ -1988,142 +2050,42 @@ window.App = (function() {
             settings.board.heatmap.enable.toggle();
           }
         });
-      }
-    };
-    return {
-      init: self.init,
-      webinit: self.webinit,
-      toggle: self.toggle,
-      setBackgroundOpacity: self.setBackgroundOpacity,
-      clear: self.clear
-    };
-  })();
-    // Virginmaps are like heatmaps
-  const virginmap = (function() {
-    const self = {
-      elements: {
-        virginmap: $('#virginmap')
-      },
-      ctx: null,
-      id: null,
-      width: 0,
-      height: 0,
-      lazy_inited: false,
-      is_shown: false,
-      lazy_init: async function() {
-        if (self.lazy_inited) {
-          uiHelper.setLoadingBubbleState('virginmap', false);
-          return;
-        }
-        uiHelper.setLoadingBubbleState('virginmap', true);
-        self.lazy_inited = true;
-        // we use xhr directly because of jquery being weird on raw binary
-        const data = await binaryAjax('/virginmap' + '?_' + (new Date()).getTime());
-        self.ctx = self.elements.virginmap[0].getContext('2d');
-        self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
-        self.id = createImageData(self.width, self.height);
 
-        self.ctx.putImageData(self.id, 0, 0);
-        self.ctx.fillStyle = '#000000';
-
-        self.intView = new Uint32Array(self.id.data.buffer);
-        for (let i = 0; i < self.width * self.height; i++) {
-          const x = i % self.width;
-          const y = Math.floor(i / self.width);
-          if (data[i] === 0) {
-            self.ctx.fillRect(x, y, 1, 1);
-          }
-        }
-        self.elements.virginmap.fadeIn(200);
-        uiHelper.setLoadingBubbleState('virginmap', false);
-        socket.on('pixel', function(data) {
-          $.map(data.pixels, function(px) {
-            self.ctx.fillStyle = '#000000';
-            self.ctx.fillRect(px.x, px.y, 1, 1);
-          });
-        });
-      },
-      clear: function() {
-        self._clear();
-      },
-      _clear: function() {
-        self.ctx.putImageData(self.id, 0, 0);
-        self.ctx.fillStyle = '#00FF00';
-        self.ctx.fillRect(0, 0, self.width, self.height);
-      },
-      setBackgroundOpacity: function(opacity) {
-        if (typeof (opacity) === 'string') {
-          opacity = parseFloat(opacity);
-          if (isNaN(opacity)) opacity = 0.5;
-        }
-        if (opacity == null || opacity === undefined) opacity = 0.5;
-        if (opacity < 0 || opacity > 1) opacity = 0.5;
-
-        self.elements.virginmap.css('background-color', 'rgba(0, 255, 0, ' + opacity + ')');
-      },
-      init: function() {
-        self.elements.virginmap.hide();
-        settings.board.virginmap.opacity.listen(function(value) {
-          self.setBackgroundOpacity(parseFloat(value));
-        });
-        $('#hvmapClear').click(function() {
-          self.clear();
-        });
-        $(window).keydown(function(evt) {
-          if (['INPUT', 'TEXTAREA'].includes(evt.target.nodeName)) {
-            // prevent inputs from triggering shortcuts
+        // virginmap stuff
+        const virginmap = self.add('virginmap', () => createOverlayImageData('/virginmap', 0x00000000, 0xff), (width, height, isReload) => {
+          if (isReload) {
             return;
           }
+          socket.on('pixel', (data) => {
+            $.map(data.pixels, (px) => {
+              virginmap.setPixel(px.x, px.y, '#000000');
+            });
+          });
 
-          if (evt.key === 'o' || evt.key === 'O' || evt.which === 79) { // O key
-            self.clear();
-          }
-        });
-      },
-      show: function() {
-        self.is_shown = false;
-        self.toggle();
-      },
-      hide: function() {
-        self.is_shown = true;
-        self.toggle();
-      },
-      toggle: function() {
-        self.is_shown = !self.is_shown;
-        ls.set('virginmap', self.is_shown);
-        if (self.fetchRequest) {
-          self.fetchRequest.abort();
-          uiHelper.setLoadingBubbleState('virginmap', false);
-          self.lazy_inited = false;
-          self.fetchRequest = null;
-          return;
-        }
+          $(window).keydown(function(evt) {
+            if (['INPUT', 'TEXTAREA'].includes(evt.target.nodeName)) {
+              // prevent inputs from triggering shortcuts
+              return;
+            }
 
-        if (self.lazy_inited) {
-          if (self.is_shown) {
-            this.elements.virginmap.fadeIn(200);
-          } else {
-            this.elements.virginmap.fadeOut(200);
-          }
-          return;
-        }
-        if (self.is_shown) {
-          self.lazy_init();
-        }
-      },
-      webinit: function(data) {
-        self.width = data.width;
-        self.height = data.height;
-        self.seconds = data.virginmapCooldown;
-        self.elements.virginmap.attr({
-          width: self.width,
-          height: self.height
+            if (evt.key === 'o' || evt.key === 'O' || evt.which === 79) { // O key
+              virginmap.clear();
+            }
+          });
         });
+
+        settings.board.virginmap.opacity.listen(function(value) {
+          virginmap.setBackgroundColor(`rgba(0, 255, 0, ${value})`);
+        });
+        $('#hvmapClear').click(function() {
+          virginmap.clear();
+        });
+
         settings.board.virginmap.enable.listen(function(value) {
           if (value) {
-            self.show();
+            virginmap.show();
           } else {
-            self.hide();
+            virginmap.hide();
           }
         });
 
@@ -2139,12 +2101,18 @@ window.App = (function() {
         });
       }
     };
+
     return {
-      init: self.init,
       webinit: self.webinit,
-      toggle: self.toggle,
-      setBackgroundOpacity: self.setBackgroundOpacity,
-      clear: self.clear
+      add: self.add,
+      // NOTE ([  ]): If heatmap or virginmap are removed, they stick around in memory thanks to keybinds
+      remove: self.remove,
+      get heatmap() {
+        return self.overlays.heatmap;
+      },
+      get virginmap() {
+        return self.overlays.virginmap;
+      }
     };
   })();
     // here all the template stuff happens
@@ -3587,11 +3555,9 @@ window.App = (function() {
         try {
           if (!url) url = 'notify.wav';
           timer.audioElem.src = url;
-          ls.set('alert.src', url);
         } catch (e) {
           modal.showText('Failed to update audio src, using default sound.');
           timer.audioElem.src = 'notify.wav';
-          ls.set('alert.src', 'notify.wav');
         }
       },
       updateAvailable: function(count, cause) {
@@ -6889,8 +6855,6 @@ window.App = (function() {
   // init progress
   query.init();
   board.init();
-  heatmap.init();
-  virginmap.init();
   lookup.init();
   template.init();
   ban.init();
@@ -6916,11 +6880,21 @@ window.App = (function() {
     ss: ss,
     settings: settings,
     query: query,
-    heatmap: {
-      clear: heatmap.clear
-    },
-    virginmap: {
-      clear: virginmap.clear
+    overlays: {
+      add: overlays.add,
+      remove: overlays.remove,
+      get heatmap() {
+        return {
+          clear: overlays.heatmap.clear,
+          reload: overlays.heatmap.reload
+        };
+      },
+      get virginmap() {
+        return {
+          clear: overlays.virginmap.clear,
+          reload: overlays.virginmap.reload
+        };
+      }
     },
     uiHelper: {
       get tabId() {

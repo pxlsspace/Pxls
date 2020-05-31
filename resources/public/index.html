@@ -54,62 +54,60 @@
 
 <div id="reconnecting">Lost connection to server, reconnecting...</div>
 
-<main>
-  <div id="board-container" style="touch-action: none">
-      <div id="grid"></div>
-      <div id="board-zoomer">
-          <div id="board-mover">
-              <canvas id="heatmap" class="pixelate noselect"></canvas>
-              <canvas id="virginmap" class="pixelate noselect"></canvas>
-              <canvas id="board" class="pixelate noselect" width="100" height="100"></canvas>
-          </div>
-      </div>
-  </div>
+</main>
+    <div id="board-container" style="touch-action: none">
+        <div id="grid"></div>
+        <div id="board-zoomer">
+            <div id="board-mover">
+                <canvas id="board" class="pixelate noselect" width="100" height="100"></canvas>
+            </div>
+        </div>
+    </div>
 
-  <div id="ui">
-      <div id="ui-top">
-          <div id="loading-bubble" class="bubble">
-              <div class="loading-bubble-item" data-process="heatmap">Loading Heatmap (press <kbd>H</kbd> to cancel)</div>
-              <div class="loading-bubble-item" data-process="virginmap">Loading Virginmap (press <kbd>X</kbd> to cancel)</div>
-          </div>
-          <div id="main-bubble" class="bubble">
-              <div id="user-info">
-                  <i class="fas fa-user"></i>
-                  <!-- TODO: link to position on stats page -->
-                  <span id="username"></span>
-                  <a href="/logout" class="logout"><i title="Logout" class="fas fa-sign-out-alt" id="logout-icon"></i></a>
-              </div>
-              <div>
-                <i class="fas fa-users"></i>
-                <span id="online-count">Loading online user count&hellip;</span>
-              </div>
-              <div id="coords-info">
-                  <a class="coords"></a>
-                  <i id="canvas-lock-icon" class="fas fa-lock"></i>
-              </div>
-              <div id="placement-info">
-                  <span id="placeable-count">N/A</span>
-                  <span>Pixels</span>
-                  <i class="fas fa-spinner fa-spin captcha-loading-icon"></i>
-              </div>
-              <div id="cooldown">
-                  <i class="far fa-clock"></i>
-                  <span id="cooldown-timer"></span>
-              </div>
-          </div>
-      </div>
+    <div id="ui">
+        <div id="ui-top">
+            <div id="loading-bubble" class="bubble">
+                <div class="loading-bubble-item" data-process="heatmap">Loading Heatmap (press <kbd>H</kbd> to cancel)</div>
+                <div class="loading-bubble-item" data-process="virginmap">Loading Virginmap (press <kbd>X</kbd> to cancel)</div>
+            </div>
+            <div id="main-bubble" class="bubble">
+                <div id="user-info">
+                    <i class="fas fa-user"></i>
+                    <!-- TODO: link to position on stats page -->
+                    <span id="username"></span>
+                    <a href="/logout" class="logout"><i title="Logout" class="fas fa-sign-out-alt" id="logout-icon"></i></a>
+                </div>
+                <div>
+                  <i class="fas fa-users"></i>
+                  <span id="online-count">Loading online user count&hellip;</span>
+                </div>
+                <div id="coords-info">
+                    <a class="coords"></a>
+                    <i id="canvas-lock-icon" class="fas fa-lock"></i>
+                </div>
+                <div id="placement-info">
+                    <span id="placeable-count">N/A</span>
+                    <span>Pixels</span>
+                    <i class="fas fa-spinner fa-spin captcha-loading-icon"></i>
+                </div>
+                <div id="cooldown">
+                    <i class="far fa-clock"></i>
+                    <span id="cooldown-timer"></span>
+                </div>
+            </div>
+        </div>
 
-      <div id="ui-bottom">
-          <button type="button" id="undo"><span>Undo</span></button>
-          <div id="login-overlay" class="palette-overlay">
-              You are not signed in.&nbsp;<a href="#">Sign in with...</a>
-          </div>
-          <div id="user-message" class="palette-overlay"></div>
-          <div id="palette">
-              <div id="cd-timer-overlay" class="palette-overlay"></div>
-          </div>
-      </div>
-  </div>
+        <div id="ui-bottom">
+            <button type="button" id="undo"><span>Undo</span></button>
+            <div id="login-overlay" class="palette-overlay">
+                You are not signed in.&nbsp;<a href="#">Sign in with...</a>
+            </div>
+            <div id="user-message" class="palette-overlay"></div>
+            <div id="palette">
+                <div id="cd-timer-overlay" class="palette-overlay"></div>
+            </div>
+        </div>
+    </div>
 </main>
 
 
