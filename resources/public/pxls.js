@@ -3045,7 +3045,7 @@ window.App = (function() {
           }, {
             id: 'faction',
             name: 'Faction',
-            get: data => data.faction || 'None Displayed'
+            get: data => data.faction || null
           }, {
             id: 'time',
             name: 'Time',

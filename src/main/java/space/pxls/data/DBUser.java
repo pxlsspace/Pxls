@@ -24,8 +24,9 @@ public class DBUser {
     public String discordName;
     public String chatbanReason;
     public Integer displayedFaction;
+    public Boolean factionBlocked;
 
-    public DBUser(int id, int stacked, String username, String login, Timestamp signup, long cooldownExpiry, Role role, long banExpiry, boolean isPermaChatbanned, long chatbanExpiry, boolean isRenameRequested, String discordName, String chatbanReason, int chatNameColor, Integer displayedFaction) {
+    public DBUser(int id, int stacked, String username, String login, Timestamp signup, long cooldownExpiry, Role role, long banExpiry, boolean isPermaChatbanned, long chatbanExpiry, boolean isRenameRequested, String discordName, String chatbanReason, int chatNameColor, Integer displayedFaction, Boolean factionBlocked) {
         this.id = id;
         this.stacked = stacked;
         this.username = username;
@@ -41,6 +42,7 @@ public class DBUser {
         this.chatbanReason = chatbanReason;
         this.chatNameColor = chatNameColor;
         this.displayedFaction = displayedFaction;
+        this.factionBlocked = factionBlocked;
     }
 
     public static class Mapper implements RowMapper<DBUser> {
@@ -68,7 +70,8 @@ public class DBUser {
                     r.getString("discord_name"),
                     r.getString("chat_ban_reason"),
                     r.getInt("chat_name_color"),
-                    df
+                    df,
+                    r.getBoolean("faction_restricted")
             );
         }
     }
