@@ -1512,7 +1512,6 @@ window.App = (function() {
             width: self.width = imageData.width,
             height: self.height = imageData.height
           });
-          self.elements.overlay.setAttribute('height', imageData.height);
           self.ctx = self.elements.overlay.getContext('2d');
           self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
           self.setImageData(imageData);
