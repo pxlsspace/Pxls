@@ -175,8 +175,8 @@
                             {% if profile_of is null %}
                             <p class="text-center text-warning">You must be logged in to manage your factions.</p>
                             {% else %}
-                            {% if profile_of.isFactionRestricted %}
-                            <small class="text-danger m-0 p-0 d-block">You are faction restricted and cannot create new factions. If you believe this is an error, please contact a moderator.</small>
+                            {% if profile_of.isFactionRestricted or profile_of.isBanned %}
+                            <small class="text-danger m-0 p-0 d-block">You are {% if profile_of.isFactionRestricted %}faction restricted{% else %}canvas banned{% endif %} and cannot create new factions. If you believe this is an error, please contact a moderator.</small>
                             {% endif %}
                             {% if (new_fac_min_pixels|default(0)) > requesting_user_alltime_pixels %}
                             <small class="text-warning m-0 p-0 d-block">You must have at least {{new_fac_min_pixels|default(0)}} all-time pixels to create a faction.</small>
