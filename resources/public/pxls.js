@@ -1671,7 +1671,7 @@ window.App = (function() {
       },
       setScale: function(scale, doUpdate = true) {
         if (settings.board.zoom.limit.enable.get() !== false && scale > 50) scale = 50;
-        else if (scale <= 0.01) scale = 0.01; // enforce the [0.5, 50] limit without blindly resetting to 0.5 when the user was trying to zoom in farther than 50x
+        else if (scale <= 0.01) scale = 0.01; // enforce the [0.01, 50] limit without blindly resetting to 0.01 when the user was trying to zoom in farther than 50x
         self.scale = scale;
         if (doUpdate) {
           self.update();
