@@ -943,7 +943,7 @@ window.App = (function() {
           if (!self.allowDrag) return;
           const oldScale = self.scale;
 
-          let delta = evt.deltaY;
+          let delta = -evt.deltaY;
 
           switch (evt.deltaMode) {
             case WheelEvent.DOM_DELTA_PIXEL:
@@ -1334,7 +1334,7 @@ window.App = (function() {
         const minimumValue = maxUnlocked ? 0 : 0.5;
         const zoomBase = self.getZoomBase();
 
-        self.scale = Math.max(minimumValue, Math.min(maximumValue, self.scale * zoomBase ** -adj));
+        self.scale = Math.max(minimumValue, Math.min(maximumValue, self.scale * zoomBase ** adj));
         self.update();
       },
       getPixel: function(x, y) {
