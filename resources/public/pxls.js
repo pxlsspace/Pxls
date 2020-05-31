@@ -3555,11 +3555,9 @@ window.App = (function() {
         try {
           if (!url) url = 'notify.wav';
           timer.audioElem.src = url;
-          ls.set('alert.src', url);
         } catch (e) {
           modal.showText('Failed to update audio src, using default sound.');
           timer.audioElem.src = 'notify.wav';
-          ls.set('alert.src', 'notify.wav');
         }
       },
       updateAvailable: function(count, cause) {
