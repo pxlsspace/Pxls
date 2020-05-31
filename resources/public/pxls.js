@@ -6393,7 +6393,7 @@ window.App = (function() {
             modal.show(modal.buildDom(
               crel('h2', 'Banned'),
               banelem
-            ), { escapeClose: false, clickClose: false, showClose: true });
+            ), { escapeClose: false, clickClose: false });
             if (window.deInitAdmin) {
               window.deInitAdmin();
             }
