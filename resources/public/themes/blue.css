@@ -1,99 +1,69 @@
 html {
     --general-text-color: #fff;
-    --general-background-color: #0083C7;
-    
-    --kbd-background-color: #1b73f4;
+    --general-background: #0083C7;
+
+    --kbd-background: #1b73f4;
     --kbd-border-color: #0a04a2;
     --kbd-text-color: #fff;
-    
-    --message-background-color: #0251fb;
-    --message-text-color: #09d5ec;
-    
+
     --input-text-color: #eee;
-    --input-background-color: #0083C7;
+    --input-background: #0083C7;
     --input-border-color: #1600fd;
-    
-    --button-background-color: #0026ff;
+
+    --button-background: #0026ff;
     --button-text-color: #fff;
     --button-border-color-hover: #44886e;
-    
-    --lookup-border-color: #0026ff;
-    --lookup-background-color: #0083C7;
-    --lookup-text-color: #eee;
-    
-    --report-button-border-color: #3906ff;
 
-    --palette-background-color: rgba(76, 161, 247, .5);
-    --palette-overlay-background-color: rgba(0, 174, 255, .9);
-    --palette-overlay-text-color: #eee;
+    --floating-panel-text-color: #eee;
+    --floating-panel-border-color: #0026ff;
+    --floating-panel-background: #0083C7;
+
+    --dangerous-button-border-color: #3906ff;
+
+    --palette-background: rgba(76, 161, 247, .5);
+    --palette-overlay-background: rgba(0, 174, 255, .9);
     --palette-deselect-button-color: #DDD;
-    
-    --undo-text-color: #fff;
+
     --undo-background: linear-gradient(to top, #59a9ea99, #134ad0);
 
-    --text-red-color:#f44;
-    --text-yellow-color:#cc0;
+    --text-red-color: #f44;
+    --text-yellow-color: #cc0;
     --ping-highlight-color: #a1aa34b3;
-    
+
     --panel-header-background: linear-gradient(to bottom, #004cff, #00c2ee);
-    --panel-background-color: #025fff;
+    --panel-background: #025fff;
     --panel-text-color: #eee;
-    
-    --option-bubble-position-background-color-selected: #03f;
+
+    --option-bubble-position-background-selected: #03f;
+
     --chat-separator-color: #2357f4;
-    --chat-odd-background-color: #0f47e3;
+    --chat-odd-background: #0f47e3;
     --chat-server-action-text-color: #dae0ec;
     --chat-user-text-shadow-color: #333;
-    
-    --mod-lookup-chatban-history-item-background-color: rgba(#7281aa40);
-    --mod-lookup-chatban-history-item-border-color: #0059f2;
-    --mod-lookup-chatban-history-item-heading-background-color: #7281aa33;
-    
-    --popup-background-color: #4859f4;
-    --popup-border-color: #000;
-    --popup-text-color: #1237c1;
-    --pane-button-background: linear-gradient(0,#020df0,#0069ff,#00cdf9);
-    --pane-button-background-hover: linear-gradient(0,#020df0,#0069ff,#00cdf9);
-    
-     --emoji-picker-border-color: #312ef9;
+
+    --emoji-picker-border-color: #312ef9;
     --emoji-picker-shadow-color: #094fb5;
-    --emoji-picker-background-color: #07b0ff;
+    --emoji-picker-background: #07b0ff;
     --emoji-picker-preview-name-text-color: #4a4949;
     --emoji-picker-tab-icon-color: #ccc;
     --emoji-picker-tab-icon-color-selected: #6fd1ff;
     --emoji-picker-section-text-color: #424040;
     --emoji-picker-emoji-color: white;
     --emoji-picker-emoji-background-hover: #5279a8;
-    --emoji-picker-emoji-search-input-border-color: #1a07ea;
-    --emoji-picker-emoji-search-input-background-color: #25a6f0;
-    --emoji-picker-emoji-search-input-text-color: #595757;
+    --emoji-picker-search-input-border-color: #1a07ea;
+    --emoji-picker-search-input-background: #25a6f0;
+    --emoji-picker-search-input-text-color: #595757;
     --emoji-picker-search-icon-color: #aaa;
     --emoji-picker-search-no-results-color: #666666;
     --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
     --emoji-picker-variant-popup-background: #FFFFFF;
-    
-    --chat-typeahead-menu-background-color: #0a009d;
-    --chat-typeahead-item-background-color: #081095;
-    --chat-typeahead-item-background-color-hover: #2314bf;
-    --chat-typeahead-item-background-color-active: #0079ff;
-    
-    --admin-check-border-color: #2413db;
-    --admin-check-text-color: #eee;
-    --admin-check-background-color: #1b7ad9;
-    
-    --admin-background: #0057ff;
-    --admin-text-color: #fff;
-    
-    --notification-background-color: #0073ff;
-    --notification-border-color: #0a00ff;
-    --notification-title-background-color: #008bff;
-    --notification-footer-background-color: #2e83f4;
-    --notification-footer-text-color: #5fd4f2;
+
+    --chat-typeahead-menu-background: #0a009d;
+    --chat-typeahead-item-background: #081095;
+    --chat-typeahead-item-background-hover: #2314bf;
+    --chat-typeahead-item-background-active: #0079ff;
+
     --notification-expiry-color: #995050;
-    
-    --modal-text-color: #ddd;
-    --modal-background-color: #2e83f4;
-    --modal-headfoot-background-color: #0018c8;
 }
 
 hr {
@@ -103,9 +73,9 @@ hr {
 
 @keyframes -scrolled-flash {
     from {
-        background-color: #5b5345;
+        background: #5b5345;
     }
     to {
-        background-color: #58a78a;
+        background: #58a78a;
     }
 }
