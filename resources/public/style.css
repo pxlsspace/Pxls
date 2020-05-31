@@ -779,6 +779,7 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     color: var(--undo-text-color);
     font-weight: bold;
     font-size: 1.25em;
+    overflow: hidden;
 }
 
 #undo.open {
