@@ -21,11 +21,11 @@ html {
 
     --dangerous-button-border-color: #3906ff;
 
-    --palette-background: rgba(76, 161, 247, .5);
+    --palette-background: rgba(18, 113, 255, .82);
     --palette-overlay-background: rgba(0, 174, 255, .9);
     --palette-deselect-button-color: #DDD;
 
-    --undo-background: linear-gradient(to top, #59a9ea99, #134ad0);
+    --undo-background: linear-gradient(to top, #59a9eac4, #0080ff);
 
     --text-red-color: #f44;
     --text-yellow-color: #cc0;
