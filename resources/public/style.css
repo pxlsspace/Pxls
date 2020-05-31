@@ -1176,7 +1176,6 @@ aside.panel.horizontal.right {
     color: var(--panel-footer-text-color);
     border-top: 1px solid #000;
     border-top: 1px solid var(--panel-border-color);
-    background-image: #;
     background: var(--panel-footer-background);
 }
 
