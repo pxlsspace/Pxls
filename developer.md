@@ -61,6 +61,23 @@ App.ls.remove('blah');
 App.ls.get('blah'); // undefined
 ```
 
+## Settings
+
+It is possible to change settings using the settings object in a program-friendly way.
+Using the following functions will cause the changes to be reflected internally as well as update settings controls to reflect new values.
+
+```js
+App.settings.board.heatmap.enable.set(true); // enable the heatmap
+App.settings.ui.cursor.enable.toggle(); // enable/disable the cursor
+App.settings.board.zoom.sensitivity.set(2); // set the zoom sensitivity
+App.settings.audio.alert.volume.get(); // returns the current alert volume
+```
+
+The various settings keys can be found in-code or through a browser auto-complete if needed.
+They will generally be named like this: `component.feature.subfeature.setting`.
+
+Also note that the `.toggle()` function is only available for boolean settings (usually those ending in `.enable`).
+
 ## Lookup Hooks
 
 Hooks are objects that provide extra functionality for lookups.
