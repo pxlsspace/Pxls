@@ -68,6 +68,7 @@ html {
     --input-text-color: #000;
     --input-background: #fff;
     --input-border-color: #ccc;
+    --input-placeholder-text-color: #666;
 
     --text-blue-color:#00a;
     --text-green-color:#0a0;
@@ -256,6 +257,20 @@ input[type="text"], input[type="number"], textarea, select {
     background: var(--input-background);
     color: #000;
     color: var(--input-text-color);
+}
+
+/* NOTE (Flying): Does not work grouped together. */
+input[type="text"]::placeholder {
+    color: var(--input-placeholder-text-color);
+}
+input[type="number"]::placeholder {
+    color: var(--input-placeholder-text-color);
+}
+textarea::placeholder {
+    color: var(--input-placeholder-text-color);
+}
+select::placeholder {
+    color: var(--input-placeholder-text-color);
 }
 
 button {
@@ -1161,7 +1176,6 @@ aside.panel.horizontal.right {
     color: var(--panel-footer-text-color);
     border-top: 1px solid #000;
     border-top: 1px solid var(--panel-border-color);
-    background-image: #;
     background: var(--panel-footer-background);
 }
 

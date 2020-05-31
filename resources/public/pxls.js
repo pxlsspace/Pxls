@@ -133,9 +133,11 @@ window.App = (function() {
     return checkImageRendering('', true, true, false) || checkImageRendering('-o-', true, false, false) || checkImageRendering('-moz-', true, false, false) || checkImageRendering('-webkit-', true, false, true);
   })();
   let haveZoomRendering = false;
-  const iOSSafari = (nua.match(/(iPod|iPhone|iPad)/i) && nua.match(/AppleWebKit/i));
+  const webkitBased = nua.match(/AppleWebKit/i);
+  const iOSSafari = (nua.match(/(iPod|iPhone|iPad)/i) && webkitBased);
   const desktopSafari = (nua.match(/safari/i) && !nua.match(/chrome/i));
   const msEdge = nua.indexOf('Edge') > -1;
+  const possiblyMobile = window.innerWidth < 768 && nua.includes('Mobile');
   if (iOSSafari) {
     const iOS = parseFloat(
       ('' + (/CPU.*OS ([0-9_]{1,5})|(CPU like).*AppleWebKit.*Mobile/i.exec(navigator.userAgent) || [0, ''])[1])
@@ -320,6 +322,369 @@ window.App = (function() {
   })();
   const ls = storageFactory(localStorage, 'ls_', 99);
   const ss = storageFactory(sessionStorage, 'ss_', null);
+
+  const settings = (function() {
+    const SettingType = {
+      TOGGLE: 0,
+      RANGE: 1,
+      TEXT: 2,
+      NUMBER: 3,
+      SELECT: 4,
+      RADIO: 5
+    };
+
+    const validate = function(value, fallback, type) {
+      switch (type) {
+        case SettingType.TOGGLE:
+          // valid if value is a boolean (either true or false)
+          if (value === true || value === false) {
+            return value;
+          }
+          break;
+        case SettingType.TEXT:
+          if (typeof value === 'string') {
+            return value;
+          }
+          break;
+        case SettingType.NUMBER:
+          /* falls through */
+        case SettingType.RANGE:
+          // valid if value is a number
+          if (!isNaN(parseFloat(value))) {
+            return value;
+          }
+          break;
+        case SettingType.SELECT:
+          /* falls through */
+        case SettingType.RADIO:
+          // select and radios can use practically any values: allow if not void
+          if (value != null) {
+            return value;
+          }
+      }
+      return fallback;
+    };
+
+    const filterInput = function(controls, type) {
+      switch (type) {
+        case SettingType.TOGGLE:
+          return controls.filter('input[type=checkbox]');
+        case SettingType.RANGE:
+          return controls.filter('input[type=range]');
+        case SettingType.TEXT:
+          return controls.filter('input[type=text]');
+        case SettingType.NUMBER:
+          return controls.filter('input[type=number]');
+        case SettingType.SELECT:
+          return controls.filter('select');
+        case SettingType.RADIO:
+          return controls.filter('input[type=radio]');
+      }
+    };
+
+    /**
+     * Creates a new setting
+     * @param {String} name the key to use in localstorage for the setting .
+     * @param {SettingType} type the type of setting.
+     * @param defaultValue the default value of the setting.
+     * @param {JQuery|Element|selector} initialControls the inputs to bind as the controls of this setting.
+     * @returns {Object} the setting object with public access to certain functions.
+     */
+    const setting = function(name, type, defaultValue, initialControls = $()) {
+      const listeners = [];
+      let controls = $();
+
+      const get = function() {
+        const value = ls.get(name);
+        return validate(value, defaultValue, type);
+      };
+      const set = function(value) {
+        const validValue = validate(value, defaultValue, type);
+        ls.set(name, validValue);
+
+        if (type === SettingType.RADIO) {
+          controls.each((_, e) => { e.checked = e.value === value; });
+        } else if (type === SettingType.TOGGLE) {
+          controls.prop('checked', validValue);
+        } else {
+          controls.prop('value', validValue);
+        }
+
+        listeners.forEach((f) => f(validValue));
+      };
+
+      // this is defined here and not higher up so that we have a specific instance to unbind events from
+      const keydownFunction = (evt) => {
+        if (evt.key === 'Enter' || evt.which === 13) {
+          $(this).blur();
+        }
+        // this prevents things like hotkey listeners picking up the events
+        evt.stopPropagation();
+      };
+      let changeFunction = (evt) => set(evt.target.value);
+      let changeEvents = 'change';
+
+      switch (type) {
+        case SettingType.RADIO:
+          changeEvents = 'click';
+          break;
+        case SettingType.RANGE:
+          changeEvents = 'input change';
+          break;
+        case SettingType.TOGGLE:
+          changeFunction = (evt) => self.set(evt.target.checked);
+          break;
+      }
+
+      const self = {
+        get: get,
+        set: set,
+        reset: function() {
+          self.set(defaultValue);
+        },
+        listen: function(f) {
+          listeners.push(f);
+          // this makes the listener aware of the initial state since it may not be initialised to the correct value
+          f(self.get());
+        },
+        unlisten: function(f) {
+          const index = listeners.indexOf(f);
+          if (index !== -1) {
+            listeners.splice(index, 1);
+          }
+        },
+        controls: {
+          add: function(control) {
+            const toAdd = filterInput($(control), type);
+            controls = controls.add(toAdd);
+
+            if (type === SettingType.TEXT || type === SettingType.NUMBER) {
+              toAdd.on('keydown', keydownFunction);
+            }
+
+            toAdd.on(changeEvents, changeFunction);
+
+            // update the new controls to have the correct value
+            self.set(self.get());
+          },
+          remove: function(control) {
+            const toRemove = controls.filter($(control));
+            controls = controls.not(toRemove);
+
+            if (type === SettingType.TEXT || type === SettingType.NUMBER) {
+              toRemove.off('keydown', keydownFunction);
+            }
+
+            toRemove.off(changeEvents, changeFunction);
+          },
+          disable: function() {
+            controls.prop('disabled', true);
+          },
+          enable: function() {
+            controls.prop('disabled', false);
+          }
+        }
+      };
+
+      if (type === SettingType.TOGGLE) {
+        self.toggle = function() { self.set(!self.get()); };
+      }
+
+      self.controls.add(initialControls);
+
+      return self;
+    };
+
+    const keymappings = {
+      currentTheme: 'ui.theme.index',
+      audio_muted: 'audio.enable',
+      heatmap: 'board.heatmap.enable',
+      virgimap: 'board.virginmap.enable',
+      view_grid: 'board.grid.enable',
+      'canvas.unlocked': 'board.lock.enable',
+      'nativenotifications.pixel-avail': 'place.notification.enable',
+      autoReset: 'place.deselectonplace.enable',
+      monospace_lookup: 'lookup.monospace.enable',
+      zoomBaseValue: 'board.zoom.sensitivity',
+      increased_zoom: 'board.zoom.limit.enable',
+      scrollSwitchEnabled: 'place.palette.scrolling.enable',
+      scrollSwitchDirectionInverted: 'place.palette.scrolling.invert',
+      'ui.show-reticule': 'ui.reticule.enable',
+      'ui.show-cursor': 'ui.cursor.enable',
+      templateBeneathHeatmap: 'board.template.beneathoverlays',
+      enableMiddleMouseSelect: 'place.picker.enable',
+      enableNumberedPalette: 'ui.palette.numbers.enable',
+      heatmap_background_opacity: 'board.heatmap.opacity',
+      virginmap_background_opacity: 'board.virginmap.opacity',
+      snapshotImageFormat: 'board.snapshot.format',
+      'bubble-position': 'ui.bubble.position',
+      'brightness.enabled': 'ui.brightness.enable',
+      colorBrightness: 'ui.brightness.value',
+      'alert.src': 'audio.alert.src',
+      'alert.volume': 'audio.alert.volume',
+      alert_delay: 'place.alert.delay',
+      'chrome-canvas-offset-workaround': 'fix.chrome.offset.enable',
+      hide_sensitive: 'lookup.filter.sensitive.enable',
+      'chat.font-size': 'chat.font.size',
+      'chat.internalClickDefault': 'chat.links.internal.behavior',
+      'chat.24h': 'chat.timestamps.24h',
+      'chat.text-icons-enabled': 'chat.badges.enable',
+      'chat.faction-tags-enabled': 'chat.factiontags.enable',
+      'chat.pings-enabled': 'chat.pings.enable',
+      'chat.ping-audio-state': 'chat.pings.audio.when',
+      'chat.ping-audio-volume': 'chat.pings.audio.volume',
+      'chat.banner-enabled': 'ui.chat.banner.enable',
+      'chat.use-template-urls': 'chat.links.templates.preferurls',
+      'chat.horizontal': 'ui.chat.horizontal.enable'
+    };
+
+    // these are the settings which have gone from being toggle-off to toggle-on
+    const flippedmappings = ['audio_muted', 'increased_zoom', 'autoReset', 'canvas.unlocked'];
+
+    // Convert old settings keys to new keys.
+    Object.entries(keymappings).forEach((entry) => {
+      if (ls.has(entry[0])) {
+        const oldvalue = ls.get(entry[0]);
+        ls.set(entry[1], flippedmappings.indexOf(entry[0]) === -1 ? oldvalue : !oldvalue);
+        ls.remove(entry[0]);
+      }
+    });
+
+    return {
+      ui: {
+        theme: {
+          index: setting('ui.theme.index', SettingType.SELECT, '-1', $('#setting-ui-theme-index'))
+        },
+        reticule: {
+          enable: setting('ui.reticule.enable', SettingType.TOGGLE, !possiblyMobile, $('#setting-ui-reticule-enable'))
+        },
+        cursor: {
+          enable: setting('ui.cursor.enable', SettingType.TOGGLE, !possiblyMobile, $('#setting-ui-cursor-enable'))
+        },
+        bubble: {
+          position: setting('ui.bubble.position', SettingType.RADIO, 'bottom left', $('[name=setting-ui-bubble-position]'))
+        },
+        brightness: {
+          enable: setting('ui.brightness.enable', SettingType.TOGGLE, false, $('#setting-ui-brightness-enable')),
+          value: setting('ui.brightness.value', SettingType.RANGE, 1, $('#setting-ui-brightness-value'))
+        },
+        palette: {
+          numbers: {
+            enable: setting('ui.palette.numbers.enable', SettingType.TOGGLE, false, $('#setting-ui-palette-numbers-enable'))
+          }
+        },
+        chat: {
+          banner: {
+            enable: setting('ui.chat.banner.enable', SettingType.TOGGLE, true)
+          },
+          horizontal: {
+            enable: setting('ui.chat.horizontal.enable', SettingType.TOGGLE, false)
+          }
+        }
+      },
+      audio: {
+        enable: setting('audio.enable', SettingType.TOGGLE, true, $('#setting-audio-enable')),
+        alert: {
+          src: setting('audio.alert.src', SettingType.TEXT, '', $('#setting-audio-alert-src')),
+          volume: setting('audio.alert.volume', SettingType.RANGE, 1, $('#setting-audio-alert-volume'))
+        }
+      },
+      board: {
+        heatmap: {
+          enable: setting('board.heatmap.enable', SettingType.TOGGLE, false, $('#setting-board-heatmap-enable')),
+          opacity: setting('board.heatmap.opacity', SettingType.RANGE, 0.5, $('#setting-board-heatmap-opacity'))
+        },
+        virginmap: {
+          enable: setting('board.virginmap.enable', SettingType.TOGGLE, false, $('#setting-board-virginmap-enable')),
+          opacity: setting('board.virginmap.opacity', SettingType.RANGE, 0.5, $('#setting-board-virginmap-opacity'))
+        },
+        grid: {
+          enable: setting('board.grid.enable', SettingType.TOGGLE, false, $('#setting-board-grid-enable'))
+        },
+        lock: {
+          enable: setting('board.lock.enable', SettingType.TOGGLE, false, $('#setting-board-lock-enable'))
+        },
+        zoom: {
+          sensitivity: setting('board.zoom.sensitivity', SettingType.RANGE, 1.5, $('#setting-board-zoom-sensitivity')),
+          limit: {
+            enable: setting('board.zoom.limit.enable', SettingType.TOGGLE, true, $('#setting-board-zoom-limit-enable'))
+          }
+        },
+        template: {
+          beneathoverlays: setting('board.template.beneathoverlays', SettingType.TOGGLE, false, $('#setting-board-template-beneathoverlays'))
+        },
+        snapshot: {
+          format: setting('board.snapshot.format', SettingType.SELECT, 'image/png', $('#setting-board-snapshot-format'))
+        }
+      },
+      place: {
+        notification: {
+          enable: setting('place.notification.enable', SettingType.TOGGLE, true, $('#setting-place-notification-enable'))
+        },
+        deselectonplace: {
+          enable: setting('place.deselectonplace.enable', SettingType.TOGGLE, true, $('#setting-place-deselectonplace-enable'))
+        },
+        palette: {
+          scrolling: {
+            enable: setting('place.palette.scrolling.enable', SettingType.TOGGLE, false, $('#setting-place-palette-scrolling-enable')),
+            invert: setting('place.palette.scrolling.invert', SettingType.TOGGLE, false, $('#setting-place-palette-scrolling-invert'))
+          }
+        },
+        picker: {
+          enable: setting('place.picker.enable', SettingType.TOGGLE, true, $('#setting-place-picker-enable'))
+        },
+        alert: {
+          delay: setting('place.alert.delay', SettingType.NUMBER, 0, $('#setting-place-alert-delay'))
+        }
+      },
+      lookup: {
+        monospace: {
+          enable: setting('lookup.monospace.enable', SettingType.TOGGLE, false, $('#setting-lookup-monospace-enable'))
+        },
+        filter: {
+          sensitive: {
+            enable: setting('lookup.filter.sensitive.enable', SettingType.TOGGLE, false)
+          }
+        }
+      },
+      chat: {
+        timestamps: {
+          '24h': setting('chat.timestamps.24h', SettingType.TOGGLE, false)
+        },
+        badges: {
+          enable: setting('chat.badges.enable', SettingType.TOGGLE, false)
+        },
+        factiontags: {
+          enable: setting('chat.factiontags.enable', SettingType.TOGGLE, true)
+        },
+        pings: {
+          enable: setting('chat.pings.enable', SettingType.TOGGLE, true),
+          audio: {
+            when: setting('chat.pings.audio.when', SettingType.SELECT, 'off'),
+            volume: setting('chat.pings.audio.volume', SettingType.RANGE, 0.5)
+          }
+        },
+        links: {
+          templates: {
+            preferurls: setting('chat.links.templates.preferurls', SettingType.TOGGLE, false)
+          },
+          internal: {
+            behavior: setting('chat.links.internal.behavior', SettingType.SELECT, 'ask')
+          }
+        },
+        font: {
+          size: setting('chat.font.size', SettingType.NUMBER, 16)
+        }
+      },
+      fix: {
+        chrome: {
+          offset: {
+            enable: setting('fix.chrome.offset.enable', SettingType.TOGGLE, webkitBased, $('#setting-fix-chrome-offset-enable'))
+          }
+        }
+      }
+    };
+  })();
   // this object is used to access the query parameters (and in the future probably to set them), it is prefered to use # now instead of ? as JS can change them
   const query = (function() {
     const self = {
@@ -855,8 +1220,7 @@ window.App = (function() {
             case 76: // L
             case 'l':
             case 'L':
-              board.setAllowDrag(!self.allowDrag);
-              $('#lockCanvasToggle').prop('checked', !self.allowDrag);
+              settings.board.lock.enable.toggle();
               break;
             case 'KeyR':
             case 82: // R
@@ -1062,7 +1426,7 @@ window.App = (function() {
           downDelta = 0;
           if (event.button != null) {
             // Is the button pressed the middle mouse button?
-            if (ls.get('enableMiddleMouseSelect') === true && event.button === 1 && dx < 15 && dy < 15) {
+            if (settings.place.picker.enable.get() === true && event.button === 1 && dx < 15 && dy < 15) {
               // If so, switch to the color at the location.
               const { x, y } = self.fromScreen(event.clientX, event.clientY);
               place.switch(self.getPixel(x, y));
@@ -1122,22 +1486,8 @@ window.App = (function() {
         self.ctx = self.elements.board[0].getContext('2d');
         self.initInteraction();
 
-        $('#snapshotImageFormat').val(ls.get('snapshotImageFormat') || 'image/png');
-        $('#snapshotImageFormat').on('change input', event => {
-          ls.set('snapshotImageFormat', event.target.value);
-        });
-
-        const templateBeneathHeatmap = ls.get('templateBeneathHeatmap') === true;
-        $('#templateBeneathHeatmapToggle').prop('checked', templateBeneathHeatmap);
-        self.elements.container.toggleClass('lower-template', templateBeneathHeatmap);
-        $('#templateBeneathHeatmapToggle').on('change input', event => {
-          ls.set('templateBeneathHeatmap', event.target.checked);
-          self.elements.container.toggleClass('lower-template', event.target.checked);
-        });
-
-        $('#zoomBaseValue').val(self.getZoomBase());
-        $('#zoomBaseValue').on('change input', event => {
-          ls.set('zoomBaseValue', event.target.value);
+        settings.board.template.beneathoverlays.listen(function(value) {
+          self.elements.container.toggleClass('lower-template', value);
         });
       },
       start: function() {
@@ -1319,16 +1669,16 @@ window.App = (function() {
         return Math.abs(self.scale);
       },
       setScale: function(scale) {
-        if (ls.get('increased_zoom') !== true && scale > 50) scale = 50;
+        if (settings.board.zoom.limit.enable.get() !== false && scale > 50) scale = 50;
         else if (scale <= 0) scale = 0.5; // enforce the [0.5, 50] limit without blindly resetting to 0.5 when the user was trying to zoom in farther than 50x
         self.scale = scale;
         self.update();
       },
       getZoomBase: function() {
-        return parseFloat(ls.get('zoomBaseValue')) || 1.5;
+        return parseFloat(settings.board.zoom.sensitivity.get()) || 1.5;
       },
       nudgeScale: function(adj) {
-        const maxUnlocked = ls.get('increased_zoom') === true;
+        const maxUnlocked = settings.board.zoom.limit.enable.get() === false;
         const maximumValue = maxUnlocked ? Infinity : 50;
         const minimumValue = maxUnlocked ? 0 : 0.5;
         const zoomBase = self.getZoomBase();
@@ -1431,7 +1781,7 @@ window.App = (function() {
       },
       save: function() {
         const a = document.createElement('a');
-        const format = $('#snapshotImageFormat').val();
+        const format = settings.board.snapshot.format.get();
 
         a.href = self.elements.board[0].toDataURL(format, 1);
         a.download = (new Date()).toISOString().replace(/^(\d+-\d+-\d+)T(\d+):(\d+):(\d).*$/, `pxls canvas $1 $2.$3.$4.${format.split('/')[1]}`);
@@ -1474,7 +1824,6 @@ window.App = (function() {
       setAllowDrag: (allowDrag) => {
         self.allowDrag = allowDrag === true;
         if (self.allowDrag) { coords.lockIcon.fadeOut(200); } else { coords.lockIcon.fadeIn(200); }
-        ls.set('canvas.unlocked', self.allowDrag);
       },
       validateCoordinates: self.validateCoordinates,
       get webInfo() {
@@ -1677,35 +2026,14 @@ window.App = (function() {
           });
         });
 
-        function validateOpactity(opacity) {
-          if (typeof (opacity) === 'string') {
-            opacity = parseFloat(opacity);
-            if (isNaN(opacity)) opacity = 0.5;
-          }
-          if (opacity == null || opacity === undefined) opacity = 0.5;
-          if (opacity < 0 || opacity > 1) opacity = 0.5;
-          return opacity;
-        }
-
-        const heatmapOpacity = validateOpactity(ls.get('heatmap_background_opacity'));
-        ls.set('heatmap_background_opacity', heatmapOpacity);
-        heatmap.setBackgroundColor(`rgba(0, 0, 0, ${heatmapOpacity})`);
-        $('#heatmap-opacity').val(heatmapOpacity);
-        $('#heatmap-opacity').on('change input', function() {
-          const opacity = parseFloat(this.value);
-          ls.set('heatmap_background_opacity', opacity);
-          heatmap.setBackgroundColor(`rgba(0, 0, 0, ${opacity})`);
+        settings.board.heatmap.opacity.listen(function(value) {
+          heatmap.setBackgroundColor(`rgba(0, 255, 0, ${value})`);
         });
         $('#hvmapClear').click(function() {
           heatmap.clear();
         });
-
-        if (ls.get('heatmap')) {
-          heatmap.show();
-        }
-        $('#heatmaptoggle')[0].checked = ls.get('heatmap');
-        $('#heatmaptoggle').change(function() {
-          if (this.checked) {
+        settings.board.heatmap.enable.listen(function(value) {
+          if (value) {
             heatmap.show();
           } else {
             heatmap.hide();
@@ -1719,9 +2047,7 @@ window.App = (function() {
           }
 
           if (e.key === 'h' || e.key === 'H' || e.which === 72) { // h key
-            heatmap.toggle();
-            ls.set('heatmap', heatmap.isShown);
-            $('#heatmaptoggle')[0].checked = heatmap.isShown;
+            settings.board.heatmap.enable.toggle();
           }
         });
 
@@ -1748,25 +2074,15 @@ window.App = (function() {
           });
         });
 
-        const virginmapOpacity = validateOpactity(ls.get('virginmap_background_opacity'));
-        ls.set('virginmap_background_opacity', virginmapOpacity);
-        virginmap.setBackgroundColor(`rgba(0, 255, 0, ${virginmapOpacity})`);
-        $('#virginmap-opacity').val(virginmapOpacity);
-        $('#virginmap-opacity').on('change input', function() {
-          const opacity = parseFloat(this.value);
-          ls.set('virginmap_background_opacity', opacity);
-          virginmap.setBackgroundColor(`rgba(0, 255, 0, ${opacity})`);
+        settings.board.virginmap.opacity.listen(function(value) {
+          virginmap.setBackgroundColor(`rgba(0, 255, 0, ${value})`);
         });
         $('#hvmapClear').click(function() {
           virginmap.clear();
         });
 
-        if (ls.get('virginmap')) {
-          virginmap.show();
-        }
-        $('#virginmaptoggle')[0].checked = ls.get('virginmap');
-        $('#virginmaptoggle').change(function() {
-          if (this.checked) {
+        settings.board.virginmap.enable.listen(function(value) {
+          if (value) {
             virginmap.show();
           } else {
             virginmap.hide();
@@ -1780,9 +2096,7 @@ window.App = (function() {
           }
 
           if (e.key === 'x' || e.key === 'X' || e.which === 88) { // x key
-            virginmap.toggle();
-            ls.set('virginmap', virginmap.isShown);
-            $('#virginmaptoggle')[0].checked = virginmap.isShown;
+            settings.board.virginmap.enable.toggle();
           }
         });
       }
@@ -2119,14 +2433,13 @@ window.App = (function() {
       },
       init: function() {
         self.elements.grid.hide();
-        $('#gridtoggle')[0].checked = ls.get('view_grid');
-        $('#gridtoggle').change(function() {
-          ls.set('view_grid', this.checked);
-          self.elements.grid.fadeToggle({ duration: 100 });
+        settings.board.grid.enable.listen(function(value) {
+          if (value) {
+            self.elements.grid.fadeIn({ duration: 100 });
+          } else {
+            self.elements.grid.fadeOut({ duration: 100 });
+          }
         });
-        if (ls.get('view_grid')) {
-          self.elements.grid.fadeToggle({ duration: 100 });
-        }
         $(document.body).on('keydown', function(evt) {
           if (['INPUT', 'TEXTAREA'].includes(evt.target.nodeName)) {
             // prevent inputs from triggering shortcuts
@@ -2134,8 +2447,7 @@ window.App = (function() {
           }
 
           if (evt.key === 'g' || evt.key === 'G' || evt.keyCode === 71) {
-            $('#gridtoggle')[0].checked = !$('#gridtoggle')[0].checked;
-            $('#gridtoggle').trigger('change');
+            settings.board.grid.enable.toggle();
           }
         });
       },
@@ -2176,7 +2488,6 @@ window.App = (function() {
       autoreset: true,
       setAutoReset: function(v) {
         self.autoreset = !!v;
-        ls.set('autoReset', self.autoreset);
       },
       switch: function(newColor) {
         self.color = newColor;
@@ -2249,7 +2560,7 @@ window.App = (function() {
           self.toggleCursor(false);
           return;
         }
-        if (ls.get('ui.show-reticule')) {
+        if (settings.ui.reticule.enable.get()) {
           const screenPos = board.toScreen(self.reticule.x, self.reticule.y);
           const scale = board.getScale();
           self.elements.reticule.css({
@@ -2260,7 +2571,7 @@ window.App = (function() {
           });
           self.toggleReticule(true);
         }
-        if (ls.get('ui.show-cursor')) {
+        if (settings.ui.cursor.enable.get()) {
           self.toggleCursor(true);
         }
       },
@@ -2268,14 +2579,14 @@ window.App = (function() {
         self.elements.palette[0].classList.toggle('no-pills', !shouldBeNumbered);
       },
       toggleReticule: (show) => {
-        if (show && ls.get('ui.show-reticule')) {
+        if (show && settings.ui.reticule.enable.get()) {
           self.elements.reticule.show();
         } else if (!show) {
           self.elements.reticule.hide();
         }
       },
       toggleCursor: (show) => {
-        if (show && ls.get('ui.show-cursor')) {
+        if (show && settings.ui.cursor.enable.get()) {
           self.elements.cursor.show();
         } else if (!show) {
           self.elements.cursor.hide();
@@ -2295,7 +2606,10 @@ window.App = (function() {
                 $('<span>').addClass('palette-number').text(idx)
               )
               .click(function() {
-                if (ls.get('autoReset') === false || timer.cooledDown()) {
+                // TODO ([  ]): This check should be in switch - not here.
+                //              It's actually not very helpful here because of mmb picker and scrolling.
+                //              These buttons are occluded by the timer anyway.
+                if (settings.place.deselectonplace.enable.get() === false || timer.cooledDown()) {
                   self.switch(idx);
                 }
               });
@@ -2342,7 +2656,7 @@ window.App = (function() {
             y = evt.clientY;
           }
 
-          if (ls.get('ui.show-cursor') !== false) {
+          if (settings.ui.cursor.enable.get() !== false) {
             self.elements.cursor.css('transform', 'translate(' + x + 'px, ' + y + 'px)');
           }
           if (self.can_undo) {
@@ -2373,9 +2687,9 @@ window.App = (function() {
           switch (data.ackFor) {
             case 'PLACE':
               $(window).trigger('pxls:ack:place', [data.x, data.y]);
-              if (uiHelper.tabHasFocus() && !ls.get('audio_muted')) {
+              if (uiHelper.tabHasFocus() && settings.audio.enable.get()) {
                 const clone = self.audio.cloneNode(false);
-                clone.volume = parseFloat(ls.get('alert.volume'));
+                clone.volume = parseFloat(settings.audio.alert.volume.get());
                 clone.play();
               }
               break;
@@ -2431,10 +2745,14 @@ window.App = (function() {
           analytics('send', 'event', 'Captcha', 'Sent');
         };
         self.elements.palette.on('wheel', e => {
-          if (ls.get('scrollSwitchEnabled') !== true) return;
+          if (settings.place.palette.scrolling.enable.get() !== true) return;
           const delta = e.originalEvent.deltaY * -40;
-          const newVal = (self.color + ((delta > 0 ? 1 : -1) * (ls.get('scrollSwitchDirectionInverted') === true ? -1 : 1))) % self.palette.length;
+          const newVal = (self.color + ((delta > 0 ? 1 : -1) * (settings.place.palette.scrolling.invert.get() === true ? -1 : 1))) % self.palette.length;
           self.switch(newVal <= -1 ? self.palette.length - 1 : newVal);
+        });
+
+        settings.place.deselectonplace.enable.listen(function(value) {
+          self.setAutoReset(value);
         });
       },
       hexToRgb: function(hex) {
@@ -2593,7 +2911,6 @@ window.App = (function() {
         });
       },
       create: function(data) {
-        const sensitive = ls.get('hide_sensitive') === true;
         const sensitiveElems = [];
         self._makeShell(data).find('.content').first().append(() => {
           if (!data.bg) {
@@ -2622,7 +2939,7 @@ window.App = (function() {
             ).attr('id', 'lookuphook_' + hook.id);
             if (hook.sensitive) {
               sensitiveElems.push(_retVal);
-              if (sensitive) {
+              if (settings.lookup.filter.sensitive.enable.get()) {
                 _retVal.css('display', 'none');
               }
             }
@@ -2636,13 +2953,7 @@ window.App = (function() {
           const label = $('<label>').text('Hide sensitive information');
           const checkbox = $('<input type="checkbox">').css('margin-top', '10px');
           label.prepend(checkbox);
-          checkbox.prop('checked', sensitive);
-          checkbox.change(function() {
-            ls.set('hide_sensitive', this.checked);
-            sensitiveElems.forEach(v => {
-              v.css('display', this.checked ? 'none' : '');
-            });
-          });
+          settings.lookup.filter.sensitive.enable.controls.add(checkbox);
           return label;
         });
         self.elements.lookup.fadeIn(200);
@@ -2742,6 +3053,10 @@ window.App = (function() {
           }
         );
 
+        settings.lookup.filter.sensitive.enable.listen(function(value) {
+          $('[data-sensitive=true]').css('display', value ? 'none' : '');
+        });
+
         self.elements.lookup.hide();
         self.elements.prompt.hide();
         board.getRenderBoard().on('click', function(evt) {
@@ -2766,38 +3081,6 @@ window.App = (function() {
       unregisterHook: self.unregisterHook,
       runLookup: self.runLookup,
       clearHandle: self.clearHandle
-    };
-  })();
-    // this takes care of the info slidedown and some settings (audio)
-  const info = (function() {
-    const self = {
-      init: function() {
-        $('#audiotoggle')
-          .prop('checked', ls.get('audio_muted'))
-          .change(function() {
-            ls.set('audio_muted', this.checked);
-          });
-
-        // stickyColorToggle ("Keep color selected"). Checked = don't auto reset.
-        let autoReset = ls.get('autoReset');
-        if (autoReset == null) {
-          autoReset = false;
-        }
-        place.setAutoReset(autoReset);
-        $('#stickyColorToggle')
-          .prop('checked', !autoReset)
-          .change(function() {
-            place.setAutoReset(!this.checked);
-          });
-
-        $('#monospaceToggle').change(function() {
-          ls.set('monospace_lookup', this.checked);
-          $('.monoVal').toggleClass('useMono', this.checked);
-        });
-      }
-    };
-    return {
-      init: self.init
     };
   })();
   const serviceWorkerHelper = (() => {
@@ -2911,11 +3194,9 @@ window.App = (function() {
         stackCount: $('#placeable-count, #placeableCount-cursor'),
         captchaLoadingIcon: $('.captcha-loading-icon'),
         coords: $('#coords-info .coords'),
-        txtAlertLocation: $('#txtAlertLocation'),
-        rangeAlertVolume: $('#rangeAlertVolume'),
         lblAlertVolume: $('#lblAlertVolume'),
         btnForceAudioUpdate: $('#btnForceAudioUpdate'),
-        themeSelect: $('#themeSelect'),
+        themeSelect: $('#setting-ui-theme-index'),
         themeColorMeta: $('meta[name="theme-color"]'),
         txtDiscordName: $('#txtDiscordName'),
         selUsernameColor: $('#selUsernameColor'),
@@ -2931,6 +3212,11 @@ window.App = (function() {
           name: 'Darker',
           location: '/themes/darker.css',
           color: '#000'
+        },
+        {
+          name: 'Blue',
+          location: '/themes/blue.css',
+          color: '#0000FF'
         },
         {
           name: 'Purple',
@@ -2961,152 +3247,63 @@ window.App = (function() {
           new SLIDEIN.Slidein(`A new ${data.report_type.toLowerCase()} report has been received.`, 'info-circle').show().closeAfter(3000);
         });
 
-        let useMono = ls.get('monospace_lookup');
-        if (typeof useMono === 'undefined') {
-          ls.set('monospace_lookup', true);
-          useMono = true;
-        }
-        $('#monospaceToggle').prop('checked', useMono);
-        if (useMono) {
-          $('.monoVal').addClass('useMono');
-        }
+        settings.lookup.monospace.enable.listen(function(value) {
+          $('.monoVal').toggleClass('useMono', value);
+        });
 
-        let alertDelay = ls.get('alert_delay');
-        if (typeof alertDelay === 'undefined') {
-          ls.set('alert_delay', '0');
-          alertDelay = 0;
-        }
-        $('#alertDelay').val(alertDelay);
-        $('#alertDelay').change(function() {
-          if (!isNaN($(this).val())) {
-            ls.set('alert_delay', $(this).val());
+        settings.ui.palette.numbers.enable.listen(function(value) {
+          place.setNumberedPaletteEnabled(value);
+        });
+
+        settings.board.lock.enable.listen((value) => board.setAllowDrag(!value));
+
+        settings.ui.chat.banner.enable.listen(function(value) {
+          self.setBannerEnabled(value);
+        });
+
+        settings.ui.chat.horizontal.enable.listen(function(value) {
+          const _chatPanel = document.querySelector('aside.panel[data-panel="chat"]');
+          if (_chatPanel) {
+            _chatPanel.classList.toggle('horizontal', value === true);
+            if (_chatPanel.classList.contains('open')) {
+              document.body.classList.toggle(`panel-${_chatPanel.classList.contains('right') ? 'right' : 'left'}-horizontal`, value === true);
+            }
           }
         });
-        $('#alertDelay').keydown(function(evt) {
-          switch (evt.code || evt.keyCode || evt.which || evt.key) {
-            case 'KeyT':
-            case 84:
-            case 'T':
-            case 't':
-            case 'KeyEnter':
-            case 13:
-              $(this).blur();
-              break;
-          }
-        });
-
-        $('#increasedZoomToggle').prop('checked', ls.get('increased_zoom') === true);
-        $('#increasedZoomToggle').change(function() {
-          const checked = $(this).prop('checked') === true; // coerce to bool
-          ls.set('increased_zoom', checked);
-        });
-
-        $('#scrollSwitchToggle').prop('checked', ls.get('scrollSwitchEnabled') === true);
-        $('#scrollSwitchToggle').change(function() {
-          ls.set('scrollSwitchEnabled', this.checked === true);
-        });
-
-        $('#scrollDirectionToggle').prop('checked', ls.get('scrollSwitchDirectionInverted') === true);
-        $('#scrollDirectionToggle').change(function() {
-          ls.set('scrollSwitchDirectionInverted', this.checked === true);
-        });
-
-        if (ls.get('enableMiddleMouseSelect') == null) ls.set('enableMiddleMouseSelect', true);
-        $('#cbEnableMiddleMouseSelect').prop('checked', ls.get('enableMiddleMouseSelect') === true)
-          .change(function() {
-            ls.set('enableMiddleMouseSelect', this.checked === true);
-          });
-
-        place.setNumberedPaletteEnabled(ls.get('enableNumberedPalette') === true);
-        $('#cbNumberedPalette').prop('checked', ls.get('enableNumberedPalette') === true)
-          .change(function() {
-            ls.set('enableNumberedPalette', this.checked === true);
-            place.setNumberedPaletteEnabled(this.checked === true);
-          });
-
-        board.setAllowDrag(ls.get('canvas.unlocked') !== false); // false check for new connections
-        $('#lockCanvasToggle').prop('checked', !board.allowDrag)
-          .change(function() {
-            board.setAllowDrag(this.checked === false); // updates localStorage for us
-          });
-
-        const _chatPanel = document.querySelector('aside.panel[data-panel="chat"]');
-        if (_chatPanel) {
-          _chatPanel.classList.toggle('horizontal', ls.get('chat.horizontal') === true);
-        }
 
         const numOrDefault = (n, def) => isNaN(n) ? def : n;
-        const colorBrightnessLevel = numOrDefault(parseFloat(ls.get('colorBrightness')), 1);
-        const colorBrightnessSlider = $('#color-brightness');
-        const colorBrightnessToggle = $('#color-brightness-toggle');
 
-        const brightnessEnabled = ls.get('brightness.enabled') === true;
         const brightnessFixElement = $('<canvas>').attr('id', 'brightness-fixer').addClass('noselect');
 
-        if (brightnessEnabled) {
-          $('#board-mover').prepend(brightnessFixElement);
-        }
+        settings.ui.brightness.enable.listen(function(enabled) {
+          if (enabled) {
+            settings.ui.brightness.value.controls.enable();
+            $('#board-mover').prepend(brightnessFixElement);
+          } else {
+            settings.ui.brightness.value.controls.disable();
+            brightnessFixElement.remove();
+          }
+          self.adjustColorBrightness(enabled ? numOrDefault(parseFloat(settings.ui.brightness.value.get()), 1) : null);
+        });
 
-        colorBrightnessToggle
-          .prop('checked', brightnessEnabled)
-          .change(function(e) {
-            const isEnabled = !!this.checked;
-            if (isEnabled) {
-              $('#board-mover').prepend(brightnessFixElement);
-            } else {
-              brightnessFixElement.remove();
-            }
-            ls.set('brightness.enabled', isEnabled);
-            colorBrightnessSlider.prop('disabled', !isEnabled);
-            self.adjustColorBrightness(isEnabled ? numOrDefault(parseFloat(ls.get('colorBrightness')), 1) : null);
-          });
+        settings.ui.brightness.value.listen(function(value) {
+          if (settings.ui.brightness.enable.get() === true) {
+            const level = numOrDefault(parseFloat(value), 1);
+            self.adjustColorBrightness(level);
+          }
+        });
 
-        colorBrightnessSlider
-          .val(colorBrightnessLevel)
-          .prop('disabled', ls.get('brightness.enabled') !== true)
-          .change((e) => {
-            if (ls.get('brightness.enabled') === true) {
-              const level = parseFloat(e.target.value);
-              ls.set('colorBrightness', level);
-              self.adjustColorBrightness(level);
-            }
-          });
-        self.adjustColorBrightness(ls.get('brightness.enabled') === true ? colorBrightnessLevel : null); // ensure we clear if it's disabled on init
+        settings.ui.bubble.position.listen(function(value) {
+          self.elements.mainBubble.attr('position', value);
+        });
 
-        const initialBubblePosition = ls.get('ui.bubble-position') || 'bottom left';
-        $(`#bubble-position input[value="${initialBubblePosition}"]`).prop('checked', true);
-        self.elements.mainBubble.attr('position', initialBubblePosition);
-        $('#bubble-position input')
-          .click((e) => {
-            ls.set('ui.bubble-position', e.target.value);
-            self.elements.mainBubble.attr('position', e.target.value);
-          });
+        settings.ui.reticule.enable.listen(function(value) {
+          place.toggleReticule(value && place.color !== -1);
+        });
 
-        const possiblyMobile = window.innerWidth < 768 && nua.includes('Mobile');
-
-        let initialShowReticule = ls.get('ui.show-reticule');
-        if (initialShowReticule == null) {
-          initialShowReticule = !possiblyMobile;
-          ls.set('ui.show-reticule', initialShowReticule);
-        }
-        $('#showReticuleToggle')
-          .prop('checked', initialShowReticule)
-          .change(function() {
-            ls.set('ui.show-reticule', this.checked === true);
-            place.toggleReticule(this.checked);
-          });
-
-        let initialShowCursor = ls.get('ui.show-cursor');
-        if (initialShowCursor == null) {
-          initialShowCursor = !possiblyMobile;
-          ls.set('ui.show-cursor', initialShowCursor);
-        }
-        $('#showCursorToggle')
-          .prop('checked', initialShowCursor)
-          .change(function() {
-            ls.set('ui.show-cursor', this.checked === true);
-            place.toggleCursor(this.checked);
-          });
+        settings.ui.reticule.enable.listen(function(value) {
+          place.toggleCursor(value && place.color !== -1);
+        });
 
         $(window).keydown((evt) => {
           if (['INPUT', 'TEXTAREA'].includes(evt.target.nodeName)) {
@@ -3162,18 +3359,11 @@ window.App = (function() {
             text: self.themes[i].name
           }));
         }
-        const currentTheme = parseInt(ls.get('currentTheme'));
-        if (isNaN(currentTheme) || (currentTheme >= self.themes.length || currentTheme < -1)) {
-          // If currentTheme hasn't been set, or it's out of bounds, reset it to default (-1)
-          ls.set('currentTheme', -1);
-        } else if (currentTheme !== -1) {
-          self.loadTheme(currentTheme);
-          self.elements.themeSelect.val(currentTheme);
-        }
-        self.elements.themeSelect.on('change', async function() {
-          const themeIdx = parseInt(this.value);
-          ls.set('currentTheme', themeIdx);
-          await self.loadTheme(themeIdx);
+
+        // since we just changed the options available, this will coerce the settings into making the control reflect the actual theme.
+        settings.ui.theme.index.set(settings.ui.theme.index.get());
+        settings.ui.theme.index.listen(async function(value) {
+          await self.loadTheme(parseInt(value));
         });
       },
       _initStack: function() {
@@ -3182,45 +3372,24 @@ window.App = (function() {
         });
       },
       _initAudio: function() {
-        let parsedVolume = parseFloat(ls.get('alert.volume'));
-        if (isNaN(parseFloat(ls.get('alert.volume')))) {
-          parsedVolume = 1;
-          ls.set('alert.volume', 1);
-        } else {
-          parsedVolume = parseFloat(ls.get('alert.volume'));
-          timer.audioElem.volume = parsedVolume;
-        }
-        self.elements.lblAlertVolume.text(`${parsedVolume * 100 >> 0}%`);
-        self.elements.rangeAlertVolume.val(parsedVolume);
-
-        if (ls.get('alert.src')) {
-          self.updateAudio(ls.get('alert.src'));
-          self.elements.txtAlertLocation.val(ls.get('alert.src'));
-        }
-
         timer.audioElem.addEventListener('error', err => {
           if (console.warn) console.warn('An error occurred on the audioElem node: %o', err);
         });
 
-        self.elements.txtAlertLocation.change(function() { // change should only fire on blur so we normally won't be calling updateAudio for each keystroke. just in case though, we'll lazy update.
+        settings.audio.alert.src.listen(function(url) { // change should only fire on blur so we normally won't be calling updateAudio for each keystroke. just in case though, we'll lazy update.
           if (self._alertUpdateTimer !== false) clearTimeout(self._alertUpdateTimer);
           self._alertUpdateTimer = setTimeout(function(url) {
             self.updateAudio(url);
             self._alertUpdateTimer = false;
-          }, 250, this.value);
-        }).keydown(function(evt) {
-          if (evt.key === 'Enter' || evt.which === 13) {
-            $(this).change();
-          }
-          evt.stopPropagation();
+          }, 250, url);
         });
-        self.elements.btnForceAudioUpdate.click(() => self.elements.txtAlertLocation.change());
+        self.elements.btnForceAudioUpdate.click(() => settings.audio.alert.src.set(settings.audio.alert.src.get()));
 
-        self.elements.rangeAlertVolume.change(function() {
-          const parsed = parseFloat(self.elements.rangeAlertVolume.val());
-          self.elements.lblAlertVolume.text(`${parsed * 100 >> 0}%`);
-          ls.set('alert.volume', parsed);
-          timer.audioElem.volume = parsed;
+        settings.audio.alert.volume.listen(function(value) {
+          const parsed = parseFloat(value);
+          const volume = isNaN(parsed) ? 1 : parsed;
+          self.elements.lblAlertVolume.text(`${volume * 100 >> 0}%`);
+          timer.audioElem.volume = volume;
         });
 
         $('#btnAlertAudioTest').click(() => timer.audioElem.play());
@@ -3228,7 +3397,7 @@ window.App = (function() {
         $('#btnAlertReset').click(() => {
           // TODO confirm with user
           self.updateAudio('notify.wav');
-          self.elements.txtAlertLocation.val('');
+          settings.audio.alert.src.reset();
         });
       },
       _initAccount: function() {
@@ -3247,7 +3416,7 @@ window.App = (function() {
         });
       },
       _initBanner() {
-        self.banner.enabled = ls.get('chat.banner-enabled') !== false;
+        self.banner.enabled = settings.ui.chat.banner.enable.get() !== false;
         self._bannerIntervalTick();
       },
       _initMultiTabDetection() {
@@ -3696,19 +3865,19 @@ window.App = (function() {
       },
       TEMPLATE_ACTIONS: {
         ASK: {
-          id: 0,
+          id: 'ask',
           pretty: 'Ask'
         },
         NEW_TAB: {
-          id: 1,
+          id: 'new tab',
           pretty: 'Open in a new tab'
         },
         CURRENT_TAB: {
-          id: 2,
+          id: 'current tab',
           pretty: 'Open in current tab (replacing template)'
         },
         JUMP_ONLY: {
-          id: 3,
+          id: 'jump only',
           pretty: 'Jump to coordinates without replacing template'
         }
       },
@@ -3828,7 +3997,7 @@ window.App = (function() {
         socket.on('chat_lookup', e => {
           if (e.target && Array.isArray(e.history) && Array.isArray(e.chatbans)) {
             // const now = moment();
-            const is24h = ls.get('chat.24h') === true;
+            const is24h = settings.chat.timestamps['24h'].get() === true;
             const shortFormat = `MMM Do YYYY, ${is24h ? 'HH:mm' : 'hh:mm A'}`;
             const longFormat = `dddd, MMMM Do YYYY, ${is24h ? 'HH:mm:ss' : 'h:mm:ss a'}`;
             const dom = crel('div', { class: 'halves' },
@@ -4256,16 +4425,6 @@ window.App = (function() {
           if (popup) popup.remove();
         });
 
-        if (ls.get('chat.pings-enabled') == null) {
-          ls.set('chat.pings-enabled', true);
-        }
-        if (ls.get('chat.ping-audio-state') == null) {
-          ls.set('chat.ping-audio-state', 'off');
-        }
-        if (ls.get('chat.ping-audio-volume') == null) {
-          ls.set('chat.ping-audio-volume', 0.5);
-        }
-
         self.elements.chat_settings_button[0].addEventListener('click', () => self.popChatSettings());
 
         self.elements.pings_button[0].addEventListener('click', function() {
@@ -4304,19 +4463,10 @@ window.App = (function() {
 
         self.elements.jump_button[0].addEventListener('click', self.scrollToBottom);
 
-        if (ls.get('chat.font-size') == null) {
-          ls.set('chat.font-size', 16);
-        }
-
-        if (ls.get('chat.faction-tags-enabled') == null) {
-          ls.set('chat.faction-tags-enabled', true);
-        }
-
-        const cbChatSettingsFontSize = $('#cbChatSettingsFontSize');
         const notifBody = document.querySelector('.panel[data-panel="notifications"] .panel-body');
-        cbChatSettingsFontSize.val(ls.get('chat.font-size') || 16);
-        self.elements.body.css('font-size', `${ls.get('chat.font-size') >> 0 || 16}px`);
-        notifBody.style.fontSize = `${ls.get('chat.font-size') >> 0 || 16}px`;
+
+        self.elements.body.css('font-size', `${settings.chat.font.size.get() >> 0 || 16}px`);
+        notifBody.style.fontSize = `${settings.chat.font.size.get() >> 0 || 16}px`;
 
         self.elements.body.on('scroll', e => {
           self.updateStickToBottom();
@@ -4335,6 +4485,28 @@ window.App = (function() {
           self.picker.pickerVisible ? self.picker.hidePicker() : self.picker.showPicker(this);
           const searchEl = self.picker.pickerEl.querySelector('.emoji-picker__search'); // searchEl is destroyed every time the picker closes. have to re-attach
           if (searchEl) { searchEl.addEventListener('keydown', e => e.stopPropagation()); }
+        });
+
+        settings.chat.font.size.listen(function(value) {
+          if (isNaN(value)) {
+            modal.showText('Invalid value. Expected a number between 1 and 72');
+          } else {
+            const val = value >> 0;
+            if (val < 1 || val > 72) {
+              modal.showText('Invalid value. Expected a number between 1 and 72');
+            } else {
+              self.elements.body.css('font-size', `${val}px`);
+              document.querySelector('.panel[data-panel="notifications"] .panel-body').style.fontSize = `${val}px`;
+            }
+          }
+        });
+
+        settings.chat.badges.enable.listen(function() {
+          self._toggleTextIconFlairs();
+        });
+
+        settings.chat.factiontags.enable.listen(function() {
+          self._toggleFactionTagFlairs();
         });
       },
       _handleChatbanVisualState(canChat) {
@@ -4570,7 +4742,7 @@ window.App = (function() {
           _cbPingAudio
         );
 
-        const _rgPingAudioVol = crel('input', { type: 'range', min: 0, max: 100 });
+        const _rgPingAudioVol = crel('input', { type: 'range', min: 0, max: 1, step: 0.01 });
         const _txtPingAudioVol = crel('span');
         const lblPingAudioVol = crel('label',
           'Ping sound volume: ',
@@ -4627,84 +4799,24 @@ window.App = (function() {
           socket.send({ type: 'UserUpdate', updates: { NameColor: String(this.value >> 0) } });
         });
 
-        _txtFontSize.value = ls.get('chat.font-size') >> 0 || 16;
-        _txtFontSize.addEventListener('change', function() {
-        });
-        _btnFontSizeConfirm.addEventListener('click', function() {
-          if (isNaN(_txtFontSize.value)) {
-            modal.showText('Invalid value. Expected a number between 1 and 72');
-          } else {
-            const val = _txtFontSize.value >> 0;
-            if (val < 1 || val > 72) {
-              modal.showText('Invalid value. Expected a number between 1 and 72');
-            } else {
-              ls.set('chat.font-size', val);
-              self.elements.body.css('font-size', `${val}px`);
-              document.querySelector('.panel[data-panel="notifications"] .panel-body').style.fontSize = `${val}px`;
-            }
-          }
-        });
+        settings.chat.font.size.controls.add(_txtFontSize);
+        _btnFontSizeConfirm.click(() => settings.chat.font.size.set(settings.chat.font.size.get()));
 
-        _selInternalClick.selectedIndex = ls.get('chat.internalClickDefault') >> 0;
-        _selInternalClick.addEventListener('change', function() {
-          ls.set('chat.internalClickDefault', this.value >> 0);
-        });
+        settings.chat.links.internal.behavior.controls.add(_selInternalClick);
 
-        _cb24hTimestamps.checked = ls.get('chat.24h') === true;
-        _cb24hTimestamps.addEventListener('change', function() {
-          ls.set('chat.24h', this.checked === true);
-        });
+        settings.chat.timestamps['24h'].controls.add(_cb24hTimestamps);
+        settings.chat.badges.enable.controls.add(_cbPixelPlaceBadges);
+        settings.chat.factiontags.enable.controls.add(_cbFactionTagBadges);
+        settings.chat.pings.enable.controls.add(_cbPings);
+        settings.chat.pings.audio.when.controls.add(_cbPingAudio);
+        settings.chat.pings.audio.volume.controls.add(_rgPingAudioVol);
+        settings.ui.chat.banner.enable.controls.add(_cbBanner);
+        settings.chat.links.templates.preferurls.controls.add(_cbTemplateTitles);
+        settings.ui.chat.horizontal.enable.controls.add(_cbHorizontal);
 
-        _cbPixelPlaceBadges.checked = ls.get('chat.text-icons-enabled');
-        _cbPixelPlaceBadges.addEventListener('change', function() {
-          ls.set('chat.text-icons-enabled', this.checked === true);
-          self._toggleTextIconFlairs();
-        });
-
-        _cbFactionTagBadges.checked = ls.get('chat.faction-tags-enabled');
-        _cbFactionTagBadges.addEventListener('change', function() {
-          ls.set('chat.faction-tags-enabled', this.checked === true);
-          self._toggleFactionTagFlairs();
-        });
-
-        _cbPings.checked = ls.get('chat.pings-enabled') === true;
-        _cbPings.addEventListener('change', function() {
-          ls.set('chat.pings-enabled', this.checked === true);
-        });
-
-        _cbPingAudio.value = ls.get('chat.ping-audio-state');
-        _cbPingAudio.addEventListener('change', function() {
-          ls.set('chat.ping-audio-state', this.value);
-        });
-
-        _rgPingAudioVol.value = ls.get('chat.ping-audio-volume') * 100;
-        _txtPingAudioVol.innerText = `${_rgPingAudioVol.value}%`;
+        _txtPingAudioVol.innerText = `${(_rgPingAudioVol.value * 100) >> 0}%`;
         _rgPingAudioVol.addEventListener('change', function() {
-          ls.set('chat.ping-audio-volume', this.value / 100);
-          _txtPingAudioVol.innerText = `${this.value}%`;
-        });
-
-        _cbBanner.checked = ls.get('chat.banner-enabled') !== false;
-        _cbBanner.addEventListener('change', function() {
-          ls.set('chat.banner-enabled', this.checked === true);
-          uiHelper.setBannerEnabled(this.checked === true);
-        });
-
-        _cbTemplateTitles.checked = ls.get('chat.use-template-urls') === true;
-        _cbTemplateTitles.addEventListener('change', function() {
-          ls.set('chat.use-template-urls', this.checked === true);
-        });
-
-        _cbHorizontal.checked = ls.get('chat.horizontal') === true;
-        _cbHorizontal.addEventListener('change', function() {
-          ls.set('chat.horizontal', this.checked === true);
-          const _chatPanel = document.querySelector('aside.panel[data-panel="chat"]');
-          if (_chatPanel) {
-            _chatPanel.classList.toggle('horizontal', this.checked === true);
-            if (_chatPanel.classList.contains('open')) {
-              document.body.classList.toggle(`panel-${_chatPanel.classList.contains('right') ? 'right' : 'left'}-horizontal`, this.checked === true);
-            }
-          }
+          _txtPingAudioVol.innerText = `${(this.value * 100) >> 0}%`;
         });
 
         _btnUnignore.addEventListener('click', function() {
@@ -4749,7 +4861,19 @@ window.App = (function() {
         modal.show(modal.buildDom(
           crel('h2', { class: 'modal-title' }, 'Chat Settings'),
           body
-        ));
+        )).one($.modal.AFTER_CLOSE, function() {
+          settings.chat.font.size.controls.remove(_txtFontSize);
+          settings.chat.links.internal.behavior.controls.remove(_selInternalClick);
+          settings.chat.timestamps['24h'].controls.remove(_cb24hTimestamps);
+          settings.chat.badges.enable.controls.remove(_cbPixelPlaceBadges);
+          settings.chat.factiontags.enable.controls.remove(_cbFactionTagBadges);
+          settings.chat.pings.enable.controls.remove(_cbPings);
+          settings.chat.pings.audio.when.controls.remove(_cbPingAudio);
+          settings.chat.pings.audio.volume.controls.remove(_rgPingAudioVol);
+          settings.ui.chat.banner.enable.controls.remove(_cbBanner);
+          settings.chat.links.templates.preferurls.controls.remove(_cbTemplateTitles);
+          settings.ui.chat.horizontal.enable.controls.remove(_cbHorizontal);
+        });
       },
       _handlePingJumpClick: function() { // must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
         if (this && this.dataset && this.dataset.id) {
@@ -4815,7 +4939,7 @@ window.App = (function() {
         const when = moment();
         const toAppend =
             crel('li', { class: 'chat-line server-action' },
-              crel('span', { title: when.format('MMM Do YYYY, hh:mm:ss A') }, when.format(ls.get('chat.24h') === true ? 'HH:mm' : 'hh:mm A')),
+              crel('span', { title: when.format('MMM Do YYYY, hh:mm:ss A') }, when.format(settings.chat.timestamps['24h'].get() === true ? 'HH:mm' : 'hh:mm A')),
               document.createTextNode(' - '),
               crel('span', { class: 'content' }, msg)
             );
@@ -4859,7 +4983,7 @@ window.App = (function() {
           $(this).find('.faction-tag').each(function() {
             this.dataset.tag = tag;
             this.style.color = color;
-            this.style.display = ls.get('chat.faction-tags-enabled') === true ? 'initial' : 'none';
+            this.style.display = settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
             this.innerHTML = tagStr;
             this.setAttribute('title', ttStr);
           });
@@ -4884,12 +5008,12 @@ window.App = (function() {
           _ft.innerHTML = '';
         });
       },
-      _toggleTextIconFlairs: (enabled = ls.get('chat.text-icons-enabled') === true) => {
+      _toggleTextIconFlairs: (enabled = settings.chat.badges.enable.get() === true) => {
         self.elements.body.find('.chat-line .flairs .text-badge').each(function() {
           this.style.display = enabled ? 'initial' : 'none';
         });
       },
-      _toggleFactionTagFlairs: (enabled = ls.get('chat.faction-tags-enabled') === true) => {
+      _toggleFactionTagFlairs: (enabled = settings.chat.factiontags.enable.get() === true) => {
         self.elements.body.find('.chat-line:not([data-faction=""]) .flairs .faction-tag').each(function() {
           this.style.display = enabled ? 'initial' : 'none';
         });
@@ -4954,14 +5078,14 @@ window.App = (function() {
 
         self.typeahead.helper.getDatabase('users').addEntry(packet.author, packet.author);
         if (self.ignored.indexOf(packet.author) >= 0) return;
-        const hasPing = !board.snipMode && ls.get('chat.pings-enabled') === true && user.isLoggedIn() && hookDatas.some((data) => data.pings.length > 0);
+        const hasPing = !board.snipMode && settings.chat.pings.enable.get() === true && user.isLoggedIn() && hookDatas.some((data) => data.pings.length > 0);
         const when = moment.unix(packet.date);
         const flairs = crel('span', { class: 'flairs' });
         if (Array.isArray(packet.badges)) {
           packet.badges.forEach(badge => {
             switch (badge.type) {
               case 'text': {
-                const _countBadgeShow = ls.get('chat.text-icons-enabled') ? 'initial' : 'none';
+                const _countBadgeShow = settings.chat.badges.enable.get() ? 'initial' : 'none';
                 crel(flairs, crel('span', {
                   class: 'flair text-badge',
                   style: `display: ${_countBadgeShow}`,
@@ -4981,7 +5105,7 @@ window.App = (function() {
 
         const _facTag = packet.strippedFaction ? packet.strippedFaction.tag : '';
         const _facColor = packet.strippedFaction ? self.intToHex(packet.strippedFaction.color) : 0;
-        const _facTagShow = packet.strippedFaction && ls.get('chat.faction-tags-enabled') === true ? 'initial' : 'none';
+        const _facTagShow = packet.strippedFaction && settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
         const _facTitle = packet.strippedFaction ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : '';
         crel(flairs, crel('span', {
           class: 'flair faction-tag',
@@ -5006,7 +5130,7 @@ window.App = (function() {
             'data-badges': JSON.stringify(packet.badges || []),
             class: `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`
           },
-          crel('span', { title: when.format('MMM Do YYYY, hh:mm:ss A') }, when.format(ls.get('chat.24h') === true ? 'HH:mm' : 'hh:mm A')),
+          crel('span', { title: when.format('MMM Do YYYY, hh:mm:ss A') }, when.format(settings.chat.timestamps['24h'].get() === true ? 'HH:mm' : 'hh:mm A')),
           document.createTextNode(' '),
           flairs,
           crel('span', {
@@ -5029,12 +5153,12 @@ window.App = (function() {
             self.elements.pings_button.addClass('has-notification');
           }
 
-          const pingAudioState = ls.get('chat.ping-audio-state');
-          const canPlayPingAudio = !isHistory && !ls.get('audio_muted') &&
+          const pingAudioState = settings.chat.pings.audio.when.get();
+          const canPlayPingAudio = !isHistory && settings.audio.enable.get() &&
               pingAudioState !== 'off' && Date.now() - self.lastPingAudioTimestamp > 5000;
           if ((!panels.isOpen('chat') || !document.hasFocus() || pingAudioState === 'always') &&
               uiHelper.tabHasFocus() && canPlayPingAudio) {
-            self.pingAudio.volume = parseFloat(ls.get('chat.ping-audio-volume'));
+            self.pingAudio.volume = parseFloat(settings.chat.pings.audio.volume.get());
             self.pingAudio.play();
             self.lastPingAudioTimestamp = Date.now();
           }
@@ -5111,7 +5235,7 @@ window.App = (function() {
                     }, params);
                     if (params.template != null && params.template.length >= 11) { // we have a template, should probably make that known
                       let title = decodeURIComponent(params.template);
-                      if (ls.get('chat.use-template-urls') !== true && params.title && params.title.trim()) { title = decodeURIComponent(params.title); }
+                      if (settings.chat.links.templates.preferurls.get() !== true && params.title && params.title.trim()) { title = decodeURIComponent(params.title); }
                       jumpTarget.displayText += ` (template: ${(title > 25) ? `${title.substr(0, 22)}...` : title})`;
                     }
                   }
@@ -5155,8 +5279,8 @@ window.App = (function() {
             x.onclick = e => {
               e.preventDefault();
               if (x.dataset.template) {
-                const internalClickDefault = ls.get('chat.internalClickDefault') >> 0;
-                if (internalClickDefault === 0) {
+                const internalClickDefault = settings.chat.links.internal.behavior.get();
+                if (internalClickDefault === self.TEMPLATE_ACTIONS.ASK.id) {
                   self._popTemplateOverwriteConfirm(x).then(action => {
                     modal.closeAll();
                     self._handleTemplateOverwriteAction(action, x);
@@ -5229,7 +5353,7 @@ window.App = (function() {
             ),
             [
               ['Cancel', () => resolve(false)],
-              ['OK', () => resolve(bodyWrapper.querySelector('input[type=radio]:checked').dataset.actionId >> 0)]
+              ['OK', () => resolve(bodyWrapper.querySelector('input[type=radio]:checked').dataset.actionId)]
             ].map(x =>
               crel('button', {
                 class: 'text-button',
@@ -5321,7 +5445,7 @@ window.App = (function() {
             { label: 'Chat Lookup', action: 'lookup-chat', staffaction: true }
           ];
 
-          crel(leftPanel, crel('p', { class: 'popup-timestamp-header text-muted' }, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(ls.get('chat.24h') === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
+          crel(leftPanel, crel('p', { class: 'popup-timestamp-header text-muted' }, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(settings.chat.timestamps['24h'].get() === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
           crel(leftPanel, crel('p', { class: 'content', style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector('.content').textContent));
 
           crel(actionsList, actions
@@ -5978,7 +6102,7 @@ window.App = (function() {
         let delta = (self.cooldown - (new Date()).getTime() - 1) / 1000;
 
         if (self.runningTimer === false) {
-          self.isOverlay = ls.get('autoReset') === true;
+          self.isOverlay = settings.place.deselectonplace.enable.get() === true;
           self.elements.timer_container = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble_container;
           self.elements.timer_countdown = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble_countdown;
           self.elements.timer_overlay.hide();
@@ -5988,7 +6112,7 @@ window.App = (function() {
           self.elements.timer_countdown.text(self.status);
         }
 
-        const alertDelay = parseInt(ls.get('alert_delay'));
+        const alertDelay = settings.place.alert.delay.get();
         if (alertDelay < 0 && delta < Math.abs(alertDelay) && !self.hasFiredNotification) {
           self.playAudio();
           let notif;
@@ -6069,7 +6193,7 @@ window.App = (function() {
       },
       init: function() {
         self.title = document.title;
-        self.elements.timer_container = ls.get('autoReset') === true
+        self.elements.timer_container = settings.place.deselectonplace.enable.get() === false
           ? self.elements.timer_overlay
           : self.elements.timer_bubble_container;
         self.elements.timer_container.hide();
@@ -6087,7 +6211,7 @@ window.App = (function() {
         });
       },
       playAudio: function() {
-        if (uiHelper.tabHasFocus() && !ls.get('audio_muted')) {
+        if (uiHelper.tabHasFocus() && settings.audio.enable.get()) {
           self.audio.play();
         }
       }
@@ -6358,7 +6482,6 @@ window.App = (function() {
               window.initAdmin({
                 socket: socket,
                 user: user,
-                place: place,
                 modal: modal,
                 lookup: lookup,
                 chat: chat,
@@ -6378,7 +6501,7 @@ window.App = (function() {
             modal.show(modal.buildDom(
               crel('h2', 'Banned'),
               banelem
-            ), { escapeClose: false, clickClose: false, showClose: true });
+            ), { escapeClose: false, clickClose: false });
             if (window.deInitAdmin) {
               window.deInitAdmin();
             }
@@ -6496,20 +6619,10 @@ window.App = (function() {
     // this takes care of browser notifications
   const nativeNotifications = (function() {
     const self = {
-      elements: {
-        toggle: $('#native-notification-toggle')
-      },
+      elements: {},
       init: () => {
-        let pixelAvailEnabled = ls.get('nativenotifications.pixel-avail');
-        if (pixelAvailEnabled == null) {
-          pixelAvailEnabled = true;
-          ls.set('nativenotifications.pixel-avail', pixelAvailEnabled);
-          self.request();
-        }
-        self.elements.toggle.prop('checked', pixelAvailEnabled);
-        self.elements.toggle.on('change', (e) => {
-          ls.set('nativenotifications.pixel-avail', e.target.checked);
-          if (e.target.checked) {
+        settings.place.notification.enable.listen(function(value) {
+          if (value) {
             self.request();
           }
         });
@@ -6547,7 +6660,7 @@ window.App = (function() {
         return null;
       },
       maybeShow: (body) => {
-        if (ls.get('nativenotifications.pixel-avail') &&
+        if (settings.place.notification.enable.get() &&
             uiHelper.tabHasFocus() &&
             Notification.permission === 'granted') {
           return self.show(body);
@@ -6632,31 +6745,16 @@ window.App = (function() {
       isEnabled: false,
       elements: {
         boardContainer: board.getContainer(),
-        setting: $('#chrome-canvas-offset-setting'),
-        checkbox: $('#chrome-canvas-offset-toggle')
+        setting: $('#chrome-canvas-offset-setting')
       },
       init: () => {
-        if (!nua.match(/AppleWebKit/)) {
+        if (!webkitBased) {
           self.elements.setting.hide();
           return;
         }
 
-        self.isEnabled = ls.get('chrome-canvas-offset-workaround');
-        if (self.isEnabled == null) {
-          // default to enabled
-          self.isEnabled = true;
-          ls.set('chrome-canvas-offset-workaround', self.isEnabled);
-        }
-
-        if (self.isEnabled) {
-          self.enable();
-        }
-
-        self.elements.checkbox.prop('checked', self.isEnabled);
-        self.elements.checkbox.on('change', (e) => {
-          self.isEnabled = e.target.checked;
-          ls.set('chrome-canvas-offset-workaround', self.isEnabled);
-          if (self.isEnabled) {
+        settings.fix.chrome.offset.enable.listen((value) => {
+          if (value) {
             self.enable();
           } else {
             self.disable();
@@ -6664,7 +6762,6 @@ window.App = (function() {
         });
       },
       enable: () => {
-        self.isEnabled = true;
         window.addEventListener('resize', self.updateContainer);
         self.updateContainer();
       },
@@ -6676,7 +6773,6 @@ window.App = (function() {
         self.elements.boardContainer.css('height', `${window.innerHeight - offsetHeight}px`);
       },
       disable: () => {
-        self.isEnabled = false;
         window.removeEventListener('resize', self.updateContainer);
         self.elements.boardContainer.css('width', '');
         self.elements.boardContainer.css('height', '');
@@ -6706,7 +6802,7 @@ window.App = (function() {
             footer = crel('div', { class: 'modal-footer' }, validButtons);
           }
         } */
-        modal.show(modal.buildDom(
+        return modal.show(modal.buildDom(
           crel('h2', { class: 'modal-title' }, opts.title || 'Pxls'),
           crel('p', { style: 'margin: 0;' }, text)
         ), opts.modalOpts);
@@ -6729,6 +6825,7 @@ window.App = (function() {
             $(this).remove();
           });
         }
+        return modalObj;
       },
       buildCloser: function() {
         const button = crel('button', { class: 'panel-closer' }, crel('i', { class: 'fas fa-times' }));
@@ -6765,7 +6862,6 @@ window.App = (function() {
   ban.init();
   grid.init();
   place.init();
-  info.init();
   timer.init();
   serviceWorkerHelper.init();
   uiHelper.init();
@@ -6784,6 +6880,7 @@ window.App = (function() {
   return {
     ls: ls,
     ss: ss,
+    settings: settings,
     query: query,
     overlays: {
       add: overlays.add,
