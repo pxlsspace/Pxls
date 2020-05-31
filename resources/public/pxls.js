@@ -2948,6 +2948,10 @@ window.App = (function() {
           color: '#000'
         },
         {
+          name: 'Blue',
+          location: '/themes/blue.css',
+          color: '#0000FF'
+        },
           name: 'Purple',
           location: '/themes/purple.css',
           color: '#5a2f71'
