@@ -5337,7 +5337,7 @@ window.App = (function() {
             crel('h2', { class: 'modal-title' }, 'Open Template'),
             crel(bodyWrapper,
               crel('h3', { class: 'text-orange' }, 'This link will overwrite your current template. What would you like to do?'),
-              Object.values(self.TEMPLATE_ACTIONS).map(action => action.id === 0 ? null
+              Object.values(self.TEMPLATE_ACTIONS).map(action => action.id === self.TEMPLATE_ACTIONS.ASK.id ? null
                 : crel('label', { style: 'display: block; margin: 3px 3px 3px 1rem; margin-left: 1rem;' },
                   crel('input', {
                     type: 'radio',
