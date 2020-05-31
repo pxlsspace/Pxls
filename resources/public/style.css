@@ -772,6 +772,7 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     height: 0px;
     flex-flow: column;
     justify-content: center;
+    align-items: center;
     cursor: pointer;
     display: flex;
     color: #000;
