@@ -2454,9 +2454,11 @@ window.App = (function() {
       update: function() {
         const a = board.fromScreen(0, 0, false);
         const scale = board.getScale();
+        const roundedScale = Math.max(1, Math.floor(scale));
+        const scaleRoundingErrorMultiplier = scale / roundedScale;
         self.elements.grid.css({
-          backgroundSize: scale + 'px ' + scale + 'px',
-          transform: 'translate(' + Math.floor(-a.x % 1 * scale) + 'px,' + Math.floor(-a.y % 1 * scale) + 'px)',
+          backgroundSize: roundedScale + 'px ' + roundedScale + 'px',
+          transform: 'translate(' + Math.floor(-a.x % 1 * roundedScale) + 'px,' + Math.floor(-a.y % 1 * roundedScale) + 'px) scale(' + scaleRoundingErrorMultiplier + ')',
           opacity: (scale - 2) / 6
         });
       }
