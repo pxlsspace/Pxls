@@ -1,6 +1,5 @@
 package space.pxls.user;
 
-import com.typesafe.config.Config;
 import com.typesafe.config.ConfigList;
 import com.typesafe.config.ConfigValueType;
 
@@ -10,7 +9,6 @@ import space.pxls.data.DBFactionSearch;
 import space.pxls.util.TextFilter;
 
 import java.sql.Timestamp;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -22,14 +20,14 @@ public class Faction {
     private String tag;
     private int color;
     private int owner;
-    private int canvasCode;
+    private String canvasCode;
     private Timestamp created;
     private transient List<User> _cachedMembers = null;
     private transient List<User> _cachedBans = null;
     private transient User _cachedOwner = null;
     private transient AtomicBoolean dirty = new AtomicBoolean(false);
 
-    public Faction(int id, String name, String tag, int color, int owner, Timestamp created, int canvasCode) {
+    public Faction(int id, String name, String tag, int color, int owner, Timestamp created, String canvasCode) {
         this.id = id;
         this.name = name;
         this.tag = tag;
@@ -194,7 +192,7 @@ public class Faction {
         this.color = color;
     }
 
-    public int getCanvasCode() {
+    public String getCanvasCode() {
         return canvasCode;
     }
 
@@ -206,8 +204,8 @@ public class Faction {
      *
      * @param canvasCode The canvas code
      */
-    public void setCanvasCode(int canvasCode) {
-        if (canvasCode != this.canvasCode) dirty.set(true);
+    public void setCanvasCode(String canvasCode) {
+        if (!canvasCode.equals(this.canvasCode)) dirty.set(true);
         this.canvasCode = canvasCode;
     }
 
@@ -237,7 +235,7 @@ public class Faction {
               .map(value -> value.valueType() == ConfigValueType.STRING ? (Number) Integer.decode((String) value.unwrapped()) : (Number) value.unwrapped())
               .collect(Collectors.toList())
           ).collect(Collectors.toList());
-        
+
         return input.codePoints().allMatch(i -> codePoints.stream()
             .anyMatch(pair -> (pair.size() == 1)
                 ? (i == pair.get(0).intValue())

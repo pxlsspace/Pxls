@@ -10,7 +10,7 @@ public class UserFaction {
     public String name;
     public String tag;
     public String owner;
-    public int canvasCode;
+    public String canvasCode;
     public long creation_ms;
     public Integer memberCount;
     public Boolean userJoined;

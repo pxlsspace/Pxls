@@ -211,7 +211,7 @@ public class Database {
                 "  color INT NOT NULL DEFAULT 0," +
                 "  owner INT NOT NULL REFERENCES users(id)," +
                 "  created TIMESTAMP NOT NULL DEFAULT NOW()," +
-                "  \"canvasCode\" INT NOT NULL DEFAULT 0" +
+                "  \"canvasCode\" VARCHAR(256) NOT NULL DEFAULT 0" +
                 ");" +
                 "CREATE INDEX IF NOT EXISTS _faction_name ON faction (\"name\");" +
                 "CREATE INDEX IF NOT EXISTS _faction_tag ON faction (tag);" +
@@ -1528,7 +1528,7 @@ public class Database {
                 .bind("tag", factionTag)
                 .bind("owner", owner_uid)
                 .bind("color", _color)
-                .bind("canvasCode", App.getConfig().getInt("canvascode"))
+                .bind("canvasCode", App.getConfig().getString("canvascode"))
                 .map(new DBFaction.Mapper())
                 .findFirst()
                 .orElse(null);
