@@ -286,7 +286,7 @@ button {
 }
 
  button::-moz-focus-inner {
-    outline: none;
+    border: 0;
 }
 
 button.text-button {
