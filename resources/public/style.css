@@ -282,6 +282,11 @@ button {
     margin: 0;
     border: 0;
     line-height: 1.1em;
+    outline: none;
+}
+
+ button::-moz-focus-inner {
+    outline: none;
 }
 
 button.text-button {
@@ -779,6 +784,7 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     color: var(--undo-text-color);
     font-weight: bold;
     font-size: 1.25em;
+    overflow: hidden;
 }
 
 #undo.open {
