@@ -712,8 +712,8 @@ body .message {
     color: #000;
     background-color: #fff;
     border: 1px solid #000;
-    width: 2em;
-    font-size: .75em;
+    width: 1.5rem;
+    font-size: .75rem;
     user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
