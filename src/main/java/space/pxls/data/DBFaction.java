@@ -13,10 +13,10 @@ public class DBFaction {
     public final String tag;
     public final int color;
     public final int owner;
-    public final int canvasCode;
+    public final String canvasCode;
     public final Timestamp created;
 
-    public DBFaction(int id, String name, String tag, int color, int owner, Timestamp created, int canvasCode) {
+    public DBFaction(int id, String name, String tag, int color, int owner, Timestamp created, String canvasCode) {
         this.id = id;
         this.name = name;
         this.tag = tag;
@@ -36,7 +36,7 @@ public class DBFaction {
                 rs.getInt("color"),
                 rs.getInt("owner"),
                 rs.getTimestamp("created"),
-                rs.getInt("canvasCode")
+                rs.getString("canvasCode")
             );
         }
     }
