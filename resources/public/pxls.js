@@ -608,6 +608,9 @@ window.App = (function() {
           sensitivity: setting('board.zoom.sensitivity', SettingType.RANGE, 1.5, $('#setting-board-zoom-sensitivity')),
           limit: {
             enable: setting('board.zoom.limit.enable', SettingType.TOGGLE, true, $('#setting-board-zoom-limit-enable'))
+          },
+          rounding: {
+            enable: setting('board.zoom.rounding.enable', SettingType.TOGGLE, false, $('#setting-board-zoom-rounding-enable'))
           }
         },
         template: {
@@ -1491,6 +1494,11 @@ window.App = (function() {
         settings.board.template.beneathoverlays.listen(function(value) {
           self.elements.container.toggleClass('lower-template', value);
         });
+
+        settings.board.zoom.rounding.enable.listen(function(value) {
+          // this rounds the current scale if it needs rounding
+          self.setScale(self.getScale());
+        });
       },
       start: function() {
         $.get('/info', (data) => {
@@ -1669,14 +1677,29 @@ window.App = (function() {
         return true;
       },
       getScale: function() {
-        if (self.scale < 1) {
-          return 2 ** Math.round(Math.log(self.scale) / Math.log(2));
-        }
-        return Math.abs(Math.round(self.scale));
+        return Math.abs(self.scale);
       },
       setScale: function(scale, doUpdate = true) {
         if (settings.board.zoom.limit.enable.get() !== false && scale > 50) scale = 50;
         else if (scale <= 0.01) scale = 0.01; // enforce the [0.01, 50] limit without blindly resetting to 0.01 when the user was trying to zoom in farther than 50x
+
+        if (settings.board.zoom.rounding.enable.get()) {
+          // We round up if zooming in and round down if zooming out to ensure that the level does change
+          // even if the scrolled amount wouldn't be closer to the next rounded value than the last one.
+          let round;
+          if (scale < self.scale) {
+            round = Math.floor;
+          } else {
+            round = Math.ceil;
+          }
+
+          if (scale > 1) {
+            scale = round(scale);
+          } else {
+            scale = 2 ** round(Math.log(scale) / Math.log(2));
+          }
+        }
+
         self.scale = scale;
         if (doUpdate) {
           self.update();
