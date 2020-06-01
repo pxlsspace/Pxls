@@ -936,6 +936,7 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     height: 110vh;
     pointer-events: none;
     background-image: linear-gradient(to right, #aaa 1px, transparent 1px), linear-gradient(to bottom, #aaa 1px, transparent 1px);
+    transform-origin: top left;
 }
 
 #settings .settingToggles > * {
