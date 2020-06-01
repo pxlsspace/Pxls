@@ -1494,11 +1494,6 @@ window.App = (function() {
         settings.board.template.beneathoverlays.listen(function(value) {
           self.elements.container.toggleClass('lower-template', value);
         });
-
-        settings.board.zoom.rounding.enable.listen(function(value) {
-          // this rounds the current scale if it needs rounding
-          self.setScale(self.getScale());
-        });
       },
       start: function() {
         $.get('/info', (data) => {
@@ -1579,6 +1574,11 @@ window.App = (function() {
           if (color != null) {
             place.switch(parseInt(color));
           }
+
+          settings.board.zoom.rounding.enable.listen(function(value) {
+            // this rounds the current scale if it needs rounding
+            self.setScale(self.getScale());
+          });
         }).fail(function() {
           socket.reconnect();
         });
