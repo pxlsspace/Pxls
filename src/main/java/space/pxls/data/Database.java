@@ -25,7 +25,7 @@ import static java.lang.Math.toIntExact;
 
 public class Database {
     private final Jdbi jdbi;
-    private static final String SQL_USER_BY_NAME = "SELECT id, stacked, username, login, signup_time, cooldown_expiry, role, ban_expiry, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color, displayed_faction FROM users WHERE username = :username";
+    private static final String SQL_USER_BY_NAME = "SELECT id, stacked, username, login, signup_time, cooldown_expiry, role, ban_expiry, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color, displayed_faction, faction_restricted FROM users WHERE username = :username";
 
     public Database() {
         try {
@@ -88,7 +88,8 @@ public class Database {
                     "is_rename_requested BOOL NOT NULL DEFAULT false," +
                     "discord_name VARCHAR(37)," +
                     "chat_name_color INT NOT NULL," +
-                    "displayed_faction INT)")
+                    "displayed_faction INT," +
+                    "faction_restricted BOOLEAN NOT NULL DEFAULT false)")
                     .execute();
             // sessions
             handle.createUpdate("CREATE TABLE IF NOT EXISTS sessions ("+
@@ -617,7 +618,7 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> getUserByLogin(String login) {
-        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, login, signup_time, cooldown_expiry, role, ban_expiry, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color, displayed_faction FROM users WHERE login = :login")
+        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, login, signup_time, cooldown_expiry, role, ban_expiry, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color, displayed_faction, faction_restricted FROM users WHERE login = :login")
                 .bind("login", login)
                 .map(new DBUser.Mapper())
                 .findFirst());
@@ -641,7 +642,7 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> getUserByID(int who) {
-        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, login, signup_time, cooldown_expiry, role, ban_expiry, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color, displayed_faction FROM users WHERE id = :who")
+        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, login, signup_time, cooldown_expiry, role, ban_expiry, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color, displayed_faction, faction_restricted FROM users WHERE id = :who")
                 .bind("who", who)
                 .map(new DBUser.Mapper())
                 .findFirst());
@@ -653,7 +654,7 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> getUserByToken(String token) {
-        return jdbi.withHandle(handle -> handle.select("SELECT u.id, u.stacked, u.username, u.login, u.signup_time, u.cooldown_expiry, u.role, u.ban_expiry, u.signup_ip, u.last_ip, u.last_ip_alert, u.perma_chat_banned, u.chat_ban_expiry, u.chat_ban_reason, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.discord_name, u.chat_name_color, u.displayed_faction FROM users u INNER JOIN sessions s ON u.id = s.who WHERE s.token = :token")
+        return jdbi.withHandle(handle -> handle.select("SELECT u.id, u.stacked, u.username, u.login, u.signup_time, u.cooldown_expiry, u.role, u.ban_expiry, u.signup_ip, u.last_ip, u.last_ip_alert, u.perma_chat_banned, u.chat_ban_expiry, u.chat_ban_reason, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.discord_name, u.chat_name_color, u.displayed_faction, u.faction_restricted FROM users u INNER JOIN sessions s ON u.id = s.who WHERE s.token = :token")
                 .bind("token", token)
                 .map(new DBUser.Mapper())
                 .findFirst());
@@ -825,6 +826,20 @@ public class Database {
                 .bind("who", who)
                 .bind("name", discordName)
                 .execute());
+    }
+
+    /**
+     * Sets the {@link User}'s faction_restricted state, which disallows them from creating or obtaining ownership of factions.
+     * <br>This will not remove their currently owned factions, only disallow future actions.
+     *
+     * @param who The {@link User}'s ID.
+     * @param factionBlocked Whether or not the user is currently faction_restricted.
+     */
+    public void setUserFactionBlocked(int who, boolean factionBlocked) {
+        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET faction_restricted = :blocked WHERE id = :who")
+            .bind("who", who)
+            .bind("blocked", factionBlocked)
+            .execute());
     }
 
     /**

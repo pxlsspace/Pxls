@@ -175,11 +175,14 @@
                             {% if profile_of is null %}
                             <p class="text-center text-warning">You must be logged in to manage your factions.</p>
                             {% else %}
+                            {% if profile_of.isFactionRestricted or profile_of.isBanned %}
+                            <small class="text-danger m-0 p-0 d-block">You are {% if profile_of.isFactionRestricted %}faction restricted{% else %}canvas banned{% endif %} and cannot create new factions. If you believe this is an error, please contact a moderator.</small>
+                            {% endif %}
                             {% if (new_fac_min_pixels|default(0)) > requesting_user_alltime_pixels %}
-                            <small class="text-danger m-0 p-0">You must have at least {{new_fac_min_pixels|default(0)}} all-time pixels to create a faction.</small>
+                            <small class="text-warning m-0 p-0 d-block">You must have at least {{new_fac_min_pixels|default(0)}} all-time pixels to create a faction.</small>
                             {% endif %}
                             <div class="mb-2">
-                                <button class="btn btn-success btn-sm mr-1 global-faction-action" data-action="factionCreate" {% if (new_fac_min_pixels|default(0)) > requesting_user_alltime_pixels %}disabled="disabled"{% endif %}><i class="fas fa-plus"></i> Create</button>
+                                <button class="btn btn-success btn-sm mr-1 global-faction-action" data-action="factionCreate" {% if ((new_fac_min_pixels|default(0)) > requesting_user_alltime_pixels) or (profile_of.isFactionRestricted) %}disabled="disabled"{% endif %}><i class="fas fa-plus"></i> Create</button>
                                 <button class="btn btn-primary btn-sm mr-1 global-faction-action" data-toggle="modal" data-target="#modal-faction-search"><i class="fas fa-user-plus"></i> Join</button>
                             </div>
                             {% if factions|length > 0 %}

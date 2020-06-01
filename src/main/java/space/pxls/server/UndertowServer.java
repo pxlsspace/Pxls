@@ -83,6 +83,7 @@ public class UndertowServer {
                 .addPrefixPath("/admin/faction/delete", new RoleGate(Role.TRIALMOD, new JsonReader(webHandler::adminDeleteFaction)))
                 .addPrefixPath("/admin", new RoleGate(Role.TRIALMOD, Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/"))
                         .setCacheTime(10)))
+                .addPrefixPath("/admin/setFactionBlocked", new AllowedMethodsHandler(new RoleGate(Role.TRIALMOD, webHandler::setFactionBlocked), Methods.POST))
                 .addPrefixPath("/whoami", webHandler::whoami)
                 .addPrefixPath("/createNotification", new RoleGate(Role.DEVELOPER, webHandler::createNotification))
                 .addPrefixPath("/sendNotificationToDiscord", new RoleGate(Role.DEVELOPER, webHandler::sendNotificationToDiscord))

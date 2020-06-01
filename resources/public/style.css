@@ -68,6 +68,7 @@ html {
     --input-text-color: #000;
     --input-background: #fff;
     --input-border-color: #ccc;
+    --input-placeholder-text-color: #666;
 
     --text-blue-color:#00a;
     --text-green-color:#0a0;
@@ -258,6 +259,20 @@ input[type="text"], input[type="number"], textarea, select {
     color: var(--input-text-color);
 }
 
+/* NOTE (Flying): Does not work grouped together. */
+input[type="text"]::placeholder {
+    color: var(--input-placeholder-text-color);
+}
+input[type="number"]::placeholder {
+    color: var(--input-placeholder-text-color);
+}
+textarea::placeholder {
+    color: var(--input-placeholder-text-color);
+}
+select::placeholder {
+    color: var(--input-placeholder-text-color);
+}
+
 button {
     cursor: pointer;
     display: inline-block;
@@ -267,6 +282,11 @@ button {
     margin: 0;
     border: 0;
     line-height: 1.1em;
+    outline: none;
+}
+
+ button::-moz-focus-inner {
+    outline: none;
 }
 
 button.text-button {
@@ -757,12 +777,14 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     height: 0px;
     flex-flow: column;
     justify-content: center;
+    align-items: center;
     cursor: pointer;
     display: flex;
     color: #000;
     color: var(--undo-text-color);
     font-weight: bold;
     font-size: 1.25em;
+    overflow: hidden;
 }
 
 #undo.open {
@@ -914,6 +936,7 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     height: 110vh;
     pointer-events: none;
     background-image: linear-gradient(to right, #aaa 1px, transparent 1px), linear-gradient(to bottom, #aaa 1px, transparent 1px);
+    transform-origin: top left;
 }
 
 #settings .settingToggles > * {
@@ -1161,7 +1184,6 @@ aside.panel.horizontal.right {
     color: var(--panel-footer-text-color);
     border-top: 1px solid #000;
     border-top: 1px solid var(--panel-border-color);
-    background-image: #;
     background: var(--panel-footer-background);
 }
 
