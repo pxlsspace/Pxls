@@ -1114,7 +1114,9 @@ window.App = (function() {
       },
       webInfo: false,
       updateViewport: function(data) {
-        if (!isNaN(data.scale)) self.scale = parseFloat(data.scale);
+        if (!isNaN(data.scale)) {
+          self.setScale(parseFloat(data.scale), false);
+        }
         self.centerOn(data.x, data.y);
       },
       centerOn: function(x, y, ignoreLock = false) {
@@ -1442,9 +1444,8 @@ window.App = (function() {
               board.centerOn(query.get('x') >> 0, query.get('y') >> 0);
               break;
             case 'scale':
-              board.setScale(newValue >> 0);
+              board.setScale(newValue >> 0, true);
               break;
-
             case 'template':
               template.queueUpdate({ template: newValue, use: newValue !== null });
               break;
@@ -1513,7 +1514,7 @@ window.App = (function() {
 
           const cx = query.get('x') || self.width / 2;
           const cy = query.get('y') || self.height / 2;
-          self.scale = query.get('scale') || self.scale;
+          self.setScale(query.get('scale') || self.scale, false);
           self.centerOn(cx, cy, true);
           socket.init();
 
@@ -1668,23 +1669,21 @@ window.App = (function() {
       getScale: function() {
         return Math.abs(self.scale);
       },
-      setScale: function(scale) {
+      setScale: function(scale, doUpdate = true) {
         if (settings.board.zoom.limit.enable.get() !== false && scale > 50) scale = 50;
-        else if (scale <= 0) scale = 0.5; // enforce the [0.5, 50] limit without blindly resetting to 0.5 when the user was trying to zoom in farther than 50x
+        else if (scale <= 0.01) scale = 0.01; // enforce the [0.01, 50] limit without blindly resetting to 0.01 when the user was trying to zoom in farther than 50x
         self.scale = scale;
-        self.update();
+        if (doUpdate) {
+          self.update();
+        }
       },
       getZoomBase: function() {
         return parseFloat(settings.board.zoom.sensitivity.get()) || 1.5;
       },
       nudgeScale: function(adj) {
-        const maxUnlocked = settings.board.zoom.limit.enable.get() === false;
-        const maximumValue = maxUnlocked ? Infinity : 50;
-        const minimumValue = maxUnlocked ? 0 : 0.5;
         const zoomBase = self.getZoomBase();
 
-        self.scale = Math.max(minimumValue, Math.min(maximumValue, self.scale * zoomBase ** adj));
-        self.update();
+        self.setScale(self.scale * zoomBase ** adj);
       },
       getPixel: function(x, y) {
         x = Math.floor(x);
@@ -4960,7 +4959,7 @@ window.App = (function() {
         board.centerOn(x, y);
 
         if (zoom) {
-          board.setScale(zoom);
+          board.setScale(zoom, true);
         }
       },
       _updateAuthorNameColor: (author, colorIdx) => {
