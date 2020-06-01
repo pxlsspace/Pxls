@@ -1228,12 +1228,12 @@ window.App = (function() {
       update: function(optional, ignoreCanvasLock = false) {
         self.pan.x = Math.min(self.width / 2, Math.max(-self.width / 2, self.pan.x));
         self.pan.y = Math.min(self.height / 2, Math.max(-self.height / 2, self.pan.y));
+        const scale = self.getScale();
         query.set({
           x: Math.round((self.width / 2) - self.pan.x),
           y: Math.round((self.height / 2) - self.pan.y),
-          scale: Math.round(self.scale * 100) / 100
+          scale: Math.round(scale * 100) / 100
         }, true);
-        const scale = self.getScale();
         if (self.use_js_render) {
           const ctx2 = self.elements.board_render[0].getContext('2d');
           let pxlX = -self.pan.x + ((self.width - (window.innerWidth / scale)) / 2);
