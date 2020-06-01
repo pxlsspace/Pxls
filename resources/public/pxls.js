@@ -1694,9 +1694,17 @@ window.App = (function() {
           }
 
           if (scale > 1) {
-            scale = round(scale);
+            if (self.scale < 1) {
+              scale = 1;
+            } else {
+              scale = round(scale);
+            }
           } else {
-            scale = 2 ** round(Math.log(scale) / Math.log(2));
+            if (self.scale > 1) {
+              scale = 1;
+            } else {
+              scale = 2 ** round(Math.log(scale) / Math.log(2));
+            }
           }
         }
 
