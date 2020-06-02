@@ -625,7 +625,7 @@ window.App = (function() {
           enable: setting('place.notification.enable', SettingType.TOGGLE, true, $('#setting-place-notification-enable'))
         },
         deselectonplace: {
-          enable: setting('place.deselectonplace.enable', SettingType.TOGGLE, true, $('#setting-place-deselectonplace-enable'))
+          enable: setting('place.deselectonplace.enable', SettingType.TOGGLE, false, $('#setting-place-deselectonplace-enable'))
         },
         palette: {
           scrolling: {
