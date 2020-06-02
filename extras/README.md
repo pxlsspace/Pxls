@@ -62,4 +62,5 @@ By default, it reads from `pixels.log` and writes to `pixels.sanit.log`
 
 ### Running
 
-1. Inside `logs/`, execute the script with `pipenv run python sanitize.py [/path/to/pixels.log] [/output/path/pixels.sanit.log]`
+1. Inside `logs/`, execute the script with `pipenv run python sanitize.py [/path/to/pixels.log] [--output-path /output/path/pixels.sanit.log]`
+	- add `--snip` to also change all usernames to "-snip-"

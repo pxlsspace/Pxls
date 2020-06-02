@@ -13,22 +13,24 @@ IP_REGEX = re.compile(r'(?:\d{1,3})(?:\.(?:\d{1,3})){3}|(([0-9a-fA-F]{1,4}:){7,7
 
 if __name__ == '__main__':
 	import sys
+	import argparse
 
-	USAGE = f'Usage: {sys.argv[0]} [path/to/pixels.log] [path/to/pixels.sanit.log]'
+	args_parser = argparse.ArgumentParser()
+	args_parser.add_argument('logs_path', help='path to pixels.log', type=Path, default='pixels.log')
+	args_parser.add_argument('--output-path', help='where to save the output', type=Path, default=None)
+	args_parser.add_argument('--snip', '--snip-mode', help='whenever to also change the usernames to -snip-', dest='snip_mode', action='store_true')
+
+	args = args_parser.parse_args()
+
 	print_err = lambda v: sys.stderr.write(str(v) + '\n')
 
-	if '--help' in sys.argv:
-		print(USAGE)
-		sys.exit(0)
+	output_path = args.output_path if args.output_path is not None else args.logs_path.with_suffix('.sanit' + args.logs_path.suffix)
 
-	log_path = Path(sys.argv[1] if len(sys.argv) > 1 else 'pixels.log')
-	output_path = Path(sys.argv[2] if len(sys.argv) > 2 else log_path.with_suffix('.sanit' + log_path.suffix))
-
-	if not log_path.exists():
-		print_err(f'{log_path.name} doesn\'t exist')
+	if not args.logs_path.exists():
+		print_err(f'{args.logs_path.name} doesn\'t exist')
 		sys.exit(1)
 
-	with log_path.open('r', encoding='utf-8') as log_file:
+	with args.logs_path.open('r', encoding='utf-8') as log_file:
 		with output_path.open('w', encoding='utf-8') as output_file:
 			for i, line in enumerate(log_file):
 				# DATE\tUSERNAME\tX\tY\tCOLOR_INDEX\tIP\tACTION_TYPE
@@ -41,6 +43,9 @@ if __name__ == '__main__':
 				else:
 					del split_line[5]
 
+					if args.snip_mode:
+						split_line[1] = '-snip-'
+
 					out_line = '\t'.join(split_line)
 					if IP_REGEX.search(out_line):
 						print(f'Failed to remove IP on line {i + 1}. Manual review needed.')
@@ -49,4 +54,3 @@ if __name__ == '__main__':
 				output_file.write(out_line)
 
 			print('Done.')
-
