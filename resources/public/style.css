@@ -224,15 +224,6 @@ kbd {
     user-select: none;
 }
 
-.indent-1 {
-    text-indent: 0.75em;
-}
-
-.vertical-spacing {
-    margin-top: .5em;
-    margin-bottom: .5em;
-}
-
 .fake-indent {
     margin-left:1.2rem;
 }
@@ -245,8 +236,16 @@ kbd {
   font-family: monospace;
 }
 
+label.extra-label {
+    display: block;
+    margin-top: .25em;
+    margin-bottom: .5em;
+    text-indent: 1em;
+}
+
 input:disabled, button:disabled {
     cursor: not-allowed;
+    opacity: 0.5;
 }
 
 input[type="text"], input[type="number"], textarea, select {
@@ -257,6 +256,14 @@ input[type="text"], input[type="number"], textarea, select {
     background: var(--input-background);
     color: #000;
     color: var(--input-text-color);
+}
+
+input.small-input {
+    width: 6em;
+}
+
+.input-group > * {
+    vertical-align: middle;
 }
 
 /* NOTE (Flying): Does not work grouped together. */
@@ -391,6 +398,10 @@ dt {
 .chat-lookup-side {
     max-height: calc(88vh - 30px);
     overflow: auto;
+}
+
+.no-p-margin p {
+    margin: 0 !important;
 }
 
 /*//////////////////////////*\
@@ -939,21 +950,6 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     transform-origin: top left;
 }
 
-#settings .settingToggles > * {
-    margin: 3px 0;
-}
-
-#settings .settingToggles > label {
-    display: block;
-}
-
-#settings input.small-input {
-    width: 6em;
-}
-#settings input[disabled] {
-    opacity: 0.5;
-}
-
 #template-image-error-warning {
     margin-bottom: 0.5em;
     display: inline-block;
@@ -971,20 +967,37 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     display: inline-flex !important;
 }
 
-.button-bar > button {
+.button-bar > * {
     flex: 1 0 auto;
-    padding: 5px;
+}
+
+ul.button-bar {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+ul.button-bar > li {
+    margin: 0;
+    padding: 0;
+}
+
+.button-bar button {
     margin: 0;
     border-width: 1px;
     border-radius: 0;
 }
 
-.button-bar > button:first-child {
+ul.button-bar > li > button {
+    width: 100%;
+}
+
+.button-bar > button:first-child, .button-bar > :first-child button {
     border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;
 }
 
-.button-bar > button:last-child {
+.button-bar > button:last-child, .button-bar > :last-child button {
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
 }
@@ -1275,6 +1288,10 @@ aside.panel.horizontal.right {
     margin: .5rem 0;
 }
 
+.panel-body article > header ~ :not(footer) > h4 ~ :not(h4) {
+    text-indent: 0.75em;
+}
+
 .panel-body article > header h1, .panel-body article > header h2, .panel-body article > header h3, .panel-body article > header h4, .panel-body article > header h5, .panel-body article > header h6 {
     font-size: x-large;
     text-align: center;
@@ -1283,14 +1300,6 @@ aside.panel.horizontal.right {
 
 .panel-body article .pad-wrapper {
     padding: .5rem;
-}
-
-.panel-body article input[type="range"] {
-    vertical-align: middle;
-}
-
-.no-p-margin p {
-    margin: 0 !important;
 }
 
 body.panel-open.panel-left #ui {
