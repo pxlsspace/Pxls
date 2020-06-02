@@ -4568,9 +4568,11 @@ window.App = (function() {
         const dbUsers = new TH.Database('users');
 
         if (window.emojiDB) {
-          Object.entries(window.emojiDB).sort((a, b) => a[0].toLocaleLowerCase().localeCompare(b[0].toLocaleLowerCase())).forEach(emojiEntry => {
-            dbEmojis.addEntry(emojiEntry[0], emojiEntry[1].char);
-          });
+          Object.keys(window.emojiDB)
+            .sort((a, b) => a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase()))
+            .forEach(name => {
+              dbEmojis.addEntry(name, window.emojiDB[name]);
+            });
         }
 
         // init triggers
