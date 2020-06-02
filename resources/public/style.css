@@ -106,10 +106,6 @@ html {
 
     --panel-trigger-outline-color: #AAA;
 
-    --option-bubble-position-border-color-hovered: #6495ED;
-    --option-bubble-position-background-hovered: rgba(0, 0, 0, 0);
-    --option-bubble-position-background-selected: #eee;
-
     --chat-separator-color: #bfbfbf;
     --chat-odd-background: #d5d5d5;
     --chat-abbr-underline-color: #aaa;
@@ -1904,44 +1900,6 @@ body .emoji-picker {
     border-bottom: 1px solid #000;
     border-bottom: 1px solid var(--panel-border-color);
     text-align: center;
-}
-
-/* Settings tweaks */
-#bubble-position {
-    width: 0;
-    grid-template: repeat(2, 1fr) / repeat(2, .5fr);
-    display: grid;
-}
-
-#bubble-position label {
-    position: relative;
-    width: 55px;
-    height: 30px;
-}
-
-#bubble-position label > input {
-    visibility: hidden;
-}
-
-#bubble-position label > div {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: inherit;
-    height: inherit;
-    border: 1px solid #797979;
-}
-
-#bubble-position label:hover > div {
-    border: 2px solid #6495ED;
-    border: 2px solid var(--option-bubble-position-border-color-hovered);
-    background: rgba(0, 0, 0, 0);
-    background: var(--option-bubble-position-background-hovered);
-}
-
-#bubble-position label input:checked ~ div {
-    background: #eee;
-    background: var(--option-bubble-position-background-selected);
 }
 
 /* Chat settings tweaks */
