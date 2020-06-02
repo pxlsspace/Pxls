@@ -1,0 +1,82 @@
+html {
+    --general-text-color: #fff;
+    --general-background: #0083C7;
+
+    --kbd-background: #1b73f4;
+    --kbd-border-color: #0a04a2;
+    --kbd-text-color: #fff;
+
+    --input-text-color: #eee;
+    --input-background: #0638ff;
+    --input-border-color: #1600fd;
+    --input-placeholder-text-color: #bbb;
+
+    --button-background: #0048ff;
+    --button-text-color: #fff;
+    --button-border-color-hover: #44886e;
+
+    --floating-panel-text-color: #eee;
+    --floating-panel-border-color: #0026ff;
+    --floating-panel-background: #0083C7;
+
+    --dangerous-button-border-color: #3906ff;
+
+    --palette-background: rgba(18, 113, 255, .82);
+    --palette-overlay-background: rgba(0, 174, 255, .9);
+    --palette-deselect-button-color: #DDD;
+
+    --undo-background: linear-gradient(to top, #59a9eac4, #0080ff);
+
+    --text-red-color: #f44;
+    --text-yellow-color: #cc0;
+    --ping-highlight-color: #00bbffb3;
+
+    --panel-header-background: linear-gradient(to bottom, #0051fffc, #03f);
+    --panel-background: #043aee;
+    --panel-text-color: #eee;
+
+    --option-bubble-position-background-selected: #03f;
+
+    --chat-separator-color: #0d47f4;
+    --chat-odd-background: #0234d9;
+    --chat-server-action-text-color: #dae0ec;
+    --chat-user-text-shadow-color: #333;
+
+    --emoji-picker-border-color: #312ef9;
+    --emoji-picker-shadow-color: #094fb5;
+    --emoji-picker-background: #0783ff;
+    --emoji-picker-preview-name-text-color: #fff;
+    --emoji-picker-tab-icon-color: #fff;
+    --emoji-picker-tab-icon-color-selected: #4f94f4;
+    --emoji-picker-section-text-color: #fff;
+    --emoji-picker-emoji-color: white;
+    --emoji-picker-emoji-background-hover: #5279a8;
+    --emoji-picker-search-input-border-color: #1a07ea;
+    --emoji-picker-search-input-background: #2558f0;
+    --emoji-picker-search-input-text-color: #fff;
+    --emoji-picker-search-icon-color: #fff;
+    --emoji-picker-search-no-results-color: #fff;
+    --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
+    --emoji-picker-variant-popup-background: #FFFFFF;
+
+    --chat-typeahead-menu-background: #0424d2;
+    --chat-typeahead-item-background: #0424d2;
+    --chat-typeahead-item-background-hover: #2314bf;
+    --chat-typeahead-item-background-active: #0079ff;
+
+    --notification-expiry-color: #995050;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #000;
+}
+
+@keyframes -scrolled-flash {
+    from {
+        background: #5b5345;
+    }
+    to {
+        background: #58a78a;
+    }
+}

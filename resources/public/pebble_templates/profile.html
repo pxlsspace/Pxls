@@ -92,6 +92,18 @@
                                         <th class="text-right pr-3">Faction</th>
                                         <td class="text-left">{% if profile_of.displayedFaction | default(0) > 0 %}[{{profile_of.fetchDisplayedFaction.tag}}] {{profile_of.fetchDisplayedFaction.name}} (ID: {{profile_of.fetchDisplayedFaction.id}}){% else %}None{% endif %}</td>
                                     </tr>
+                                    {% if profile_of.isBanned() %}
+                                    <tr>
+                                        <th class="text-right pr-3">Canvas Ban Expiry</th>
+                                        <td class="text-left">{% if profile_of.isPermaBanned() %}Never{% else %}{{profile_of.getBanExpiryTime() | date("LLL d, y, hh:mm:s a (z)")}}{% endif %}</td>
+                                    </tr>
+                                    {% endif %}
+                                    {% if profile_of.isChatbanned() %}
+                                    <tr>
+                                        <th class="text-right pr-3">Chat Ban Expiry</th>
+                                        <td class="text-left">{% if profile_of.isPermaChatbanned() %}Never{% else %}{{profile_of.getChatBanExpiryTime() | date("LLL d, y, hh:mm:s a (z)")}}{% endif %}</td>
+                                    </tr>
+                                    {% endif %}
                                 </tbody>
                             </table>
                             <div class="d-block mt-4">
@@ -163,11 +175,14 @@
                             {% if profile_of is null %}
                             <p class="text-center text-warning">You must be logged in to manage your factions.</p>
                             {% else %}
+                            {% if profile_of.isFactionRestricted or profile_of.isBanned %}
+                            <small class="text-danger m-0 p-0 d-block">You are {% if profile_of.isFactionRestricted %}faction restricted{% else %}canvas banned{% endif %} and cannot create new factions. If you believe this is an error, please contact a moderator.</small>
+                            {% endif %}
                             {% if (new_fac_min_pixels|default(0)) > requesting_user_alltime_pixels %}
-                            <small class="text-danger m-0 p-0">You must have at least {{new_fac_min_pixels|default(0)}} all-time pixels to create a faction.</small>
+                            <small class="text-warning m-0 p-0 d-block">You must have at least {{new_fac_min_pixels|default(0)}} all-time pixels to create a faction.</small>
                             {% endif %}
                             <div class="mb-2">
-                                <button class="btn btn-success btn-sm mr-1 global-faction-action" data-action="factionCreate" {% if (new_fac_min_pixels|default(0)) > requesting_user_alltime_pixels %}disabled="disabled"{% endif %}><i class="fas fa-plus"></i> Create</button>
+                                <button class="btn btn-success btn-sm mr-1 global-faction-action" data-action="factionCreate" {% if ((new_fac_min_pixels|default(0)) > requesting_user_alltime_pixels) or (profile_of.isFactionRestricted) %}disabled="disabled"{% endif %}><i class="fas fa-plus"></i> Create</button>
                                 <button class="btn btn-primary btn-sm mr-1 global-faction-action" data-toggle="modal" data-target="#modal-faction-search"><i class="fas fa-user-plus"></i> Join</button>
                             </div>
                             {% if factions|length > 0 %}

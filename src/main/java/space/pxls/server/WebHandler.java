@@ -1,6 +1,5 @@
 package space.pxls.server;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -229,45 +228,51 @@ public class WebHandler {
         if (user == null) { // This is not a fetch endpoint, if the user doesn't exist we can't continue.
             send(StatusCodes.UNAUTHORIZED, exchange, "Not Authorized");
         } else if (exchange.getRequestMethod().equals(Methods.POST)) { // create a new faction
-            if (dataObj != null) {
-                String name = null;
-                String tag = null;
-                Integer color = null;
-                try {
-                    name = dataObj.get("name").getAsString();
-                } catch (Exception ignored) {
-                }
-                try {
-                    tag = dataObj.get("tag").getAsString();
-                } catch (Exception ignored) {
-                }
-                try {
-                    color = dataObj.get("color").getAsInt();
-                } catch (Exception ignored) {
-                }
-                if (name == null || tag == null) {
-                    sendBadRequest(exchange, "Invalid/Missing name/tag");
-                } else {
-                    if (!Faction.ValidateTag(tag)) {
-                        sendBadRequest(exchange, "Invalid/Disallowed Tag");
-                    } else if (!Faction.ValidateName(name)) {
-                        sendBadRequest(exchange, "Invalid/Disallowed Name");
-                    } else if (App.getDatabase().getOwnedFactionCountForUID(user.getId()) >= App.getConfig().getInt("factions.maxOwned")) {
-                        sendBadRequest(exchange, String.format("You've reached the maximum number of owned factions (%d).", App.getConfig().getInt("factions.maxOwned")));
-                    } else if (App.getConfig().getInt("factions.minPixelsToCreate") > user.getPixelsAllTime()) {
-                        send(403, exchange, String.format("You do not meet the minimum all-time pixel requirements to create a faction. The current minimum is %d.", App.getConfig().getInt("chat.minPixelsToCreate")));
+            if (user.isBanned()) {
+                send(StatusCodes.FORBIDDEN, exchange, "Cannot create factions while banned");
+            } else if (user.isFactionRestricted()) {
+                send(StatusCodes.FORBIDDEN, exchange, "Your account is faction restricted and cannot creat new factions");
+            } else {
+                if (dataObj != null) {
+                    String name = null;
+                    String tag = null;
+                    Integer color = null;
+                    try {
+                        name = dataObj.get("name").getAsString();
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        tag = dataObj.get("tag").getAsString();
+                    } catch (Exception ignored) {
+                    }
+                    try {
+                        color = dataObj.get("color").getAsInt();
+                    } catch (Exception ignored) {
+                    }
+                    if (name == null || tag == null) {
+                        sendBadRequest(exchange, "Invalid/Missing name/tag");
                     } else {
-                        Optional<Faction> faction = FactionManager.getInstance().create(name, tag, user.getId(), color);
-                        if (faction.isPresent()) {
-                            user.setDisplayedFactionMaybe(faction.get().getId());
-                            sendObj(200, exchange, faction.get());
+                        if (!Faction.ValidateTag(tag)) {
+                            sendBadRequest(exchange, "Invalid/Disallowed Tag");
+                        } else if (!Faction.ValidateName(name)) {
+                            sendBadRequest(exchange, "Invalid/Disallowed Name");
+                        } else if (App.getDatabase().getOwnedFactionCountForUID(user.getId()) >= App.getConfig().getInt("factions.maxOwned")) {
+                            sendBadRequest(exchange, String.format("You've reached the maximum number of owned factions (%d).", App.getConfig().getInt("factions.maxOwned")));
+                        } else if (App.getConfig().getInt("factions.minPixelsToCreate") > user.getPixelsAllTime()) {
+                            send(403, exchange, String.format("You do not meet the minimum all-time pixel requirements to create a faction. The current minimum is %d.", App.getConfig().getInt("chat.minPixelsToCreate")));
                         } else {
-                            send(500, exchange, "Failed to create faction.");
+                            Optional<Faction> faction = FactionManager.getInstance().create(name, tag, user.getId(), color);
+                            if (faction.isPresent()) {
+                                user.setDisplayedFactionMaybe(faction.get().getId());
+                                sendObj(200, exchange, faction.get());
+                            } else {
+                                send(500, exchange, "Failed to create faction.");
+                            }
                         }
                     }
+                } else {
+                    sendBadRequest(exchange, "Missing data");
                 }
-            } else {
-                sendBadRequest(exchange, "Missing data");
             }
         } else {
             int fid;
@@ -365,11 +370,17 @@ public class WebHandler {
                             if (user.getId() == faction.getOwner()) {
                                 User userToModify = App.getUserManager().getByName(newOwner);
                                 if (userToModify != null) {
-                                    if (faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
-                                        App.getDatabase().setFactionOwnerForFID(faction.getId(), userToModify.getId());
-                                        FactionManager.getInstance().invalidate(faction.getId());
+                                    if (userToModify.isBanned()) {
+                                        sendBadRequest(exchange, "This user is banned and cannot own any new factions.");
+                                    } else if (userToModify.isFactionRestricted()) {
+                                        sendBadRequest(exchange, "This user is faction restricted and cannot own any new factions.");
                                     } else {
-                                        sendBadRequest(exchange, "The requested user is not a member of the specified faction.");
+                                        if (faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
+                                            App.getDatabase().setFactionOwnerForFID(faction.getId(), userToModify.getId());
+                                            FactionManager.getInstance().invalidate(faction.getId());
+                                        } else {
+                                            sendBadRequest(exchange, "The requested user is not a member of the specified faction.");
+                                        }
                                     }
                                 } else {
                                     sendBadRequest(exchange, "The requested user does not exist.");
@@ -1161,6 +1172,34 @@ public class WebHandler {
         }
     }
 
+    public void setFactionBlocked(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user != null) {
+            FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+            if (data != null) {
+                if (data.contains("username") && data.contains("faction_restricted")) {
+                    String username = data.getFirst("username").getValue();
+                    boolean isFactionBlocked = data.getFirst("faction_restricted").getValue().equalsIgnoreCase("true");
+                    User fromForm = App.getUserManager().getByName(username);
+                    if (fromForm != null) {
+                        fromForm.setFactionBlocked(isFactionBlocked, true);
+                        App.getDatabase().insertAdminLog(user.getId(), String.format("Set %s's faction_restricted state to %s", fromForm.getName(), isFactionBlocked));
+                        send(StatusCodes.OK, exchange, "OK");
+                    } else {
+                        sendBadRequest(exchange, "The user does not exist");
+                    }
+                } else {
+                    sendBadRequest(exchange, "Missing params");
+                }
+            } else {
+                sendBadRequest(exchange, "Missing form data");
+            }
+        } else {
+            sendBadRequest(exchange, "No authenticated users found");
+        }
+    }
+
     public void createNotification(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
 
@@ -1373,6 +1412,7 @@ public class WebHandler {
                 exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
                 exchange.getResponseSender().send(App.getGson().toJson(
                     new ServerUserPixelInfo(user.getName(),
+                        user.getLogin(),
                         user.getRole().name(),
                         user.isBanned(),
                         user.getBanExpiryTime(),

@@ -13,12 +13,12 @@ public class DBFactionSearch {
     public final String tag;
     public final int color;
     public final int owner;
-    public final int canvasCode;
+    public final String canvasCode;
     public final int memberCount;
     public final Timestamp created;
     public final boolean userJoined;
 
-    public DBFactionSearch(int id, String name, String tag, int color, int owner, Timestamp created, int canvasCode, int memberCount, boolean memberJoined) {
+    public DBFactionSearch(int id, String name, String tag, int color, int owner, Timestamp created, String canvasCode, int memberCount, boolean memberJoined) {
         this.id = id;
         this.name = name;
         this.tag = tag;
@@ -40,7 +40,7 @@ public class DBFactionSearch {
                 rs.getInt("color"),
                 rs.getInt("owner"),
                 rs.getTimestamp("created"),
-                rs.getInt("canvasCode"),
+                rs.getString("canvasCode"),
                 rs.getInt("memberCount"),
                 rs.getBoolean("userJoined")
             );

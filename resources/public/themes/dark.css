@@ -1,129 +1,72 @@
-/* TODO: Add sections, like in style.css */
+html {
+    --general-text-color: #fff;
+    --general-background: #1A1A1A;
+    
+    --kbd-background: #444;
+    --kbd-border-color: #333;
+    --kbd-text-color: #fff;
+    
+    --input-text-color: #eee;
+    --input-background: #222;
+    --input-border-color: #333;
+    
+    --button-background: #bbb;
+    --button-border-color-hover: #844;
+    
+    --floating-panel-border-color: #222;
+    --floating-panel-background: #333;
+    --floating-panel-text-color: #eee;
+    
+    --dangerous-button-border-color: #333;
 
-html, body {
-    background-color: #1A1A1A;
-}
+    --palette-background: rgba(0, 0, 0, 0.5);
+    --palette-overlay-background: rgba(0, 0, 0, 0.9);
+    --palette-overlay-text-color: #eee;
+    --palette-deselect-button-color: #DDD;
+    
+    --undo-text-color: #fff;
+    --undo-background: linear-gradient(to top, #0000007F, #000);
 
-kbd {
-    border: 1px solid #333;
-    background-color: #444;
-    color: #fff;
-}
+    --text-red-color:#f44;
+    --text-yellow-color:#cc0;
+    --ping-highlight-color: #5b5345;
+    
+    --panel-header-background: linear-gradient(to bottom, #444, #333);
+    --panel-background: #333;
+    --panel-text-color: #eee;
+    --panel-close-button-color: #f44;
+    --panel-footer-background: #2e2e2e;
+    --panel-footer-text-color: #666;
+    
+    --option-bubble-position-background-selected: #9d9d9d;
+    --chat-separator-color: #4f4f4f;
+    --chat-odd-background: #3f3f3f;
+    --chat-server-action-text-color: #9f9f9f;
+    --chat-user-text-shadow-color: #333;
+    
+    --emoji-picker-border-color: #515151;
+    --emoji-picker-shadow-color: #1f1f1f;
+    --emoji-picker-background: #333333;
+    --emoji-picker-preview-name-text-color: #ccc;
+    --emoji-picker-tab-icon-color: #ccc;
+    --emoji-picker-tab-icon-color-selected: #6fd1ff;
+    --emoji-picker-section-text-color: #ccc;
+    --emoji-picker-emoji-color: white;
+    --emoji-picker-emoji-background-hover: #656565;
+    --emoji-picker-search-input-border-color: #333;
+    --emoji-picker-search-input-background: #222;
+    --emoji-picker-search-input-text-color: #ddd;
+    --emoji-picker-search-icon-color: #aaa;
+    --emoji-picker-search-no-results-color: #666666;
+    --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
+    --emoji-picker-variant-popup-background: #FFFFFF;
+    
+    --chat-typeahead-menu-background: #1d1d1d;
+    --chat-typeahead-item-background: #2c2c2c;
+    --chat-typeahead-item-background-hover: #3b3b3b;
+    --chat-typeahead-item-background-active: #595959;
 
-.message {
-    background-color: #333;
-    color: #eee;
-}
-
-.modal select, .modal textarea, .modal input {
-    border: 2px solid #333;
-    background-color: #222;
-    color: #eee;
-}
-
-.button {
-    background-color: #bbb;
-}
-
-.button:hover {
-    border: 1px solid #844;
-}
-
-#lookup {
-    border: 1px solid #222;
-    background-color: #333;
-}
-
-#lookup .content {
-    color: #eee;
-}
-
-#lookup .content input {
-    border: 1px solid #333;
-    background-color: #222;
-    color: #eee;
-}
-
-#lookup .report-button {
-    border: 1px solid #333;
-}
-
-.palette-overlay {
-    background-color: rgba(0, 0, 0, 0.9);
-    color: #eee;
-}
-
-#palette {
-    background-color: rgba(0, 0, 0, 0.5);
-}
-
-.palette-color.deselect-button {
-    color: #DDD;
-}
-
-#undo {
-    background-image: linear-gradient(to top, #0000007F, #000);
-    color: #fff;
-}
-
-input[type="text"], input[type="number"], textarea, select {
-    border: 1px solid #333;
-    background-color: #222;
-    color: #eee;
-}
-
-/* Text Colors */
-
-.text-red {
-    color: #f44;
-}
-
-.text-yellow {
-    color: #cc0;
-}
-
-/* Panels */
-
-header {
-    background-image: linear-gradient(to bottom, #444, #333);
-}
-
-aside.panel {
-    background-color: #333;
-    color: #eee;
-}
-
-#bubble-position label input:checked ~ div {
-    background-color: #9d9d9d;
-}
-
-/* Chat */
-
-ul.chat-body li.chat-line {
-    border-bottom: 1px solid #4f4f4f;
-}
-
-ul.chat-body li.chat-line:nth-child(odd) {
-    background-color: #3f3f3f;
-}
-
-ul.chat-body li.chat-line.server-action {
-    color: #9f9f9f;
-}
-
-.chatban-history li {
-    background-color: rgba(37, 37, 37, 0.3);
-    border: 1px solid #828282;
-}
-
-.chatban-history h4 {
-    background-color: #82828233;
-    border-bottom: 1px solid #828282;
-}
-
-.popup {
-    background-color: #333;
-    color: #ccc;
+    --notification-expiry-color: #995050;
 }
 
 hr {
@@ -131,169 +74,11 @@ hr {
     border-top: 1px solid #000;
 }
 
-.pane .chat-timestamp-header {
-    color: #666;
-}
-
-.pane ul.actions-list li[data-action] {
-    background-image: linear-gradient(0,#333,#3f3f3f,#333);
-}
-
-.pane ul.actions-list li[data-action]:hover {
-    background-image: linear-gradient(0,#2a2a2a,#3a3a3a,#2a2a2a);
-}
-
-ul.chat-body .chat-line[data-id].has-ping {
-    background-color: #5b5345;
-}
-
-li.chat-line .user {
-    text-shadow: 1px 1px 0 #333, -1px 1px 0 #333, 1px -1px 0 #333, -1px -1px 0 #333, 0 1px 0 #333, 0 -1px 0 #333, -1px 0 0 #333, 1px 0 0 #333;
-}
-
 @keyframes -scrolled-flash {
     from {
-        background-color: #5b5345;
+        background: #5b5345;
     }
     to {
-        background-color: #58a78a;
+        background: #58a78a;
     }
-}
-
-.emoji-picker {
-    border: 1px solid #515151;
-    box-shadow: 0px 0px 3px 1px #1f1f1f;
-    background: #333333;
-}
-
-.emoji-picker__preview {
-    border-top: 1px solid #515151;
-}
-
-.emoji-picker__preview-name {
-    color: #ccc;
-}
-
-.emoji-picker__tab {
-    color: #ccc;
-}
-
-.emoji-picker__tab.active {
-    border-bottom: 3px solid #6fd1ff;
-    color: #6fd1ff;
-}
-
-.emoji-picker__tab-body h2 {
-    color: #ccc;
-}
-
-.emoji-picker__emojis.search-results {
-    height: 21rem;
-}
-
-.emoji-picker__emoji {
-    background: transparent;
-    color: white;
-}
-
-.emoji-picker__emoji:hover {
-    background: #656565;
-}
-
-.emoji-picker__search-container input {
-    border: 1px solid #333;
-    background-color: #222;
-    color: #ddd;
-}
-
-.emoji-picker__search-icon {
-    color: #aaa;
-}
-
-.emoji-picker__search-not-found {
-    color: #666666;
-}
-
-.emoji-picker__variant-overlay {
-    background: rgba(0, 0, 0, 0.7);
-}
-
-.emoji-picker__variant-popup {
-    background: #FFFFFF;
-}
-
-.emoji-picker__variant-popup-close-button {
-    background: transparent;
-}
-
-#typeahead {
-    background-color: #1d1d1d;
-}
-#typeahead ul li {
-    background-color: #2c2c2c;
-}
-
-#typeahead ul li:hover {
-    background-color: #3b3b3b;
-}
-
-#typeahead ul li.active {
-    background-color: #595959;
-}
-
-/* Admin */
-
-.admin input {
-    border: 1px solid #333;
-    background-color: #222;
-}
-
-.admin-check {
-    border: 1px solid #222 !important;
-    background-color: #333 !important;
-}
-
-.admin-check div:not(.button) {
-    color: #eee;
-}
-
-.admin-check input {
-    border: 1px solid #333;
-    background-color: #222;
-    color: #eee;
-}
-
-/* Notifications */
-.notification {
-    background-color: #3d3d3d;
-    border: 1px solid #111111;
-}
-
-.notification .notification-title {
-    background-color: #292929;
-    border-bottom: 1px solid #111111;
-}
-
-.notification .notification-footer {
-    color: #666;
-    background-color: #2e2e2e;
-    border-top: 1px solid #111111;
-}
-
-.notification-footer .notification-expiry {
-    color: #995050;
-}
-
-/*//////////////////////////*\
-| Modal
-\*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
-/* https://github.com/kylefox/jquery-modal/blob/a8b9c9b01961c0a3c6676fcc8fe6cc5b8c74cb5c/jquery.modal.css */
-
-.modal {
-    color: #ddd;
-    background-color: #3d3d3d;
-}
-
-.modal .modal-header, .modal .modal-footer {
-    background-color: #292929;
 }

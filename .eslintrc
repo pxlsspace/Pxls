@@ -1,6 +1,25 @@
 {
   "extends": "semistandard",
+  "env": {
+    "browser": true,
+    "node": true
+  },
   "rules": {
-    "no-console": ["error", {"allow": ["info", "warn", "error", "debug"]}]
+    "no-console": ["error", {"allow": ["info", "warn", "error", "debug", "trace"]}],
+    "space-before-function-paren": "off"
+  },
+  "globals": {
+    // Third-party libraries
+    "$": "readonly",
+    "crel": "readonly",
+    "moment": "readonly",
+    "EmojiButton": "readonly",
+    "anchorme": "readonly",
+    "grecaptcha": "readonly",
+    "twemoji": "readonly",
+    // Pxls-specific
+    "App": "writable",
+    "SLIDEIN": "readonly",
+    "interact": "readonly"
   }
 }

@@ -63,3 +63,20 @@ By default, it reads from `pixels.log` and writes to `pixels.sanit.log`
 ### Running
 
 1. Inside `logs/`, execute the script with `pipenv run python sanitize.py [/path/to/pixels.log] [/output/path/pixels.sanit.log]`
+	- add `--snip` to also change all usernames to "-snip-"
+
+
+## logs/timelapse.py
+
+`logs/timelapse.py` allows for creating timelapses out of a `default_board.dat` (initial canvas state) and a `pixels.log` file (found in the _logs/_ directory).
+It might also ask for the canvas width and palette used.
+
+The script allows for customizing the output. Use the `--help` parameter to kow more
+
+### Running
+
+1. Make sure to have a `pxls.conf` somewhere in your PC. If the `pxls.conf` is placed as much as three directories above the `reset/` directory, the script will try find it automatically.
+	- if it doesn't find it, you can specify it's path with the `--config-path /path/to/pxls.conf` argument
+2. Inside `logs/`, execute the script with `pipenv run python timelapse.py /path/to/pixels.log`
+	- add `-h` or `--help` to see a list of available arguments.
+	- add `--default-board-path /path/to/default_board.dat` if you're using a custom `default_board.dat`.

@@ -41,6 +41,7 @@ public class User {
     private long initialAuthTime = 0L;
     private Timestamp signup_time;
     private Integer displayedFaction;
+    private Boolean factionBlocked;
 
     // 0 = not banned
     private long banExpiryTime;
@@ -48,7 +49,7 @@ public class User {
 
     private Set<WebSocketChannel> connections = new HashSet<>();
 
-    public User(int id, int stacked, String name, String login, Timestamp signup, long cooldownExpiry, Role role, long banExpiryTime, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor, Integer displayedFaction, String discordName) {
+    public User(int id, int stacked, String name, String login, Timestamp signup, long cooldownExpiry, Role role, long banExpiryTime, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor, Integer displayedFaction, String discordName, Boolean factionBlocked) {
         this.id = id;
         this.stacked = stacked;
         this.name = name;
@@ -63,6 +64,7 @@ public class User {
         this.chatNameColor = chatNameColor;
         this.displayedFaction = displayedFaction;
         this.discordName = discordName;
+        this.factionBlocked = factionBlocked;
     }
 
     public void reloadFromDatabase() {
@@ -83,6 +85,7 @@ public class User {
             this.chatbanReason = user.chatbanReason;
             this.chatNameColor = user.chatNameColor;
             this.displayedFaction = user.displayedFaction;
+            this.factionBlocked = user.factionBlocked;
         }
     }
 
@@ -278,6 +281,10 @@ public class User {
         }
 
         return toReturn;
+    }
+
+    public boolean isPermaBanned() {
+        return this.role == Role.BANNED;
     }
 
     public boolean isShadowBanned() {
@@ -672,7 +679,18 @@ public class User {
         return FactionManager.getInstance().getByID(displayedFaction).orElse(null);
     }
 
+    public void setFactionBlocked(boolean factionBlocked, boolean callDB) {
+        this.factionBlocked = factionBlocked;
+        if (callDB) {
+            App.getDatabase().setUserFactionBlocked(id, factionBlocked);
+        }
+    }
+
+    public Boolean isFactionRestricted() {
+        return factionBlocked;
+    }
+
     public static User fromDBUser(DBUser user) {
-        return new User(user.id, user.stacked, user.username, user.login, user.signup_time, user.cooldownExpiry, user.role, user.banExpiry, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName);
+        return new User(user.id, user.stacked, user.username, user.login, user.signup_time, user.cooldownExpiry, user.role, user.banExpiry, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked);
     }
 }
