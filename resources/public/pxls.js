@@ -157,11 +157,11 @@ window.App = (function() {
   const TH = (function() { // place typeahead in its own pseudo namespace
     /**
      *
-     * @param char {string} The char trigger. Should only be a one byte wide grapheme. Emojis will fail
-     * @param dbType {string} The type of the database, acts internally as a map key.
-     * @param [keepTrigger=false] {boolean} Whether or not this trigger type should keep it's matching trigger chars on search results.
-     * @param [hasPair=false] {boolean} Whether or not this trigger has a matching pair at the end, e.g. ':word:' vs '@word'
-     * @param [minLength=0] {number} The minimum length of the match before this trigger is considered valid.
+     * @param {string} char The char trigger. Should only be a one byte wide grapheme. Emojis will fail
+     * @param {string} dbType The type of the database, acts internally as a map key.
+     * @param {boolean} [keepTrigger=false] Whether or not this trigger type should keep it's matching trigger chars on search results.
+     * @param {boolean} [hasPair=false] Whether or not this trigger has a matching pair at the end, e.g. ':word:' vs '@word'
+     * @param {number} [minLength=0] The minimum length of the match before this trigger is considered valid.
      *                                Length is calculated without `this.char`, so a trigger of ":" and a match of ":one" will be a length of 3.
      * @constructor
      */
@@ -175,10 +175,10 @@ window.App = (function() {
 
     /**
      *
-     * @param start {number} The first (typically left-most) index of the trigger match
-     * @param end {number} The right (typically right-most) index of the trigger match
-     * @param trigger {Trigger} The trigger this match is for
-     * @param word {string} The whole word this trigger matches
+     * @param {number} start The first (typically left-most) index of the trigger match
+     * @param {number} end The right (typically right-most) index of the trigger match
+     * @param {Trigger} trigger The trigger this match is for
+     * @param {string} word The whole word this trigger matches
      * @constructor
      */
     function TriggerMatch(start, end, trigger, word) {
@@ -190,10 +190,10 @@ window.App = (function() {
 
     /**
      *
-     * @param name {string} The name of the database. Used internally as an accessor key.
-     * @param [initData={}] {object} The initial data to seed this database with.
-     * @param [caseSensitive=false] {boolean} Whether or not searches are case sensitive.
-     * @param [leftAnchored=false] {boolean} Whether or not searches are left-anchored.
+     * @param {string} name The name of the database. Used internally as an accessor key.
+     * @param {object} [initData={}] The initial data to seed this database with.
+     * @param {boolean} [caseSensitive=false] Whether or not searches are case sensitive.
+     * @param {boolean} [leftAnchored=false] Whether or not searches are left-anchored.
      *                                       If true, `startsWith` is used. Otherwise, `includes` is used.
      * @constructor
      */
@@ -223,9 +223,9 @@ window.App = (function() {
 
     /**
      *
-     * @param triggers {Trigger[]}
-     * @param [stops=[' ']] {string[]} An array of characters that mark the bounds of a match, e.g. if we have an input of "one two", a cancels of [' '], and we search from the end of the string, we'll grab the word "two"
-     * @param DBs {Database[]} The databases to scan for trigger matches
+     * @param {Trigger[]} triggers
+     * @param {string[]} [stops=[' ']] An array of characters that mark the bounds of a match, e.g. if we have an input of "one two", a cancels of [' '], and we search from the end of the string, we'll grab the word "two"
+     * @param {Database[]} [DBs=[]] The databases to scan for trigger matches
      * @constructor
      */
     function Typeahead(triggers, stops = [' '], DBs = []) {
@@ -246,8 +246,8 @@ window.App = (function() {
        * Scans the given string from the specified start position for a trigger match.
        * Starts from the right and scans left for a trigger. If found, we then scan to the right of the start index for a word break.
        *
-       * @param startIndex {number} The index to start searching from. Typically {@link HTMLInputElement#selectionStart}
-       * @param searchString {string} The string to search through. Typically {@link HTMLInputElement#value}
+       * @param {number} startIndex The index to start searching from. Typically {@link HTMLInputElement#selectionStart}
+       * @param {string} searchString The string to search through. Typically {@link HTMLInputElement#value}
        * @returns {TriggerMatch|boolean} `false` if failed, a `TriggerMatch` otherwise.
        */
       this.scan = (startIndex, searchString) => {
@@ -284,7 +284,7 @@ window.App = (function() {
       };
 
       /**
-       * @param trigger {TriggerMatch} The trigger match we should look for suggestions on.
+       * @param {TriggerMatch} trigger The trigger match we should look for suggestions on.
        */
       this.suggestions = (trigger) => {
         let db = this.DBs.filter(x => x.name === trigger.trigger.dbType);
@@ -300,7 +300,7 @@ window.App = (function() {
       /**
        * Gets the requested database.
        *
-       * @param dbName {string} The database's name.
+       * @param {string} dbName The database's name.
        * @see {@link Database#name}
        * @returns {null|Database}
        */
