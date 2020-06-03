@@ -236,6 +236,8 @@ public class User {
         if (getRole() != null && getRole().greaterEqual(Role.TRIALMOD)) {
             if (getRole().equals(Role.DEVELOPER)) {
                 toReturn.add(new Badge("Developer", "Developer", "icon", "fas fa-wrench"));
+            if (getRole().equals(Role.DONATORE)) {
+                toReturn.add(new Badge("Donator", "Donator", "icon", "fas fa-dollar-sign"));
             } else if (getRole().greaterEqual(Role.TRIALMOD)) {
                 String roleName = getRole().name().toLowerCase();
                 roleName = Character.toUpperCase(roleName.charAt(0)) + roleName.substring(1);
