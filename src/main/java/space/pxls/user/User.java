@@ -240,6 +240,7 @@ public class User {
                 String roleName = getRole().name().toLowerCase();
                 roleName = Character.toUpperCase(roleName.charAt(0)) + roleName.substring(1);
                 toReturn.add(new Badge(roleName, roleName, "icon", "fas fa-shield-alt"));
+            }
          if (getRole() != null && getRole().greaterEqual(Role.TRIALMOD)) {
             if (getRole().equals(Role.DONATOR)) {
                 toReturn.add(new Badge("Donator", "Donator", "icon", "fas fa-dollar-sign"));
