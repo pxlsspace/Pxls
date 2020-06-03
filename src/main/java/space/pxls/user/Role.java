@@ -5,6 +5,7 @@ public enum Role {
     BANNED,
     GUEST,
     USER,
+    DONATOR,
     TRIALMOD,
     MODERATOR,
     DEVELOPER,
