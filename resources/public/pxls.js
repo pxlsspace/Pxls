@@ -4513,7 +4513,12 @@ window.App = (function() {
           self.elements.jump_button[0].style.display = self.stickToBottom ? 'none' : 'block';
         });
 
-        self.picker = new EmojiButton({ position: 'left-start' });
+        self.picker = new EmojiButton({
+          position: 'left-start',
+          style: 'twemoji',
+          zIndex: 30,
+          emojiVersion: '13.0'
+        });
         self.picker.on('emoji', emojiStr => {
           self.elements.input[0].value += emojiStr;
           self.elements.input[0].focus();
@@ -4521,7 +4526,9 @@ window.App = (function() {
         self.elements.emoji_button.on('click', function() {
           self.picker.pickerVisible ? self.picker.hidePicker() : self.picker.showPicker(this);
           const searchEl = self.picker.pickerEl.querySelector('.emoji-picker__search'); // searchEl is destroyed every time the picker closes. have to re-attach
-          if (searchEl) { searchEl.addEventListener('keydown', e => e.stopPropagation()); }
+          if (searchEl) {
+            searchEl.addEventListener('keydown', e => e.stopPropagation());
+          }
         });
 
         settings.chat.font.size.listen(function(value) {

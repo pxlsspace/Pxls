@@ -15,6 +15,8 @@ z-index:
 22 - lookup, emoji-picker
 22 - admin-check popup
 
+30 - emoji picker
+
 98 - lost connection
 99 - alert box
 */
@@ -1755,16 +1757,12 @@ body .emoji-picker {
     background: var(--emoji-picker-background);
 }
 
-.emoji-picker img.emoji {
-    max-height: 1.3rem;
-}
-
 .emoji-picker .emoji-picker__search {
     padding-left: .5em;
 }
 
 .emoji-picker .emoji-picker__preview {
-    padding-top: 1.75em;
+    padding-top: 1.5em 1em;
     border-top: 1px solid #999999;
     border-top: 1px solid var(--emoji-picker-border-color);
 }
