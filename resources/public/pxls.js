@@ -4639,16 +4639,8 @@ window.App = (function() {
                 event.preventDefault();
                 event.stopPropagation();
                 event.stopImmediatePropagation();
-                let nextIndex = self.typeahead.highlightedIndex + (event.shiftKey ? -1 : 1); // if we're holding shift, walk backwards (up).
-                const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
-                if (event.shiftKey && nextIndex < 0) { // if we're holding shift, we're walking backwards and need to check underflow.
-                  nextIndex = children.length - 1;
-                } else if (nextIndex >= children.length) {
-                  nextIndex = 0;
-                }
-                children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
-                children[nextIndex].classList.add('active');
-                self.typeahead.highlightedIndex = nextIndex;
+
+                self.selectNextTypeaheadEntry(event.shiftKey ? -1 : 1); // if we're holding shift, walk backwards (up).
                 return;
               } else {
                 scan();
@@ -4661,14 +4653,7 @@ window.App = (function() {
                 event.preventDefault();
                 event.stopPropagation();
                 event.stopImmediatePropagation();
-                let nextIndex = self.typeahead.highlightedIndex - 1;
-                const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
-                if (nextIndex < 0) {
-                  nextIndex = children.length - 1;
-                }
-                children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
-                children[nextIndex].classList.add('active');
-                self.typeahead.highlightedIndex = nextIndex;
+                self.selectNextTypeaheadEntry(-1);
                 return;
               }
               break;
@@ -4679,14 +4664,7 @@ window.App = (function() {
                 event.preventDefault();
                 event.stopPropagation();
                 event.stopImmediatePropagation();
-                let nextIndex = self.typeahead.highlightedIndex + 1;
-                const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
-                if (nextIndex >= children.length) {
-                  nextIndex = 0;
-                }
-                children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
-                children[nextIndex].classList.add('active');
-                self.typeahead.highlightedIndex = nextIndex;
+                self.selectNextTypeaheadEntry(1);
                 return;
               }
               break;
@@ -4759,6 +4737,21 @@ window.App = (function() {
         self.elements.input[0].value = self.elements.input[0].value.substring(0, start) + toInsert + self.elements.input[0].value.substring(end);
         self.elements.input[0].focus();
         self.resetTypeahead();
+      },
+      selectNextTypeaheadEntry(direction) {
+        let nextIndex = self.typeahead.highlightedIndex + direction;
+        const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
+        if (direction < 0 && nextIndex < 0) { // if we're walking backwards, we need to check for underflow.
+          nextIndex = children.length - 1;
+        } else if (direction > 0 && nextIndex >= children.length) { // if we're walking forwards, we need to check for overflow.
+          nextIndex = 0;
+        }
+        const lastSelected = children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex];
+        if (lastSelected) {
+          lastSelected.classList.remove('active');
+        }
+        children[nextIndex].classList.add('active');
+        self.typeahead.highlightedIndex = nextIndex;
       },
       resetTypeahead: () => { // close with reset
         self.typeahead.suggesting = false;
