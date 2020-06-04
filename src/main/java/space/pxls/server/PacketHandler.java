@@ -191,7 +191,6 @@ public class PacketHandler {
             return;
         }
         if (user.isShadowBanned()) {
-            user.setLastUndoTime();
             user.setCooldown(0);
             sendCooldownData(user);
             return;
@@ -208,23 +207,21 @@ public class PacketHandler {
                     user.setStacked(Math.min(user.getStacked() + 1, App.getConfig().getInt("stacking.maxStacked")));
                     sendAvailablePixels(user, "undo");
                 }
-                user.setLastUndoTime();
                 user.setCooldown(0);
                 DBPixelPlacement lastPixel = App.getDatabase().getPixelByID(null, thisPixel.secondaryId);
-                if (lastPixel != null) {
-                    App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
-                    App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, ip, false, "user undo");
-                    broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
-                    ackUndo(user, lastPixel.x, lastPixel.y);
-                    sendAvailablePixels(user, "undo");
+                int colorIdx;
+                if (lastPixel == null) {
+                    lastPixel = thisPixel;
+                    colorIdx = thisPixel.color;
                 } else {
-                    byte defaultColor = App.getDefaultColor(thisPixel.x, thisPixel.y);
-                    App.getDatabase().putUserUndoPixel(thisPixel.x, thisPixel.y, defaultColor, user, thisPixel.id);
-                    App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, ip, false, "user undo");
-                    broadcastPixelUpdate(thisPixel.x, thisPixel.y, defaultColor);
-                    ackUndo(user, thisPixel.x, thisPixel.y);
-                    sendAvailablePixels(user, "undo");
+                    colorIdx = App.getDefaultColor(thisPixel.x, thisPixel.y);
                 }
+                App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
+                user.decreasePixelCounts();
+                App.putPixel(lastPixel.x, lastPixel.y, colorIdx, user, false, ip, false, "user undo");
+                broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
+                ackUndo(user, lastPixel.x, lastPixel.y);
+                sendAvailablePixels(user, "undo");
                 sendCooldownData(user);
             } finally {
                 user.releaseUndoLock();
@@ -249,7 +246,7 @@ public class PacketHandler {
                         int pixels = App.getConfig().getInt("captcha.maxPixels");
                         if (pixels != 0) {
                             boolean allTime = App.getConfig().getBoolean("captcha.allTime");
-                            doCaptcha = (allTime ? user.getPixelsAllTime() : user.getPixels()) < pixels;
+                            doCaptcha = (allTime ? user.getAllTimePixelCount() : user.getPixelCount()) < pixels;
                         }
                     }
                     if (user.updateCaptchaFlagPrePlace() && doCaptcha) {
