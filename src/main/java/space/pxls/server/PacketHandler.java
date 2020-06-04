@@ -63,6 +63,8 @@ public class PacketHandler {
                     user.getName(),
                     user.getLogin(),
                     user.getRole().name().equals("SHADOWBANNED") ? "USER" : user.getRole().name(),
+                    user.getPixelCount(),
+                    user.getAllTimePixelCount(),
                     user.isBanned(),
                     user.isBanned() ? user.getBanExpiryTime() : 0,
                     user.isBanned() ? user.getBanReason() : "",
@@ -223,6 +225,7 @@ public class PacketHandler {
                 ackUndo(user, lastPixel.x, lastPixel.y);
                 sendAvailablePixels(user, "undo");
                 sendCooldownData(user);
+                sendPixelCountUpdate(user);
             } finally {
                 user.releaseUndoLock();
             }
@@ -303,6 +306,7 @@ public class PacketHandler {
                                 App.saveMap();
                                 broadcastPixelUpdate(cp.getX(), cp.getY(), cp.getColor());
                                 ackPlace(user, cp.getX(), cp.getY());
+                                sendPixelCountUpdate(user);
                             }
                             if (!user.isOverridingCooldown()) {
                                 if (user.isIdled()) {
@@ -500,6 +504,12 @@ public class PacketHandler {
     public void sendAvailablePixels(User user, String cause) {
         for (WebSocketChannel ch : user.getConnections()) {
             sendAvailablePixels(ch, user, cause);
+        }
+    }
+
+    public void sendPixelCountUpdate(User user) {
+        for (WebSocketChannel ch : user.getConnections()) {
+            server.send(ch, new ServerPixelCountUpdate(user));
         }
     }
 

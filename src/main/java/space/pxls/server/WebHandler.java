@@ -1411,14 +1411,15 @@ public class WebHandler {
             if (user != null) {
                 exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
                 exchange.getResponseSender().send(App.getGson().toJson(
-                    new ServerUserPixelInfo(user.getName(),
+                    new ServerUserInfo(
+                        user.getName(),
                         user.getLogin(),
                         user.getRole().name(),
+                        user.getPixelCount(),
+                        user.getAllTimePixelCount(),
                         user.isBanned(),
                         user.getBanExpiryTime(),
                         user.getBanReason(),
-                        user.getPixelCount(),
-                        user.getAllTimePixelCount(),
                         user.getLogin().split(":")[0],
                         user.isOverridingCooldown(),
                         !user.canChat(),
