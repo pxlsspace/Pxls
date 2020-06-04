@@ -4921,7 +4921,7 @@ window.App = (function() {
             lblUsernameColor,
             lblIgnores,
             lblIgnoresFeedback
-          ].map(x => crel('p', x))
+          ].map(x => crel('div', x))
         );
         modal.show(modal.buildDom(
           crel('h2', { class: 'modal-title' }, 'Chat Settings'),
