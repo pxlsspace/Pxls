@@ -963,37 +963,20 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     display: inline-flex !important;
 }
 
-.button-bar > * {
+.button-bar > button {
     flex: 1 0 auto;
-}
-
-ul.button-bar {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-ul.button-bar > li {
-    margin: 0;
-    padding: 0;
-}
-
-.button-bar button {
+    padding: 5px;
     margin: 0;
     border-width: 1px;
     border-radius: 0;
 }
 
-ul.button-bar > li > button {
-    width: 100%;
-}
-
-.button-bar > button:first-child, .button-bar > :first-child button {
+.button-bar > button:first-child {
     border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;
 }
 
-.button-bar > button:last-child, .button-bar > :last-child button {
+.button-bar > button:last-child {
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
 }
