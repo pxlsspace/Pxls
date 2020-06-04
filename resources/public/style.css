@@ -1564,12 +1564,6 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     color: #ccc;
 }
 
-.chat-line img.emoji {
-    height: 1em;
-    width: 1em;
-    margin: 0 .05em 0 .1em;
-    vertical-align: -0.1em;
-}
 
 #typeahead {
     position: absolute;
@@ -1617,6 +1611,14 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 #typeahead ul li button.active {
     background: #828282;
     background: var(--chat-typeahead-item-background-active);
+}
+
+.chat-line img.emoji,
+#typeahead ul li button img.emoji {
+    height: 1em;
+    width: 1em;
+    margin: 0 .05em 0 .1em;
+    vertical-align: -0.1em;
 }
 
 /* PINGS */

@@ -159,16 +159,14 @@ window.App = (function() {
      *
      * @param {string} char The char trigger. Should only be a one byte wide grapheme. Emojis will fail
      * @param {string} dbType The type of the database, acts internally as a map key.
-     * @param {boolean} [keepTrigger=false] Whether or not this trigger type should keep it's matching trigger chars on search results.
      * @param {boolean} [hasPair=false] Whether or not this trigger has a matching pair at the end, e.g. ':word:' vs '@word'
      * @param {number} [minLength=0] The minimum length of the match before this trigger is considered valid.
      *                                Length is calculated without `this.char`, so a trigger of ":" and a match of ":one" will be a length of 3.
      * @constructor
      */
-    function Trigger(char, dbType, keepTrigger = false, hasPair = false, minLength = 0) {
+    function Trigger(char, dbType, hasPair = false, minLength = 0) {
       this.char = char;
       this.dbType = dbType;
-      this.keepTrigger = keepTrigger;
       this.hasPair = hasPair;
       this.minLength = minLength;
     }
@@ -190,26 +188,56 @@ window.App = (function() {
 
     /**
      *
+     * @typedef TypeaheadEntry
+     * @type {object}
+     * @property {string} key The key of the entry, to be matched by the typeahead.
+     * @property {string} value The value of the entry, what the typeahead should output when the option is selected.
+     */
+
+    /**
+     *
+     * @callback TypeaheadInserterCallback
+     * @param {TypeaheadEntry} entry
+     */
+    /**
+     *
+     * @callback TypeaheadRendererCallback
+     * @param {TypeaheadEntry} entry
+     */
+
+    const defaultCallback = (entry) => entry.value;
+
+    /**
+     *
      * @param {string} name The name of the database. Used internally as an accessor key.
      * @param {object} [initData={}] The initial data to seed this database with.
      * @param {boolean} [caseSensitive=false] Whether or not searches are case sensitive.
      * @param {boolean} [leftAnchored=false] Whether or not searches are left-anchored.
      *                                       If true, `startsWith` is used. Otherwise, `includes` is used.
+     * @param {TypeaheadInserterCallback} [inserter] Function ran to insert an entry into the text field.
+     * @param {TypeaheadRendererCallback} [renderer] Function ran to render an entry on the typeahead prompt.
      * @constructor
      */
-    function Database(name, initData = {}, caseSensitive = false, leftAnchored = false) {
+    function Database(name, initData = {}, caseSensitive = false, leftAnchored = false, inserter = defaultCallback, renderer = defaultCallback) {
       this.name = name;
       this._caseSensitive = caseSensitive;
       this.initData = initData;
       this.leftAnchored = leftAnchored;
+      this.inserter = inserter;
+      this.renderer = renderer;
 
       const fixKey = key => this._caseSensitive ? key.trim() : key.toLowerCase().trim();
       this.search = (start) => {
         start = fixKey(start);
-        return Object.entries(this.initData).filter(x => {
-          const key = fixKey(x[0]);
-          return this.leftAnchored ? key.startsWith(start) : key.includes(start);
-        }).map(x => x[1]);
+        return Object.entries(this.initData)
+          .filter(x => {
+            const key = fixKey(x[0]);
+            return this.leftAnchored ? key.startsWith(start) : key.includes(start);
+          })
+          .map(x => ({
+            key: x[0],
+            value: x[1]
+          }));
       };
       this.addEntry = (key, value) => {
         key = fixKey(key);
@@ -290,11 +318,7 @@ window.App = (function() {
         let db = this.DBs.filter(x => x.name === trigger.trigger.dbType);
         if (!db || !db.length) return [];
         db = db[0];
-        let fromDB = db.search(trigger.word, trigger.trigger.leftAnchored);
-        if (fromDB && trigger.trigger.keepTrigger) {
-          fromDB = fromDB.map(x => `${trigger.trigger.char}${x}`);
-        }
-        return fromDB;
+        return db.search(trigger.word, trigger.trigger.leftAnchored);
       };
 
       /**
@@ -4571,8 +4595,8 @@ window.App = (function() {
       },
       initTypeahead() {
         // init DBs
-        const dbEmojis = new TH.Database('emoji');
-        const dbUsers = new TH.Database('users');
+        const dbEmojis = new TH.Database('emoji', {}, false, false, (x) => x.value, (x) => `${twemoji.parse(x.value)} :${x.key}:`);
+        const dbUsers = new TH.Database('users', {}, false, false, (x) => `@${x.value} `, (x) => `@${x.value}`);
 
         if (window.emojiDB) {
           Object.keys(window.emojiDB)
@@ -4583,8 +4607,8 @@ window.App = (function() {
         }
 
         // init triggers
-        const triggerEmoji = new TH.Trigger(':', 'emoji', false, true, 2);
-        const triggerUsers = new TH.Trigger('@', 'users', true, false);
+        const triggerEmoji = new TH.Trigger(':', 'emoji', true, 2);
+        const triggerUsers = new TH.Trigger('@', 'users', false);
 
         // init typeahead
         self.typeahead.helper = new TH.Typeahead([triggerEmoji, triggerUsers], [' '], [dbEmojis, dbUsers]);
@@ -4703,14 +4727,18 @@ window.App = (function() {
               self.elements.typeahead_list[0].innerHTML = '<li class="no-results">No Results</li>'; // no reason to crel this if we're just gonna innerHTML anyway.
             } else {
               self.elements.typeahead_list[0].innerHTML = '';
-              const LIs = got.slice(0, 10).map(x =>
-                crel('li', crel('button', {
-                  'data-insert': `${x} `,
+              const db = self.typeahead.helper.getDatabase(scanRes.trigger.dbType);
+
+              const LIs = got.slice(0, 10).map(x => {
+                const el = crel('button', {
+                  'data-insert': db.inserter(x),
                   'data-start': scanRes.start,
                   'data-end': scanRes.end,
                   onclick: self._handleTypeaheadInsert
-                }, x))
-              );
+                });
+                el.innerHTML = db.renderer(x);
+                return crel('li', el);
+              });
               LIs[0].classList.add('active');
               crel(self.elements.typeahead_list[0], LIs);
             }
