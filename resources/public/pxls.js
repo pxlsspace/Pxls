@@ -5045,7 +5045,7 @@ window.App = (function() {
       _updateAuthorDisplayedFaction: (author, faction) => {
         const tag = (faction && faction.tag) || '';
         const color = faction ? self.intToHex(faction && faction.color) : null;
-        const tagStr = (faction && faction.tag) ? `[${faction.tag}]` : '';
+        const tagStr = (faction && faction.tag) ? `[${twemoji.parse(faction.tag)}]` : '';
         let ttStr = '';
         if (faction && faction.name != null && faction.id != null) {
           ttStr = `${faction.name} (ID: ${faction.id})`;
@@ -5068,7 +5068,7 @@ window.App = (function() {
         const colorHex = `#${('000000' + (faction.color >>> 0).toString(16)).slice(-6)}`;
         self.elements.body.find(`.chat-line[data-faction="${faction.id}"]`).each(function() {
           this.dataset.tag = faction.tag;
-          $(this).find('.faction-tag').attr('data-tag', faction.tag).attr('title', `${faction.name} (ID: ${faction.id})`).css('color', colorHex).html(`[${faction.tag}]`);
+          $(this).find('.faction-tag').attr('data-tag', faction.tag).attr('title', `${faction.name} (ID: ${faction.id})`).css('color', colorHex).html(`[${twemoji.parse(faction.tag)}]`);
         });
       },
       _clearFaction: (fid) => {
@@ -5181,12 +5181,15 @@ window.App = (function() {
         const _facColor = packet.strippedFaction ? self.intToHex(packet.strippedFaction.color) : 0;
         const _facTagShow = packet.strippedFaction && settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
         const _facTitle = packet.strippedFaction ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : '';
-        crel(flairs, crel('span', {
+
+        const _facFlair = crel('span', {
           class: 'flair faction-tag',
           'data-tag': _facTag,
           style: `color: ${_facColor}; display: ${_facTagShow}`,
           title: _facTitle
-        }, `[${_facTag}]`));
+        });
+        _facFlair.innerHTML = `[${twemoji.parse(_facTag)}]`;
+        crel(flairs, _facFlair);
 
         const contentSpan = self.processMessage('span', 'content', packet.message_raw);
         twemoji.parse(contentSpan);
@@ -5500,7 +5503,7 @@ window.App = (function() {
               class: 'fas fa-times',
               onclick: closeHandler
             })),
-            crel('span', (closest.dataset.tag ? `[${closest.dataset.tag}] ` : null), closest.dataset.author, badges),
+            crel('span', (closest.dataset.tag ? `[${twemoji.parse(closest.dataset.tag)}] ` : null), closest.dataset.author, badges),
             crel('div', { class: 'right' })
           );
           const leftPanel = crel('div', { class: 'pane details-wrapper chat-line' });
