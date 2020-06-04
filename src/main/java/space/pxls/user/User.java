@@ -50,7 +50,7 @@ public class User {
 
     private Set<WebSocketChannel> connections = new HashSet<>();
 
-    public User(int id, int stacked, String name, String login, Timestamp signup, long cooldownExpiry, Role role, int pixelCount, int pixelCountAlltime, long banExpiryTime, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor, Integer displayedFaction, String discordName, Boolean factionBlocked) {
+    public User(int id, int stacked, String name, String login, Timestamp signup, long cooldownExpiry, Role role, int pixelCount, int pixelCountAllTime, long banExpiryTime, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor, Integer displayedFaction, String discordName, Boolean factionBlocked) {
         this.id = id;
         this.stacked = stacked;
         this.name = name;
@@ -59,7 +59,7 @@ public class User {
         this.cooldownExpiry = cooldownExpiry;
         this.role = role;
         this.pixelCount = pixelCount;
-        this.pixelCountAllTime = pixelCountAlltime;
+        this.pixelCountAllTime = pixelCountAllTime;
         this.banExpiryTime = banExpiryTime;
         this.isPermaChatbanned = isPermaChatbanned;
         this.chatbanExpiryTime = chatbanExpiryTime;
@@ -512,7 +512,7 @@ public class User {
 
         DBUserPixelCounts newCounts = App.getDatabase().modifyPixelCounts(this.id, amount, increaseCurrent, increaseAllTime);
         this.pixelCount = newCounts.pixelCount;
-        this.pixelCountAllTime = newCounts.pixelCountAlltime;
+        this.pixelCountAllTime = newCounts.pixelCountAllTime;
     }
 
     public void increasePixelCounts() {
@@ -708,6 +708,6 @@ public class User {
     }
 
     public static User fromDBUser(DBUser user) {
-        return new User(user.id, user.stacked, user.username, user.login, user.signup_time, user.cooldownExpiry, user.role, user.pixelCount, user.pixelCountAlltime, user.banExpiry, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked);
+        return new User(user.id, user.stacked, user.username, user.login, user.signup_time, user.cooldownExpiry, user.role, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked);
     }
 }

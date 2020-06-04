@@ -1829,15 +1829,15 @@ public class Database {
      * @param who The ID of the {@link User}.
      * @param amount The amount of pixels to increase the count with. Use a negative value to decrease pixels.
      * @param increaseCurrent Whenever to increase the pixel count for the current canvas.
-     * @param increaseAlltime Whenever to increase the total pixel count of the user.
+     * @param increaseAllTime Whenever to increase the total pixel count of the user.
      * @return An instance of {@Link DBUserPixelCounts}.
      */
-    public DBUserPixelCounts modifyPixelCounts(int who, int amount, boolean increaseCurrent, boolean increaseAlltime) {
+    public DBUserPixelCounts modifyPixelCounts(int who, int amount, boolean increaseCurrent, boolean increaseAllTime) {
         return jdbi.withHandle(handle ->
             handle.createQuery("UPDATE users SET pixel_count = pixel_count + :current_amount, pixel_count_alltime = pixel_count_alltime + :alltime_amount WHERE id = :who RETURNING pixel_count, pixel_count_alltime")
                 .bind("who", who)
                 .bind("current_amount", increaseCurrent ? amount : 0)
-                .bind("alltime_amount", increaseAlltime ? amount : 0)
+                .bind("alltime_amount", increaseAllTime ? amount : 0)
                 .map(new DBUserPixelCounts.Mapper())
                 .findFirst()
                 .orElse(null)

@@ -7,12 +7,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class DBUserPixelCounts {
-		public int pixelCount;
-		public int pixelCountAlltime;
+    public int pixelCount;
+    public int pixelCountAllTime;
 
-    public DBUserPixelCounts(int pixelCount, int pixelCountAlltime) {
-				this.pixelCount = pixelCount;
-				this.pixelCountAlltime = pixelCountAlltime;
+    public DBUserPixelCounts(int pixelCount, int pixelCountAllTime) {
+        this.pixelCount = pixelCount;
+        this.pixelCountAllTime = pixelCountAllTime;
     }
 
     public static class Mapper implements RowMapper<DBUserPixelCounts> {

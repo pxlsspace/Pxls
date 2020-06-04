@@ -18,7 +18,7 @@ public class DBUser {
     public long cooldownExpiry;
     public Role role;
     public int pixelCount;
-    public int pixelCountAlltime;
+    public int pixelCountAllTime;
     public long banExpiry;
     public boolean isPermaChatbanned;
     public long chatbanExpiry;
@@ -37,7 +37,7 @@ public class DBUser {
         this.cooldownExpiry = cooldownExpiry;
         this.role = role;
         this.pixelCount = pixelCount;
-        this.pixelCountAlltime = pixelCountAllTime;
+        this.pixelCountAllTime = pixelCountAllTime;
         this.banExpiry = banExpiry;
         this.isPermaChatbanned = isPermaChatbanned;
         this.chatbanExpiry = chatbanExpiry;
