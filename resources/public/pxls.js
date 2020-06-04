@@ -4729,7 +4729,7 @@ window.App = (function() {
               self.elements.typeahead_list[0].innerHTML = '';
               const db = self.typeahead.helper.getDatabase(scanRes.trigger.dbType);
 
-              const LIs = got.slice(0, 10).map(x => {
+              const LIs = got.slice(0, 50).map(x => {
                 const el = crel('button', {
                   'data-insert': db.inserter(x),
                   'data-start': scanRes.start,

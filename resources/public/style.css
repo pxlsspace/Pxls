@@ -1577,16 +1577,22 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     border-radius: 5px 5px 0 0;
 }
 
-#typeahead ul {
+#typeahead .entry-container {
+    min-height: 2em;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+#typeahead .entry-container ul {
     list-style: none;
 }
 
-#typeahead ul, #typeahead ul li {
+#typeahead .entry-container ul, #typeahead .entry-container ul li {
     margin: 0;
     padding: 0;
 }
 
-#typeahead ul li button {
+#typeahead .entry-container ul li button {
     font-size: 1em;
     line-height: 1.5em;
     cursor: pointer;
@@ -1603,18 +1609,18 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     text-align: left;
 }
 
-#typeahead ul li button:hover {
+#typeahead .entry-container ul li button:hover {
     background: #949494;
     background: var(--chat-typeahead-item-background-hover);
 }
 
-#typeahead ul li button.active {
+#typeahead .entry-container ul li button.active {
     background: #828282;
     background: var(--chat-typeahead-item-background-active);
 }
 
 .chat-line img.emoji,
-#typeahead ul li button img.emoji {
+#typeahead .entry-container ul li button img.emoji {
     height: 1em;
     width: 1em;
     margin: 0 .05em 0 .1em;
