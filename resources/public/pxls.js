@@ -4751,6 +4751,7 @@ window.App = (function() {
           lastSelected.classList.remove('active');
         }
         children[nextIndex].classList.add('active');
+        children[nextIndex].scrollIntoView();
         self.typeahead.highlightedIndex = nextIndex;
       },
       resetTypeahead: () => { // close with reset
