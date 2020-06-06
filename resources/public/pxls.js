@@ -157,28 +157,26 @@ window.App = (function() {
   const TH = (function() { // place typeahead in its own pseudo namespace
     /**
      *
-     * @param char {string} The char trigger. Should only be a one byte wide grapheme. Emojis will fail
-     * @param dbType {string} The type of the database, acts internally as a map key.
-     * @param [keepTrigger=false] {boolean} Whether or not this trigger type should keep it's matching trigger chars on search results.
-     * @param [hasPair=false] {boolean} Whether or not this trigger has a matching pair at the end, e.g. ':word:' vs '@word'
-     * @param [minLength=0] {number} The minimum length of the match before this trigger is considered valid.
+     * @param {string} char The char trigger. Should only be a one byte wide grapheme. Emojis will fail
+     * @param {string} dbType The type of the database, acts internally as a map key.
+     * @param {boolean} [hasPair=false] Whether or not this trigger has a matching pair at the end, e.g. ':word:' vs '@word'
+     * @param {number} [minLength=0] The minimum length of the match before this trigger is considered valid.
      *                                Length is calculated without `this.char`, so a trigger of ":" and a match of ":one" will be a length of 3.
      * @constructor
      */
-    function Trigger(char, dbType, keepTrigger = false, hasPair = false, minLength = 0) {
+    function Trigger(char, dbType, hasPair = false, minLength = 0) {
       this.char = char;
       this.dbType = dbType;
-      this.keepTrigger = keepTrigger;
       this.hasPair = hasPair;
       this.minLength = minLength;
     }
 
     /**
      *
-     * @param start {number} The first (typically left-most) index of the trigger match
-     * @param end {number} The right (typically right-most) index of the trigger match
-     * @param trigger {Trigger} The trigger this match is for
-     * @param word {string} The whole word this trigger matches
+     * @param {number} start The first (typically left-most) index of the trigger match
+     * @param {number} end The right (typically right-most) index of the trigger match
+     * @param {Trigger} trigger The trigger this match is for
+     * @param {string} word The whole word this trigger matches
      * @constructor
      */
     function TriggerMatch(start, end, trigger, word) {
@@ -190,26 +188,56 @@ window.App = (function() {
 
     /**
      *
-     * @param name {string} The name of the database. Used internally as an accessor key.
-     * @param [initData={}] {object} The initial data to seed this database with.
-     * @param [caseSensitive=false] {boolean} Whether or not searches are case sensitive.
-     * @param [leftAnchored=false] {boolean} Whether or not searches are left-anchored.
+     * @typedef TypeaheadEntry
+     * @type {object}
+     * @property {string} key The key of the entry, to be matched by the typeahead.
+     * @property {string} value The value of the entry, what the typeahead should output when the option is selected.
+     */
+
+    /**
+     *
+     * @callback TypeaheadInserterCallback
+     * @param {TypeaheadEntry} entry
+     */
+    /**
+     *
+     * @callback TypeaheadRendererCallback
+     * @param {TypeaheadEntry} entry
+     */
+
+    const defaultCallback = (entry) => entry.value;
+
+    /**
+     *
+     * @param {string} name The name of the database. Used internally as an accessor key.
+     * @param {object} [initData={}] The initial data to seed this database with.
+     * @param {boolean} [caseSensitive=false] Whether or not searches are case sensitive.
+     * @param {boolean} [leftAnchored=false] Whether or not searches are left-anchored.
      *                                       If true, `startsWith` is used. Otherwise, `includes` is used.
+     * @param {TypeaheadInserterCallback} [inserter] Function ran to insert an entry into the text field.
+     * @param {TypeaheadRendererCallback} [renderer] Function ran to render an entry on the typeahead prompt.
      * @constructor
      */
-    function Database(name, initData = {}, caseSensitive = false, leftAnchored = false) {
+    function Database(name, initData = {}, caseSensitive = false, leftAnchored = false, inserter = defaultCallback, renderer = defaultCallback) {
       this.name = name;
       this._caseSensitive = caseSensitive;
       this.initData = initData;
       this.leftAnchored = leftAnchored;
+      this.inserter = inserter;
+      this.renderer = renderer;
 
       const fixKey = key => this._caseSensitive ? key.trim() : key.toLowerCase().trim();
       this.search = (start) => {
         start = fixKey(start);
-        return Object.entries(this.initData).filter(x => {
-          const key = fixKey(x[0]);
-          return this.leftAnchored ? key.startsWith(start) : key.includes(start);
-        }).map(x => x[1]);
+        return Object.entries(this.initData)
+          .filter(x => {
+            const key = fixKey(x[0]);
+            return this.leftAnchored ? key.startsWith(start) : key.includes(start);
+          })
+          .map(x => ({
+            key: x[0],
+            value: x[1]
+          }));
       };
       this.addEntry = (key, value) => {
         key = fixKey(key);
@@ -223,9 +251,9 @@ window.App = (function() {
 
     /**
      *
-     * @param triggers {Trigger[]}
-     * @param [stops=[' ']] {string[]} An array of characters that mark the bounds of a match, e.g. if we have an input of "one two", a cancels of [' '], and we search from the end of the string, we'll grab the word "two"
-     * @param DBs {Database[]} The databases to scan for trigger matches
+     * @param {Trigger[]} triggers
+     * @param {string[]} [stops=[' ']] An array of characters that mark the bounds of a match, e.g. if we have an input of "one two", a cancels of [' '], and we search from the end of the string, we'll grab the word "two"
+     * @param {Database[]} [DBs=[]] The databases to scan for trigger matches
      * @constructor
      */
     function Typeahead(triggers, stops = [' '], DBs = []) {
@@ -246,8 +274,8 @@ window.App = (function() {
        * Scans the given string from the specified start position for a trigger match.
        * Starts from the right and scans left for a trigger. If found, we then scan to the right of the start index for a word break.
        *
-       * @param startIndex {number} The index to start searching from. Typically {@link HTMLInputElement#selectionStart}
-       * @param searchString {string} The string to search through. Typically {@link HTMLInputElement#value}
+       * @param {number} startIndex The index to start searching from. Typically {@link HTMLInputElement#selectionStart}
+       * @param {string} searchString The string to search through. Typically {@link HTMLInputElement#value}
        * @returns {TriggerMatch|boolean} `false` if failed, a `TriggerMatch` otherwise.
        */
       this.scan = (startIndex, searchString) => {
@@ -284,23 +312,19 @@ window.App = (function() {
       };
 
       /**
-       * @param trigger {TriggerMatch} The trigger match we should look for suggestions on.
+       * @param {TriggerMatch} trigger The trigger match we should look for suggestions on.
        */
       this.suggestions = (trigger) => {
         let db = this.DBs.filter(x => x.name === trigger.trigger.dbType);
         if (!db || !db.length) return [];
         db = db[0];
-        let fromDB = db.search(trigger.word, trigger.trigger.leftAnchored);
-        if (fromDB && trigger.trigger.keepTrigger) {
-          fromDB = fromDB.map(x => `${trigger.trigger.char}${x}`);
-        }
-        return fromDB;
+        return db.search(trigger.word, trigger.trigger.leftAnchored);
       };
 
       /**
        * Gets the requested database.
        *
-       * @param dbName {string} The database's name.
+       * @param {string} dbName The database's name.
        * @see {@link Database#name}
        * @returns {null|Database}
        */
@@ -4508,7 +4532,12 @@ window.App = (function() {
           self.elements.jump_button[0].style.display = self.stickToBottom ? 'none' : 'block';
         });
 
-        self.picker = new EmojiButton({ position: 'left-start' });
+        self.picker = new EmojiButton({
+          position: 'left-start',
+          style: 'twemoji',
+          zIndex: 30,
+          emojiVersion: '13.0'
+        });
         self.picker.on('emoji', emojiStr => {
           self.elements.input[0].value += emojiStr;
           self.elements.input[0].focus();
@@ -4516,7 +4545,9 @@ window.App = (function() {
         self.elements.emoji_button.on('click', function() {
           self.picker.pickerVisible ? self.picker.hidePicker() : self.picker.showPicker(this);
           const searchEl = self.picker.pickerEl.querySelector('.emoji-picker__search'); // searchEl is destroyed every time the picker closes. have to re-attach
-          if (searchEl) { searchEl.addEventListener('keydown', e => e.stopPropagation()); }
+          if (searchEl) {
+            searchEl.addEventListener('keydown', e => e.stopPropagation());
+          }
         });
 
         settings.chat.font.size.listen(function(value) {
@@ -4559,18 +4590,20 @@ window.App = (function() {
       },
       initTypeahead() {
         // init DBs
-        const dbEmojis = new TH.Database('emoji');
-        const dbUsers = new TH.Database('users');
+        const dbEmojis = new TH.Database('emoji', {}, false, false, (x) => x.value, (x) => `${twemoji.parse(x.value)} :${x.key}:`);
+        const dbUsers = new TH.Database('users', {}, false, false, (x) => `@${x.value} `, (x) => `@${x.value}`);
 
         if (window.emojiDB) {
-          Object.entries(window.emojiDB).sort((a, b) => a[0].toLocaleLowerCase().localeCompare(b[0].toLocaleLowerCase())).forEach(emojiEntry => {
-            dbEmojis.addEntry(emojiEntry[0], emojiEntry[1].char);
-          });
+          Object.keys(window.emojiDB)
+            .sort((a, b) => a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase()))
+            .forEach(name => {
+              dbEmojis.addEntry(name, window.emojiDB[name]);
+            });
         }
 
         // init triggers
-        const triggerEmoji = new TH.Trigger(':', 'emoji', false, true, 2);
-        const triggerUsers = new TH.Trigger('@', 'users', true, false);
+        const triggerEmoji = new TH.Trigger(':', 'emoji', true, 2);
+        const triggerUsers = new TH.Trigger('@', 'users', false);
 
         // init typeahead
         self.typeahead.helper = new TH.Typeahead([triggerEmoji, triggerUsers], [' '], [dbEmojis, dbUsers]);
@@ -4601,16 +4634,8 @@ window.App = (function() {
                 event.preventDefault();
                 event.stopPropagation();
                 event.stopImmediatePropagation();
-                let nextIndex = self.typeahead.highlightedIndex + (event.shiftKey ? -1 : 1); // if we're holding shift, walk backwards (up).
-                const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
-                if (event.shiftKey && nextIndex < 0) { // if we're holding shift, we're walking backwards and need to check underflow.
-                  nextIndex = children.length - 1;
-                } else if (nextIndex >= children.length) {
-                  nextIndex = 0;
-                }
-                children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
-                children[nextIndex].classList.add('active');
-                self.typeahead.highlightedIndex = nextIndex;
+
+                self.selectNextTypeaheadEntry(event.shiftKey ? -1 : 1); // if we're holding shift, walk backwards (up).
                 return;
               } else {
                 scan();
@@ -4623,14 +4648,7 @@ window.App = (function() {
                 event.preventDefault();
                 event.stopPropagation();
                 event.stopImmediatePropagation();
-                let nextIndex = self.typeahead.highlightedIndex - 1;
-                const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
-                if (nextIndex < 0) {
-                  nextIndex = children.length - 1;
-                }
-                children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
-                children[nextIndex].classList.add('active');
-                self.typeahead.highlightedIndex = nextIndex;
+                self.selectNextTypeaheadEntry(-1);
                 return;
               }
               break;
@@ -4641,14 +4659,7 @@ window.App = (function() {
                 event.preventDefault();
                 event.stopPropagation();
                 event.stopImmediatePropagation();
-                let nextIndex = self.typeahead.highlightedIndex + 1;
-                const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
-                if (nextIndex >= children.length) {
-                  nextIndex = 0;
-                }
-                children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
-                children[nextIndex].classList.add('active');
-                self.typeahead.highlightedIndex = nextIndex;
+                self.selectNextTypeaheadEntry(1);
                 return;
               }
               break;
@@ -4689,14 +4700,18 @@ window.App = (function() {
               self.elements.typeahead_list[0].innerHTML = '<li class="no-results">No Results</li>'; // no reason to crel this if we're just gonna innerHTML anyway.
             } else {
               self.elements.typeahead_list[0].innerHTML = '';
-              const LIs = got.slice(0, 10).map(x =>
-                crel('li', crel('button', {
-                  'data-insert': `${x} `,
+              const db = self.typeahead.helper.getDatabase(scanRes.trigger.dbType);
+
+              const LIs = got.slice(0, 50).map(x => {
+                const el = crel('button', {
+                  'data-insert': db.inserter(x),
                   'data-start': scanRes.start,
                   'data-end': scanRes.end,
                   onclick: self._handleTypeaheadInsert
-                }, x))
-              );
+                });
+                el.innerHTML = db.renderer(x);
+                return crel('li', el);
+              });
               LIs[0].classList.add('active');
               crel(self.elements.typeahead_list[0], LIs);
             }
@@ -4717,6 +4732,22 @@ window.App = (function() {
         self.elements.input[0].value = self.elements.input[0].value.substring(0, start) + toInsert + self.elements.input[0].value.substring(end);
         self.elements.input[0].focus();
         self.resetTypeahead();
+      },
+      selectNextTypeaheadEntry(direction) {
+        let nextIndex = self.typeahead.highlightedIndex + direction;
+        const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
+        if (direction < 0 && nextIndex < 0) { // if we're walking backwards, we need to check for underflow.
+          nextIndex = children.length - 1;
+        } else if (direction > 0 && nextIndex >= children.length) { // if we're walking forwards, we need to check for overflow.
+          nextIndex = 0;
+        }
+        const lastSelected = children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex];
+        if (lastSelected) {
+          lastSelected.classList.remove('active');
+        }
+        children[nextIndex].classList.add('active');
+        children[nextIndex].scrollIntoView();
+        self.typeahead.highlightedIndex = nextIndex;
       },
       resetTypeahead: () => { // close with reset
         self.typeahead.suggesting = false;
@@ -5013,7 +5044,7 @@ window.App = (function() {
       _updateAuthorDisplayedFaction: (author, faction) => {
         const tag = (faction && faction.tag) || '';
         const color = faction ? self.intToHex(faction && faction.color) : null;
-        const tagStr = (faction && faction.tag) ? `[${faction.tag}]` : '';
+        const tagStr = (faction && faction.tag) ? `[${twemoji.parse(faction.tag)}]` : '';
         let ttStr = '';
         if (faction && faction.name != null && faction.id != null) {
           ttStr = `${faction.name} (ID: ${faction.id})`;
@@ -5036,7 +5067,7 @@ window.App = (function() {
         const colorHex = `#${('000000' + (faction.color >>> 0).toString(16)).slice(-6)}`;
         self.elements.body.find(`.chat-line[data-faction="${faction.id}"]`).each(function() {
           this.dataset.tag = faction.tag;
-          $(this).find('.faction-tag').attr('data-tag', faction.tag).attr('title', `${faction.name} (ID: ${faction.id})`).css('color', colorHex).html(`[${faction.tag}]`);
+          $(this).find('.faction-tag').attr('data-tag', faction.tag).attr('title', `${faction.name} (ID: ${faction.id})`).css('color', colorHex).html(`[${twemoji.parse(faction.tag)}]`);
         });
       },
       _clearFaction: (fid) => {
@@ -5149,12 +5180,15 @@ window.App = (function() {
         const _facColor = packet.strippedFaction ? self.intToHex(packet.strippedFaction.color) : 0;
         const _facTagShow = packet.strippedFaction && settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
         const _facTitle = packet.strippedFaction ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : '';
-        crel(flairs, crel('span', {
+
+        const _facFlair = crel('span', {
           class: 'flair faction-tag',
           'data-tag': _facTag,
           style: `color: ${_facColor}; display: ${_facTagShow}`,
           title: _facTitle
-        }, `[${_facTag}]`));
+        });
+        _facFlair.innerHTML = `[${twemoji.parse(_facTag)}]`;
+        crel(flairs, _facFlair);
 
         const contentSpan = self.processMessage('span', 'content', packet.message_raw);
         twemoji.parse(contentSpan);
@@ -5468,7 +5502,7 @@ window.App = (function() {
               class: 'fas fa-times',
               onclick: closeHandler
             })),
-            crel('span', (closest.dataset.tag ? `[${closest.dataset.tag}] ` : null), closest.dataset.author, badges),
+            crel('span', (closest.dataset.tag ? `[${twemoji.parse(closest.dataset.tag)}] ` : null), closest.dataset.author, badges),
             crel('div', { class: 'right' })
           );
           const leftPanel = crel('div', { class: 'pane details-wrapper chat-line' });

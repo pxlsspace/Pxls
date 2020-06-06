@@ -8,6 +8,7 @@
     "no-console": ["error", {"allow": ["info", "warn", "error", "debug", "trace"]}],
     "space-before-function-paren": "off"
   },
+  "ignorePatterns": ["*.min.js"],
   "globals": {
     // Third-party libraries
     "$": "readonly",

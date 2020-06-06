@@ -15,6 +15,8 @@ z-index:
 22 - lookup, emoji-picker
 22 - admin-check popup
 
+30 - emoji picker
+
 98 - lost connection
 99 - alert box
 */
@@ -1561,12 +1563,6 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     color: #ccc;
 }
 
-.chat-line img.emoji {
-    height: 1em;
-    width: 1em;
-    margin: 0 .05em 0 .1em;
-    vertical-align: -0.1em;
-}
 
 #typeahead {
     position: absolute;
@@ -1581,6 +1577,9 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 }
 
 #typeahead ul {
+    min-height: 2em;
+    max-height: 50vh;
+    overflow-y: auto;
     list-style: none;
 }
 
@@ -1614,6 +1613,14 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 #typeahead ul li button.active {
     background: #828282;
     background: var(--chat-typeahead-item-background-active);
+}
+
+.chat-line img.emoji,
+#typeahead ul li button img.emoji {
+    height: 1em;
+    width: 1em;
+    margin: 0 .05em 0 .1em;
+    vertical-align: -0.1em;
 }
 
 /* PINGS */
@@ -1754,16 +1761,13 @@ body .emoji-picker {
     background: var(--emoji-picker-background);
 }
 
-.emoji-picker img.emoji {
-    max-height: 1.3rem;
-}
-
 .emoji-picker .emoji-picker__search {
     padding-left: .5em;
 }
 
 .emoji-picker .emoji-picker__preview {
-    padding-top: 1.75em;
+    margin-top: .5em;
+    padding: 1.5em 1em;
     border-top: 1px solid #999999;
     border-top: 1px solid var(--emoji-picker-border-color);
 }
