@@ -6347,6 +6347,7 @@ window.App = (function() {
       elements: {
         users: $('#online-count'),
         userInfo: $('#user-info'),
+        pixelCounts: $('#pixel-counts'),
         loginOverlay: $('#login-overlay'),
         userMessage: $('#user-message'),
         prompt: $('#prompt'),
@@ -6360,6 +6361,8 @@ window.App = (function() {
       getRole: () => self.role,
       isStaff: () => ['MODERATOR', 'DEVELOPER', 'ADMIN', 'TRIALMOD'].includes(self.getRole()),
       getUsername: () => self.username,
+      getPixelCount: () => self.pixelCount,
+      getPixelCountAllTime: () => self.pixelCountAllTime,
       signin: function() {
         const data = ls.get('auth_respond');
         if (!data) {
@@ -6454,11 +6457,13 @@ window.App = (function() {
         });
         self.elements.signup.find('#signup-button').click(self.doSignup);
         self.elements.users.hide();
+        self.elements.pixelCounts.hide();
         self.elements.userInfo.hide();
         self.elements.userInfo.find('.logout').click(function(evt) {
           evt.preventDefault();
           $.get('/logout', function() {
             self.elements.userInfo.fadeOut(200);
+            self.elements.pixelCounts.fadeOut(200);
             self.elements.userMessage.fadeOut(200);
             self.elements.loginOverlay.fadeIn(200);
             if (window.deInitAdmin) {
@@ -6487,6 +6492,10 @@ window.App = (function() {
           const banelem = crel('div', { class: 'ban-alert-content' });
           self.username = data.username;
           self.loggedIn = true;
+          self.pixelCount = data.pixelCount;
+          self.pixelCountAllTime = data.pixelCountAllTime;
+          self.updatePixelCountElements();
+          self.elements.pixelCounts.fadeIn(200);
           self.chatNameColor = data.chatNameColor;
           uiHelper.updateSelectedNameColor(data.chatNameColor);
           $(window).trigger('pxls:user:loginState', [true]);
@@ -6555,6 +6564,15 @@ window.App = (function() {
 
           analytics('send', 'event', 'Auth', 'Login', data.method);
         });
+        socket.on('pixelCounts', function(data) {
+          self.pixelCount = data.pixelCount;
+          self.pixelCountAllTime = data.pixelCountAllTime;
+
+          self.updatePixelCountElements();
+
+          // For userscripts.
+          $(window).trigger('pxls:pixelCounts:update', Object.assign({}, data));
+        });
         socket.on('rename', function(e) {
           if (e.requested === true) {
             self.showRenameRequest();
@@ -6567,7 +6585,7 @@ window.App = (function() {
           self.elements.userInfo.find('span.name').text(e.newName);
         });
       },
-      _handleSubmit: function(event) {
+      _handleRenameSubmit: function(event) {
         event.preventDefault();
         const input = this.querySelector('.rename-input');
         const btn = this.querySelector('.rename-submit');
@@ -6595,7 +6613,7 @@ window.App = (function() {
         });
       },
       _handleRenameClick: function(event) {
-        const renamePopup = crel('form', { onsubmit: self._handleSubmit },
+        const renamePopup = crel('form', { onsubmit: self._handleRenameSubmit },
           crel('p', 'Staff have required you to change your username, this usually means your name breaks one of our rules.'),
           crel('p', 'If you disagree, please contact us on Discord (link in the info panel).'),
           crel('label', 'New Username: ',
@@ -6633,6 +6651,10 @@ window.App = (function() {
       },
       hideRenameRequest: () => {
         self.elements.userMessage.fadeOut(200);
+      },
+      updatePixelCountElements: () => {
+        self.elements.pixelCounts.find('#current-pixel-count').text(self.pixelCount.toLocaleString());
+        self.elements.pixelCounts.find('#alltime-pixel-count').text(self.pixelCountAllTime.toLocaleString());
       }
     };
     return {
@@ -6640,6 +6662,8 @@ window.App = (function() {
       getRole: self.getRole,
       isStaff: self.isStaff,
       getUsername: self.getUsername,
+      getPixelCount: self.getPixelCount,
+      getPixelCountAllTime: self.getPixelCountAllTime,
       webinit: self.webinit,
       wsinit: self.wsinit,
       isLoggedIn: self.isLoggedIn,
@@ -6983,6 +7007,8 @@ window.App = (function() {
     typeahead: chat.typeahead,
     user: {
       getUsername: user.getUsername,
+      getPixelCount: user.getPixelCount,
+      getPixelCountAllTime: user.getPixelCountAllTime,
       getRole: user.getRole,
       isLoggedIn: user.isLoggedIn,
       isStaff: user.isStaff

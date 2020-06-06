@@ -1,6 +1,5 @@
 package space.pxls.data;
 
-import com.typesafe.config.Config;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.jdbi.v3.core.Handle;
@@ -264,7 +263,6 @@ public class Database {
                     .bind("second_id", second_id)
                     .bind("mod", mod_action)
                     .execute();
-            increasePixelCount(mod_action, whoID);
             return rowID;
         });
     }
@@ -582,7 +580,6 @@ public class Database {
                     .bind("from", from)
                     .execute();
         });
-        decreasePixelCount(whoID);
     }
 
     /**
@@ -609,7 +606,6 @@ public class Database {
                     .bind("from", from)
                     .execute();
         });
-        decreasePixelCount(whoID);
     }
 
     /**
@@ -855,11 +851,11 @@ public class Database {
     }
 
     /**
-     * Gets the amount of pixels a {@link User} has.
+     * Gets the amount of pixels a {@link User} has for the current canvas.
      * @param who The {@link User}'s ID.
      * @return The amount of pixels the user has.
      */
-    public int getUserPixels(int who) {
+    public int getUserPixelCount(int who) {
         return jdbi.withHandle(handle -> handle.select("SELECT pixel_count FROM users WHERE id = :who")
                 .bind("who", who)
                 .mapTo(Integer.class)
@@ -871,7 +867,7 @@ public class Database {
      * @param who The {@link User}'s ID.
      * @return The amount of all-time pixels the user has.
      */
-    public int getPixelsAllTime(int who) {
+    public int getUserPixelCountAllTime(int who) {
         return jdbi.withHandle(handle -> handle.select("SELECT pixel_count_alltime FROM users WHERE id = :who")
                 .bind("who", who)
                 .mapTo(Integer.class)
@@ -1829,51 +1825,22 @@ public class Database {
     }
 
     /**
-     * Increases the specified user's pixel count if the pixel isn't caused by a mod action, and the configuration allows such.
-     * @param modAction Whether the pixel was caused by a mod action.
+     * Modifies the specified user's pixel count by a certain amount.
      * @param who The ID of the {@link User}.
+     * @param amount The amount of pixels to increase the count with. Use a negative value to decrease pixels.
+     * @param increaseCurrent Whenever to increase the pixel count for the current canvas.
+     * @param increaseAllTime Whenever to increase the total pixel count of the user.
+     * @return An instance of {@Link DBUserPixelCounts}.
      */
-    private void increasePixelCount(boolean modAction, int who) {
-        if (!App.shouldIncreaseSomePixelCount()) return;
-        Config config = App.getConfig();
-        boolean increaseAllTime = config.getBoolean("pixelCounts.countTowardsAlltime");
-        boolean increase = config.getBoolean("pixelCounts.countTowardsCurrent");
-        jdbi.useHandle(handle -> {
-            if (increaseAllTime) {
-                handle.createUpdate("UPDATE users SET pixel_count_alltime = pixel_count_alltime + (CASE WHEN :mod THEN 0 ELSE 1 END) WHERE id = :who")
-                        .bind("mod", modAction)
-                        .bind("who", who)
-                        .execute();
-            }
-            if (increase) {
-                handle.createUpdate("UPDATE users SET pixel_count = pixel_count + (CASE WHEN :mod THEN 0 ELSE 1 END) WHERE id = :who")
-                        .bind("mod", modAction)
-                        .bind("who", who)
-                        .execute();
-            }
-        });
-    }
-
-    /**
-     * Decreases the specified user's pixel count by one. Primarily used when undoing.
-     * @param who The ID of the {@link User}.
-     */
-    private void decreasePixelCount(int who) {
-        if (!App.shouldIncreaseSomePixelCount()) return;
-        Config config = App.getConfig();
-        boolean increaseAllTime = config.getBoolean("pixelCounts.countTowardsAlltime");
-        boolean increaseCanvas = config.getBoolean("pixelCounts.countTowardsCurrent");
-        jdbi.useHandle(handle -> {
-            if (increaseAllTime) {
-                handle.createUpdate("UPDATE users SET pixel_count_alltime = pixel_count_alltime - 1 WHERE id = :who")
-                    .bind("who", who)
-                    .execute();
-            }
-            if (increaseCanvas) {
-                handle.createUpdate("UPDATE users SET pixel_count = pixel_count - 1 WHERE id = :who")
-                    .bind("who", who)
-                    .execute();
-            }
-        });
+    public DBUserPixelCounts modifyPixelCounts(int who, int amount, boolean increaseCurrent, boolean increaseAllTime) {
+        return jdbi.withHandle(handle ->
+            handle.createQuery("UPDATE users SET pixel_count = pixel_count + :current_amount, pixel_count_alltime = pixel_count_alltime + :alltime_amount WHERE id = :who RETURNING pixel_count, pixel_count_alltime")
+                .bind("who", who)
+                .bind("current_amount", increaseCurrent ? amount : 0)
+                .bind("alltime_amount", increaseAllTime ? amount : 0)
+                .map(new DBUserPixelCounts.Mapper())
+                .findFirst()
+                .orElse(null)
+        );
     }
 }
