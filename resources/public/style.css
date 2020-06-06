@@ -222,6 +222,13 @@ kbd {
     user-select: none;
 }
 
+img.emoji {
+    height: 1em;
+    width: 1em;
+    margin: 0 .05em 0 .1em;
+    vertical-align: -0.1em;
+}
+
 .fake-indent {
     margin-left:1.2rem;
 }
@@ -290,7 +297,7 @@ button {
     outline: none;
 }
 
- button::-moz-focus-inner {
+button::-moz-focus-inner {
     border: 0;
 }
 
@@ -1613,14 +1620,6 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 #typeahead ul li button.active {
     background: #828282;
     background: var(--chat-typeahead-item-background-active);
-}
-
-.chat-line img.emoji,
-#typeahead ul li button img.emoji {
-    height: 1em;
-    width: 1em;
-    margin: 0 .05em 0 .1em;
-    vertical-align: -0.1em;
 }
 
 /* PINGS */

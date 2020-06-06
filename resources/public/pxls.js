@@ -5495,6 +5495,12 @@ window.App = (function() {
             }
           };
 
+          let _factionTag = null;
+          if (closest.dataset.tag) {
+            _factionTag = document.createElement('span', { class: 'flair faction-tag' });
+            _factionTag.innerHTML = `[${twemoji.parse(closest.dataset.tag)}] `;
+          }
+
           const popupWrapper = crel('div', { class: 'popup panel', 'data-popup-for': id });
           const panelHeader = crel('header',
             { class: 'panel-header' },
@@ -5502,7 +5508,7 @@ window.App = (function() {
               class: 'fas fa-times',
               onclick: closeHandler
             })),
-            crel('span', (closest.dataset.tag ? `[${twemoji.parse(closest.dataset.tag)}] ` : null), closest.dataset.author, badges),
+            crel('span', _factionTag, closest.dataset.author, badges),
             crel('div', { class: 'right' })
           );
           const leftPanel = crel('div', { class: 'pane details-wrapper chat-line' });
