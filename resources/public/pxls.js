@@ -562,7 +562,7 @@ window.App = (function() {
           enable: setting('ui.cursor.enable', SettingType.TOGGLE, !possiblyMobile, $('#setting-ui-cursor-enable'))
         },
         bubble: {
-          position: setting('ui.bubble.position', SettingType.RADIO, 'bottom left', $('[name=setting-ui-bubble-position]'))
+          position: setting('ui.bubble.position', SettingType.SELECT, 'bottom left', $('#setting-ui-bubble-position'))
         },
         brightness: {
           enable: setting('ui.brightness.enable', SettingType.TOGGLE, false, $('#setting-ui-brightness-enable')),
@@ -4750,57 +4750,61 @@ window.App = (function() {
       getIgnores: () => [].concat(self.ignored || []),
       popChatSettings() {
         // dom generation
-        const body = crel('div', { class: 'chat-settings-wrapper' });
+        const body = crel('div', { class: 'chat-settings-wrapper no-p-margin' });
 
-        const _cb24hTimestamps = crel('input', { type: 'checkbox' });
-        const lbl24hTimestamps = crel('label', _cb24hTimestamps, '24 Hour Timestamps');
+        const genCheckboxGroup = (label) => {
+          const cb = crel('input', { type: 'checkbox' });
+          const lbl = crel('label', { class: 'input-group' },
+            cb,
+            ' ',
+            crel('span', { class: 'label-text' }, label));
+          return [cb, lbl];
+        };
 
-        const _cbPixelPlaceBadges = crel('input', { type: 'checkbox' });
-        const lblPixelPlaceBadges = crel('label', _cbPixelPlaceBadges, 'Show pixel-placed badges');
-
-        const _cbFactionTagBadges = crel('input', { type: 'checkbox' });
-        const lblFactionTagBadges = crel('label', _cbFactionTagBadges, 'Show faction tags');
-
-        const _cbPings = crel('input', { type: 'checkbox' });
-        const lblPings = crel('label', _cbPings, 'Enable pings');
+        const [_cb24hTimestamps, lbl24hTimestamps] = genCheckboxGroup('24 Hour Timestamps');
+        const [_cbPixelPlaceBadges, lblPixelPlaceBadges] = genCheckboxGroup('Show pixel-placed badges');
+        const [_cbFactionTagBadges, lblFactionTagBadges] = genCheckboxGroup('Show faction tags');
+        const [_cbPings, lblPings] = genCheckboxGroup('Enable pings');
 
         const _cbPingAudio = crel('select', {},
           crel('option', { value: 'off' }, 'Off'),
           crel('option', { value: 'discrete' }, 'Only when necessary'),
           crel('option', { value: 'always' }, 'Always')
         );
-        const lblPingAudio = crel('label',
-          'Play sound on ping: ',
+        const lblPingAudio = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Play sound on ping: '),
           _cbPingAudio
         );
 
         const _rgPingAudioVol = crel('input', { type: 'range', min: 0, max: 1, step: 0.01 });
-        const _txtPingAudioVol = crel('span');
-        const lblPingAudioVol = crel('label',
-          'Ping sound volume: ',
+        const _txtPingAudioVol = crel('span', { class: 'range-text-value' });
+        const lblPingAudioVol = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Ping sound volume: '),
           _rgPingAudioVol,
           _txtPingAudioVol
         );
 
-        const _cbBanner = crel('input', { type: 'checkbox' });
-        const lblBanner = crel('label', _cbBanner, 'Enable the rotating banner under chat');
-
-        const _cbTemplateTitles = crel('input', { type: 'checkbox' });
-        const lblTemplateTitles = crel('label', _cbTemplateTitles, 'Replace template titles with URLs in chat where applicable');
+        const [_cbBanner, lblBanner] = genCheckboxGroup('Enable the rotating banner under chat');
+        const [_cbTemplateTitles, lblTemplateTitles] = genCheckboxGroup('Replace template titles with URLs in chat where applicable');
 
         const _txtFontSize = crel('input', { type: 'number', min: '1', max: '72' });
         const _btnFontSizeConfirm = crel('button', { class: 'text-button' }, crel('i', { class: 'fas fa-check' }));
-        const lblFontSize = crel('label', 'Font Size: ', _txtFontSize, _btnFontSizeConfirm);
+        const lblFontSize = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Font Size: '),
+          _txtFontSize
+        );
 
-        const _cbHorizontal = crel('input', { type: 'checkbox' });
-        const lblHorizontal = crel('label', _cbHorizontal, 'Enable horizontal chat');
+        const [_cbHorizontal, lblHorizontal] = genCheckboxGroup('Enable horizontal chat');
 
         const _selInternalClick = crel('select',
           Object.values(self.TEMPLATE_ACTIONS).map(action =>
             crel('option', { value: action.id }, action.pretty)
           )
         );
-        const lblInternalAction = crel('label', 'Default internal link action click: ', _selInternalClick);
+        const lblInternalAction = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Default internal link action click: '),
+          _selInternalClick
+        );
 
         const _selUsernameColor = crel('select', { class: 'username-color-picker' },
           user.isStaff() ? crel('option', { value: -1, class: 'rainbow' }, 'rainbow') : null,
@@ -4810,7 +4814,10 @@ window.App = (function() {
             style: `background-color: ${x}`
           }, x))
         );
-        const lblUsernameColor = crel('label', 'Username Color: ', _selUsernameColor);
+        const lblUsernameColor = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Username Color: '),
+          _selUsernameColor
+        );
 
         const _selIgnores = crel('select', {
           class: 'user-ignores',
@@ -4820,9 +4827,12 @@ window.App = (function() {
           crel('option', { value: x }, x)
         )
         );
-        const _btnUnignore = crel('button', { class: 'text-button', style: 'margin-left: .5rem' }, 'Unignore');
-        const lblIgnores = crel('label', 'Ignores: ', _selIgnores, _btnUnignore);
-        const lblIgnoresFeedback = crel('label', { style: 'display: none; margin-left: 1rem;' }, '');
+        const _btnUnignore = crel('button', { class: 'text-button' }, 'Unignore');
+        const lblIgnores = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Ignores: '),
+          _selIgnores
+        );
+        const lblIgnoresFeedback = crel('label', { for: _selIgnores.id, class: 'extra-label' }, '');
 
         // events/scaffolding
         _selUsernameColor.value = user.getChatNameColor();
