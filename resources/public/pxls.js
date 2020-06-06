@@ -4766,21 +4766,10 @@ window.App = (function() {
           return [cb, lbl];
         };
 
-        const a24hTimestamps = genCheckboxGroup('24 Hour Timestamps');
-        const _cb24hTimestamps = a24hTimestamps[0];
-        const lbl24hTimestamps = a24hTimestamps[1];
-
-        const aPixelPlaceBadges = genCheckboxGroup('Show pixel-placed badges');
-        const _cbPixelPlaceBadges = aPixelPlaceBadges[0];
-        const lblPixelPlaceBadges = aPixelPlaceBadges[1];
-
-        const aFactionTagBadges = genCheckboxGroup('Show faction tags');
-        const _cbFactionTagBadges = aFactionTagBadges[0];
-        const lblFactionTagBadges = aFactionTagBadges[1];
-
-        const aPings = genCheckboxGroup('Enable pings');
-        const _cbPings = aPings[0];
-        const lblPings = aPings[1];
+        const [_cb24hTimestamps, lbl24hTimestamps] = genCheckboxGroup('24 Hour Timestamps');
+        const [_cbPixelPlaceBadges, lblPixelPlaceBadges] = genCheckboxGroup('Show pixel-placed badges');
+        const [_cbFactionTagBadges, lblFactionTagBadges] = genCheckboxGroup('Show faction tags');
+        const [_cbPings, lblPings] = genCheckboxGroup('Enable pings');
 
         const _cbPingAudio = crel('select', {},
           crel('option', { value: 'off' }, 'Off'),
@@ -4800,13 +4789,8 @@ window.App = (function() {
           _txtPingAudioVol
         );
 
-        const aBanner = genCheckboxGroup('Enable the rotating banner under chat');
-        const _cbBanner = aBanner[0];
-        const lblBanner = aBanner[1];
-
-        const aTemplateTitles = genCheckboxGroup('Replace template titles with URLs in chat where applicable');
-        const _cbTemplateTitles = aTemplateTitles[0];
-        const lblTemplateTitles = aTemplateTitles[1];
+        const [_cbBanner, lblBanner] = genCheckboxGroup('Enable the rotating banner under chat');
+        const [_cbTemplateTitles, lblTemplateTitles] = genCheckboxGroup('Replace template titles with URLs in chat where applicable');
 
         const _txtFontSize = crel('input', { type: 'number', min: '1', max: '72' });
         const _btnFontSizeConfirm = crel('button', { class: 'text-button' }, crel('i', { class: 'fas fa-check' }));
@@ -4815,9 +4799,7 @@ window.App = (function() {
           _txtFontSize
         );
 
-        const aHorizontal = genCheckboxGroup('Enable horizontal chat');
-        const _cbHorizontal = aHorizontal[0];
-        const lblHorizontal = aHorizontal[1];
+        const [_cbHorizontal, lblHorizontal] = genCheckboxGroup('Enable horizontal chat');
 
         const _selInternalClick = crel('select',
           Object.values(self.TEMPLATE_ACTIONS).map(action =>
