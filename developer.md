@@ -148,7 +148,7 @@ $(window).on('pxls:panel:opened', (event, panelDescriptor) => {
 });
 
 $(window).on('pxls:panel:closed', (event, panelDescriptor) => {
-    console.log("Opened panel " + panelDescriptor);
+    console.log("Closed panel " + panelDescriptor);
 });
 
 $(window).on('pxls:queryUpdated', (event, propName, oldValue, newValue) => {
@@ -156,4 +156,8 @@ $(window).on('pxls:queryUpdated', (event, propName, oldValue, newValue) => {
         console.log("Query property " + propName + " changed from " + oldValue + " to " + newValue);
     }
 });
+
+$(window).on("pxls:user:loginState", function(e, isLoggedIn) {
+    console.log(isLoggedIn ? "Client is logged in" : "Client isn't logged in");
+})
 ```
