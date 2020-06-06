@@ -71,24 +71,25 @@
                 <div class="loading-bubble-item" data-process="virginmap">Loading Virginmap (press <kbd>X</kbd> to cancel)</div>
             </div>
             <div id="main-bubble" class="bubble">
-                <div id="user-info">
+                <button id="setting-ui-bubble-compact"><i class="fas fa-angle-up"></i></button>
+                <div id="user-info" class="toggeable">
                     <i class="fas fa-user"></i>
                     <!-- TODO: link to position on stats page -->
                     <span id="username"></span>
                     <a href="/logout" class="logout"><i title="Logout" class="fas fa-sign-out-alt" id="logout-icon"></i></a>
                 </div>
-                <div id="pixel-counts">
+                <div id="pixel-counts" class="toggeable">
                     <i class="fas fa-chart-line"></i>
                     <ul>
                         <li><span>Canvas: </span><span id="current-pixel-count">N/A</span></li>
                         <li><span>All Time: </span><span id="alltime-pixel-count">N/A</span></li>
                     </ul>
                 </div>
-                <div>
-                  <i class="fas fa-users"></i>
-                  <span id="online-count">Loading online user count&hellip;</span>
+                <div class="toggeable">
+                    <i class="fas fa-users"></i>
+                    <span id="online-count">Loading online user count&hellip;</span>
                 </div>
-                <div id="coords-info">
+                <div id="coords-info" class="toggeable">
                     <a class="coords"></a>
                     <i id="canvas-lock-icon" class="fas fa-lock"></i>
                 </div>

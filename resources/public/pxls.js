@@ -426,12 +426,14 @@ window.App = (function() {
         const validValue = validate(value, defaultValue, type);
         ls.set(name, validValue);
 
-        if (type === SettingType.RADIO) {
-          controls.each((_, e) => { e.checked = e.value === value; });
-        } else if (type === SettingType.TOGGLE) {
-          controls.prop('checked', validValue);
-        } else {
-          controls.prop('value', validValue);
+        if (controls.length > 0) {
+          if (type === SettingType.RADIO) {
+            controls.each((_, e) => { e.checked = e.value === value; });
+          } else if (type === SettingType.TOGGLE) {
+            controls.prop('checked', validValue);
+          } else {
+            controls.prop('value', validValue);
+          }
         }
 
         listeners.forEach((f) => f(validValue));
@@ -586,7 +588,8 @@ window.App = (function() {
           enable: setting('ui.cursor.enable', SettingType.TOGGLE, !possiblyMobile, $('#setting-ui-cursor-enable'))
         },
         bubble: {
-          position: setting('ui.bubble.position', SettingType.SELECT, 'bottom left', $('#setting-ui-bubble-position'))
+          position: setting('ui.bubble.position', SettingType.SELECT, 'bottom left', $('#setting-ui-bubble-position')),
+          compact: setting('ui.bubble.compact', SettingType.TOGGLE, false)
         },
         brightness: {
           enable: setting('ui.brightness.enable', SettingType.TOGGLE, false, $('#setting-ui-brightness-enable')),
@@ -3353,6 +3356,11 @@ window.App = (function() {
 
         settings.ui.bubble.position.listen(function(value) {
           self.elements.mainBubble.attr('position', value);
+        });
+
+        $('#setting-ui-bubble-compact').on('click', settings.ui.bubble.compact.toggle);
+        settings.ui.bubble.compact.listen(function(value) {
+          self.elements.mainBubble.toggleClass('compact', value);
         });
 
         settings.ui.reticule.enable.listen(function(value) {

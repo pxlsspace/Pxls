@@ -566,7 +566,7 @@ body .message {
 #ui .bubble {
     position: absolute;
     display: inline-block;
-    padding: 8px 16px;
+    padding: 0.5em 1em;
     background: rgba(0, 0, 0, 0.7);
     background: var(--bubble-background);
     border-radius: 5px;
@@ -592,6 +592,7 @@ body .message {
 
 #main-bubble[position~="top"] {
     top: 4rem;
+    padding-bottom: 1em;
 }
 
 #main-bubble[position~="left"] {
@@ -600,6 +601,7 @@ body .message {
 
 #main-bubble[position~="bottom"] {
     bottom: 1rem;
+    padding-top: 1em;
 }
 
 #main-bubble[position~="right"] {
@@ -613,6 +615,36 @@ body .message {
 #main-bubble .fas {
     width: 1.25em;
     text-align: center;
+}
+
+#main-bubble.compact .toggeable {
+    /* don't hide it completely to keep their width */
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    height: 0;
+}
+
+#main-bubble #setting-ui-bubble-compact {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+}
+
+#main-bubble[position~="top"] #setting-ui-bubble-compact {
+    top: initial;
+    bottom: 0;
+}
+
+#main-bubble[position~="top"] #setting-ui-bubble-compact .fas,
+#main-bubble.compact[position~="bottom"] #setting-ui-bubble-compact .fas {
+    transform: rotate(180deg);
+}
+
+#main-bubble[position~="bottom"] #setting-ui-bubble-compact .fas,
+#main-bubble.compact[position~="top"] #setting-ui-bubble-compact .fas {
+    transform: rotate(0);
 }
 
 #pixel-counts .fas {
