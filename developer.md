@@ -137,6 +137,10 @@ $(window).on('pxls:ack:undo', (event, x, y) => {
     console.log("Pixel succesfully undoed at (" + x + ", " + y + ")");
 });
 
+$(window).on('pxls:pixelCounts:update', (event, counts) => {
+    console.log("New pixel count: " + counts.pixelCount + " current, " + counts.pixelCountAllTime + " all time");
+});
+
 
 /** Events used internally but still available to anyone **/
 $(window).on('pxls:panel:opened', (event, panelDescriptor) => {

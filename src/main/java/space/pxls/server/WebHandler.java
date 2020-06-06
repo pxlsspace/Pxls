@@ -170,8 +170,8 @@ public class WebHandler {
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
-                        m.put("requesting_user_canvas_pixels", user.getPixels());
-                        m.put("requesting_user_alltime_pixels", user.getPixelsAllTime());
+                        m.put("requesting_user_canvas_pixels", user.getPixelCount());
+                        m.put("requesting_user_alltime_pixels", user.getAllTimePixelCount());
                         m.put("new_fac_min_pixels", App.getConfig().getInt("factions.minPixelsToCreate"));
                         m.put("max_faction_tag_length", App.getConfig().getInt("factions.maxTagLength"));
                         m.put("max_faction_name_length", App.getConfig().getInt("factions.maxNameLength"));
@@ -258,7 +258,7 @@ public class WebHandler {
                             sendBadRequest(exchange, "Invalid/Disallowed Name");
                         } else if (App.getDatabase().getOwnedFactionCountForUID(user.getId()) >= App.getConfig().getInt("factions.maxOwned")) {
                             sendBadRequest(exchange, String.format("You've reached the maximum number of owned factions (%d).", App.getConfig().getInt("factions.maxOwned")));
-                        } else if (App.getConfig().getInt("factions.minPixelsToCreate") > user.getPixelsAllTime()) {
+                        } else if (App.getConfig().getInt("factions.minPixelsToCreate") > user.getAllTimePixelCount()) {
                             send(403, exchange, String.format("You do not meet the minimum all-time pixel requirements to create a faction. The current minimum is %d.", App.getConfig().getInt("chat.minPixelsToCreate")));
                         } else {
                             Optional<Faction> faction = FactionManager.getInstance().create(name, tag, user.getId(), color);
@@ -1411,14 +1411,15 @@ public class WebHandler {
             if (user != null) {
                 exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
                 exchange.getResponseSender().send(App.getGson().toJson(
-                    new ServerUserPixelInfo(user.getName(),
+                    new ServerUserInfo(
+                        user.getName(),
                         user.getLogin(),
                         user.getRole().name(),
+                        user.getPixelCount(),
+                        user.getAllTimePixelCount(),
                         user.isBanned(),
                         user.getBanExpiryTime(),
                         user.getBanReason(),
-                        user.getPixels(),
-                        user.getPixelsAllTime(),
                         user.getLogin().split(":")[0],
                         user.isOverridingCooldown(),
                         !user.canChat(),
