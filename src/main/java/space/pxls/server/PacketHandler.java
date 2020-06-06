@@ -211,18 +211,20 @@ public class PacketHandler {
                 }
                 user.setCooldown(0);
                 DBPixelPlacement lastPixel = App.getDatabase().getPixelByID(null, thisPixel.secondaryId);
-                int colorIdx;
-                if (lastPixel == null) {
-                    lastPixel = thisPixel;
-                    colorIdx = thisPixel.color;
+                if (lastPixel != null) {
+                    App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
+                    App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, ip, false, "user undo");
+                    user.decreasePixelCounts();
+                    broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
+                    ackUndo(user, lastPixel.x, lastPixel.y);
                 } else {
-                    colorIdx = App.getDefaultColor(thisPixel.x, thisPixel.y);
+                    byte defaultColor = App.getDefaultColor(thisPixel.x, thisPixel.y);
+                    App.getDatabase().putUserUndoPixel(thisPixel.x, thisPixel.y, defaultColor, user, thisPixel.id);
+                    user.decreasePixelCounts();
+                    App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, ip, false, "user undo");
+                    broadcastPixelUpdate(thisPixel.x, thisPixel.y, defaultColor);
+                    ackUndo(user, thisPixel.x, thisPixel.y);
                 }
-                App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
-                user.decreasePixelCounts();
-                App.putPixel(lastPixel.x, lastPixel.y, colorIdx, user, false, ip, false, "user undo");
-                broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
-                ackUndo(user, lastPixel.x, lastPixel.y);
                 sendAvailablePixels(user, "undo");
                 sendCooldownData(user);
                 sendPixelCountUpdate(user);
