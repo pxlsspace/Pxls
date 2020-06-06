@@ -615,17 +615,6 @@ body .message {
     text-align: center;
 }
 
-#pixel-counts .fas {
-    vertical-align: top;
-}
-
-#pixel-counts > ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: inline-block;
-}
-
 #coords-info {
     margin-top: 16px;
     margin-bottom: 8px;
