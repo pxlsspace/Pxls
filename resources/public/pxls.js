@@ -2645,12 +2645,7 @@ window.App = (function() {
                 $('<span>').addClass('palette-number').text(idx)
               )
               .click(function() {
-                // TODO ([  ]): This check should be in switch - not here.
-                //              It's actually not very helpful here because of mmb picker and scrolling.
-                //              These buttons are occluded by the timer anyway.
-                if (settings.place.deselectonplace.enable.get() === false || timer.cooledDown()) {
-                  self.switch(idx);
-                }
+                self.switch(idx);
               });
           })
         );
@@ -6120,12 +6115,10 @@ window.App = (function() {
     const self = {
       elements: {
         palette: $('#palette'),
-        timer_overlay: $('#cd-timer-overlay'),
-        timer_bubble_container: $('#cooldown'),
-        timer_bubble_countdown: $('#cooldown-timer'),
+        timer_container: $('#cooldown'),
+        timer_countdown: $('#cooldown-timer'),
         timer_chat: $('#txtMobileChatCooldown')
       },
-      isOverlay: false,
       hasFiredNotification: true,
       cooldown: 0,
       runningTimer: false,
@@ -6139,10 +6132,7 @@ window.App = (function() {
         let delta = (self.cooldown - (new Date()).getTime() - 1) / 1000;
 
         if (self.runningTimer === false) {
-          self.isOverlay = settings.place.deselectonplace.enable.get() === true;
-          self.elements.timer_container = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble_container;
-          self.elements.timer_countdown = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble_countdown;
-          self.elements.timer_overlay.hide();
+          self.elements.timer_container.hide();
         }
 
         if (self.status) {
@@ -6167,10 +6157,6 @@ window.App = (function() {
 
         if (delta > 0) {
           self.elements.timer_container.show();
-          if (self.isOverlay) {
-            self.elements.palette.css('overflow-x', 'hidden');
-            self.elements.timer_container.css('left', `${self.elements.palette.scrollLeft()}px`);
-          }
           delta++; // real people don't count seconds zero-based (programming is more awesome)
           const secs = Math.floor(delta % 60);
           const secsStr = secs < 10 ? '0' + secs : secs;
@@ -6194,10 +6180,6 @@ window.App = (function() {
         self.runningTimer = false;
 
         document.title = uiHelper.getTitle();
-        if (self.isOverlay) {
-          self.elements.palette.css('overflow-x', 'auto');
-          self.elements.timer_container.css('left', '0');
-        }
         self.elements.timer_container.hide();
         self.elements.timer_chat.text('');
 
@@ -6230,9 +6212,6 @@ window.App = (function() {
       },
       init: function() {
         self.title = document.title;
-        self.elements.timer_container = settings.place.deselectonplace.enable.get() === false
-          ? self.elements.timer_overlay
-          : self.elements.timer_bubble_container;
         self.elements.timer_container.hide();
         self.elements.timer_chat.text('');
 
