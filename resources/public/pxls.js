@@ -2093,7 +2093,7 @@ window.App = (function() {
         settings.board.heatmap.opacity.listen(function(value) {
           heatmap.setBackgroundColor(`rgba(0, 0, 0, ${value})`);
         });
-        $('#hvmapClear').click(function() {
+        $('#hmapClear').click(function() {
           heatmap.clear();
         });
         settings.board.heatmap.enable.listen(function(value) {
@@ -2141,7 +2141,7 @@ window.App = (function() {
         settings.board.virginmap.opacity.listen(function(value) {
           virginmap.setBackgroundColor(`rgba(0, 255, 0, ${value})`);
         });
-        $('#hvmapClear').click(function() {
+        $('#vmapClear').click(function() {
           virginmap.clear();
         });
 
