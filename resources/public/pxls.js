@@ -4936,6 +4936,7 @@ window.App = (function() {
             lblFontSize,
             lblUsernameColor,
             lblIgnores,
+            _btnUnignore,
             lblIgnoresFeedback
           ].map(x => crel('div', x))
         );
