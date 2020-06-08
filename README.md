@@ -9,8 +9,7 @@ Pxls is a collaborative image editor where you can place up to six pixels at a t
 ## Prerequisites
 
 - [Maven][maven]
-- [Java 8][java]
-- [JDK (for development)][jdk8]
+- [JDK 14][jdk14]
 - [Postgres][postgres]
 
 ## Building
@@ -157,7 +156,7 @@ A full list of contributors is available [here](https://github.com/xSke/Pxls/gra
 [dockerhub]: https://hub.docker.com/r/m08y/docker-pxls.space
 [maven]: https://maven.apache.org/
 [java]: https://www.java.com/en/download/linux_manual.jsp
-[jdk8]: http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
+[jdk14]: https://openjdk.java.net/projects/jdk/14/
 [postgres]: https://www.postgresql.org/
 [hocon]: https://github.com/typesafehub/config/blob/master/HOCON.md
 [googleconsole]: https://console.developers.google.com
