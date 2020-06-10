@@ -1704,10 +1704,10 @@ ul.chat-history, ul.chatban-history {
     position: absolute;
     bottom: 0;
     left: 0;
-    transform: translateY(-55%) translateX(-45%);
+    transform: translateY(-30%) translateX(-40%);
     padding: 1px 5px;
     border-radius: 5px;
-    font-size: 1rem;
+    font-size: 1.25rem;
     font-weight: bold;
     color: #ffa500;
     color: var(--ping-counter-color);
