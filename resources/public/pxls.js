@@ -3932,27 +3932,27 @@ window.App = (function() {
             inline: ['coordinate', 'emoji_raw', 'emoji_name', 'mention', 'escape', 'autoLink', 'url', 'underline', 'strong', 'emphasis', 'deletion', 'code']
           }
         })
-        .use(pxlsMarkdown.remarkToCrel, {
-          customElements: {
-            link: (node, next) => {
-              const url = new URL(node.url, location.href);
+        .use(function() {
+          this.Compiler.prototype.visitors.link = (node, next) => {
+            const url = new URL(node.url, location.href);
 
-              const hashParams = new URLSearchParams(url.hash);
-              const getParam = (name) => hashParams.has(name) ? hashParams.get(name) : url.searchParams.get(name);
+            const hashParams = new URLSearchParams(url.hash);
+            const getParam = (name) => hashParams.has(name) ? hashParams.get(name) : url.searchParams.get(name);
 
-              const coordsX = parseFloat(getParam('x'));
-              const coordsY = parseFloat(getParam('y'));
+            const coordsX = parseFloat(getParam('x'));
+            const coordsY = parseFloat(getParam('y'));
 
-              const isSameOrigin = location.origin && url.origin && location.origin === url.origin;
-              if (isSameOrigin && !isNaN(coordsX) && !isNaN(coordsY) && board.validateCoordinates(coordsX, coordsY)) {
-                const scale = parseFloat(getParam('scale'));
-                return self._makeCoordinatesElement(url.toString(), coordsX, coordsY, isNaN(scale) ? 20 : scale, getParam('template'), getParam('title'));
-              } else {
-                return crel('a', { href: node.url, target: '_blank' }, next());
-              }
-            },
-            coordinate: (node, next) => self._makeCoordinatesElement(node.url, node.x, node.y, node.scale)
-          }
+            const isSameOrigin = location.origin && url.origin && location.origin === url.origin;
+            if (isSameOrigin && !isNaN(coordsX) && !isNaN(coordsY) && board.validateCoordinates(coordsX, coordsY)) {
+              const scale = parseFloat(getParam('scale'));
+              return self._makeCoordinatesElement(url.toString(), coordsX, coordsY, isNaN(scale) ? 20 : scale, getParam('template'), getParam('title'));
+            } else {
+              return crel('a', { href: node.url, target: '_blank' }, next());
+            }
+          };
+
+          this.Compiler.prototype.visitors.coordinate =
+            (node, next) => self._makeCoordinatesElement(node.url, node.x, node.y, node.scale);
         }),
       TEMPLATE_ACTIONS: {
         ASK: {
