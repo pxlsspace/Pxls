@@ -41,13 +41,11 @@ html {
     --chat-user-text-shadow-color: #333;
 
     --emoji-picker-border-color: #312ef9;
-    --emoji-picker-shadow-color: #094fb5;
     --emoji-picker-background: #0783ff;
     --emoji-picker-preview-name-text-color: #fff;
     --emoji-picker-tab-icon-color: #fff;
     --emoji-picker-tab-icon-color-selected: #4f94f4;
     --emoji-picker-section-text-color: #fff;
-    --emoji-picker-emoji-color: white;
     --emoji-picker-emoji-background-hover: #5279a8;
     --emoji-picker-search-input-border-color: #1a07ea;
     --emoji-picker-search-input-background: #2558f0;

@@ -44,13 +44,11 @@ html {
     --chat-user-text-shadow-color: #333;
     
     --emoji-picker-border-color: #515151;
-    --emoji-picker-shadow-color: #1f1f1f;
     --emoji-picker-background: #333333;
     --emoji-picker-preview-name-text-color: #ccc;
     --emoji-picker-tab-icon-color: #ccc;
     --emoji-picker-tab-icon-color-selected: #6fd1ff;
     --emoji-picker-section-text-color: #ccc;
-    --emoji-picker-emoji-color: white;
     --emoji-picker-emoji-background-hover: #656565;
     --emoji-picker-search-input-border-color: #333;
     --emoji-picker-search-input-background: #222;
