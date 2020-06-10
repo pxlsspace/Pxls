@@ -15,7 +15,7 @@
     "crel": "readonly",
     "moment": "readonly",
     "EmojiButton": "readonly",
-    "anchorme": "readonly",
+    "pxlsMarkdown": "readonly",
     "grecaptcha": "readonly",
     "twemoji": "readonly",
     // Pxls-specific
