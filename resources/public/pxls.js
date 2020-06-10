@@ -3283,6 +3283,11 @@ window.App = (function() {
           name: 'Purple',
           location: '/themes/purple.css',
           color: '#5a2f71'
+        },
+        {
+          name: 'Green',
+          location: '/themes/green.css',
+          color: '#005f00'
         }
       ],
       specialChatColorClasses: ['rainbow'],
