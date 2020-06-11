@@ -35,8 +35,8 @@ html {
     --palette-overlay-background: #5a2f71ee;
     --palette-overlay-text-color: inherit;
     --palette-deselect-button-color: #fff;
-    --pallete-number-text-color: #ffffff;
-    --pallete-number-background-color: #111;
+    --palette-number-text-color: #ffffff;
+    --palette-number-background-color: #111;
 
     --cursor-text-color: #fff;
     --cursor-text-background-color: #111;
