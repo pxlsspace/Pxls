@@ -576,6 +576,86 @@ window.App = (function() {
       }
     });
 
+    const searchInput = $('#settings-search-input').val(null);
+    const searchNoResults = $('<p>').text('No Results').addClass('hidden text-muted').css({ 'text-align': 'center', 'margin-top': '5em', 'font-style': 'italic' });
+    $('#settings > .panel-body').append(searchNoResults);
+
+    const searchFunction = function(regex, object, allowTextSearch = false) {
+      const data = object.data('keywords');
+      if (!data) {
+        return allowTextSearch && regex.test(object.text());
+      }
+      return data.split(';').some((k) => regex.test(k)) || (allowTextSearch && regex.test(object.text()));
+    };
+
+    function filterSettings(searchString) {
+      const search = searchFunction.bind(null, new RegExp(searchString.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'), 'i'));
+
+      const sections = $('#settings > .panel-body > article');
+      const displayedSections = sections.filter((_, _section) => {
+        const section = $(_section);
+        const sectionItems = section.children('header + *').children(':not(section)');
+        const subsections = section.children('header + *').children('section');
+
+        if (search(section)) {
+          section.toggleClass('hidden', false);
+          sectionItems.toggleClass('hidden', false);
+          subsections.toggleClass('hidden', false);
+          subsections.children(':not(h4)').toggleClass('hidden', false);
+          return true;
+        } else {
+          const displayedItems = sectionItems.filter((_, _item) => {
+            const item = $(_item);
+            const itemVisible = search(item, true);
+            item.toggleClass('hidden', !itemVisible);
+            return itemVisible;
+          });
+
+          const displayedSubsections = subsections.filter((_, _subsection) => {
+            const subsection = $(_subsection);
+            const subsectionItems = subsection.children(':not(h4)');
+
+            if (search(subsection)) {
+              subsection.toggleClass('hidden', false);
+              subsectionItems.toggleClass('hidden', false);
+              return true;
+            } else {
+              const displayedSubsectionItems = subsectionItems.filter((_, _item) => {
+                const item = $(_item);
+                const itemVisible = search(item, true);
+                item.toggleClass('hidden', !itemVisible);
+                return itemVisible;
+              });
+
+              const subsectionHidden = displayedSubsectionItems.length === 0;
+              subsection.toggleClass('hidden', subsectionHidden);
+              return !subsectionHidden;
+            }
+          });
+
+          const sectionHidden = displayedSubsections.length + displayedItems.length === 0;
+          section.toggleClass('hidden', sectionHidden);
+          return !sectionHidden;
+        }
+      });
+
+      searchNoResults.toggleClass('hidden', displayedSections.length > 0);
+    }
+
+    searchInput.on('keyup', function(evt) {
+      if (evt.key === 'Enter' || evt.which === 13) {
+        $(this).blur();
+      }
+
+      filterSettings(searchInput.val());
+
+      evt.stopPropagation();
+    });
+
+    searchInput.on('change', function() {
+      filterSettings(searchInput.val());
+    });
+
     return {
       ui: {
         theme: {
@@ -2212,6 +2292,7 @@ window.App = (function() {
         }
         self.options.use = true;
 
+        self.elements.imageErrorWarning.empty();
         self.elements.imageErrorWarning.hide();
 
         const drag = {
@@ -2265,6 +2346,7 @@ window.App = (function() {
           }
         }).on('error', () => {
           self.elements.imageErrorWarning.show();
+          self.elements.imageErrorWarning.text('There was an error getting the image');
           self.elements.template.remove();
         });
         if (board.update(true)) {
@@ -6848,7 +6930,8 @@ window.App = (function() {
       },
       init: () => {
         if (!webkitBased) {
-          self.elements.setting.hide();
+          settings.fix.chrome.offset.enable.controls.remove(self.elements.setting.find('input'));
+          self.elements.setting.parent().remove();
           return;
         }
 

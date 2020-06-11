@@ -241,6 +241,13 @@ img.emoji {
   font-family: monospace;
 }
 
+#settings-search-input {
+  margin: 0.5em 0;
+  padding-left: 1em;
+  padding-right: 1em;
+  font-size: 110%;
+}
+
 label.extra-label {
     display: block;
     margin-top: .25em;
@@ -253,7 +260,7 @@ input:disabled, button:disabled {
     opacity: 0.5;
 }
 
-input[type="text"], input[type="number"], textarea, select {
+input[type="text"], input[type="search"], input[type="number"], textarea, select {
     padding: 0.5em;
     border: 1px solid #ccc;
     border: 1px solid var(--input-border-color);
@@ -273,6 +280,9 @@ input.small-input {
 
 /* NOTE (Flying): Does not work grouped together. */
 input[type="text"]::placeholder {
+    color: var(--input-placeholder-text-color);
+}
+input[type="search"]::placeholder {
     color: var(--input-placeholder-text-color);
 }
 input[type="number"]::placeholder {
