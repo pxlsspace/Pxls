@@ -768,8 +768,8 @@ body .message {
     bottom: 100%;
     border-radius: 16px;
     text-align: center;
-    color: var(--pallete-number-text-color);
-    background-color: var(--pallete-number-background-color);
+    color: var(--palette-number-text-color);
+    background-color: var(--palette-number-background-color);
     border: 1px solid #000;
     width: 1.5rem;
     font-size: .75rem;
