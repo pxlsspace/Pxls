@@ -3973,27 +3973,6 @@ window.App = (function() {
         }
       },
       init: () => {
-        // Register default hooks
-        // TODO(netux): username mentions are handled by pxlsMarkdown
-        // self.registerHook({
-        //   id: 'username-mention',
-        //   get: message => ({
-        //     pings: (() => {
-        //       const mentionRegExp = new RegExp(`(\\s|^)@${user.getUsername().replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&')}(?![a-zA-Z0-9_-])`, 'gi');
-        //       const matches = [];
-        //       let match;
-        //       while ((match = mentionRegExp.exec(message.message_raw)) !== null) {
-        //         matches.push(match);
-        //       }
-        //       return matches.map((match) => ({
-        //         start: match.index + match[1].length,
-        //         length: user.getUsername().length + 1,
-        //         highlight: true
-        //       }));
-        //     })()
-        //   })
-        // });
-
         self.initTypeahead();
         self.reloadIgnores();
         socket.on('ack_client_update', e => {
