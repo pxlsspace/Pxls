@@ -27,6 +27,9 @@ html {
     --pallete-number-text-color: #ffffff;
     --pallete-number-background-color: #030764;
     
+    --cursor-text-color: #fff;
+    --cursor-text-background-color: #030764;
+    
     --undo-background: linear-gradient(to top, #05157d99, #04236f);
 
     --text-red-color: #f44;
