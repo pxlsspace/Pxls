@@ -816,8 +816,8 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     line-height: 24px;
     border-radius: 16px;
     text-align: center;
-    color: #000;
-    background-color: white;
+    color: var(--cursor-text-color);
+    background-color: var(--cursor-text-background-color);
     border: 1px solid black;
     padding: 0 8px;
     white-space: nowrap;
