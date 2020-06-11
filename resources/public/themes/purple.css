@@ -58,7 +58,7 @@ html {
     --ping-flash-color: #8ef7d1;
     --ping-counter-color: #ffa500;
     --notification-expiry-color: var(--text-orange-color);
-      
+
     --panel-background: #3d204d;
     --panel-text-color: inherit;
     --panel-border-color: #000;
@@ -85,10 +85,11 @@ html {
     --chat-abbr-underline-color: var(--general-text-color);
     --chat-badge-background: #ccc;
     --chat-badge-text-color: #770;
+    --chat-mention-text-color: #1ea1bb;
     --chat-server-action-text-color: var(--text-muted-color);
     --chat-user-text-shadow-color: #555;
     --chat-purged-text-color: var(--text-muted-color);
-    
+
     --chat-tobottom-text-color: #fff;
     --chat-tobottom-background: #683683;
     --chat-tobottom-text-color-hover: var(--chat-tobottom-text-color);

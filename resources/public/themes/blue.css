@@ -37,6 +37,7 @@ html {
 
     --chat-separator-color: #0d47f4;
     --chat-odd-background: #0234d9;
+    --chat-mention-text-color: #000;
     --chat-server-action-text-color: #dae0ec;
     --chat-user-text-shadow-color: #333;
 
