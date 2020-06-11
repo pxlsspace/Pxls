@@ -21,12 +21,15 @@ html {
 
     --dangerous-button-border-color: #0f680f;
 
-    --palette-background: rgba(35, 123, 38, .5);
+    --palette-background: rgba(27, 96, 29, .62);
     --palette-overlay-background: rgba(36, 113, 32, .9);
     --palette-deselect-button-color: #DDD;
-    --pallete-number-background-color: #108e1d;
+    --palette-number-background-color: #108e1d;
+    
+    --cursor-text-color: #fff;
+    --cursor-text-background-color: #096c02;
 
-    --undo-background: linear-gradient(to top, #46aa3f99, #0c8829);
+    --undo-background: linear-gradient(to top, #28642499, #075e1c);
 
     --text-red-color: #f44;
     --text-yellow-color: #cc0;
@@ -38,7 +41,7 @@ html {
     --panel-text-color: #eee;
 
     --option-bubble-position-background-selected: #1a6c26;
-    --bubble-background: #024603b0;
+    --bubble-background: #013502b0;
 
     --chat-separator-color: #14551f;
     --chat-odd-background: #014d0b;
