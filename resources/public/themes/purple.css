@@ -35,7 +35,8 @@ html {
     --palette-overlay-background: #5a2f71ee;
     --palette-overlay-text-color: inherit;
     --palette-deselect-button-color: #fff;
-    --pallete-number-background-color: #d80bdf;
+    --pallete-number-text-color: #ffffff;
+    --pallete-number-background-color: #111;
 
     --undo-text-color: #fff;
     --undo-background: linear-gradient(to top, #5a2f71cc, #5a2f71);
