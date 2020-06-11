@@ -31,6 +31,7 @@ html {
     --cursor-text-background-color: #030764;
     
     --undo-background: linear-gradient(to top, #05157d99, #04236f);
+    --undo-text-color: #fff;
 
     --text-red-color: #f44;
     --text-yellow-color: #cc0;
