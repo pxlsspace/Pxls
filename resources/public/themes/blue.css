@@ -24,8 +24,8 @@ html {
     --palette-background: rgba(7, 32, 142, .5);
     --palette-overlay-background: rgba(4, 27, 151, .9);
     --palette-deselect-button-color: #DDD;
-    --pallete-number-text-color: #ffffff;
-    --pallete-number-background-color: #030764;
+    --palette-number-text-color: #ffffff;
+    --palette-number-background-color: #030764;
     
     --cursor-text-color: #fff;
     --cursor-text-background-color: #030764;
