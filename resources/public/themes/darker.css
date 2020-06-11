@@ -28,6 +28,10 @@ html {
     --pallete-number-text-color: #ffffff;
     --pallete-number-background-color: #313532;
     
+    --cursor-text-color: #fff;
+    --cursor-text-background-color: #111;
+    
+    
     --undo-background: #000;
     --undo-text-color: #fff;
     
