@@ -24,7 +24,8 @@ html {
     --palette-background: rgba(7, 32, 142, .5);
     --palette-overlay-background: rgba(4, 27, 151, .9);
     --palette-deselect-button-color: #DDD;
-    --pallete-number-background-color: #1d2cca;
+    --pallete-number-text-color: #ffffff;
+    --pallete-number-background-color: #030764;
     
     --undo-background: linear-gradient(to top, #05157d99, #04236f);
 
