@@ -1461,7 +1461,6 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 }
 
 .panel-trigger .has-notification, i.fas.has-notification, i.far.has-notification {
-    color: #b20;
     color: var(--notification-color);
 }
 
