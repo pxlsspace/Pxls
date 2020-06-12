@@ -30,7 +30,7 @@ html {
     --text-red-color: #f44;
     --text-yellow-color: #cc0;
     --ping-highlight-color: #134cc8b3;
-      --ping-counter-color: #00a6ffd4;
+    --ping-counter-color: #00a6ffd4;
 
     --panel-header-background: linear-gradient(to bottom, #1e2e77fc, #212697);
     --panel-background: #171e79;
