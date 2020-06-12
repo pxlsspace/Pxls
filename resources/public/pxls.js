@@ -2084,7 +2084,7 @@ window.App = (function() {
               return;
             }
 
-            if (evt.key === 'o' || evt.key === 'O' || evt.which === 79) {
+            if (evt.key === 'o' || evt.key === 'O' || evt.which === 111 || evt.which === 79) {
               heatmap.clear();
             }
           });
@@ -2132,7 +2132,7 @@ window.App = (function() {
               return;
             }
 
-            if (evt.key === 'u' || evt.key === 'U' || evt.which === 85) { // U key
+            if (evt.key === 'u' || evt.key === 'U' || evt.which === 117 || evt.which === 85) { // U key
               virginmap.clear();
             }
           });
