@@ -3931,6 +3931,13 @@ window.App = (function() {
           inline: ['coordinate', 'emoji_raw', 'emoji_name', 'mention', 'escape', 'autoLink', 'url', 'underline', 'strong', 'emphasis', 'deletion', 'code']
         })
         .use(function() {
+          this.Compiler.prototype.visitors.emoji = (node, next) => crel('img', {
+            class: 'emoji',
+            alt: node.emojiName,
+            title: node.emojiName,
+            src: `https://twemoji.maxcdn.com/v/13.0.0/72x72/${twemoji.convert.toCodePoint(node.value)}.png`
+          });
+
           this.Compiler.prototype.visitors.link = (node, next) => {
             const url = new URL(node.url, location.href);
 
