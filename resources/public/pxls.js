@@ -3934,8 +3934,9 @@ window.App = (function() {
           this.Compiler.prototype.visitors.emoji = (node, next) => crel('img', {
             class: 'emoji',
             alt: node.emojiName,
-            title: node.emojiName,
-            src: `https://twemoji.maxcdn.com/v/13.0.0/72x72/${twemoji.convert.toCodePoint(node.value)}.png`
+            title: `:${node.emojiName}:`,
+            draggable: false,
+            src: `${twemoji.base}${twemoji.size}/${twemoji.convert.toCodePoint(node.value)}${twemoji.ext}`
           });
 
           this.Compiler.prototype.visitors.link = (node, next) => {
