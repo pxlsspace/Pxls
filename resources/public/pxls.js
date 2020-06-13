@@ -1683,6 +1683,8 @@ window.App = (function() {
         }
 
         self.elements.board.toggleClass('pixelate', scale > 1);
+        overlays.heatmap.setPixelated(scale > 1);
+        overlays.virginmap.setPixelated(scale > 1);
         template.setPixelated(scale > template.getWidthRatio());
 
         if (ignoreCanvasLock || self.allowDrag || (!self.allowDrag && self.pannedWithKeys)) {
@@ -2011,7 +2013,10 @@ window.App = (function() {
         },
         setShown: self.setShown,
         remove: self.remove,
-        reload: self.reload
+        reload: self.reload,
+        setPixelated: function(pixelate = true) {
+          $(self.elements.overlay).toggleClass('pixelate', pixelate);
+        }
       };
     };
 
