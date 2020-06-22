@@ -1,8 +1,7 @@
 package space.pxls;
 
 import com.google.gson.Gson;
-import com.typesafe.config.Config;
-import com.typesafe.config.ConfigFactory;
+import com.typesafe.config.*;
 import org.apache.commons.jcs.JCS;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -13,6 +12,7 @@ import space.pxls.data.DBPixelPlacement;
 import space.pxls.data.DBRollbackPixel;
 import space.pxls.data.Database;
 import space.pxls.server.UndertowServer;
+import space.pxls.server.packets.chat.Badge;
 import space.pxls.server.packets.chat.ClientChatMessage;
 import space.pxls.server.packets.socket.*;
 import space.pxls.user.*;
@@ -26,13 +26,18 @@ import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class App {
     private static Gson gson;
     private static Config config;
     private static Database database;
     private static UserManager userManager;
+    private static RoleManager roleManager;
+    private static PermissionManager permissionManager;
     private static Logger pixelLogger;
     private static Logger shadowbannedPixelLogger;
     private static Logger appLogger;
@@ -85,6 +90,10 @@ public class App {
 
         database = new Database();
         userManager = new UserManager();
+        roleManager = new RoleManager();
+        permissionManager = new PermissionManager();
+
+        loadRoles();
 
         new Thread(() -> {
             Scanner s = new Scanner(System.in);
@@ -157,29 +166,83 @@ public class App {
                 } catch (Exception x) {
                     x.printStackTrace();
                 }
-            } else if (token[0].equalsIgnoreCase("role")) {
-                User user = userManager.getByName(token[1]);
-                if (user != null) {
-                    Role role = Role.valueOf(token[2].toUpperCase());
-                    user.setRole(role);
-                    database.setUserRole(user, role);
-                    database.insertServerAdminLog("Set " + user.getName() + "'s role to " + role.name());
-                    System.out.println("Set " + user.getName() + "'s role to " + role.name());
-                } else {
-                    System.out.println("Cannot find user " + token[1]);
-                }
-            } else if (token[0].equalsIgnoreCase("alert")) {
-                String rest = line.substring(token[0].length() + 1).trim();
-                App.getDatabase().insertServerAdminLog(String.format("Sent a server-wide broadcast with the content: %s", rest));
-                server.broadcast(new ServerAlert("console", rest));
-            } else if (token[0].equalsIgnoreCase("ban")) {
-                if (token.length < 3) {
-                    System.out.println("Missing reason");
+            } else if (token[0].equalsIgnoreCase("roles") || token[0].equalsIgnoreCase("role")) {
+                if (token.length < 2) {
+                    System.out.println("Usage: roles <username> [role ID ...]");
                     return;
                 }
                 User user = userManager.getByName(token[1]);
+                if (user == null) {
+                    System.out.println("Cannot find user " + token[1]);
+                    return;
+                }
+                if (token.length < 3) {
+                    System.out.println("User " + user.getName() + " has roles " + user.getRolesString());
+                    return;
+                }
+                var rest = Arrays.copyOfRange(token, 2, token.length);
+                List<Role> roles = Stream.concat(App.getRoleManager().getByIDs(List.of(rest)).stream(), App.getRoleManager().getDefaultRoles().stream()).collect(Collectors.toList());
+                user.setRoles(roles);
+                database.setUserRoles(user, roles);
+                database.insertServerAdminLog("Set " + user.getName() + "'s roles to " + user.getRoleIDsString());
+                System.out.println("Set " + user.getName() + "'s roles to " + user.getRoleIDsString());
+            } else if (token[0].equalsIgnoreCase("addroles") || token[0].equalsIgnoreCase("addrole")) {
+                if (token.length < 2) {
+                    System.out.println("Usage: addroles <username> [role ID ...]");
+                    return;
+                }
+                User user = userManager.getByName(token[1]);
+                if (user == null) {
+                    System.out.println("Cannot find user " + token[1]);
+                    return;
+                }
+                if (token.length < 3) {
+                    System.out.println("Usage: addroles <username> <role ID ...>");
+                    return;
+                }
+                var rest = Arrays.copyOfRange(token, 2, token.length);
+                List<Role> roles = App.getRoleManager().getByIDs(List.of(rest));
+                user.addRoles(roles);
+                database.setUserRoles(user, user.getRoles());
+                String message = "Added roles \"" + roles.stream().map(Role::getName).collect(Collectors.joining(", ")) + "\" to " + user.getName();
+                database.insertServerAdminLog(message);
+                System.out.println(message);
+            } else if (token[0].equalsIgnoreCase("removeroles") || token[0].equalsIgnoreCase("removerole")) {
+                if (token.length < 2) {
+                    System.out.println("Usage: removeroles <username> [role ID ...]");
+                    return;
+                }
+                User user = userManager.getByName(token[1]);
+                if (user == null) {
+                    System.out.println("Cannot find user " + token[1]);
+                    return;
+                }
+                if (token.length < 3) {
+                    System.out.println("Usage: removeroles <username> <role ID ...>");
+                    return;
+                }
+                var rest = Arrays.copyOfRange(token, 2, token.length);
+                List<Role> roles = App.getRoleManager().getByIDs(List.of(rest));
+                user.removeRoles(roles);
+                database.setUserRoles(user, user.getRoles());
+                String message = "Removed roles \"" + roles.stream().map(Role::getName).collect(Collectors.joining(", ")) + "\" from " + user.getName();
+                database.insertServerAdminLog(message);
+                System.out.println(message);
+            } else if (token[0].equalsIgnoreCase("alert")) {
+                var rest = Arrays.copyOfRange(token, 1, token.length);
+                String message = String.join(" ", rest);
+                App.getDatabase().insertServerAdminLog(String.format("Sent a server-wide broadcast with the content: %s", message));
+                server.broadcast(new ServerAlert("console", message));
+            } else if (token[0].equalsIgnoreCase("ban")) {
+                if (token.length < 2) {
+                    System.out.println("Usage: ban <username> [reason]");
+                    return;
+                }
+                var rest = Arrays.copyOfRange(token, 2, token.length);
+                User user = userManager.getByName(token[1]);
                 if (user != null) {
-                    String reason = line.substring(token[0].length() + token[1].length() + 2).trim();
+                    String reason = String.join(" ", rest);
+                    if (reason.equals("")) reason = "Banned via console; no reason given";
                     user.ban(24 * 60 * 60, reason, null);
                     database.insertServerAdminLog(String.format("ban %s with reason: %s", user.getName(), reason));
                     System.out.println("Banned " + user.getName() + " for 24 hours.");
@@ -187,41 +250,48 @@ public class App {
                     System.out.println("Cannot find user " + token[1]);
                 }
             } else if (token[0].equalsIgnoreCase("permaban")) {
-                if (token.length < 3) {
-                    System.out.println("Missing reason");
+                if (token.length < 2) {
+                    System.out.println("Usage: permaban <username> [reason]");
                     return;
                 }
                 User user = userManager.getByName(token[1]);
+                var rest = Arrays.copyOfRange(token, 2, token.length);
                 if (user != null) {
-                    String reason = line.substring(token[0].length() + token[1].length() + 2).trim();
-                    user.permaban(reason, null);
+                    String reason = String.join(" ", rest);
+                    if (reason.equals("")) reason = "Banned via console; no reason given";
+                    user.ban(0, reason, null);
                     database.insertServerAdminLog(String.format("permaban %s with reason: %s", user.getName(), reason));
                     System.out.println("Permabanned " + user.getName());
                 } else {
                     System.out.println("Cannot find user " + token[1]);
                 }
             } else if (token[0].equalsIgnoreCase("shadowban")) {
-                if (token.length < 3) {
-                    System.out.println("Missing reason");
+                if (token.length < 2) {
+                    System.out.println("Usage: shadowban <username> [reason]");
                     return;
                 }
+                var rest = Arrays.copyOfRange(token, 2, token.length);
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
-                    String reason = line.substring(token[0].length() + token[1].length() + 2).trim();
-                    user.shadowban(reason, null);
+                    String reason = String.join(" ", rest);
+                    if (reason.equals("")) reason = "Banned via console; no reason given";
+                    user.shadowBan(reason, null);
                     database.insertServerAdminLog(String.format("shadowban %s with reason: %s", user.getName(), reason));
                     System.out.println("Shadowbanned " + user.getName());
                 } else {
                     System.out.println("Cannot find user " + token[1]);
                 }
             } else if (token[0].equalsIgnoreCase("unban")) {
-                if (token.length < 3) {
-                    System.out.println("Missing reason");
+                if (token.length < 2) {
+                    System.out.println("Usage: unban <username> [reason]");
                     return;
                 }
+                var rest = Arrays.copyOfRange(token, 2, token.length);
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
-                    user.unban(null, line.substring(token[0].length() + token[1].length() + 2).trim());
+                    String reason = String.join(" ", rest);
+                    if (reason.equals("")) reason = "Unbanned via console; no reason given";
+                    user.unban(null, reason);
                     database.insertServerAdminLog("unban " + user.getName());
                     System.out.println("Unbanned " + user.getName() + ".");
                 } else {
@@ -257,7 +327,7 @@ public class App {
             } else if (token[0].equalsIgnoreCase("users")) {
                 System.out.println("Number of authenticated users: " + server.getAuthedUsers().size());
                 for (User user : server.getAuthedUsers().values()) {
-                    System.out.println(String.format("[%d] %s (%s) (num connections: %d)", user.getId(), user.getName(), user.getRole().name(), user.getConnections().size()));
+                    System.out.println(String.format("[%d] %s (%s) (num connections: %d)", user.getId(), user.getName(), user.getRoleIDsString(), user.getConnections().size()));
                 }
             } else if (token[0].equalsIgnoreCase("stack")) {
                 //stack USERNAME[ set AMOUNT]
@@ -573,6 +643,51 @@ public class App {
         } catch (IOException e) {
             // do nothing
         }
+    }
+
+    private static void loadRoles() {
+        // NOTE: This differs from the way pxls.conf is handled. Something in com.typesafe:config's ConfigFactory.load()
+        // uses reference.conf without it being explicitly defined, but I can't seem to figure out how to replicate that
+        // behavior.
+        var refRoleConfig = ConfigFactory.parseFile(new File("resources/roles-reference.conf"));
+        var roleConfig = ConfigFactory.parseFile(new File("roles.conf")).withFallback(refRoleConfig);
+
+        HashMap<Role, List<String>> inheritanceMap = new HashMap<>();
+        for (var id : roleConfig.root().keySet()) {
+            var name = roleConfig.getString(id + ".name");
+            var type = Util.defaultConfigVal(() -> Role.RoleType.valueOf(roleConfig.getString(id + ".type")), Role.RoleType.USER);
+            var defaultRole = Util.defaultConfigVal(() -> roleConfig.getBoolean(id + ".default"), false);
+
+            ArrayList<Badge> badges = new ArrayList<>();
+            try {
+                ConfigList badgeList = roleConfig.getList(id + ".badges");
+                for (var value : badgeList) {
+                    HashMap<String, String> badgeHashMap = (HashMap<String, String>) value.unwrapped();
+                    String badgeName = badgeHashMap.get("name");
+                    String badgeTooltip = badgeHashMap.get("tooltip");
+                    String badgeType = badgeHashMap.get("type");
+                    String badgeCSSIcon = badgeHashMap.get("cssIcon");
+                    badges.add(new Badge(badgeName, badgeTooltip, badgeType, badgeCSSIcon));
+                }
+            } catch (ConfigException ex) {
+                // If there're no badges for this role
+            }
+
+            List<String> permissionNodes = Util.defaultConfigVal(() -> roleConfig.getStringList(id + ".permissions"), Collections.emptyList());
+            var permissions = permissionManager.resolve(permissionNodes);
+
+            var role = new Role(id, name, type, defaultRole, badges, permissions);
+            App.roleManager.register(role);
+
+            // Queue up the inherited role strings for later.
+            inheritanceMap.put(role, Util.defaultConfigVal(() -> roleConfig.getStringList(id + ".inherits"), Collections.emptyList()));
+        }
+
+        // After all of the roles are registered, handle inheritance mappings.
+        inheritanceMap.forEach((role, inheritStrings) -> {
+            List<Role> inherits = App.getRoleManager().getByIDs(inheritStrings);
+            role.setInherits(inherits);
+        });
     }
 
     public static int getStackMultiplier() {
@@ -937,6 +1052,14 @@ public class App {
 
     public static UserManager getUserManager() {
         return userManager;
+    }
+
+    public static RoleManager getRoleManager() {
+        return roleManager;
+    }
+
+    public static PermissionManager getPermissionManager() {
+        return permissionManager;
     }
 
     public static byte getDefaultColor(int x, int y) {

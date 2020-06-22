@@ -1,6 +1,9 @@
 package space.pxls.util;
 
+import com.typesafe.config.ConfigException;
+
 import java.util.Random;
+import java.util.function.Supplier;
 
 public class Util {
     public static String generateRandomToken() {
@@ -12,5 +15,21 @@ public class Util {
             res.append(charset.charAt(randIndex));
         }
         return res.toString();
+    }
+
+    /**
+     * Returns a default value if the supplier throws ConfigException.Missing,
+     * otherwise the value in the getter.
+     * @param method Config getter supplier
+     * @param val Default value
+     * @param <T> Type of value
+     * @return value or default value
+     */
+    public static <T> T defaultConfigVal(Supplier<T> method, T val) {
+        try {
+            return method.get();
+        } catch (ConfigException.Missing ex) {
+            return val;
+        }
     }
 }
