@@ -45,8 +45,4 @@ public class RoleManager {
     public List<Role> getDefaultRoles() {
         return roles.values().stream().filter(Role::isDefault).collect(Collectors.toList());
     }
-
-    public List<Role> getStaffRoles() {
-        return roles.values().stream().filter(Role::isStaff).collect(Collectors.toList());
-    }
 }

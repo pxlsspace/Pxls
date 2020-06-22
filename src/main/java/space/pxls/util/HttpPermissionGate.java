@@ -24,12 +24,12 @@ public class HttpPermissionGate implements HttpHandler {
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         User user = exchange.getAttachment(AuthReader.USER);
-        List<Role> roles = App.getRoleManager().getDefaultRoles();
+        List<Role> roles = App.getRoleManager().getGuestRoles();
         if (user != null) {
             roles = user.getRoles();
         }
-        // Sanity check--if the user has no roles, assume default again.
-        if (roles.isEmpty()) roles = App.getRoleManager().getDefaultRoles();
+        // Sanity check--if the user has no roles, assume guest again.
+        if (roles.isEmpty()) roles = App.getRoleManager().getGuestRoles();
         if (roles.stream().anyMatch(role -> role.hasPermission(this.permission))) {
             next.handleRequest(exchange);
             return;

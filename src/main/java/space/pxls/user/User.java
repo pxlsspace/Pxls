@@ -327,10 +327,6 @@ public class User {
         return toReturn;
     }
 
-    public Boolean isStaff() {
-        return !Collections.disjoint(roles, App.getRoleManager().getStaffRoles());
-    }
-
     public boolean isBanned() {
         // It may just be this simple...
         return banExpiryTime != null;

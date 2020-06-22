@@ -9,24 +9,18 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Role {
-    public enum RoleType {
-        GUEST,
-        BANNED,
-        USER,
-        STAFF
-    }
     private final String id;
     private final String name;
-    private final RoleType type;
+    private final Boolean guest;
     private final Boolean defaultRole;
     private List<Role> inherits = new ArrayList<>();
     private final List<Badge> badges;
     private final List<Permission> permissions;
 
-    public Role(String id, String name, RoleType type, Boolean defaultRole, List<Badge> badges, List<Permission> permissions) {
+    public Role(String id, String name, Boolean guest, Boolean defaultRole, List<Badge> badges, List<Permission> permissions) {
         this.id = id;
         this.name = name;
-        this.type = type;
+        this.guest = guest;
         this.defaultRole = defaultRole;
         this.badges = badges;
         this.permissions = permissions;
@@ -40,20 +34,8 @@ public class Role {
         return this.name;
     }
 
-    public RoleType getType() {
-        return this.type;
-    }
-
     public Boolean isGuest() {
-        return this.type == RoleType.GUEST;
-    }
-
-    public Boolean isUser() {
-        return this.type == RoleType.USER;
-    }
-
-    public Boolean isStaff() {
-        return this.type == RoleType.STAFF;
+        return this.guest;
     }
 
     public Boolean isDefault() {

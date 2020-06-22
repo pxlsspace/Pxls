@@ -655,7 +655,7 @@ public class App {
         HashMap<Role, List<String>> inheritanceMap = new HashMap<>();
         for (var id : roleConfig.root().keySet()) {
             var name = roleConfig.getString(id + ".name");
-            var type = Util.defaultConfigVal(() -> Role.RoleType.valueOf(roleConfig.getString(id + ".type")), Role.RoleType.USER);
+            var guest = Util.defaultConfigVal(() -> roleConfig.getBoolean(id + ".guest"), false);
             var defaultRole = Util.defaultConfigVal(() -> roleConfig.getBoolean(id + ".default"), false);
 
             ArrayList<Badge> badges = new ArrayList<>();
@@ -676,7 +676,7 @@ public class App {
             List<String> permissionNodes = Util.defaultConfigVal(() -> roleConfig.getStringList(id + ".permissions"), Collections.emptyList());
             var permissions = permissionManager.resolve(permissionNodes);
 
-            var role = new Role(id, name, type, defaultRole, badges, permissions);
+            var role = new Role(id, name, guest, defaultRole, badges, permissions);
             App.roleManager.register(role);
 
             // Queue up the inherited role strings for later.
