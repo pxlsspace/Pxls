@@ -21,15 +21,16 @@ html {
 
     --dangerous-button-border-color: #0f680f;
 
-    --palette-background: rgba(27, 96, 29, .62);
+    --palette-background: rgba(27, 96, 29, .85);
     --palette-overlay-background: rgba(36, 113, 32, .9);
     --palette-deselect-button-color: #DDD;
-    --palette-number-background-color: #108e1d;
+    --palette-number-background-color: #06460d;
+    --palette-number-text-color: #fff;
     
     --cursor-text-color: #fff;
-    --cursor-text-background-color: #096c02;
+    --cursor-text-background-color: #075701;
 
-    --undo-background: linear-gradient(to top, #28642499, #075e1c);
+    --undo-background: linear-gradient(to top, #286424db, #075e1cc7);
 
     --text-red-color: #f44;
     --text-yellow-color: #cc0;
