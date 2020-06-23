@@ -187,7 +187,7 @@ public class User {
     }
 
     public boolean hasPermission(String node) {
-        if (roles.isEmpty()) return App.getRoleManager().getDefaultRoles().stream().anyMatch(role -> role.hasPermission(node));
+        if (roles.isEmpty()) return Role.getDefaultRoles().stream().anyMatch(role -> role.hasPermission(node));
         return roles.stream().anyMatch(role -> role.hasPermission(node));
     }
 

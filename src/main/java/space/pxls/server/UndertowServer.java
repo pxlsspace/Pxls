@@ -18,8 +18,6 @@ import space.pxls.App;
 import space.pxls.server.packets.chat.*;
 import space.pxls.server.packets.socket.*;
 import space.pxls.tasks.UserAuthedTask;
-import space.pxls.user.Role;
-import space.pxls.user.RoleManager;
 import space.pxls.user.User;
 import space.pxls.util.*;
 

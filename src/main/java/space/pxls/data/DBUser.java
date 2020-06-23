@@ -70,7 +70,7 @@ public class DBUser {
                     r.getString("login"),
                     r.getTimestamp("signup_time"),
                     stamp == null ? 0 : stamp.getTime(),
-                    App.getRoleManager().getByIDs(r.getString("roles")),
+                    Role.fromIDs(r.getString("roles")),
                     r.getInt("pixel_count"),
                     r.getInt("pixel_count_alltime"),
                     ban == null ? 0 : ban.getTime(),

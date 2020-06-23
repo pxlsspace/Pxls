@@ -74,7 +74,7 @@ public class DBPixelPlacement {
                     r.getInt("u_id"),
                     r.getString("username"),
                     r.getString("login"),
-                    App.getRoleManager().getByIDs(r.getString("roles")),
+                    Role.fromIDs(r.getString("roles")),
                     ban_expiry == null ? 0 : ban_expiry.getTime(),
                     r.getInt("pixel_count"),
                     r.getInt("pixel_count_alltime"),

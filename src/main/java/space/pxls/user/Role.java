@@ -1,9 +1,10 @@
 package space.pxls.user;
 
-import space.pxls.App;
 import space.pxls.server.packets.chat.Badge;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -15,9 +16,11 @@ public class Role {
     private final Boolean defaultRole;
     private List<Role> inherits = new ArrayList<>();
     private final List<Badge> badges;
-    private final List<Permission> permissions;
+    private final List<String> permissions;
 
-    public Role(String id, String name, Boolean guest, Boolean defaultRole, List<Badge> badges, List<Permission> permissions) {
+    private static final HashMap<String, Role> canonicalRoles = new HashMap<>();
+
+    public Role(String id, String name, Boolean guest, Boolean defaultRole, List<Badge> badges, List<String> permissions) {
         this.id = id;
         this.name = name;
         this.guest = guest;
@@ -54,19 +57,43 @@ public class Role {
         return this.badges;
     }
 
-    public List<Permission> getPermissions() {
-        Stream<Permission> inherited = inherits.stream()
+    public List<String> getPermissions() {
+        Stream<String> inherited = inherits.stream()
                 .map(Role::getPermissions)
                 .flatMap(List::stream);
         return Stream.concat(permissions.stream(), inherited)
                 .collect(Collectors.toList());
     }
 
-    public boolean hasPermission(Permission permission) {
-        return getPermissions().contains(permission);
+    public boolean hasPermission(String node) {
+        return getPermissions().contains(node);
     }
 
-    public boolean hasPermission(String node) {
-        return hasPermission(App.getPermissionManager().resolve(node));
+    public static void makeCanonical(Role role) {
+        canonicalRoles.put(role.id, role);
+    }
+
+    public static Role fromID(String id) {
+        return canonicalRoles.get(id);
+    }
+
+    public static List<Role> fromIDs(List<String> ids) {
+        List<Role> found = new ArrayList<>();
+        for (String id : ids) {
+            found.add(canonicalRoles.get(id));
+        }
+        return found;
+    }
+
+    public static List<Role> fromIDs(String ids) {
+        return fromIDs(Arrays.asList(ids.split(",")));
+    }
+
+    public static List<Role> getGuestRoles() {
+        return canonicalRoles.values().stream().filter(Role::isGuest).collect(Collectors.toList());
+    }
+
+    public static List<Role> getDefaultRoles() {
+        return canonicalRoles.values().stream().filter(Role::isDefault).collect(Collectors.toList());
     }
 }

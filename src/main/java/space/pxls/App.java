@@ -36,8 +36,7 @@ public class App {
     private static Config config;
     private static Database database;
     private static UserManager userManager;
-    private static RoleManager roleManager;
-    private static PermissionManager permissionManager;
+    private static List<String> permissions;
     private static Logger pixelLogger;
     private static Logger shadowbannedPixelLogger;
     private static Logger appLogger;
@@ -90,8 +89,7 @@ public class App {
 
         database = new Database();
         userManager = new UserManager();
-        roleManager = new RoleManager();
-        permissionManager = new PermissionManager();
+        permissions = new ArrayList<>();
 
         loadRoles();
 
@@ -181,7 +179,7 @@ public class App {
                     return;
                 }
                 var rest = Arrays.copyOfRange(token, 2, token.length);
-                List<Role> roles = Stream.concat(App.getRoleManager().getByIDs(List.of(rest)).stream(), App.getRoleManager().getDefaultRoles().stream()).collect(Collectors.toList());
+                List<Role> roles = Stream.concat(Role.fromIDs(List.of(rest)).stream(), Role.getDefaultRoles().stream()).collect(Collectors.toList());
                 user.setRoles(roles);
                 database.setUserRoles(user, roles);
                 database.insertServerAdminLog("Set " + user.getName() + "'s roles to " + user.getRoleIDsString());
@@ -201,7 +199,7 @@ public class App {
                     return;
                 }
                 var rest = Arrays.copyOfRange(token, 2, token.length);
-                List<Role> roles = App.getRoleManager().getByIDs(List.of(rest));
+                List<Role> roles = Role.fromIDs(List.of(rest));
                 user.addRoles(roles);
                 database.setUserRoles(user, user.getRoles());
                 String message = "Added roles \"" + roles.stream().map(Role::getName).collect(Collectors.joining(", ")) + "\" to " + user.getName();
@@ -222,7 +220,7 @@ public class App {
                     return;
                 }
                 var rest = Arrays.copyOfRange(token, 2, token.length);
-                List<Role> roles = App.getRoleManager().getByIDs(List.of(rest));
+                List<Role> roles = Role.fromIDs(List.of(rest));
                 user.removeRoles(roles);
                 database.setUserRoles(user, user.getRoles());
                 String message = "Removed roles \"" + roles.stream().map(Role::getName).collect(Collectors.joining(", ")) + "\" from " + user.getName();
@@ -674,10 +672,9 @@ public class App {
             }
 
             List<String> permissionNodes = Util.defaultConfigVal(() -> roleConfig.getStringList(id + ".permissions"), Collections.emptyList());
-            var permissions = permissionManager.resolve(permissionNodes);
 
-            var role = new Role(id, name, guest, defaultRole, badges, permissions);
-            App.roleManager.register(role);
+            var role = new Role(id, name, guest, defaultRole, badges, permissionNodes);
+            Role.makeCanonical(role);
 
             // Queue up the inherited role strings for later.
             inheritanceMap.put(role, Util.defaultConfigVal(() -> roleConfig.getStringList(id + ".inherits"), Collections.emptyList()));
@@ -685,7 +682,7 @@ public class App {
 
         // After all of the roles are registered, handle inheritance mappings.
         inheritanceMap.forEach((role, inheritStrings) -> {
-            List<Role> inherits = App.getRoleManager().getByIDs(inheritStrings);
+            List<Role> inherits = Role.fromIDs(inheritStrings);
             role.setInherits(inherits);
         });
     }
@@ -1054,12 +1051,8 @@ public class App {
         return userManager;
     }
 
-    public static RoleManager getRoleManager() {
-        return roleManager;
-    }
-
-    public static PermissionManager getPermissionManager() {
-        return permissionManager;
+    public static List<String> getPermissions() {
+        return permissions;
     }
 
     public static byte getDefaultColor(int x, int y) {
