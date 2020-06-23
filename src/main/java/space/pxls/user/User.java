@@ -104,7 +104,6 @@ public class User {
 
         if (hasPermission("board.cooldown.override") && overrideCooldown) return true;
         if (!hasPermission("board.place")) return false;
-        if (hasPermission("board.place.localonly")) return false; // Shadowban logic
         return cooldownExpiry < System.currentTimeMillis();
     }
 
