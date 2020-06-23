@@ -798,7 +798,7 @@ public class WebHandler {
             sendBadRequest(exchange);
             return;
         }
-        if (user.isBanned() || user.isBanned()) {
+        if (user.isBanned()) {
             sendBadRequest(exchange);
             return;
         }
