@@ -34,8 +34,9 @@ The output `.jar` is in `target/`.
 1. Create a new directory.
 2. Copy `resources/` and the output `.jar` to it.
 3. Copy `resources/reference.conf` to the directory as `pxls.conf`.
-4. Configure `pxls.conf`.
-5. Execute the jar with `java -jar pxls-1.0-SNAPSHOT.jar`
+4. Copy `resources/roles-reference.conf` to the directory as `roles.conf`.
+5. Configure `pxls.conf` and `roles.conf` (optional; see [roles.md](roles.md) for details). 
+6. Execute the jar with `java -jar pxls-1.0-SNAPSHOT.jar`
 
 The server will start on port 4567 by default, and will expose a rudimentary console with a few commands (listed in `Commands` below).
 You will need to configure the database for the server to start, see the `Configuring Database` section below.
