@@ -36,7 +36,6 @@ public class App {
     private static Config config;
     private static Database database;
     private static UserManager userManager;
-    private static List<String> permissions;
     private static Logger pixelLogger;
     private static Logger shadowbannedPixelLogger;
     private static Logger appLogger;
@@ -89,7 +88,6 @@ public class App {
 
         database = new Database();
         userManager = new UserManager();
-        permissions = new ArrayList<>();
 
         loadRoles();
 
@@ -1049,10 +1047,6 @@ public class App {
 
     public static UserManager getUserManager() {
         return userManager;
-    }
-
-    public static List<String> getPermissions() {
-        return permissions;
     }
 
     public static byte getDefaultColor(int x, int y) {
