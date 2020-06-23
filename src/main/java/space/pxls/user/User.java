@@ -164,8 +164,7 @@ public class User {
     }
 
     public void setOverrideCooldown(boolean overrideCooldown) {
-        if (!hasPermission("board.cooldown.override")) overrideCooldown = false;
-        this.overrideCooldown = overrideCooldown;
+        this.overrideCooldown = hasPermission("board.cooldown.override") && overrideCooldown;
     }
 
     public List<Role> getRoles() {
