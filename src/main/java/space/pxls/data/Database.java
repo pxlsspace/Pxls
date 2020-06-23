@@ -733,7 +733,7 @@ public class Database {
             }
             handle.createUpdate("UPDATE users SET ban_expiry = " + expiryStr + " WHERE id = :who")
                     .bind("who", user.getId())
-                    .bind("expiry", expiryStr)
+                    .bind("expiry", time)
                     .execute();
         });
     }
@@ -747,6 +747,18 @@ public class Database {
         jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET ban_reason = :ban_reason WHERE id = :who")
                 .bind("who", user.getId())
                 .bind("ban_reason", reason)
+                .execute());
+    }
+
+    /**
+     * Updates the {@link User}'s shadow-ban status.
+     * @param user The user.
+     * @param shadowBanned Whether or not the user is shadow-banned.
+     */
+    public void updateUserShadowBanned(User user, boolean shadowBanned) {
+        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET is_shadow_banned = :shadow_banned WHERE id = :who")
+                .bind("who", user.getId())
+                .bind("shadow_banned", shadowBanned)
                 .execute());
     }
 

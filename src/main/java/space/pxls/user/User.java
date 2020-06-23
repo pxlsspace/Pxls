@@ -52,7 +52,7 @@ public class User {
 
     private Set<WebSocketChannel> connections = new HashSet<>();
 
-    public User(int id, int stacked, String name, String login, Timestamp signup, long cooldownExpiry, List<Role> roles, int pixelCount, int pixelCountAllTime, long banExpiryTime, boolean shadowBanned, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor, Integer displayedFaction, String discordName, Boolean factionBlocked) {
+    public User(int id, int stacked, String name, String login, Timestamp signup, long cooldownExpiry, List<Role> roles, int pixelCount, int pixelCountAllTime, Long banExpiryTime, boolean shadowBanned, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor, Integer displayedFaction, String discordName, Boolean factionBlocked) {
         this.id = id;
         this.stacked = stacked;
         this.name = name;
@@ -428,6 +428,7 @@ public class User {
     public void shadowBan(String reason, int rollbackTime, User banner) {
         setBanReason(reason);
         shadowBanned = true;
+        App.getDatabase().updateUserShadowBanned(this, true);
         App.rollbackAfterBan(this, rollbackTime);
         App.getDatabase().insertBanLog(banner == null ? 0 : banner.getId(), this.getId(), System.currentTimeMillis(), 0L, "shadowban", reason);
     }
@@ -455,6 +456,7 @@ public class User {
 
     public void unban(User whoUnbanned, String unbanReason) {
         setBanExpiryTime(null);
+        App.getDatabase().updateUserShadowBanned(this, false);
         App.undoRollback(this);
         long now = System.currentTimeMillis();
         App.getDatabase().insertBanLog(whoUnbanned == null ? 0 : whoUnbanned.getId(), this.getId(), now, null, "unban", unbanReason);

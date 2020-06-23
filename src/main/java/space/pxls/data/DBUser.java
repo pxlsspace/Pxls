@@ -21,7 +21,7 @@ public class DBUser {
     public List<Role> roles;
     public int pixelCount;
     public int pixelCountAllTime;
-    public long banExpiry;
+    public Long banExpiry;
     public boolean isPermaChatbanned;
     public boolean shadowBanned;
     public long chatbanExpiry;
@@ -31,7 +31,7 @@ public class DBUser {
     public Integer displayedFaction;
     public Boolean factionBlocked;
 
-    public DBUser(int id, int stacked, String username, String login, Timestamp signup, long cooldownExpiry, List<Role> roles, int pixelCount, int pixelCountAllTime, long banExpiry, boolean isPermaChatbanned, boolean shadowBanned, long chatbanExpiry, boolean isRenameRequested, String discordName, String chatbanReason, int chatNameColor, Integer displayedFaction, Boolean factionBlocked) {
+    public DBUser(int id, int stacked, String username, String login, Timestamp signup, long cooldownExpiry, List<Role> roles, int pixelCount, int pixelCountAllTime, Long banExpiry, boolean shadowBanned, boolean isPermaChatbanned, long chatbanExpiry, boolean isRenameRequested, String discordName, String chatbanReason, int chatNameColor, Integer displayedFaction, Boolean factionBlocked) {
         this.id = id;
         this.stacked = stacked;
         this.username = username;
@@ -73,7 +73,7 @@ public class DBUser {
                     Role.fromIDs(r.getString("roles")),
                     r.getInt("pixel_count"),
                     r.getInt("pixel_count_alltime"),
-                    ban == null ? 0 : ban.getTime(),
+                    ban == null ? null : ban.getTime(),
                     r.getBoolean("is_shadow_banned"),
                     r.getBoolean("perma_chat_banned"),
                     chatban == null ? 0 : chatban.getTime(),
