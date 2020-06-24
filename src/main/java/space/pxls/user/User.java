@@ -612,8 +612,7 @@ public class User {
     }
 
     public boolean hasRainbowChatNameColor() {
-        return App.getConfig().getBoolean("chat.staffRainbow")
-                && hasPermission("chat.usercolor.rainbow")
+        return hasPermission("chat.usercolor.rainbow")
                 && this.chatNameColor == -1;
     }
 
