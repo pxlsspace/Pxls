@@ -76,13 +76,14 @@ public class User {
     public void reloadFromDatabase() {
         DBUser user = App.getDatabase().getUserByID(id).orElse(null);
         if (user != null) {
+            List<Role> roles = App.getDatabase().getUserRoles(user.id);
             this.id = user.id;
             this.stacked = user.stacked;
             this.name = user.username;
             this.login = user.login;
             this.signup_time = user.signup_time;
             this.cooldownExpiry = user.cooldownExpiry;
-            this.roles = user.roles;
+            this.roles = roles;
             this.banExpiryTime = user.banExpiry;
             this.isPermaChatbanned = user.isPermaChatbanned;
             this.chatbanExpiryTime = user.chatbanExpiry;
@@ -742,6 +743,7 @@ public class User {
     }
 
     public static User fromDBUser(DBUser user) {
-        return new User(user.id, user.stacked, user.username, user.login, user.signup_time, user.cooldownExpiry, user.roles, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.shadowBanned, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked);
+        List<Role> roles = App.getDatabase().getUserRoles(user.id);
+        return new User(user.id, user.stacked, user.username, user.login, user.signup_time, user.cooldownExpiry, roles, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.shadowBanned, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked);
     }
 }

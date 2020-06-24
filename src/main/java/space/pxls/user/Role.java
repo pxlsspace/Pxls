@@ -1,7 +1,11 @@
 package space.pxls.user;
 
+import org.jdbi.v3.core.mapper.RowMapper;
+import org.jdbi.v3.core.statement.StatementContext;
 import space.pxls.server.packets.chat.Badge;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -95,5 +99,12 @@ public class Role {
 
     public static List<Role> getDefaultRoles() {
         return canonicalRoles.values().stream().filter(Role::isDefault).collect(Collectors.toList());
+    }
+
+    public static class Mapper implements RowMapper<Role> {
+        @Override
+        public Role map(ResultSet rs, StatementContext ctx) throws SQLException {
+            return Role.fromIDs(rs.getString("role")).get(0);
+        }
     }
 }

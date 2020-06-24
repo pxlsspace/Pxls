@@ -18,7 +18,6 @@ public class DBUser {
     public String username;
     public String login;
     public long cooldownExpiry;
-    public List<Role> roles;
     public int pixelCount;
     public int pixelCountAllTime;
     public Long banExpiry;
@@ -31,14 +30,13 @@ public class DBUser {
     public Integer displayedFaction;
     public Boolean factionBlocked;
 
-    public DBUser(int id, int stacked, String username, String login, Timestamp signup, long cooldownExpiry, List<Role> roles, int pixelCount, int pixelCountAllTime, Long banExpiry, boolean shadowBanned, boolean isPermaChatbanned, long chatbanExpiry, boolean isRenameRequested, String discordName, String chatbanReason, int chatNameColor, Integer displayedFaction, Boolean factionBlocked) {
+    public DBUser(int id, int stacked, String username, String login, Timestamp signup, long cooldownExpiry, int pixelCount, int pixelCountAllTime, Long banExpiry, boolean shadowBanned, boolean isPermaChatbanned, long chatbanExpiry, boolean isRenameRequested, String discordName, String chatbanReason, int chatNameColor, Integer displayedFaction, Boolean factionBlocked) {
         this.id = id;
         this.stacked = stacked;
         this.username = username;
         this.login = login;
         this.signup_time = signup;
         this.cooldownExpiry = cooldownExpiry;
-        this.roles = roles;
         this.pixelCount = pixelCount;
         this.pixelCountAllTime = pixelCountAllTime;
         this.banExpiry = banExpiry;
@@ -70,7 +68,6 @@ public class DBUser {
                     r.getString("login"),
                     r.getTimestamp("signup_time"),
                     stamp == null ? 0 : stamp.getTime(),
-                    Role.fromIDs(r.getString("roles")),
                     r.getInt("pixel_count"),
                     r.getInt("pixel_count_alltime"),
                     ban == null ? null : ban.getTime(),

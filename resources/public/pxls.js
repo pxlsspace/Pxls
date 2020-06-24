@@ -6397,8 +6397,20 @@ window.App = (function() {
       username: '',
       chatNameColor: 0,
       getRoles: () => self.roles,
-      isStaff: () => self.roles.find(role => role.type === 'STAFF') != null,
-      hasPermission: node => self.roles.flatMap(role => role.inherits.flatMap(inherited => inherited.permissions.flatMap(perm => perm.node))).includes(node),
+      isStaff: () => self.hasPermission('user.admin'),
+      getPermissions: () => {
+        const perms = [];
+        self.roles.flatMap(function loop(node) {
+          if (node.inherits.length > 0) {
+            perms.push(...node.permissions);
+            return node.inherits.flatMap(loop);
+          } else {
+            perms.push(node.permissions);
+          }
+        });
+        return [...new Set(perms)];
+      },
+      hasPermission: node => self.getPermissions().includes(node),
       getUsername: () => self.username,
       getPixelCount: () => self.pixelCount,
       getPixelCountAllTime: () => self.pixelCountAllTime,
@@ -6559,7 +6571,7 @@ window.App = (function() {
           } else if (data.banned === true) {
             isBanned = true;
             crel(banelem, crel('p', `You are temporarily banned and will not be allowed to place until ${new Date(data.banExpiry).toLocaleString()}`));
-          } else if (self.roles.find(role => role.type === 'STAFF') != null) {
+          } else if (self.isStaff()) {
             if (window.deInitAdmin) {
               window.deInitAdmin();
             }
@@ -6700,6 +6712,7 @@ window.App = (function() {
       init: self.init,
       getRoles: self.getRoles,
       isStaff: self.isStaff,
+      getPermissions: self.getPermissions,
       hasPermission: self.hasPermission,
       getUsername: self.getUsername,
       getPixelCount: self.getPixelCount,
@@ -7052,6 +7065,7 @@ window.App = (function() {
       getRoles: user.getRoles,
       isLoggedIn: user.isLoggedIn,
       isStaff: user.isStaff,
+      getPermissions: user.getPermissions,
       hasPermission: user.hasPermission
     },
     modal
