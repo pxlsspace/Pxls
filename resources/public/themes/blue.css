@@ -41,6 +41,9 @@ html {
     --panel-header-background: linear-gradient(to bottom, #1e2e77fc, #212697);
     --panel-background: #171e79;
     --panel-text-color: #eee;
+    --panel-article-footer-background: #10165e;
+    --panel-article-footer-text-color: #ffffff;
+    --panel-footer-background: #10165e;
 
     --option-bubble-position-background-selected: #132d99;
     --bubble-background: #07138cb0;
