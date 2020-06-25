@@ -24,8 +24,14 @@ html {
     --palette-background: rgba(7, 32, 142, .5);
     --palette-overlay-background: rgba(4, 27, 151, .9);
     --palette-deselect-button-color: #DDD;
-
+    --palette-number-text-color: #ffffff;
+    --palette-number-background-color: #030764;
+    
+    --cursor-text-color: #fff;
+    --cursor-text-background-color: #02076c;
+    
     --undo-background: linear-gradient(to top, #05157d99, #04236f);
+    --undo-text-color: #fff;
 
     --text-red-color: #f44;
     --text-yellow-color: #cc0;
@@ -35,6 +41,9 @@ html {
     --panel-header-background: linear-gradient(to bottom, #1e2e77fc, #212697);
     --panel-background: #171e79;
     --panel-text-color: #eee;
+    --panel-article-footer-background: #10165e;
+    --panel-article-footer-text-color: #ffffff;
+    --panel-footer-background: #10165e;
 
     --option-bubble-position-background-selected: #132d99;
     --bubble-background: #07138cb0;
@@ -62,7 +71,7 @@ html {
     --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
     --emoji-picker-variant-popup-background: #FFFFFF;
 
-    --chat-typeahead-menu-background: #1b33b7;
+    --chat-typeahead-menu-background: #000;
     --chat-typeahead-item-background: #172ea8;
     --chat-typeahead-item-background-hover: #303bcc;
     --chat-typeahead-item-background-active: #0012b0;
