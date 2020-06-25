@@ -614,6 +614,13 @@ public class User {
     public boolean hasRainbowChatNameColor() {
         return hasPermission("chat.usercolor.rainbow")
                 && this.chatNameColor == -1;
+        
+    }
+    
+     public boolean hasDonatorChatNameColor() {
+        return hasPermission("chat.usercolor.donator")
+                && this.chatNameColor == -2;
+        
     }
 
     public int getChatNameColor() {
