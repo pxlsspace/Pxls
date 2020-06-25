@@ -3294,6 +3294,16 @@ window.App = (function() {
         self._initAccount();
         self._initBanner();
         self._initMultiTabDetection();
+        
+      specialChatColorClasses: ['donator'],
+      init: function() {
+        self.initTitle = document.title;
+        self._initThemes();
+        self._initStack();
+        self._initAudio();
+        self._initAccount();
+        self._initBanner();
+        self._initMultiTabDetection();
 
         self.elements.coords.click(() => coords.copyCoords(true));
 
@@ -4847,6 +4857,7 @@ window.App = (function() {
 
         const _selUsernameColor = crel('select', { class: 'username-color-picker' },
           user.isStaff() ? crel('option', { value: -1, class: 'rainbow' }, 'rainbow') : null,
+          user.isDonator() ? crel('option', { value: -2, class: 'donator' }, 'donator') : null,                             
           place.getPalette().map((x, i) => crel('option', {
             value: i,
             'data-idx': i,
