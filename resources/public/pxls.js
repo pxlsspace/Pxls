@@ -3285,17 +3285,7 @@ window.App = (function() {
           color: '#5a2f71'
         }
       ],
-      specialChatColorClasses: ['rainbow'],
-      init: function() {
-        self.initTitle = document.title;
-        self._initThemes();
-        self._initStack();
-        self._initAudio();
-        self._initAccount();
-        self._initBanner();
-        self._initMultiTabDetection();
-        
-      specialChatColorClasses: ['donator'],
+      specialChatColorClasses: ['rainbow, donator'],
       init: function() {
         self.initTitle = document.title;
         self._initThemes();
