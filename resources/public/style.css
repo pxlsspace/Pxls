@@ -62,11 +62,11 @@ html {
     --palette-overlay-background: rgba(255, 255, 255, 0.9);
     --palette-overlay-text-color: #000;
     --palette-deselect-button-color: inherit;
-    --palette-number-text-color: #fff;
-    --palette-number-background-color: #000;
+    --palette-number-text-color: #000;
+    --palette-number-background-color: #fff;
 
-    --cursor-text-color: #fff;
-    --cursor-text-background-color: #000;
+    --cursor-text-color: #000;
+    --cursor-text-background-color: #fff;
  
     --undo-text-color: #000;
     --undo-background: linear-gradient(to top, #FFFC, #FFF);
