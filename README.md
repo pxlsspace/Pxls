@@ -108,7 +108,9 @@ Commands are entered directly into the running instance (stdin):
 
 - `reload` - Reloads the main configuration, applying _most_ changes immediately. Also reloads the user and faction cache.
 - `save` - Saves the map.
-- `role <user> <role>` - Changes the role of the user. The role can be either `USER`, `TRIALMOD`, `MODERATOR`, `DEVELOPER`, or `ADMIN`.
+- `roles <username> [role ID ...]` - Gets or sets the user's role(s).
+- `addroles <username> <role ID ...>` - Adds role(s) to the user.
+- `removeroles <username> <role ID ...>` - Removes role(s) from the user.
 - `alert <text>` - Sends an popup-like alert to all users on the canvas.
 - `ban <user> <reason>` - Bans the user for 24 hours, with the specified reason (if any).
 - `permaban <user> <reason>` - Permanently bans the user, with the specified reason (if any).
