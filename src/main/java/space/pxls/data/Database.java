@@ -729,7 +729,7 @@ public class Database {
 
     /**
      * Updates the {@link User}'s roles.
-     * @param user The user.
+     * @param userID The user's ID.
      * @param roles The new roles.
      */
     public void setUserRoles(int userID, List<Role> roles) {
