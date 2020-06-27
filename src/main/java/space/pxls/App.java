@@ -179,7 +179,7 @@ public class App {
                 var rest = Arrays.copyOfRange(token, 2, token.length);
                 List<Role> roles = Stream.concat(Role.fromIDs(List.of(rest)).stream(), Role.getDefaultRoles().stream()).collect(Collectors.toList());
                 user.setRoles(roles);
-                database.setUserRoles(user, roles);
+                database.setUserRoles(user.getId(), roles);
                 database.insertServerAdminLog("Set " + user.getName() + "'s roles to " + user.getRoleIDsString());
                 System.out.println("Set " + user.getName() + "'s roles to " + user.getRoleIDsString());
             } else if (token[0].equalsIgnoreCase("addroles") || token[0].equalsIgnoreCase("addrole")) {
@@ -199,7 +199,7 @@ public class App {
                 var rest = Arrays.copyOfRange(token, 2, token.length);
                 List<Role> roles = Role.fromIDs(List.of(rest));
                 user.addRoles(roles);
-                database.setUserRoles(user, user.getRoles());
+                database.setUserRoles(user.getId(), user.getRoles());
                 String message = "Added roles \"" + roles.stream().map(Role::getName).collect(Collectors.joining(", ")) + "\" to " + user.getName();
                 database.insertServerAdminLog(message);
                 System.out.println(message);
@@ -220,7 +220,7 @@ public class App {
                 var rest = Arrays.copyOfRange(token, 2, token.length);
                 List<Role> roles = Role.fromIDs(List.of(rest));
                 user.removeRoles(roles);
-                database.setUserRoles(user, user.getRoles());
+                database.setUserRoles(user.getId(), user.getRoles());
                 String message = "Removed roles \"" + roles.stream().map(Role::getName).collect(Collectors.joining(", ")) + "\" from " + user.getName();
                 database.insertServerAdminLog(message);
                 System.out.println(message);

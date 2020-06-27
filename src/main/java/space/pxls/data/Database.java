@@ -732,14 +732,14 @@ public class Database {
      * @param user The user.
      * @param roles The new roles.
      */
-    public void setUserRoles(User user, List<Role> roles) {
+    public void setUserRoles(int userID, List<Role> roles) {
         jdbi.useTransaction(handle -> {
             handle.createUpdate("DELETE FROM roles WHERE id = :who")
-                    .bind("who", user.getId())
+                    .bind("who", userID)
                     .execute();
             for (Role role : roles) {
                 handle.createUpdate("INSERT INTO roles VALUES (:who, :role)")
-                        .bind("who", user.getId())
+                        .bind("who", userID)
                         .bind("role", role.getID())
                         .execute();
             }
