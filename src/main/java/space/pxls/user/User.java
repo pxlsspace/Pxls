@@ -206,7 +206,7 @@ public class User {
 
     public void setRoles(List<Role> rolesToSet, boolean skipSendUserData) {
         this.roles = rolesToSet;
-        App.getDatabase().setUserRoles(this, roles);
+        App.getDatabase().setUserRoles(this.getId(), roles);
         if (!skipSendUserData && !isShadowBanned()) sendUserData();
     }
 

@@ -1,6 +1,6 @@
 # Roles
 
-Roles are multi-assignable user groups. The structure of a role looks like so:
+Roles are multi-assignable user groups. Roles can inherit the permissions of other roles. The structure of a role looks like so:
 
 ```hocon
 roleID {
