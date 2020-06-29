@@ -149,6 +149,7 @@ public class App {
                 try {
                     cachedWhoamiOrigin = null;
                     loadConfig();
+                    loadRoles();
                     FactionManager.getInstance().invalidateAll();
                     System.out.println("Success!");
                 } catch (Exception x) {
