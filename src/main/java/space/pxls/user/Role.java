@@ -93,6 +93,26 @@ public class Role {
         return fromIDs(Arrays.asList(ids.split(",")));
     }
 
+    public static List<Role> fromNames(List<String> ids) {
+        return canonicalRoles.values().stream()
+                .filter(role -> ids.contains(role.getName()))
+                .collect(Collectors.toUnmodifiableList());
+    }
+
+    public static List<Role> fromNames(String names) {
+        return fromNames(Arrays.asList(names.split(",")));
+    }
+
+    public static List<Role> fromMixed(List<String> mixed) {
+        return canonicalRoles.values().stream()
+                .filter(role -> mixed.contains(role.getID()) || mixed.contains(role.getName()))
+                .collect(Collectors.toUnmodifiableList());
+    }
+
+    public static List<Role> fromMixed(String mixed) {
+        return fromMixed(Arrays.asList(mixed.split(",")));
+    }
+
     public static List<Role> getGuestRoles() {
         return canonicalRoles.values().stream().filter(Role::isGuest).collect(Collectors.toList());
     }
