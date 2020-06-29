@@ -327,10 +327,13 @@ public class User {
     }
 
     public boolean isBanned() {
-        // It may just be this simple...
+        if (banExpiryTime != null && banExpiryTime > System.currentTimeMillis()) {
+            // If now is past their ban expiry, erase their ban expiry time.
+            banExpiryTime = null;
+            App.getDatabase().updateBan(this, null);
+            return false;
+        }
         return banExpiryTime != null;
-//        if (banExpiryTime == null) return false;
-//        return banExpiryTime == 0 || banExpiryTime > System.currentTimeMillis();
     }
 
     public boolean isShadowBanned() {
