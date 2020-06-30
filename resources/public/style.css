@@ -68,6 +68,14 @@ html {
     --cursor-text-color: #000;
     --cursor-text-background-color: #fff;
  
+    --selection-color;
+    --selection-background-color;
+    /*use this in desired theme:   
+    ::selection {
+    background-color: var(--selection-background-color);
+    color:var(--selection-color);
+    } */
+ 
     --undo-text-color: #000;
     --undo-background: linear-gradient(to top, #FFFC, #FFF);
     --undo-border-color: #000;
@@ -2081,3 +2089,4 @@ body .emoji-picker {
         max-height: initial;
     }
 }
+
