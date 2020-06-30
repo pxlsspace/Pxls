@@ -28,7 +28,10 @@ html {
     --palette-number-background-color: #030764;
     
     --cursor-text-color: #fff;
-    --cursor-text-background-color: #030764;
+    --cursor-text-background-color: #02076c;
+    
+    --selection-color: #000;
+    --selection-background-color: #00c0e6;
     
     --undo-background: linear-gradient(to top, #05157d99, #04236f);
     --undo-text-color: #fff;
@@ -71,12 +74,13 @@ html {
     --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
     --emoji-picker-variant-popup-background: #FFFFFF;
 
-    --chat-typeahead-menu-background: #1b33b7;
+    --chat-typeahead-menu-background: #000;
     --chat-typeahead-item-background: #172ea8;
     --chat-typeahead-item-background-hover: #303bcc;
     --chat-typeahead-item-background-active: #0012b0;
 
     --notification-expiry-color: #995050;
+    
 }
 
 hr {
@@ -92,3 +96,8 @@ hr {
         background: #58a78a;
     }
 }
+
+    ::selection {
+    background-color: var(--selection-background-color);
+    color:var(--selection-color);
+    }
