@@ -30,6 +30,9 @@ html {
     --cursor-text-color: #fff;
     --cursor-text-background-color: #075701;
 
+    --selection-color: #fff;
+    --selection-background-color: #08b022;
+    
     --undo-background: linear-gradient(to top, #286424db, #075e1cc7);
 
     --text-red-color: #f44;
@@ -90,3 +93,8 @@ hr {
         background: #58a78a;
     }
 }
+
+    ::selection {
+    background-color: var(--selection-background-color);
+    color:var(--selection-color);
+    }
