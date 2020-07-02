@@ -671,6 +671,9 @@ public class App {
         pixelLogger.log(Level.INFO, String.format("%s\t%d\t%d\t%d\t%s\t%s", userName, x, y, color, ip, action));
         if (updateDatabase) {
             database.placePixel(x, y, color, user, mod_action);
+            if (!mod_action) {
+                user.increasePixelCounts();
+            }
         }
     }
 

@@ -71,17 +71,25 @@
                 <div class="loading-bubble-item" data-process="virginmap">Loading Virginmap (press <kbd>X</kbd> to cancel)</div>
             </div>
             <div id="main-bubble" class="bubble">
-                <div id="user-info">
+                <button id="setting-ui-bubble-compact"><i class="fas fa-angle-down"></i></button>
+                <div id="user-info" class="toggeable">
                     <i class="fas fa-user"></i>
                     <!-- TODO: link to position on stats page -->
                     <span id="username"></span>
                     <a href="/logout" class="logout"><i title="Logout" class="fas fa-sign-out-alt" id="logout-icon"></i></a>
                 </div>
-                <div>
-                  <i class="fas fa-users"></i>
-                  <span id="online-count">Loading online user count&hellip;</span>
+                <div id="pixel-counts" class="toggeable">
+                    <i class="fas fa-chart-line"></i>
+                    <ul>
+                        <li><span>Canvas: </span><span id="current-pixel-count">N/A</span></li>
+                        <li><span>All Time: </span><span id="alltime-pixel-count">N/A</span></li>
+                    </ul>
                 </div>
-                <div id="coords-info">
+                <div class="toggeable">
+                    <i class="fas fa-users"></i>
+                    <span id="online-count">Loading online user count&hellip;</span>
+                </div>
+                <div id="coords-info" class="toggeable">
                     <a class="coords"></a>
                     <i id="canvas-lock-icon" class="fas fa-lock"></i>
                 </div>
@@ -104,7 +112,6 @@
             </div>
             <div id="user-message" class="palette-overlay"></div>
             <div id="palette">
-                <div id="cd-timer-overlay" class="palette-overlay"></div>
             </div>
         </div>
     </div>
@@ -122,8 +129,12 @@
     <div class="content">
       <h1>Sign up</h1>
       <h4>Pick a username</h4>
-
-      <label>Username: <input type="text" maxlength="32"></label>
+      <p>
+          <label class="input-group">
+              <span class="label-text">Username:</span>
+              <input id="signup-username-input" type="text" maxlength="32">
+          </label>
+      </p>
       <div class="error" id="error"></div>
     </div>
     <button id="signup-button" class="float-right text-button">Sign up</button>
@@ -203,31 +214,28 @@
             </header>
             <div class="pad-wrapper">
                 <h4>General</h4>
-                <div class="indent-1">
-                    <p>Mouse/arrows/wasd to pan</p>
-                    <p>Scroll/pinch to zoom</p>
-                    <p><kbd>+</kbd>/<kbd>-</kbd> or <kbd>Q</kbd>/<kbd>E</kbd> to zoom</p>
-                    <p><kbd>Shift</kbd> + Click/Hold touch to lookup pixel</p>
-                    <p><kbd>G</kbd> to toggle grid</p>
-                    <p><kbd>I</kbd> to open info</p>
-                    <p><kbd>T</kbd> to open settings</p>
-                    <p><kbd>B</kbd> to open chat</p>
-                    <p><kbd>L</kbd> to toggle locking panning of the canvas</p>
-                    <p><kbd>P</kbd> to take a snapshot</p>
-                    <p><kbd>H</kbd> to toggle heatmap</p>
-                    <p><kbd>X</kbd> to toggle virginmap</p>
-                    <p><kbd>O</kbd> to clear heatmap and virginmap (if either is enabled)</p>
-                    <p><kbd>J</kbd>/<kbd>K</kbd> to cycle through palette colors</p>
-                    <p><kbd>C</kbd> to copy link of moused-over coordinates</p>
-                    <p><kbd>ESC</kbd> to deselect current pixel</p>
-                    <p><kbd>R</kbd> to center the board on the current template</p>
-                </div>
+                <p>Mouse/arrows/wasd to pan</p>
+                <p>Scroll/pinch to zoom</p>
+                <p><kbd>+</kbd>/<kbd>-</kbd> or <kbd>Q</kbd>/<kbd>E</kbd> to zoom</p>
+                <p><kbd>Shift</kbd> + Click/Hold touch to lookup pixel</p>
+                <p><kbd>G</kbd> to toggle grid</p>
+                <p><kbd>I</kbd> to open info</p>
+                <p><kbd>T</kbd> to open settings</p>
+                <p><kbd>B</kbd> to open chat</p>
+                <p><kbd>L</kbd> to toggle locking panning of the canvas</p>
+                <p><kbd>P</kbd> to take a snapshot</p>
+                <p><kbd>H</kbd> to toggle heatmap</p>
+                <p><kbd>X</kbd> to toggle virginmap</p>
+                <p><kbd>O</kbd> to clear heatmap and virginmap (if either is enabled)</p>
+                <p><kbd>J</kbd>/<kbd>K</kbd> to cycle through palette colors</p>
+                <p><kbd>C</kbd> to copy link of moused-over coordinates</p>
+                <p><kbd>ESC</kbd> to deselect current pixel</p>
+                <p><kbd>R</kbd> to center the board on the current template</p>
+
                 <h4>Template</h4>
-                <div class="indent-1">
-                    <p><kbd>Page Up</kbd> to increase opacity</p>
-                    <p><kbd>Page Down</kbd> to decrease opacity</p>
-                    <p><kbd>V</kbd> to toggle visibility</p>
-                </div>
+                <p><kbd>Page Up</kbd> to increase opacity</p>
+                <p><kbd>Page Down</kbd> to decrease opacity</p>
+                <p><kbd>V</kbd> to toggle visibility</p>
             </div>
         </article>
         <article>
@@ -235,117 +243,181 @@
                 <h3>General Settings</h3>
             </header>
             <div class="pad-wrapper">
-                <div class="settingToggles">
-                    <div class="lblwrap">
-                        <label>Theme:
-                            <select id="setting-ui-theme-index">
-                                <option value="-1" selected>Default</option>
-                            </select>
-                        </label>
-                    </div>
-                    <div>
-                        <label><input id="setting-audio-enable" type="checkbox"/>Enable sound</label>
-                    </div>
-                    <div>
-                        <label><input id="setting-board-heatmap-enable" type="checkbox"/>Turn on heatmap (toggle with <kbd>H</kbd>)</label>
-                    </div>
-                    <div>
-                        <label><input id="setting-board-virginmap-enable" type="checkbox"/>Turn on virginmap (toggle with <kbd>X</kbd>)</label>
-                    </div>
-                    <div>
-                        <button class="text-button" id="hvmapClear">Clear heatmap and virginmap</button> (hotkey: <kbd>O</kbd>)
-                    </div>
-                    <div>
-                        <label><input id="setting-board-grid-enable" type="checkbox"/>Turn on grid (toggle with <kbd>G</kbd>)</label>
-                    </div>
-                    <div>
-                        <label><input type="checkbox" id="setting-board-lock-enable">Lock the canvas (disallow canvas drag/zoom with mouse/fingers)</label>
-                    </div>
-                    <div>
-                        <label><input id="setting-place-notification-enable" type="checkbox"/>Enable pixel available notification</label>
-                    </div>
-                    <div>
-                        <label><input id="setting-place-deselectonplace-enable" type="checkbox"/>Deselect color after placing</label>
-                    </div>
-                    <div>
-                        <label><input id="setting-lookup-monospace-enable" type="checkbox"/>Toggle monospace font for lookups</label>
-                    </div>
-                    <div>
-                      <label>Zoom Sensitivity: <input id="setting-board-zoom-sensitivity" type="range" min="1.01" max="3" step="0.01"/></label>
-                    </div>
-                    <div>
-                        <label><input id="setting-board-zoom-limit-enable" type="checkbox"/>Limit zoom to 50x</label>
-                    </div>
-                    <div>
-                        <label><input id="setting-board-zoom-rounding-enable" type="checkbox"/>Round zoom values to nearest whole number</label>
-                    </div>
-                    <div>
-                        <label><input id="setting-place-palette-scrolling-enable" type="checkbox"/>Enable scrolling on the palette to switch colors</label>
-                    </div>
-                    <div>
-                        <label style="text-indent:1em"><input id="setting-place-palette-scrolling-invert" type="checkbox"/>Invert scroll direction</label>
-                    </div>
-                    <div>
-                        <label><input id="setting-ui-reticule-enable" type="checkbox"/>Show Reticule</label>
-                    </div>
-                    <div>
-                        <label><input id="setting-ui-cursor-enable" type="checkbox"/>Show Cursor</label>
-                    </div>
-                    <div>
-                        <label><input id="setting-board-template-beneathoverlays" type="checkbox"/>Layer Template Underneath Heatmap</label>
-                    </div>
-                    <div>
-                        <label><input id="setting-place-picker-enable" type="checkbox">Enable middle mouse button selecting color from board</label>
-                    </div>
-                    <div>
-                        <label><input id="setting-ui-palette-numbers-enable" type="checkbox"> Add numbers to palette entries</label>
-                    </div>
-                    <div>
-                        <label>Heatmap Background Opacity: <input type="range" min="0" max="1" step="0.01" id="setting-board-heatmap-opacity"></label>
-                    </div>
-                    <div>
-                        <label>Virginmap Background Opacity: <input type="range" min="0" max="1" step="0.01" id="setting-board-virginmap-opacity"></label>
-                    </div>
-                    <div>
-                        <label>
-                            Snapshot (hotkey: <kbd>P</kbd>) image format
-                            <select id="setting-board-snapshot-format">
-                                <option value="image/png" selected>PNG</option>
-                                <option value="image/jpeg">JPEG</option>
-                                <option value="image/webp">WEBP (Chrome only)</option>
-                            </select>
-                        </label>
-                    </div>
-                    <div>
-                        Bubble position
-                        <div id="bubble-position">
-                            <label>
-                                <input type="radio" name="setting-ui-bubble-position" value="top left" />
-                                <div></div>
-                            </label>
-                            <label>
-                                <input type="radio" name="setting-ui-bubble-position" value="top right" />
-                                <div></div>
-                            </label>
-                            <label>
-                                <input type="radio" name="setting-ui-bubble-position" value="bottom left" />
-                                <div></div>
-                            </label>
-                            <label>
-                                <input type="radio" name="setting-ui-bubble-position" value="bottom right" />
-                                <div></div>
-                            </label>
-                        </div>
-                    </div>
-
-
+                <div>
+                    <label class="input-group">
+                        <span class="label-text">Theme:</span>
+                        <select id="setting-ui-theme-index">
+                            <option value="-1" selected>Default</option>
+                        </select>
+                    </label>
                 </div>
                 <div>
-                    <p><label class="vertical-spacing"><input type="checkbox" id="setting-ui-brightness-enable"> Enable Color Brightness</label></p>
-                    <p><label class="text-orange fake-indent"><i class="fas fa-exclamation-triangle"></i> Warning: Known to cause fuzziness in Chrome on some Mac/Linux installs</label></p>
-                    <p><label class="fake-indent">Color Brightness: <input type="range" min="0" max="1" step="0.01" value="1" id="setting-ui-brightness-value"></label></p>
+                    <label class="input-group">
+                        <input id="setting-audio-enable" type="checkbox"/>
+                        <span class="label-text">Enable sound</span>
+                    </label>
                 </div>
-                <label id="chrome-canvas-offset-setting"><input id="setting-fix-chrome-offset-enable" type="checkbox"/>Attempt to fix Canvas displacement bug in Chrome 78+</label>
+                <div>
+                    <label class="input-group">
+                        <input id="setting-board-heatmap-enable" type="checkbox"/>
+                        <span class="label-text">Turn on heatmap</span>
+                    </label>
+                    <label for="setting-board-heatmap-enable">(toggle with <kbd>H</kbd>)</label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <input id="setting-board-virginmap-enable" type="checkbox"/>
+                        <span class="label-text">Turn on virginmap</span>
+                    </label>
+                    <label for="setting-board-virginmap-enable">(toggle with <kbd>X</kbd>)</label>
+                </div>
+                <div>
+                    <button class="text-button" id="hvmapClear">Clear heatmap and virginmap</button>
+                    <label for="hvmapClear">(hotkey: <kbd>O</kbd>)</label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <input id="setting-board-grid-enable" type="checkbox"/>
+                        <span class="label-text">Turn on grid</span>
+                    </label>
+                    <label for="setting-board-grid-enable">(toggle with <kbd>G</kbd>)</label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <input type="checkbox" id="setting-board-lock-enable">
+                        <span class="label-text">Lock the canvas (disallow canvas drag/zoom with mouse/fingers)</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <input id="setting-place-notification-enable" type="checkbox"/>
+                        <span class="label-text">Enable pixel available notification</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <input id="setting-place-deselectonplace-enable" type="checkbox"/>
+                        <span class="label-text">Deselect color after placing</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <input id="setting-lookup-monospace-enable" type="checkbox"/>
+                        <span class="label-text">Toggle monospace font for lookups</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <span class="label-text">Zoom Sensitivity:</span>
+                        <input id="setting-board-zoom-sensitivity" type="range" min="1.01" max="3" step="0.01"/>
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <input id="setting-board-zoom-limit-enable" type="checkbox"/>
+                        <span class="label-text">Limit zoom to 50x</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <input id="setting-board-zoom-rounding-enable" type="checkbox"/>
+                        <span class="label-text">Round zoom values to nearest whole number</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <input id="setting-place-palette-scrolling-enable" type="checkbox"/>
+                        <span class="label-text">Enable scrolling on the palette to switch colors</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                      <input id="setting-place-palette-scrolling-invert" type="checkbox"/>
+                      <span class="label-text">Invert scroll direction</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <input id="setting-ui-reticule-enable" type="checkbox"/>
+                        <span class="label-text">Show Reticule</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <input id="setting-ui-cursor-enable" type="checkbox"/>
+                        <span class="label-text">Show Cursor</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <input id="setting-board-template-beneathoverlays" type="checkbox"/>
+                        <span class="label-text">Layer Template Underneath Heatmap</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <input id="setting-place-picker-enable" type="checkbox">
+                        <span class="label-text">Enable middle mouse button selecting color from board</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <input id="setting-ui-palette-numbers-enable" type="checkbox">
+                        <span class="label-text">Add numbers to palette entries</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <span class="label-text">Heatmap Background Opacity:</span>
+                        <input type="range" min="0" max="1" step="0.01" id="setting-board-heatmap-opacity">
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <span class="label-text">Virginmap Background Opacity:</span>
+                        <input type="range" min="0" max="1" step="0.01" id="setting-board-virginmap-opacity">
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <span class="label-text">Snapshot image format:</span>
+                        <select id="setting-board-snapshot-format">
+                            <option value="image/png" selected>PNG</option>
+                            <option value="image/jpeg">JPEG</option>
+                            <option value="image/webp">WEBP (Chrome only)</option>
+                        </select>
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <span class="label-text">Bubble position:</span>
+                        <select id="setting-ui-bubble-position">
+                            <option value="top left">Top left</option>
+                            <option value="top right">Top right</option>
+                            <option value="bottom left" selected>Bottom left</option>
+                            <option value="bottom right">Bottom right</option>
+                        </select>
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <input type="checkbox" id="setting-ui-brightness-enable">
+                        <span class="label-text">Enable Color Brightness</span>
+                    </label>
+                    <label for="setting-ui-brightness-enable" class="text-orange extra-label">
+                        <i class="fas fa-exclamation-triangle"></i> Warning: Known to cause fuzziness in Chrome on some Mac/Linux installs
+                    </label>
+                    <label class="input-group fake-indent">
+                        <span class="label-text">Color Brightness:</span>
+                        <input type="range" min="0" max="1" step="0.01" value="1" id="setting-ui-brightness-value">
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group" id="chrome-canvas-offset-setting">
+                        <input id="setting-fix-chrome-offset-enable" type="checkbox"/>
+                        <span class="label-text">Attempt to fix Canvas displacement bug in Chrome 78+</span>
+                    </label>
+                </div>
             </div>
         </article>
         <article>
@@ -354,27 +426,47 @@
             </header>
             <div class="pad-wrapper">
                 <div>
-                    <label><input type="checkbox" id="template-use"> Use template</label>
+                    <label class="input-group">
+                        <input type="checkbox" id="template-use">
+                        <span class="label-text">Use template</span>
+                    </label>
                 </div>
                 <p>Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around</p>
-                <p>
-                    <label>Title:</label>
-                    <input class="fullwidth" type="text" id="template-title">
-                </p>
-                <p>
-                    <label>URL:</label>
-                    <input class="fullwidth" type="text" id="template-url">
-                    <span id="template-image-error-warning" class="text-red">There was an error getting the image</span>
-                </p>
                 <div>
-                    <label>Position: <input type="number" min="0" class="template-coords small-input" id="template-coords-x">, <input type="number" min="0" class="template-coords small-input" id="template-coords-y"></label>
+                    <label class="input-group">
+                        <span class="label-text">Title:</span>
+                        <input class="fullwidth" type="text" id="template-title">
+                    </label>
                 </div>
                 <div>
-                    <label>Opacity: <input type="range" id="template-opacity" min="0" max="1" step="0.01"></label>
-                    <span id="template-opacity-percentage">100%</span>
+                    <label class="input-group">
+                        <span class="label-text">URL:</span>
+                        <input class="fullwidth" type="text" id="template-url">
+                    </label>
+                    <label id="template-image-error-warning" for="template-url" class="text-red extra-label">There was an error getting the image</label>
                 </div>
                 <div>
-                    <label>Width: <input type="number" id="template-width" class="small-input" min="0"></label>
+                    <label class="input-group">
+                        <span class="label-text">Horizontal position:</span>
+                        <input type="number" min="0" class="template-coords small-input" id="template-coords-x">
+                    </label>
+                    <label class="input-group">
+                        <span class="label-text">Vertical position:</span>
+                        <input type="number" min="0" class="template-coords small-input" id="template-coords-y">
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <span class="label-text">Opacity:</span>
+                        <input type="range" id="template-opacity" min="0" max="1" step="0.01" value="0.5">
+                        <span class="range-text-value" id="template-opacity-percentage">50%</span>
+                    </label>
+                </div>
+                <div>
+                    <label class="input-group">
+                        <span class="label-text">Width:</span>
+                        <input type="number" id="template-width" class="small-input" min="0">
+                    </label>
                     <button class="text-button" id="template-width-reset">Reset</button>
                 </div>
             </div>
@@ -384,18 +476,30 @@
                 <h3>Pixel Ready Alert Settings</h3>
             </header>
             <div class="pad-wrapper">
-                <p><label for="setting-audio-alert-src">Alert URL:</label><input class="fullwidth" type="text" placeholder="notify.wav" id="setting-audio-alert-src"></p>
-                <div class="button-bar">
-                    <button class="text-button" id="btnForceAudioUpdate">Update</button>
-                    <button class="text-button" id="btnAlertAudioTest">Test</button>
-                    <button class="text-button" id="btnAlertReset">Reset</button>
+                <div>
+                    <label class="input-group">
+                        <span class="label-text">Alert URL:</span>
+                        <input class="fullwidth" type="text" placeholder="notify.wav" id="setting-audio-alert-src">
+                    </label>
+                    <div class="button-bar">
+                        <button class="text-button" id="btnForceAudioUpdate">Update</button>
+                        <button class="text-button" id="btnAlertAudioTest">Test</button>
+                        <button class="text-button" id="btnAlertReset">Reset</button>
+                    </div>
                 </div>
                 <div>
-                    <label for="setting-audio-alert-volume">Volume:</label>
-                    <input type="range" id="setting-audio-alert-volume" min=0 max=1 step=".01" value=1>
-                    <span id="lblAlertVolume"></span>
+                    <label class="input-group">
+                        <span class="label-text">Volume:</span>
+                        <input type="range" id="setting-audio-alert-volume" min=0 max=1 step=".01" value="1">
+                        <span class="range-text-value" id="lblAlertVolume">100%</span>
+                    </label>
                 </div>
-                <label style="display: block;">Delay (Seconds): <input type="number" width="30px" value="0" id="setting-place-alert-delay"></label>
+                <div>
+                    <label class="input-group">
+                        <span class="label-text">Delay (Seconds):</span>
+                        <input type="number" width="30px" value="0" id="setting-place-alert-delay">
+                    </label>
+                </div>
             </div>
         </article>
         <article>
@@ -403,10 +507,15 @@
                 <h3>Account Settings</h3>
             </header>
             <div class="pad-wrapper">
-                <p><label for="txtDiscordName">Public Discord Name:</label><input class="fullwidth" type="text" placeholder="pxlslover#1337" id="txtDiscordName"></p>
-                <div class="button-bar">
-                    <button class="text-button" id="btnDiscordNameSet">Set</button>
-                    <button class="text-button" id="btnDiscordNameRemove">Remove</button>
+                <div>
+                    <label class="input-group">
+                        <span class="label-text">Public Discord Name:<span>
+                        <input class="fullwidth" type="text" placeholder="pxlslover#1337" id="txtDiscordName">
+                    </label>
+                    <div class="button-bar">
+                        <button class="text-button" id="btnDiscordNameSet">Set</button>
+                        <button class="text-button" id="btnDiscordNameRemove">Remove</button>
+                    </div>
                 </div>
             </div>
         </article>

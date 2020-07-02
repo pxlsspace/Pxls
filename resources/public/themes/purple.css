@@ -80,10 +80,6 @@ html {
 
     --panel-trigger-outline-color: #AAA;
 
-    --option-bubble-position-border-color-hovered: #797979;
-    --option-bubble-position-background-hovered: #683683;
-    --option-bubble-position-background-selected: #8445a7;
-
     --chat-separator-color: #000;
     --chat-odd-background: rgba(0, 0, 0, 0.1);
     --chat-abbr-underline-color: var(--general-text-color);

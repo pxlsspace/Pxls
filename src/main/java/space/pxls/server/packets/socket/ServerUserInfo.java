@@ -5,6 +5,8 @@ public class ServerUserInfo {
     public String username;
     public String login;
     public String role;
+    public int pixelCount;
+    public int pixelCountAllTime;
     public Boolean banned;
     public Long banExpiry;
     public String ban_reason;
@@ -18,13 +20,15 @@ public class ServerUserInfo {
     public String discordName;
     public Number chatNameColor;
 
-    public ServerUserInfo(String username, String login, String role, Boolean banned, Long banExpiry, String ban_reason,
-                          String method, Boolean cdOverride, Boolean chatBanned, String chatbanReason,
-                          Boolean chatbanIsPerma, Long chatbanExpiry, Boolean renameRequested, String discordName,
-                          Number chatNameColor) {
+    public ServerUserInfo(String username, String login, String role, int pixelCount, int pixelCountAllTime,
+                          Boolean banned, Long banExpiry, String ban_reason, String method, Boolean cdOverride,
+                          Boolean chatBanned, String chatbanReason, Boolean chatbanIsPerma, Long chatbanExpiry,
+                          Boolean renameRequested, String discordName, Number chatNameColor) {
         this.username = username;
         this.login = login;
         this.role = role;
+        this.pixelCount = pixelCount;
+        this.pixelCountAllTime = pixelCountAllTime;
         this.banned = banned;
         this.banExpiry = banExpiry;
         this.ban_reason = ban_reason;

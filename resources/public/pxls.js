@@ -157,28 +157,26 @@ window.App = (function() {
   const TH = (function() { // place typeahead in its own pseudo namespace
     /**
      *
-     * @param char {string} The char trigger. Should only be a one byte wide grapheme. Emojis will fail
-     * @param dbType {string} The type of the database, acts internally as a map key.
-     * @param [keepTrigger=false] {boolean} Whether or not this trigger type should keep it's matching trigger chars on search results.
-     * @param [hasPair=false] {boolean} Whether or not this trigger has a matching pair at the end, e.g. ':word:' vs '@word'
-     * @param [minLength=0] {number} The minimum length of the match before this trigger is considered valid.
+     * @param {string} char The char trigger. Should only be a one byte wide grapheme. Emojis will fail
+     * @param {string} dbType The type of the database, acts internally as a map key.
+     * @param {boolean} [hasPair=false] Whether or not this trigger has a matching pair at the end, e.g. ':word:' vs '@word'
+     * @param {number} [minLength=0] The minimum length of the match before this trigger is considered valid.
      *                                Length is calculated without `this.char`, so a trigger of ":" and a match of ":one" will be a length of 3.
      * @constructor
      */
-    function Trigger(char, dbType, keepTrigger = false, hasPair = false, minLength = 0) {
+    function Trigger(char, dbType, hasPair = false, minLength = 0) {
       this.char = char;
       this.dbType = dbType;
-      this.keepTrigger = keepTrigger;
       this.hasPair = hasPair;
       this.minLength = minLength;
     }
 
     /**
      *
-     * @param start {number} The first (typically left-most) index of the trigger match
-     * @param end {number} The right (typically right-most) index of the trigger match
-     * @param trigger {Trigger} The trigger this match is for
-     * @param word {string} The whole word this trigger matches
+     * @param {number} start The first (typically left-most) index of the trigger match
+     * @param {number} end The right (typically right-most) index of the trigger match
+     * @param {Trigger} trigger The trigger this match is for
+     * @param {string} word The whole word this trigger matches
      * @constructor
      */
     function TriggerMatch(start, end, trigger, word) {
@@ -190,26 +188,56 @@ window.App = (function() {
 
     /**
      *
-     * @param name {string} The name of the database. Used internally as an accessor key.
-     * @param [initData={}] {object} The initial data to seed this database with.
-     * @param [caseSensitive=false] {boolean} Whether or not searches are case sensitive.
-     * @param [leftAnchored=false] {boolean} Whether or not searches are left-anchored.
+     * @typedef TypeaheadEntry
+     * @type {object}
+     * @property {string} key The key of the entry, to be matched by the typeahead.
+     * @property {string} value The value of the entry, what the typeahead should output when the option is selected.
+     */
+
+    /**
+     *
+     * @callback TypeaheadInserterCallback
+     * @param {TypeaheadEntry} entry
+     */
+    /**
+     *
+     * @callback TypeaheadRendererCallback
+     * @param {TypeaheadEntry} entry
+     */
+
+    const defaultCallback = (entry) => entry.value;
+
+    /**
+     *
+     * @param {string} name The name of the database. Used internally as an accessor key.
+     * @param {object} [initData={}] The initial data to seed this database with.
+     * @param {boolean} [caseSensitive=false] Whether or not searches are case sensitive.
+     * @param {boolean} [leftAnchored=false] Whether or not searches are left-anchored.
      *                                       If true, `startsWith` is used. Otherwise, `includes` is used.
+     * @param {TypeaheadInserterCallback} [inserter] Function ran to insert an entry into the text field.
+     * @param {TypeaheadRendererCallback} [renderer] Function ran to render an entry on the typeahead prompt.
      * @constructor
      */
-    function Database(name, initData = {}, caseSensitive = false, leftAnchored = false) {
+    function Database(name, initData = {}, caseSensitive = false, leftAnchored = false, inserter = defaultCallback, renderer = defaultCallback) {
       this.name = name;
       this._caseSensitive = caseSensitive;
       this.initData = initData;
       this.leftAnchored = leftAnchored;
+      this.inserter = inserter;
+      this.renderer = renderer;
 
       const fixKey = key => this._caseSensitive ? key.trim() : key.toLowerCase().trim();
       this.search = (start) => {
         start = fixKey(start);
-        return Object.entries(this.initData).filter(x => {
-          const key = fixKey(x[0]);
-          return this.leftAnchored ? key.startsWith(start) : key.includes(start);
-        }).map(x => x[1]);
+        return Object.entries(this.initData)
+          .filter(x => {
+            const key = fixKey(x[0]);
+            return this.leftAnchored ? key.startsWith(start) : key.includes(start);
+          })
+          .map(x => ({
+            key: x[0],
+            value: x[1]
+          }));
       };
       this.addEntry = (key, value) => {
         key = fixKey(key);
@@ -223,9 +251,9 @@ window.App = (function() {
 
     /**
      *
-     * @param triggers {Trigger[]}
-     * @param [stops=[' ']] {string[]} An array of characters that mark the bounds of a match, e.g. if we have an input of "one two", a cancels of [' '], and we search from the end of the string, we'll grab the word "two"
-     * @param DBs {Database[]} The databases to scan for trigger matches
+     * @param {Trigger[]} triggers
+     * @param {string[]} [stops=[' ']] An array of characters that mark the bounds of a match, e.g. if we have an input of "one two", a cancels of [' '], and we search from the end of the string, we'll grab the word "two"
+     * @param {Database[]} [DBs=[]] The databases to scan for trigger matches
      * @constructor
      */
     function Typeahead(triggers, stops = [' '], DBs = []) {
@@ -246,8 +274,8 @@ window.App = (function() {
        * Scans the given string from the specified start position for a trigger match.
        * Starts from the right and scans left for a trigger. If found, we then scan to the right of the start index for a word break.
        *
-       * @param startIndex {number} The index to start searching from. Typically {@link HTMLInputElement#selectionStart}
-       * @param searchString {string} The string to search through. Typically {@link HTMLInputElement#value}
+       * @param {number} startIndex The index to start searching from. Typically {@link HTMLInputElement#selectionStart}
+       * @param {string} searchString The string to search through. Typically {@link HTMLInputElement#value}
        * @returns {TriggerMatch|boolean} `false` if failed, a `TriggerMatch` otherwise.
        */
       this.scan = (startIndex, searchString) => {
@@ -284,23 +312,19 @@ window.App = (function() {
       };
 
       /**
-       * @param trigger {TriggerMatch} The trigger match we should look for suggestions on.
+       * @param {TriggerMatch} trigger The trigger match we should look for suggestions on.
        */
       this.suggestions = (trigger) => {
         let db = this.DBs.filter(x => x.name === trigger.trigger.dbType);
         if (!db || !db.length) return [];
         db = db[0];
-        let fromDB = db.search(trigger.word, trigger.trigger.leftAnchored);
-        if (fromDB && trigger.trigger.keepTrigger) {
-          fromDB = fromDB.map(x => `${trigger.trigger.char}${x}`);
-        }
-        return fromDB;
+        return db.search(trigger.word, trigger.trigger.leftAnchored);
       };
 
       /**
        * Gets the requested database.
        *
-       * @param dbName {string} The database's name.
+       * @param {string} dbName The database's name.
        * @see {@link Database#name}
        * @returns {null|Database}
        */
@@ -402,12 +426,14 @@ window.App = (function() {
         const validValue = validate(value, defaultValue, type);
         ls.set(name, validValue);
 
-        if (type === SettingType.RADIO) {
-          controls.each((_, e) => { e.checked = e.value === value; });
-        } else if (type === SettingType.TOGGLE) {
-          controls.prop('checked', validValue);
-        } else {
-          controls.prop('value', validValue);
+        if (controls.length > 0) {
+          if (type === SettingType.RADIO) {
+            controls.each((_, e) => { e.checked = e.value === value; });
+          } else if (type === SettingType.TOGGLE) {
+            controls.prop('checked', validValue);
+          } else {
+            controls.prop('value', validValue);
+          }
         }
 
         listeners.forEach((f) => f(validValue));
@@ -562,7 +588,8 @@ window.App = (function() {
           enable: setting('ui.cursor.enable', SettingType.TOGGLE, !possiblyMobile, $('#setting-ui-cursor-enable'))
         },
         bubble: {
-          position: setting('ui.bubble.position', SettingType.RADIO, 'bottom left', $('[name=setting-ui-bubble-position]'))
+          position: setting('ui.bubble.position', SettingType.SELECT, 'bottom left', $('#setting-ui-bubble-position')),
+          compact: setting('ui.bubble.compact', SettingType.TOGGLE, false)
         },
         brightness: {
           enable: setting('ui.brightness.enable', SettingType.TOGGLE, false, $('#setting-ui-brightness-enable')),
@@ -2645,12 +2672,7 @@ window.App = (function() {
                 $('<span>').addClass('palette-number').text(idx)
               )
               .click(function() {
-                // TODO ([  ]): This check should be in switch - not here.
-                //              It's actually not very helpful here because of mmb picker and scrolling.
-                //              These buttons are occluded by the timer anyway.
-                if (settings.place.deselectonplace.enable.get() === false || timer.cooledDown()) {
-                  self.switch(idx);
-                }
+                self.switch(idx);
               });
           })
         );
@@ -3334,6 +3356,11 @@ window.App = (function() {
 
         settings.ui.bubble.position.listen(function(value) {
           self.elements.mainBubble.attr('position', value);
+        });
+
+        $('#setting-ui-bubble-compact').on('click', settings.ui.bubble.compact.toggle);
+        settings.ui.bubble.compact.listen(function(value) {
+          self.elements.mainBubble.toggleClass('compact', value);
         });
 
         settings.ui.reticule.enable.listen(function(value) {
@@ -4513,7 +4540,12 @@ window.App = (function() {
           self.elements.jump_button[0].style.display = self.stickToBottom ? 'none' : 'block';
         });
 
-        self.picker = new EmojiButton({ position: 'left-start' });
+        self.picker = new EmojiButton({
+          position: 'left-start',
+          style: 'twemoji',
+          zIndex: 30,
+          emojiVersion: '13.0'
+        });
         self.picker.on('emoji', emojiStr => {
           self.elements.input[0].value += emojiStr;
           self.elements.input[0].focus();
@@ -4521,7 +4553,9 @@ window.App = (function() {
         self.elements.emoji_button.on('click', function() {
           self.picker.pickerVisible ? self.picker.hidePicker() : self.picker.showPicker(this);
           const searchEl = self.picker.pickerEl.querySelector('.emoji-picker__search'); // searchEl is destroyed every time the picker closes. have to re-attach
-          if (searchEl) { searchEl.addEventListener('keydown', e => e.stopPropagation()); }
+          if (searchEl) {
+            searchEl.addEventListener('keydown', e => e.stopPropagation());
+          }
         });
 
         settings.chat.font.size.listen(function(value) {
@@ -4564,18 +4598,20 @@ window.App = (function() {
       },
       initTypeahead() {
         // init DBs
-        const dbEmojis = new TH.Database('emoji');
-        const dbUsers = new TH.Database('users');
+        const dbEmojis = new TH.Database('emoji', {}, false, false, (x) => x.value, (x) => `${twemoji.parse(x.value)} :${x.key}:`);
+        const dbUsers = new TH.Database('users', {}, false, false, (x) => `@${x.value} `, (x) => `@${x.value}`);
 
         if (window.emojiDB) {
-          Object.entries(window.emojiDB).sort((a, b) => a[0].toLocaleLowerCase().localeCompare(b[0].toLocaleLowerCase())).forEach(emojiEntry => {
-            dbEmojis.addEntry(emojiEntry[0], emojiEntry[1].char);
-          });
+          Object.keys(window.emojiDB)
+            .sort((a, b) => a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase()))
+            .forEach(name => {
+              dbEmojis.addEntry(name, window.emojiDB[name]);
+            });
         }
 
         // init triggers
-        const triggerEmoji = new TH.Trigger(':', 'emoji', false, true, 2);
-        const triggerUsers = new TH.Trigger('@', 'users', true, false);
+        const triggerEmoji = new TH.Trigger(':', 'emoji', true, 2);
+        const triggerUsers = new TH.Trigger('@', 'users', false);
 
         // init typeahead
         self.typeahead.helper = new TH.Typeahead([triggerEmoji, triggerUsers], [' '], [dbEmojis, dbUsers]);
@@ -4606,16 +4642,8 @@ window.App = (function() {
                 event.preventDefault();
                 event.stopPropagation();
                 event.stopImmediatePropagation();
-                let nextIndex = self.typeahead.highlightedIndex + (event.shiftKey ? -1 : 1); // if we're holding shift, walk backwards (up).
-                const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
-                if (event.shiftKey && nextIndex < 0) { // if we're holding shift, we're walking backwards and need to check underflow.
-                  nextIndex = children.length - 1;
-                } else if (nextIndex >= children.length) {
-                  nextIndex = 0;
-                }
-                children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
-                children[nextIndex].classList.add('active');
-                self.typeahead.highlightedIndex = nextIndex;
+
+                self.selectNextTypeaheadEntry(event.shiftKey ? -1 : 1); // if we're holding shift, walk backwards (up).
                 return;
               } else {
                 scan();
@@ -4628,14 +4656,7 @@ window.App = (function() {
                 event.preventDefault();
                 event.stopPropagation();
                 event.stopImmediatePropagation();
-                let nextIndex = self.typeahead.highlightedIndex - 1;
-                const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
-                if (nextIndex < 0) {
-                  nextIndex = children.length - 1;
-                }
-                children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
-                children[nextIndex].classList.add('active');
-                self.typeahead.highlightedIndex = nextIndex;
+                self.selectNextTypeaheadEntry(-1);
                 return;
               }
               break;
@@ -4646,14 +4667,7 @@ window.App = (function() {
                 event.preventDefault();
                 event.stopPropagation();
                 event.stopImmediatePropagation();
-                let nextIndex = self.typeahead.highlightedIndex + 1;
-                const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
-                if (nextIndex >= children.length) {
-                  nextIndex = 0;
-                }
-                children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex].classList.remove('active');
-                children[nextIndex].classList.add('active');
-                self.typeahead.highlightedIndex = nextIndex;
+                self.selectNextTypeaheadEntry(1);
                 return;
               }
               break;
@@ -4694,14 +4708,18 @@ window.App = (function() {
               self.elements.typeahead_list[0].innerHTML = '<li class="no-results">No Results</li>'; // no reason to crel this if we're just gonna innerHTML anyway.
             } else {
               self.elements.typeahead_list[0].innerHTML = '';
-              const LIs = got.slice(0, 10).map(x =>
-                crel('li', crel('button', {
-                  'data-insert': `${x} `,
+              const db = self.typeahead.helper.getDatabase(scanRes.trigger.dbType);
+
+              const LIs = got.slice(0, 50).map(x => {
+                const el = crel('button', {
+                  'data-insert': db.inserter(x),
                   'data-start': scanRes.start,
                   'data-end': scanRes.end,
                   onclick: self._handleTypeaheadInsert
-                }, x))
-              );
+                });
+                el.innerHTML = db.renderer(x);
+                return crel('li', el);
+              });
               LIs[0].classList.add('active');
               crel(self.elements.typeahead_list[0], LIs);
             }
@@ -4722,6 +4740,22 @@ window.App = (function() {
         self.elements.input[0].value = self.elements.input[0].value.substring(0, start) + toInsert + self.elements.input[0].value.substring(end);
         self.elements.input[0].focus();
         self.resetTypeahead();
+      },
+      selectNextTypeaheadEntry(direction) {
+        let nextIndex = self.typeahead.highlightedIndex + direction;
+        const children = self.elements.typeahead_list[0].querySelectorAll('button[data-insert]');
+        if (direction < 0 && nextIndex < 0) { // if we're walking backwards, we need to check for underflow.
+          nextIndex = children.length - 1;
+        } else if (direction > 0 && nextIndex >= children.length) { // if we're walking forwards, we need to check for overflow.
+          nextIndex = 0;
+        }
+        const lastSelected = children[self.typeahead.highlightedIndex === -1 ? nextIndex : self.typeahead.highlightedIndex];
+        if (lastSelected) {
+          lastSelected.classList.remove('active');
+        }
+        children[nextIndex].classList.add('active');
+        children[nextIndex].scrollIntoView();
+        self.typeahead.highlightedIndex = nextIndex;
       },
       resetTypeahead: () => { // close with reset
         self.typeahead.suggesting = false;
@@ -4755,57 +4789,61 @@ window.App = (function() {
       getIgnores: () => [].concat(self.ignored || []),
       popChatSettings() {
         // dom generation
-        const body = crel('div', { class: 'chat-settings-wrapper' });
+        const body = crel('div', { class: 'chat-settings-wrapper no-p-margin' });
 
-        const _cb24hTimestamps = crel('input', { type: 'checkbox' });
-        const lbl24hTimestamps = crel('label', _cb24hTimestamps, '24 Hour Timestamps');
+        const genCheckboxGroup = (label) => {
+          const cb = crel('input', { type: 'checkbox' });
+          const lbl = crel('label', { class: 'input-group' },
+            cb,
+            ' ',
+            crel('span', { class: 'label-text' }, label));
+          return [cb, lbl];
+        };
 
-        const _cbPixelPlaceBadges = crel('input', { type: 'checkbox' });
-        const lblPixelPlaceBadges = crel('label', _cbPixelPlaceBadges, 'Show pixel-placed badges');
-
-        const _cbFactionTagBadges = crel('input', { type: 'checkbox' });
-        const lblFactionTagBadges = crel('label', _cbFactionTagBadges, 'Show faction tags');
-
-        const _cbPings = crel('input', { type: 'checkbox' });
-        const lblPings = crel('label', _cbPings, 'Enable pings');
+        const [_cb24hTimestamps, lbl24hTimestamps] = genCheckboxGroup('24 Hour Timestamps');
+        const [_cbPixelPlaceBadges, lblPixelPlaceBadges] = genCheckboxGroup('Show pixel-placed badges');
+        const [_cbFactionTagBadges, lblFactionTagBadges] = genCheckboxGroup('Show faction tags');
+        const [_cbPings, lblPings] = genCheckboxGroup('Enable pings');
 
         const _cbPingAudio = crel('select', {},
           crel('option', { value: 'off' }, 'Off'),
           crel('option', { value: 'discrete' }, 'Only when necessary'),
           crel('option', { value: 'always' }, 'Always')
         );
-        const lblPingAudio = crel('label',
-          'Play sound on ping: ',
+        const lblPingAudio = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Play sound on ping: '),
           _cbPingAudio
         );
 
         const _rgPingAudioVol = crel('input', { type: 'range', min: 0, max: 1, step: 0.01 });
-        const _txtPingAudioVol = crel('span');
-        const lblPingAudioVol = crel('label',
-          'Ping sound volume: ',
+        const _txtPingAudioVol = crel('span', { class: 'range-text-value' });
+        const lblPingAudioVol = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Ping sound volume: '),
           _rgPingAudioVol,
           _txtPingAudioVol
         );
 
-        const _cbBanner = crel('input', { type: 'checkbox' });
-        const lblBanner = crel('label', _cbBanner, 'Enable the rotating banner under chat');
-
-        const _cbTemplateTitles = crel('input', { type: 'checkbox' });
-        const lblTemplateTitles = crel('label', _cbTemplateTitles, 'Replace template titles with URLs in chat where applicable');
+        const [_cbBanner, lblBanner] = genCheckboxGroup('Enable the rotating banner under chat');
+        const [_cbTemplateTitles, lblTemplateTitles] = genCheckboxGroup('Replace template titles with URLs in chat where applicable');
 
         const _txtFontSize = crel('input', { type: 'number', min: '1', max: '72' });
         const _btnFontSizeConfirm = crel('button', { class: 'text-button' }, crel('i', { class: 'fas fa-check' }));
-        const lblFontSize = crel('label', 'Font Size: ', _txtFontSize, _btnFontSizeConfirm);
+        const lblFontSize = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Font Size: '),
+          _txtFontSize
+        );
 
-        const _cbHorizontal = crel('input', { type: 'checkbox' });
-        const lblHorizontal = crel('label', _cbHorizontal, 'Enable horizontal chat');
+        const [_cbHorizontal, lblHorizontal] = genCheckboxGroup('Enable horizontal chat');
 
         const _selInternalClick = crel('select',
           Object.values(self.TEMPLATE_ACTIONS).map(action =>
             crel('option', { value: action.id }, action.pretty)
           )
         );
-        const lblInternalAction = crel('label', 'Default internal link action click: ', _selInternalClick);
+        const lblInternalAction = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Default internal link action click: '),
+          _selInternalClick
+        );
 
         const _selUsernameColor = crel('select', { class: 'username-color-picker' },
           user.isStaff() ? crel('option', { value: -1, class: 'rainbow' }, 'rainbow') : null,
@@ -4815,7 +4853,10 @@ window.App = (function() {
             style: `background-color: ${x}`
           }, x))
         );
-        const lblUsernameColor = crel('label', 'Username Color: ', _selUsernameColor);
+        const lblUsernameColor = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Username Color: '),
+          _selUsernameColor
+        );
 
         const _selIgnores = crel('select', {
           class: 'user-ignores',
@@ -4825,9 +4866,12 @@ window.App = (function() {
           crel('option', { value: x }, x)
         )
         );
-        const _btnUnignore = crel('button', { class: 'text-button', style: 'margin-left: .5rem' }, 'Unignore');
-        const lblIgnores = crel('label', 'Ignores: ', _selIgnores, _btnUnignore);
-        const lblIgnoresFeedback = crel('label', { style: 'display: none; margin-left: 1rem;' }, '');
+        const _btnUnignore = crel('button', { class: 'text-button' }, 'Unignore');
+        const lblIgnores = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Ignores: '),
+          _selIgnores
+        );
+        const lblIgnoresFeedback = crel('label', { for: _selIgnores.id, class: 'extra-label' }, '');
 
         // events/scaffolding
         _selUsernameColor.value = user.getChatNameColor();
@@ -4892,6 +4936,7 @@ window.App = (function() {
             lblFontSize,
             lblUsernameColor,
             lblIgnores,
+            _btnUnignore,
             lblIgnoresFeedback
           ].map(x => crel('div', x))
         );
@@ -5008,7 +5053,7 @@ window.App = (function() {
       _updateAuthorDisplayedFaction: (author, faction) => {
         const tag = (faction && faction.tag) || '';
         const color = faction ? self.intToHex(faction && faction.color) : null;
-        const tagStr = (faction && faction.tag) ? `[${faction.tag}]` : '';
+        const tagStr = (faction && faction.tag) ? `[${twemoji.parse(faction.tag)}]` : '';
         let ttStr = '';
         if (faction && faction.name != null && faction.id != null) {
           ttStr = `${faction.name} (ID: ${faction.id})`;
@@ -5031,7 +5076,7 @@ window.App = (function() {
         const colorHex = `#${('000000' + (faction.color >>> 0).toString(16)).slice(-6)}`;
         self.elements.body.find(`.chat-line[data-faction="${faction.id}"]`).each(function() {
           this.dataset.tag = faction.tag;
-          $(this).find('.faction-tag').attr('data-tag', faction.tag).attr('title', `${faction.name} (ID: ${faction.id})`).css('color', colorHex).html(`[${faction.tag}]`);
+          $(this).find('.faction-tag').attr('data-tag', faction.tag).attr('title', `${faction.name} (ID: ${faction.id})`).css('color', colorHex).html(`[${twemoji.parse(faction.tag)}]`);
         });
       },
       _clearFaction: (fid) => {
@@ -5144,12 +5189,15 @@ window.App = (function() {
         const _facColor = packet.strippedFaction ? self.intToHex(packet.strippedFaction.color) : 0;
         const _facTagShow = packet.strippedFaction && settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
         const _facTitle = packet.strippedFaction ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : '';
-        crel(flairs, crel('span', {
+
+        const _facFlair = crel('span', {
           class: 'flair faction-tag',
           'data-tag': _facTag,
           style: `color: ${_facColor}; display: ${_facTagShow}`,
           title: _facTitle
-        }, `[${_facTag}]`));
+        });
+        _facFlair.innerHTML = `[${twemoji.parse(_facTag)}]`;
+        crel(flairs, _facFlair);
 
         const contentSpan = self.processMessage('span', 'content', packet.message_raw);
         twemoji.parse(contentSpan);
@@ -5456,6 +5504,12 @@ window.App = (function() {
             }
           };
 
+          let _factionTag = null;
+          if (closest.dataset.tag) {
+            _factionTag = document.createElement('span', { class: 'flair faction-tag' });
+            _factionTag.innerHTML = `[${twemoji.parse(closest.dataset.tag)}] `;
+          }
+
           const popupWrapper = crel('div', { class: 'popup panel', 'data-popup-for': id });
           const panelHeader = crel('header',
             { class: 'panel-header' },
@@ -5463,7 +5517,7 @@ window.App = (function() {
               class: 'fas fa-times',
               onclick: closeHandler
             })),
-            crel('span', (closest.dataset.tag ? `[${closest.dataset.tag}] ` : null), closest.dataset.author, badges),
+            crel('span', _factionTag, closest.dataset.author, badges),
             crel('div', { class: 'right' })
           );
           const leftPanel = crel('div', { class: 'pane details-wrapper chat-line' });
@@ -6120,12 +6174,10 @@ window.App = (function() {
     const self = {
       elements: {
         palette: $('#palette'),
-        timer_overlay: $('#cd-timer-overlay'),
-        timer_bubble_container: $('#cooldown'),
-        timer_bubble_countdown: $('#cooldown-timer'),
+        timer_container: $('#cooldown'),
+        timer_countdown: $('#cooldown-timer'),
         timer_chat: $('#txtMobileChatCooldown')
       },
-      isOverlay: false,
       hasFiredNotification: true,
       cooldown: 0,
       runningTimer: false,
@@ -6139,10 +6191,7 @@ window.App = (function() {
         let delta = (self.cooldown - (new Date()).getTime() - 1) / 1000;
 
         if (self.runningTimer === false) {
-          self.isOverlay = settings.place.deselectonplace.enable.get() === true;
-          self.elements.timer_container = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble_container;
-          self.elements.timer_countdown = self.isOverlay ? self.elements.timer_overlay : self.elements.timer_bubble_countdown;
-          self.elements.timer_overlay.hide();
+          self.elements.timer_container.hide();
         }
 
         if (self.status) {
@@ -6167,10 +6216,6 @@ window.App = (function() {
 
         if (delta > 0) {
           self.elements.timer_container.show();
-          if (self.isOverlay) {
-            self.elements.palette.css('overflow-x', 'hidden');
-            self.elements.timer_container.css('left', `${self.elements.palette.scrollLeft()}px`);
-          }
           delta++; // real people don't count seconds zero-based (programming is more awesome)
           const secs = Math.floor(delta % 60);
           const secsStr = secs < 10 ? '0' + secs : secs;
@@ -6194,10 +6239,6 @@ window.App = (function() {
         self.runningTimer = false;
 
         document.title = uiHelper.getTitle();
-        if (self.isOverlay) {
-          self.elements.palette.css('overflow-x', 'auto');
-          self.elements.timer_container.css('left', '0');
-        }
         self.elements.timer_container.hide();
         self.elements.timer_chat.text('');
 
@@ -6230,9 +6271,6 @@ window.App = (function() {
       },
       init: function() {
         self.title = document.title;
-        self.elements.timer_container = settings.place.deselectonplace.enable.get() === false
-          ? self.elements.timer_overlay
-          : self.elements.timer_bubble_container;
         self.elements.timer_container.hide();
         self.elements.timer_chat.text('');
 
@@ -6347,6 +6385,7 @@ window.App = (function() {
       elements: {
         users: $('#online-count'),
         userInfo: $('#user-info'),
+        pixelCounts: $('#pixel-counts'),
         loginOverlay: $('#login-overlay'),
         userMessage: $('#user-message'),
         prompt: $('#prompt'),
@@ -6360,6 +6399,8 @@ window.App = (function() {
       getRole: () => self.role,
       isStaff: () => ['MODERATOR', 'DEVELOPER', 'ADMIN', 'TRIALMOD'].includes(self.getRole()),
       getUsername: () => self.username,
+      getPixelCount: () => self.pixelCount,
+      getPixelCountAllTime: () => self.pixelCountAllTime,
       signin: function() {
         const data = ls.get('auth_respond');
         if (!data) {
@@ -6454,11 +6495,13 @@ window.App = (function() {
         });
         self.elements.signup.find('#signup-button').click(self.doSignup);
         self.elements.users.hide();
+        self.elements.pixelCounts.hide();
         self.elements.userInfo.hide();
         self.elements.userInfo.find('.logout').click(function(evt) {
           evt.preventDefault();
           $.get('/logout', function() {
             self.elements.userInfo.fadeOut(200);
+            self.elements.pixelCounts.fadeOut(200);
             self.elements.userMessage.fadeOut(200);
             self.elements.loginOverlay.fadeIn(200);
             if (window.deInitAdmin) {
@@ -6487,6 +6530,10 @@ window.App = (function() {
           const banelem = crel('div', { class: 'ban-alert-content' });
           self.username = data.username;
           self.loggedIn = true;
+          self.pixelCount = data.pixelCount;
+          self.pixelCountAllTime = data.pixelCountAllTime;
+          self.updatePixelCountElements();
+          self.elements.pixelCounts.fadeIn(200);
           self.chatNameColor = data.chatNameColor;
           uiHelper.updateSelectedNameColor(data.chatNameColor);
           $(window).trigger('pxls:user:loginState', [true]);
@@ -6555,6 +6602,15 @@ window.App = (function() {
 
           analytics('send', 'event', 'Auth', 'Login', data.method);
         });
+        socket.on('pixelCounts', function(data) {
+          self.pixelCount = data.pixelCount;
+          self.pixelCountAllTime = data.pixelCountAllTime;
+
+          self.updatePixelCountElements();
+
+          // For userscripts.
+          $(window).trigger('pxls:pixelCounts:update', Object.assign({}, data));
+        });
         socket.on('rename', function(e) {
           if (e.requested === true) {
             self.showRenameRequest();
@@ -6567,7 +6623,7 @@ window.App = (function() {
           self.elements.userInfo.find('span.name').text(e.newName);
         });
       },
-      _handleSubmit: function(event) {
+      _handleRenameSubmit: function(event) {
         event.preventDefault();
         const input = this.querySelector('.rename-input');
         const btn = this.querySelector('.rename-submit');
@@ -6595,7 +6651,7 @@ window.App = (function() {
         });
       },
       _handleRenameClick: function(event) {
-        const renamePopup = crel('form', { onsubmit: self._handleSubmit },
+        const renamePopup = crel('form', { onsubmit: self._handleRenameSubmit },
           crel('p', 'Staff have required you to change your username, this usually means your name breaks one of our rules.'),
           crel('p', 'If you disagree, please contact us on Discord (link in the info panel).'),
           crel('label', 'New Username: ',
@@ -6633,6 +6689,10 @@ window.App = (function() {
       },
       hideRenameRequest: () => {
         self.elements.userMessage.fadeOut(200);
+      },
+      updatePixelCountElements: () => {
+        self.elements.pixelCounts.find('#current-pixel-count').text(self.pixelCount.toLocaleString());
+        self.elements.pixelCounts.find('#alltime-pixel-count').text(self.pixelCountAllTime.toLocaleString());
       }
     };
     return {
@@ -6640,6 +6700,8 @@ window.App = (function() {
       getRole: self.getRole,
       isStaff: self.isStaff,
       getUsername: self.getUsername,
+      getPixelCount: self.getPixelCount,
+      getPixelCountAllTime: self.getPixelCountAllTime,
       webinit: self.webinit,
       wsinit: self.wsinit,
       isLoggedIn: self.isLoggedIn,
@@ -6983,6 +7045,8 @@ window.App = (function() {
     typeahead: chat.typeahead,
     user: {
       getUsername: user.getUsername,
+      getPixelCount: user.getPixelCount,
+      getPixelCountAllTime: user.getPixelCountAllTime,
       getRole: user.getRole,
       isLoggedIn: user.isLoggedIn,
       isStaff: user.isStaff
