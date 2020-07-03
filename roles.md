@@ -26,8 +26,8 @@ roleID {
 | --- | --- | --- | --- |
 | `roleID` | No | `String` | Case-sensitive role identifier |
 | `name` | No | `String` | Role display name |
-| `type` | Yes | `String` | Type of role **\[1\]** |
-| `default` | Yes | `String` | Whether or not the role is assigned after registration |
+| `guest` | Yes | `Boolean` | Whether or not all visitors have the role |
+| `default` | Yes | `Boolean` | Whether or not the role is assigned after registration |
 | `inherits` | Yes | `String[]` | IDs of roles to inherit permissions of |
 | `badges` | Yes | `Object[]` | Badges that appear next to the username in chat |
 | `badge.name` | No | `String` | Name of the badge |
