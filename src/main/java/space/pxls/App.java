@@ -179,7 +179,7 @@ public class App {
                     return;
                 }
                 var rest = Arrays.copyOfRange(token, 2, token.length);
-                List<Role> roles = Stream.concat(Role.fromMixed(List.of(rest)).stream(), Role.getDefaultRoles().stream()).collect(Collectors.toList());
+                List<Role> roles = Role.fromMixed(List.of(rest));
                 user.setRoles(roles);
                 database.setUserRoles(user.getId(), roles);
                 database.insertServerAdminLog("Set " + user.getName() + "'s roles to " + user.getRoleIDsString());
