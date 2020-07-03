@@ -336,12 +336,6 @@ public class User {
     }
 
     public boolean isBanned() {
-        if (banExpiryTime != null && banExpiryTime > System.currentTimeMillis()) {
-            // If now is past their ban expiry, erase their ban expiry time.
-            banExpiryTime = null;
-            App.getDatabase().updateBan(this, null);
-            return false;
-        }
         return banExpiryTime != null;
     }
 
