@@ -175,15 +175,30 @@ public class App {
                     return;
                 }
                 if (token.length < 3) {
-                    System.out.println("User " + user.getName() + " has roles " + user.getRolesString());
+                    if (user.getRoles().isEmpty()) {
+                        System.out.println("User " + user.getName() + " has no roles");
+                    } else {
+                        System.out.println("User " + user.getName() + " has roles " + user.getRolesString());
+                    }
                     return;
                 }
                 var rest = Arrays.copyOfRange(token, 2, token.length);
-                List<Role> roles = Role.fromMixed(List.of(rest));
+                List<Role> roles = new ArrayList<>();
+                if (!rest[0].equals("-")) {
+                    roles = Role.fromMixed(List.of(rest));
+                }
+                if (roles.stream().anyMatch(role -> role.isGuest() || role.isDefault())) {
+                    System.out.println("Guest/default roles cannot be assigned");
+                    return;
+                }
                 user.setRoles(roles);
                 database.setUserRoles(user.getId(), roles);
-                database.insertServerAdminLog("Set " + user.getName() + "'s roles to " + user.getRoleIDsString());
-                System.out.println("Set " + user.getName() + "'s roles to " + user.getRoleIDsString());
+                String logMessage = "Set " + user.getName() + "'s roles to " + user.getRoleIDsString();
+                if (roles.isEmpty()) {
+                    logMessage = "Removed " + user.getName() + "'s roles";
+                }
+                database.insertServerAdminLog(logMessage);
+                System.out.println(logMessage);
             } else if (token[0].equalsIgnoreCase("addroles") || token[0].equalsIgnoreCase("addrole")) {
                 if (token.length < 2) {
                     System.out.println("Usage: addroles <username> [role ID ...]");
