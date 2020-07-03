@@ -7,6 +7,7 @@ import space.pxls.App;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -25,7 +26,9 @@ public class HttpPermissionGate implements HttpHandler {
         User user = exchange.getAttachment(AuthReader.USER);
         List<Role> roles = Role.getGuestRoles();
         if (user != null) {
-            roles = Stream.concat(user.getRoles().stream(), Role.getDefaultRoles().stream()).collect(Collectors.toList());
+            roles = Stream.of(user.getRoles(), Role.getGuestRoles(), Role.getDefaultRoles())
+                    .flatMap(Collection::stream)
+                    .collect(Collectors.toList());
         }
         // Sanity check--if the user has no roles, assume guest again.
         if (roles.isEmpty()) roles = Role.getGuestRoles();

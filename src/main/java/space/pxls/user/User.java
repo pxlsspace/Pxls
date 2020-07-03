@@ -16,6 +16,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class User {
     private int id;
@@ -186,7 +187,9 @@ public class User {
     }
 
     public boolean hasPermission(String node) {
-        if (roles.isEmpty()) return Role.getDefaultRoles().stream().anyMatch(role -> role.hasPermission(node));
+        if (roles.isEmpty()) return Stream.of(Role.getGuestRoles(), Role.getDefaultRoles())
+                .flatMap(Collection::stream)
+                .anyMatch(role -> role.hasPermission(node));
         return roles.stream().anyMatch(role -> role.hasPermission(node));
     }
 
