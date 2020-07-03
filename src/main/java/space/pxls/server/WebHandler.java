@@ -1433,7 +1433,7 @@ public class WebHandler {
                     new ServerUserInfo(
                         user.getName(),
                         user.getLogin(),
-                        user.getRoles(),
+                        user.getAllRoles(),
                         user.getPixelCount(),
                         user.getAllTimePixelCount(),
                         user.isBanned(),

@@ -62,7 +62,7 @@ public class PacketHandler {
             server.send(channel, new ServerUserInfo(
                     user.getName(),
                     user.getLogin(),
-                    user.getRoles(),
+                    user.getAllRoles(),
                     user.getPixelCount(),
                     user.getAllTimePixelCount(),
                     user.isBanned(),

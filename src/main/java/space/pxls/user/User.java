@@ -172,6 +172,12 @@ public class User {
         return roles;
     }
 
+    public List<Role> getAllRoles() {
+        return Stream.of(roles, Role.getGuestRoles(), Role.getDefaultRoles())
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+    }
+
     public String getRolesString() {
         if (roles.isEmpty()) return "";
         return roles.stream()
