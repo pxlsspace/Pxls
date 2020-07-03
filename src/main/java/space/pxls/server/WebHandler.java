@@ -1208,11 +1208,6 @@ public class WebHandler {
             sendBadRequest(exchange, "No authenticated users found");
             return;
         }
-        // NOTE (Flying): We're already perm-gating the request
-        /*if (user.getRoles().lessThan(Role.DEVELOPER)) {
-            send(StatusCodes.FORBIDDEN, exchange, "Invalid permissions");
-            return;
-        }*/
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         String title = null;
         String body = null;
@@ -1264,11 +1259,6 @@ public class WebHandler {
             sendBadRequest(exchange, "No authenticated users found");
             return;
         }
-        // NOTE (Flying): We're already perm-gating the request
-        /*if (user.getRoles().lessThan(Role.DEVELOPER)) {
-            send(StatusCodes.FORBIDDEN, exchange, "Invalid permissions");
-            return;
-        }*/
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         int notificationID = -1;
         if (!data.contains("id")) {
@@ -1295,11 +1285,6 @@ public class WebHandler {
             sendBadRequest(exchange, "No authenticated users found");
             return;
         }
-        // NOTE (Flying): We're already perm-gating the request
-        /*if (user.getRoles().lessThan(Role.DEVELOPER)) {
-            send(StatusCodes.FORBIDDEN, exchange, "Invalid permissions");
-            return;
-        }*/
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         int notificationID = -1;
         boolean shouldBeExpired = false;
