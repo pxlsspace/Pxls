@@ -8,6 +8,8 @@ import space.pxls.user.Role;
 import space.pxls.user.User;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class HttpPermissionGate implements HttpHandler {
     String permission;
@@ -23,7 +25,7 @@ public class HttpPermissionGate implements HttpHandler {
         User user = exchange.getAttachment(AuthReader.USER);
         List<Role> roles = Role.getGuestRoles();
         if (user != null) {
-            roles = user.getRoles();
+            roles = Stream.concat(user.getRoles().stream(), Role.getDefaultRoles().stream()).collect(Collectors.toList());
         }
         // Sanity check--if the user has no roles, assume guest again.
         if (roles.isEmpty()) roles = Role.getGuestRoles();

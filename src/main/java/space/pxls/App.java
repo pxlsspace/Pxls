@@ -149,7 +149,9 @@ public class App {
                 try {
                     cachedWhoamiOrigin = null;
                     loadConfig();
+                    loadRoles();
                     FactionManager.getInstance().invalidateAll();
+                    userManager.reload();
                     System.out.println("Success!");
                 } catch (Exception x) {
                     x.printStackTrace();
@@ -177,7 +179,7 @@ public class App {
                     return;
                 }
                 var rest = Arrays.copyOfRange(token, 2, token.length);
-                List<Role> roles = Stream.concat(Role.fromIDs(List.of(rest)).stream(), Role.getDefaultRoles().stream()).collect(Collectors.toList());
+                List<Role> roles = Role.fromMixed(List.of(rest));
                 user.setRoles(roles);
                 database.setUserRoles(user.getId(), roles);
                 database.insertServerAdminLog("Set " + user.getName() + "'s roles to " + user.getRoleIDsString());
@@ -197,7 +199,7 @@ public class App {
                     return;
                 }
                 var rest = Arrays.copyOfRange(token, 2, token.length);
-                List<Role> roles = Role.fromIDs(List.of(rest));
+                List<Role> roles = Role.fromMixed(List.of(rest));
                 user.addRoles(roles);
                 database.setUserRoles(user.getId(), user.getRoles());
                 String message = "Added roles \"" + roles.stream().map(Role::getName).collect(Collectors.joining(", ")) + "\" to " + user.getName();
@@ -218,7 +220,7 @@ public class App {
                     return;
                 }
                 var rest = Arrays.copyOfRange(token, 2, token.length);
-                List<Role> roles = Role.fromIDs(List.of(rest));
+                List<Role> roles = Role.fromMixed(List.of(rest));
                 user.removeRoles(roles);
                 database.setUserRoles(user.getId(), user.getRoles());
                 String message = "Removed roles \"" + roles.stream().map(Role::getName).collect(Collectors.joining(", ")) + "\" from " + user.getName();

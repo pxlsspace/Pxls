@@ -91,10 +91,6 @@ public class UserManager {
 
         if (!App.getDatabase().getUserByName(name).isPresent()) {
             Optional<DBUser> user = App.getDatabase().createUser(name, login, ip);
-            if (user.isPresent()) {
-                DBUser dbUser = user.get();
-                App.getDatabase().setUserRoles(dbUser.id, Role.getDefaultRoles());
-            }
             userSignupTokens.remove(token);
             return getByDB(user);
         }
