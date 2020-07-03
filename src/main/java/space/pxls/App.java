@@ -151,6 +151,7 @@ public class App {
                     loadConfig();
                     loadRoles();
                     FactionManager.getInstance().invalidateAll();
+                    userManager.reload();
                     System.out.println("Success!");
                 } catch (Exception x) {
                     x.printStackTrace();
