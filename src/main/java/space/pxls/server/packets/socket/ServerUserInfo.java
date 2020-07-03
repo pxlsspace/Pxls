@@ -59,7 +59,7 @@ public class ServerUserInfo {
         return login;
     }
 
-    public List<Role> getRole() {
+    public List<Role> getRoles() {
         return roles;
     }
 

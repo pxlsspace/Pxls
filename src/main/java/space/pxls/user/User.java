@@ -172,6 +172,12 @@ public class User {
         return roles;
     }
 
+    public List<Role> getAllRoles() {
+        return Stream.of(roles, Role.getGuestRoles(), Role.getDefaultRoles())
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+    }
+
     public String getRolesString() {
         if (roles.isEmpty()) return "";
         return roles.stream()
@@ -210,7 +216,7 @@ public class User {
     public void setRoles(List<Role> rolesToSet, boolean skipSendUserData) {
         this.roles = rolesToSet;
         App.getDatabase().setUserRoles(this.getId(), roles);
-        if (!skipSendUserData && !isShadowBanned()) sendUserData();
+        if (!skipSendUserData) sendUserData();
     }
 
     public void addRoles(List<Role> rolesToAdd) {
@@ -330,12 +336,6 @@ public class User {
     }
 
     public boolean isBanned() {
-        if (banExpiryTime != null && banExpiryTime > System.currentTimeMillis()) {
-            // If now is past their ban expiry, erase their ban expiry time.
-            banExpiryTime = null;
-            App.getDatabase().updateBan(this, null);
-            return false;
-        }
         return banExpiryTime != null;
     }
 
@@ -364,9 +364,7 @@ public class User {
             this.banExpiryTime = (timeFromNowSeconds*1000) + System.currentTimeMillis();
         }
         App.getDatabase().updateBan(this, timeFromNowSeconds);
-        if (!skipSendUserData && !shadowBanned) {
-            sendUserData();
-        }
+        if (!skipSendUserData) sendUserData();
     }
 
     public boolean canChat() {

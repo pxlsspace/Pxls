@@ -1208,11 +1208,6 @@ public class WebHandler {
             sendBadRequest(exchange, "No authenticated users found");
             return;
         }
-        // NOTE (Flying): We're already perm-gating the request
-        /*if (user.getRoles().lessThan(Role.DEVELOPER)) {
-            send(StatusCodes.FORBIDDEN, exchange, "Invalid permissions");
-            return;
-        }*/
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         String title = null;
         String body = null;
@@ -1264,11 +1259,6 @@ public class WebHandler {
             sendBadRequest(exchange, "No authenticated users found");
             return;
         }
-        // NOTE (Flying): We're already perm-gating the request
-        /*if (user.getRoles().lessThan(Role.DEVELOPER)) {
-            send(StatusCodes.FORBIDDEN, exchange, "Invalid permissions");
-            return;
-        }*/
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         int notificationID = -1;
         if (!data.contains("id")) {
@@ -1295,11 +1285,6 @@ public class WebHandler {
             sendBadRequest(exchange, "No authenticated users found");
             return;
         }
-        // NOTE (Flying): We're already perm-gating the request
-        /*if (user.getRoles().lessThan(Role.DEVELOPER)) {
-            send(StatusCodes.FORBIDDEN, exchange, "Invalid permissions");
-            return;
-        }*/
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         int notificationID = -1;
         boolean shouldBeExpired = false;
@@ -1433,7 +1418,7 @@ public class WebHandler {
                     new ServerUserInfo(
                         user.getName(),
                         user.getLogin(),
-                        user.getRoles(),
+                        user.getAllRoles(),
                         user.getPixelCount(),
                         user.getAllTimePixelCount(),
                         user.isBanned(),
@@ -1724,12 +1709,6 @@ public class WebHandler {
 
     public void lookup(HttpServerExchange exchange) {
         User user = exchange.getAttachment(AuthReader.USER);
-
-        /*if (user == null || user.getRole().lessThan(Role.USER)) {
-            exchange.setStatusCode(StatusCodes.UNAUTHORIZED);
-            exchange.endExchange();
-            return;
-        }*/
 
         Deque<String> xq = exchange.getQueryParameters().get("x");
         Deque<String> yq = exchange.getQueryParameters().get("y");
