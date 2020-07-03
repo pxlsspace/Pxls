@@ -36,8 +36,6 @@ roleID {
 | `badge.cssIcon` | No | `String` | CSS class(es) of icon |
 | `permissions` | Yes | `String[]` | Role permissions nodes |
 
-\[1\] If the type is `GUEST`, it is assigned to users who are not logged in.
-
 ## Permissions
 
 ### Board
