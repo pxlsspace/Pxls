@@ -216,7 +216,7 @@ public class User {
     public void setRoles(List<Role> rolesToSet, boolean skipSendUserData) {
         this.roles = rolesToSet;
         App.getDatabase().setUserRoles(this.getId(), roles);
-        if (!skipSendUserData && !isShadowBanned()) sendUserData();
+        if (!skipSendUserData) sendUserData();
     }
 
     public void addRoles(List<Role> rolesToAdd) {
@@ -370,9 +370,7 @@ public class User {
             this.banExpiryTime = (timeFromNowSeconds*1000) + System.currentTimeMillis();
         }
         App.getDatabase().updateBan(this, timeFromNowSeconds);
-        if (!skipSendUserData && !shadowBanned) {
-            sendUserData();
-        }
+        if (!skipSendUserData) sendUserData();
     }
 
     public boolean canChat() {
