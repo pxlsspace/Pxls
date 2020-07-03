@@ -21,7 +21,7 @@ public class DBPixelPlacement {
     public final int userId;
     public final String username;
     public final String login;
-    public final List<Role> roles;
+    //public final List<Role> roles;
     public final long ban_expiry;
     public final int pixel_count;
     public final int pixel_count_alltime;
@@ -32,7 +32,7 @@ public class DBPixelPlacement {
     public final String discordName;
     public final String faction;
 
-    public DBPixelPlacement(int id, int x, int y, int color, int secondaryId, long time, int userId, String username, String login, List<Role> roles, long ban_expiry, int pixel_count, int pixel_count_alltime, String ban_reason, boolean banned, boolean undoAction, String userAgent, String discordName, String faction) {
+    public DBPixelPlacement(int id, int x, int y, int color, int secondaryId, long time, int userId, String username, String login, /* List<Role> roles, */ long ban_expiry, int pixel_count, int pixel_count_alltime, String ban_reason, boolean banned, boolean undoAction, String userAgent, String discordName, String faction) {
         this.id = id;
         this.x = x;
         this.y = y;
@@ -42,7 +42,7 @@ public class DBPixelPlacement {
         this.userId = userId;
         this.username = username;
         this.login = login;
-        this.roles = roles;
+        //this.roles = roles;
         this.ban_expiry = ban_expiry;
         this.pixel_count = pixel_count;
         this.pixel_count_alltime = pixel_count_alltime;
@@ -74,7 +74,7 @@ public class DBPixelPlacement {
                     r.getInt("u_id"),
                     r.getString("username"),
                     r.getString("login"),
-                    App.getDatabase().getUserRoles(r.getInt("u_id")),
+                    //App.getDatabase().getUserRoles(r.getInt("u_id")),
                     ban_expiry == null ? 0 : ban_expiry.getTime(),
                     r.getInt("pixel_count"),
                     r.getInt("pixel_count_alltime"),
