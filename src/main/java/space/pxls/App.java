@@ -29,7 +29,6 @@ import java.util.*;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class App {
     private static Gson gson;
@@ -657,13 +656,11 @@ public class App {
             // do nothing
         }
     }
-
     private static void loadRoles() {
-        // NOTE: This differs from the way pxls.conf is handled. Something in com.typesafe:config's ConfigFactory.load()
-        // uses reference.conf without it being explicitly defined, but I can't seem to figure out how to replicate that
-        // behavior.
-        var refRoleConfig = ConfigFactory.parseFile(new File("resources/roles-reference.conf"));
-        var roleConfig = ConfigFactory.parseFile(new File("roles.conf")).withFallback(refRoleConfig);
+        // NOTE: This differs from the way pxls.conf is handled, as we don't merge the roles-reference.conf
+        // file into roles.conf, but use it as a default in case roles.conf doesn't exist or is invalid.
+        var roleConfigFile = new File("roles.conf");
+        var roleConfig = ConfigFactory.parseFile(roleConfigFile.exists() ? roleConfigFile : new File("resources/roles-reference.conf"));
 
         HashMap<Role, List<String>> inheritanceMap = new HashMap<>();
         for (var id : roleConfig.root().keySet()) {
