@@ -193,10 +193,9 @@ public class User {
     }
 
     public boolean hasPermission(String node) {
-        if (roles.isEmpty()) return Stream.of(Role.getGuestRoles(), Role.getDefaultRoles())
+        return Stream.of(Role.getGuestRoles(), Role.getDefaultRoles(), roles)
                 .flatMap(Collection::stream)
                 .anyMatch(role -> role.hasPermission(node));
-        return roles.stream().anyMatch(role -> role.hasPermission(node));
     }
 
     public String getLogin() {
