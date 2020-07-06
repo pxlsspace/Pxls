@@ -723,7 +723,10 @@ public class Database {
                 handle.createQuery("SELECT role FROM roles WHERE id = :who")
                         .bind("who", who)
                         .map(new Role.Mapper())
-                        .list()
+                        .withStream(stream -> stream
+                            .filter(role -> role != null)
+                            .collect(Collectors.toList())
+                        )
         );
     }
 
