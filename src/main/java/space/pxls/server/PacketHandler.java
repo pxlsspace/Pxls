@@ -62,12 +62,12 @@ public class PacketHandler {
             server.send(channel, new ServerUserInfo(
                     user.getName(),
                     user.getLogin(),
-                    user.getRole().name().equals("SHADOWBANNED") ? "USER" : user.getRole().name(),
+                    user.getAllRoles(),
                     user.getPixelCount(),
                     user.getAllTimePixelCount(),
                     user.isBanned(),
-                    user.isBanned() ? user.getBanExpiryTime() : 0,
-                    user.isBanned() ? user.getBanReason() : "",
+                    user.getBanExpiryTime(),
+                    user.getBanReason(),
                     user.getLogin().split(":")[0],
                     user.isOverridingCooldown(),
                     user.isChatbanned(),
@@ -108,28 +108,19 @@ public class PacketHandler {
     }
 
     public void accept(WebSocketChannel channel, User user, Object obj, String ip) {
-        if (user != null) {
-            if (obj instanceof ClientPlace) {
-                handlePlace(channel, user, ((ClientPlace) obj), ip);
-            }
-            if (obj instanceof ClientUndo) handleUndo(channel, user, ((ClientUndo) obj), ip);
-            if (obj instanceof ClientCaptcha) handleCaptcha(channel, user, ((ClientCaptcha) obj));
-            if (obj instanceof ClientShadowBanMe) handleShadowBanMe(channel, user, ((ClientShadowBanMe) obj));
-            if (obj instanceof ClientBanMe) handleBanMe(channel, user, ((ClientBanMe) obj));
-            if (obj instanceof ClientChatHistory) handleChatHistory(channel, user, ((ClientChatHistory) obj));
-            if (obj instanceof ClientChatbanState) handleChatbanState(channel, user, ((ClientChatbanState) obj));
-            if (obj instanceof ClientChatMessage) handleChatMessage(channel, user, ((ClientChatMessage) obj));
-            if (obj instanceof ClientUserUpdate) handleClientUserUpdate(channel, user, ((ClientUserUpdate) obj));
-            if (obj instanceof ClientChatLookup) handleChatLookup(channel, user, ((ClientChatLookup) obj));
-
-            if (user.getRole().greaterEqual(Role.MODERATOR)) {
-                if (obj instanceof ClientAdminCooldownOverride)
-                    handleCooldownOverride(channel, user, ((ClientAdminCooldownOverride) obj));
-
-                if (obj instanceof ClientAdminMessage)
-                    handleAdminMessage(channel, user, ((ClientAdminMessage) obj));
-            }
-        }
+        if (user == null) return;
+        if (obj instanceof ClientPlace && user.hasPermission("board.place")) handlePlace(channel, user, ((ClientPlace) obj), ip);
+        if (obj instanceof ClientUndo && user.hasPermission("board.undo")) handleUndo(channel, user, ((ClientUndo) obj), ip);
+        if (obj instanceof ClientCaptcha) handleCaptcha(channel, user, ((ClientCaptcha) obj));
+        if (obj instanceof ClientShadowBanMe) handleShadowBanMe(channel, user, ((ClientShadowBanMe) obj));
+        if (obj instanceof ClientBanMe) handleBanMe(channel, user, ((ClientBanMe) obj));
+        if (obj instanceof ClientChatHistory && user.hasPermission("chat.history")) handleChatHistory(channel, user, ((ClientChatHistory) obj));
+        if (obj instanceof ClientChatbanState) handleChatbanState(channel, user, ((ClientChatbanState) obj));
+        if (obj instanceof ClientChatMessage && user.hasPermission("chat.send")) handleChatMessage(channel, user, ((ClientChatMessage) obj));
+        if (obj instanceof ClientUserUpdate) handleClientUserUpdate(channel, user, ((ClientUserUpdate) obj));
+        if (obj instanceof ClientChatLookup && user.hasPermission("chat.lookup")) handleChatLookup(channel, user, ((ClientChatLookup) obj));
+        if (obj instanceof ClientAdminCooldownOverride && user.hasPermission("board.cooldown.override")) handleCooldownOverride(channel, user, ((ClientAdminCooldownOverride) obj));
+        if (obj instanceof ClientAdminMessage && user.hasPermission("user.alert")) handleAdminMessage(channel, user, ((ClientAdminMessage) obj));
     }
 
     private void handleAdminMessage(WebSocketChannel channel, User user, ClientAdminMessage obj) {
@@ -144,42 +135,38 @@ public class PacketHandler {
     }
 
     private void handleChatLookup(WebSocketChannel channel, User user, ClientChatLookup obj) {
-        if (user.getRole().greaterEqual(Role.TRIALMOD)) {
-            ServerChatLookup scl;
-            String username = obj.getArg();
-            if (obj.getMode().equalsIgnoreCase("cmid")) {
-                Integer i = null;
-                try {
-                    i = Integer.parseInt(obj.getArg());
-                } catch (NumberFormatException nfe) {
-                    server.send(channel, new ServerError("Invalid message ID supplied"));
-                }
-                if (i != null) {
-                    DBChatMessage chatMessage = App.getDatabase().getChatMessageByID(i);
-                    if (chatMessage != null) {
-                        User fromChatMessage = App.getUserManager().getByID(chatMessage.author_uid);
-                        username = fromChatMessage != null ? fromChatMessage.getName() : null;
-                    }
+        ServerChatLookup scl;
+        String username = obj.getArg();
+        if (obj.getMode().equalsIgnoreCase("cmid")) {
+            Integer i = null;
+            try {
+                i = Integer.parseInt(obj.getArg());
+            } catch (NumberFormatException nfe) {
+                server.send(channel, new ServerError("Invalid message ID supplied"));
+            }
+            if (i != null) {
+                DBChatMessage chatMessage = App.getDatabase().getChatMessageByID(i);
+                if (chatMessage != null) {
+                    User fromChatMessage = App.getUserManager().getByID(chatMessage.author_uid);
+                    username = fromChatMessage != null ? fromChatMessage.getName() : null;
                 }
             }
-            scl = username != null ? App.getDatabase().runChatLookupForUsername(username, App.getConfig().getInt("chat.chatLookupScrollbackAmount")) : null;
-            server.send(channel, scl == null ? new ServerError("User doesn't exist") : scl);
-        } else {
-            server.send(channel, new ServerError("Missing Permissions"));
         }
+        scl = username != null ? App.getDatabase().runChatLookupForUsername(username, App.getConfig().getInt("chat.chatLookupScrollbackAmount")) : null;
+        server.send(channel, scl == null ? new ServerError("User doesn't exist") : scl);
     }
 
     private void handleShadowBanMe(WebSocketChannel channel, User user, ClientShadowBanMe obj) {
-        if (user.getRole().greaterEqual(Role.USER)) {
+        if (!user.isBanned() && !user.isShadowBanned()) {
             App.getDatabase().insertAdminLog(user.getId(), String.format("shadowban %s with reason: self-shadowban via script", user.getName()));
-            user.shadowban(String.format("auto-ban via script (app: %s%s)", obj.getApp(), obj.getZ().isEmpty() ? "" : ", " + obj.getZ()), 999*24*3600, user);
+            user.shadowBan(String.format("auto-ban via script (app: %s%s)", obj.getApp(), obj.getZ().isEmpty() ? "" : ", " + obj.getZ()), 999*24*3600, user);
         }
     }
 
     private void handleBanMe(WebSocketChannel channel, User user, ClientBanMe obj) {
         String app = obj.getApp();
         App.getDatabase().insertAdminLog(user.getId(), String.format("shadowban %s with reason: auto-ban via script (ap: %s)", user.getName(), app));
-        user.permaban(String.format("auto-ban via script(ap: %s)", app), 0, user);
+        user.ban(null, String.format("auto-ban via script(ap: %s)", app), 0, user);
     }
 
     private void handleCooldownOverride(WebSocketChannel channel, User user, ClientAdminCooldownOverride obj) {
@@ -394,7 +381,7 @@ public class PacketHandler {
             try {
                 int t = Integer.parseInt(nameColor);
                 if (t >= -1 && t < App.getConfig().getStringList("board.palette").size()) {
-                    if (t < 0 && user.getRole().lessThan(Role.TRIALMOD)) {
+                    if (t < 0 && !user.hasPermission("chat.usercolor.rainbow")) {
                         server.send(channel, new ServerACKClientUpdate(false, "Color reserved for staff members", "NameColor", null));
                         return;
                     }
@@ -443,25 +430,24 @@ public class PacketHandler {
             int remaining = RateLimitFactory.getTimeRemaining(DBChatMessage.class, String.valueOf(user.getId()));
             if (remaining > 0) {
                 server.send(user, new ServerChatCooldown(remaining, message));
-            } else {
-                try {
-                    String toSend = bracketTranslator.translate(message); //filter out brackets before we do anything else so it's filtered in db
-                    if (App.getConfig().getBoolean("chat.trimInput"))
-                        toSend = toSend.trim();
-                    Faction usersFaction = user.fetchDisplayedFaction();
-                    if (App.getConfig().getBoolean("textFilter.enabled")) {
-                        TextFilter.FilterResult result = TextFilter.getInstance().filter(toSend);
-                        toSend = result.filterHit ? result.filtered : result.original;
-                        Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toSend);
-                        server.broadcast(new ServerChatMessage(new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction)));
-                    } else {
-                        Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, "");
-                        server.broadcast(new ServerChatMessage(new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction)));
-                    }
-                } catch (UnableToExecuteStatementException utese) {
-                    utese.printStackTrace();
-                    System.err.println("Failed to execute the ChatMessage insert statement.");
+                return;
+            }
+            try {
+                String toSend = bracketTranslator.translate(message); //filter out brackets before we do anything else so it's filtered in db
+                if (App.getConfig().getBoolean("chat.trimInput"))
+                    toSend = toSend.trim();
+                Faction usersFaction = user.fetchDisplayedFaction();
+                String toFilter = "";
+                if (App.getConfig().getBoolean("textFilter.enabled")) {
+                    TextFilter.FilterResult result = TextFilter.getInstance().filter(toSend);
+                    toSend = result.filterHit ? result.filtered : result.original;
+                    toFilter = toSend;
                 }
+                Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter);
+                server.broadcast(new ServerChatMessage(new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction)));
+            } catch (UnableToExecuteStatementException utese) {
+                utese.printStackTrace();
+                System.err.println("Failed to execute the ChatMessage insert statement.");
             }
         }
     }
