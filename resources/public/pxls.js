@@ -6399,7 +6399,7 @@ window.App = (function() {
       getRoles: () => self.roles,
       isStaff: () => self.hasPermission('user.admin'),
       getPermissions: () => {
-        const perms = [];
+        let perms = [];
         self.roles.flatMap(function loop(node) {
           if (node.inherits.length > 0) {
             perms.push(...node.permissions);
@@ -6408,6 +6408,8 @@ window.App = (function() {
             perms.push(node.permissions);
           }
         });
+        // NOTE: Slightly hacky fix for arrays showing up in permissions
+        perms = perms.flatMap(permissions => permissions);
         return [...new Set(perms)];
       },
       hasPermission: node => self.getPermissions().includes(node),
