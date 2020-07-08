@@ -15,6 +15,8 @@ import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class User {
     private int id;
@@ -23,7 +25,7 @@ public class User {
     private String name;
     private String login;
     private String useragent;
-    private Role role;
+    private List<Role> roles;
     private int pixelCount;
     private int pixelCountAllTime;
     private boolean overrideCooldown;
@@ -44,23 +46,25 @@ public class User {
     private Integer displayedFaction;
     private Boolean factionBlocked;
 
+    private boolean shadowBanned;
     // 0 = not banned
-    private long banExpiryTime;
+    private Long banExpiryTime;
     private long chatbanExpiryTime;
 
     private Set<WebSocketChannel> connections = new HashSet<>();
 
-    public User(int id, int stacked, String name, String login, Timestamp signup, long cooldownExpiry, Role role, int pixelCount, int pixelCountAllTime, long banExpiryTime, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor, Integer displayedFaction, String discordName, Boolean factionBlocked) {
+    public User(int id, int stacked, String name, String login, Timestamp signup, long cooldownExpiry, List<Role> roles, int pixelCount, int pixelCountAllTime, Long banExpiryTime, boolean shadowBanned, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor, Integer displayedFaction, String discordName, Boolean factionBlocked) {
         this.id = id;
         this.stacked = stacked;
         this.name = name;
         this.login = login;
         this.signup_time = signup;
         this.cooldownExpiry = cooldownExpiry;
-        this.role = role;
+        this.roles = roles;
         this.pixelCount = pixelCount;
         this.pixelCountAllTime = pixelCountAllTime;
         this.banExpiryTime = banExpiryTime;
+        this.shadowBanned = shadowBanned;
         this.isPermaChatbanned = isPermaChatbanned;
         this.chatbanExpiryTime = chatbanExpiryTime;
         this.chatbanReason = chatbanReason;
@@ -73,13 +77,14 @@ public class User {
     public void reloadFromDatabase() {
         DBUser user = App.getDatabase().getUserByID(id).orElse(null);
         if (user != null) {
+            List<Role> roles = App.getDatabase().getUserRoles(user.id);
             this.id = user.id;
             this.stacked = user.stacked;
             this.name = user.username;
             this.login = user.login;
             this.signup_time = user.signup_time;
             this.cooldownExpiry = user.cooldownExpiry;
-            this.role = user.role;
+            this.roles = roles;
             this.banExpiryTime = user.banExpiry;
             this.isPermaChatbanned = user.isPermaChatbanned;
             this.chatbanExpiryTime = user.chatbanExpiry;
@@ -98,8 +103,9 @@ public class User {
 
     public boolean canPlace() {
         if (isRenameRequested) return false;
-        if (role.greaterEqual(Role.MODERATOR) && overrideCooldown) return true;
-        if (!role.greaterEqual(Role.USER) && role != Role.SHADOWBANNED) return false; // shadowbanned seems to be able to place
+
+        if (hasPermission("board.cooldown.override") && overrideCooldown) return true;
+        if (!hasPermission("board.place")) return false;
         return cooldownExpiry < System.currentTimeMillis();
     }
 
@@ -111,6 +117,7 @@ public class User {
         return canUndo(true);
     }
     public boolean canUndo(boolean hitBucket) {
+        if (!hasPermission("board.undo")) return false;
         int rem = RateLimitFactory.getTimeRemaining(ClientUndo.class, String.valueOf(this.id), hitBucket);
         return rem == 0;
     }
@@ -128,13 +135,13 @@ public class User {
     }
 
     public float getRemainingCooldown() {
-        if (role.greaterEqual(Role.MODERATOR) && overrideCooldown) return 0;
+        if (hasPermission("board.cooldown.override") && overrideCooldown) return 0;
 
         return Math.max(0, cooldownExpiry - System.currentTimeMillis()) / 1000f;
     }
 
     public boolean updateCaptchaFlagPrePlace() {
-        if (role.greaterThan(Role.USER)) {
+        if (hasPermission("board.captcha.ignore")) {
             flaggedForCaptcha = false;
             return false;
         }
@@ -158,12 +165,37 @@ public class User {
     }
 
     public void setOverrideCooldown(boolean overrideCooldown) {
-        this.overrideCooldown = overrideCooldown;
-        if (role.lessThan(Role.MODERATOR)) this.overrideCooldown = false;
+        this.overrideCooldown = hasPermission("board.cooldown.override") && overrideCooldown;
     }
 
-    public Role getRole() {
-        return role;
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public List<Role> getAllRoles() {
+        return Stream.of(roles, Role.getGuestRoles(), Role.getDefaultRoles())
+                .flatMap(Collection::stream)
+                .collect(Collectors.toList());
+    }
+
+    public String getRolesString() {
+        if (roles.isEmpty()) return "";
+        return roles.stream()
+                .map(Role::getName)
+                .collect(Collectors.joining(", "));
+    }
+
+    public String getRoleIDsString() {
+        if (roles.isEmpty()) return "";
+        return roles.stream()
+                .map(Role::getID)
+                .collect(Collectors.joining(","));
+    }
+
+    public boolean hasPermission(String node) {
+        return Stream.of(Role.getGuestRoles(), Role.getDefaultRoles(), roles)
+                .flatMap(Collection::stream)
+                .anyMatch(role -> role.hasPermission(node));
     }
 
     public String getLogin() {
@@ -176,15 +208,44 @@ public class User {
         }
     }
 
-    public void setRole(Role role) {
-        setRole(role, false);
+    public void setRoles(List<Role> rolesToSet) {
+        setRoles(rolesToSet, false);
     }
-    public void setRole(Role role, boolean skipSendUserData) {
-        this.role = role;
-        App.getDatabase().setUserRole(this, role);
-        if (!skipSendUserData && role != Role.SHADOWBANNED) {
-            sendUserData();
+
+    public void setRoles(List<Role> rolesToSet, boolean skipSendUserData) {
+        this.roles = rolesToSet;
+        App.getDatabase().setUserRoles(this.getId(), roles);
+        if (!skipSendUserData) sendUserData();
+    }
+
+    public void addRoles(List<Role> rolesToAdd) {
+        addRoles(rolesToAdd, false);
+    }
+
+    public void addRoles(List<Role> rolesToAdd, boolean skipSendUserData) {
+        var newRoles = new ArrayList<>(rolesToAdd);
+        for (var role : roles) {
+            if (!newRoles.contains(role)) newRoles.add(role);
         }
+        setRoles(newRoles, skipSendUserData);
+    }
+
+    public void addRole(Role role, boolean skipSendUserData) {
+        addRoles(List.of(role), skipSendUserData);
+    }
+
+    public void removeRoles(List<Role> rolesToRemove) {
+        removeRoles(rolesToRemove, false);
+    }
+
+    public void removeRoles(List<Role> rolesToRemove, boolean skipSendUserData) {
+        var newRoles = new ArrayList<>(roles);
+        newRoles.removeAll(rolesToRemove);
+        setRoles(newRoles, skipSendUserData);
+    }
+
+    public void removeRole(Role role, boolean skipSendUserData) {
+        removeRoles(List.of(role), skipSendUserData);
     }
 
     public String getBanReason() {
@@ -200,7 +261,7 @@ public class User {
     }
 
     public boolean isOverridingCooldown() {
-        if (role.greaterEqual(Role.MODERATOR)) return overrideCooldown;
+        if (hasPermission("board.cooldown.override")) return overrideCooldown;
         return (overrideCooldown = false);
     }
 
@@ -232,15 +293,7 @@ public class User {
     public List<Badge> getChatBadges() {
         List<Badge> toReturn = new ArrayList<>();
 
-        if (getRole() != null && getRole().greaterEqual(Role.TRIALMOD)) {
-            if (getRole().equals(Role.DEVELOPER)) {
-                toReturn.add(new Badge("Developer", "Developer", "icon", "fas fa-wrench"));
-            } else if (getRole().greaterEqual(Role.TRIALMOD)) {
-                String roleName = getRole().name().toLowerCase();
-                roleName = Character.toUpperCase(roleName.charAt(0)) + roleName.substring(1);
-                toReturn.add(new Badge(roleName, roleName, "icon", "fas fa-shield-alt"));
-            }
-        }
+        getRoles().forEach(role -> toReturn.addAll(role.getBadges()));
 
         if (!App.getConfig().getBoolean("oauth.snipMode")) {
             if (this.pixelCountAllTime >= 1000000) {
@@ -281,28 +334,36 @@ public class User {
         return toReturn;
     }
 
-    public boolean isPermaBanned() {
-        return this.role == Role.BANNED;
+    public boolean isBanned() {
+        return banExpiryTime != null && (banExpiryTime == 0 || banExpiryTime > System.currentTimeMillis());
     }
 
     public boolean isShadowBanned() {
-        return this.role == Role.SHADOWBANNED;
+        return shadowBanned;
     }
 
-    public boolean isBanned() {
-        return banExpiryTime > System.currentTimeMillis() || role == Role.BANNED; // shadowbans are hidden....
-    }
-
-    public long getBanExpiryTime() {
+    public Long getBanExpiryTime() {
         return banExpiryTime;
     }
 
-    private void setBanExpiryTime(long timeFromNowSeconds, boolean skipSendUserData) {
-        this.banExpiryTime = (timeFromNowSeconds*1000) + System.currentTimeMillis();
-        App.getDatabase().updateBan(this, timeFromNowSeconds);
-        if (!skipSendUserData && role != Role.SHADOWBANNED) {
-            sendUserData();
+    private void setBanExpiryTime(Integer timeFromNowSeconds) {
+        setBanExpiryTime(timeFromNowSeconds, false);
+    }
+
+    private void setBanExpiryTime(Integer timeFromNowSeconds, boolean skipSendUserData) {
+        // timeFromNowSeconds
+        //   null = unban
+        //   0 = perma
+        //   n = timed
+        if (timeFromNowSeconds == null) {
+            this.banExpiryTime = null;
+        } else if (timeFromNowSeconds == 0) {
+            this.banExpiryTime = 0L;
+        } else {
+            this.banExpiryTime = (timeFromNowSeconds*1000) + System.currentTimeMillis();
         }
+        App.getDatabase().updateBan(this, timeFromNowSeconds);
+        if (!skipSendUserData) sendUserData();
     }
 
     public boolean canChat() {
@@ -367,64 +428,41 @@ public class User {
         return connections;
     }
 
-    public void shadowban(String reason, int rollbackTime, User banner) {
+    public void shadowBan(String reason, int rollbackTime, User banner) {
         setBanReason(reason);
-        setRole(Role.SHADOWBANNED, true);
+        shadowBanned = true;
+        App.getDatabase().updateUserShadowBanned(this, true);
         App.rollbackAfterBan(this, rollbackTime);
         App.getDatabase().insertBanLog(banner == null ? 0 : banner.getId(), this.getId(), System.currentTimeMillis(), 0L, "shadowban", reason);
     }
 
-    public void shadowban(String reason, User banner) {
-        shadowban(reason, 24*3600, banner);
+    public void shadowBan(String reason, User banner) {
+        shadowBan(reason, 24*3600, banner);
     }
 
-    public void shadowban(User banner) {
-        shadowban("", banner);
+    public void ban(Integer timeFromNowSeconds, String reason, User banner) {
+        ban(timeFromNowSeconds, reason, 24 * 3600, banner);
     }
 
-    public void ban(long timeFromNowSeconds, String reason, int rollbackTime, User banner) {
-        setBanExpiryTime(timeFromNowSeconds, true);
+    public void ban(Integer timeFromNowSeconds, String reason, int rollbackTime, User banner) {
         setBanReason(reason);
-        sendUserData();
+        setBanExpiryTime(timeFromNowSeconds, false);
         App.rollbackAfterBan(this, rollbackTime);
         long now = System.currentTimeMillis();
-        App.getDatabase().insertBanLog(banner == null ? 0 : banner.getId(), this.getId(), now, now + (timeFromNowSeconds * 1000), "ban", reason);
-    }
-
-    public void ban(long timeFromNowSeconds, String reason, User banner) {
-        ban(timeFromNowSeconds, reason, 0, banner);
-    }
-
-    public void ban(long timeFromNowSeconds, User banner) {
-        ban(timeFromNowSeconds, "", banner);
-    }
-
-    public void permaban(String reason, int rollbackTime, User banner) {
-        setBanReason(reason);
-        setRole(Role.BANNED, true);
-        sendUserData();
-        App.rollbackAfterBan(this, rollbackTime);
-        long now = System.currentTimeMillis();
-        App.getDatabase().insertBanLog(banner == null ? 0 : banner.getId(), this.getId(), now, 0L, "permaban", reason);
-    }
-
-    public void permaban(String reason, User banner) {
-        permaban(reason, 24*3600, banner);
-    }
-
-    public void permaban(User banner) {
-        permaban("", banner);
+        int bannerId = banner == null ? 0 : banner.getId();
+        if (timeFromNowSeconds == null) {
+            App.getDatabase().insertBanLog(bannerId, this.getId(), now, 0L, "permaban", reason);
+        } else {
+            App.getDatabase().insertBanLog(bannerId, this.getId(), now, now + (timeFromNowSeconds * 1000), "ban", reason);
+        }
     }
 
     public void unban(User whoUnbanned, String unbanReason) {
-        setBanExpiryTime(0, true);
-        if (role.lessThan(Role.USER)) {
-            setRole(Role.USER, true);
-        }
-        sendUserData();
+        setBanExpiryTime(null);
+        App.getDatabase().updateUserShadowBanned(this, false);
         App.undoRollback(this);
         long now = System.currentTimeMillis();
-        App.getDatabase().insertBanLog(whoUnbanned == null ? 0 : whoUnbanned.getId(), this.getId(), now, 0L, "unban", unbanReason);
+        App.getDatabase().insertBanLog(whoUnbanned == null ? 0 : whoUnbanned.getId(), this.getId(), now, null, "unban", unbanReason);
     }
 
     public void setUserAgent(String s) {
@@ -577,8 +615,7 @@ public class User {
     }
 
     public boolean hasRainbowChatNameColor() {
-        return App.getConfig().getBoolean("chat.staffRainbow")
-                && role.greaterEqual(Role.TRIALMOD)
+        return hasPermission("chat.usercolor.rainbow")
                 && this.chatNameColor == -1;
     }
 
@@ -708,6 +745,7 @@ public class User {
     }
 
     public static User fromDBUser(DBUser user) {
-        return new User(user.id, user.stacked, user.username, user.login, user.signup_time, user.cooldownExpiry, user.role, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked);
+        List<Role> roles = App.getDatabase().getUserRoles(user.id);
+        return new User(user.id, user.stacked, user.username, user.login, user.signup_time, user.cooldownExpiry, roles, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.shadowBanned, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked);
     }
 }

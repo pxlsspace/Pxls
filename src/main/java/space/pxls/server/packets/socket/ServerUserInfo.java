@@ -1,15 +1,19 @@
 package space.pxls.server.packets.socket;
 
+import space.pxls.user.Role;
+
+import java.util.List;
+
 public class ServerUserInfo {
     public String type = "userinfo";
     public String username;
     public String login;
-    public String role;
+    public List<Role> roles;
     public int pixelCount;
     public int pixelCountAllTime;
     public Boolean banned;
     public Long banExpiry;
-    public String ban_reason;
+    public String banReason;
     public String method;
     public Boolean cdOverride;
     public Boolean chatBanned;
@@ -20,18 +24,18 @@ public class ServerUserInfo {
     public String discordName;
     public Number chatNameColor;
 
-    public ServerUserInfo(String username, String login, String role, int pixelCount, int pixelCountAllTime,
-                          Boolean banned, Long banExpiry, String ban_reason, String method, Boolean cdOverride,
+    public ServerUserInfo(String username, String login, List<Role> roles, int pixelCount, int pixelCountAllTime,
+                          Boolean banned, Long banExpiry, String banReason, String method, Boolean cdOverride,
                           Boolean chatBanned, String chatbanReason, Boolean chatbanIsPerma, Long chatbanExpiry,
                           Boolean renameRequested, String discordName, Number chatNameColor) {
         this.username = username;
         this.login = login;
-        this.role = role;
+        this.roles = roles;
         this.pixelCount = pixelCount;
         this.pixelCountAllTime = pixelCountAllTime;
         this.banned = banned;
         this.banExpiry = banExpiry;
-        this.ban_reason = ban_reason;
+        this.banReason = banReason;
         this.method = method;
         this.cdOverride = cdOverride;
         this.chatBanned = chatBanned;
@@ -55,8 +59,8 @@ public class ServerUserInfo {
         return login;
     }
 
-    public String getRole() {
-        return role;
+    public List<Role> getRoles() {
+        return roles;
     }
 
     public Boolean getBanned() {
@@ -67,8 +71,8 @@ public class ServerUserInfo {
         return banExpiry;
     }
 
-    public String getBan_reason() {
-        return ban_reason;
+    public String getBanReason() {
+        return banReason;
     }
 
     public String getMethod() {

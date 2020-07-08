@@ -34,8 +34,9 @@ The output `.jar` is in `target/`.
 1. Create a new directory.
 2. Copy `resources/` and the output `.jar` to it.
 3. Copy `resources/reference.conf` to the directory as `pxls.conf`.
-4. Configure `pxls.conf`.
-5. Execute the jar with `java -jar pxls-1.0-SNAPSHOT.jar`
+4. Copy `resources/roles-reference.conf` to the directory as `roles.conf`.
+5. Configure `pxls.conf` and `roles.conf` (optional; see [roles.md](roles.md) for details). 
+6. Execute the jar with `java -jar pxls-1.0-SNAPSHOT.jar`
 
 The server will start on port 4567 by default, and will expose a rudimentary console with a few commands (listed in `Commands` below).
 You will need to configure the database for the server to start, see the `Configuring Database` section below.
@@ -107,7 +108,9 @@ Commands are entered directly into the running instance (stdin):
 
 - `reload` - Reloads the main configuration, applying _most_ changes immediately. Also reloads the user and faction cache.
 - `save` - Saves the map.
-- `role <user> <role>` - Changes the role of the user. The role can be either `USER`, `TRIALMOD`, `MODERATOR`, `DEVELOPER`, or `ADMIN`.
+- `roles <username> [role ID ...]` - Gets or sets the user's role(s).
+- `addroles <username> <role ID ...>` - Adds role(s) to the user.
+- `removeroles <username> <role ID ...>` - Removes role(s) from the user.
 - `alert <text>` - Sends an popup-like alert to all users on the canvas.
 - `ban <user> <reason>` - Bans the user for 24 hours, with the specified reason (if any).
 - `permaban <user> <reason>` - Permanently bans the user, with the specified reason (if any).
