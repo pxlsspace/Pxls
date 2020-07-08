@@ -61,7 +61,7 @@ roleID {
 | `chat.ban` | `/admin/chatban` | Chat-ban users | staff |
 | `chat.delete` | `/admin/delete` | Delete chat messages | staff |
 | `chat.history` | | Retrieve chat history | user |
-| `chat.lookup` | | Chat message lookups | user |
+| `chat.lookup` | | Chat message lookups | staff |
 | `chat.purge` | `/admin/chatPurge` | Purge (multiple) chat messages | staff |
 | `chat.report` | `/reportChat` | Report chat messages | user |
 | `chat.send` | | Send chat messages | user |
