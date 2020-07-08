@@ -80,3 +80,17 @@ The script allows for customizing the output. Use the `--help` parameter to kow 
 2. Inside `logs/`, execute the script with `pipenv run python timelapse.py /path/to/pixels.log`
 	- add `-h` or `--help` to see a list of available arguments.
 	- add `--default-board-path /path/to/default_board.dat` if you're using a custom `default_board.dat`.
+
+## database/db2pixellogs.py
+
+`database/db2pixellogs.py` retrieves the pixels from the database and creates a (sanitized, with no IPs) `pixels.log` file.
+
+It is recommended that nothing else interacts with the database while the script is running.
+
+### Running
+
+1. Make sure the database is running
+2. Inside `database/`, execute the script with `pipenv run python db2pixellogs.py db_name -f /output/path/to/pixels.log`.
+	- add `-h` or `--help` to see a list of available arguments
+	- add `--bulk-size` to change how many pixels are retrieved from the database at a time
+	- add `--snip` to write all usernames as "-snip-"
