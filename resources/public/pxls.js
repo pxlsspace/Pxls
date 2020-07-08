@@ -6166,7 +6166,10 @@ window.App = (function() {
       registerHook: self.registerHook,
       replaceHook: self.replaceHook,
       unregisterHook: self.unregisterHook,
-      runLookup: self.runLookup
+      runLookup: self.runLookup,
+      get canvasBanRespected() {
+        return self.canvasBanRespected;
+      }
     };
   })();
     // this takes care of the countdown timer
