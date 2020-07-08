@@ -335,7 +335,7 @@ public class User {
     }
 
     public boolean isBanned() {
-        return banExpiryTime != null && banExpiryTime > System.currentTimeMillis();
+        return banExpiryTime != null && (banExpiryTime == 0 || banExpiryTime > System.currentTimeMillis());
     }
 
     public boolean isShadowBanned() {
