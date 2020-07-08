@@ -3285,7 +3285,7 @@ window.App = (function() {
           color: '#5a2f71'
         }
       ],
-      specialChatColorClasses: ['rainbow', 'donator'],
+      specialChatColorClasses: ['rainbow'],
       init: function() {
         self.initTitle = document.title;
         self._initThemes();
