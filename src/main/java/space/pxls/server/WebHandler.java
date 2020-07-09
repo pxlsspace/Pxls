@@ -712,7 +712,7 @@ public class WebHandler {
         User user = parseUserFromForm(exchange);
         User user_perform = exchange.getAttachment(AuthReader.USER);
         if (user != null && !user.hasPermission("user.permaban")) {
-            user.ban(null, getBanReason(exchange), getRollbackTime(exchange), user_perform);
+            user.ban(0, getBanReason(exchange), getRollbackTime(exchange), user_perform);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             if (doLog(exchange)) {
                 App.getDatabase().insertAdminLog(user_perform.getId(), String.format("permaban %s with reason: %s", user.getName(), getBanReason(exchange)));
