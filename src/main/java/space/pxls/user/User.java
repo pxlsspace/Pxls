@@ -459,6 +459,7 @@ public class User {
 
     public void unban(User whoUnbanned, String unbanReason) {
         setBanExpiryTime(null);
+        shadowBanned = false;
         App.getDatabase().updateUserShadowBanned(this, false);
         App.undoRollback(this);
         long now = System.currentTimeMillis();
