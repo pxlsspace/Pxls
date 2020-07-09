@@ -3367,7 +3367,7 @@ window.App = (function() {
           place.toggleReticule(value && place.color !== -1);
         });
 
-        settings.ui.reticule.enable.listen(function(value) {
+        settings.ui.cursor.enable.listen(function(value) {
           place.toggleCursor(value && place.color !== -1);
         });
 
