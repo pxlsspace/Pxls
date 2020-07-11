@@ -2,11 +2,14 @@ package space.pxls.data;
 
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
+import space.pxls.App;
 import space.pxls.user.Role;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class DBPixelPlacement {
     public final int id;
@@ -18,7 +21,7 @@ public class DBPixelPlacement {
     public final int userId;
     public final String username;
     public final String login;
-    public final Role role;
+    //public final List<Role> roles;
     public final long ban_expiry;
     public final int pixel_count;
     public final int pixel_count_alltime;
@@ -29,7 +32,7 @@ public class DBPixelPlacement {
     public final String discordName;
     public final String faction;
 
-    public DBPixelPlacement(int id, int x, int y, int color, int secondaryId, long time, int userId, String username, String login, Role role, long ban_expiry, int pixel_count, int pixel_count_alltime, String ban_reason, boolean banned, boolean undoAction, String userAgent, String discordName, String faction) {
+    public DBPixelPlacement(int id, int x, int y, int color, int secondaryId, long time, int userId, String username, String login, /* List<Role> roles, */ long ban_expiry, int pixel_count, int pixel_count_alltime, String ban_reason, boolean banned, boolean undoAction, String userAgent, String discordName, String faction) {
         this.id = id;
         this.x = x;
         this.y = y;
@@ -39,7 +42,7 @@ public class DBPixelPlacement {
         this.userId = userId;
         this.username = username;
         this.login = login;
-        this.role = role;
+        //this.roles = roles;
         this.ban_expiry = ban_expiry;
         this.pixel_count = pixel_count;
         this.pixel_count_alltime = pixel_count_alltime;
@@ -57,10 +60,6 @@ public class DBPixelPlacement {
             Timestamp time = r.getTimestamp("time");
             Timestamp ban_expiry = r.getTimestamp("ban_expiry");
             String faction = null;
-            boolean banned = Role.valueOf(r.getString("role")) == Role.BANNED;
-            if (!banned && ban_expiry != null) {
-                banned = ban_expiry.getTime() > System.currentTimeMillis();
-            }
             try {
                 faction = r.getString("faction");
             } catch (Exception ignored) {}
@@ -75,12 +74,12 @@ public class DBPixelPlacement {
                     r.getInt("u_id"),
                     r.getString("username"),
                     r.getString("login"),
-                    Role.valueOf(r.getString("role")), // TODO: all users might not have valid roles
+                    //App.getDatabase().getUserRoles(r.getInt("u_id")),
                     ban_expiry == null ? 0 : ban_expiry.getTime(),
                     r.getInt("pixel_count"),
                     r.getInt("pixel_count_alltime"),
                     r.getString("ban_reason"),
-                    banned,
+                    ban_expiry != null,
                     r.getBoolean("undo_action"),
                     r.getString("user_agent"),
                     r.getString("discord_name"),

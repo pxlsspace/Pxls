@@ -4,6 +4,7 @@ import space.pxls.App;
 import space.pxls.data.DBUser;
 import space.pxls.util.Util;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -62,7 +63,8 @@ public class UserManager {
     private User getByDB(Optional<DBUser> optionalUser) {
         if (!optionalUser.isPresent()) return null;
         DBUser user = optionalUser.get();
-        return userCache.computeIfAbsent(user.id, (k) -> new User(user.id, user.stacked, user.username, user.login, user.signup_time, user.cooldownExpiry, user.role, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked));
+        List<Role> roles = App.getDatabase().getUserRoles(user.id);
+        return userCache.computeIfAbsent(user.id, (k) -> new User(user.id, user.stacked, user.username, user.login, user.signup_time, user.cooldownExpiry, roles, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.shadowBanned, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked));
     }
 
     public String logIn(User user, String ip) {

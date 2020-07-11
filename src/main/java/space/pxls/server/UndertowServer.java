@@ -5,7 +5,6 @@ import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.AllowedMethodsHandler;
-import io.undertow.server.handlers.PathHandler;
 import io.undertow.server.handlers.form.EagerFormParsingHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.util.Headers;
@@ -19,7 +18,6 @@ import space.pxls.App;
 import space.pxls.server.packets.chat.*;
 import space.pxls.server.packets.socket.*;
 import space.pxls.tasks.UserAuthedTask;
-import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.util.*;
 
@@ -50,50 +48,47 @@ public class UndertowServer {
     }
 
     public void start() {
-        PathHandler pathHandler = Handlers.path()
-                .addExactPath("/ws", Handlers.websocket(this::webSocketHandler))
-                .addPrefixPath("/ws", Handlers.websocket(this::webSocketHandler))
-                .addPrefixPath("/info", webHandler::info)
-                .addPrefixPath("/boarddata", webHandler::data)
-                .addPrefixPath("/heatmap", webHandler::heatmap)
-                .addPrefixPath("/virginmap", webHandler::virginmap)
-                .addPrefixPath("/placemap", webHandler::placemap)
-                .addPrefixPath("/logout", webHandler::logout)
-                .addPrefixPath("/lookup", new RateLimitingHandler(webHandler::lookup, "http:lookup", (int) App.getConfig().getDuration("server.limits.lookup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.lookup.count")))
-                .addPrefixPath("/report", new RoleGate(Role.USER, webHandler::report))
-                .addPrefixPath("/reportChat", new RoleGate(Role.USER, webHandler::chatReport))
-                .addPrefixPath("/signin", webHandler::signIn)
-                .addPrefixPath("/users", webHandler::users)
-                .addPrefixPath("/auth", new RateLimitingHandler(webHandler::auth, "http:auth", (int) App.getConfig().getDuration("server.limits.auth.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.auth.count")))
-                .addPrefixPath("/signup", new RateLimitingHandler(webHandler::signUp, "http:signUp", (int) App.getConfig().getDuration("server.limits.signup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.signup.count")))
-                .addPrefixPath("/setDiscordName", new RateLimitingHandler(webHandler::discordNameChange, "http:discordName", (int) App.getConfig().getDuration("server.limits.discordNameChange.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.discordNameChange.count")))
-                .addPrefixPath("/setDiscordName", webHandler::discordNameChange)
-                .addPrefixPath("/admin/ban", new RoleGate(Role.TRIALMOD, webHandler::ban))
-                .addPrefixPath("/admin/unban", new RoleGate(Role.TRIALMOD, webHandler::unban))
-                .addPrefixPath("/admin/permaban", new RoleGate(Role.MODERATOR, webHandler::permaban))
-                .addPrefixPath("/admin/shadowban", new RoleGate(Role.DEVELOPER, webHandler::shadowban))
-                .addPrefixPath("/admin/check", new RoleGate(Role.TRIALMOD, webHandler::check))
-                .addPrefixPath("/admin/chatban", new RoleGate(Role.TRIALMOD, webHandler::chatban))
-                .addPrefixPath("/admin/delete", new RoleGate(Role.TRIALMOD, webHandler::deleteChatMessage))
-                .addPrefixPath("/admin/chatPurge", new RoleGate(Role.TRIALMOD, webHandler::chatPurge))
-                .addPrefixPath("/execNameChange", new RoleGate(Role.USER, webHandler::execNameChange))
-                .addPrefixPath("/admin/flagNameChange", new RoleGate(Role.MODERATOR, webHandler::flagNameChange))
-                .addPrefixPath("/admin/forceNameChange", new RoleGate(Role.DEVELOPER, webHandler::forceNameChange))
-                .addPrefixPath("/admin/faction/edit", new RoleGate(Role.TRIALMOD, new JsonReader(webHandler::adminEditFaction)))
-                .addPrefixPath("/admin/faction/delete", new RoleGate(Role.TRIALMOD, new JsonReader(webHandler::adminDeleteFaction)))
-                .addPrefixPath("/admin", new RoleGate(Role.TRIALMOD, Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/"))
-                        .setCacheTime(10)))
-                .addPrefixPath("/admin/setFactionBlocked", new AllowedMethodsHandler(new RoleGate(Role.TRIALMOD, webHandler::setFactionBlocked), Methods.POST))
-                .addPrefixPath("/whoami", webHandler::whoami)
-                .addPrefixPath("/createNotification", new RoleGate(Role.DEVELOPER, webHandler::createNotification))
-                .addPrefixPath("/sendNotificationToDiscord", new RoleGate(Role.DEVELOPER, webHandler::sendNotificationToDiscord))
-                .addPrefixPath("/setNotificationExpired", new RoleGate(Role.DEVELOPER, webHandler::setNotificationExpired))
-                .addPrefixPath("/notifications", webHandler::notificationsList)
+        var pathHandler = new PxlsPathHandler()
+                .addPermGatedExactPath("/ws", "board.socket", Handlers.websocket(this::webSocketHandler))
+                .addPermGatedPrefixPath("/ws", "board.socket", Handlers.websocket(this::webSocketHandler))
+                .addPermGatedPrefixPath("/info", "board.info", webHandler::info)
+                .addPermGatedPrefixPath("/boarddata", "board.data", webHandler::data)
+                .addPermGatedPrefixPath("/heatmap", "board.data", webHandler::heatmap)
+                .addPermGatedPrefixPath("/virginmap", "board.data", webHandler::virginmap)
+                .addPermGatedPrefixPath("/placemap", "board.data", webHandler::placemap)
+                .addPermGatedPrefixPath("/auth", "user.auth", new RateLimitingHandler(webHandler::auth, "http:auth", (int) App.getConfig().getDuration("server.limits.auth.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.auth.count")))
+                .addPermGatedPrefixPath("/signin", "user.auth", webHandler::signIn)
+                .addPermGatedPrefixPath("/signup", "user.auth", new RateLimitingHandler(webHandler::signUp, "http:signUp", (int) App.getConfig().getDuration("server.limits.signup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.signup.count")))
+                .addPermGatedPrefixPath("/logout", "user.auth", webHandler::logout)
+                .addPermGatedPrefixPath("/lookup", "board.lookup", webHandler::lookup)
+                .addPermGatedPrefixPath("/report", "board.report", new RateLimitingHandler(webHandler::report, "http:lookup", (int) App.getConfig().getDuration("server.limits.lookup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.lookup.count")))
+                .addPermGatedPrefixPath("/reportChat", "chat.report", webHandler::chatReport)
+                .addPermGatedPrefixPath("/whoami", "user.auth", webHandler::whoami)
+                .addPermGatedPrefixPath("/users", "user.online", webHandler::users)
+                .addPermGatedPrefixPath("/setDiscordName", "user.discordNameChange", new RateLimitingHandler(webHandler::discordNameChange, "http:discordName", (int) App.getConfig().getDuration("server.limits.discordNameChange.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.discordNameChange.count")))
+                .addPermGatedPrefixPath("/admin", "user.admin", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/")).setCacheTime(10))
+                .addPermGatedPrefixPath("/admin/ban", "user.ban", webHandler::ban)
+                .addPermGatedPrefixPath("/admin/unban", "user.unban", webHandler::unban)
+                .addPermGatedPrefixPath("/admin/permaban", "user.permaban", webHandler::permaban)
+                .addPermGatedPrefixPath("/admin/shadowban", "user.shadowban", webHandler::shadowban)
+                .addPermGatedPrefixPath("/admin/chatban", "chat.ban", webHandler::chatban)
+                .addPermGatedPrefixPath("/admin/check", "board.check", webHandler::check)
+                .addPermGatedPrefixPath("/admin/delete", "chat.delete", webHandler::deleteChatMessage)
+                .addPermGatedPrefixPath("/admin/chatPurge", "chat.purge", webHandler::chatPurge)
+                .addPermGatedPrefixPath("/execNameChange", "user.namechange", webHandler::execNameChange)
+                .addPermGatedPrefixPath("/admin/flagNameChange", "user.namechange.flag", webHandler::flagNameChange)
+                .addPermGatedPrefixPath("/admin/forceNameChange", "user.namechange.force", webHandler::forceNameChange)
+                .addPermGatedPrefixPath("/admin/faction/edit", "faction.edit", new JsonReader(webHandler::adminEditFaction))
+                .addPermGatedPrefixPath("/admin/faction/delete", "faction.delete", new JsonReader(webHandler::adminDeleteFaction))
+                .addPermGatedPrefixPath("/admin/setFactionBlocked", "faction.setblocked", new AllowedMethodsHandler(webHandler::setFactionBlocked, Methods.POST))
+                .addPermGatedPrefixPath("/createNotification", "notification.create", webHandler::createNotification)
+                .addPermGatedPrefixPath("/sendNotificationToDiscord", "notification.discord", webHandler::sendNotificationToDiscord)
+                .addPermGatedPrefixPath("/setNotificationExpired", "notification.expired", webHandler::setNotificationExpired)
+                .addPermGatedPrefixPath("/notifications", "notification.list", webHandler::notificationsList)
                 .addExactPath("/", webHandler::index)
                 .addExactPath("/index.html", webHandler::index)
                 .addExactPath("/factions", new AllowedMethodsHandler(webHandler::getRequestingUserFactions, Methods.GET))
-                .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/"))
-                        .setCacheTime(10));
+                .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/")).setCacheTime(10));
         RoutingHandler routingHandler = Handlers.routing()
             .get("/profile", webHandler::profileView)
             .get("/profile/{who}", webHandler::profileView)
@@ -211,11 +206,11 @@ public class UndertowServer {
     }
 
     public void broadcastNoShadow(Object obj) {
-        broadcastToUserPredicate(obj, user -> user.getRole() != Role.SHADOWBANNED);
+        broadcastToUserPredicate(obj, user -> !user.isShadowBanned());
     }
 
     public void broadcastToStaff(Object obj) {
-        broadcastToUserPredicate(obj, user -> user.getRole().greaterEqual(Role.TRIALMOD));
+        broadcastToUserPredicate(obj, user -> user.hasPermission("user.receivestaffbroadcasts"));
     }
 
     public void broadcastToUserPredicate(Object obj, Predicate<User> predicate) {
