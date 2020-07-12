@@ -433,12 +433,14 @@ window.App = (function() {
         const validValue = validate(value, defaultValue, type);
         ls.set(name, validValue);
 
-        if (type === SettingType.RADIO) {
-          controls.each((_, e) => { e.checked = e.value === value; });
-        } else if (type === SettingType.TOGGLE) {
-          controls.prop('checked', validValue);
-        } else {
-          controls.prop('value', validValue);
+        if (controls.length > 0) {
+          if (type === SettingType.RADIO) {
+            controls.each((_, e) => { e.checked = e.value === value; });
+          } else if (type === SettingType.TOGGLE) {
+            controls.prop('checked', validValue);
+          } else {
+            controls.prop('value', validValue);
+          }
         }
 
         listeners.forEach((f) => f(validValue));
@@ -593,7 +595,8 @@ window.App = (function() {
           enable: setting('ui.cursor.enable', SettingType.TOGGLE, !possiblyMobile, $('#setting-ui-cursor-enable'))
         },
         bubble: {
-          position: setting('ui.bubble.position', SettingType.SELECT, 'bottom left', $('#setting-ui-bubble-position'))
+          position: setting('ui.bubble.position', SettingType.SELECT, 'bottom left', $('#setting-ui-bubble-position')),
+          compact: setting('ui.bubble.compact', SettingType.TOGGLE, false)
         },
         brightness: {
           enable: setting('ui.brightness.enable', SettingType.TOGGLE, false, $('#setting-ui-brightness-enable')),
@@ -3362,6 +3365,11 @@ window.App = (function() {
           self.elements.mainBubble.attr('position', value);
         });
 
+        $('#setting-ui-bubble-compact').on('click', settings.ui.bubble.compact.toggle);
+        settings.ui.bubble.compact.listen(function(value) {
+          self.elements.mainBubble.toggleClass('compact', value);
+        });
+
         settings.ui.reticule.enable.listen(function(value) {
           place.toggleReticule(value && place.color !== -1);
         });
@@ -4253,7 +4261,7 @@ window.App = (function() {
           const trimmed = toSend.trim();
           let handling = false;
           if ((e.originalEvent.key === 'Enter' || e.originalEvent.which === 13) && !e.shiftKey) {
-            if (trimmed.startsWith('/') && user.getRole() !== 'USER') {
+            if (trimmed.startsWith('/') && user.isStaff()) {
               const args = trimmed.substr(1).split(' ');
               const command = args.shift();
               let banReason; // To fix compiler warning
@@ -4412,7 +4420,7 @@ window.App = (function() {
           const toSend = self.elements.input[0].value;
           const trimmed = toSend.trim();
           if (trimmed.length === 0) return self.showHint('');
-          if (!((e.originalEvent.key === 'Enter' || e.originalEvent.which === 13) && !e.originalEvent.shiftKey) && trimmed.startsWith('/') && user.getRole() !== 'USER') {
+          if (!((e.originalEvent.key === 'Enter' || e.originalEvent.which === 13) && !e.originalEvent.shiftKey) && trimmed.startsWith('/') && user.isStaff()) {
             const searchAgainst = trimmed.substr(1).split(' ').shift();
             const matches = [];
             commandsCache.forEach(x => {
@@ -4949,6 +4957,7 @@ window.App = (function() {
             lblFontSize,
             lblUsernameColor,
             lblIgnores,
+            _btnUnignore,
             lblIgnoresFeedback
           ].map(x => crel('div', x))
         );
@@ -6331,13 +6340,28 @@ window.App = (function() {
         prompt: $('#prompt'),
         signup: $('#signup')
       },
-      role: 'USER',
+      roles: [],
       pendingSignupToken: null,
       loggedIn: false,
       username: '',
       chatNameColor: 0,
-      getRole: () => self.role,
-      isStaff: () => ['MODERATOR', 'DEVELOPER', 'ADMIN', 'TRIALMOD'].includes(self.getRole()),
+      getRoles: () => self.roles,
+      isStaff: () => self.hasPermission('user.admin'),
+      getPermissions: () => {
+        let perms = [];
+        self.roles.flatMap(function loop(node) {
+          if (node.inherits.length > 0) {
+            perms.push(...node.permissions);
+            return node.inherits.flatMap(loop);
+          } else {
+            perms.push(node.permissions);
+          }
+        });
+        // NOTE: Slightly hacky fix for arrays showing up in permissions
+        perms = perms.flatMap(permissions => permissions);
+        return [...new Set(perms)];
+      },
+      hasPermission: node => self.getPermissions().includes(node),
       getUsername: () => self.username,
       getPixelCount: () => self.pixelCount,
       getPixelCountAllTime: () => self.pixelCountAllTime,
@@ -6490,15 +6514,15 @@ window.App = (function() {
           } else {
             self.elements.userInfo.fadeIn(200);
           }
-          self.role = data.role;
+          self.roles = data.roles;
 
-          if (self.role === 'BANNED') {
+          if (data.banExpiry === 0) {
             isBanned = true;
             crel(banelem, crel('p', 'You are permanently banned.'));
           } else if (data.banned === true) {
             isBanned = true;
             crel(banelem, crel('p', `You are temporarily banned and will not be allowed to place until ${new Date(data.banExpiry).toLocaleString()}`));
-          } else if (['TRIALMOD', 'MODERATOR', 'DEVELOPER', 'ADMIN'].indexOf(self.role) !== -1) {
+          } else if (self.isStaff()) {
             if (window.deInitAdmin) {
               window.deInitAdmin();
             }
@@ -6520,7 +6544,7 @@ window.App = (function() {
             crel(banelem,
               crel('p', 'If you think this was an error, please contact us using one of the links in the info tab.'),
               crel('p', 'Ban reason:'),
-              crel('p', data.ban_reason)
+              crel('p', data.banReason)
             );
             modal.show(modal.buildDom(
               crel('h2', 'Banned'),
@@ -6637,8 +6661,10 @@ window.App = (function() {
     };
     return {
       init: self.init,
-      getRole: self.getRole,
+      getRoles: self.getRoles,
       isStaff: self.isStaff,
+      getPermissions: self.getPermissions,
+      hasPermission: self.hasPermission,
       getUsername: self.getUsername,
       getPixelCount: self.getPixelCount,
       getPixelCountAllTime: self.getPixelCountAllTime,
@@ -6987,9 +7013,11 @@ window.App = (function() {
       getUsername: user.getUsername,
       getPixelCount: user.getPixelCount,
       getPixelCountAllTime: user.getPixelCountAllTime,
-      getRole: user.getRole,
+      getRoles: user.getRoles,
       isLoggedIn: user.isLoggedIn,
-      isStaff: user.isStaff
+      isStaff: user.isStaff,
+      getPermissions: user.getPermissions,
+      hasPermission: user.hasPermission
     },
     modal
   };

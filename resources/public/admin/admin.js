@@ -10,7 +10,7 @@
     }).addClass('text-button').text(s);
   };
   const sendAlert = function(username) {
-    if (admin.user.getRole() === 'TRIALMOD') return '';
+    if (!admin.user.hasPermission('user.alert')) return '';
     return $('<input>').attr('type', 'text').attr('placeholder', 'Send alert...').keydown(function (evt) {
       if (evt.which === 13) {
         admin.socket.send({
@@ -174,11 +174,11 @@
         let chatbannedStr = '';
         const chabannedExpiracyStr = `${chatbanDelta >> 0}s`;
         // chabannedExpiracyStr = `${(chatbanDelta/3600) >> 0}h ${((chatbanDelta/60) >> 0) % 60}m ${(delta % 60) >> 0}s`;
-        if (data.role === 'SHADOWBANNED') {
+        if (data.shadowBanned) {
           bannedStr = 'shadow';
           banned = true;
           expiracyStr = 'never';
-        } else if (data.role === 'BANNED') {
+        } else if (data.roles.find(role => role.type === 'BANNED') != null) {
           bannedStr = 'permanent';
           banned = true;
           expiracyStr = 'never';
@@ -193,9 +193,9 @@
           }, data.username)],
           ['Profile', crel('a', { href: `/profile/${data.username}`, target: '_blank' }, data.username)],
           ['Login', data.login],
-          ['Role', data.role],
-          ['Pixels', data.pixels],
-          ['All Time Pixels', data.pixelsAllTime],
+          ['Roles', data.roles.map(role => role.name).join(', ')],
+          ['Pixels', data.pixelCount],
+          ['All Time Pixels', data.pixelCountAllTime],
           ['Rename Requested', data.renameRequested ? 'Yes' : 'No'],
           ['Discord Name', data.discordName || '(not set)'],
           ['Banned', bannedStr],
@@ -226,7 +226,7 @@
                   self.elements.check.fadeOut(200);
                 });
               }),
-              (admin.user.getRole() !== 'TRIALMOD' ? genButton('Permaban').click(function () {
+              (admin.user.hasPermission('user.permaban') ? genButton('Permaban').click(function () {
                 ban.perma(data.username, function () {
                   self.elements.check.fadeOut(200);
                 });
@@ -234,13 +234,11 @@
             ),
             $('<div>').append(
               genButton('Unban').click(() => self.popUnban(data.username)),
-              (admin.user.getRole() === 'ADMIN'
-                ? genButton('Shadowban').click(function () {
-                  ban.shadow(data.username, function () {
-                    self.elements.check.fadeOut(200);
-                  });
-                })
-                : '')
+              (admin.user.hasPermission('user.shadowban') ? genButton('Shadowban').click(function () {
+                ban.shadow(data.username, function () {
+                  self.elements.check.fadeOut(200);
+                });
+              }) : '')
             ),
             crel('div',
               crel('button', {
@@ -265,25 +263,22 @@
                 onclick: admin.chat._handleActionClick
               }, 'Chat lookup')
             ),
-            (admin.user.getRole() !== 'TRIALMOD'
-              ? crel('div',
-                crel('button', {
-                  class: 'text-button',
-                  'data-action': 'request-rename',
-                  'data-target': data.username,
-                  style: 'position: initial; right: auto; left: auto; bottom: auto;',
-                  onclick: admin.chat._handleActionClick
-                }, 'Request Rename'),
-                (admin.user.getRole() === 'ADMIN' || admin.user.getRole() === 'DEVELOPER' ? crel('button', {
-                  class: 'text-button',
-                  'data-action': 'force-rename',
-                  'data-target': data.username,
-                  style: 'position: initial; right: auto; left: auto; bottom: auto;',
-                  onclick: admin.chat._handleActionClick
-                }, 'Force Rename') : '')
-              )
-              : ''
-            ),
+            (admin.user.hasPermission('user.namechange.flag') ? crel('div',
+              crel('button', {
+                class: 'text-button',
+                'data-action': 'request-rename',
+                'data-target': data.username,
+                style: 'position: initial; right: auto; left: auto; bottom: auto;',
+                onclick: admin.chat._handleActionClick
+              }, 'Request Rename'),
+              (admin.user.hasPermission('user.namechange.force') ? crel('button', {
+                class: 'text-button',
+                'data-action': 'force-rename',
+                'data-target': data.username,
+                style: 'position: initial; right: auto; left: auto; bottom: auto;',
+                onclick: admin.chat._handleActionClick
+              }, 'Force Rename') : '')
+            ) : ''),
             $('<div>').append(
               $('<b>').text('Custom ban length: '), '<br>',
               $('<input>').attr('type', 'number').attr('step', 'any').addClass('admin-bannumber').val(24),
@@ -371,7 +366,7 @@
                     admin.socket.send({ type: 'admin_cdoverride', override: this.checked });
                   },
                   checkState: admin.cdOverride,
-                  disabled: admin.user.getRole() === 'TRIALMOD'
+                  disabled: !admin.user.hasPermission('board.cooldown.override')
                 }
               ],
               function (cbox) {

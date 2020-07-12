@@ -78,11 +78,11 @@
                                     </tr>
                                     <tr>
                                         <th class="text-right pr-3">Alltime Pixels</th>
-                                        <td class="text-left">{{profile_of.pixelsAllTime | numberformat("#,###")}}</td>
+                                        <td class="text-left">{{profile_of.allTimePixelCount | numberformat("#,###")}}</td>
                                     </tr>
                                     <tr>
                                         <th class="text-right pr-3">Current Canvas Pixels</th>
-                                        <td class="text-left">{{profile_of.pixels | numberformat("#,###")}}</td>
+                                        <td class="text-left">{{profile_of.pixelCount | numberformat("#,###")}}</td>
                                     </tr>
                                     <tr>
                                         <th class="text-right pr-3">Discord Tag</th>
@@ -91,6 +91,10 @@
                                     <tr>
                                         <th class="text-right pr-3">Faction</th>
                                         <td class="text-left">{% if profile_of.displayedFaction | default(0) > 0 %}[{{profile_of.fetchDisplayedFaction.tag}}] {{profile_of.fetchDisplayedFaction.name}} (ID: {{profile_of.fetchDisplayedFaction.id}}){% else %}None{% endif %}</td>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-right pr-3">Roles</th>
+                                        <td class="text-left">{{profile_of.getRolesString() | default("None")}}</td>
                                     </tr>
                                     {% if profile_of.isBanned() %}
                                     <tr>

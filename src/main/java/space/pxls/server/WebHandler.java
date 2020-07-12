@@ -667,7 +667,7 @@ public class WebHandler {
     public void ban(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
         User user_perform = exchange.getAttachment(AuthReader.USER);
-        if (user != null && user.getRole().lessThan(user_perform.getRole())) {
+        if (user != null && !user.hasPermission("user.ban")) {
             String time = "86400";
             FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
             FormData.FormValue time_form = data.getFirst("time");
@@ -677,7 +677,7 @@ public class WebHandler {
             if (doLog(exchange)) {
                 App.getDatabase().insertAdminLog(user_perform.getId(), String.format("ban %s with reason: %s", user.getName(), getBanReason(exchange)));
             }
-            user.ban(Integer.parseInt(time), getBanReason(exchange), getRollbackTime(exchange), user_perform);
+            user.ban(Integer.valueOf(time), getBanReason(exchange), getRollbackTime(exchange), user_perform);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             exchange.setStatusCode(200);
         } else {
@@ -711,8 +711,8 @@ public class WebHandler {
     public void permaban(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
         User user_perform = exchange.getAttachment(AuthReader.USER);
-        if (user != null && user.getRole().lessThan(user_perform.getRole())) {
-            user.permaban(getBanReason(exchange), getRollbackTime(exchange), user_perform);
+        if (user != null && !user.hasPermission("user.permaban")) {
+            user.ban(null, getBanReason(exchange), getRollbackTime(exchange), user_perform);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             if (doLog(exchange)) {
                 App.getDatabase().insertAdminLog(user_perform.getId(), String.format("permaban %s with reason: %s", user.getName(), getBanReason(exchange)));
@@ -726,8 +726,8 @@ public class WebHandler {
     public void shadowban(HttpServerExchange exchange) {
         User user = parseUserFromForm(exchange);
         User user_perform = exchange.getAttachment(AuthReader.USER);
-        if (user != null && user.getRole().lessThan(user_perform.getRole())) {
-            user.shadowban(getBanReason(exchange), getRollbackTime(exchange), user_perform);
+        if (user != null && !user.hasPermission("user.shadowban")) {
+            user.shadowBan(getBanReason(exchange), getRollbackTime(exchange), user_perform);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             if (doLog(exchange)) {
                 App.getDatabase().insertAdminLog(user_perform.getId(), String.format("shadowban %s with reason: %s", user.getName(), getBanReason(exchange)));
@@ -743,12 +743,12 @@ public class WebHandler {
 
         User user = exchange.getAttachment(AuthReader.USER);
         if (user == null) {
-            sendBadRequest(exchange);
+            sendUnauthorized(exchange, "User must be logged in to report chat messages");
             return;
         }
 
         if (user.isBanned()) {
-            sendBadRequest(exchange);
+            sendForbidden(exchange, "Banned users cannot report chat messages");
             return;
         }
 
@@ -798,7 +798,7 @@ public class WebHandler {
             sendBadRequest(exchange);
             return;
         }
-        if (user.isBanned() || user.getRole().lessEqual(Role.USER)) {
+        if (user.isBanned()) {
             sendBadRequest(exchange);
             return;
         }
@@ -1208,10 +1208,6 @@ public class WebHandler {
             sendBadRequest(exchange, "No authenticated users found");
             return;
         }
-        if (user.getRole().lessThan(Role.DEVELOPER)) {
-            send(StatusCodes.FORBIDDEN, exchange, "Invalid permissions");
-            return;
-        }
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         String title = null;
         String body = null;
@@ -1263,10 +1259,6 @@ public class WebHandler {
             sendBadRequest(exchange, "No authenticated users found");
             return;
         }
-        if (user.getRole().lessThan(Role.DEVELOPER)) {
-            send(StatusCodes.FORBIDDEN, exchange, "Invalid permissions");
-            return;
-        }
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         int notificationID = -1;
         if (!data.contains("id")) {
@@ -1291,10 +1283,6 @@ public class WebHandler {
         User user = exchange.getAttachment(AuthReader.USER);
         if (user == null) {
             sendBadRequest(exchange, "No authenticated users found");
-            return;
-        }
-        if (user.getRole().lessThan(Role.DEVELOPER)) {
-            send(StatusCodes.FORBIDDEN, exchange, "Invalid permissions");
             return;
         }
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
@@ -1356,6 +1344,22 @@ public class WebHandler {
         send(StatusCodes.BAD_REQUEST, exchange, details);
     }
 
+    private void sendUnauthorized(HttpServerExchange exchange) {
+        sendUnauthorized(exchange, "");
+    }
+
+    private void sendUnauthorized(HttpServerExchange exchange, String details) {
+        send(StatusCodes.UNAUTHORIZED, exchange, details);
+    }
+
+    private void sendForbidden(HttpServerExchange exchange) {
+        sendForbidden(exchange, "");
+    }
+
+    private void sendForbidden(HttpServerExchange exchange, String details) {
+        send(StatusCodes.FORBIDDEN, exchange, details);
+    }
+
     private void send(int statusCode, HttpServerExchange exchange, String details) {
         boolean isSuccess = statusCode >= 200 && statusCode < 300;
 
@@ -1414,7 +1418,7 @@ public class WebHandler {
                     new ServerUserInfo(
                         user.getName(),
                         user.getLogin(),
-                        user.getRole().name(),
+                        user.getAllRoles(),
                         user.getPixelCount(),
                         user.getAllTimePixelCount(),
                         user.isBanned(),
@@ -1706,12 +1710,6 @@ public class WebHandler {
     public void lookup(HttpServerExchange exchange) {
         User user = exchange.getAttachment(AuthReader.USER);
 
-        /*if (user == null || user.getRole().lessThan(Role.USER)) {
-            exchange.setStatusCode(StatusCodes.UNAUTHORIZED);
-            exchange.endExchange();
-            return;
-        }*/
-
         Deque<String> xq = exchange.getQueryParameters().get("x");
         Deque<String> yq = exchange.getQueryParameters().get("y");
 
@@ -1738,7 +1736,7 @@ public class WebHandler {
             App.getDatabase().insertLookup(user.getId(), exchange.getAttachment(IPReader.IP));
         }
 
-        exchange.getResponseSender().send(App.getGson().toJson(((user == null) || user.getRole().lessThan(Role.TRIALMOD)) ? Lookup.fromDB(App.getDatabase().getPixelAtUser(x, y).orElse(null)) : ExtendedLookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null))));
+        exchange.getResponseSender().send(App.getGson().toJson(((user == null) || !user.hasPermission("board.lookup") ? Lookup.fromDB(App.getDatabase().getPixelAtUser(x, y).orElse(null)) : ExtendedLookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null)))));
     }
 
     public void report(HttpServerExchange exchange) {
