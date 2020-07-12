@@ -81,7 +81,7 @@ Also note that the `.toggle()` function is only available for boolean settings (
 ## Lookup Hooks
 
 Hooks are objects that provide extra functionality for lookups.
-In the example, `data` supplied to `get` would be lookup information, while properies in `css` are assigned to their values.
+In the example, `data` supplied to `get` would be lookup information, while properties in `css` are assigned to their values.
 
 ```js
 App.lookup.registerHook({
@@ -121,7 +121,7 @@ App.chat.registerHook({
 
 Your function's return value should be an object containing an array object in the key `pings` which contains one or more ping objects.
 A ping object contains three keys as shown in the example: `start`, `length`, and `highlight`.
-While not currently used, these values are used to indicate if a message should highlighted as a ping and what section if it if so.
+While not currently used, these values are used to indicate if a message should highlighted as a ping and what section in it if so.
 
 ## Global Events
 
