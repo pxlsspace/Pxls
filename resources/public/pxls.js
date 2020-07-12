@@ -7068,6 +7068,7 @@ window.App = (function() {
       getRoles: user.getRoles,
       isLoggedIn: user.isLoggedIn,
       isStaff: user.isStaff,
+      isDonator: user.isDonator,
       getPermissions: user.getPermissions,
       hasPermission: user.hasPermission
     },
