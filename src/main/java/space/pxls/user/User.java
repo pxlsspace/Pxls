@@ -619,10 +619,6 @@ public class User {
                 && this.chatNameColor == -1;
     }
     
-    public boolean hasDonatorChatNameColor() {
-        return hasPermission("chat.usercolor.donator")
-                && this.chatNameColor == -2;
-    }
 
     public int getChatNameColor() {
         return this.chatNameColor;
