@@ -633,6 +633,9 @@ public class User {
         if (this.hasRainbowChatNameColor()) {
             toReturn.add("rainbow");
         }
+        if (this.hasDonatorChatNameColor()) {
+            toReturn.add("donator");
+        }
         return toReturn.size() != 0 ? toReturn : null;
     }
 
