@@ -2091,7 +2091,7 @@ window.App = (function() {
               return;
             }
 
-            if (evt.key === 'o' || evt.key === 'O' || evt.which === 79) {
+            if (evt.key === 'o' || evt.key === 'O' || evt.which === 111 || evt.which === 79) {
               heatmap.clear();
             }
           });
@@ -2100,7 +2100,7 @@ window.App = (function() {
         settings.board.heatmap.opacity.listen(function(value) {
           heatmap.setBackgroundColor(`rgba(0, 0, 0, ${value})`);
         });
-        $('#hvmapClear').click(function() {
+        $('#hmapClear').click(function() {
           heatmap.clear();
         });
         settings.board.heatmap.enable.listen(function(value) {
@@ -2139,7 +2139,7 @@ window.App = (function() {
               return;
             }
 
-            if (evt.key === 'o' || evt.key === 'O' || evt.which === 79) { // O key
+            if (evt.key === 'u' || evt.key === 'U' || evt.which === 117 || evt.which === 85) { // U key
               virginmap.clear();
             }
           });
@@ -2148,7 +2148,7 @@ window.App = (function() {
         settings.board.virginmap.opacity.listen(function(value) {
           virginmap.setBackgroundColor(`rgba(0, 255, 0, ${value})`);
         });
-        $('#hvmapClear').click(function() {
+        $('#vmapClear').click(function() {
           virginmap.clear();
         });
 
@@ -3374,7 +3374,7 @@ window.App = (function() {
           place.toggleReticule(value && place.color !== -1);
         });
 
-        settings.ui.reticule.enable.listen(function(value) {
+        settings.ui.cursor.enable.listen(function(value) {
           place.toggleCursor(value && place.color !== -1);
         });
 
@@ -6115,6 +6115,9 @@ window.App = (function() {
       runLookup: self.runLookup,
       get markdownProcessor() {
         return self.markdownProcessor;
+      },
+      get canvasBanRespected() {
+        return self.canvasBanRespected;
       }
     };
   })();
