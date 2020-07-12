@@ -1796,7 +1796,35 @@ ul.chat-history, ul.chatban-history {
     text-shadow: none !important;
 }
 
+/*donator gradient*/
+.username-color-picker.donator {
+    background-color: black;
+    text-shadow: 0 0 0.5em black;
+    color: white;
+}
 
+/*for reference: linear-gradient(45deg, #94E044, #02BE01 25%, #005F00 50%, #02BE01 75%, #94E044 90%)*/
+@keyframes donator-transition-bg {
+    0% { background-color: #94E044; }
+    25% { background-color: #02BE01; }
+    50% { background-color: #005F00; }
+    75% { background-color: #02BE01; }
+    90% { background-color: #94E044; }
+}
+
+.username-color-picker option.donator {
+    animation: donator-transition-bg 4s linear infinite;
+    background-color: green;
+}
+
+.user.donator {
+    display: inline-block;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+    text-shadow: none !important;
+}
 
 /* preselecting body makes this a more specific selector than the built-in one which would normally override this since it's inline */
 /* the same principle is why each of the following preselect .emoji-picker */
