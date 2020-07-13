@@ -35,7 +35,12 @@ html {
     --palette-overlay-background: #5a2f71ee;
     --palette-overlay-text-color: inherit;
     --palette-deselect-button-color: #fff;
+    --palette-number-text-color: #ffffff;
+    --palette-number-background-color: #5a2f71;
 
+    --cursor-text-color: #fff;
+    --cursor-text-background-color: #36046a;
+    
     --undo-text-color: #fff;
     --undo-background: linear-gradient(to top, #5a2f71cc, #5a2f71);
     --undo-border-color: #000;
@@ -56,7 +61,7 @@ html {
     --notification-color: #b20;
     --ping-highlight-color: #860d82;
     --ping-flash-color: #8ef7d1;
-    --ping-counter-color: #ffa500;
+    --ping-counter-color: #ae5cdb;
     --notification-expiry-color: var(--text-orange-color);
       
     --panel-background: #3d204d;

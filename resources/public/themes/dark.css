@@ -23,6 +23,11 @@ html {
     --palette-overlay-background: rgba(0, 0, 0, 0.9);
     --palette-overlay-text-color: #eee;
     --palette-deselect-button-color: #DDD;
+    --palette-number-text-color: #ffffff;
+    --palette-number-background-color: #474a48;
+    
+    --cursor-text-color: #fff;
+    --cursor-text-background-color: #474a48;
     
     --undo-text-color: #fff;
     --undo-background: linear-gradient(to top, #0000007F, #000);
