@@ -1,0 +1,100 @@
+html {
+    --general-text-color: #fff;
+    --general-background: #005f00;
+
+    --kbd-background: #0d5919;
+    --kbd-border-color: #03591e;
+    --kbd-text-color: #fff;
+
+    --input-text-color: #eee;
+    --input-background: #154a15;
+    --input-border-color: #125e1c;
+    --input-placeholder-text-color: #bbb;
+
+    --button-background: #023912;
+    --button-text-color: #fff;
+    --button-border-color-hover: #215732;
+
+    --floating-panel-text-color: #eee;
+    --floating-panel-border-color: #1f8633;
+    --floating-panel-background: #01571b;
+
+    --dangerous-button-border-color: #0f680f;
+
+    --palette-background: rgba(27, 96, 29, .85);
+    --palette-overlay-background: rgba(36, 113, 32, .9);
+    --palette-deselect-button-color: #DDD;
+    --palette-number-background-color: #06460d;
+    --palette-number-text-color: #fff;
+    
+    --cursor-text-color: #fff;
+    --cursor-text-background-color: #075701;
+
+    --selection-color: #fff;
+    --selection-background-color: #08b022;
+    
+    --undo-background: linear-gradient(to top, #286424db, #075e1cc7);
+
+    --text-red-color: #f44;
+    --text-yellow-color: #cc0;
+    --ping-highlight-color: #04c81eb3;
+    --ping-counter-color: #03cc1eb3;
+
+    --panel-header-background: linear-gradient(to bottom, #194a1bfc, #0b330d);
+    --panel-background: #084a0b;
+    --panel-text-color: #eee;
+    --panel-article-footer-background: #063708;
+    --panel-article-footer-text-color: #ffffff;
+    --panel-footer-background: #052d07;
+
+    --option-bubble-position-background-selected: #1a6c26;
+    --bubble-background: #013502b0;
+
+    --chat-separator-color: #14551f;
+    --chat-odd-background: #014d0b;
+    --chat-server-action-text-color: #ebeef2;
+    --chat-user-text-shadow-color: #333;
+
+    --emoji-picker-border-color: #158023;
+    --emoji-picker-shadow-color: #05641d;
+    --emoji-picker-background: #025117;
+    --emoji-picker-preview-name-text-color: #fff;
+    --emoji-picker-tab-icon-color: #fff;
+    --emoji-picker-tab-icon-color-selected: #258441;
+    --emoji-picker-section-text-color: #fff;
+    --emoji-picker-emoji-color: white;
+    --emoji-picker-emoji-background-hover: #408250;
+    --emoji-picker-search-input-border-color: #027d06;
+    --emoji-picker-search-input-background: #146815;
+    --emoji-picker-search-input-text-color: #fff;
+    --emoji-picker-search-icon-color: #fff;
+    --emoji-picker-search-no-results-color: #fff;
+    --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
+    --emoji-picker-variant-popup-background: #FFFFFF;
+
+    --chat-typeahead-menu-background: #017d0d;
+    --chat-typeahead-item-background: #02802a;
+    --chat-typeahead-item-background-hover: #085e0f;
+    --chat-typeahead-item-background-active: #038a3a;
+
+    --notification-expiry-color: #995050;
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #000;
+}
+
+@keyframes -scrolled-flash {
+    from {
+        background: #5b5345;
+    }
+    to {
+        background: #58a78a;
+    }
+}
+
+    ::selection {
+    background-color: var(--selection-background-color);
+    color:var(--selection-color);
+    }

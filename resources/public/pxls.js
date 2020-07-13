@@ -1761,11 +1761,12 @@ window.App = (function() {
         if (optional) {
           return false;
         }
-        if (scale < 1) {
-          self.elements.board.removeClass('pixelate');
-        } else {
-          self.elements.board.addClass('pixelate');
-        }
+
+        self.elements.board.toggleClass('pixelate', scale > 1);
+        overlays.heatmap.setPixelated(scale > 1);
+        overlays.virginmap.setPixelated(scale > 1);
+        template.setPixelated(scale > template.getWidthRatio());
+
         if (ignoreCanvasLock || self.allowDrag || (!self.allowDrag && self.pannedWithKeys)) {
           self.elements.mover.css({
             width: self.width,
@@ -2092,7 +2093,10 @@ window.App = (function() {
         },
         setShown: self.setShown,
         remove: self.remove,
-        reload: self.reload
+        reload: self.reload,
+        setPixelated: function(pixelate = true) {
+          $(self.elements.overlay).toggleClass('pixelate', pixelate);
+        }
       };
     };
 
@@ -2164,7 +2168,7 @@ window.App = (function() {
               return;
             }
 
-            if (evt.key === 'o' || evt.key === 'O' || evt.which === 79) {
+            if (evt.key === 'o' || evt.key === 'O' || evt.which === 111 || evt.which === 79) {
               heatmap.clear();
             }
           });
@@ -2173,7 +2177,7 @@ window.App = (function() {
         settings.board.heatmap.opacity.listen(function(value) {
           heatmap.setBackgroundColor(`rgba(0, 0, 0, ${value})`);
         });
-        $('#hvmapClear').click(function() {
+        $('#hmapClear').click(function() {
           heatmap.clear();
         });
         settings.board.heatmap.enable.listen(function(value) {
@@ -2212,7 +2216,7 @@ window.App = (function() {
               return;
             }
 
-            if (evt.key === 'o' || evt.key === 'O' || evt.which === 79) { // O key
+            if (evt.key === 'u' || evt.key === 'U' || evt.which === 117 || evt.which === 85) { // U key
               virginmap.clear();
             }
           });
@@ -2221,7 +2225,7 @@ window.App = (function() {
         settings.board.virginmap.opacity.listen(function(value) {
           virginmap.setBackgroundColor(`rgba(0, 255, 0, ${value})`);
         });
-        $('#hvmapClear').click(function() {
+        $('#vmapClear').click(function() {
           virginmap.clear();
         });
 
@@ -2299,7 +2303,7 @@ window.App = (function() {
           x: 0,
           y: 0
         };
-        self.elements.template = $('<img>').addClass('noselect pixelate').attr({
+        self.elements.template = $('<img>').addClass('noselect').attr({
           id: 'board-template',
           src: self.options.url,
           alt: 'template'
@@ -2344,6 +2348,7 @@ window.App = (function() {
           if (self.options.width < 0) {
             self.elements.widthInput.val(self.elements.template.width());
           }
+          self.elements.template.toggleClass('pixelate', query.get('scale') > self.getWidthRatio());
         }).on('error', () => {
           self.elements.imageErrorWarning.show();
           self.elements.imageErrorWarning.text('There was an error getting the image');
@@ -2474,6 +2479,8 @@ window.App = (function() {
           self.updateSettings();
         }
         document.title = uiHelper.getTitle();
+
+        self.setPixelated(query.get('scale') > self.getWidthRatio());
       },
       disableTemplate: function() {
         self._update({ url: null });
@@ -2560,6 +2567,18 @@ window.App = (function() {
         if (self.options.use) {
           self.elements.template.css('pointer-events', 'none').data('dragging', false);
         }
+      },
+      setPixelated: function(pixelate = true) {
+        if (self.elements.template !== null) {
+          self.elements.template.toggleClass('pixelate', pixelate);
+        }
+      },
+      getWidthRatio: function() {
+        if (self.elements.template === null || self.options.width === -1) {
+          return 1;
+        }
+
+        return self.elements.template[0].naturalWidth / self.options.width;
       }
     };
     return {
@@ -2568,7 +2587,9 @@ window.App = (function() {
       draw: self.draw,
       init: self.init,
       queueUpdate: self.queueUpdate,
-      getOptions: () => self.options
+      getOptions: () => self.options,
+      setPixelated: self.setPixelated,
+      getWidthRatio: self.getWidthRatio
     };
   })();
     // here all the grid stuff happens
@@ -3365,6 +3386,11 @@ window.App = (function() {
           name: 'Purple',
           location: '/themes/purple.css',
           color: '#5a2f71'
+        },
+        {
+          name: 'Green',
+          location: '/themes/green.css',
+          color: '#005f00'
         }
       ],
       specialChatColorClasses: ['rainbow'],
@@ -3449,7 +3475,7 @@ window.App = (function() {
           place.toggleReticule(value && place.color !== -1);
         });
 
-        settings.ui.reticule.enable.listen(function(value) {
+        settings.ui.cursor.enable.listen(function(value) {
           place.toggleCursor(value && place.color !== -1);
         });
 
@@ -4322,7 +4348,7 @@ window.App = (function() {
           const trimmed = toSend.trim();
           let handling = false;
           if ((e.originalEvent.key === 'Enter' || e.originalEvent.which === 13) && !e.shiftKey) {
-            if (trimmed.startsWith('/') && user.getRole() !== 'USER') {
+            if (trimmed.startsWith('/') && user.isStaff()) {
               const args = trimmed.substr(1).split(' ');
               const command = args.shift();
               let banReason; // To fix compiler warning
@@ -4481,7 +4507,7 @@ window.App = (function() {
           const toSend = self.elements.input[0].value;
           const trimmed = toSend.trim();
           if (trimmed.length === 0) return self.showHint('');
-          if (!((e.originalEvent.key === 'Enter' || e.originalEvent.which === 13) && !e.originalEvent.shiftKey) && trimmed.startsWith('/') && user.getRole() !== 'USER') {
+          if (!((e.originalEvent.key === 'Enter' || e.originalEvent.which === 13) && !e.originalEvent.shiftKey) && trimmed.startsWith('/') && user.isStaff()) {
             const searchAgainst = trimmed.substr(1).split(' ').shift();
             const matches = [];
             commandsCache.forEach(x => {
@@ -6248,7 +6274,10 @@ window.App = (function() {
       registerHook: self.registerHook,
       replaceHook: self.replaceHook,
       unregisterHook: self.unregisterHook,
-      runLookup: self.runLookup
+      runLookup: self.runLookup,
+      get canvasBanRespected() {
+        return self.canvasBanRespected;
+      }
     };
   })();
     // this takes care of the countdown timer
@@ -6473,13 +6502,28 @@ window.App = (function() {
         prompt: $('#prompt'),
         signup: $('#signup')
       },
-      role: 'USER',
+      roles: [],
       pendingSignupToken: null,
       loggedIn: false,
       username: '',
       chatNameColor: 0,
-      getRole: () => self.role,
-      isStaff: () => ['MODERATOR', 'DEVELOPER', 'ADMIN', 'TRIALMOD'].includes(self.getRole()),
+      getRoles: () => self.roles,
+      isStaff: () => self.hasPermission('user.admin'),
+      getPermissions: () => {
+        let perms = [];
+        self.roles.flatMap(function loop(node) {
+          if (node.inherits.length > 0) {
+            perms.push(...node.permissions);
+            return node.inherits.flatMap(loop);
+          } else {
+            perms.push(node.permissions);
+          }
+        });
+        // NOTE: Slightly hacky fix for arrays showing up in permissions
+        perms = perms.flatMap(permissions => permissions);
+        return [...new Set(perms)];
+      },
+      hasPermission: node => self.getPermissions().includes(node),
       getUsername: () => self.username,
       getPixelCount: () => self.pixelCount,
       getPixelCountAllTime: () => self.pixelCountAllTime,
@@ -6632,15 +6676,15 @@ window.App = (function() {
           } else {
             self.elements.userInfo.fadeIn(200);
           }
-          self.role = data.role;
+          self.roles = data.roles;
 
-          if (self.role === 'BANNED') {
+          if (data.banExpiry === 0) {
             isBanned = true;
             crel(banelem, crel('p', 'You are permanently banned.'));
           } else if (data.banned === true) {
             isBanned = true;
             crel(banelem, crel('p', `You are temporarily banned and will not be allowed to place until ${new Date(data.banExpiry).toLocaleString()}`));
-          } else if (['TRIALMOD', 'MODERATOR', 'DEVELOPER', 'ADMIN'].indexOf(self.role) !== -1) {
+          } else if (self.isStaff()) {
             if (window.deInitAdmin) {
               window.deInitAdmin();
             }
@@ -6662,7 +6706,7 @@ window.App = (function() {
             crel(banelem,
               crel('p', 'If you think this was an error, please contact us using one of the links in the info tab.'),
               crel('p', 'Ban reason:'),
-              crel('p', data.ban_reason)
+              crel('p', data.banReason)
             );
             modal.show(modal.buildDom(
               crel('h2', 'Banned'),
@@ -6779,8 +6823,10 @@ window.App = (function() {
     };
     return {
       init: self.init,
-      getRole: self.getRole,
+      getRoles: self.getRoles,
       isStaff: self.isStaff,
+      getPermissions: self.getPermissions,
+      hasPermission: self.hasPermission,
       getUsername: self.getUsername,
       getPixelCount: self.getPixelCount,
       getPixelCountAllTime: self.getPixelCountAllTime,
@@ -7130,9 +7176,11 @@ window.App = (function() {
       getUsername: user.getUsername,
       getPixelCount: user.getPixelCount,
       getPixelCountAllTime: user.getPixelCountAllTime,
-      getRole: user.getRole,
+      getRoles: user.getRoles,
       isLoggedIn: user.isLoggedIn,
-      isStaff: user.isStaff
+      isStaff: user.isStaff,
+      getPermissions: user.getPermissions,
+      hasPermission: user.hasPermission
     },
     modal
   };

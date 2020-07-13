@@ -27,7 +27,7 @@ public class RateLimitingHandler implements HttpHandler {
         Cookie header = exchange.getRequestCookies().get("pxls-token");
         if (header != null) {
             User user = App.getUserManager().getByToken(header.getValue());
-            if (user != null && user.getRole().greaterEqual(Role.TRIALMOD)) {
+            if (user != null && user.hasPermission("user.ratelimits.bypass")) {
                 next.handleRequest(exchange);
                 return;
             }
