@@ -165,8 +165,8 @@ public class PacketHandler {
 
     private void handleBanMe(WebSocketChannel channel, User user, ClientBanMe obj) {
         String app = obj.getApp();
-        App.getDatabase().insertAdminLog(user.getId(), String.format("shadowban %s with reason: auto-ban via script (ap: %s)", user.getName(), app));
-        user.ban(null, String.format("auto-ban via script(ap: %s)", app), 0, user);
+        App.getDatabase().insertAdminLog(user.getId(), String.format("permaban %s with reason: auto-ban via script (ap: %s)", user.getName(), app));
+        user.ban(0, String.format("auto-ban via script(ap: %s)", app), 0, user);
     }
 
     private void handleCooldownOverride(WebSocketChannel channel, User user, ClientAdminCooldownOverride obj) {
