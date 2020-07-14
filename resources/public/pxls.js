@@ -6887,7 +6887,6 @@ window.App = (function() {
     // by a pixel when the window size is odd.
   const chromeOffsetWorkaround = (function() {
     const self = {
-      isEnabled: false,
       elements: {
         boardContainer: board.getContainer(),
         setting: $('#chrome-canvas-offset-setting')
@@ -6926,7 +6925,7 @@ window.App = (function() {
     return {
       init: self.init,
       update: () => {
-        if (self.isEnabled) {
+        if (settings.fix.chrome.offset.enable.get()) {
           self.updateContainer();
         }
       }
