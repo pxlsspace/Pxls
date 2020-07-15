@@ -73,6 +73,7 @@ roleID {
 | Node | Endpoint | Purpose | Default Role |
 | --- | --- | --- | --- |
 | `user.admin` | `/admin/*` | Access to admin client resources | staff |
+| `user.donator` | `/donator/*` | donator role | donator |
 | `user.alert` | | Alerts users | staff |
 | `user.auth` | `/auth`, `/signin`, `/signup`, `/logout` | User authentication | guest |
 | `user.auth` | `/whoami` | List own username and ID | guest |
