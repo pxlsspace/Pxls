@@ -139,7 +139,7 @@ public class WebHandler {
             view40x(exchange, 403, null);
         } else {
             PathTemplateMatch match = exchange.getAttachment(PathTemplateMatch.ATTACHMENT_KEY);
-            String requested = match.getParameters().computeIfAbsent("who", s -> user.getName());
+            String requested = match.getParameters().compute("who", (k, s) -> (s == null || s.isEmpty()) ? user.getName() : s);
             boolean requested_self = user.getName().equals(requested); // usernames are case-sensitive, we can use #equals relatively safely.
             User profileUser = requested_self ? user : App.getUserManager().getByName(requested);
 

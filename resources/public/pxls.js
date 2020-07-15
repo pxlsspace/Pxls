@@ -1688,11 +1688,12 @@ window.App = (function() {
         if (optional) {
           return false;
         }
-        if (scale < 1) {
-          self.elements.board.removeClass('pixelate');
-        } else {
-          self.elements.board.addClass('pixelate');
-        }
+
+        self.elements.board.toggleClass('pixelate', scale > 1);
+        overlays.heatmap.setPixelated(scale > 1);
+        overlays.virginmap.setPixelated(scale > 1);
+        template.setPixelated(scale > template.getWidthRatio());
+
         if (ignoreCanvasLock || self.allowDrag || (!self.allowDrag && self.pannedWithKeys)) {
           self.elements.mover.css({
             width: self.width,
@@ -2019,7 +2020,10 @@ window.App = (function() {
         },
         setShown: self.setShown,
         remove: self.remove,
-        reload: self.reload
+        reload: self.reload,
+        setPixelated: function(pixelate = true) {
+          $(self.elements.overlay).toggleClass('pixelate', pixelate);
+        }
       };
     };
 
@@ -2225,7 +2229,7 @@ window.App = (function() {
           x: 0,
           y: 0
         };
-        self.elements.template = $('<img>').addClass('noselect pixelate').attr({
+        self.elements.template = $('<img>').addClass('noselect').attr({
           id: 'board-template',
           src: self.options.url,
           alt: 'template'
@@ -2270,6 +2274,7 @@ window.App = (function() {
           if (self.options.width < 0) {
             self.elements.widthInput.val(self.elements.template.width());
           }
+          self.elements.template.toggleClass('pixelate', query.get('scale') > self.getWidthRatio());
         }).on('error', () => {
           self.elements.imageErrorWarning.show();
           self.elements.template.remove();
@@ -2399,6 +2404,8 @@ window.App = (function() {
           self.updateSettings();
         }
         document.title = uiHelper.getTitle();
+
+        self.setPixelated(query.get('scale') > self.getWidthRatio());
       },
       disableTemplate: function() {
         self._update({ url: null });
@@ -2485,6 +2492,18 @@ window.App = (function() {
         if (self.options.use) {
           self.elements.template.css('pointer-events', 'none').data('dragging', false);
         }
+      },
+      setPixelated: function(pixelate = true) {
+        if (self.elements.template !== null) {
+          self.elements.template.toggleClass('pixelate', pixelate);
+        }
+      },
+      getWidthRatio: function() {
+        if (self.elements.template === null || self.options.width === -1) {
+          return 1;
+        }
+
+        return self.elements.template[0].naturalWidth / self.options.width;
       }
     };
     return {
@@ -2493,7 +2512,9 @@ window.App = (function() {
       draw: self.draw,
       init: self.init,
       queueUpdate: self.queueUpdate,
-      getOptions: () => self.options
+      getOptions: () => self.options,
+      setPixelated: self.setPixelated,
+      getWidthRatio: self.getWidthRatio
     };
   })();
     // here all the grid stuff happens
@@ -3290,6 +3311,11 @@ window.App = (function() {
           name: 'Purple',
           location: '/themes/purple.css',
           color: '#5a2f71'
+        },
+        {
+          name: 'Green',
+          location: '/themes/green.css',
+          color: '#005f00'
         }
       ],
       specialChatColorClasses: ['rainbow'],
@@ -6810,7 +6836,6 @@ window.App = (function() {
     // by a pixel when the window size is odd.
   const chromeOffsetWorkaround = (function() {
     const self = {
-      isEnabled: false,
       elements: {
         boardContainer: board.getContainer(),
         setting: $('#chrome-canvas-offset-setting')
@@ -6849,7 +6874,7 @@ window.App = (function() {
     return {
       init: self.init,
       update: () => {
-        if (self.isEnabled) {
+        if (settings.fix.chrome.offset.enable.get()) {
           self.updateContainer();
         }
       }

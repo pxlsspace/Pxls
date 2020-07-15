@@ -30,6 +30,9 @@ html {
     --cursor-text-color: #fff;
     --cursor-text-background-color: #02076c;
     
+    --selection-color: #000;
+    --selection-background-color: #00c0e6;
+    
     --undo-background: linear-gradient(to top, #05157d99, #04236f);
     --undo-text-color: #fff;
 
@@ -78,6 +81,7 @@ html {
     --chat-typeahead-item-background-active: #0012b0;
 
     --notification-expiry-color: #995050;
+    
 }
 
 hr {
@@ -93,3 +97,8 @@ hr {
         background: #58a78a;
     }
 }
+
+    ::selection {
+    background-color: var(--selection-background-color);
+    color:var(--selection-color);
+    }
