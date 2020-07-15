@@ -6399,6 +6399,7 @@ window.App = (function() {
       chatNameColor: 0,
       getRoles: () => self.roles,
       isStaff: () => self.hasPermission('user.admin'),
+      isDonator: () => self.hasPermission('user.donator'),
       getPermissions: () => {
         let perms = [];
         self.roles.flatMap(function loop(node) {
