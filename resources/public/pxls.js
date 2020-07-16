@@ -3976,7 +3976,7 @@ window.App = (function() {
           this.Compiler.prototype.visitors.link = (node, next) => {
             const url = new URL(node.url, location.href);
 
-            const hashParams = new URLSearchParams(url.hash);
+            const hashParams = new URLSearchParams(url.hash.substr(1));
             const getParam = (name) => hashParams.has(name) ? hashParams.get(name) : url.searchParams.get(name);
 
             const coordsX = parseFloat(getParam('x'));
