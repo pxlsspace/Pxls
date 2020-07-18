@@ -7083,9 +7083,6 @@ window.App = (function() {
     attemptPlace: function() {
       ban.me(3);
     },
-    banme: function() {
-      ban.me(4);
-    },
     chat,
     typeahead: chat.typeahead,
     user: {
