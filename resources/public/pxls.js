@@ -3032,11 +3032,10 @@ window.App = (function() {
             return '';
           }
 
-          const label = $('<label>').text('Hide sensitive information');
-          const checkbox = $('<input type="checkbox">').css('margin-top', '10px');
-          label.prepend(checkbox);
+          const label = $('<label>').attr('for', 'hide-sensitive-information').text('Hide sensitive information');
+          const checkbox = $('<input id="hide-sensitive-information", type="checkbox">').css('margin-top', '10px');
           settings.lookup.filter.sensitive.enable.controls.add(checkbox);
-          return label;
+          return [checkbox, label];
         });
         self.elements.lookup.fadeIn(200);
       },
@@ -3309,6 +3308,11 @@ window.App = (function() {
           name: 'Green',
           location: '/themes/green.css',
           color: '#005f00'
+        },
+        {
+          name: 'Matte',
+          location: '/themes/matte.css',
+          color: '#468079'
         }
       ],
       specialChatColorClasses: ['rainbow'],
@@ -3396,6 +3400,15 @@ window.App = (function() {
         settings.ui.cursor.enable.listen(function(value) {
           place.toggleCursor(value && place.color !== -1);
         });
+
+        $('input[type=range]').on('input', function(e) {
+          var min = e.target.min;
+          var max = e.target.max;
+          var val = e.target.value;
+          $(e.target).css({
+            backgroundSize: (val - min) * 100 / (max - min) + '% 100%'
+          });
+        }).trigger('input');
 
         $(window).keydown((evt) => {
           if (['INPUT', 'TEXTAREA'].includes(evt.target.nodeName)) {
@@ -4817,19 +4830,18 @@ window.App = (function() {
         // dom generation
         const body = crel('div', { class: 'chat-settings-wrapper no-p-margin' });
 
-        const genCheckboxGroup = (label) => {
-          const cb = crel('input', { type: 'checkbox' });
-          const lbl = crel('label', { class: 'input-group' },
-            cb,
+        const genCheckboxGroup = (label, id) => {
+          const cb = crel('input', { id: id, type: 'checkbox' });
+          const lbl = crel('label', { for: id, class: 'input-group' },
             ' ',
             crel('span', { class: 'label-text' }, label));
           return [cb, lbl];
         };
 
-        const [_cb24hTimestamps, lbl24hTimestamps] = genCheckboxGroup('24 Hour Timestamps');
-        const [_cbPixelPlaceBadges, lblPixelPlaceBadges] = genCheckboxGroup('Show pixel-placed badges');
-        const [_cbFactionTagBadges, lblFactionTagBadges] = genCheckboxGroup('Show faction tags');
-        const [_cbPings, lblPings] = genCheckboxGroup('Enable pings');
+        const [_cb24hTimestamps, lbl24hTimestamps] = genCheckboxGroup('24 Hour Timestamps', '24-hour-timestamps');
+        const [_cbPixelPlaceBadges, lblPixelPlaceBadges] = genCheckboxGroup('Show pixel-placed badges', 'show-pixel-placed-badges');
+        const [_cbFactionTagBadges, lblFactionTagBadges] = genCheckboxGroup('Show faction tags', 'show-faction-tags');
+        const [_cbPings, lblPings] = genCheckboxGroup('Enable pings', 'enable-pings');
 
         const _cbPingAudio = crel('select', {},
           crel('option', { value: 'off' }, 'Off'),
@@ -4849,8 +4861,8 @@ window.App = (function() {
           _txtPingAudioVol
         );
 
-        const [_cbBanner, lblBanner] = genCheckboxGroup('Enable the rotating banner under chat');
-        const [_cbTemplateTitles, lblTemplateTitles] = genCheckboxGroup('Replace template titles with URLs in chat where applicable');
+        const [_cbBanner, lblBanner] = genCheckboxGroup('Enable the rotating banner under chat', 'chat-banner');
+        const [_cbTemplateTitles, lblTemplateTitles] = genCheckboxGroup('Replace template titles with URLs in chat where applicable', 'replace-template-titles');
 
         const _txtFontSize = crel('input', { type: 'number', min: '1', max: '72' });
         const _btnFontSizeConfirm = crel('button', { class: 'text-button' }, crel('i', { class: 'fas fa-check' }));
@@ -4859,7 +4871,7 @@ window.App = (function() {
           _txtFontSize
         );
 
-        const [_cbHorizontal, lblHorizontal] = genCheckboxGroup('Enable horizontal chat');
+        const [_cbHorizontal, lblHorizontal] = genCheckboxGroup('Enable horizontal chat', 'enable-horizontal-chat');
 
         const _selInternalClick = crel('select',
           Object.values(self.TEMPLATE_ACTIONS).map(action =>
@@ -4930,17 +4942,17 @@ window.App = (function() {
           if (self.removeIgnore(_selIgnores.value)) {
             _selIgnores.querySelector(`option[value="${_selIgnores.value}"]`).remove();
             lblIgnoresFeedback.innerHTML = 'User unignored.';
-            lblIgnoresFeedback.style.color = '#0d0';
+            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
             lblIgnoresFeedback.style.display = 'block';
             setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 3000);
           } else if (self.ignored.length === 0) {
             lblIgnoresFeedback.innerHTML = 'You haven\'t ignored any users. Congratulations!';
-            lblIgnoresFeedback.style.color = '#d00';
+            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
             lblIgnoresFeedback.style.display = 'block';
             setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 3000);
           } else {
             lblIgnoresFeedback.innerHTML = 'Failed to unignore user. Either they weren\'t actually ignored, or an error occurred. Contact a developer if the problem persists.';
-            lblIgnoresFeedback.style.color = '#d00';
+            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
             lblIgnoresFeedback.style.display = 'block';
             setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 5000);
           }
@@ -4949,16 +4961,23 @@ window.App = (function() {
         crel(body,
           crel('h3', { class: 'chat-settings-title' }, 'Chat Settings'),
           [
-            lbl24hTimestamps,
-            lblPixelPlaceBadges,
-            lblFactionTagBadges,
-            lblPings,
-            lblHorizontal,
+            [_cb24hTimestamps,
+              lbl24hTimestamps],
+            [_cbPixelPlaceBadges,
+              lblPixelPlaceBadges],
+            [_cbFactionTagBadges,
+              lblFactionTagBadges],
+            [_cbPings,
+              lblPings],
+            [_cbHorizontal,
+              lblHorizontal],
             lblInternalAction,
             lblPingAudio,
             lblPingAudioVol,
-            lblBanner,
-            lblTemplateTitles,
+            [_cbBanner,
+              lblBanner],
+            [_cbTemplateTitles,
+              lblTemplateTitles],
             lblFontSize,
             lblUsernameColor,
             lblIgnores,
@@ -4982,6 +5001,14 @@ window.App = (function() {
           settings.chat.links.templates.preferurls.controls.remove(_cbTemplateTitles);
           settings.ui.chat.horizontal.enable.controls.remove(_cbHorizontal);
         });
+        $('input[type=range]').on('input', function(e) {
+          var min = e.target.min;
+          var max = e.target.max;
+          var val = e.target.value;
+          $(e.target).css({
+            backgroundSize: (val - min) * 100 / (max - min) + '% 100%'
+          });
+        }).trigger('input');
       },
       _handlePingJumpClick: function() { // must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
         if (this && this.dataset && this.dataset.id) {

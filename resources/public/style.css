@@ -68,8 +68,8 @@ html {
     --cursor-text-color: #000;
     --cursor-text-background-color: #fff;
  
-    --selection-color;
-    --selection-background-color;
+    --selection-color: inherit;
+    --selection-background-color: inherit;
     /*use this in desired theme:   
     ::selection {
     background-color: var(--selection-background-color);
@@ -1366,7 +1366,7 @@ li.chat-line i[title] {
 }
 
 header .text-badge {
-    background-color: #eee;
+    background-color: var(--chat-badge-background);
 }
 
 header .icon-badge {
@@ -1981,4 +1981,3 @@ body .emoji-picker {
         max-height: initial;
     }
 }
-
