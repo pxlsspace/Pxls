@@ -1677,9 +1677,9 @@ window.App = (function() {
         }
 
         self.elements.board.toggleClass('pixelate', scale > 1);
-        overlays.heatmap.setPixelated(scale > 1);
-        overlays.virginmap.setPixelated(scale > 1);
-        template.setPixelated(scale > template.getWidthRatio());
+        overlays.heatmap.setPixelated(scale >= 1);
+        overlays.virginmap.setPixelated(scale >= 1);
+        template.setPixelated(scale >= template.getWidthRatio());
 
         if (ignoreCanvasLock || self.allowDrag || (!self.allowDrag && self.pannedWithKeys)) {
           self.elements.mover.css({
@@ -2392,7 +2392,7 @@ window.App = (function() {
         }
         document.title = uiHelper.getTitle();
 
-        self.setPixelated(query.get('scale') > self.getWidthRatio());
+        self.setPixelated(query.get('scale') >= self.getWidthRatio());
       },
       disableTemplate: function() {
         self._update({ url: null });
