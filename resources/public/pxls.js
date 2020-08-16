@@ -897,7 +897,7 @@ window.App = (function() {
         // as naive as possible to make injection next to impossible
         for (let i = 0; i < self.bad_src.length; i++) {
           if (src.match(self.bad_src[i])) {
-            self.shadow(2);
+            self.shadow('checkSrc pattern #' + i);
           }
         }
       },
@@ -908,13 +908,13 @@ window.App = (function() {
         // don't allow new websocket connections
         // eslint-disable-next-line no-global-assign
         WebSocket = function(a, b) {
-          self.shadow(1);
+          self.shadow('new WebSocket instance');
           return new _WebSocket(a, b);
         };
 
         // don't even try to generate mouse events. I am being nice
         window.MouseEvent = function() {
-          self.me(2);
+          self.me('new MouseEvent instance');
         };
 
         const _Event = Event;
@@ -922,7 +922,7 @@ window.App = (function() {
         // eslint-disable-next-line no-global-assign
         Event = function(e, s) {
           if (self.bad_events.indexOf(e.toLowerCase()) !== -1) {
-            self.shadow(4);
+            self.shadow('bad Event ' + self.bad_events[self.bad_events.indexOf(e.toLowerCase())]);
           }
           return new _Event(e, s);
         };
@@ -930,7 +930,7 @@ window.App = (function() {
         // eslint-disable-next-line no-global-assign
         CustomEvent = function(e, s) {
           if (self.bad_events.indexOf(e.toLowerCase()) !== -1) {
-            self.shadow(5);
+            self.shadow('bad CustomEvent ' + self.bad_events[self.bad_events.indexOf(e.toLowerCase())]);
           }
           return new _CustomEvent(e, s);
         };
@@ -938,7 +938,7 @@ window.App = (function() {
         // eslint-disable-next-line no-global-assign
         document.createEvent = function(e, s) {
           if (self.bad_events.indexOf(e.toLowerCase()) !== -1) {
-            self.shadow(6);
+            self.shadow('bad document.createEvent ' + self.bad_events[self.bad_events.indexOf(e.toLowerCase())]);
           }
           return createEvent(e, s);
         };
@@ -954,55 +954,49 @@ window.App = (function() {
           self.checkSrc(this.src);
         });
       },
-      shadow: function(app = 0, z) {
-        const banstr = `{"type": "shadowbanme", "app": "${String(app >> 0).substr(0, 2)}"${typeof z === 'string' && z.trim().length ? `, "z": "${z}"` : ''}}`;
-        socket.send(banstr);
+      shadow: function(reason) {
+        socket.send(`{"type": "shadowbanme", "reason": "${reason}"}`);
       },
-      me: function(app = 0, z) {
-        const banstr = `{"type": "banme", "app": "${String(app >> 0).substr(0, 2)}"${typeof z === 'string' && z.trim().length ? `, "z": "${z}"` : ''}}`;
-        socket.send(banstr); // we send as a string to not allow re-writing JSON.stringify
+      me: function(reason) {
+        socket.send(`{"type": "banme", "reason": "${reason}"}`);
         socket.close();
         window.location.href = 'https://www.youtube.com/watch?v=QHvKSo4BFi0';
       },
       update: function() {
-        const _ = function(z) {
-          // This (still) does exactly what you think it does. or does it?
-          self.shadow(3, z || 'generic');
-        };
-
-        window.App.attemptPlace = window.App.doPlace = function() {
-          self.me(3);
-        };
+        window.App.attemptPlace = () => self.me('window.App.attemptPlace');
+        window.App.doPlace = () => self.me('window.App.doPlace');
 
         // AutoPXLS by p0358 (who, by the way, will never win this battle)
-        if (document.autoPxlsScriptRevision) _('autopxls');
-        if (document.autoPxlsScriptRevision_) _('autopxls');
-        if (document.autoPxlsRandomNumber) _('autopxls');
-        if (document.RN) _('autopxls');
-        if (window.AutoPXLS) _('autopxls');
-        if (window.AutoPXLS2) _('autopxls');
-        if (document.defaultCaptchaFaviconSource) _('autopxls');
-        if (window.CFS) _('autopxls');
-        if ($('div.info').find('#autopxlsinfo').length) _('autopxls');
+        if (document.autoPxlsScriptRevision != null) self.shadow('document.autoPxlsScriptRevision');
+        if (document.autoPxlsScriptRevision_ != null) self.shadow('document.autoPxlsScriptRevision_');
+        if (document.autoPxlsRandomNumber != null) self.shadow('document.autoPxlsRandomNumber');
+        if (document.RN != null) self.shadow('document.RN');
+        if (window.AutoPXLS != null) self.shadow('window.AutoPXLS');
+        if (window.AutoPXLS2 != null) self.shadow('window.AutoPXLS2');
+        if (document.defaultCaptchaFaviconSource != null) self.shadow('document.defaultCaptchaFaviconSource');
+        if (window.CFS != null) self.shadow('window.CFS');
+        if ($('div.info').find('#autopxlsinfo').length) self.shadow('#autopxlsinfo');
 
         // Modified AutoPXLS
-        if (window.xD) _('autopxls2');
-        if (window.vdk) _('autopxls2');
+        if (window.xD != null) self.shadow('window.xD (autopxls2)');
+        if (window.vdk != null) self.shadow('window.vdk (autopxls2)');
 
         // Notabot
-        if ($('.botpanel').length) _('notabot/generic');
-        if (window.Notabot) _('notabot');
+        if ($('.botpanel').length) self.shadow('.botpanel (notabot/generic)');
+        if (window.Notabot != null) self.shadow('window.Notabot (notabot)');
 
         // "Botnet" by (unknown, obfuscated)
-        if (window.Botnet) _('botnet');
+        if (window.Botnet != null) self.shadow('window.Botnet');
 
         // ???
-        if (window.DrawIt) _('drawit');
+        if (window.DrawIt != null) self.shadow('window.DrawIt');
 
         // NomoXBot
-        if (window.NomoXBot) _('nomo');
-        if (window.UBot) _('nomo');
-        if (document.querySelector('.xbotpanel') || document.querySelector('.botalert') || document.getElementById('restartbot')) _('nomo');
+        if (window.NomoXBot != null) self.shadow('window.NomoXBot (nomo)');
+        if (window.UBot != null) self.shadow('window.UBot (nomo)');
+        if (document.querySelector('.xbotpanel') != null) self.shadow('.xbotpanel (nomo)');
+        if (document.querySelector('.botalert') != null) self.shadow('.botalert (nomo)');
+        if (document.getElementById('restartbot') != null) self.shadow('#restartbot (nomo)');
       }
     };
     return {
@@ -1681,11 +1675,12 @@ window.App = (function() {
         if (optional) {
           return false;
         }
-        if (scale < 1) {
-          self.elements.board.removeClass('pixelate');
-        } else {
-          self.elements.board.addClass('pixelate');
-        }
+
+        self.elements.board.toggleClass('pixelate', scale > 1);
+        overlays.heatmap.setPixelated(scale > 1);
+        overlays.virginmap.setPixelated(scale > 1);
+        template.setPixelated(scale > template.getWidthRatio());
+
         if (ignoreCanvasLock || self.allowDrag || (!self.allowDrag && self.pannedWithKeys)) {
           self.elements.mover.css({
             width: self.width,
@@ -2012,7 +2007,10 @@ window.App = (function() {
         },
         setShown: self.setShown,
         remove: self.remove,
-        reload: self.reload
+        reload: self.reload,
+        setPixelated: function(pixelate = true) {
+          $(self.elements.overlay).toggleClass('pixelate', pixelate);
+        }
       };
     };
 
@@ -2084,7 +2082,7 @@ window.App = (function() {
               return;
             }
 
-            if (evt.key === 'o' || evt.key === 'O' || evt.which === 79) {
+            if (evt.key === 'o' || evt.key === 'O' || evt.which === 111 || evt.which === 79) {
               heatmap.clear();
             }
           });
@@ -2093,7 +2091,7 @@ window.App = (function() {
         settings.board.heatmap.opacity.listen(function(value) {
           heatmap.setBackgroundColor(`rgba(0, 0, 0, ${value})`);
         });
-        $('#hvmapClear').click(function() {
+        $('#hmapClear').click(function() {
           heatmap.clear();
         });
         settings.board.heatmap.enable.listen(function(value) {
@@ -2132,7 +2130,7 @@ window.App = (function() {
               return;
             }
 
-            if (evt.key === 'o' || evt.key === 'O' || evt.which === 79) { // O key
+            if (evt.key === 'u' || evt.key === 'U' || evt.which === 117 || evt.which === 85) { // U key
               virginmap.clear();
             }
           });
@@ -2141,7 +2139,7 @@ window.App = (function() {
         settings.board.virginmap.opacity.listen(function(value) {
           virginmap.setBackgroundColor(`rgba(0, 255, 0, ${value})`);
         });
-        $('#hvmapClear').click(function() {
+        $('#vmapClear').click(function() {
           virginmap.clear();
         });
 
@@ -2218,7 +2216,7 @@ window.App = (function() {
           x: 0,
           y: 0
         };
-        self.elements.template = $('<img>').addClass('noselect pixelate').attr({
+        self.elements.template = $('<img>').addClass('noselect').attr({
           id: 'board-template',
           src: self.options.url,
           alt: 'template'
@@ -2263,6 +2261,7 @@ window.App = (function() {
           if (self.options.width < 0) {
             self.elements.widthInput.val(self.elements.template.width());
           }
+          self.elements.template.toggleClass('pixelate', query.get('scale') > self.getWidthRatio());
         }).on('error', () => {
           self.elements.imageErrorWarning.show();
           self.elements.template.remove();
@@ -2392,6 +2391,8 @@ window.App = (function() {
           self.updateSettings();
         }
         document.title = uiHelper.getTitle();
+
+        self.setPixelated(query.get('scale') > self.getWidthRatio());
       },
       disableTemplate: function() {
         self._update({ url: null });
@@ -2478,6 +2479,18 @@ window.App = (function() {
         if (self.options.use) {
           self.elements.template.css('pointer-events', 'none').data('dragging', false);
         }
+      },
+      setPixelated: function(pixelate = true) {
+        if (self.elements.template !== null) {
+          self.elements.template.toggleClass('pixelate', pixelate);
+        }
+      },
+      getWidthRatio: function() {
+        if (self.elements.template === null || self.options.width === -1) {
+          return 1;
+        }
+
+        return self.elements.template[0].naturalWidth / self.options.width;
       }
     };
     return {
@@ -2486,7 +2499,9 @@ window.App = (function() {
       draw: self.draw,
       init: self.init,
       queueUpdate: self.queueUpdate,
-      getOptions: () => self.options
+      getOptions: () => self.options,
+      setPixelated: self.setPixelated,
+      getWidthRatio: self.getWidthRatio
     };
   })();
     // here all the grid stuff happens
@@ -3283,6 +3298,11 @@ window.App = (function() {
           name: 'Purple',
           location: '/themes/purple.css',
           color: '#5a2f71'
+        },
+        {
+          name: 'Green',
+          location: '/themes/green.css',
+          color: '#005f00'
         }
       ],
       specialChatColorClasses: ['rainbow'],
@@ -3367,7 +3387,7 @@ window.App = (function() {
           place.toggleReticule(value && place.color !== -1);
         });
 
-        settings.ui.reticule.enable.listen(function(value) {
+        settings.ui.cursor.enable.listen(function(value) {
           place.toggleCursor(value && place.color !== -1);
         });
 
@@ -6166,7 +6186,10 @@ window.App = (function() {
       registerHook: self.registerHook,
       replaceHook: self.replaceHook,
       unregisterHook: self.unregisterHook,
-      runLookup: self.runLookup
+      runLookup: self.runLookup,
+      get canvasBanRespected() {
+        return self.canvasBanRespected;
+      }
     };
   })();
     // this takes care of the countdown timer
@@ -6611,9 +6634,7 @@ window.App = (function() {
           }
           chat.updateCanvasBanState(isBanned);
 
-          if (instaban) {
-            ban.shadow(7);
-          }
+          if (instaban) ban.shadow('App existed beforehand');
 
           analytics('send', 'event', 'Auth', 'Login', data.method);
         });
@@ -6858,7 +6879,6 @@ window.App = (function() {
     // by a pixel when the window size is odd.
   const chromeOffsetWorkaround = (function() {
     const self = {
-      isEnabled: false,
       elements: {
         boardContainer: board.getContainer(),
         setting: $('#chrome-canvas-offset-setting')
@@ -6897,7 +6917,7 @@ window.App = (function() {
     return {
       init: self.init,
       update: () => {
-        if (self.isEnabled) {
+        if (settings.fix.chrome.offset.enable.get()) {
           self.updateContainer();
         }
       }
@@ -7050,13 +7070,10 @@ window.App = (function() {
       modal.showText(s, { title: 'Alert', modalOpts: { closeExisting: false } });
     },
     doPlace: function() {
-      ban.me(3);
+      ban.me('call to doPlace()');
     },
     attemptPlace: function() {
-      ban.me(3);
-    },
-    banme: function() {
-      ban.me(4);
+      ban.me('call to attemptPlace()');
     },
     chat,
     typeahead: chat.typeahead,

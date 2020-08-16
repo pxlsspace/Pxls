@@ -1,13 +1,13 @@
 package space.pxls.server.packets.socket;
 
 public class ClientBanMe {
-    public String app;
+    public String reason;
 
-    public ClientBanMe(String app) {
-        this.app = app;
+    public ClientBanMe(String reason) {
+        this.reason = reason;
     }
 
-    public String getApp() {
-        return app;
+    public String getReason() {
+        return reason;
     }
 }

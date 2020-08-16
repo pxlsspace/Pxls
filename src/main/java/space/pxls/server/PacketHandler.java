@@ -16,7 +16,6 @@ import space.pxls.data.DBPixelPlacement;
 import space.pxls.server.packets.chat.*;
 import space.pxls.server.packets.socket.*;
 import space.pxls.user.Faction;
-import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.util.TextFilter;
 import space.pxls.util.RateLimitFactory;
@@ -158,15 +157,15 @@ public class PacketHandler {
 
     private void handleShadowBanMe(WebSocketChannel channel, User user, ClientShadowBanMe obj) {
         if (!user.isBanned() && !user.isShadowBanned()) {
-            App.getDatabase().insertAdminLog(user.getId(), String.format("shadowban %s with reason: self-shadowban via script", user.getName()));
-            user.shadowBan(String.format("auto-ban via script (app: %s%s)", obj.getApp(), obj.getZ().isEmpty() ? "" : ", " + obj.getZ()), 999*24*3600, user);
+            App.getDatabase().insertAdminLog(user.getId(), String.format("shadowban %s with reason: self-shadowban via script; %s", user.getName(), obj.getReason()));
+            user.shadowBan(String.format("auto-ban via script; %s", obj.getReason()), 999*24*3600, user);
         }
     }
 
     private void handleBanMe(WebSocketChannel channel, User user, ClientBanMe obj) {
-        String app = obj.getApp();
-        App.getDatabase().insertAdminLog(user.getId(), String.format("shadowban %s with reason: auto-ban via script (ap: %s)", user.getName(), app));
-        user.ban(null, String.format("auto-ban via script(ap: %s)", app), 0, user);
+        String app = obj.getReason();
+        App.getDatabase().insertAdminLog(user.getId(), String.format("permaban %s with reason: auto-ban via script; %s", user.getName(), app));
+        user.ban(0, String.format("auto-ban via script; %s", app), 0, user);
     }
 
     private void handleCooldownOverride(WebSocketChannel channel, User user, ClientAdminCooldownOverride obj) {

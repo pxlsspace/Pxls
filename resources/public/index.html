@@ -226,7 +226,8 @@
                 <p><kbd>P</kbd> to take a snapshot</p>
                 <p><kbd>H</kbd> to toggle heatmap</p>
                 <p><kbd>X</kbd> to toggle virginmap</p>
-                <p><kbd>O</kbd> to clear heatmap and virginmap (if either is enabled)</p>
+                <p><kbd>O</kbd> to clear heatmap</p>
+                <p><kbd>U</kbd> to clear virginmap</p>
                 <p><kbd>J</kbd>/<kbd>K</kbd> to cycle through palette colors</p>
                 <p><kbd>C</kbd> to copy link of moused-over coordinates</p>
                 <p><kbd>ESC</kbd> to deselect current pixel</p>
@@ -272,8 +273,12 @@
                     <label for="setting-board-virginmap-enable">(toggle with <kbd>X</kbd>)</label>
                 </div>
                 <div>
-                    <button class="text-button" id="hvmapClear">Clear heatmap and virginmap</button>
-                    <label for="hvmapClear">(hotkey: <kbd>O</kbd>)</label>
+                    <button class="text-button" id="hmapClear">Clear heatmap</button>
+                    <label for="hmapClear">(hotkey: <kbd>O</kbd>)</label>
+                </div>
+                <div>
+                    <button class="text-button" id="vmapClear">Clear virginmap</button>
+                    <label for="vmapClear">(hotkey: <kbd>U</kbd>)</label>
                 </div>
                 <div>
                     <label class="input-group">
@@ -308,7 +313,7 @@
                 </div>
                 <div>
                     <label class="input-group">
-                        <span class="label-text">Zoom Sensitivity:</span>
+                        <span class="label-text">Zoom sensitivity:</span>
                         <input id="setting-board-zoom-sensitivity" type="range" min="1.01" max="3" step="0.01"/>
                     </label>
                 </div>
@@ -339,19 +344,19 @@
                 <div>
                     <label class="input-group">
                         <input id="setting-ui-reticule-enable" type="checkbox"/>
-                        <span class="label-text">Show Reticule</span>
+                        <span class="label-text">Show reticule</span>
                     </label>
                 </div>
                 <div>
                     <label class="input-group">
                         <input id="setting-ui-cursor-enable" type="checkbox"/>
-                        <span class="label-text">Show Cursor</span>
+                        <span class="label-text">Show cursor</span>
                     </label>
                 </div>
                 <div>
                     <label class="input-group">
                         <input id="setting-board-template-beneathoverlays" type="checkbox"/>
-                        <span class="label-text">Layer Template Underneath Heatmap</span>
+                        <span class="label-text">Layer template underneath heatmap</span>
                     </label>
                 </div>
                 <div>
@@ -368,13 +373,13 @@
                 </div>
                 <div>
                     <label class="input-group">
-                        <span class="label-text">Heatmap Background Opacity:</span>
+                        <span class="label-text">Heatmap background opacity:</span>
                         <input type="range" min="0" max="1" step="0.01" id="setting-board-heatmap-opacity">
                     </label>
                 </div>
                 <div>
                     <label class="input-group">
-                        <span class="label-text">Virginmap Background Opacity:</span>
+                        <span class="label-text">Virginmap background opacity:</span>
                         <input type="range" min="0" max="1" step="0.01" id="setting-board-virginmap-opacity">
                     </label>
                 </div>
@@ -402,20 +407,20 @@
                 <div>
                     <label class="input-group">
                         <input type="checkbox" id="setting-ui-brightness-enable">
-                        <span class="label-text">Enable Color Brightness</span>
+                        <span class="label-text">Enable color brightness</span>
                     </label>
                     <label for="setting-ui-brightness-enable" class="text-orange extra-label">
                         <i class="fas fa-exclamation-triangle"></i> Warning: Known to cause fuzziness in Chrome on some Mac/Linux installs
                     </label>
                     <label class="input-group fake-indent">
-                        <span class="label-text">Color Brightness:</span>
+                        <span class="label-text">Color brightness:</span>
                         <input type="range" min="0" max="1" step="0.01" value="1" id="setting-ui-brightness-value">
                     </label>
                 </div>
                 <div>
                     <label class="input-group" id="chrome-canvas-offset-setting">
                         <input id="setting-fix-chrome-offset-enable" type="checkbox"/>
-                        <span class="label-text">Attempt to fix Canvas displacement bug in Chrome 78+</span>
+                        <span class="label-text">Attempt to fix canvas displacement bug in Chrome 78+</span>
                     </label>
                 </div>
             </div>
@@ -496,7 +501,7 @@
                 </div>
                 <div>
                     <label class="input-group">
-                        <span class="label-text">Delay (Seconds):</span>
+                        <span class="label-text">Delay (seconds):</span>
                         <input type="number" width="30px" value="0" id="setting-place-alert-delay">
                     </label>
                 </div>
@@ -509,7 +514,7 @@
             <div class="pad-wrapper">
                 <div>
                     <label class="input-group">
-                        <span class="label-text">Public Discord Name:<span>
+                        <span class="label-text">Public Discord name:<span>
                         <input class="fullwidth" type="text" placeholder="pxlslover#1337" id="txtDiscordName">
                     </label>
                     <div class="button-bar">

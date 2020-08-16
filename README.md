@@ -35,7 +35,7 @@ The output `.jar` is in `target/`.
 2. Copy `resources/` and the output `.jar` to it.
 3. Copy `resources/reference.conf` to the directory as `pxls.conf`.
 4. Copy `resources/roles-reference.conf` to the directory as `roles.conf`.
-5. Configure `pxls.conf` and `roles.conf` (optional; see [roles.md](roles.md) for details). 
+5. Configure `pxls.conf` and `roles.conf` (optional; see [roles.md](roles.md) for details).
 6. Execute the jar with `java -jar pxls-1.0-SNAPSHOT.jar`
 
 The server will start on port 4567 by default, and will expose a rudimentary console with a few commands (listed in `Commands` below).
@@ -164,7 +164,7 @@ A full list of contributors is available [here](https://github.com/xSke/Pxls/gra
 [hocon]: https://github.com/typesafehub/config/blob/master/HOCON.md
 [googleconsole]: https://console.developers.google.com
 [redditapps]: https://www.reddit.com/prefs/apps
-[discordapps]: https://discordapp.com/developers/applications/me
+[discordapps]: https://discord.com/developers/applications/me
 [vkapps]: https://vk.com/apps?act=manage
 [tumblrapps]: https://www.tumblr.com/oauth/apps
 [captcha]: https://www.google.com/recaptcha/admin

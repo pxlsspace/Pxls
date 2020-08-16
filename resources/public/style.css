@@ -62,7 +62,20 @@ html {
     --palette-overlay-background: rgba(255, 255, 255, 0.9);
     --palette-overlay-text-color: #000;
     --palette-deselect-button-color: inherit;
+    --palette-number-text-color: #000;
+    --palette-number-background-color: #fff;
 
+    --cursor-text-color: #000;
+    --cursor-text-background-color: #fff;
+ 
+    --selection-color;
+    --selection-background-color;
+    /*use this in desired theme:   
+    ::selection {
+    background-color: var(--selection-background-color);
+    color:var(--selection-color);
+    } */
+ 
     --undo-text-color: #000;
     --undo-background: linear-gradient(to top, #FFFC, #FFF);
     --undo-border-color: #000;
@@ -156,9 +169,7 @@ html, body {
     margin: 0;
     width: 100%;
     height: 100%;
-    color: #000;
     color: var(--general-text-color);
-    background: #CDCDCD;
     background: var(--general-background);
     overflow: hidden;
     position: relative;
@@ -200,12 +211,9 @@ a, a:hover, a:visited, a:active, .link, .link:hover, .link:active {
 }
 
 kbd {
-    background: #eee;
     background: var(--kbd-background);
-    border: 1px solid #ddd;
     border: 1px solid var(--kbd-border-color);
     border-radius: 4px;
-    color: black;
     color: var(--kbd-text-color);
     display: inline-block;
     font-family: Arial, Helvetica, sans-serif;
@@ -255,11 +263,8 @@ input:disabled, button:disabled {
 
 input[type="text"], input[type="number"], textarea, select {
     padding: 0.5em;
-    border: 1px solid #ccc;
     border: 1px solid var(--input-border-color);
-    background: #fff;
     background: var(--input-background);
-    color: #000;
     color: var(--input-text-color);
 }
 
@@ -306,48 +311,34 @@ button.text-button {
     margin-right: 4.5px;
     display: inline-block;
     font-size: 12px;
-    border: 1px solid #999;
     border: 1px solid var(--button-border-color);
     padding: 5px 10px;
     border-radius: 3px;
-    background: #ddd;
     background: var(--button-background);
-    color: #000;
     color: var(--button-text-color);
 }
 
 button.text-button:disabled {
-    border: 1px solid #777;
     border: 1px solid var(--button-border-color-disabled);
-    background: #aaa;
     background: var(--button-background-disabled);
-    color: #555;
     color: var(--button-text-color-disabled);
 }
 
 button.text-button:hover {
-    color: #fff;
     color: var(--button-text-color-hover);
-    background: #ce4747;
     background: var(--button-background-hover);
     border-color: var(--button-border-color-hover);
 }
 
 button.dangerous-button {
-    background: #e20;
     background: var(--dangerous-button-background);
-    color: #fff;
     color: var(--dangerous-button-text-color);
-    border-color: unset;
     border-color: var(--dangerous-button-border-color);
 }
 
 button.dangerous-button:hover {
-    color: #fff;
     color: var(--dangerous-button-text-color-hover);
-    background: #f10;
     background: var(--dangerous-button-background-hover);
-    border-color: unset;
     border-color: var(--dangerous-button-border-color-hover);
 }
 
@@ -381,7 +372,6 @@ dt {
 }
 
 .error {
-    color: #cc3333;
     color: var(--error-color);
     font-weight: 700;
 }
@@ -468,11 +458,8 @@ body .message {
 
 .floating-panel {
     border-radius: 8px;
-    border: 1px solid #ccc;
     border: 1px solid var(--floating-panel-border-color);
-    background: #eee;
     background: var(--floating-panel-background);
-    color: inherit;
     color: var(--floating-panel-text-color);
     box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
     padding: 16px;
@@ -574,10 +561,8 @@ body .message {
     position: absolute;
     display: inline-block;
     padding: 0.5em 1em;
-    background: rgba(0, 0, 0, 0.7);
     background: var(--bubble-background);
     border-radius: 5px;
-    color: #fff;
     color: var(--bubble-text-color);
 }
 
@@ -683,9 +668,7 @@ body .message {
     padding: 0 8px;
     width: 100%;
     height: 100%;
-    background: rgba(255, 255, 255, 0.9);
     background: var(--palette-overlay-background);
-    color: #000;
     color: var(--palette-overlay-text-color);
     font-weight: 700;
     z-index: 9;
@@ -704,7 +687,6 @@ body .message {
     overflow-x: auto;
     text-align: center;
     white-space: nowrap;
-    background: rgba(255, 255, 255, 0.8);
     background: var(--palette-background);
 
     /* Scrollbar, Firefox only */
@@ -732,7 +714,6 @@ body .message {
 
     min-width: 32px;
     min-height: 32px;
-    border: 2px solid black;
     border: 2px solid var(--palette-item-border-color);
     border-radius: 3px;
     margin-right: 10px;
@@ -753,7 +734,6 @@ body .message {
 
 .palette-color.deselect-button {
     font-size: 1.75rem;
-    color: inherit;
     color: var(--palette-deselect-button-color);
 }
 
@@ -768,8 +748,8 @@ body .message {
     bottom: 100%;
     border-radius: 16px;
     text-align: center;
-    color: #000;
-    background-color: #fff;
+    color: var(--palette-number-text-color);
+    background-color: var(--palette-number-background-color);
     border: 1px solid #000;
     width: 1.5rem;
     font-size: .75rem;
@@ -816,8 +796,8 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     line-height: 24px;
     border-radius: 16px;
     text-align: center;
-    color: #000;
-    background-color: white;
+    color: var(--cursor-text-color);
+    background-color: var(--cursor-text-background-color);
     border: 1px solid black;
     padding: 0 8px;
     white-space: nowrap;
@@ -830,7 +810,6 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
 #undo {
     width: 100%;
     text-align: center;
-    background-image: linear-gradient(to top, #FFFC, #FFF);
     background: var(--undo-background);
     transition: height .25s ease-in-out;
     height: 0px;
@@ -839,7 +818,6 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     align-items: center;
     cursor: pointer;
     display: flex;
-    color: #000;
     color: var(--undo-text-color);
     font-weight: bold;
     font-size: 1.25em;
@@ -847,7 +825,6 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
 }
 
 #undo.open {
-    border-top: 1px solid #000;
     border-top: 1px solid var(--undo-border-color);
     height: 2em;
 }
@@ -875,7 +852,6 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
 }
 
 .copyPulse {
-    color: rgba(0, 211, 221, 0.7);
     color: var(--copypulse-color);
 }
 
@@ -1098,32 +1074,26 @@ footer {
 }
 
 .text-blue {
-    color: #00a;
     color: var(--text-blue-color);
 }
 
 .text-green {
-    color: #0a0;
     color: var(--text-green-color);
 }
 
 .text-red {
-    color: #a00;
     color: var(--text-red-color);
 }
 
 .text-muted {
-    color: #8c8c8c;
     color: var(--text-muted-color);
 }
 
 .text-yellow {
-    color: #f0ff27;
     color: var(--text-yellow-color);
 }
 
 .text-orange {
-    color: #e67700;
     color: var(--text-orange-color);
 }
 
@@ -1194,9 +1164,7 @@ aside.panel.horizontal.right {
 
 .panel {
     box-shadow: 0 0 10px 5px #0009;
-    background: #dfdfdf;
     background: var(--panel-background);
-    color: inherit;
     color: var(--panel-text-color);
 }
 
@@ -1211,11 +1179,8 @@ aside.panel.horizontal.right {
 }
 
 .panel-header {
-    color: inherit;
     color: var(--panel-header-text-color);
-    background-image: linear-gradient(to bottom, #ccc, #bbb);
     background: var(--panel-header-background);
-    border-bottom: 1px solid #000;
     border-bottom: 1px solid var(--panel-border-color);
 }
 
@@ -1224,9 +1189,7 @@ aside.panel.horizontal.right {
 }
 
 .panel-footer {
-    color: inherit;
     color: var(--panel-footer-text-color);
-    border-top: 1px solid #000;
     border-top: 1px solid var(--panel-border-color);
     background: var(--panel-footer-background);
 }
@@ -1235,7 +1198,6 @@ aside.panel.horizontal.right {
     color: #000;
     position: relative;
     /* AAAAAAAAAAAAAAAAAAAAAAAAAAA */
-    text-shadow: 1px 1px 0 #AAA, -1px 1px 0 #AAA, 1px -1px 0 #AAA, -1px -1px 0 #AAA, 0px 1px 0 #AAA, 0px -1px 0 #AAA, -1px 0px 0 #AAA, 1px 0px 0 #AAA;
     text-shadow: 1px 1px 0 var(--panel-trigger-outline-color), -1px 1px 0 var(--panel-trigger-outline-color), 1px -1px 0 var(--panel-trigger-outline-color), -1px -1px 0 var(--panel-trigger-outline-color), 0px 1px 0 var(--panel-trigger-outline-color), 0px -1px 0 var(--panel-trigger-outline-color), -1px 0px 0 var(--panel-trigger-outline-color), 1px 0px 0 var(--panel-trigger-outline-color);
     display: inline-block;
     font-size: 2.5rem;
@@ -1253,7 +1215,6 @@ aside.panel.horizontal.right {
 }
 
 .panel-closer {
-    color: #a00;
     color: var(--panel-close-button-color);
     border: 0;
     padding: 0;
@@ -1261,12 +1222,10 @@ aside.panel.horizontal.right {
 }
 
 .panel-closer:hover {
-    color: #a00;
     color: var(--panel-close-button-color-hover);
 }
 
 .panel-closer:active {
-    color: #a00;
     color: var(--panel-close-button-color-active);
 }
 
@@ -1283,20 +1242,14 @@ aside.panel.horizontal.right {
 }
 
 .panel-body article:not(.naked) {
-    color: inherit;
     color: var(--panel-article-text-color);
-    border: 1px solid #000;
-    border-bottom: 1px solid var(--panel-article-border-color);
-    background: #0002;
+    border: 1px solid var(--panel-article-border-color);
     background: var(--panel-article-background);
 }
 
 .panel-body article:not(.naked) > header {
-    color: inherit;
     color: var(--panel-article-header-text-color);
-    border-bottom: 1px solid #000;
     border-bottom: 1px solid var(--panel-article-border-color);
-    background: linear-gradient(to bottom, #ccc, #bbb);
     background: var(--panel-article-header-background);
     border-top-left-radius: inherit;
     border-top-right-radius: inherit;
@@ -1304,11 +1257,8 @@ aside.panel.horizontal.right {
 
 .panel-body article:not(.naked) > footer {
     padding: 0.833em .5em;
-    color: #666;
     color: var(--panel-article-footer-text-color);
-    border-top: 1px solid #000;
     border-top: 1px solid var(--panel-article-border-color);
-    background: linear-gradient(to bottom, #ccc, #bbb);
     background: var(--panel-article-footer-background);
     border-bottom-left-radius: inherit;
     border-bottom-right-radius: inherit;
@@ -1377,13 +1327,11 @@ body.panel-open.panel-right.panel-right-horizontal #ui {
 ul.chat-body li.chat-line {
     /*border:1px solid #000;*/
     line-height: 1.5em;
-    border-bottom: 1px solid #bfbfbf;
     border-bottom: 1px solid var(--chat-separator-color);
     overflow: hidden;
 }
 
 ul.chat-body li.chat-line:nth-child(odd) {
-    background: #d5d5d5;
     background: var(--chat-odd-background);
 }
 
@@ -1392,7 +1340,6 @@ ul.chat-body li.chat-line:not(:last-child):not(:only-of-type) {
 }
 
 li.chat-line span[title]:not(.text-badge) {
-    border-bottom: 1px dashed #aaa;
     border-bottom: 1px dashed var(--chat-abbr-underline-color);
     cursor: default;
 }
@@ -1403,11 +1350,9 @@ li.chat-line i[title] {
 
 .text-badge {
     line-height: 1em;
-    background: #ccc;
     background: var(--chat-badge-background);
     padding: .15em .5em;
     border-radius: 1em;
-    color: #770;
     color: var(--chat-badge-text-color);
     cursor: default;
     -webkit-user-select: none;
@@ -1435,7 +1380,6 @@ header .icon-badge:only-of-type, header.text-badge:only-of-type, header .icon-ba
 li.chat-line.server-action {
     text-align: center;
     font-weight: bold;
-    color: #555;
     color: var(--chat-server-action-text-color);
     cursor: default;
 }
@@ -1447,7 +1391,6 @@ li.chat-line .flairs .flair {
 li.chat-line .user {
     font-weight: bold;
     cursor: pointer;
-    text-shadow: 1px 1px 0 #ccc, -1px 1px 0 #ccc, 1px -1px 0 #ccc, -1px -1px 0 #ccc, 0 1px 0 #ccc, 0 -1px 0 #ccc, -1px 0 0 #ccc, 1px 0 0 #ccc;
     text-shadow: 1px 1px 0 var(--chat-user-text-shadow-color), -1px 1px 0 var(--chat-user-text-shadow-color), 1px -1px 0 var(--chat-user-text-shadow-color), -1px -1px 0 var(--chat-user-text-shadow-color), 0 1px 0 var(--chat-user-text-shadow-color), 0 -1px 0 var(--chat-user-text-shadow-color), -1px 0 0 var(--chat-user-text-shadow-color), 1px 0 0 var(--chat-user-text-shadow-color);
 }
 
@@ -1531,7 +1474,6 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 }
 
 .panel-trigger .has-notification, i.fas.has-notification, i.far.has-notification {
-    color: #b20;
     color: var(--notification-color);
 }
 
@@ -1561,20 +1503,17 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 .chat-line.purged {
     font-style: italic;
     font-size: .9em;
-    color: #888;
     color: var(--chat-purged-text-color);
     text-decoration: line-through;
 }
 
 #jump-to-bottom {
     text-align: center;
-    color: #fff;
     color: var(--chat-tobottom-text-color);
     line-height: 1.25rem;
     font-size: .8rem;
     font-weight: bold;
     border-radius: 5px 5px 0 0;
-    background: #66a;
     background: var(--chat-tobottom-background);
     cursor: pointer;
     position: absolute;
@@ -1584,9 +1523,7 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 }
 
 #jump-to-bottom:hover {
-    color: #fff;
     color: var(--chat-tobottom-text-color-hover);
-    background: #5c5ca0;
     background: var(--chat-tobottom-background-hover);
 }
 
@@ -1610,7 +1547,6 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     bottom: 3rem;
     margin-bottom: -1px;
     padding: 5px;
-    background: #b9b9b9;
     background: var(--chat-typeahead-menu-background);
     border-radius: 5px 5px 0 0;
 }
@@ -1633,24 +1569,20 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     cursor: pointer;
     user-select: none;
     text-indent: .75em;
-    background: #a3a3a3;
     background: var(--chat-typeahead-item-background);
     border-radius: 4px;
     padding: 3px;
     margin: 4px 0;
-    color: inherit;
     color: var(--chat-typeahead-item-text-color);
     width: 100%;
     text-align: left;
 }
 
 #typeahead ul li button:hover {
-    background: #949494;
     background: var(--chat-typeahead-item-background-hover);
 }
 
 #typeahead ul li button.active {
-    background: #828282;
     background: var(--chat-typeahead-item-background-active);
 }
 
@@ -1667,7 +1599,6 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 }
 
 ul.chat-body .chat-line[data-id].has-ping {
-    background: #feedd1;
     background: var(--ping-highlight-color);
 }
 
@@ -1704,12 +1635,11 @@ ul.chat-history, ul.chatban-history {
     position: absolute;
     bottom: 0;
     left: 0;
-    transform: translateY(-55%) translateX(-45%);
+    transform: translateY(-30%) translateX(-40%);
     padding: 1px 5px;
     border-radius: 5px;
-    font-size: 1rem;
+    font-size: 1.25rem;
     font-weight: bold;
-    color: #ffa500;
     color: var(--ping-counter-color);
 }
 
@@ -1734,7 +1664,6 @@ ul.chat-history, ul.chatban-history {
     content: "No pings here";
     display: block;
     text-align: center;
-    color: #8c8c8c;
     color: var(--text-muted-color);
 }
 
@@ -1784,11 +1713,8 @@ ul.chat-history, ul.chatban-history {
 /* the same principle is why each of the following preselect .emoji-picker */
 body .emoji-picker {
     z-index: 22;
-    border: 1px solid #999999;
     border: 1px solid var(--emoji-picker-border-color);
-    box-shadow: 0px 0px 3px 1px #CCCCCC;
     box-shadow: 0px 0px 3px 1px var(--emoji-picker-shadow-color);
-    background: #FFFFFF;
     background: var(--emoji-picker-background);
 }
 
@@ -1799,75 +1725,58 @@ body .emoji-picker {
 .emoji-picker .emoji-picker__preview {
     margin-top: .5em;
     padding: 1.5em 1em;
-    border-top: 1px solid #999999;
     border-top: 1px solid var(--emoji-picker-border-color);
 }
 
 .emoji-picker .emoji-picker__preview-name {
-    color: #666666;
     color: var(--emoji-picker-preview-name-text-color);
 }
 
 .emoji-picker .emoji-picker__tab {
-    color: inherit;
     color: var(--emoji-picker-tab-icon-color);
 }
 
 .emoji-picker .emoji-picker__tab.active {
-    color: #4F81E5;
     color: var(--emoji-picker-tab-icon-color-selected);
-    border-bottom: 3px solid #4F81E5;
     border-bottom: 3px solid var(--emoji-picker-tab-icon-color-selected);
 }
 
 .emoji-picker .emoji-picker__tab-body h2 {
-    color: #333333;
     color: var(--emoji-picker-section-text-color);
 }
 
 .emoji-picker .emoji-picker__emoji {
-    color: inherit;
     color: var(--emoji-picker-emoji-color);
-    background: transparent;
     background: var(--emoji-picker-emoji-background);
 }
 
 .emoji-picker .emoji-picker__emoji:hover {
-    background: #E8F4F9;
     background: var(--emoji-picker-emoji-background-hover);
 }
 
 .emoji-picker .emoji-picker__search-container input {
-    border: 1px solid #CCCCCC;
     border: 1px solid var(--emoji-picker-search-input-border-color);
-    background: #fff;
     background: var(--emoji-picker-search-input-background);
-    color: #000;
     color: var(--emoji-picker-search-input-text-color);
 }
 
 .emoji-picker .emoji-picker__search-icon {
-    color: #CCCCCC;
     color: var(--emoji-picker-search-icon-color);
 }
 
 .emoji-picker .emoji-picker__search-not-found {
-    color: #666666;
     color: var(--emoji-picker-search-no-results-color);
 }
 
 .emoji-picker .emoji-picker__variant-overlay {
-    background: rgba(0, 0, 0, 0.7);
     background: var(--emoji-picker-variant-overlay-background);
 }
 
 .emoji-picker .emoji-picker__variant-popup {
-    background: #FFFFFF;
     background: var(--emoji-picker-variant-popup-background);
 }
 
 .emoji-picker .emoji-picker__variant-popup-close-button {
-    color: inherit;
     color: var(--emoji-picker-variant-close-button-color)
 }
 
@@ -1890,7 +1799,6 @@ body .emoji-picker {
 
 .popup .actions-wrapper {
     width: 35%;
-    background: #0002;
     background: var(--panel-article-background);
 }
 
@@ -1914,7 +1822,6 @@ body .emoji-picker {
     padding: 0;
     padding-bottom: .5em;
     list-style: none;
-    border-left: 1px solid #000;
     border-left: 1px solid var(--panel-border-color);
 }
 
@@ -1926,7 +1833,6 @@ body .emoji-picker {
 .popup-timestamp-header {
     margin: 0;
     padding: 8px 0;
-    border-bottom: 1px solid #000;
     border-bottom: 1px solid var(--panel-border-color);
     text-align: center;
 }
@@ -1965,7 +1871,6 @@ body .emoji-picker {
 
 .notification-footer .notification-expiry {
     cursor: default;
-    color: #b66;
     color: var(--notification-expiry-color);
 }
 
@@ -2076,3 +1981,4 @@ body .emoji-picker {
         max-height: initial;
     }
 }
+
