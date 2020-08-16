@@ -382,6 +382,7 @@ public class PacketHandler {
                 if (t >= -1 && t < App.getConfig().getStringList("board.palette").size()) {
                     if (t < 0 && !user.hasPermission("chat.usercolor.rainbow")) {
                         server.send(channel, new ServerACKClientUpdate(false, "Color reserved for staff members", "NameColor", null));
+                    }
                     if (t < 0 && !user.hasPermission("chat.usercolor.donator")) {
                         server.send(channel, new ServerACKClientUpdate(false, "Color reserved for donators", "NameColor", null));
                         return;
