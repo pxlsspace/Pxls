@@ -148,9 +148,13 @@ public class App {
                 try {
                     cachedWhoamiOrigin = null;
                     loadConfig();
+                    System.out.println("Reloaded configuration");
                     loadRoles();
+                    System.out.println("Reloaded roles configuration");
                     FactionManager.getInstance().invalidateAll();
+                    System.out.println("Invalidated all factions");
                     userManager.reload();
+                    System.out.println("Reloaded user manager");
                     System.out.println("Success!");
                 } catch (Exception x) {
                     x.printStackTrace();

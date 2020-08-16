@@ -61,7 +61,7 @@ roleID {
 | `chat.ban` | `/admin/chatban` | Chat-ban users | staff |
 | `chat.delete` | `/admin/delete` | Delete chat messages | staff |
 | `chat.history` | | Retrieve chat history | user |
-| `chat.lookup` | | Chat message lookups | user |
+| `chat.lookup` | | Chat message lookups | staff |
 | `chat.purge` | `/admin/chatPurge` | Purge (multiple) chat messages | staff |
 | `chat.report` | `/reportChat` | Report chat messages | user |
 | `chat.send` | | Send chat messages | user |
@@ -77,6 +77,7 @@ roleID {
 | `user.auth` | `/auth`, `/signin`, `/signup`, `/logout` | User authentication | guest |
 | `user.auth` | `/whoami` | List own username and ID | guest |
 | `user.ban` | `/admin/ban` | Time-ban users | staff |
+| `user.discordNameChange` | `/setDiscordName` | Change Discord tag | user |
 | `user.namechange` | `/execNameChange` | Execute staff-initiated name changes | staff |
 | `user.namechange.flag` | `/admin/flagNameChange` | Flag users to change their name | staff |
 | `user.namechange.force` | `/admin/forceNameChange` | Force prompt for users to change their name | staff |

@@ -1,68 +1,86 @@
 html {
     --general-text-color: #fff;
-    --general-background: #0083C7;
+    --general-background: #030764;
 
-    --kbd-background: #1b73f4;
-    --kbd-border-color: #0a04a2;
+    --kbd-background: #03169f;
+    --kbd-border-color: #000;
     --kbd-text-color: #fff;
 
     --input-text-color: #eee;
-    --input-background: #0638ff;
-    --input-border-color: #1600fd;
+    --input-background: #152975;
+    --input-border-color: #180b9d;
     --input-placeholder-text-color: #bbb;
 
-    --button-background: #0048ff;
+    --button-background: #1d429f;
     --button-text-color: #fff;
     --button-border-color-hover: #44886e;
 
     --floating-panel-text-color: #eee;
-    --floating-panel-border-color: #0026ff;
-    --floating-panel-background: #0083C7;
+    --floating-panel-border-color: #0b2093;
+    --floating-panel-background: #02166a;
 
-    --dangerous-button-border-color: #3906ff;
+    --dangerous-button-border-color: #291ce3;
 
-    --palette-background: rgba(18, 113, 255, .82);
-    --palette-overlay-background: rgba(0, 174, 255, .9);
+    --palette-background: rgba(7, 32, 142, .5);
+    --palette-overlay-background: rgba(4, 27, 151, .9);
     --palette-deselect-button-color: #DDD;
-
-    --undo-background: linear-gradient(to top, #59a9eac4, #0080ff);
+    --palette-number-text-color: #ffffff;
+    --palette-number-background-color: #030764;
+    
+    --cursor-text-color: #fff;
+    --cursor-text-background-color: #02076c;
+    
+    --selection-color: #000;
+    --selection-background-color: #00c0e6;
+    
+    --undo-background: linear-gradient(to top, #05157d99, #04236f);
+    --undo-text-color: #fff;
 
     --text-red-color: #f44;
     --text-yellow-color: #cc0;
-    --ping-highlight-color: #00bbffb3;
+    --ping-highlight-color: #134cc8b3;
+    --ping-counter-color: #00a6ffd4;
 
-    --panel-header-background: linear-gradient(to bottom, #0051fffc, #03f);
-    --panel-background: #043aee;
+    --panel-header-background: linear-gradient(to bottom, #1e2e77fc, #212697);
+    --panel-background: #171e79;
     --panel-text-color: #eee;
+    --panel-article-footer-background: #10165e;
+    --panel-article-footer-text-color: #ffffff;
+    --panel-footer-background: #10165e;
 
-    --chat-separator-color: #0d47f4;
-    --chat-odd-background: #0234d9;
+    --option-bubble-position-background-selected: #132d99;
+    --bubble-background: #07138cb0;
+    --bubble-text-color: #ffffff;
+
+    --chat-separator-color: #1236a4;
+    --chat-odd-background: #072073;
     --chat-server-action-text-color: #dae0ec;
-    --chat-user-text-shadow-color: #333;
+    --chat-user-text-shadow-color: #00000012;
 
-    --emoji-picker-border-color: #312ef9;
-    --emoji-picker-shadow-color: #094fb5;
-    --emoji-picker-background: #0783ff;
+    --emoji-picker-border-color: #243c9b;
+    --emoji-picker-shadow-color: #164384;
+    --emoji-picker-background: #2635a2;
     --emoji-picker-preview-name-text-color: #fff;
     --emoji-picker-tab-icon-color: #fff;
-    --emoji-picker-tab-icon-color-selected: #4f94f4;
+    --emoji-picker-tab-icon-color-selected: #2725ce;
     --emoji-picker-section-text-color: #fff;
     --emoji-picker-emoji-color: white;
-    --emoji-picker-emoji-background-hover: #5279a8;
-    --emoji-picker-search-input-border-color: #1a07ea;
-    --emoji-picker-search-input-background: #2558f0;
+    --emoji-picker-emoji-background-hover: #5f8ec6;
+    --emoji-picker-search-input-border-color: #2f3c9d;
+    --emoji-picker-search-input-background: #184380;
     --emoji-picker-search-input-text-color: #fff;
     --emoji-picker-search-icon-color: #fff;
     --emoji-picker-search-no-results-color: #fff;
     --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
     --emoji-picker-variant-popup-background: #FFFFFF;
 
-    --chat-typeahead-menu-background: #0424d2;
-    --chat-typeahead-item-background: #0424d2;
-    --chat-typeahead-item-background-hover: #2314bf;
-    --chat-typeahead-item-background-active: #0079ff;
+    --chat-typeahead-menu-background: #000;
+    --chat-typeahead-item-background: #172ea8;
+    --chat-typeahead-item-background-hover: #303bcc;
+    --chat-typeahead-item-background-active: #0012b0;
 
     --notification-expiry-color: #995050;
+    
 }
 
 hr {
@@ -78,3 +96,8 @@ hr {
         background: #58a78a;
     }
 }
+
+    ::selection {
+    background-color: var(--selection-background-color);
+    color:var(--selection-color);
+    }

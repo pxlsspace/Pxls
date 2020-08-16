@@ -335,7 +335,7 @@ public class User {
     }
 
     public boolean isBanned() {
-        return banExpiryTime != null && banExpiryTime > System.currentTimeMillis();
+        return banExpiryTime != null && (banExpiryTime == 0 || banExpiryTime > System.currentTimeMillis());
     }
 
     public boolean isShadowBanned() {
@@ -459,6 +459,7 @@ public class User {
 
     public void unban(User whoUnbanned, String unbanReason) {
         setBanExpiryTime(null);
+        shadowBanned = false;
         App.getDatabase().updateUserShadowBanned(this, false);
         App.undoRollback(this);
         long now = System.currentTimeMillis();
