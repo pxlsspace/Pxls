@@ -3305,7 +3305,7 @@ window.App = (function() {
           color: '#005f00'
         }
       ],
-      specialChatColorClasses: ['rainbow'],
+      specialChatColorClasses: ['rainbow, donator'],
       init: function() {
         self.initTitle = document.title;
         self._initThemes();
@@ -4867,6 +4867,7 @@ window.App = (function() {
 
         const _selUsernameColor = crel('select', { class: 'username-color-picker' },
           user.isStaff() ? crel('option', { value: -1, class: 'rainbow' }, 'rainbow') : null,
+          user.isDonator() ? crel('option', { value: -2, class: 'donator' }, 'donator') : null,                             
           place.getPalette().map((x, i) => crel('option', {
             value: i,
             'data-idx': i,

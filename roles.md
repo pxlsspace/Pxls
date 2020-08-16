@@ -66,6 +66,7 @@ roleID {
 | `chat.report` | `/reportChat` | Report chat messages | user |
 | `chat.send` | | Send chat messages | user |
 | `chat.usercolor.rainbow` | | Ability to use rainbow user color | staff |
+| `chat.usercolor.donator` | | Ability to use donator user color | donator |
 
 ### User
 

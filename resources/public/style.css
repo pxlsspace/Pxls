@@ -371,6 +371,22 @@ dt {
     transform: rotateZ(360deg); /* force rainbow rendering onto GPU if available */
 }
 
+@keyframes donator-move {
+    0% {
+        background-position: 5px 0%;
+    }
+    100% {
+        background-position: -500px 0%;
+    }
+}
+
+.donator {
+    background-image: linear-gradient(45deg, #94E044, #02BE01 25%, #005F00 50%, #02BE01 75%, #94E044 90%);
+    background-size: 500px 100%;
+    animation: donator-move 4s linear 1ms infinite;
+    transform: rotateZ(360deg); /* force donator rendering onto GPU if available */
+}
+
 .error {
     color: var(--error-color);
     font-weight: 700;
@@ -1701,6 +1717,36 @@ ul.chat-history, ul.chatban-history {
 }
 
 .user.rainbow {
+    display: inline-block;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+    text-shadow: none !important;
+}
+
+/*donator gradient*/
+.username-color-picker.donator {
+    background-color: black;
+    text-shadow: 0 0 0.5em black;
+    color: white;
+}
+
+/*for reference: linear-gradient(45deg, #94E044, #02BE01 25%, #005F00 50%, #02BE01 75%, #94E044 90%)*/
+@keyframes donator-transition-bg {
+    0% { background-color: #94E044; }
+    25% { background-color: #02BE01; }
+    50% { background-color: #005F00; }
+    75% { background-color: #02BE01; }
+    90% { background-color: #94E044; }
+}
+
+.username-color-picker option.donator {
+    animation: donator-transition-bg 4s linear infinite;
+    background-color: green;
+}
+
+.user.donator {
     display: inline-block;
     -webkit-background-clip: text;
     background-clip: text;
