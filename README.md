@@ -2,7 +2,7 @@
 
 ![Java CI with Maven](https://github.com/pxlsspace/Pxls/workflows/Java%20CI%20with%20Maven/badge.svg)
 
-Stem Place is an open source fork of the collaborative image editor 'pxls.space' created by and for students of the STEM School, where you can place up to six pixels at a time, inspired by Reddit's [r/Place][place] experiment. 
+Pxls is a collaborative image editor where you can place up to six pixels at a time, inspired by Reddit's [r/Place][place] experiment.pixels at a time, inspired by Reddit's [r/Place][place] experiment. 
 
 **Note:** A Docker image is available at [aneurinprice/docker-pxls.space][docker] and on [Docker Hub][dockerhub].
 
@@ -21,7 +21,7 @@ Stem Place is an open source fork of the collaborative image editor 'pxls.space'
 
 3. Navigate to the directory:
 
-    > $ cd Stem-place
+    > $ cd Pxls
 
 4. Clean the package:
 
