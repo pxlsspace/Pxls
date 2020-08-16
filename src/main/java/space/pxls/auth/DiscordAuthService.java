@@ -15,11 +15,11 @@ public class DiscordAuthService extends AuthService {
     }
 
     public String getRedirectUrl(String state) {
-        return "https://discordapp.com/api/oauth2/authorize?client_id=" + App.getConfig().getString("oauth.discord.key") + "&response_type=code&redirect_uri=" + getCallbackUrl() + "&duration=temporary&scope=identify&state=" + state;
+        return "https://discord.com/api/oauth2/authorize?client_id=" + App.getConfig().getString("oauth.discord.key") + "&response_type=code&redirect_uri=" + getCallbackUrl() + "&duration=temporary&scope=identify&state=" + state;
     }
 
     public String getToken(String code) throws UnirestException {
-        HttpResponse<JsonNode> response = Unirest.post("https://discordapp.com/api/oauth2/token")
+        HttpResponse<JsonNode> response = Unirest.post("https://discord.com/api/oauth2/token")
                 .header("User-Agent", "pxls.space")
                 .field("grant_type", "authorization_code")
                 .field("code", code)
@@ -37,7 +37,7 @@ public class DiscordAuthService extends AuthService {
     }
 
     public String getIdentifier(String token) throws UnirestException, InvalidAccountException {
-        HttpResponse<JsonNode> me = Unirest.get("https://discordapp.com/api/users/@me")
+        HttpResponse<JsonNode> me = Unirest.get("https://discord.com/api/users/@me")
                 .header("Authorization", "Bearer " + token)
                 .header("User-Agent", "pxls.space")
                 .asJson();

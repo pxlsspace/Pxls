@@ -1,19 +1,13 @@
 package space.pxls.server.packets.socket;
 
 public class ClientShadowBanMe {
-    public String app;
-    public String z;
+    public String reason;
 
-    public ClientShadowBanMe(String app, String z) {
-        this.app = app;
-        this.z = z;
+    public ClientShadowBanMe(String reason) {
+        this.reason = reason;
     }
 
-    public String getApp() {
-        return app;
-    }
-
-    public String getZ() {
-        return z;
+    public String getReason() {
+        return reason;
     }
 }

@@ -10,7 +10,6 @@
     }).addClass('text-button').text(s);
   };
   const sendAlert = function(username) {
-    if (!admin.user.hasPermission('user.alert')) return '';
     return $('<input>').attr('type', 'text').attr('placeholder', 'Send alert...').keydown(function (evt) {
       if (evt.which === 13) {
         admin.socket.send({
@@ -168,22 +167,17 @@
         const minuteStr = minutes < 10 ? '0' + minutes : minutes;
         const hours = Math.floor(delta / 3600);
         const hoursStr = hours < 10 ? '0' + hours : hours;
-        let banned = data.banned;
         let bannedStr = '';
         let expiracyStr = hoursStr + ':' + minuteStr + ':' + secsStr;
         let chatbannedStr = '';
-        const chabannedExpiracyStr = `${chatbanDelta >> 0}s`;
-        // chabannedExpiracyStr = `${(chatbanDelta/3600) >> 0}h ${((chatbanDelta/60) >> 0) % 60}m ${(delta % 60) >> 0}s`;
         if (data.shadowBanned) {
           bannedStr = 'shadow';
-          banned = true;
           expiracyStr = 'never';
-        } else if (data.roles.find(role => role.type === 'BANNED') != null) {
+        } else if (data.banExpiry === 0) {
           bannedStr = 'permanent';
-          banned = true;
           expiracyStr = 'never';
         } else {
-          bannedStr = banned ? 'Yes' : 'No';
+          bannedStr = data.banned ? 'Yes' : 'No';
         }
         chatbannedStr = data.chatbanIsPerma ? 'Yes (permanent)' : (data.chatBanned ? 'Yes' : 'No');
         const items = [
@@ -201,14 +195,15 @@
           ['Banned', bannedStr],
           ['Chatbanned', chatbannedStr]
         ];
-        if (banned) {
+        if (data.banned) {
           items.push(['Ban Reason', data.ban_reason]);
           items.push(['Ban Expiracy', expiracyStr]);
         }
         if (data.chatBanned) {
-          items.push(['Chatban Reason', data.chatbanReason]);
+          items.push(['Chatban Reason', App.chat.canvasBanRespected && !data.chatbanReason ? '(canvas ban)' : data.chatbanReason]);
           if (!data.isChatbanPerma) {
-            items.push(['Chatban Expires', chabannedExpiracyStr]);
+            const chatbannedExpiracyStr = App.chat.canvasBanRespected && chatbanDelta < 0 ? 'when canvas ban ends' : `${chatbanDelta >> 0}s`;
+            items.push(['Chatban Expires', chatbannedExpiracyStr]);
           }
         }
         self.elements.check.empty().append(
@@ -219,7 +214,7 @@
                 typeof o[1] === 'string' ? $('<span>').text(o[1]) : o[1]
               );
             }),
-            $('<div>').append(sendAlert(data.username)),
+            (admin.user.hasPermission('user.alert') ? $('<div>').append(sendAlert(data.username)) : ''),
             $('<div>').append(
               genButton('Ban (24h)').click(function () {
                 ban.ban_24h(data.username, function () {
@@ -233,7 +228,7 @@
               }) : '')
             ),
             $('<div>').append(
-              genButton('Unban').click(() => self.popUnban(data.username)),
+              (data.banned ? genButton('Unban').click(() => self.popUnban(data.username)) : ''),
               (admin.user.hasPermission('user.shadowban') ? genButton('Shadowban').click(function () {
                 ban.shadow(data.username, function () {
                   self.elements.check.fadeOut(200);

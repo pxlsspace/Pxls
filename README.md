@@ -2,7 +2,7 @@
 
 ![Java CI with Maven](https://github.com/pxlsspace/Pxls/workflows/Java%20CI%20with%20Maven/badge.svg)
 
-Pxls is a collaborative image editor where you can place up to six pixels at a time, inspired by Reddit's [r/Place][place] experiment.
+Stem Place is an open source fork of the collaborative image editor 'pxls.space' created by and for students of the STEM School, where you can place up to six pixels at a time, inspired by Reddit's [r/Place][place] experiment. 
 
 **Note:** A Docker image is available at [aneurinprice/docker-pxls.space][docker] and on [Docker Hub][dockerhub].
 
@@ -17,11 +17,11 @@ Pxls is a collaborative image editor where you can place up to six pixels at a t
 1. Install the above requirements either via package manager (recommended) or by building from their sources.
 2. Clone the repo:
 
-    > $ git clone git@github.com:pxlsspace/Pxls.git
+    > $ git clone git@github.com:cp-codes2/Stem-place.git
 
 3. Navigate to the directory:
 
-    > $ cd Pxls
+    > $ cd Stem-place
 
 4. Clean the package:
 
@@ -35,7 +35,7 @@ The output `.jar` is in `target/`.
 2. Copy `resources/` and the output `.jar` to it.
 3. Copy `resources/reference.conf` to the directory as `pxls.conf`.
 4. Copy `resources/roles-reference.conf` to the directory as `roles.conf`.
-5. Configure `pxls.conf` and `roles.conf` (optional; see [roles.md](roles.md) for details). 
+5. Configure `pxls.conf` and `roles.conf` (optional; see [roles.md](roles.md) for details).
 6. Execute the jar with `java -jar pxls-1.0-SNAPSHOT.jar`
 
 The server will start on port 4567 by default, and will expose a rudimentary console with a few commands (listed in `Commands` below).
@@ -164,7 +164,7 @@ A full list of contributors is available [here](https://github.com/xSke/Pxls/gra
 [hocon]: https://github.com/typesafehub/config/blob/master/HOCON.md
 [googleconsole]: https://console.developers.google.com
 [redditapps]: https://www.reddit.com/prefs/apps
-[discordapps]: https://discordapp.com/developers/applications/me
+[discordapps]: https://discord.com/developers/applications/me
 [vkapps]: https://vk.com/apps?act=manage
 [tumblrapps]: https://www.tumblr.com/oauth/apps
 [captcha]: https://www.google.com/recaptcha/admin

@@ -139,7 +139,7 @@ public class WebHandler {
             view40x(exchange, 403, null);
         } else {
             PathTemplateMatch match = exchange.getAttachment(PathTemplateMatch.ATTACHMENT_KEY);
-            String requested = match.getParameters().computeIfAbsent("who", s -> user.getName());
+            String requested = match.getParameters().compute("who", (k, s) -> (s == null || s.isEmpty()) ? user.getName() : s);
             boolean requested_self = user.getName().equals(requested); // usernames are case-sensitive, we can use #equals relatively safely.
             User profileUser = requested_self ? user : App.getUserManager().getByName(requested);
 
@@ -712,7 +712,7 @@ public class WebHandler {
         User user = parseUserFromForm(exchange);
         User user_perform = exchange.getAttachment(AuthReader.USER);
         if (user != null && !user.hasPermission("user.permaban")) {
-            user.ban(null, getBanReason(exchange), getRollbackTime(exchange), user_perform);
+            user.ban(0, getBanReason(exchange), getRollbackTime(exchange), user_perform);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/text");
             if (doLog(exchange)) {
                 App.getDatabase().insertAdminLog(user_perform.getId(), String.format("permaban %s with reason: %s", user.getName(), getBanReason(exchange)));
