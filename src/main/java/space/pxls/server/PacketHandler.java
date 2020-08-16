@@ -386,9 +386,6 @@ public class PacketHandler {
                         server.send(channel, new ServerACKClientUpdate(false, "Color reserved for donators", "NameColor", null));
                         return;
                     }
-                    if (t < 0 && !user.hasPermission("chat.usercolor.donator")) {
-                        server.send(channel, new ServerACKClientUpdate(false, "Color reserved for donators", "NameColor", null));
-                    }
                     user.setChatNameColor(t, true);
                     server.send(channel, new ServerACKClientUpdate(true, null, "NameColor", String.valueOf(t)));
                     toBroadcast.put("NameColor", String.valueOf(t));
