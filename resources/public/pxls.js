@@ -3046,10 +3046,23 @@ window.App = (function() {
             self.elements.lookup.fadeOut(200);
           }),
           (template.getOptions().use ? $('<button>').css('float', 'right').addClass('text-button').text('Move Template Here').click(function() {
-            template.queueUpdate({
-              ox: data.x,
-              oy: data.y
-            });
+            modal.show(modal.buildDom(
+              crel('h2', { class: 'modal-title' }, 'Confirmation'),
+              `Move top left of the template template to (${data.x}, ${data.y})?`,
+              [
+                crel('button', {
+                  class: 'text-button',
+                  onclick: () => {
+                    template.queueUpdate({
+                      ox: data.x,
+                      oy: data.y
+                    });
+                    modal.closeAll();
+                  }
+                }, 'Yes'),
+                crel('button', { class: 'text-button', onclick: () => modal.closeAll() }, 'No')
+              ]
+            ));
           }) : '')
         );
       },
