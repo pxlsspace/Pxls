@@ -225,7 +225,7 @@ public class PacketHandler {
             handlePlaceMaybe(channel, user, cp, ip);
         }
         if (cp.getX() < 0 || cp.getX() >= App.getWidth() || cp.getY() < 0 || cp.getY() >= App.getHeight()) return;
-        if (cp.getColor() < 0 || cp.getColor() >= App.getConfig().getStringList("board.palette").size()) return;
+        if (cp.getColor() < 0 || cp.getColor() >= App.getPalette().getColors().size()) return;
         if (user.isBanned()) return;
 
         if (user.canPlace()) {
@@ -379,7 +379,7 @@ public class PacketHandler {
         if (nameColor != null && !nameColor.trim().isEmpty()) {
             try {
                 int t = Integer.parseInt(nameColor);
-                if (t >= -1 && t < App.getConfig().getStringList("board.palette").size()) {
+                if (t >= -1 && t < App.getPalette().getColors().size()) {
                     if (t < 0 && !user.hasPermission("chat.usercolor.rainbow")) {
                         server.send(channel, new ServerACKClientUpdate(false, "Color reserved for staff members", "NameColor", null));
                         return;

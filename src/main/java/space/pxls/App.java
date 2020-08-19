@@ -17,6 +17,7 @@ import space.pxls.server.packets.chat.ClientChatMessage;
 import space.pxls.server.packets.socket.*;
 import space.pxls.user.*;
 import space.pxls.util.*;
+import space.pxls.palette.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,6 +49,7 @@ public class App {
     private static byte[] placemap;
     private static byte[] virginmap;
     private static boolean havePlacemap;
+    private static Palette palette;
 
     private static PxlsTimer mapSaveTimer;
     private static PxlsTimer mapBackupTimer;
@@ -89,6 +91,7 @@ public class App {
         userManager = new UserManager();
 
         loadRoles();
+        loadPalette();
 
         new Thread(() -> {
             Scanner s = new Scanner(System.in);
@@ -702,6 +705,29 @@ public class App {
             role.setInherits(inherits);
         });
     }
+    public static void loadPalette() {
+        // NOTE: This differs from the way pxls.conf is handled, as we don't merge the palette-reference.conf
+        // file into roles.conf, but use it as a default in case palette.conf doesn't exist or is invalid.
+        var paletteConfigFile = new File("palette.conf");
+        var paletteConfig = ConfigFactory.parseFile(paletteConfigFile.exists() ? paletteConfigFile : new File("resources/palette-reference.conf"));
+
+        ArrayList<Color> colors = new ArrayList<Color>();
+        int defaultIdx = -1;
+        for (ConfigValue colorConfig : paletteConfig.getList("colors")) {
+            Map<String, Object> color = (Map<String, Object>) colorConfig.unwrapped();
+            colors.add(new Color((String) color.get("name"), (String) color.get("value")));
+
+            if (defaultIdx == -1 && color.get("background") != null && (boolean) color.get("background")) {
+                defaultIdx = colors.size() - 1;
+            }
+        }
+
+        if (defaultIdx == -1) {
+            defaultIdx = 0;
+        }
+
+        palette = new Palette(colors, (byte) defaultIdx);
+    }
 
     public static int getStackMultiplier() {
         return stackMultiplier;
@@ -756,10 +782,6 @@ public class App {
         return Paths.get(config.getString("server.storage"));
     }
 
-    public static List<String> getPalette() {
-        return config.getStringList("board.palette");
-    }
-
     public static boolean isCaptchaEnabled() {
         return !config.getString("captcha.key").isEmpty() && !config.getString("captcha.secret").isEmpty();
     }
@@ -786,7 +808,7 @@ public class App {
     }
 
     public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase, String action) {
-        if (x < 0 || x >= width || y < 0 || y >= height || (color >= getPalette().size() && !(color == 0xFF || color == -1))) return;
+        if (x < 0 || x >= width || y < 0 || y >= height || (color >= getPalette().getColors().size() && !(color == 0xFF || color == -1))) return;
         String userName = user != null ? user.getName() : "<server>";
 
         if (action.trim().isEmpty()) {
@@ -1080,7 +1102,7 @@ public class App {
             } catch (IOException e) {
             }
         }
-        return (byte) config.getInt("board.defaultColor");
+        return palette.getDefaultColorIndex();
     }
 
     public static Database getDatabase() {
@@ -1089,6 +1111,10 @@ public class App {
 
     public static UndertowServer getServer() {
         return server;
+    }
+
+    public static Palette getPalette() {
+        return palette;
     }
 
     public static long getUserIdleTimeout() {
