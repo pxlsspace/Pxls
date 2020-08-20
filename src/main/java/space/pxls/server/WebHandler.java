@@ -1661,6 +1661,7 @@ public class WebHandler {
             App.getRegistrationEnabled(),
             Math.min(App.getConfig().getInt("chat.characterLimit"), 2048),
             App.getConfig().getBoolean("chat.canvasBanRespected"),
+            App.getConfig().getStringList("chat.bannerText"),
             App.getConfig().getBoolean("oauth.snipMode")
         )));
     }
