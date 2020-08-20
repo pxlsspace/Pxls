@@ -1548,13 +1548,6 @@ window.App = (function() {
           self.centerOn(cx, cy, true);
           socket.init();
 
-          try {
-            self.draw(await binaryAjax('/boarddata' + '?_' + (new Date()).getTime()));
-          } catch (e) {
-            console.error('Error drawing board:', e);
-            socket.reconnect();
-          }
-
           if (self.use_js_render) {
             $(window).resize(function() {
               self.update();
@@ -1604,6 +1597,13 @@ window.App = (function() {
             // this rounds the current scale if it needs rounding
             self.setScale(self.getScale());
           });
+
+          try {
+            self.draw(await binaryAjax('/boarddata' + '?_' + (new Date()).getTime()));
+          } catch (e) {
+            console.error('Error drawing board:', e);
+            socket.reconnect();
+          }
         }).fail(function(e) {
           console.error('Error fetching /info:', e);
           socket.reconnect();
