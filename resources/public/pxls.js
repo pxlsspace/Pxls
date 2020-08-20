@@ -3250,7 +3250,6 @@ window.App = (function() {
   })();
   const serviceWorkerHelper = (() => {
     const self = {
-      worker: null,
       registrationPromise: null,
       messageListeners: {},
       hasSupport: 'serviceWorker' in window.navigator,
@@ -3259,11 +3258,10 @@ window.App = (function() {
           return;
         }
 
-        self.registrationPromise = navigator.serviceWorker.register('/serviceWorker.js').then((reg) => {
-          self.worker = reg.installing || reg.waiting || reg.active;
-        }).catch((err) => {
-          console.error('Failed to register Service Worker:', err);
-        });
+        self.registrationPromise = navigator.serviceWorker.register('/serviceWorker.js')
+          .catch((err) => {
+            console.error('Failed to register Service Worker:', err);
+          });
 
         navigator.serviceWorker.addEventListener('message', (ev) => {
           if (typeof ev.data !== 'object' || !('type' in ev.data)) {
@@ -3305,20 +3303,17 @@ window.App = (function() {
         callbacks.splice(idx, 1);
       },
       postMessage(data) {
-        if (!self.worker) {
+        if (!self.registrationPromise) {
           return;
         }
 
-        self.worker.postMessage(data);
+        self.registrationPromise.then(() => navigator.serviceWorker.controller.postMessage(data));
       }
     };
 
     return {
       get hasSupport() {
         return self.hasSupport;
-      },
-      get worker() {
-        return self.worker;
       },
       get registrationPromise() {
         return self.registrationPromise;
