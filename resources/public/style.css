@@ -126,6 +126,7 @@ html {
     --chat-abbr-underline-color: #aaa;
     --chat-badge-background: #ccc;
     --chat-badge-text-color: #770;
+    --chat-mention-text-color: #800080;
     --chat-server-action-text-color: #555;
     --chat-user-text-shadow-color: #ccc;
     --chat-purged-text-color: #888;
@@ -1360,6 +1361,12 @@ li.chat-line i[title] {
 
 .chat-line .content {
     white-space: pre-wrap;
+}
+
+.chat-line .content .mention {
+    font-weight: bold;
+    color: #800080;
+    color: var(--chat-mention-text-color);
 }
 
 header .text-badge {
