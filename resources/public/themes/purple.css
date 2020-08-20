@@ -106,23 +106,21 @@ html {
     --chat-typeahead-item-background-active: #8445a7;
 
     --emoji-picker-border-color: var(--floating-panel-border-color);
-    --emoji-picker-shadow-color: #0009;
     --emoji-picker-background: var(--floating-panel-background);
-    --emoji-picker-preview-name-text-color: var(--text-muted-color);
+    --emoji-picker-preview-name-text-color: var(--general-text-color);
     --emoji-picker-tab-icon-color: inherit;
     --emoji-picker-tab-icon-color-selected: #ae5cdb;
     --emoji-picker-section-text-color: var(--general-text-color);
-    --emoji-picker-emoji-color: var(--general-text-color);
     --emoji-picker-emoji-background: transparent;
     --emoji-picker-emoji-background-hover: rgba(0, 0, 0, 0.1);
     --emoji-picker-search-input-border-color: var(--input-border-color);
+    --emoji-picker-search-input-border-color-focus: #ae5cdb;
     --emoji-picker-search-input-background: var(--input-background);
     --emoji-picker-search-input-text-color: var(--input-text-color);
     --emoji-picker-search-icon-color: var(--text-muted-color);
     --emoji-picker-search-no-results-color: var(--text-muted-color);
     --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
     --emoji-picker-variant-popup-background: var(--floating-panel-background);
-    --emoji-picker-variant-close-button-color: var(--text-red-color);
 }
 
 .button:disabled {

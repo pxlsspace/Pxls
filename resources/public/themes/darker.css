@@ -60,13 +60,11 @@ html {
     --ping-flash-color: #2c5445;
     
     --emoji-picker-border-color: #383838;
-    --emoji-picker-shadow-color: #111;
     --emoji-picker-background: #000;
     --emoji-picker-preview-name-text-color: #fff;
     --emoji-picker-tab-icon-color: #fff;
     --emoji-picker-tab-icon-color-selected: #6fd1ff;
     --emoji-picker-section-text-color: #fff;
-    --emoji-picker-emoji-color: #fff;
     --emoji-picker-emoji-background: transparent;
     --emoji-picker-emoji-background-hover: #656565;
     --emoji-picker-search-input-border-color: #2f2f2f;
