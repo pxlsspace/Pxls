@@ -374,6 +374,10 @@ public class WebHandler {
                                         sendBadRequest(exchange, "This user is banned and cannot own any new factions.");
                                     } else if (userToModify.isFactionRestricted()) {
                                         sendBadRequest(exchange, "This user is faction restricted and cannot own any new factions.");
+                                    } else if (App.getConfig().getInt("factions.minPixelsToCreate") > userToModify.getAllTimePixelCount()) {
+                                        sendBadRequest(exchange, String.format("This user does not meet the minimum all-time pixel requirements to own a faction. The current minimum is %d.", App.getConfig().getInt("factions.minPixelsToCreate")));
+                                    } else if (App.getDatabase().getOwnedFactionCountForUID(userToModify.getId()) >= App.getConfig().getInt("factions.maxOwned")) {
+                                        sendBadRequest(exchange, String.format("This user has reached the maximum number of owned factions (%d).", App.getConfig().getInt("factions.maxOwned")));
                                     } else {
                                         if (faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
                                             App.getDatabase().setFactionOwnerForFID(faction.getId(), userToModify.getId());
