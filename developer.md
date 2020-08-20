@@ -123,6 +123,68 @@ Your function's return value should be an object containing an array object in t
 A ping object contains three keys as shown in the example: `start`, `length`, and `highlight`.
 While not currently used, these values are used to indicate if a message should highlighted as a ping and what section in it if so.
 
+## Chat Markdown
+
+Markdown processing in chat is backed by [pxls-markdown](https://github.com/pxlsspace/pxls-markdown), which uses [unified](https://github.com/unifiedjs/unified), [remark-parse](https://github.com/remarkjs/remark/tree/master/packages/remark-parse) and a combination of custom plugins to handle __underlines__, @mentions, :emoji: 😄, etc; as well as converting the syntax tree into DOM elements.
+
+The [Processor](https://github.com/unifiedjs/unified#processors) is exposed in `App.chat.markdownProcessor`. You can extend its functionality by creating a [Plugins](https://github.com/unifiedjs/unified#plugin) and doing `App.chat.markdownProcessor.use(yourPlugin)`.
+
+You can read more on how the processor works on [unified's README](https://github.com/unifiedjs/unified#description) or by [checking the sourcecode of plugins on the pxls-markdown repository](https://github.com/pxlsspace/pxls-markdown/tree/master/plugins).
+
+```js
+function myPlugin() {
+    const parserProto = this.Parser.prototype;
+    const compilerProto = this.Compiler.prototype;
+
+    /*
+     * Inject a new inline tokenizer into the Parser (remark-parse)
+     */
+
+    // inlineMethods contains a list of parserProto.inlineTokenizers functions to run
+    // sequentially. This is why we add the name of our new tokenizer to the beginning, as to
+    // avoid any conflicts with other tokenizers.
+    parserProto.inlineMethods.splice(0, 0, 'myCustomMarkup');
+
+    parserProto.inlineTokenizers.myCustomMarkup = function tokenizer(eat, value, silent) {
+        if (value.startsWith('test')) {
+            if (silent) {
+                // If in silent mode, we are only asserting that we've found our markup.
+                return true;
+            }
+
+            // we eat "test" from the input and replace it with a Node of type "myCustomMarkup" and value "test"
+            return eat('test')({
+                type: 'myCustomMarkup',
+                value: 'test'
+            });
+        }
+
+        return false;
+    }
+    parserProto.inlineTokenizers.myCustomMarkup.notInLink = true;
+    parserProto.inlineTokenizers.myCustomMarkup.locator = function(value, fromIndex) {
+        // A tokenizer's locator returns the location of where our markup starts, or -1 if not found,
+        // for optimization purposes.
+        // * A constant value of -1 will make our tokenizer only run at the beginning of the source string.
+        // * A constant value of 0 will generate an infinite loop.
+        return value.indexOf('test', fromIndex);
+    }
+
+    /*
+     * Inject a new visitor into the Compiler (remark-crel)
+     */
+    compilerProto.visitors.myCustomMarkup = (node, next) => {
+        // calling next() will recursively visit all childrens of our node (node.children)
+        // or return the value of our node (node.value) if it has no children.
+
+        const style = 'font-weight: bold; font-style: italic; text-decoration: underline;';
+        return crel('span', { style }, next())
+    };
+}
+
+App.chat.markdownProcessor.use(myPlugin);
+```
+
 ## Global Events
 
 You can listen for various custom $(window) events triggered with the `pxls:` prefix. Note that these are only listen-able with jQuery.

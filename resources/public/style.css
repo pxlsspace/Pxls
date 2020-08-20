@@ -67,15 +67,17 @@ html {
 
     --cursor-text-color: #000;
     --cursor-text-background-color: #fff;
- 
-    --selection-color;
-    --selection-background-color;
-    /*use this in desired theme:   
-    ::selection {
-    background-color: var(--selection-background-color);
-    color:var(--selection-color);
-    } */
- 
+
+    --selection-color: unset;
+    --selection-background-color: unset;
+    /*
+        use this in desired theme:
+        ::selection {
+            color: var(--selection-color);
+            background-color: var(--selection-background-color);
+        }
+    */
+
     --undo-text-color: #000;
     --undo-background: linear-gradient(to top, #FFFC, #FFF);
     --undo-border-color: #000;
@@ -126,6 +128,7 @@ html {
     --chat-abbr-underline-color: #aaa;
     --chat-badge-background: #ccc;
     --chat-badge-text-color: #770;
+    --chat-mention-text-color: #800080;
     --chat-server-action-text-color: #555;
     --chat-user-text-shadow-color: #ccc;
     --chat-purged-text-color: #888;
@@ -141,24 +144,21 @@ html {
     --chat-typeahead-item-background-hover: #949494;
     --chat-typeahead-item-background-active: #828282;
 
-    --emoji-picker-border-color: #999999;
-    --emoji-picker-shadow-color: #CCCCCC;
+    --emoji-picker-border-color: #CCCCCC;
     --emoji-picker-background: #FFFFFF;
-    --emoji-picker-preview-name-text-color: #666666;
-    --emoji-picker-tab-icon-color: inherit;
+    --emoji-picker-preview-name-text-color: #000000;
+    --emoji-picker-tab-icon-color: #666666;
     --emoji-picker-tab-icon-color-selected: #4F81E5;
     --emoji-picker-section-text-color: #333333;
-    --emoji-picker-emoji-color: #333333;
-    --emoji-picker-emoji-background: transparent;
     --emoji-picker-emoji-background-hover: #E8F4F9;
     --emoji-picker-search-input-border-color: #CCCCCC;
+    --emoji-picker-search-input-border-color-focus: #4F81E5;
     --emoji-picker-search-input-background: #fff;
     --emoji-picker-search-input-text-color: #000;
     --emoji-picker-search-icon-color: #CCCCCC;
     --emoji-picker-search-no-results-color: #666666;
-    --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
+    --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.8);
     --emoji-picker-variant-popup-background: #FFFFFF;
-    --emoji-picker-variant-close-button-color: inherit;
 }
 
 /*//////////////////////////*\
@@ -249,6 +249,13 @@ img.emoji {
   font-family: monospace;
 }
 
+#settings-search-input {
+  margin: 0.5em 0;
+  padding-left: 1em;
+  padding-right: 1em;
+  font-size: 110%;
+}
+
 label.extra-label {
     display: block;
     margin-top: .25em;
@@ -261,7 +268,7 @@ input:disabled, button:disabled {
     opacity: 0.5;
 }
 
-input[type="text"], input[type="number"], textarea, select {
+input[type="text"], input[type="search"], input[type="number"], textarea, select {
     padding: 0.5em;
     border: 1px solid var(--input-border-color);
     background: var(--input-background);
@@ -278,6 +285,9 @@ input.small-input {
 
 /* NOTE (Flying): Does not work grouped together. */
 input[type="text"]::placeholder {
+    color: var(--input-placeholder-text-color);
+}
+input[type="search"]::placeholder {
     color: var(--input-placeholder-text-color);
 }
 input[type="number"]::placeholder {
@@ -1365,6 +1375,12 @@ li.chat-line i[title] {
     white-space: pre-wrap;
 }
 
+.chat-line .content .mention {
+    font-weight: bold;
+    color: #800080;
+    color: var(--chat-mention-text-color);
+}
+
 header .text-badge {
     background-color: #eee;
 }
@@ -1710,74 +1726,34 @@ ul.chat-history, ul.chatban-history {
 }
 
 /* preselecting body makes this a more specific selector than the built-in one which would normally override this since it's inline */
-/* the same principle is why each of the following preselect .emoji-picker */
 body .emoji-picker {
-    z-index: 22;
-    border: 1px solid var(--emoji-picker-border-color);
-    box-shadow: 0px 0px 3px 1px var(--emoji-picker-shadow-color);
-    background: var(--emoji-picker-background);
+    --focus-indicator-color: #999999;
+
+    --border-color: var(--emoji-picker-border-color);
+    --background-color: var(--emoji-picker-background);
+    --text-color: var(--emoji-picker-preview-name-text-color);
+    --secondary-text-color: var(--emoji-picker-search-no-results-color);
+    --hover-color: var(--emoji-picker-emoji-background-hover);
+    --search-focus-border-color: var(--emoji-picker-search-input-border-color-focus);
+    --search-icon-color: var(--emoji-picker-search-icon-color);
+    --overlay-background-color: var(--emoji-picker-variant-overlay-background);
+    --popup-background-color: var(--emoji-picker-variant-popup-background);
+    --category-button-color: var(--emoji-picker-tab-icon-color);
+    --category-button-active-color: var(--emoji-picker-tab-icon-color-selected);
 }
 
-.emoji-picker .emoji-picker__search {
-    padding-left: .5em;
+.emoji-picker * {
+    box-sizing: content-box;
 }
 
-.emoji-picker .emoji-picker__preview {
-    margin-top: .5em;
-    padding: 1.5em 1em;
-    border-top: 1px solid var(--emoji-picker-border-color);
-}
-
-.emoji-picker .emoji-picker__preview-name {
-    color: var(--emoji-picker-preview-name-text-color);
-}
-
-.emoji-picker .emoji-picker__tab {
-    color: var(--emoji-picker-tab-icon-color);
-}
-
-.emoji-picker .emoji-picker__tab.active {
-    color: var(--emoji-picker-tab-icon-color-selected);
-    border-bottom: 3px solid var(--emoji-picker-tab-icon-color-selected);
-}
-
-.emoji-picker .emoji-picker__tab-body h2 {
-    color: var(--emoji-picker-section-text-color);
-}
-
-.emoji-picker .emoji-picker__emoji {
-    color: var(--emoji-picker-emoji-color);
-    background: var(--emoji-picker-emoji-background);
-}
-
-.emoji-picker .emoji-picker__emoji:hover {
-    background: var(--emoji-picker-emoji-background-hover);
-}
-
-.emoji-picker .emoji-picker__search-container input {
-    border: 1px solid var(--emoji-picker-search-input-border-color);
+.emoji-picker__search {
+    --border-color: var(--emoji-picker-search-input-border-color);
     background: var(--emoji-picker-search-input-background);
     color: var(--emoji-picker-search-input-text-color);
 }
 
-.emoji-picker .emoji-picker__search-icon {
-    color: var(--emoji-picker-search-icon-color);
-}
-
-.emoji-picker .emoji-picker__search-not-found {
-    color: var(--emoji-picker-search-no-results-color);
-}
-
-.emoji-picker .emoji-picker__variant-overlay {
-    background: var(--emoji-picker-variant-overlay-background);
-}
-
-.emoji-picker .emoji-picker__variant-popup {
-    background: var(--emoji-picker-variant-popup-background);
-}
-
-.emoji-picker .emoji-picker__variant-popup-close-button {
-    color: var(--emoji-picker-variant-close-button-color)
+.emoji-picker__emojis h2.emoji-picker__category-name {
+    --secondary-text-color: var(--emoji-picker-section-text-color);
 }
 
 /* CHAT ACTIONS POPUP */

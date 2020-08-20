@@ -63,7 +63,7 @@ html {
     --ping-flash-color: #8ef7d1;
     --ping-counter-color: #ae5cdb;
     --notification-expiry-color: var(--text-orange-color);
-      
+
     --panel-background: #3d204d;
     --panel-text-color: inherit;
     --panel-border-color: #000;
@@ -90,10 +90,11 @@ html {
     --chat-abbr-underline-color: var(--general-text-color);
     --chat-badge-background: #ccc;
     --chat-badge-text-color: #770;
+    --chat-mention-text-color: #1ea1bb;
     --chat-server-action-text-color: var(--text-muted-color);
     --chat-user-text-shadow-color: #555;
     --chat-purged-text-color: var(--text-muted-color);
-    
+
     --chat-tobottom-text-color: #fff;
     --chat-tobottom-background: #683683;
     --chat-tobottom-text-color-hover: var(--chat-tobottom-text-color);
@@ -106,23 +107,21 @@ html {
     --chat-typeahead-item-background-active: #8445a7;
 
     --emoji-picker-border-color: var(--floating-panel-border-color);
-    --emoji-picker-shadow-color: #0009;
     --emoji-picker-background: var(--floating-panel-background);
-    --emoji-picker-preview-name-text-color: var(--text-muted-color);
+    --emoji-picker-preview-name-text-color: var(--general-text-color);
     --emoji-picker-tab-icon-color: inherit;
     --emoji-picker-tab-icon-color-selected: #ae5cdb;
     --emoji-picker-section-text-color: var(--general-text-color);
-    --emoji-picker-emoji-color: var(--general-text-color);
     --emoji-picker-emoji-background: transparent;
     --emoji-picker-emoji-background-hover: rgba(0, 0, 0, 0.1);
     --emoji-picker-search-input-border-color: var(--input-border-color);
+    --emoji-picker-search-input-border-color-focus: #ae5cdb;
     --emoji-picker-search-input-background: var(--input-background);
     --emoji-picker-search-input-text-color: var(--input-text-color);
     --emoji-picker-search-icon-color: var(--text-muted-color);
     --emoji-picker-search-no-results-color: var(--text-muted-color);
     --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
     --emoji-picker-variant-popup-background: var(--floating-panel-background);
-    --emoji-picker-variant-close-button-color: var(--text-red-color);
 }
 
 .button:disabled {
