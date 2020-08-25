@@ -1765,7 +1765,9 @@ window.App = (function() {
 
         self.elements.board.toggleClass('pixelate', scale > 1);
         overlays.heatmap.setPixelated(scale >= 1);
+        overlays.heatbackground.setPixelated(scale >= 1);
         overlays.virginmap.setPixelated(scale >= 1);
+        overlays.virginbackground.setPixelated(scale >= 1);
         template.setPixelated(scale >= template.getWidthRatio());
 
         if (ignoreCanvasLock || self.allowDrag || (!self.allowDrag && self.pannedWithKeys)) {
@@ -2035,8 +2037,8 @@ window.App = (function() {
             self.setImageData(createImageData(self.width, self.height));
           }
         },
-        setBackgroundColor: function(color) {
-          $(self.elements.overlay).css('background-color', color);
+        setOpacity: function(opacity) {
+          $(self.elements.overlay).css('opacity', opacity);
         },
         setShown: function(value = self.isShown, fadeTime = 200) {
           self.isShown = value === true;
@@ -2082,7 +2084,7 @@ window.App = (function() {
         getImageData: self.getImageData,
         setImageData: self.setImageData,
         clear: self.clear,
-        setBackgroundColor: self.setBackgroundColor,
+        setOpacity: self.setOpacity,
         show: function() {
           self.setShown(true);
         },
@@ -2124,22 +2126,27 @@ window.App = (function() {
 
         // create default overlays
 
-        async function createOverlayImageData(basepath, color, dataXOR = 0) {
+        async function createOverlayImageData(basepath, placepath, color, dataXOR = 0) {
           // we use xhr directly because of jquery being weird on raw binary
           const overlayData = await binaryAjax(basepath + '?_' + (new Date()).getTime());
           const imageData = createImageData(width, height);
+          const placemapData = await binaryAjax(placepath + '?_' + (new Date()).getTime());
 
           const intView = new Uint32Array(imageData.data.buffer);
           for (let i = 0; i < width * height; i++) {
-            // this assignement uses the data as the alpha channel for the color
-            intView[i] = ((overlayData[i] ^ dataXOR) << 24) | color;
+            if (placemapData[i] === 255) {
+              intView[i] = 0x00000000;
+            } else {
+              // this assignment uses the data as the alpha channel for the color
+              intView[i] = ((overlayData[i] ^ dataXOR) << 24) | color;
+            }
           }
 
           return imageData;
         }
 
         // heatmap stuff
-        const heatmap = self.add('heatmap', () => createOverlayImageData('/heatmap', 0x005C5CCD), (width, height, isReload) => {
+        const heatmap = self.add('heatmap', () => createOverlayImageData('/heatmap', '/placemap', 0x005C5CCD), (width, height, isReload) => {
           // Ran when lazy init finshes
           if (isReload) {
             return;
@@ -2175,8 +2182,10 @@ window.App = (function() {
           });
         });
 
+        const heatbackground = self.add('heatbackground', () => createOverlayImageData('/heatmap', '/placemap', 0xFF000000));
+
         settings.board.heatmap.opacity.listen(function(value) {
-          heatmap.setBackgroundColor(`rgba(0, 0, 0, ${value})`);
+          heatbackground.setOpacity(value);
         });
         $('#hmapClear').click(function() {
           heatmap.clear();
@@ -2184,8 +2193,10 @@ window.App = (function() {
         settings.board.heatmap.enable.listen(function(value) {
           if (value) {
             heatmap.show();
+            heatbackground.show();
           } else {
             heatmap.hide();
+            heatbackground.hide();
           }
         });
 
@@ -2201,7 +2212,7 @@ window.App = (function() {
         });
 
         // virginmap stuff
-        const virginmap = self.add('virginmap', () => createOverlayImageData('/virginmap', 0x00000000, 0xff), (width, height, isReload) => {
+        const virginmap = self.add('virginmap', () => createOverlayImageData('/virginmap', '/placemap', 0x00000000, 0xff), (width, height, isReload) => {
           if (isReload) {
             return;
           }
@@ -2223,8 +2234,10 @@ window.App = (function() {
           });
         });
 
+        const virginbackground = self.add('virginbackground', () => createOverlayImageData('/virginmap', '/placemap', 0x0000FF00, 0x00));
+
         settings.board.virginmap.opacity.listen(function(value) {
-          virginmap.setBackgroundColor(`rgba(0, 255, 0, ${value})`);
+          virginbackground.setOpacity(value);
         });
         $('#vmapClear').click(function() {
           virginmap.clear();
@@ -2233,8 +2246,10 @@ window.App = (function() {
         settings.board.virginmap.enable.listen(function(value) {
           if (value) {
             virginmap.show();
+            virginbackground.show();
           } else {
             virginmap.hide();
+            virginbackground.hide();
           }
         });
 
@@ -2259,8 +2274,14 @@ window.App = (function() {
       get heatmap() {
         return self.overlays.heatmap;
       },
+      get heatbackground() {
+        return self.overlays.heatbackground;
+      },
       get virginmap() {
         return self.overlays.virginmap;
+      },
+      get virginbackground() {
+        return self.overlays.virginbackground;
       }
     };
   })();
@@ -7054,10 +7075,20 @@ window.App = (function() {
           reload: overlays.heatmap.reload
         };
       },
+      get heatbackground() {
+        return {
+          reload: overlays.heatbackground.reload
+        };
+      },
       get virginmap() {
         return {
           clear: overlays.virginmap.clear,
           reload: overlays.virginmap.reload
+        };
+      },
+      get virginbackground() {
+        return {
+          reload: overlays.virginbackground.reload
         };
       }
     },
