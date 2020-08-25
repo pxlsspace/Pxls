@@ -902,19 +902,7 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     user-select: none;
 }
 
-#heatbackground {
-    position: absolute;
-    pointer-events: none;
-    user-select: none;
-}
-
 #virginmap {
-    position: absolute;
-    pointer-events: none;
-    user-select: none;
-}
-
-#virginbackground {
     position: absolute;
     pointer-events: none;
     user-select: none;
