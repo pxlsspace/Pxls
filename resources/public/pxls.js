@@ -4041,7 +4041,7 @@ window.App = (function() {
             alt: node.emojiName,
             title: `:${node.emojiName}:`,
             draggable: false,
-            src: `${twemoji.base}${twemoji.size}/${twemoji.convert.toCodePoint(node.value)}${twemoji.ext}`
+            src: `${twemoji.base}${twemoji.size}/${twemoji.convert.toCodePoint(node.value.replace(/[\uFE00-\uFE0F]$/, ''))}${twemoji.ext}`
           });
 
           this.Compiler.prototype.visitors.link = (node, next) => {
