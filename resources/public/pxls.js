@@ -6769,6 +6769,7 @@ window.App = (function() {
       init: self.init,
       getRoles: self.getRoles,
       isStaff: self.isStaff,
+      isDonator: self.isDonator,
       getPermissions: self.getPermissions,
       hasPermission: self.hasPermission,
       getUsername: self.getUsername,
