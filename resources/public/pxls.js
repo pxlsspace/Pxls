@@ -3395,7 +3395,7 @@ window.App = (function() {
           color: '#005f00'
         }
       ],
-      specialChatColorClasses: ['rainbow'],
+      specialChatColorClasses: ['rainbow', 'donator'],
       init: function() {
         self.initTitle = document.title;
         self._initThemes();
@@ -4971,6 +4971,7 @@ window.App = (function() {
 
         const _selUsernameColor = crel('select', { class: 'username-color-picker' },
           user.isStaff() ? crel('option', { value: -1, class: 'rainbow' }, 'rainbow') : null,
+          user.isDonator() ? crel('option', { value: -2, class: 'donator' }, 'donator') : null,
           place.getPalette().map((x, i) => crel('option', {
             value: i,
             'data-idx': i,
@@ -6453,6 +6454,7 @@ window.App = (function() {
       chatNameColor: 0,
       getRoles: () => self.roles,
       isStaff: () => self.hasPermission('user.admin'),
+      isDonator: () => self.hasPermission('user.donator'),
       getPermissions: () => {
         let perms = [];
         self.roles.flatMap(function loop(node) {
@@ -7117,6 +7119,7 @@ window.App = (function() {
       getRoles: user.getRoles,
       isLoggedIn: user.isLoggedIn,
       isStaff: user.isStaff,
+      isDonator: user.isDonator,
       getPermissions: user.getPermissions,
       hasPermission: user.hasPermission
     },
