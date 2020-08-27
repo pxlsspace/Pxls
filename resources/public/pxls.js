@@ -3250,7 +3250,7 @@ window.App = (function() {
   })();
   const serviceWorkerHelper = (() => {
     const self = {
-      registrationPromise: null,
+      isInit: false,
       messageListeners: {},
       hasSupport: 'serviceWorker' in window.navigator,
       init() {
@@ -3258,7 +3258,10 @@ window.App = (function() {
           return;
         }
 
-        self.registrationPromise = navigator.serviceWorker.register('/serviceWorker.js')
+        navigator.serviceWorker.register('/serviceWorker.js')
+          .then(() => {
+            self.isInit = true;
+          })
           .catch((err) => {
             console.error('Failed to register Service Worker:', err);
           });
@@ -3303,11 +3306,14 @@ window.App = (function() {
         callbacks.splice(idx, 1);
       },
       postMessage(data) {
-        if (!self.registrationPromise) {
+        if (!self.isInit) {
           return;
         }
 
-        self.registrationPromise.then(() => navigator.serviceWorker.controller.postMessage(data));
+        navigator.serviceWorker.ready.then(({ installing, waiting, active }) => {
+          const worker = navigator.serviceWorker.controller || installing || waiting || active;
+          worker.postMessage(data);
+        });
       }
     };
 
@@ -3315,8 +3321,8 @@ window.App = (function() {
       get hasSupport() {
         return self.hasSupport;
       },
-      get registrationPromise() {
-        return self.registrationPromise;
+      get readyPromise() {
+        return navigator.serviceWorker.ready;
       },
       init: self.init,
       addMessageListener: self.addMessageListener,
@@ -3603,7 +3609,7 @@ window.App = (function() {
             self._workerIsTabFocused = self.tabId === data.id;
           });
 
-          serviceWorkerHelper.registrationPromise.then(async () => {
+          serviceWorkerHelper.readyPromise.then(async () => {
             serviceWorkerHelper.postMessage({ type: 'request-id' });
           }).catch(() => {
             self.tabHasFocus = true;
