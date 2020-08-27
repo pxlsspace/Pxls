@@ -5424,7 +5424,7 @@ window.App = (function() {
             template,
             title
           },
-          onclick: template ? handleClick : null
+          onclick: handleClick
         }, text);
       },
       _handleTemplateOverwriteAction: (action, linkElem) => {
