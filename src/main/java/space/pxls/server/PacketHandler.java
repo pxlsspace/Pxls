@@ -407,11 +407,6 @@ public class PacketHandler {
         server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, false, false)));
     }
 
-    private CharSequenceTranslator bracketTranslator = new LookupTranslator(new HashMap<CharSequence, CharSequence>() {{
-        put("<", "&lt;");
-        put(">", "&gt;");
-    }});
-
     public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
         int charLimit = Math.min(App.getConfig().getInt("chat.characterLimit"), 2048);
         if (charLimit <= 0) {
@@ -435,7 +430,7 @@ public class PacketHandler {
                 return;
             }
             try {
-                String toSend = bracketTranslator.translate(message); //filter out brackets before we do anything else so it's filtered in db
+                String toSend = message;
                 if (App.getConfig().getBoolean("chat.trimInput"))
                     toSend = toSend.trim();
                 Faction usersFaction = user.fetchDisplayedFaction();
