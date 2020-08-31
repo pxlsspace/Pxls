@@ -5421,7 +5421,7 @@ window.App = (function() {
           }
         }
 
-        return crel('span', {
+        return crel('a', {
           class: 'link coordinates',
           dataset: {
             raw,
@@ -5431,6 +5431,7 @@ window.App = (function() {
             template,
             title
           },
+          href: raw,
           onclick: handleClick
         }, text);
       },
