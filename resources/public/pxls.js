@@ -4042,13 +4042,11 @@ window.App = (function() {
           inline: ['coordinate', 'emoji_raw', 'emoji_name', 'mention', 'escape', 'autoLink', 'url', 'underline', 'strong', 'emphasis', 'deletion', 'code']
         })
         .use(function() {
-          this.Compiler.prototype.visitors.emoji = (node, next) => crel('img', {
-            class: 'emoji',
-            alt: node.emojiName,
-            title: `:${node.emojiName}:`,
-            draggable: false,
-            src: `${twemoji.base}${twemoji.size}/${twemoji.convert.toCodePoint(node.value.replace(/[\uFE00-\uFE0F]$/, ''))}${twemoji.ext}`
-          });
+          this.Compiler.prototype.visitors.emoji = (node, next) => {
+            const el = twemoji.parse(crel('span', node.value)).children[0];
+            el.title = `:${node.emojiName}:`;
+            return el;
+          };
 
           this.Compiler.prototype.visitors.link = (node, next) => {
             const url = new URL(node.url, location.href);
