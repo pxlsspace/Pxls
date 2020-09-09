@@ -3444,7 +3444,7 @@ window.App = (function() {
 
         const numOrDefault = (n, def) => isNaN(n) ? def : n;
 
-        const brightnessFixElement = $('<canvas>').attr('id', 'brightness-fixer').addClass('noselect');
+        const brightnessFixElement = $('<div>').attr('id', 'brightness-fixer').addClass('noselect');
 
         settings.ui.brightness.enable.listen(function(enabled) {
           if (enabled) {
