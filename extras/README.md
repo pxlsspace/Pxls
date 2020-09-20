@@ -71,7 +71,7 @@ By default, it reads from `pixels.log` and writes to `pixels.sanit.log`.
 `logs/timelapse.py` allows for creating timelapses out of a `default_board.dat` (initial canvas state) and a `pixels.log` file (found in the _logs/_ directory).
 It might also ask for the canvas width and palette used.
 
-The script allows for customizing the output. Use the `--help` parameter to kow more.
+The script allows for customizing the output. Use the `--help` parameter to know more.
 
 ### Running
 
