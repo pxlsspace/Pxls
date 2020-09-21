@@ -319,7 +319,7 @@ public class WebHandler {
                                 }
                             } else {
                                 if (faction.getOwner() == user.getId()) {
-                                    sendBadRequest(exchange, "You can not leave a faction you own. Transfer ownership first.");
+                                    sendBadRequest(exchange, "You cannot leave a faction you own. Transfer ownership first.");
                                 } else {
                                     FactionManager.getInstance().leaveFaction(fid, user.getId());
                                     if (user.getDisplayedFaction() != null && user.getDisplayedFaction() == fid) {

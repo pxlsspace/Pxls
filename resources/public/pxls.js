@@ -4298,7 +4298,7 @@ window.App = (function() {
               }
             } else if (e.type !== 'chat_ban_state') { // chat_ban_state is a query result, not an action notice.
               self.addServerAction('You have been unbanned from chat.');
-              self.elements.rate_limit_counter.text('You can not use chat while canvas banned.');
+              self.elements.rate_limit_counter.text('You cannot use chat while canvas banned.');
               self.chatban.banned = false;
             }
             self._handleChatbanVisualState(self._canChat());
@@ -6193,7 +6193,7 @@ window.App = (function() {
         const canChat = self._canChat();
         self._handleChatbanVisualState(canChat);
         if (!canChat) {
-          if (self.elements.rate_limit_counter.text().trim().length === 0) { self.elements.rate_limit_counter.text('You can not use chat while canvas banned.'); }
+          if (self.elements.rate_limit_counter.text().trim().length === 0) { self.elements.rate_limit_counter.text('You cannot use chat while canvas banned.'); }
         }
       }
     };
