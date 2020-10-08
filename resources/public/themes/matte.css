@@ -39,6 +39,7 @@ html {
     --input-text-color: #678;
     --input-background: #1c2228;
     --input-border-color: #468079;
+    --input-placeholder-text-color: #678;
     --text-blue-color: #1ea1bb;
     --text-green-color: #468079;
     --text-red-color: #468079;
@@ -120,24 +121,6 @@ html {
     outline-offset: 0;
 }
 
-::-webkit-input-placeholder {
-    color: #678;
-}
-
-:-ms-input-placeholder {
-    color: #678;
-}
-
-::-moz-placeholder {
-    color: #678;
-    opacity: 1;
-}
-
-:-moz-placeholder {
-    color: #678;
-    opacity: 1;
-}
-
 ::-webkit-scrollbar {
     width: 0px;
     background: transparent;
@@ -198,7 +181,7 @@ input[type="checkbox"] {
     display: none;
 }
 
-input[type="checkbox"]+label {
+input[type="checkbox"]+span {
     display: block;
     position: relative;
     padding-left: 20px;
@@ -209,11 +192,11 @@ select {
     -webkit-appearance: none;
 }
 
-input[type="checkbox"]+label:last-child {
+input[type="checkbox"]+span:last-child {
     margin-bottom: 0;
 }
 
-input[type="checkbox"]+label:before {
+input[type="checkbox"]+span:before {
     content: '';
     display: block;
     width: 12px;
@@ -226,7 +209,7 @@ input[type="checkbox"]+label:before {
     transition: all .20s, border-color .14s;
 }
 
-input[type="checkbox"]:checked+label:before {
+input[type="checkbox"]:checked+span:before {
     width: 6px;
     left: 4px;
     top: -1px;
