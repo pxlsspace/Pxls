@@ -374,6 +374,11 @@ dt {
     }
 }
 
+.checkerboard-background {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAVSURBVBhXY1i/fv39+/cZgfjChQsAQicJuS/hrEUAAAAASUVORK5CYII=');
+    background-size: cover;
+}
+
 .rainbow {
     background-image: linear-gradient(45deg, violet, #308dff, cyan, green, yellow, orange, red, orange, yellow, green, cyan, #308dff, violet, violet);
     background-size: 500px 100%;

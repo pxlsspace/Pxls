@@ -367,38 +367,75 @@ public class App {
                         System.out.printf("Unknown user: %s%n", token[1]);
                     }
                 }
-            } else if (token[0].equalsIgnoreCase("cd-override")) {
-                //cd-override list|USERNAME[ STATE]
+            } else if (token[0].equalsIgnoreCase("placementOverride") || token[0].equalsIgnoreCase("placementOverrides")) {
+                //placementOverride list|USERNAME[ NAME STATE]
+                //NAME=placeanycolor|ignorecooldown|ignoreplacemap
                 //STATE=on|off
-                if (token.length > 1) {
+                if (token.length > 1 && !token[1].equalsIgnoreCase("help")) {
                     if (token[1].equalsIgnoreCase("list")) {
                         StringBuilder sb = new StringBuilder();
                         userManager.getAllUsersByToken().forEach((s, user) -> {
-                            if (user.isOverridingCooldown()) sb.append("    ").append(user.getName()).append('\n');
+                            PlacementOverrides po = user.getPlaceOverrides();
+                            ArrayList<String> enabledPOs = new ArrayList<String>();
+                            if (po.getCanPlaceAnyColor()) {
+                                enabledPOs.add("placeAnyColor");
+                            }
+                            if (po.hasIgnoreCooldown()) {
+                                enabledPOs.add("ignoreCooldown");
+                            }
+                            if (po.hasIgnorePlacemap()) {
+                                enabledPOs.add("ignorePlacemap");
+                            }
+
+                            if (enabledPOs.size() > 0) {
+                                sb.append("    ").append(user.getName()).append(": ").append(String.join(", ", enabledPOs)).append("\n");
+                            }
                         });
-                        System.out.println(sb);
-                    } else if (token[1].equalsIgnoreCase("help")) {
-                        System.out.println("cd-override list|USERNAME[ STATE]");
-                        System.out.println("STATE=on|off");
+
+                        System.out.println(sb.length() > 0 ? sb.toString().trim() : "    <no one has any Placement Overrides enabled>");
                     } else {
                         User user = getUserManager().getByName(token[1]);
                         if (user == null) {
                             System.out.printf("Unknown user: %s%n", token[1]);
                         } else {
-                            if (token.length >= 3) {
-                                if (token[2].equalsIgnoreCase("on") || token[2].equalsIgnoreCase("off")) {
-                                    user.setOverrideCooldown(token[2].equalsIgnoreCase("on"));
-                                    System.out.printf("Updated %s's cd-override state to %s%n", user.getName(), token[2].toLowerCase());
+                            PlacementOverrides po = user.getPlaceOverrides();
+                            if (token.length >= 4) {
+                                boolean state = token[3].equalsIgnoreCase("on");
+                                if (token[3].equalsIgnoreCase("on")) {
+                                    state = true;
+                                } else if (token[3].equalsIgnoreCase("off")) {
+                                    state = false;
                                 } else {
-                                    System.out.printf("Invalid state: %s%n", token[2]);
+                                    System.out.printf("Invalid state: %s%n", token[3]);
+                                    return;
                                 }
+
+                                if (token[2].equalsIgnoreCase("placeAnyColor")) {
+                                    po.setCanPlaceAnyColor(state);
+                                } else if (token[2].equalsIgnoreCase("ignoreCooldown")) {
+                                    po.setIgnoreCooldown(state);
+                                } else if (token[2].equalsIgnoreCase("ignorePlacemap")) {
+                                    po.setIgnorePlacemap(state);
+                                } else {
+                                    System.out.printf("Invalid placement override name: %s%n", token[2]);
+                                    return;
+                                }
+
+                                System.out.printf("Updated %s's %s state to %s%n", user.getName(), token[2].toLowerCase(), state ? "on" : "off");
+                                server.getPacketHandler().sendPlacementOverrides(user);
                             } else {
-                                System.out.printf("User's CD Override state is: %s%n", user.isOverridingCooldown() ? "on" : "off");
+                                System.out.printf(
+                                    "User's Placement Overrides:%n    Ignore cooldown: %s%n    Ignore placemap: %s%n    Place any color: %s%n",
+                                    po.hasIgnoreCooldown() ? "on" : "off",
+                                    po.hasIgnorePlacemap() ? "on" : "off",
+                                    po.getCanPlaceAnyColor() ? "on" : "off"
+                                );
                             }
                         }
                     }
                 } else {
-                    System.out.println("cd-override list|USERNAME[ STATE]");
+                    System.out.println("placementOverride list|USERNAME[ NAME STATE]");
+                    System.out.println("NAME=placeAnyColor|ignoreCooldown|ignorePlacemap");
                     System.out.println("STATE=on|off");
                 }
             } else if (token[0].equalsIgnoreCase("broadcast")) {
@@ -938,7 +975,7 @@ public class App {
     private static boolean loadPlacemap() {
         Path path = getStorageDir().resolve("placemap.dat");
         if (!Files.exists(path)) {
-            getLogger().warn("Cannot find placemap.dat in working directory, using blank placemap");
+            getLogger().warn("Cannot find placemap.dat in working directory, assuming transparent pixels are unplaceable");
             return false;
         }
 

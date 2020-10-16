@@ -1429,7 +1429,7 @@ public class WebHandler {
                         user.getBanExpiryTime(),
                         user.getBanReason(),
                         user.getLogin().split(":")[0],
-                        user.isOverridingCooldown(),
+                        user.getPlaceOverrides(),
                         !user.canChat(),
                         App.getDatabase().getChatBanReason(user.getId()),
                         user.isPermaChatbanned(),

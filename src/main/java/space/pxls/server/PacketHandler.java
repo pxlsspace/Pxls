@@ -7,8 +7,6 @@ import com.mashape.unirest.http.async.Callback;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.typesafe.config.Config;
 import io.undertow.websockets.core.WebSocketChannel;
-import org.apache.commons.text.translate.CharSequenceTranslator;
-import org.apache.commons.text.translate.LookupTranslator;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 import space.pxls.App;
 import space.pxls.data.DBChatMessage;
@@ -68,7 +66,7 @@ public class PacketHandler {
                     user.getBanExpiryTime(),
                     user.getBanReason(),
                     user.getLogin().split(":")[0],
-                    user.isOverridingCooldown(),
+                    user.getPlaceOverrides(),
                     user.isChatbanned(),
                     App.getDatabase().getChatBanReason(user.getId()),
                     user.isPermaChatbanned(),
@@ -118,7 +116,7 @@ public class PacketHandler {
         if (obj instanceof ClientChatMessage && user.hasPermission("chat.send")) handleChatMessage(channel, user, ((ClientChatMessage) obj));
         if (obj instanceof ClientUserUpdate) handleClientUserUpdate(channel, user, ((ClientUserUpdate) obj));
         if (obj instanceof ClientChatLookup && user.hasPermission("chat.lookup")) handleChatLookup(channel, user, ((ClientChatLookup) obj));
-        if (obj instanceof ClientAdminCooldownOverride && user.hasPermission("board.cooldown.override")) handleCooldownOverride(channel, user, ((ClientAdminCooldownOverride) obj));
+        if (obj instanceof ClientAdminPlacementOverrides && user.hasPermission("user.admin")) handlePlacementOverrides(channel, user, ((ClientAdminPlacementOverrides) obj));
         if (obj instanceof ClientAdminMessage && user.hasPermission("user.alert")) handleAdminMessage(channel, user, ((ClientAdminMessage) obj));
     }
 
@@ -168,9 +166,21 @@ public class PacketHandler {
         user.ban(0, String.format("auto-ban via script; %s", app), 0, user);
     }
 
-    private void handleCooldownOverride(WebSocketChannel channel, User user, ClientAdminCooldownOverride obj) {
-        user.setOverrideCooldown(obj.getOverride());
-        sendCooldownData(user);
+    private void handlePlacementOverrides(WebSocketChannel channel, User user, ClientAdminPlacementOverrides obj) {
+        if (obj.hasIgnoreCooldown() != null) {
+            user.maybeSetIgnoreCooldown(obj.hasIgnoreCooldown());
+        }
+        if (obj.getCanPlaceAnyColor() != null) {
+            user.maybeSetCanPlaceAnyColor(obj.getCanPlaceAnyColor());
+        }
+        if (obj.hasIgnorePlacemap() != null) {
+            user.maybeSetIgnorePlacemap(obj.hasIgnorePlacemap());
+        }
+
+        for (WebSocketChannel ch : user.getConnections()) {
+            sendPlacementOverrides(ch, user);
+            sendCooldownData(ch, user);
+        }
     }
 
     private void handleUndo(WebSocketChannel channel, User user, ClientUndo cu, String ip){
@@ -225,8 +235,8 @@ public class PacketHandler {
             handlePlaceMaybe(channel, user, cp, ip);
         }
         if (cp.getX() < 0 || cp.getX() >= App.getWidth() || cp.getY() < 0 || cp.getY() >= App.getHeight()) return;
-        if (cp.getColor() < 0 || cp.getColor() >= App.getConfig().getStringList("board.palette").size()) return;
         if (user.isBanned()) return;
+        if (!user.canPlaceColor(cp.getColor())) return;
 
         if (user.canPlace()) {
             boolean gotLock = user.tryGetPlacingLock();
@@ -244,13 +254,13 @@ public class PacketHandler {
                         server.send(channel, new ServerCaptchaRequired());
                     } else {
                         int c = App.getPixel(cp.getX(), cp.getY());
-                        boolean canPlace = false;
+                        boolean isInsidePlacemap = false;
                         if (App.getHavePlacemap()) {
                             int placemapType = App.getPlacemap(cp.getX(), cp.getY());
                             switch (placemapType) {
                                 case 0:
                                     // Allow normal placement
-                                    canPlace = c != cp.getColor();
+                                    isInsidePlacemap = c != cp.getColor();
                                     break;
                                 case 2:
                                     // Allow tendril placement
@@ -265,15 +275,15 @@ public class PacketHandler {
                                     int defaultBottom = App.getDefaultColor(cp.getX(), cp.getY() - 1);
                                     if (top != defaultTop || left != defaultLeft || right != defaultRight || bottom != defaultBottom) {
                                         // The pixel has at least one other attached pixel
-                                        canPlace = c != cp.getColor() && c != 0xFF && c != -1;
+                                        isInsidePlacemap = c != cp.getColor() && c != 0xFF && c != -1;
                                     }
                                     break;
                             }
                         } else {
-                            canPlace = c != cp.getColor() && c != 0xFF && c != -1;
+                            isInsidePlacemap = c != cp.getColor() && c != 0xFF && c != -1;
                         }
                         int c_old = c;
-                        if (canPlace) {
+                        if (user.hasIgnorePlacemap() || isInsidePlacemap) {
                             int seconds = getCooldown();
                             if (c_old != 0xFF && c_old != -1 && App.getDatabase().shouldPixelTimeIncrease(user.getId(), cp.getX(), cp.getY()) && App.getConfig().getBoolean("backgroundPixel.enabled")) {
                                 seconds = (int)Math.round(seconds * App.getConfig().getDouble("backgroundPixel.multiplier"));
@@ -289,14 +299,14 @@ public class PacketHandler {
                                     server.send(channel, new ServerCanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
                                 }
                             } else {
-                                boolean mod_action = user.isOverridingCooldown();
-                                App.putPixel(cp.getX(), cp.getY(), cp.getColor(), user, mod_action, ip, true, "");
+                                boolean modAction = cp.getColor() == 0xFF || user.hasIgnoreCooldown();
+                                App.putPixel(cp.getX(), cp.getY(), cp.getColor(), user, modAction, ip, true, "");
                                 App.saveMap();
                                 broadcastPixelUpdate(cp.getX(), cp.getY(), cp.getColor());
                                 ackPlace(user, cp.getX(), cp.getY());
                                 sendPixelCountUpdate(user);
                             }
-                            if (!user.isOverridingCooldown()) {
+                            if (!user.hasIgnoreCooldown()) {
                                 if (user.isIdled()) {
                                     user.setIdled(false);
                                     updateUserData();
@@ -469,12 +479,22 @@ public class PacketHandler {
         server.broadcast(new ServerUsers(App.getServer().getNonIdledUsersCount()));
     }
 
+    private void sendPlacementOverrides(WebSocketChannel channel, User user) {
+        server.send(channel, new ServerAdminPlacementOverrides(user.getPlaceOverrides()));
+    }
+
+    public void sendPlacementOverrides(User user) {
+        for (WebSocketChannel ch : user.getConnections()) {
+            sendPlacementOverrides(ch, user);
+        }
+    }
+
     private void sendCooldownData(WebSocketChannel channel, User user) {
         server.send(channel, new ServerCooldown(user.getRemainingCooldown()));
     }
 
     private void sendCooldownData(User user) {
-        for (WebSocketChannel ch: user.getConnections()) {
+        for (WebSocketChannel ch : user.getConnections()) {
             sendCooldownData(ch, user);
         }
     }
