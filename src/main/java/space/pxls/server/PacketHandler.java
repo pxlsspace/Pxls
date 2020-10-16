@@ -299,7 +299,7 @@ public class PacketHandler {
                                     server.send(channel, new ServerCanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
                                 }
                             } else {
-                                boolean modAction = cp.getColor() == 0xFF || user.hasIgnoreCooldown();
+                                boolean modAction = cp.getColor() == 0xFF || user.hasIgnoreCooldown() || (user.hasIgnorePlacemap() && !isInsidePlacemap);
                                 App.putPixel(cp.getX(), cp.getY(), cp.getColor(), user, modAction, ip, true, "");
                                 App.saveMap();
                                 broadcastPixelUpdate(cp.getX(), cp.getY(), cp.getColor());
