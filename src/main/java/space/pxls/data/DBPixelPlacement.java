@@ -2,14 +2,10 @@ package space.pxls.data;
 
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
-import space.pxls.App;
-import space.pxls.user.Role;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class DBPixelPlacement {
     public final int id;
@@ -27,12 +23,13 @@ public class DBPixelPlacement {
     public final int pixel_count_alltime;
     public final String ban_reason;
     public final boolean banned;
+    public final boolean modAction;
     public final boolean undoAction;
     public final String userAgent;
     public final String discordName;
     public final String faction;
 
-    public DBPixelPlacement(int id, int x, int y, int color, int secondaryId, long time, int userId, String username, String login, /* List<Role> roles, */ long ban_expiry, int pixel_count, int pixel_count_alltime, String ban_reason, boolean banned, boolean undoAction, String userAgent, String discordName, String faction) {
+    public DBPixelPlacement(int id, int x, int y, int color, int secondaryId, long time, int userId, String username, String login, /* List<Role> roles, */ long ban_expiry, int pixel_count, int pixel_count_alltime, String ban_reason, boolean banned, boolean modAction, boolean undoAction, String userAgent, String discordName, String faction) {
         this.id = id;
         this.x = x;
         this.y = y;
@@ -48,6 +45,7 @@ public class DBPixelPlacement {
         this.pixel_count_alltime = pixel_count_alltime;
         this.ban_reason = ban_reason;
         this.banned = banned;
+        this.modAction = modAction;
         this.undoAction = undoAction;
         this.userAgent = userAgent;
         this.discordName = discordName;
@@ -80,6 +78,7 @@ public class DBPixelPlacement {
                     r.getInt("pixel_count_alltime"),
                     r.getString("ban_reason"),
                     ban_expiry != null,
+                    r.getBoolean("mod_action"),
                     r.getBoolean("undo_action"),
                     r.getString("user_agent"),
                     r.getString("discord_name"),

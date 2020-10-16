@@ -13,18 +13,20 @@ public class DBPixelPlacementUser {
     public final int y;
     public final int color;
     public final long time;
+    public final boolean modAction;
     public final String username;
     public final int pixel_count;
     public final int pixel_count_alltime;
     public final String discordName;
     public final String faction;
 
-    public DBPixelPlacementUser(int id, int x, int y, int color, long time, String username, int pixel_count, int pixel_count_alltime, String discordName, String faction) {
+    public DBPixelPlacementUser(int id, int x, int y, int color, long time, String username, boolean modAction, int pixel_count, int pixel_count_alltime, String discordName, String faction) {
         this.id = id;
         this.x = x;
         this.y = y;
         this.color = color;
         this.time = time;
+        this.modAction = modAction;
         this.username = username;
         this.pixel_count = pixel_count;
         this.pixel_count_alltime = pixel_count_alltime;
@@ -48,6 +50,7 @@ public class DBPixelPlacementUser {
                     r.getInt("color"),
                     time == null ? 0 : time.getTime(),
                     r.getString("u_login").startsWith("ip:") ? "-snip-" : r.getString("username"),
+                    r.getBoolean("mod_action"),
                     r.getInt("pixel_count"),
                     r.getInt("pixel_count_alltime"),
                     r.getString("discord_name"),

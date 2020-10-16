@@ -3168,6 +3168,10 @@ window.App = (function() {
             get: data => $('<a>').text('(' + data.x + ', ' + data.y + ')').attr('href', coords.getLinkToCoords(data.x, data.y)),
             backgroundCompatible: true
           }, {
+            id: 'modAction',
+            name: 'Staff Ab00ze',
+            get: data => data.modAction ? 'Yes' : null
+          }, {
             id: 'username',
             name: 'Username',
             get: data => crel('a', {
