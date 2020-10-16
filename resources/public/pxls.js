@@ -2889,6 +2889,9 @@ window.App = (function() {
         });
         socket.on('admin_placement_overrides', function(data) {
           self.togglePaletteSpecialColors(data.placementOverrides.canPlaceAnyColor);
+          if (!data.placementOverrides.canPlaceAnyColor && self.color === 0xFF) {
+            self.switch(-1);
+          }
         });
         socket.on('captcha_required', function(data) {
           if (!self.isDoingCaptcha) {
