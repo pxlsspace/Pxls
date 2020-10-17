@@ -8,7 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.xnio.XnioWorker;
 import space.pxls.data.DBChatMessage;
-import space.pxls.data.DBPixelPlacement;
+import space.pxls.data.DBPixelPlacementFull;
 import space.pxls.data.DBRollbackPixel;
 import space.pxls.data.Database;
 import space.pxls.server.UndertowServer;
@@ -831,7 +831,7 @@ public class App {
                 forBroadcast.add(new ServerPlace.Pixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color));
                 database.putRollbackPixel(who, rbPixel.fromId, rbPixel.toPixel.id);
             } else { //else rollback to blank canvas
-                DBPixelPlacement fromPixel = database.getPixelByID(null, rbPixel.fromId);
+                DBPixelPlacementFull fromPixel = database.getPixelByID(null, rbPixel.fromId);
                 byte rollbackDefault = getDefaultColor(fromPixel.x, fromPixel.y);
                 putPixel(fromPixel.x, fromPixel.y, rollbackDefault, who, false, "", false, "rollback");
                 forBroadcast.add(new ServerPlace.Pixel(fromPixel.x, fromPixel.y, (int) rollbackDefault));
@@ -848,9 +848,9 @@ public class App {
     }
 
     private static void undoRollback_(User who) {
-        List<DBPixelPlacement> pixels = database.getUndoPixels(who); //get all pixels that can and need to be undone
+        List<DBPixelPlacementFull> pixels = database.getUndoPixels(who); //get all pixels that can and need to be undone
         List<ServerPlace.Pixel> forBroadcast = new ArrayList<>();
-        for (DBPixelPlacement fromPixel : pixels) {
+        for (DBPixelPlacementFull fromPixel : pixels) {
             //restores original pixel
             putPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, false, "", false, "rollback undo"); //in board[]
             forBroadcast.add(new ServerPlace.Pixel(fromPixel.x, fromPixel.y, fromPixel.color)); //in websocket

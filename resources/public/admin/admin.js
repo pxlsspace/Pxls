@@ -409,13 +409,15 @@
        */
       init: function () {
         App.lookup.replaceHook('username', {
-          get: data => crel('span', crel('a', {
-            href: `https://admin.${location.host}/userinfo/${data.username}`,
-            target: '_blank'
-          }, data.username), ' (', crel('a', {
-            href: `/profile/${data.username}`,
-            target: '_blank'
-          }, 'profile'), ')')
+          get: data => data.username
+            ? crel('span', crel('a', {
+              href: `https://admin.${location.host}/userinfo/${data.username}`,
+              target: '_blank'
+            }, data.username), ' (', crel('a', {
+              href: `/profile/${data.username}`,
+              target: '_blank'
+            }, 'profile'), ')')
+            : null
         });
         App.lookup.registerHook({
           id: 'login',

@@ -1740,7 +1740,7 @@ public class WebHandler {
             App.getDatabase().insertLookup(user.getId(), exchange.getAttachment(IPReader.IP));
         }
 
-        exchange.getResponseSender().send(App.getGson().toJson(((user == null) || !user.hasPermission("board.lookup") ? Lookup.fromDB(App.getDatabase().getPixelAtUser(x, y).orElse(null)) : ExtendedLookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null)))));
+        exchange.getResponseSender().send(App.getGson().toJson(((user == null) || !user.hasPermission("board.lookup") ? Lookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null)) : ExtendedLookup.fromDB(App.getDatabase().getFullPixelAt(x, y).orElse(null)))));
     }
 
     public void report(HttpServerExchange exchange) {
@@ -1789,7 +1789,7 @@ public class WebHandler {
             exchange.endExchange();
             return;
         }
-        DBPixelPlacement pxl = App.getDatabase().getPixelByID(null, id);
+        DBPixelPlacementFull pxl = App.getDatabase().getPixelByID(null, id);
         if (pxl.x != x || pxl.y != y) {
             exchange.setStatusCode(StatusCodes.BAD_REQUEST);
             exchange.endExchange();
