@@ -3410,7 +3410,7 @@ window.App = (function() {
         socket.on('alert', (data) => {
           modal.show(modal.buildDom(
             crel('h2', { class: 'modal-title' }, 'Alert'),
-            crel('p', { style: 'padding: 0; margin: 0;' }, data.message),
+            crel('p', { style: 'padding: 0; margin: 0;' }, chat.processMessage(data.message)),
             crel('span', `Sent from ${data.sender || '$Unknown'}`)
           ), { closeExisting: false });
         });
