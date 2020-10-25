@@ -3032,10 +3032,12 @@ window.App = (function() {
             return '';
           }
 
-          const label = $('<label>').attr('for', 'hide-sensitive-information').text('Hide sensitive information');
-          const checkbox = $('<input id="hide-sensitive-information", type="checkbox">').css('margin-top', '10px');
+          const label = $('<label>');
+          const checkbox = $('<input type="checkbox">').css('margin-top', '10px');
+          const span = $('<span class="label-text">').text('Hide sensitive information');
+          label.prepend(checkbox, span);
           settings.lookup.filter.sensitive.enable.controls.add(checkbox);
-          return [checkbox, label];
+          return label;
         });
         self.elements.lookup.fadeIn(200);
       },
@@ -3324,6 +3326,7 @@ window.App = (function() {
         self._initAccount();
         self._initBanner();
         self._initMultiTabDetection();
+        self.prettifyRange('input[type=range]');
 
         self.elements.coords.click(() => coords.copyCoords(true));
 
@@ -3401,15 +3404,6 @@ window.App = (function() {
           place.toggleCursor(value && place.color !== -1);
         });
 
-        $('input[type=range]').on('input', function(e) {
-          var min = e.target.min;
-          var max = e.target.max;
-          var val = e.target.value;
-          $(e.target).css({
-            backgroundSize: (val - min) * 100 / (max - min) + '% 100%'
-          });
-        }).trigger('input');
-
         $(window).keydown((evt) => {
           if (['INPUT', 'TEXTAREA'].includes(evt.target.nodeName)) {
             // prevent inputs from triggering shortcuts
@@ -3454,6 +3448,19 @@ window.App = (function() {
           };
           $(window).on('pxls:panel:opened', toAttach);
         }
+      },
+      prettifyRange: function (ranges) {
+        ranges = $(ranges);
+        function updateBar(e) {
+          var min = e.min;
+          var max = e.max;
+          var val = e.value;
+          $(e).css({
+            backgroundSize: (val - min) * 100 / (max - min) + '% 100%'
+          });
+        }
+        ranges.on('input', (e) => updateBar(e.target));
+        ranges.each((idx, element) => updateBar(element));
       },
       _initThemes: function() {
         for (let i = 0; i < self.themes.length; i++) {
@@ -3806,7 +3813,8 @@ window.App = (function() {
         return serviceWorkerHelper.hasSupport
           ? self._workerIsTabFocused
           : ls.get('tabs.has-focus') === self.tabId;
-      }
+      },
+      prettifyRange: self.prettifyRange
     };
   })();
   const panels = (function() {
@@ -4830,18 +4838,19 @@ window.App = (function() {
         // dom generation
         const body = crel('div', { class: 'chat-settings-wrapper no-p-margin' });
 
-        const genCheckboxGroup = (label, id) => {
-          const cb = crel('input', { id: id, type: 'checkbox' });
-          const lbl = crel('label', { for: id, class: 'input-group' },
+        const genCheckboxGroup = (label) => {
+          const cb = crel('input', { type: 'checkbox' });
+          const lbl = crel('label', { class: 'input-group' },
+            cb,
             ' ',
             crel('span', { class: 'label-text' }, label));
           return [cb, lbl];
         };
 
-        const [_cb24hTimestamps, lbl24hTimestamps] = genCheckboxGroup('24 Hour Timestamps', '24-hour-timestamps');
-        const [_cbPixelPlaceBadges, lblPixelPlaceBadges] = genCheckboxGroup('Show pixel-placed badges', 'show-pixel-placed-badges');
-        const [_cbFactionTagBadges, lblFactionTagBadges] = genCheckboxGroup('Show faction tags', 'show-faction-tags');
-        const [_cbPings, lblPings] = genCheckboxGroup('Enable pings', 'enable-pings');
+        const [_cb24hTimestamps, lbl24hTimestamps] = genCheckboxGroup('24 Hour Timestamps');
+        const [_cbPixelPlaceBadges, lblPixelPlaceBadges] = genCheckboxGroup('Show pixel-placed badges');
+        const [_cbFactionTagBadges, lblFactionTagBadges] = genCheckboxGroup('Show faction tags');
+        const [_cbPings, lblPings] = genCheckboxGroup('Enable pings');
 
         const _cbPingAudio = crel('select', {},
           crel('option', { value: 'off' }, 'Off'),
@@ -4861,8 +4870,8 @@ window.App = (function() {
           _txtPingAudioVol
         );
 
-        const [_cbBanner, lblBanner] = genCheckboxGroup('Enable the rotating banner under chat', 'chat-banner');
-        const [_cbTemplateTitles, lblTemplateTitles] = genCheckboxGroup('Replace template titles with URLs in chat where applicable', 'replace-template-titles');
+        const [_cbBanner, lblBanner] = genCheckboxGroup('Enable the rotating banner under chat');
+        const [_cbTemplateTitles, lblTemplateTitles] = genCheckboxGroup('Replace template titles with URLs in chat where applicable');
 
         const _txtFontSize = crel('input', { type: 'number', min: '1', max: '72' });
         const _btnFontSizeConfirm = crel('button', { class: 'text-button' }, crel('i', { class: 'fas fa-check' }));
@@ -4871,7 +4880,7 @@ window.App = (function() {
           _txtFontSize
         );
 
-        const [_cbHorizontal, lblHorizontal] = genCheckboxGroup('Enable horizontal chat', 'enable-horizontal-chat');
+        const [_cbHorizontal, lblHorizontal] = genCheckboxGroup('Enable horizontal chat');
 
         const _selInternalClick = crel('select',
           Object.values(self.TEMPLATE_ACTIONS).map(action =>
@@ -4937,7 +4946,8 @@ window.App = (function() {
         _rgPingAudioVol.addEventListener('change', function() {
           _txtPingAudioVol.innerText = `${(this.value * 100) >> 0}%`;
         });
-
+        uiHelper.prettifyRange(_rgPingAudioVol);
+        
         _btnUnignore.addEventListener('click', function() {
           if (self.removeIgnore(_selIgnores.value)) {
             _selIgnores.querySelector(`option[value="${_selIgnores.value}"]`).remove();
@@ -4961,23 +4971,16 @@ window.App = (function() {
         crel(body,
           crel('h3', { class: 'chat-settings-title' }, 'Chat Settings'),
           [
-            [_cb24hTimestamps,
-              lbl24hTimestamps],
-            [_cbPixelPlaceBadges,
-              lblPixelPlaceBadges],
-            [_cbFactionTagBadges,
-              lblFactionTagBadges],
-            [_cbPings,
-              lblPings],
-            [_cbHorizontal,
-              lblHorizontal],
+            lbl24hTimestamps,
+            lblPixelPlaceBadges,
+            lblFactionTagBadges,
+            lblPings,
+            lblHorizontal,
             lblInternalAction,
             lblPingAudio,
             lblPingAudioVol,
-            [_cbBanner,
-              lblBanner],
-            [_cbTemplateTitles,
-              lblTemplateTitles],
+            lblBanner,
+            lblTemplateTitles,
             lblFontSize,
             lblUsernameColor,
             lblIgnores,
@@ -5001,14 +5004,6 @@ window.App = (function() {
           settings.chat.links.templates.preferurls.controls.remove(_cbTemplateTitles);
           settings.ui.chat.horizontal.enable.controls.remove(_cbHorizontal);
         });
-        $('input[type=range]').on('input', function(e) {
-          var min = e.target.min;
-          var max = e.target.max;
-          var val = e.target.value;
-          $(e.target).css({
-            backgroundSize: (val - min) * 100 / (max - min) + '% 100%'
-          });
-        }).trigger('input');
       },
       _handlePingJumpClick: function() { // must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
         if (this && this.dataset && this.dataset.id) {

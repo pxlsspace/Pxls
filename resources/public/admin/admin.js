@@ -357,7 +357,6 @@
               [
                 {
                   text: 'Override cooldown',
-                  id: 'override-cooldown',
                   onChange: function () {
                     admin.socket.send({ type: 'admin_cdoverride', override: this.checked });
                   },
@@ -366,7 +365,9 @@
                 }
               ],
               function (cbox) {
-                return [$('<input>').attr({ type: 'checkbox', id: cbox.id }).prop('checked', !!cbox.checkState).prop('disabled', !!cbox.disabled).change(cbox.onChange), $('<label>').attr('for', cbox.id).text(cbox.text)];
+                return $('<label>').append(
+                  $('<input>').attr('type', 'checkbox').prop('checked', !!cbox.checkState).prop('disabled', !!cbox.disabled).change(cbox.onChange), $('<span class="label-text">').text(cbox.text)
+                );
               }
             ),
             // next do the text input
