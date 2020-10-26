@@ -1,3 +1,5 @@
+# "Matte" theme by github.com/feeeek
+
 html {
     --general-text-color: #678;
     --general-background: #242d35;
@@ -121,6 +123,12 @@ html {
     outline-offset: 0;
 }
 
+:focus {
+	outline-style: none;
+	outline-width: 0 !important;
+	outline-color: none !important;
+}
+
 ::-webkit-scrollbar {
     width: 0px;
     background: transparent;
@@ -182,7 +190,6 @@ input[type="checkbox"] {
 }
 
 input[type="checkbox"]+span {
-    display: block;
     position: relative;
     padding-left: 20px;
     cursor: pointer;
@@ -190,6 +197,14 @@ input[type="checkbox"]+span {
 
 select {
     -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' version='1.1' id='Capa_1' x='0px' y='0px' width='8px' height='8px' viewBox='0 0 284.929 284.929' style='enable-background:new 0 0 284.929 284.929;' xml:space='preserve'%3E%3Cg%3E%3Cpath xmlns='http://www.w3.org/2000/svg' style='fill:%2340726e;' d='M282.082,76.511l-14.274-14.273c-1.902-1.906-4.093-2.856-6.57-2.856c-2.471,0-4.661,0.95-6.563,2.856L142.466,174.441 L30.262,62.241c-1.903-1.906-4.093-2.856-6.567-2.856c-2.475,0-4.665,0.95-6.567,2.856L2.856,76.515C0.95,78.417,0,80.607,0,83.082 c0,2.473,0.953,4.663,2.856,6.565l133.043,133.046c1.902,1.903,4.093,2.854,6.567,2.854s4.661-0.951,6.562-2.854L282.082,89.647 c1.902-1.903,2.847-4.093,2.847-6.565C284.929,80.607,283.984,78.417,282.082,76.511z'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 3px center;
+    padding: 7px 10px 7px 10px;
+}
+
+.select-arrow {
+    background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg width='8px' height='8px' enable-background='new 0 0 284.929 284.929' version='1.1' viewBox='0 0 284.93 284.93' xml:space='preserve' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m282.08 76.511-14.274-14.273c-1.902-1.906-4.093-2.856-6.57-2.856-2.471 0-4.661 0.95-6.563 2.856l-112.21 112.2-112.2-112.2c-1.903-1.906-4.093-2.856-6.567-2.856-2.475 0-4.665 0.95-6.567 2.856l-14.272 14.274c-1.906 1.902-2.856 4.092-2.856 6.567 0 2.473 0.953 4.663 2.856 6.565l133.04 133.05c1.902 1.903 4.093 2.854 6.567 2.854s4.661-0.951 6.562-2.854l133.05-133.05c1.902-1.903 2.847-4.093 2.847-6.565 0-2.475-0.945-4.665-2.847-6.571z' fill='%2340726e' style='transform-origin:center center;transform:rotate(180deg)' xmlns='http://www.w3.org/2000/svg'/%3E%3C/svg%3E");
 }
 
 input[type="checkbox"]+span:last-child {
