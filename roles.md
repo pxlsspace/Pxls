@@ -66,12 +66,14 @@ roleID {
 | `chat.report` | `/reportChat` | Report chat messages | user |
 | `chat.send` | | Send chat messages | user |
 | `chat.usercolor.rainbow` | | Ability to use rainbow user color | staff |
+| `chat.usercolor.donator` | | Ability to use donator user color | donator |
 
 ### User
 
 | Node | Endpoint | Purpose | Default Role |
 | --- | --- | --- | --- |
 | `user.admin` | `/admin/*` | Access to admin client resources | staff |
+| `user.donator` | `/donator/*` | donator role | donator |
 | `user.alert` | | Alerts users | staff |
 | `user.auth` | `/auth`, `/signin`, `/signup`, `/logout` | User authentication | guest |
 | `user.auth` | `/whoami` | List own username and ID | guest |

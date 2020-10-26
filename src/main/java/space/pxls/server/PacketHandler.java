@@ -16,7 +16,6 @@ import space.pxls.data.DBPixelPlacement;
 import space.pxls.server.packets.chat.*;
 import space.pxls.server.packets.socket.*;
 import space.pxls.user.Faction;
-import space.pxls.user.Role;
 import space.pxls.user.User;
 import space.pxls.util.TextFilter;
 import space.pxls.util.RateLimitFactory;
@@ -158,15 +157,15 @@ public class PacketHandler {
 
     private void handleShadowBanMe(WebSocketChannel channel, User user, ClientShadowBanMe obj) {
         if (!user.isBanned() && !user.isShadowBanned()) {
-            App.getDatabase().insertAdminLog(user.getId(), String.format("shadowban %s with reason: self-shadowban via script", user.getName()));
-            user.shadowBan(String.format("auto-ban via script (app: %s%s)", obj.getApp(), obj.getZ().isEmpty() ? "" : ", " + obj.getZ()), 999*24*3600, user);
+            App.getDatabase().insertAdminLog(user.getId(), String.format("shadowban %s with reason: self-shadowban via script; %s", user.getName(), obj.getReason()));
+            user.shadowBan(String.format("auto-ban via script; %s", obj.getReason()), 999*24*3600, user);
         }
     }
 
     private void handleBanMe(WebSocketChannel channel, User user, ClientBanMe obj) {
-        String app = obj.getApp();
-        App.getDatabase().insertAdminLog(user.getId(), String.format("permaban %s with reason: auto-ban via script (ap: %s)", user.getName(), app));
-        user.ban(0, String.format("auto-ban via script(ap: %s)", app), 0, user);
+        String app = obj.getReason();
+        App.getDatabase().insertAdminLog(user.getId(), String.format("permaban %s with reason: auto-ban via script; %s", user.getName(), app));
+        user.ban(0, String.format("auto-ban via script; %s", app), 0, user);
     }
 
     private void handleCooldownOverride(WebSocketChannel channel, User user, ClientAdminCooldownOverride obj) {
@@ -380,9 +379,12 @@ public class PacketHandler {
         if (nameColor != null && !nameColor.trim().isEmpty()) {
             try {
                 int t = Integer.parseInt(nameColor);
-                if (t >= -1 && t < App.getConfig().getStringList("board.palette").size()) {
-                    if (t < 0 && !user.hasPermission("chat.usercolor.rainbow")) {
+                if (t >= -2 && t < App.getConfig().getStringList("board.palette").size()) {
+                    if (t == -1 && !user.hasPermission("chat.usercolor.rainbow")) {
                         server.send(channel, new ServerACKClientUpdate(false, "Color reserved for staff members", "NameColor", null));
+                    }
+                    if (t == -2 && !user.hasPermission("chat.usercolor.donator")) {
+                        server.send(channel, new ServerACKClientUpdate(false, "Color reserved for donators", "NameColor", null));
                         return;
                     }
                     user.setChatNameColor(t, true);
@@ -404,11 +406,6 @@ public class PacketHandler {
     public void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
         server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, false, false)));
     }
-
-    private CharSequenceTranslator bracketTranslator = new LookupTranslator(new HashMap<CharSequence, CharSequence>() {{
-        put("<", "&lt;");
-        put(">", "&gt;");
-    }});
 
     public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
         int charLimit = Math.min(App.getConfig().getInt("chat.characterLimit"), 2048);
@@ -433,7 +430,7 @@ public class PacketHandler {
                 return;
             }
             try {
-                String toSend = bracketTranslator.translate(message); //filter out brackets before we do anything else so it's filtered in db
+                String toSend = message;
                 if (App.getConfig().getBoolean("chat.trimInput"))
                     toSend = toSend.trim();
                 Faction usersFaction = user.fetchDisplayedFaction();

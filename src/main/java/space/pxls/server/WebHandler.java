@@ -319,7 +319,7 @@ public class WebHandler {
                                 }
                             } else {
                                 if (faction.getOwner() == user.getId()) {
-                                    sendBadRequest(exchange, "You can not leave a faction you own. Transfer ownership first.");
+                                    sendBadRequest(exchange, "You cannot leave a faction you own. Transfer ownership first.");
                                 } else {
                                     FactionManager.getInstance().leaveFaction(fid, user.getId());
                                     if (user.getDisplayedFaction() != null && user.getDisplayedFaction() == fid) {
@@ -374,6 +374,10 @@ public class WebHandler {
                                         sendBadRequest(exchange, "This user is banned and cannot own any new factions.");
                                     } else if (userToModify.isFactionRestricted()) {
                                         sendBadRequest(exchange, "This user is faction restricted and cannot own any new factions.");
+                                    } else if (App.getConfig().getInt("factions.minPixelsToCreate") > userToModify.getAllTimePixelCount()) {
+                                        sendBadRequest(exchange, String.format("This user does not meet the minimum all-time pixel requirements to own a faction. The current minimum is %d.", App.getConfig().getInt("factions.minPixelsToCreate")));
+                                    } else if (App.getDatabase().getOwnedFactionCountForUID(userToModify.getId()) >= App.getConfig().getInt("factions.maxOwned")) {
+                                        sendBadRequest(exchange, String.format("This user has reached the maximum number of owned factions (%d).", App.getConfig().getInt("factions.maxOwned")));
                                     } else {
                                         if (faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
                                             App.getDatabase().setFactionOwnerForFID(faction.getId(), userToModify.getId());
@@ -1736,7 +1740,10 @@ public class WebHandler {
             App.getDatabase().insertLookup(user.getId(), exchange.getAttachment(IPReader.IP));
         }
 
-        exchange.getResponseSender().send(App.getGson().toJson(((user == null) || !user.hasPermission("board.lookup") ? Lookup.fromDB(App.getDatabase().getPixelAtUser(x, y).orElse(null)) : ExtendedLookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null)))));
+        var lookup = user != null && user.hasPermission("board.check")
+            ? ExtendedLookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null))
+            : Lookup.fromDB(App.getDatabase().getPixelAtUser(x, y).orElse(null));
+        exchange.getResponseSender().send(App.getGson().toJson(lookup));
     }
 
     public void report(HttpServerExchange exchange) {

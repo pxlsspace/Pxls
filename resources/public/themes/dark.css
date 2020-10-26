@@ -1,22 +1,22 @@
 html {
     --general-text-color: #fff;
     --general-background: #1A1A1A;
-    
+
     --kbd-background: #444;
     --kbd-border-color: #333;
     --kbd-text-color: #fff;
-    
+
     --input-text-color: #eee;
     --input-background: #222;
     --input-border-color: #333;
-    
+
     --button-background: #bbb;
     --button-border-color-hover: #844;
-    
+
     --floating-panel-border-color: #222;
     --floating-panel-background: #333;
     --floating-panel-text-color: #eee;
-    
+
     --dangerous-button-border-color: #333;
 
     --palette-background: rgba(0, 0, 0, 0.5);
@@ -25,37 +25,36 @@ html {
     --palette-deselect-button-color: #DDD;
     --palette-number-text-color: #ffffff;
     --palette-number-background-color: #474a48;
-    
+
     --cursor-text-color: #fff;
     --cursor-text-background-color: #474a48;
-    
+
     --undo-text-color: #fff;
     --undo-background: linear-gradient(to top, #0000007F, #000);
 
     --text-red-color:#f44;
     --text-yellow-color:#cc0;
     --ping-highlight-color: #5b5345;
-    
+
     --panel-header-background: linear-gradient(to bottom, #444, #333);
     --panel-background: #333;
     --panel-text-color: #eee;
     --panel-close-button-color: #f44;
     --panel-footer-background: #2e2e2e;
     --panel-footer-text-color: #666;
-    
+
     --chat-separator-color: #4f4f4f;
     --chat-odd-background: #3f3f3f;
+    --chat-mention-text-color: #d000d0;
     --chat-server-action-text-color: #9f9f9f;
     --chat-user-text-shadow-color: #333;
-    
+
     --emoji-picker-border-color: #515151;
-    --emoji-picker-shadow-color: #1f1f1f;
     --emoji-picker-background: #333333;
     --emoji-picker-preview-name-text-color: #ccc;
     --emoji-picker-tab-icon-color: #ccc;
     --emoji-picker-tab-icon-color-selected: #6fd1ff;
     --emoji-picker-section-text-color: #ccc;
-    --emoji-picker-emoji-color: white;
     --emoji-picker-emoji-background-hover: #656565;
     --emoji-picker-search-input-border-color: #333;
     --emoji-picker-search-input-background: #222;
@@ -64,7 +63,7 @@ html {
     --emoji-picker-search-no-results-color: #666666;
     --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
     --emoji-picker-variant-popup-background: #FFFFFF;
-    
+
     --chat-typeahead-menu-background: #1d1d1d;
     --chat-typeahead-item-background: #2c2c2c;
     --chat-typeahead-item-background-hover: #3b3b3b;

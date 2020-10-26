@@ -6,6 +6,13 @@ crel.attrMap.onmousemiddledown = function(element, value) {
     }
   });
 };
+crel.attrMap.dataset = function(element, value) {
+  for (const key in value) {
+    if (value[key]) {
+      element.dataset[key] = value[key];
+    }
+  }
+};
 
 let instaban = false;
 if (window.App !== undefined) {
@@ -576,6 +583,86 @@ window.App = (function() {
       }
     });
 
+    const searchInput = $('#settings-search-input').val(null);
+    const searchNoResults = $('<p>').text('No Results').addClass('hidden text-muted').css({ 'text-align': 'center', 'margin-top': '5em', 'font-style': 'italic' });
+    $('#settings > .panel-body').append(searchNoResults);
+
+    const searchFunction = function(regex, object, allowTextSearch = false) {
+      const data = object.data('keywords');
+      if (!data) {
+        return allowTextSearch && regex.test(object.text());
+      }
+      return data.split(';').some((k) => regex.test(k)) || (allowTextSearch && regex.test(object.text()));
+    };
+
+    function filterSettings(searchString) {
+      const search = searchFunction.bind(null, new RegExp(searchString.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&'), 'i'));
+
+      const sections = $('#settings > .panel-body > article');
+      const displayedSections = sections.filter((_, _section) => {
+        const section = $(_section);
+        const sectionItems = section.children('header + *').children(':not(section)');
+        const subsections = section.children('header + *').children('section');
+
+        if (search(section)) {
+          section.toggleClass('hidden', false);
+          sectionItems.toggleClass('hidden', false);
+          subsections.toggleClass('hidden', false);
+          subsections.children(':not(h4)').toggleClass('hidden', false);
+          return true;
+        } else {
+          const displayedItems = sectionItems.filter((_, _item) => {
+            const item = $(_item);
+            const itemVisible = search(item, true);
+            item.toggleClass('hidden', !itemVisible);
+            return itemVisible;
+          });
+
+          const displayedSubsections = subsections.filter((_, _subsection) => {
+            const subsection = $(_subsection);
+            const subsectionItems = subsection.children(':not(h4)');
+
+            if (search(subsection)) {
+              subsection.toggleClass('hidden', false);
+              subsectionItems.toggleClass('hidden', false);
+              return true;
+            } else {
+              const displayedSubsectionItems = subsectionItems.filter((_, _item) => {
+                const item = $(_item);
+                const itemVisible = search(item, true);
+                item.toggleClass('hidden', !itemVisible);
+                return itemVisible;
+              });
+
+              const subsectionHidden = displayedSubsectionItems.length === 0;
+              subsection.toggleClass('hidden', subsectionHidden);
+              return !subsectionHidden;
+            }
+          });
+
+          const sectionHidden = displayedSubsections.length + displayedItems.length === 0;
+          section.toggleClass('hidden', sectionHidden);
+          return !sectionHidden;
+        }
+      });
+
+      searchNoResults.toggleClass('hidden', displayedSections.length > 0);
+    }
+
+    searchInput.on('keyup', function(evt) {
+      if (evt.key === 'Enter' || evt.which === 13) {
+        $(this).blur();
+      }
+
+      filterSettings(searchInput.val());
+
+      evt.stopPropagation();
+    });
+
+    searchInput.on('change', function() {
+      filterSettings(searchInput.val());
+    });
+
     return {
       ui: {
         theme: {
@@ -897,7 +984,7 @@ window.App = (function() {
         // as naive as possible to make injection next to impossible
         for (let i = 0; i < self.bad_src.length; i++) {
           if (src.match(self.bad_src[i])) {
-            self.shadow(2);
+            self.shadow('checkSrc pattern #' + i);
           }
         }
       },
@@ -908,13 +995,13 @@ window.App = (function() {
         // don't allow new websocket connections
         // eslint-disable-next-line no-global-assign
         WebSocket = function(a, b) {
-          self.shadow(1);
+          self.shadow('new WebSocket instance');
           return new _WebSocket(a, b);
         };
 
         // don't even try to generate mouse events. I am being nice
         window.MouseEvent = function() {
-          self.me(2);
+          self.me('new MouseEvent instance');
         };
 
         const _Event = Event;
@@ -922,7 +1009,7 @@ window.App = (function() {
         // eslint-disable-next-line no-global-assign
         Event = function(e, s) {
           if (self.bad_events.indexOf(e.toLowerCase()) !== -1) {
-            self.shadow(4);
+            self.shadow('bad Event ' + self.bad_events[self.bad_events.indexOf(e.toLowerCase())]);
           }
           return new _Event(e, s);
         };
@@ -930,7 +1017,7 @@ window.App = (function() {
         // eslint-disable-next-line no-global-assign
         CustomEvent = function(e, s) {
           if (self.bad_events.indexOf(e.toLowerCase()) !== -1) {
-            self.shadow(5);
+            self.shadow('bad CustomEvent ' + self.bad_events[self.bad_events.indexOf(e.toLowerCase())]);
           }
           return new _CustomEvent(e, s);
         };
@@ -938,7 +1025,7 @@ window.App = (function() {
         // eslint-disable-next-line no-global-assign
         document.createEvent = function(e, s) {
           if (self.bad_events.indexOf(e.toLowerCase()) !== -1) {
-            self.shadow(6);
+            self.shadow('bad document.createEvent ' + self.bad_events[self.bad_events.indexOf(e.toLowerCase())]);
           }
           return createEvent(e, s);
         };
@@ -954,55 +1041,49 @@ window.App = (function() {
           self.checkSrc(this.src);
         });
       },
-      shadow: function(app = 0, z) {
-        const banstr = `{"type": "shadowbanme", "app": "${String(app >> 0).substr(0, 2)}"${typeof z === 'string' && z.trim().length ? `, "z": "${z}"` : ''}}`;
-        socket.send(banstr);
+      shadow: function(reason) {
+        socket.send(`{"type": "shadowbanme", "reason": "${reason}"}`);
       },
-      me: function(app = 0, z) {
-        const banstr = `{"type": "banme", "app": "${String(app >> 0).substr(0, 2)}"${typeof z === 'string' && z.trim().length ? `, "z": "${z}"` : ''}}`;
-        socket.send(banstr); // we send as a string to not allow re-writing JSON.stringify
+      me: function(reason) {
+        socket.send(`{"type": "banme", "reason": "${reason}"}`);
         socket.close();
         window.location.href = 'https://www.youtube.com/watch?v=QHvKSo4BFi0';
       },
       update: function() {
-        const _ = function(z) {
-          // This (still) does exactly what you think it does. or does it?
-          self.shadow(3, z || 'generic');
-        };
-
-        window.App.attemptPlace = window.App.doPlace = function() {
-          self.me(3);
-        };
+        window.App.attemptPlace = () => self.me('window.App.attemptPlace');
+        window.App.doPlace = () => self.me('window.App.doPlace');
 
         // AutoPXLS by p0358 (who, by the way, will never win this battle)
-        if (document.autoPxlsScriptRevision) _('autopxls');
-        if (document.autoPxlsScriptRevision_) _('autopxls');
-        if (document.autoPxlsRandomNumber) _('autopxls');
-        if (document.RN) _('autopxls');
-        if (window.AutoPXLS) _('autopxls');
-        if (window.AutoPXLS2) _('autopxls');
-        if (document.defaultCaptchaFaviconSource) _('autopxls');
-        if (window.CFS) _('autopxls');
-        if ($('div.info').find('#autopxlsinfo').length) _('autopxls');
+        if (document.autoPxlsScriptRevision != null) self.shadow('document.autoPxlsScriptRevision');
+        if (document.autoPxlsScriptRevision_ != null) self.shadow('document.autoPxlsScriptRevision_');
+        if (document.autoPxlsRandomNumber != null) self.shadow('document.autoPxlsRandomNumber');
+        if (document.RN != null) self.shadow('document.RN');
+        if (window.AutoPXLS != null) self.shadow('window.AutoPXLS');
+        if (window.AutoPXLS2 != null) self.shadow('window.AutoPXLS2');
+        if (document.defaultCaptchaFaviconSource != null) self.shadow('document.defaultCaptchaFaviconSource');
+        if (window.CFS != null) self.shadow('window.CFS');
+        if ($('div.info').find('#autopxlsinfo').length) self.shadow('#autopxlsinfo');
 
         // Modified AutoPXLS
-        if (window.xD) _('autopxls2');
-        if (window.vdk) _('autopxls2');
+        if (window.xD != null) self.shadow('window.xD (autopxls2)');
+        if (window.vdk != null) self.shadow('window.vdk (autopxls2)');
 
         // Notabot
-        if ($('.botpanel').length) _('notabot/generic');
-        if (window.Notabot) _('notabot');
+        if ($('.botpanel').length) self.shadow('.botpanel (notabot/generic)');
+        if (window.Notabot != null) self.shadow('window.Notabot (notabot)');
 
         // "Botnet" by (unknown, obfuscated)
-        if (window.Botnet) _('botnet');
+        if (window.Botnet != null) self.shadow('window.Botnet');
 
         // ???
-        if (window.DrawIt) _('drawit');
+        if (window.DrawIt != null) self.shadow('window.DrawIt');
 
         // NomoXBot
-        if (window.NomoXBot) _('nomo');
-        if (window.UBot) _('nomo');
-        if (document.querySelector('.xbotpanel') || document.querySelector('.botalert') || document.getElementById('restartbot')) _('nomo');
+        if (window.NomoXBot != null) self.shadow('window.NomoXBot (nomo)');
+        if (window.UBot != null) self.shadow('window.UBot (nomo)');
+        if (document.querySelector('.xbotpanel') != null) self.shadow('.xbotpanel (nomo)');
+        if (document.querySelector('.botalert') != null) self.shadow('.botalert (nomo)');
+        if (document.getElementById('restartbot') != null) self.shadow('#restartbot (nomo)');
       }
     };
     return {
@@ -1683,9 +1764,9 @@ window.App = (function() {
         }
 
         self.elements.board.toggleClass('pixelate', scale > 1);
-        overlays.heatmap.setPixelated(scale > 1);
-        overlays.virginmap.setPixelated(scale > 1);
-        template.setPixelated(scale > template.getWidthRatio());
+        overlays.heatmap.setPixelated(scale >= 1);
+        overlays.virginmap.setPixelated(scale >= 1);
+        template.setPixelated(scale >= template.getWidthRatio());
 
         if (ignoreCanvasLock || self.allowDrag || (!self.allowDrag && self.pannedWithKeys)) {
           self.elements.mover.css({
@@ -2216,6 +2297,7 @@ window.App = (function() {
         }
         self.options.use = true;
 
+        self.elements.imageErrorWarning.empty();
         self.elements.imageErrorWarning.hide();
 
         const drag = {
@@ -2270,6 +2352,7 @@ window.App = (function() {
           self.elements.template.toggleClass('pixelate', query.get('scale') > self.getWidthRatio());
         }).on('error', () => {
           self.elements.imageErrorWarning.show();
+          self.elements.imageErrorWarning.text('There was an error getting the image');
           self.elements.template.remove();
         });
         if (board.update(true)) {
@@ -2398,7 +2481,7 @@ window.App = (function() {
         }
         document.title = uiHelper.getTitle();
 
-        self.setPixelated(query.get('scale') > self.getWidthRatio());
+        self.setPixelated(query.get('scale') >= self.getWidthRatio());
       },
       disableTemplate: function() {
         self._update({ url: null });
@@ -3168,8 +3251,7 @@ window.App = (function() {
   })();
   const serviceWorkerHelper = (() => {
     const self = {
-      worker: null,
-      registrationPromise: null,
+      isInit: false,
       messageListeners: {},
       hasSupport: 'serviceWorker' in window.navigator,
       init() {
@@ -3177,11 +3259,13 @@ window.App = (function() {
           return;
         }
 
-        self.registrationPromise = navigator.serviceWorker.register('/serviceWorker.js').then((reg) => {
-          self.worker = reg.installing || reg.waiting || reg.active;
-        }).catch((err) => {
-          console.error('Failed to register Service Worker:', err);
-        });
+        navigator.serviceWorker.register('/serviceWorker.js')
+          .then(() => {
+            self.isInit = true;
+          })
+          .catch((err) => {
+            console.error('Failed to register Service Worker:', err);
+          });
 
         navigator.serviceWorker.addEventListener('message', (ev) => {
           if (typeof ev.data !== 'object' || !('type' in ev.data)) {
@@ -3223,11 +3307,14 @@ window.App = (function() {
         callbacks.splice(idx, 1);
       },
       postMessage(data) {
-        if (!self.worker) {
+        if (!self.isInit) {
           return;
         }
 
-        self.worker.postMessage(data);
+        navigator.serviceWorker.ready.then(({ installing, waiting, active }) => {
+          const worker = navigator.serviceWorker.controller || installing || waiting || active;
+          worker.postMessage(data);
+        });
       }
     };
 
@@ -3235,11 +3322,8 @@ window.App = (function() {
       get hasSupport() {
         return self.hasSupport;
       },
-      get worker() {
-        return self.worker;
-      },
-      get registrationPromise() {
-        return self.registrationPromise;
+      get readyPromise() {
+        return navigator.serviceWorker.ready;
       },
       init: self.init,
       addMessageListener: self.addMessageListener,
@@ -3317,7 +3401,7 @@ window.App = (function() {
           color: '#468079'
         }
       ],
-      specialChatColorClasses: ['rainbow'],
+      specialChatColorClasses: ['rainbow', 'donator'],
       init: function() {
         self.initTitle = document.title;
         self._initThemes();
@@ -3554,7 +3638,7 @@ window.App = (function() {
             self._workerIsTabFocused = self.tabId === data.id;
           });
 
-          serviceWorkerHelper.registrationPromise.then(async () => {
+          serviceWorkerHelper.readyPromise.then(async () => {
             serviceWorkerHelper.postMessage({ type: 'request-id' });
           }).catch(() => {
             self.tabHasFocus = true;
@@ -3978,12 +4062,44 @@ window.App = (function() {
         typeahead_list: $('#typeahead ul')
       },
       picker: null,
-      _anchorme: {
-        fnAttributes: urlObj => {
-        },
-        fnExclude: urlObj => {
-        }
-      },
+      markdownProcessor: pxlsMarkdown.processor()
+        .use(pxlsMarkdown.plugins.emoji, {
+          emojiDB: window.emojiDB,
+          // from Twemoji 13.0.0
+          emojiRegex: /(?:\ud83d\udc68\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffc-\udfff]|\ud83d\udc68\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb\udffd-\udfff]|\ud83d\udc68\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb\udffc\udffe\udfff]|\ud83d\udc68\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb-\udffd\udfff]|\ud83d\udc68\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb-\udffe]|\ud83d\udc69\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffc-\udfff]|\ud83d\udc69\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffc-\udfff]|\ud83d\udc69\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb\udffd-\udfff]|\ud83d\udc69\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffb\udffd-\udfff]|\ud83d\udc69\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb\udffc\udffe\udfff]|\ud83d\udc69\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffb\udffc\udffe\udfff]|\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb-\udffd\udfff]|\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffb-\udffd\udfff]|\ud83d\udc69\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb-\udffe]|\ud83d\udc69\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffb-\udffe]|\ud83e\uddd1\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\u200d\ud83e\udd1d\u200d\ud83e\uddd1|\ud83d\udc6b\ud83c[\udffb-\udfff]|\ud83d\udc6c\ud83c[\udffb-\udfff]|\ud83d\udc6d\ud83c[\udffb-\udfff]|\ud83d[\udc6b-\udc6d])|(?:\ud83d[\udc68\udc69]|\ud83e\uddd1)(?:\ud83c[\udffb-\udfff])?\u200d(?:\u2695\ufe0f|\u2696\ufe0f|\u2708\ufe0f|\ud83c[\udf3e\udf73\udf7c\udf84\udf93\udfa4\udfa8\udfeb\udfed]|\ud83d[\udcbb\udcbc\udd27\udd2c\ude80\ude92]|\ud83e[\uddaf-\uddb3\uddbc\uddbd])|(?:\ud83c[\udfcb\udfcc]|\ud83d[\udd74\udd75]|\u26f9)((?:\ud83c[\udffb-\udfff]|\ufe0f)\u200d[\u2640\u2642]\ufe0f)|(?:\ud83c[\udfc3\udfc4\udfca]|\ud83d[\udc6e\udc70\udc71\udc73\udc77\udc81\udc82\udc86\udc87\ude45-\ude47\ude4b\ude4d\ude4e\udea3\udeb4-\udeb6]|\ud83e[\udd26\udd35\udd37-\udd39\udd3d\udd3e\uddb8\uddb9\uddcd-\uddcf\uddd6-\udddd])(?:\ud83c[\udffb-\udfff])?\u200d[\u2640\u2642]\ufe0f|(?:\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68|\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d[\udc68\udc69]|\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc68|\ud83d\udc68\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc68\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d[\udc66\udc67]|\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d[\udc66\udc67]|\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d[\udc68\udc69]|\ud83d\udc69\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d[\udc66\udc67]|\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f|\ud83c\udff3\ufe0f\u200d\ud83c\udf08|\ud83c\udff4\u200d\u2620\ufe0f|\ud83d\udc15\u200d\ud83e\uddba|\ud83d\udc3b\u200d\u2744\ufe0f|\ud83d\udc41\u200d\ud83d\udde8|\ud83d\udc68\u200d\ud83d[\udc66\udc67]|\ud83d\udc69\u200d\ud83d[\udc66\udc67]|\ud83d\udc6f\u200d\u2640\ufe0f|\ud83d\udc6f\u200d\u2642\ufe0f|\ud83e\udd3c\u200d\u2640\ufe0f|\ud83e\udd3c\u200d\u2642\ufe0f|\ud83e\uddde\u200d\u2640\ufe0f|\ud83e\uddde\u200d\u2642\ufe0f|\ud83e\udddf\u200d\u2640\ufe0f|\ud83e\udddf\u200d\u2642\ufe0f|\ud83d\udc08\u200d\u2b1b)|[#*0-9]\ufe0f?\u20e3|(?:[©®\u2122\u265f]\ufe0f)|(?:\ud83c[\udc04\udd70\udd71\udd7e\udd7f\ude02\ude1a\ude2f\ude37\udf21\udf24-\udf2c\udf36\udf7d\udf96\udf97\udf99-\udf9b\udf9e\udf9f\udfcd\udfce\udfd4-\udfdf\udff3\udff5\udff7]|\ud83d[\udc3f\udc41\udcfd\udd49\udd4a\udd6f\udd70\udd73\udd76-\udd79\udd87\udd8a-\udd8d\udda5\udda8\uddb1\uddb2\uddbc\uddc2-\uddc4\uddd1-\uddd3\udddc-\uddde\udde1\udde3\udde8\uddef\uddf3\uddfa\udecb\udecd-\udecf\udee0-\udee5\udee9\udef0\udef3]|[\u203c\u2049\u2139\u2194-\u2199\u21a9\u21aa\u231a\u231b\u2328\u23cf\u23ed-\u23ef\u23f1\u23f2\u23f8-\u23fa\u24c2\u25aa\u25ab\u25b6\u25c0\u25fb-\u25fe\u2600-\u2604\u260e\u2611\u2614\u2615\u2618\u2620\u2622\u2623\u2626\u262a\u262e\u262f\u2638-\u263a\u2640\u2642\u2648-\u2653\u2660\u2663\u2665\u2666\u2668\u267b\u267f\u2692-\u2697\u2699\u269b\u269c\u26a0\u26a1\u26a7\u26aa\u26ab\u26b0\u26b1\u26bd\u26be\u26c4\u26c5\u26c8\u26cf\u26d1\u26d3\u26d4\u26e9\u26ea\u26f0-\u26f5\u26f8\u26fa\u26fd\u2702\u2708\u2709\u270f\u2712\u2714\u2716\u271d\u2721\u2733\u2734\u2744\u2747\u2757\u2763\u2764\u27a1\u2934\u2935\u2b05-\u2b07\u2b1b\u2b1c\u2b50\u2b55\u3030\u303d\u3297\u3299])(?:\ufe0f|(?!\ufe0e))|(?:(?:\ud83c[\udfcb\udfcc]|\ud83d[\udd74\udd75\udd90]|[\u261d\u26f7\u26f9\u270c\u270d])(?:\ufe0f|(?!\ufe0e))|(?:\ud83c[\udf85\udfc2-\udfc4\udfc7\udfca]|\ud83d[\udc42\udc43\udc46-\udc50\udc66-\udc69\udc6e\udc70-\udc78\udc7c\udc81-\udc83\udc85-\udc87\udcaa\udd7a\udd95\udd96\ude45-\ude47\ude4b-\ude4f\udea3\udeb4-\udeb6\udec0\udecc]|\ud83e[\udd0c\udd0f\udd18-\udd1c\udd1e\udd1f\udd26\udd30-\udd39\udd3d\udd3e\udd77\uddb5\uddb6\uddb8\uddb9\uddbb\uddcd-\uddcf\uddd1-\udddd]|[\u270a\u270b]))(?:\ud83c[\udffb-\udfff])?|(?:\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f|\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc73\udb40\udc63\udb40\udc74\udb40\udc7f|\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc77\udb40\udc6c\udb40\udc73\udb40\udc7f|\ud83c\udde6\ud83c[\udde8-\uddec\uddee\uddf1\uddf2\uddf4\uddf6-\uddfa\uddfc\uddfd\uddff]|\ud83c\udde7\ud83c[\udde6\udde7\udde9-\uddef\uddf1-\uddf4\uddf6-\uddf9\uddfb\uddfc\uddfe\uddff]|\ud83c\udde8\ud83c[\udde6\udde8\udde9\uddeb-\uddee\uddf0-\uddf5\uddf7\uddfa-\uddff]|\ud83c\udde9\ud83c[\uddea\uddec\uddef\uddf0\uddf2\uddf4\uddff]|\ud83c\uddea\ud83c[\udde6\udde8\uddea\uddec\udded\uddf7-\uddfa]|\ud83c\uddeb\ud83c[\uddee-\uddf0\uddf2\uddf4\uddf7]|\ud83c\uddec\ud83c[\udde6\udde7\udde9-\uddee\uddf1-\uddf3\uddf5-\uddfa\uddfc\uddfe]|\ud83c\udded\ud83c[\uddf0\uddf2\uddf3\uddf7\uddf9\uddfa]|\ud83c\uddee\ud83c[\udde8-\uddea\uddf1-\uddf4\uddf6-\uddf9]|\ud83c\uddef\ud83c[\uddea\uddf2\uddf4\uddf5]|\ud83c\uddf0\ud83c[\uddea\uddec-\uddee\uddf2\uddf3\uddf5\uddf7\uddfc\uddfe\uddff]|\ud83c\uddf1\ud83c[\udde6-\udde8\uddee\uddf0\uddf7-\uddfb\uddfe]|\ud83c\uddf2\ud83c[\udde6\udde8-\udded\uddf0-\uddff]|\ud83c\uddf3\ud83c[\udde6\udde8\uddea-\uddec\uddee\uddf1\uddf4\uddf5\uddf7\uddfa\uddff]|\ud83c\uddf4\ud83c\uddf2|\ud83c\uddf5\ud83c[\udde6\uddea-\udded\uddf0-\uddf3\uddf7-\uddf9\uddfc\uddfe]|\ud83c\uddf6\ud83c\udde6|\ud83c\uddf7\ud83c[\uddea\uddf4\uddf8\uddfa\uddfc]|\ud83c\uddf8\ud83c[\udde6-\uddea\uddec-\uddf4\uddf7-\uddf9\uddfb\uddfd-\uddff]|\ud83c\uddf9\ud83c[\udde6\udde8\udde9\uddeb-\udded\uddef-\uddf4\uddf7\uddf9\uddfb\uddfc\uddff]|\ud83c\uddfa\ud83c[\udde6\uddec\uddf2\uddf3\uddf8\uddfe\uddff]|\ud83c\uddfb\ud83c[\udde6\udde8\uddea\uddec\uddee\uddf3\uddfa]|\ud83c\uddfc\ud83c[\uddeb\uddf8]|\ud83c\uddfd\ud83c\uddf0|\ud83c\uddfe\ud83c[\uddea\uddf9]|\ud83c\uddff\ud83c[\udde6\uddf2\uddfc]|\ud83c[\udccf\udd8e\udd91-\udd9a\udde6-\uddff\ude01\ude32-\ude36\ude38-\ude3a\ude50\ude51\udf00-\udf20\udf2d-\udf35\udf37-\udf7c\udf7e-\udf84\udf86-\udf93\udfa0-\udfc1\udfc5\udfc6\udfc8\udfc9\udfcf-\udfd3\udfe0-\udff0\udff4\udff8-\udfff]|\ud83d[\udc00-\udc3e\udc40\udc44\udc45\udc51-\udc65\udc6a\udc6f\udc79-\udc7b\udc7d-\udc80\udc84\udc88-\udca9\udcab-\udcfc\udcff-\udd3d\udd4b-\udd4e\udd50-\udd67\udda4\uddfb-\ude44\ude48-\ude4a\ude80-\udea2\udea4-\udeb3\udeb7-\udebf\udec1-\udec5\uded0-\uded2\uded5-\uded7\udeeb\udeec\udef4-\udefc\udfe0-\udfeb]|\ud83e[\udd0d\udd0e\udd10-\udd17\udd1d\udd20-\udd25\udd27-\udd2f\udd3a\udd3c\udd3f-\udd45\udd47-\udd76\udd78\udd7a-\uddb4\uddb7\uddba\uddbc-\uddcb\uddd0\uddde-\uddff\ude70-\ude74\ude78-\ude7a\ude80-\ude86\ude90-\udea8\udeb0-\udeb6\udec0-\udec2\uded0-\uded6]|[\u23e9-\u23ec\u23f0\u23f3\u267e\u26ce\u2705\u2728\u274c\u274e\u2753-\u2755\u2795-\u2797\u27b0\u27bf\ue50a])|\ufe0f/
+        })
+        .use(pxlsMarkdown.plugins.methodWhitelist, {
+          block: ['blankLine'],
+          inline: ['coordinate', 'emoji_raw', 'emoji_name', 'mention', 'escape', 'autoLink', 'url', 'underline', 'strong', 'emphasis', 'deletion', 'code']
+        })
+        .use(function() {
+          this.Compiler.prototype.visitors.emoji = (node, next) => {
+            const el = twemoji.parse(crel('span', node.value)).children[0];
+            el.title = `:${node.emojiName}:`;
+            return el;
+          };
+
+          this.Compiler.prototype.visitors.link = (node, next) => {
+            const url = new URL(node.url, location.href);
+
+            const hashParams = new URLSearchParams(url.hash.substr(1));
+            const getParam = (name) => hashParams.has(name) ? hashParams.get(name) : url.searchParams.get(name);
+
+            const coordsX = parseFloat(getParam('x'));
+            const coordsY = parseFloat(getParam('y'));
+
+            const isSameOrigin = location.origin && url.origin && location.origin === url.origin;
+            if (isSameOrigin && !isNaN(coordsX) && !isNaN(coordsY) && board.validateCoordinates(coordsX, coordsY)) {
+              const scale = parseFloat(getParam('scale'));
+              return self._makeCoordinatesElement(url.toString(), coordsX, coordsY, isNaN(scale) ? 20 : scale, getParam('template'), getParam('title'));
+            } else {
+              return crel('a', { href: node.url, target: '_blank' }, next());
+            }
+          };
+
+          this.Compiler.prototype.visitors.coordinate =
+            (node, next) => self._makeCoordinatesElement(node.url, node.x, node.y, node.scale);
+        }),
       TEMPLATE_ACTIONS: {
         ASK: {
           id: 'ask',
@@ -4003,26 +4119,6 @@ window.App = (function() {
         }
       },
       init: () => {
-        // Register default hooks
-        self.registerHook({
-          id: 'username-mention',
-          get: message => ({
-            pings: (() => {
-              const mentionRegExp = new RegExp(`(\\s|^)@${user.getUsername().replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&')}(?![a-zA-Z0-9_-])`, 'gi');
-              const matches = [];
-              let match;
-              while ((match = mentionRegExp.exec(message.message_raw)) !== null) {
-                matches.push(match);
-              }
-              return matches.map((match) => ({
-                start: match.index + match[1].length,
-                length: user.getUsername().length + 1,
-                highlight: true
-              }));
-            })()
-          })
-        });
-
         self.initTypeahead();
         self.reloadIgnores();
         socket.on('ack_client_update', e => {
@@ -4233,7 +4329,7 @@ window.App = (function() {
               }
             } else if (e.type !== 'chat_ban_state') { // chat_ban_state is a query result, not an action notice.
               self.addServerAction('You have been unbanned from chat.');
-              self.elements.rate_limit_counter.text('You can not use chat while canvas banned.');
+              self.elements.rate_limit_counter.text('You cannot use chat while canvas banned.');
               self.chatban.banned = false;
             }
             self._handleChatbanVisualState(self._canChat());
@@ -4568,7 +4664,7 @@ window.App = (function() {
           // const mainPanel = crel('div', { class: 'pane' });
 
           const pingsList = crel('ul', { class: 'pings-list' }, self.pingsList.map(packet => {
-            const _processed = self.processMessage('span', '', packet.message_raw);
+            const _processed = crel('span', self.processMessage(packet.message_raw));
             return crel('li', { title: _processed.textContent }, crel('i', {
               class: 'fas fa-external-link-alt fa-is-left',
               style: 'font-size: .65rem; cursor: pointer;',
@@ -4904,6 +5000,7 @@ window.App = (function() {
 
         const _selUsernameColor = uiHelper.createSelect({ class: 'username-color-picker' },
           user.isStaff() ? crel('option', { value: -1, class: 'rainbow' }, 'rainbow') : null,
+          user.isDonator() ? crel('option', { value: -2, class: 'donator' }, 'donator') : null,
           place.getPalette().map((x, i) => crel('option', {
             value: i,
             'data-idx': i,
@@ -5218,7 +5315,7 @@ window.App = (function() {
 
         self.typeahead.helper.getDatabase('users').addEntry(packet.author, packet.author);
         if (self.ignored.indexOf(packet.author) >= 0) return;
-        const hasPing = !board.snipMode && settings.chat.pings.enable.get() === true && user.isLoggedIn() && hookDatas.some((data) => data.pings.length > 0);
+        let hasPing = !board.snipMode && settings.chat.pings.enable.get() === true && user.isLoggedIn() && hookDatas.some((data) => data.pings.length > 0);
         const when = moment.unix(packet.date);
         const flairs = crel('span', { class: 'flairs' });
         if (Array.isArray(packet.badges)) {
@@ -5257,9 +5354,13 @@ window.App = (function() {
         _facFlair.innerHTML = `[${twemoji.parse(_facTag)}]`;
         crel(flairs, _facFlair);
 
-        const contentSpan = self.processMessage('span', 'content', packet.message_raw);
-        twemoji.parse(contentSpan);
-        // TODO basic markdown
+        const contentSpan = crel('span', { class: 'content' },
+          self.processMessage(packet.message_raw, (username) => {
+            if (username === user.getUsername() && !hasPing) {
+              hasPing = true;
+            }
+          })
+        );
         let nameClasses = 'user';
         if (Array.isArray(packet.authorNameClass)) nameClasses += ` ${packet.authorNameClass.join(' ')}`;
 
@@ -5308,139 +5409,61 @@ window.App = (function() {
         }
       },
       intToHex: (i) => `#${('000000' + (i >>> 0).toString(16)).slice(-6)}`,
-      processMessage: (elem, elemClass, str) => {
-        const toReturn = crel(elem, { class: elemClass }, str);
-
+      processMessage: (str, mentionCallback) => {
+        let content = str;
         try {
-          const list = anchorme(str, {
-            emails: false,
-            files: false,
-            exclude: self._anchorme.fnExclude,
-            attributes: [self._anchorme.fnAttributes],
-            list: true
-          });
-
-          // handle jump links (e.g. (500, 500[, 20[x]]))
-          str = str.replace(/\(([0-9]+)[., ]{1,2}([0-9]+)[., ]{0,2}([0-9]+)?x?\)/ig, function(match, group1, group2, group3) {
-            if (isNaN(group1) || isNaN(group2)) return match;
-            if (!board.validateCoordinates(parseFloat(group1), parseFloat(group2))) return match;
-            const group3Str = !(parseFloat(group3)) ? '' : `, ${group3}x`;
-            return `<a class="link -internal-jump" href="#x=${group1}&y=${group2}&scale=${!(parseFloat(group3)) ? 1 : group3}" data-x="${group1}" data-y="${group2}" data-scale="${group3}">(${group1}, ${group2}${group3Str})</a>`;
-          });
-
-          // insert <a>'s
-          // const _re = /^[?#]/;
-          for (const x of list) {
-            let url = false;
-
-            let anchorText = x.raw.substr(0, 78);
-            if (x.raw.length > 78) anchorText += '...';
-            let anchorTarget = null;
-            let jumpTarget = false;
-
-            try {
-              url = new URL(x.raw.indexOf(x.protocol) !== 0 ? `${x.protocol}${x.raw}` : x.raw);
-            } catch (ignored) {
-            }
-            if (!url) {
-              console.warn('no url with %o!', x);
-            } else {
-              // process URL params for future use/manipulation
-              const params = {};
-              let toSplit = url.hash.substring(1);
-              if (url.search.length > 0) { toSplit += ('&' + url.search.substring(1)); }
-
-              const _varsTemp = toSplit.split('&');
-              const vars = {};
-              _varsTemp.forEach(val => {
-                const split = val.split('=');
-                const key = split.shift().toLowerCase();
-                if (!key.length) return;
-                vars[key] = split.shift();
-              });
-
-              const varKeys = Object.keys(vars);
-              for (let i = 0; i < varKeys.length; i++) {
-                const key = varKeys[i];
-                // const value = vars[key];
-                if (!Object.prototype.hasOwnProperty.call(params, key)) {
-                  params[key] = vars[key];
-                }
-              }
-
-              // check for any special URL needs and store the proper anchor `target`
-              if ((document.location.origin && url.origin) && document.location.origin === url.origin) { // URL is for this origin, run some checks for game features
-                if (params.x != null && params.y != null) { // url has x/y so it's probably in the game window
-                  if (board.validateCoordinates(params.x, params.y)) {
-                    jumpTarget = Object.assign({
-                      displayText: `(${params.x}, ${params.y}${params.scale != null ? `, ${params.scale}x` : ''})`,
-                      raw: url.toString()
-                    }, params);
-                    if (params.template != null && params.template.length >= 11) { // we have a template, should probably make that known
-                      let title = decodeURIComponent(params.template);
-                      if (settings.chat.links.templates.preferurls.get() !== true && params.title && params.title.trim()) { title = decodeURIComponent(params.title); }
-                      jumpTarget.displayText += ` (template: ${(title > 25) ? `${title.substr(0, 22)}...` : title})`;
-                    }
-                  }
-                } else {
-                  anchorTarget = '_blank'; // probably `/stats` or something
-                }
-              } else {
-                anchorTarget = '_blank';
-              }
-            }
-
-            const elem = crel('a', {
-              href: x.raw.indexOf(x.protocol) !== 0 ? `${x.protocol}${x.raw}` : x.raw,
-              title: x.raw
-            }, anchorText);
-            if (jumpTarget !== false) {
-              elem.innerHTML = jumpTarget.displayText || elem.innerHTML;
-              elem.className = 'link -internal-jump';
-              for (const key in jumpTarget) {
-                if (Object.prototype.hasOwnProperty.call(jumpTarget, key)) {
-                  elem.dataset[key] = jumpTarget[key];
-                }
-              }
-            } else {
-              if (anchorTarget) elem.target = anchorTarget;
-            }
-
-            if (!str.includes(elem.outerHTML)) {
-              str = str.split(x.raw).join(elem.outerHTML);
-            }
-          }
-
-          // any other text manipulation after anchor insertion
-          // TODO markdown, it might be better to do it on the back-end so that burden of parsing+rendering is shifted
-
-          // parse HTML into DOM
-          toReturn.innerHTML = str;
-
-          // hook up any necessary event listeners
-          toReturn.querySelectorAll('.-internal-jump[data-x]').forEach(x => {
-            x.onclick = e => {
-              e.preventDefault();
-              if (x.dataset.template) {
-                const internalClickDefault = settings.chat.links.internal.behavior.get();
-                if (internalClickDefault === self.TEMPLATE_ACTIONS.ASK.id) {
-                  self._popTemplateOverwriteConfirm(x).then(action => {
-                    modal.closeAll();
-                    self._handleTemplateOverwriteAction(action, x);
-                  });
-                } else {
-                  self._handleTemplateOverwriteAction(internalClickDefault, x);
-                }
-              } else {
-                self.jump(parseFloat(x.dataset.x), parseFloat(x.dataset.y), parseFloat(x.dataset.scale));
-              }
-            };
-          });
-        } catch (e) {
-          console.error('Failed to process a line, defaulting to raw', e);
+          const processor = self.markdownProcessor()
+            .use(pxlsMarkdown.plugins.mention, { mentionCallback });
+          const file = processor.processSync(str);
+          content = file.result;
+        } catch (err) {
+          console.error(`could not process chat message "${str}"`, err, '\nDefaulting to raw content.');
         }
 
-        return toReturn;
+        return content;
+      },
+      _makeCoordinatesElement: (raw, x, y, scale, template, title) => {
+        let text = `(${x}, ${y}${scale != null ? `, ${scale}x` : ''})`;
+        if (template != null && template.length >= 11) { // we have a template, should probably make that known
+          const tmplName = decodeURIComponent(
+            settings.chat.links.templates.preferurls.get() !== true && title && title.trim()
+              ? title
+              : template
+          );
+          text += ` (template: ${(tmplName > 25) ? `${tmplName.substr(0, 22)}...` : tmplName})`;
+        }
+
+        function handleClick(e) {
+          e.preventDefault();
+
+          if (template) {
+            const internalClickDefault = settings.chat.links.internal.behavior.get();
+            if (internalClickDefault === self.TEMPLATE_ACTIONS.ASK.id) {
+              self._popTemplateOverwriteConfirm(e.target).then(action => {
+                modal.closeAll();
+                self._handleTemplateOverwriteAction(action, e.target);
+              });
+            } else {
+              self._handleTemplateOverwriteAction(internalClickDefault, e.target);
+            }
+          } else {
+            self.jump(parseFloat(x), parseFloat(y), parseFloat(scale));
+          }
+        }
+
+        return crel('a', {
+          class: 'link coordinates',
+          dataset: {
+            raw,
+            x,
+            y,
+            scale,
+            template,
+            title
+          },
+          href: raw,
+          onclick: handleClick
+        }, text);
       },
       _handleTemplateOverwriteAction: (action, linkElem) => {
         switch (action) {
@@ -6202,7 +6225,7 @@ window.App = (function() {
         const canChat = self._canChat();
         self._handleChatbanVisualState(canChat);
         if (!canChat) {
-          if (self.elements.rate_limit_counter.text().trim().length === 0) { self.elements.rate_limit_counter.text('You can not use chat while canvas banned.'); }
+          if (self.elements.rate_limit_counter.text().trim().length === 0) { self.elements.rate_limit_counter.text('You cannot use chat while canvas banned.'); }
         }
       }
     };
@@ -6225,6 +6248,9 @@ window.App = (function() {
       replaceHook: self.replaceHook,
       unregisterHook: self.unregisterHook,
       runLookup: self.runLookup,
+      get markdownProcessor() {
+        return self.markdownProcessor;
+      },
       get canvasBanRespected() {
         return self.canvasBanRespected;
       }
@@ -6459,6 +6485,7 @@ window.App = (function() {
       chatNameColor: 0,
       getRoles: () => self.roles,
       isStaff: () => self.hasPermission('user.admin'),
+      isDonator: () => self.hasPermission('user.donator'),
       getPermissions: () => {
         let perms = [];
         self.roles.flatMap(function loop(node) {
@@ -6672,9 +6699,7 @@ window.App = (function() {
           }
           chat.updateCanvasBanState(isBanned);
 
-          if (instaban) {
-            ban.shadow(7);
-          }
+          if (instaban) ban.shadow('App existed beforehand');
 
           analytics('send', 'event', 'Auth', 'Login', data.method);
         });
@@ -6775,6 +6800,7 @@ window.App = (function() {
       init: self.init,
       getRoles: self.getRoles,
       isStaff: self.isStaff,
+      isDonator: self.isDonator,
       getPermissions: self.getPermissions,
       hasPermission: self.hasPermission,
       getUsername: self.getUsername,
@@ -6900,7 +6926,7 @@ window.App = (function() {
       makeDomForNotification(notification) {
         return crel('article', { class: 'notification', 'data-notification-id': notification.id },
           crel('header', { class: 'notification-title' }, crel('h2', notification.title)),
-          chat.processMessage('div', 'notification-body', notification.content),
+          crel('div', { class: 'notification-body' }, chat.processMessage(notification.content)),
           crel('footer', { class: 'notification-footer' },
             notification.who ? document.createTextNode(`Posted by ${notification.who}`) : null,
             notification.expiry !== 0 ? crel('span', { class: 'notification-expiry float-left' },
@@ -6925,7 +6951,8 @@ window.App = (function() {
       },
       init: () => {
         if (!webkitBased) {
-          self.elements.setting.hide();
+          settings.fix.chrome.offset.enable.controls.remove(self.elements.setting.find('input'));
+          self.elements.setting.parent().remove();
           return;
         }
 
@@ -7110,10 +7137,10 @@ window.App = (function() {
       modal.showText(s, { title: 'Alert', modalOpts: { closeExisting: false } });
     },
     doPlace: function() {
-      ban.me(3);
+      ban.me('call to doPlace()');
     },
     attemptPlace: function() {
-      ban.me(3);
+      ban.me('call to attemptPlace()');
     },
     chat,
     typeahead: chat.typeahead,
@@ -7124,6 +7151,7 @@ window.App = (function() {
       getRoles: user.getRoles,
       isLoggedIn: user.isLoggedIn,
       isStaff: user.isStaff,
+      isDonator: user.isDonator,
       getPermissions: user.getPermissions,
       hasPermission: user.hasPermission
     },
