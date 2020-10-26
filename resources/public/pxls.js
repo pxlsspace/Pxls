@@ -3000,7 +3000,7 @@ window.App = (function() {
         modal.show(modal.buildDom(
           crel('h2', { class: 'modal-title' }, 'Report Pixel'),
           crel('div',
-            uiHelper.createSelect({ style: 'width: 100%; margin-bottom: 1em;' },
+            crel('select', { style: 'width: 100%; margin-bottom: 1em;' },
               crel('option', 'Rule #1: Hateful/derogatory speech or symbols'),
               crel('option', 'Rule #2: Nudity, genitalia, or non-PG-13 content'),
               crel('option', 'Rule #3: Multi-account'),
@@ -3547,14 +3547,6 @@ window.App = (function() {
         ranges.on('input', (e) => updateBar(e.target));
         ranges.each((idx, element) => updateBar(element));
       },
-      prettifySelect: function (select) {
-        $(select).click(function () { $(this).toggleClass('select-arrow'); });
-      },
-      createSelect: function () {
-        const el = crel('select', ...arguments);
-        self.prettifySelect(el);
-        return el;
-      },
       _initThemes: function() {
         for (let i = 0; i < self.themes.length; i++) {
           self.themes[i].element = $('<link data-theme="' + i + '" rel="stylesheet" href="' + self.themes[i].location + '">');
@@ -3907,8 +3899,7 @@ window.App = (function() {
           ? self._workerIsTabFocused
           : ls.get('tabs.has-focus') === self.tabId;
       },
-      prettifyRange: self.prettifyRange,
-      createSelect: self.createSelect
+      prettifyRange: self.prettifyRange
     };
   })();
   const panels = (function() {
@@ -4958,7 +4949,7 @@ window.App = (function() {
         const [_cbFactionTagBadges, lblFactionTagBadges] = genCheckboxGroup('Show faction tags');
         const [_cbPings, lblPings] = genCheckboxGroup('Enable pings');
 
-        const _cbPingAudio = uiHelper.createSelect({},
+        const _cbPingAudio = crel('select', {},
           crel('option', { value: 'off' }, 'Off'),
           crel('option', { value: 'discrete' }, 'Only when necessary'),
           crel('option', { value: 'always' }, 'Always')
@@ -4988,7 +4979,7 @@ window.App = (function() {
 
         const [_cbHorizontal, lblHorizontal] = genCheckboxGroup('Enable horizontal chat');
 
-        const _selInternalClick = uiHelper.createSelect(
+        const _selInternalClick = crel('select',
           Object.values(self.TEMPLATE_ACTIONS).map(action =>
             crel('option', { value: action.id }, action.pretty)
           )
@@ -4998,7 +4989,7 @@ window.App = (function() {
           _selInternalClick
         );
 
-        const _selUsernameColor = uiHelper.createSelect({ class: 'username-color-picker' },
+        const _selUsernameColor = crel('select', { class: 'username-color-picker' },
           user.isStaff() ? crel('option', { value: -1, class: 'rainbow' }, 'rainbow') : null,
           user.isDonator() ? crel('option', { value: -2, class: 'donator' }, 'donator') : null,
           place.getPalette().map((x, i) => crel('option', {
@@ -5012,7 +5003,7 @@ window.App = (function() {
           _selUsernameColor
         );
 
-        const _selIgnores = uiHelper.createSelect({
+        const _selIgnores = crel('select', {
           class: 'user-ignores',
           style: 'font-family: monospace; padding: 5px; border-radius: 5px;'
         },
@@ -5774,14 +5765,14 @@ window.App = (function() {
               );
 
             const banLengths = [['Unban', -3], ['Permanent', -1], ['Temporary', -2]];
-            const _selBanLength = uiHelper.createSelect({ name: 'selBanLength' },
+            const _selBanLength = crel('select', { name: 'selBanLength' },
               banLengths.map(lenPart =>
                 crel('option', { value: lenPart[1] }, lenPart[0])
               )
             );
 
             const _customLenWrap = crel('div', { style: 'display: block; margin-top: .5rem' });
-            const _selCustomLength = uiHelper.createSelect({
+            const _selCustomLength = crel('select', {
               name: 'selCustomLength',
               style: 'display: inline-block; width: auto;'
             },
@@ -5799,7 +5790,7 @@ window.App = (function() {
               value: '10'
             });
 
-            const _selBanReason = uiHelper.createSelect(
+            const _selBanReason = crel('select',
               crel('option', 'Rule 3: Spam'),
               crel('option', 'Rule 1: Chat civility'),
               crel('option', 'Rule 2: Hate Speech'),

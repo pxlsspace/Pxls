@@ -1,4 +1,4 @@
-# "Matte" theme by github.com/feeeek
+/* "Matte" theme by https://github.com/feeeek */
 
 html {
     --general-text-color: #678;
@@ -203,7 +203,7 @@ select {
     padding: 7px 10px 7px 10px;
 }
 
-.select-arrow {
+select:focus {
     background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg width='8px' height='8px' enable-background='new 0 0 284.929 284.929' version='1.1' viewBox='0 0 284.93 284.93' xml:space='preserve' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m282.08 76.511-14.274-14.273c-1.902-1.906-4.093-2.856-6.57-2.856-2.471 0-4.661 0.95-6.563 2.856l-112.21 112.2-112.2-112.2c-1.903-1.906-4.093-2.856-6.567-2.856-2.475 0-4.665 0.95-6.567 2.856l-14.272 14.274c-1.906 1.902-2.856 4.092-2.856 6.567 0 2.473 0.953 4.663 2.856 6.565l133.04 133.05c1.902 1.903 4.093 2.854 6.567 2.854s4.661-0.951 6.562-2.854l133.05-133.05c1.902-1.903 2.847-4.093 2.847-6.565 0-2.475-0.945-4.665-2.847-6.571z' fill='%2340726e' style='transform-origin:center center;transform:rotate(180deg)' xmlns='http://www.w3.org/2000/svg'/%3E%3C/svg%3E");
 }
 
