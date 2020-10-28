@@ -3411,7 +3411,6 @@ window.App = (function() {
         self._initBanner();
         self._initMultiTabDetection();
         self.prettifyRange('input[type=range]');
-        self.prettifySelect('select');
 
         self.elements.coords.click(() => coords.copyCoords(true));
 
