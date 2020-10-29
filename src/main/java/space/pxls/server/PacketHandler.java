@@ -285,6 +285,7 @@ public class PacketHandler {
                                 for (WebSocketChannel ch : user.getConnections()) {
                                     server.send(ch, msg);
                                 }
+                                ackPlace(user, cp.getX(), cp.getY());
                                 if (user.canUndo(false)) {
                                     server.send(channel, new ServerCanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
                                 }
