@@ -1356,7 +1356,7 @@ public class Database {
                 .execute());
         String initiatorName = initiator == null ? "CONSOLE" : initiator.getName();
         int initiatorID = initiator == null ? 0 : initiator.getId();
-        String logReason = reason != null && reason.length() > 0 ? " because: " + reason : "";
+        String logReason = reason != null && reason.length() > 0 ? " with reason: " + reason : "";
         String logMessage = String.format("<%s, %s> purged %s messages from <%s, %s>%s.", initiatorName, initiatorID, amount, target.getName(), target.getId(), logReason);
         if (initiator == null) {
             insertServerAdminLog(logMessage);
@@ -1383,7 +1383,7 @@ public class Database {
                 .execute());
         String initiatorName = initiator == null ? "CONSOLE" : initiator.getName();
         int initiatorID = initiator == null ? 0 : initiator.getId();
-        String logReason = reason != null && reason.length() > 0 ? " because: " + reason : "";
+        String logReason = reason != null && reason.length() > 0 ? " with reason: " + reason : "";
         String logMessage = String.format("<%s, %s> purged message with id %d from <%s, %s>%s.", initiatorName, initiatorID, id, target.getName(), target.getId(), logReason);
         if (initiator == null) {
             insertServerAdminLog(logMessage);
