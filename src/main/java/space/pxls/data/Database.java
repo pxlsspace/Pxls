@@ -1357,7 +1357,12 @@ public class Database {
         String initiatorName = initiator == null ? "CONSOLE" : initiator.getName();
         int initiatorID = initiator == null ? 0 : initiator.getId();
         String logReason = reason != null && reason.length() > 0 ? " because: " + reason : "";
-        insertServerAdminLog(String.format("<%s, %s> purged %s messages from <%s, %s>%s.", initiatorName, initiatorID, amount, target.getName(), target.getId(), logReason));
+        String logMessage = String.format("<%s, %s> purged %s messages from <%s, %s>%s.", initiatorName, initiatorID, amount, target.getName(), target.getId(), logReason);
+        if (initiator == null) {
+            insertServerAdminLog(logMessage);
+        } else {
+            insertAdminLog(initiatorID, logMessage);
+        }
         if (broadcast) {
             App.getServer().getPacketHandler().sendChatPurge(target, initiator, amount, reason);
         }
@@ -1379,7 +1384,12 @@ public class Database {
         String initiatorName = initiator == null ? "CONSOLE" : initiator.getName();
         int initiatorID = initiator == null ? 0 : initiator.getId();
         String logReason = reason != null && reason.length() > 0 ? " because: " + reason : "";
-        insertServerAdminLog(String.format("<%s, %s> purged message with id %d from <%s, %s>%s.", initiatorName, initiatorID, id, target.getName(), target.getId(), logReason));
+        String logMessage = String.format("<%s, %s> purged message with id %d from <%s, %s>%s.", initiatorName, initiatorID, id, target.getName(), target.getId(), logReason);
+        if (initiator == null) {
+            insertServerAdminLog(logMessage);
+        } else {
+            insertAdminLog(initiatorID, logMessage);
+        }
         if (broadcast) {
             App.getServer().getPacketHandler().sendSpecificPurge(target, initiator, id, reason);
         }
