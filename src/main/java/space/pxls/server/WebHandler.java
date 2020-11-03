@@ -1118,7 +1118,7 @@ public class WebHandler {
         }
 
         toFlag.setRenameRequested(isRequested);
-        App.getDatabase().insertAdminLog(user.getId(), String.format("Flagged %s (%d) for name change", toFlag.getName(), toFlag.getId()));
+        App.getDatabase().insertAdminLog(user.getId(), String.format("%s %s (%d) for name change", isRequested ? "Flagged" : "Unflagged", toFlag.getName(), toFlag.getId()));
 
         exchange.setStatusCode(200);
         exchange.getResponseSender().send("{}");
