@@ -493,6 +493,7 @@ public class App {
                     if (toFlag != null) {
                         System.out.printf("Flagging %s as %s%n", toFlag.getName(), flagState);
                         toFlag.setRenameRequested(flagState);
+                        App.getDatabase().insertServerAdminLog(String.format("%s %s (%d) for name change", flagState ? "Flagged" : "Unflagged", toFlag.getName(), toFlag.getId()));
                     } else {
                         System.out.println("User doesn't exist");
                     }
@@ -507,6 +508,7 @@ public class App {
                         toRename.setRenameRequested(false);
                         if (toRename.updateUsername(token[2], true)) {
                             App.getServer().send(toRename, new ServerRenameSuccess(toRename.getName()));
+                            App.getDatabase().insertServerAdminLog(String.format("Changed %s's name to %s (uid: %d)", token[1], token[2], toRename.getId()));
                             System.out.println("Name updated");
                         } else {
                             System.out.println("Failed to update name (function returned false. name taken or an error occurred)");
