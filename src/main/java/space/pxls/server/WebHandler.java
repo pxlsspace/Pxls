@@ -1481,14 +1481,21 @@ public class WebHandler {
             return;
         }
 
-        // do additional checks for possible multi here
-        List<String> reports = new ArrayList<String>(); //left in `reports` here for future use, however signup IP checks have been moved to dupe IP checks on auth.
-        if (reports.size() > 0) {
-            String msg = "Potential dupe user. Reasons:\n\n";
-            for (String r : reports) {
-                msg += r + "\n";
+        // Do additional checks below:
+        List<String> reports = new ArrayList<String>();
+
+        // NOTE: Dupe IP checks are done on auth, not just signup.
+
+        // check username for filter hits
+        if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(name)) {
+            reports.add(String.format("Username filter hit on \"%s\"", name));
+        }
+
+        for (String reportMessage : reports) {
+            Integer rid = App.getDatabase().insertServerReport(user.getId(), reportMessage);
+            if (rid != null) {
+                App.getServer().broadcastToStaff(new ServerReceivedReport(rid, ServerReceivedReport.REPORT_TYPE_CANVAS));
             }
-            App.getDatabase().insertServerReport(user.getId(), msg);
         }
 
         String loginToken = App.getUserManager().logIn(user, ip);
