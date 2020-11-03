@@ -252,6 +252,7 @@ public class App {
                 String message = String.join(" ", rest);
                 App.getDatabase().insertServerAdminLog(String.format("Sent a server-wide broadcast with the content: %s", message));
                 server.broadcast(new ServerAlert("console", message));
+                System.out.println("Alert sent");
             } else if (token[0].equalsIgnoreCase("ban")) {
                 if (token.length < 2) {
                     System.out.println("Usage: ban <username> [reason]");
