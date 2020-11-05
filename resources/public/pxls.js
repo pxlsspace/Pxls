@@ -4364,9 +4364,7 @@ window.App = (function() {
           }
           if (lines.length) {
             lines.forEach(x => _doPurge(x, e));
-            if (user.getUsername().toLowerCase().trim() === e.target.toLowerCase().trim()) {
-              self.addServerAction(`${e.IDs.length} message${e.IDs.length !== 1 ? 's were' : ' was'} purged by ${e.initiator}`);
-            }
+            self.addServerAction(`${e.IDs.length} message${e.IDs.length !== 1 ? 's' : ''} from ${e.target} ${e.IDs.length !== 1 ? 'were' : 'was'} purged by ${e.initiator}`);
           }
         });
 
