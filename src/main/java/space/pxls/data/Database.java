@@ -1264,7 +1264,17 @@ public class Database {
                     faction = temp.fetchDisplayedFaction();
                 }
             }
-            toReturn.add(new ChatMessage(dbChatMessage.id, author, dbChatMessage.sent, App.getConfig().getBoolean("textFilter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameClass, nameColor, faction));
+            toReturn.add(new ChatMessage(
+                dbChatMessage.id,
+                author,
+                dbChatMessage.sent,
+                App.getConfig().getBoolean("textFilter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content,
+                dbChatMessage.purged ? new ChatMessage.Purge(dbChatMessage.purged_by_uid, dbChatMessage.purge_reason) : null,
+                badges,
+                nameClass,
+                nameColor,
+                faction
+            ));
         }
         return toReturn;
     }
