@@ -751,6 +751,10 @@ public class App {
         return board;
     }
 
+    public static byte[] getDefaultBoardData() {
+        return defaultBoard;
+    }
+
     public static boolean getHavePlacemap() {
         return havePlacemap;
     }
