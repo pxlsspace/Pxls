@@ -3122,9 +3122,10 @@ window.App = (function() {
             return '';
           }
 
-          const label = $('<label>').text('Hide sensitive information');
+          const label = $('<label>');
           const checkbox = $('<input type="checkbox">').css('margin-top', '10px');
-          label.prepend(checkbox);
+          const span = $('<span class="label-text">').text('Hide sensitive information');
+          label.prepend(checkbox, span);
           settings.lookup.filter.sensitive.enable.controls.add(checkbox);
           return label;
         });
@@ -3257,7 +3258,7 @@ window.App = (function() {
   })();
   const serviceWorkerHelper = (() => {
     const self = {
-      registrationPromise: null,
+      isInit: false,
       messageListeners: {},
       hasSupport: 'serviceWorker' in window.navigator,
       init() {
@@ -3265,7 +3266,10 @@ window.App = (function() {
           return;
         }
 
-        self.registrationPromise = navigator.serviceWorker.register('/serviceWorker.js')
+        navigator.serviceWorker.register('/serviceWorker.js')
+          .then(() => {
+            self.isInit = true;
+          })
           .catch((err) => {
             console.error('Failed to register Service Worker:', err);
           });
@@ -3310,11 +3314,14 @@ window.App = (function() {
         callbacks.splice(idx, 1);
       },
       postMessage(data) {
-        if (!self.registrationPromise) {
+        if (!self.isInit) {
           return;
         }
 
-        self.registrationPromise.then(() => navigator.serviceWorker.controller.postMessage(data));
+        navigator.serviceWorker.ready.then(({ installing, waiting, active }) => {
+          const worker = navigator.serviceWorker.controller || installing || waiting || active;
+          worker.postMessage(data);
+        });
       }
     };
 
@@ -3322,8 +3329,8 @@ window.App = (function() {
       get hasSupport() {
         return self.hasSupport;
       },
-      get registrationPromise() {
-        return self.registrationPromise;
+      get readyPromise() {
+        return navigator.serviceWorker.ready;
       },
       init: self.init,
       addMessageListener: self.addMessageListener,
@@ -3394,9 +3401,14 @@ window.App = (function() {
           name: 'Green',
           location: '/themes/green.css',
           color: '#005f00'
+        },
+        {
+          name: 'Matte',
+          location: '/themes/matte.css',
+          color: '#468079'
         }
       ],
-      specialChatColorClasses: ['rainbow'],
+      specialChatColorClasses: ['rainbow', 'donator'],
       init: function() {
         self.initTitle = document.title;
         self._initThemes();
@@ -3405,6 +3417,7 @@ window.App = (function() {
         self._initAccount();
         self._initBanner();
         self._initMultiTabDetection();
+        self.prettifyRange('input[type=range]');
 
         self.elements.coords.click(() => coords.copyCoords(true));
 
@@ -3445,7 +3458,7 @@ window.App = (function() {
 
         const numOrDefault = (n, def) => isNaN(n) ? def : n;
 
-        const brightnessFixElement = $('<canvas>').attr('id', 'brightness-fixer').addClass('noselect');
+        const brightnessFixElement = $('<div>').attr('id', 'brightness-fixer').addClass('noselect');
 
         settings.ui.brightness.enable.listen(function(enabled) {
           if (enabled) {
@@ -3526,6 +3539,19 @@ window.App = (function() {
           };
           $(window).on('pxls:panel:opened', toAttach);
         }
+      },
+      prettifyRange: function (ranges) {
+        ranges = $(ranges);
+        function updateBar(e) {
+          var min = e.min;
+          var max = e.max;
+          var val = e.value;
+          $(e).css({
+            backgroundSize: (val - min) * 100 / (max - min) + '% 100%'
+          });
+        }
+        ranges.on('input', (e) => updateBar(e.target));
+        ranges.each((idx, element) => updateBar(element));
       },
       _initThemes: function() {
         for (let i = 0; i < self.themes.length; i++) {
@@ -3610,7 +3636,7 @@ window.App = (function() {
             self._workerIsTabFocused = self.tabId === data.id;
           });
 
-          serviceWorkerHelper.registrationPromise.then(async () => {
+          serviceWorkerHelper.readyPromise.then(async () => {
             serviceWorkerHelper.postMessage({ type: 'request-id' });
           }).catch(() => {
             self.tabHasFocus = true;
@@ -3878,7 +3904,8 @@ window.App = (function() {
         return serviceWorkerHelper.hasSupport
           ? self._workerIsTabFocused
           : ls.get('tabs.has-focus') === self.tabId;
-      }
+      },
+      prettifyRange: self.prettifyRange
     };
   })();
   const panels = (function() {
@@ -4043,13 +4070,11 @@ window.App = (function() {
           inline: ['coordinate', 'emoji_raw', 'emoji_name', 'mention', 'escape', 'autoLink', 'url', 'underline', 'strong', 'emphasis', 'deletion', 'code']
         })
         .use(function() {
-          this.Compiler.prototype.visitors.emoji = (node, next) => crel('img', {
-            class: 'emoji',
-            alt: node.emojiName,
-            title: `:${node.emojiName}:`,
-            draggable: false,
-            src: `${twemoji.base}${twemoji.size}/${twemoji.convert.toCodePoint(node.value)}${twemoji.ext}`
-          });
+          this.Compiler.prototype.visitors.emoji = (node, next) => {
+            const el = twemoji.parse(crel('span', node.value)).children[0];
+            el.title = `:${node.emojiName}:`;
+            return el;
+          };
 
           this.Compiler.prototype.visitors.link = (node, next) => {
             const url = new URL(node.url, location.href);
@@ -4301,7 +4326,7 @@ window.App = (function() {
               }
             } else if (e.type !== 'chat_ban_state') { // chat_ban_state is a query result, not an action notice.
               self.addServerAction('You have been unbanned from chat.');
-              self.elements.rate_limit_counter.text('You can not use chat while canvas banned.');
+              self.elements.rate_limit_counter.text('You cannot use chat while canvas banned.');
               self.chatban.banned = false;
             }
             self._handleChatbanVisualState(self._canChat());
@@ -4971,7 +4996,8 @@ window.App = (function() {
         );
 
         const _selUsernameColor = crel('select', { class: 'username-color-picker' },
-          user.isStaff() ? crel('option', { value: -1, class: 'rainbow' }, '*. Rainbow') : null,
+          user.hasPermission('chat.usercolor.rainbow') ? crel('option', { value: -1, class: 'rainbow' }, '*. Rainbow') : null,
+          user.hasPermission('chat.usercolor.donator') ? crel('option', { value: -2, class: 'donator' }, '*. Donator') : null,
           place.palette.map((x, i) => crel('option', {
             value: i,
             'data-idx': i,
@@ -5024,22 +5050,23 @@ window.App = (function() {
         _rgPingAudioVol.addEventListener('change', function() {
           _txtPingAudioVol.innerText = `${(this.value * 100) >> 0}%`;
         });
+        uiHelper.prettifyRange(_rgPingAudioVol);
 
         _btnUnignore.addEventListener('click', function() {
           if (self.removeIgnore(_selIgnores.value)) {
             _selIgnores.querySelector(`option[value="${_selIgnores.value}"]`).remove();
             lblIgnoresFeedback.innerHTML = 'User unignored.';
-            lblIgnoresFeedback.style.color = '#0d0';
+            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
             lblIgnoresFeedback.style.display = 'block';
             setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 3000);
           } else if (self.ignored.length === 0) {
             lblIgnoresFeedback.innerHTML = 'You haven\'t ignored any users. Congratulations!';
-            lblIgnoresFeedback.style.color = '#d00';
+            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
             lblIgnoresFeedback.style.display = 'block';
             setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 3000);
           } else {
             lblIgnoresFeedback.innerHTML = 'Failed to unignore user. Either they weren\'t actually ignored, or an error occurred. Contact a developer if the problem persists.';
-            lblIgnoresFeedback.style.color = '#d00';
+            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
             lblIgnoresFeedback.style.display = 'block';
             setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 5000);
           }
@@ -5420,7 +5447,7 @@ window.App = (function() {
           }
         }
 
-        return crel('span', {
+        return crel('a', {
           class: 'link coordinates',
           dataset: {
             raw,
@@ -5430,7 +5457,8 @@ window.App = (function() {
             template,
             title
           },
-          onclick: template ? handleClick : null
+          href: raw,
+          onclick: handleClick
         }, text);
       },
       _handleTemplateOverwriteAction: (action, linkElem) => {
@@ -6193,7 +6221,7 @@ window.App = (function() {
         const canChat = self._canChat();
         self._handleChatbanVisualState(canChat);
         if (!canChat) {
-          if (self.elements.rate_limit_counter.text().trim().length === 0) { self.elements.rate_limit_counter.text('You can not use chat while canvas banned.'); }
+          if (self.elements.rate_limit_counter.text().trim().length === 0) { self.elements.rate_limit_counter.text('You cannot use chat while canvas banned.'); }
         }
       }
     };
@@ -6453,6 +6481,7 @@ window.App = (function() {
       chatNameColor: 0,
       getRoles: () => self.roles,
       isStaff: () => self.hasPermission('user.admin'),
+      isDonator: () => self.hasPermission('user.donator'),
       getPermissions: () => {
         let perms = [];
         self.roles.flatMap(function loop(node) {
@@ -6767,6 +6796,7 @@ window.App = (function() {
       init: self.init,
       getRoles: self.getRoles,
       isStaff: self.isStaff,
+      isDonator: self.isDonator,
       getPermissions: self.getPermissions,
       hasPermission: self.hasPermission,
       getUsername: self.getUsername,
@@ -7117,6 +7147,7 @@ window.App = (function() {
       getRoles: user.getRoles,
       isLoggedIn: user.isLoggedIn,
       isStaff: user.isStaff,
+      isDonator: user.isDonator,
       getPermissions: user.getPermissions,
       hasPermission: user.hasPermission
     },

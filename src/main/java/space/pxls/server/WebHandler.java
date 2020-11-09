@@ -319,7 +319,7 @@ public class WebHandler {
                                 }
                             } else {
                                 if (faction.getOwner() == user.getId()) {
-                                    sendBadRequest(exchange, "You can not leave a faction you own. Transfer ownership first.");
+                                    sendBadRequest(exchange, "You cannot leave a faction you own. Transfer ownership first.");
                                 } else {
                                     FactionManager.getInstance().leaveFaction(fid, user.getId());
                                     if (user.getDisplayedFaction() != null && user.getDisplayedFaction() == fid) {
@@ -1742,7 +1742,10 @@ public class WebHandler {
             App.getDatabase().insertLookup(user.getId(), exchange.getAttachment(IPReader.IP));
         }
 
-        exchange.getResponseSender().send(App.getGson().toJson(((user == null) || !user.hasPermission("board.lookup") ? Lookup.fromDB(App.getDatabase().getPixelAtUser(x, y).orElse(null)) : ExtendedLookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null)))));
+        var lookup = user != null && user.hasPermission("board.check")
+            ? ExtendedLookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null))
+            : Lookup.fromDB(App.getDatabase().getPixelAtUser(x, y).orElse(null));
+        exchange.getResponseSender().send(App.getGson().toJson(lookup));
     }
 
     public void report(HttpServerExchange exchange) {
