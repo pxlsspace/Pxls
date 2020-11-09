@@ -926,6 +926,8 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
 
 #brightness-fixer {
     position: absolute;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
     user-select: none;
     /* actually just transparent but tricks chrome into thinking it has to render this element */

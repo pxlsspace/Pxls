@@ -47,6 +47,7 @@ public class App {
     private static byte[] heatmap;
     private static byte[] placemap;
     private static byte[] virginmap;
+    private static byte[] defaultBoard;
     private static boolean havePlacemap;
 
     private static PxlsTimer mapSaveTimer;
@@ -79,7 +80,9 @@ public class App {
         heatmap = new byte[width * height];
         placemap = new byte[width * height];
         virginmap = new byte[width * height];
+        defaultBoard = null;
 
+        loadDefaultMap();
         loadMap();
         loadHeatmap();
         havePlacemap = loadPlacemap();
@@ -888,6 +891,27 @@ public class App {
         server.broadcastNoShadow(new ServerPlace(forBroadcast));
     }
 
+    private static boolean loadDefaultMap() {
+        Path path = getStorageDir().resolve("default_board.dat").toAbsolutePath();
+        if (!Files.exists(path)) {
+            defaultBoard = null;
+            return false;
+        }
+
+        try {
+            byte[] bytes = Files.readAllBytes(path);
+            defaultBoard = new byte[width * height];
+            System.arraycopy(bytes, 0, defaultBoard, 0, width * height);
+            return true;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            getLogger().error("board.dat dimensions don't match the ones on pxls.conf");
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
     private static boolean loadMap() {
         Path path = getStorageDir().resolve("board.dat");
         if (!Files.exists(path)) {
@@ -1068,19 +1092,9 @@ public class App {
     }
 
     public static byte getDefaultColor(int x, int y) {
-        Path path = getStorageDir().resolve("default_board.dat").toAbsolutePath();
-        if (Files.exists(path)) {
-            try {
-                RandomAccessFile raf = new RandomAccessFile(path.toString(), "r");
-                raf.seek(x + y * width);
-                byte b = raf.readByte();
-                raf.close();
-                return b;
-            } catch (NoSuchFileException e) {
-            } catch (IOException e) {
-            }
-        }
-        return (byte) config.getInt("board.defaultColor");
+        return App.defaultBoard != null
+            ? App.defaultBoard[x + y * App.width]
+            : (byte) config.getInt("board.defaultColor");
     }
 
     public static Database getDatabase() {

@@ -3115,9 +3115,10 @@ window.App = (function() {
             return '';
           }
 
-          const label = $('<label>').text('Hide sensitive information');
+          const label = $('<label>');
           const checkbox = $('<input type="checkbox">').css('margin-top', '10px');
-          label.prepend(checkbox);
+          const span = $('<span class="label-text">').text('Hide sensitive information');
+          label.prepend(checkbox, span);
           settings.lookup.filter.sensitive.enable.controls.add(checkbox);
           return label;
         });
@@ -3408,6 +3409,11 @@ window.App = (function() {
           name: 'Green',
           location: '/themes/green.css',
           color: '#005f00'
+        },
+        {
+          name: 'Matte',
+          location: '/themes/matte.css',
+          color: '#468079'
         }
       ],
       specialChatColorClasses: ['rainbow', 'donator'],
@@ -3419,6 +3425,7 @@ window.App = (function() {
         self._initAccount();
         self._initBanner();
         self._initMultiTabDetection();
+        self.prettifyRange('input[type=range]');
 
         self.elements.coords.click(() => coords.copyCoords(true));
 
@@ -3459,7 +3466,7 @@ window.App = (function() {
 
         const numOrDefault = (n, def) => isNaN(n) ? def : n;
 
-        const brightnessFixElement = $('<canvas>').attr('id', 'brightness-fixer').addClass('noselect');
+        const brightnessFixElement = $('<div>').attr('id', 'brightness-fixer').addClass('noselect');
 
         settings.ui.brightness.enable.listen(function(enabled) {
           if (enabled) {
@@ -3540,6 +3547,19 @@ window.App = (function() {
           };
           $(window).on('pxls:panel:opened', toAttach);
         }
+      },
+      prettifyRange: function (ranges) {
+        ranges = $(ranges);
+        function updateBar(e) {
+          var min = e.min;
+          var max = e.max;
+          var val = e.value;
+          $(e).css({
+            backgroundSize: (val - min) * 100 / (max - min) + '% 100%'
+          });
+        }
+        ranges.on('input', (e) => updateBar(e.target));
+        ranges.each((idx, element) => updateBar(element));
       },
       _initThemes: function() {
         for (let i = 0; i < self.themes.length; i++) {
@@ -3892,7 +3912,8 @@ window.App = (function() {
         return serviceWorkerHelper.hasSupport
           ? self._workerIsTabFocused
           : ls.get('tabs.has-focus') === self.tabId;
-      }
+      },
+      prettifyRange: self.prettifyRange
     };
   })();
   const panels = (function() {
@@ -4983,8 +5004,8 @@ window.App = (function() {
         );
 
         const _selUsernameColor = crel('select', { class: 'username-color-picker' },
-          user.isStaff() ? crel('option', { value: -1, class: 'rainbow' }, 'rainbow') : null,
-          user.isDonator() ? crel('option', { value: -2, class: 'donator' }, 'donator') : null,
+          user.hasPermission('chat.usercolor.rainbow') ? crel('option', { value: -1, class: 'rainbow' }, 'rainbow') : null,
+          user.hasPermission('chat.usercolor.donator') ? crel('option', { value: -2, class: 'donator' }, 'donator') : null,
           place.getPalette().map((x, i) => crel('option', {
             value: i,
             'data-idx': i,
@@ -5037,22 +5058,23 @@ window.App = (function() {
         _rgPingAudioVol.addEventListener('change', function() {
           _txtPingAudioVol.innerText = `${(this.value * 100) >> 0}%`;
         });
+        uiHelper.prettifyRange(_rgPingAudioVol);
 
         _btnUnignore.addEventListener('click', function() {
           if (self.removeIgnore(_selIgnores.value)) {
             _selIgnores.querySelector(`option[value="${_selIgnores.value}"]`).remove();
             lblIgnoresFeedback.innerHTML = 'User unignored.';
-            lblIgnoresFeedback.style.color = '#0d0';
+            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
             lblIgnoresFeedback.style.display = 'block';
             setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 3000);
           } else if (self.ignored.length === 0) {
             lblIgnoresFeedback.innerHTML = 'You haven\'t ignored any users. Congratulations!';
-            lblIgnoresFeedback.style.color = '#d00';
+            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
             lblIgnoresFeedback.style.display = 'block';
             setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 3000);
           } else {
             lblIgnoresFeedback.innerHTML = 'Failed to unignore user. Either they weren\'t actually ignored, or an error occurred. Contact a developer if the problem persists.';
-            lblIgnoresFeedback.style.color = '#d00';
+            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
             lblIgnoresFeedback.style.display = 'block';
             setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 5000);
           }
