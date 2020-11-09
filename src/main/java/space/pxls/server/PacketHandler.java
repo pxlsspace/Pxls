@@ -285,6 +285,7 @@ public class PacketHandler {
                                 for (WebSocketChannel ch : user.getConnections()) {
                                     server.send(ch, msg);
                                 }
+                                ackPlace(user, cp.getX(), cp.getY());
                                 if (user.canUndo(false)) {
                                     server.send(channel, new ServerCanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
                                 }
@@ -379,9 +380,12 @@ public class PacketHandler {
         if (nameColor != null && !nameColor.trim().isEmpty()) {
             try {
                 int t = Integer.parseInt(nameColor);
-                if (t >= -1 && t < App.getConfig().getStringList("board.palette").size()) {
-                    if (t < 0 && !user.hasPermission("chat.usercolor.rainbow")) {
+                if (t >= -2 && t < App.getConfig().getStringList("board.palette").size()) {
+                    if (t == -1 && !user.hasPermission("chat.usercolor.rainbow")) {
                         server.send(channel, new ServerACKClientUpdate(false, "Color reserved for staff members", "NameColor", null));
+                    }
+                    if (t == -2 && !user.hasPermission("chat.usercolor.donator")) {
+                        server.send(channel, new ServerACKClientUpdate(false, "Color reserved for donators", "NameColor", null));
                         return;
                     }
                     user.setChatNameColor(t, true);
@@ -403,11 +407,6 @@ public class PacketHandler {
     public void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
         server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, false, false)));
     }
-
-    private CharSequenceTranslator bracketTranslator = new LookupTranslator(new HashMap<CharSequence, CharSequence>() {{
-        put("<", "&lt;");
-        put(">", "&gt;");
-    }});
 
     public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
         int charLimit = Math.min(App.getConfig().getInt("chat.characterLimit"), 2048);
@@ -432,7 +431,7 @@ public class PacketHandler {
                 return;
             }
             try {
-                String toSend = bracketTranslator.translate(message); //filter out brackets before we do anything else so it's filtered in db
+                String toSend = message;
                 if (App.getConfig().getBoolean("chat.trimInput"))
                     toSend = toSend.trim();
                 Faction usersFaction = user.fetchDisplayedFaction();

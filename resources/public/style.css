@@ -27,7 +27,7 @@ z-index:
 
 html {
     --general-text-color: #000;
-    --general-background: #CDCDCD;
+    --general-background: #c5c5c5;
 
     --kbd-background: #eee;
     --kbd-border-color: #ddd;
@@ -379,6 +379,22 @@ dt {
     background-size: 500px 100%;
     animation: rainbow-move 4s linear 1ms infinite;
     transform: rotateZ(360deg); /* force rainbow rendering onto GPU if available */
+}
+
+@keyframes donator-move {
+    0% {
+        background-position: 5px 0%;
+    }
+    100% {
+        background-position: -500px 0%;
+    }
+}
+
+.donator {
+    background-image: linear-gradient(45deg, #94E044, #02BE01 25%, #005F00 50%, #02BE01 75%, #94E044 90%);
+    background-size: 500px 100%;
+    animation: donator-move 4s linear 1ms infinite;
+    transform: rotateZ(360deg); /* force donator rendering onto GPU if available */
 }
 
 .error {
@@ -910,6 +926,8 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
 
 #brightness-fixer {
     position: absolute;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
     user-select: none;
     /* actually just transparent but tricks chrome into thinking it has to render this element */
@@ -1717,6 +1735,36 @@ ul.chat-history, ul.chatban-history {
 }
 
 .user.rainbow {
+    display: inline-block;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+    text-shadow: none !important;
+}
+
+/*donator gradient*/
+.username-color-picker.donator {
+    background-color: black;
+    text-shadow: 0 0 0.5em black;
+    color: white;
+}
+
+/*for reference: linear-gradient(45deg, #94E044, #02BE01 25%, #005F00 50%, #02BE01 75%, #94E044 90%)*/
+@keyframes donator-transition-bg {
+    0% { background-color: #94E044; }
+    25% { background-color: #02BE01; }
+    50% { background-color: #005F00; }
+    75% { background-color: #02BE01; }
+    90% { background-color: #94E044; }
+}
+
+.username-color-picker option.donator {
+    animation: donator-transition-bg 4s linear infinite;
+    background-color: green;
+}
+
+.user.donator {
     display: inline-block;
     -webkit-background-clip: text;
     background-clip: text;
