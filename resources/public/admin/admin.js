@@ -186,7 +186,10 @@
             target: '_blank'
           }, data.username)],
           ['Profile', crel('a', { href: `/profile/${data.username}`, target: '_blank' }, data.username)],
-          ['Login', data.login],
+          ['Logins', data.logins // TODO(netux): add logins to the object returned and remove this check
+            ? data.logins.map(({ serviceID, serviceUserID }) => `${serviceID}:${serviceUserID}`).join(', ')
+            : null
+          ],
           ['Roles', data.roles.map(role => role.name).join(', ')],
           ['Pixels', data.pixelCount],
           ['All Time Pixels', data.pixelCountAllTime],
@@ -208,10 +211,14 @@
         }
         self.elements.check.empty().append(
           $('<div>').addClass('content').append(
-            $.map(items, function (o) {
+            $.map(items, function ([name, value]) {
+              if (value == null) {
+                return null;
+              }
+
               return $('<div>').append(
-                $('<b>').text(o[0] + ': '),
-                typeof o[1] === 'string' ? $('<span>').text(o[1]) : o[1]
+                $('<b>').text(name + ': '),
+                typeof value === 'string' ? $('<span>').text(value) : value
               );
             }),
             (admin.user.hasPermission('user.alert') ? $('<div>').append(sendAlert(data.username)) : ''),

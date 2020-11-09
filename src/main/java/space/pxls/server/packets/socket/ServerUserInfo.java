@@ -7,7 +7,6 @@ import java.util.List;
 public class ServerUserInfo {
     public String type = "userinfo";
     public String username;
-    public String login;
     public List<Role> roles;
     public int pixelCount;
     public int pixelCountAllTime;
@@ -24,12 +23,11 @@ public class ServerUserInfo {
     public String discordName;
     public Number chatNameColor;
 
-    public ServerUserInfo(String username, String login, List<Role> roles, int pixelCount, int pixelCountAllTime,
+    public ServerUserInfo(String username, List<Role> roles, int pixelCount, int pixelCountAllTime,
                           Boolean banned, Long banExpiry, String banReason, String method, Boolean cdOverride,
                           Boolean chatBanned, String chatbanReason, Boolean chatbanIsPerma, Long chatbanExpiry,
                           Boolean renameRequested, String discordName, Number chatNameColor) {
         this.username = username;
-        this.login = login;
         this.roles = roles;
         this.pixelCount = pixelCount;
         this.pixelCountAllTime = pixelCountAllTime;
@@ -53,10 +51,6 @@ public class ServerUserInfo {
 
     public String getUsername() {
         return username;
-    }
-
-    public String getLogin() {
-        return login;
     }
 
     public List<Role> getRoles() {

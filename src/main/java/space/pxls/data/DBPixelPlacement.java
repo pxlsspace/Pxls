@@ -73,7 +73,8 @@ public class DBPixelPlacement {
                     time == null ? 0 : time.getTime(),
                     r.getInt("u_id"),
                     r.getString("username"),
-                    r.getString("login"),
+                    // TODO(netux): fix query to fetch login methods
+                    r.getBoolean("login_with_ip") ? "ip" : "service",
                     //App.getDatabase().getUserRoles(r.getInt("u_id")),
                     ban_expiry == null ? 0 : ban_expiry.getTime(),
                     r.getInt("pixel_count"),

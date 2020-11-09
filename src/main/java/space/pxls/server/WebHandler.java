@@ -632,6 +632,10 @@ public class WebHandler {
         }
     }
 
+    public AuthService getAuthServiceByID(String id) {
+        return services.get(id);
+    }
+
     private String getBanReason(HttpServerExchange exchange) {
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         FormData.FormValue reason = data.getFirst("reason");
@@ -1421,14 +1425,13 @@ public class WebHandler {
                 exchange.getResponseSender().send(App.getGson().toJson(
                     new ServerUserInfo(
                         user.getName(),
-                        user.getLogin(),
                         user.getAllRoles(),
                         user.getPixelCount(),
                         user.getAllTimePixelCount(),
                         user.isBanned(),
                         user.getBanExpiryTime(),
                         user.getBanReason(),
-                        user.getLogin().split(":")[0],
+                        user.loginsWithIP() ? "ip" : "service",
                         user.isOverridingCooldown(),
                         !user.canChat(),
                         App.getDatabase().getChatBanReason(user.getId()),
@@ -1581,12 +1584,11 @@ public class WebHandler {
             }
 
             if (identifier != null) {
-                String login = id + ":" + identifier;
-                User user = App.getUserManager().getByLogin(login);
+                User user = App.getUserManager().getByLogin(id, identifier);
                 // If there is no user with that identifier, we make a signup token and tell the client to sign up with that token
                 if (user == null) {
                     if (service.isRegistrationEnabled()) {
-                        String signUpToken = App.getUserManager().generateUserCreationToken(login);
+                        String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin(id, identifier));
                         if (redirect) {
                             redirect(exchange, String.format("/auth_done.html?token=%s&signup=true", encodedURIComponent(signUpToken)));
                         } else {
