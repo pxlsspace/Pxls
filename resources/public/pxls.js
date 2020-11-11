@@ -3171,15 +3171,30 @@ window.App = (function() {
           }, {
             id: 'username',
             name: 'Username',
-            get: data => crel('a', {
-              href: `/profile/${data.username}`,
-              target: '_blank',
-              title: 'View Profile'
-            }, data.username)
+            get: data => data.username
+              ? crel('a', {
+                href: `/profile/${data.username}`,
+                target: '_blank',
+                title: 'View Profile'
+              }, data.username)
+              : null
           }, {
             id: 'faction',
             name: 'Faction',
             get: data => data.faction || null
+          }, {
+            id: 'origin',
+            name: 'Origin',
+            get: data => {
+              switch (data.origin) {
+                case 'nuke':
+                  return 'Part of a nuke';
+                case 'mod':
+                  return 'Placed by a staff member using cooldown override';
+                default:
+                  return null;
+              }
+            }
           }, {
             id: 'time',
             name: 'Time',
@@ -3207,11 +3222,11 @@ window.App = (function() {
           }, {
             id: 'pixels',
             name: 'Pixels',
-            get: data => data.pixel_count
+            get: data => data.pixelCount
           }, {
             id: 'pixels_alltime',
             name: 'Alltime Pixels',
-            get: data => data.pixel_count_alltime
+            get: data => data.pixelCountAlltime
           }, {
             id: 'discord_name',
             name: 'Discord',

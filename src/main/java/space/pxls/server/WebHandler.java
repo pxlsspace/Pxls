@@ -1741,8 +1741,8 @@ public class WebHandler {
         }
 
         var lookup = user != null && user.hasPermission("board.check")
-            ? ExtendedLookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null))
-            : Lookup.fromDB(App.getDatabase().getPixelAtUser(x, y).orElse(null));
+            ? ExtendedLookup.fromDB(App.getDatabase().getFullPixelAt(x, y).orElse(null))
+            : Lookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null));
         exchange.getResponseSender().send(App.getGson().toJson(lookup));
     }
 
@@ -1792,7 +1792,7 @@ public class WebHandler {
             exchange.endExchange();
             return;
         }
-        DBPixelPlacement pxl = App.getDatabase().getPixelByID(null, id);
+        DBPixelPlacementFull pxl = App.getDatabase().getPixelByID(null, id);
         if (pxl.x != x || pxl.y != y) {
             exchange.setStatusCode(StatusCodes.BAD_REQUEST);
             exchange.endExchange();
