@@ -17,9 +17,10 @@ public class CanvasInfo {
     public Boolean registrationEnabled;
     public Boolean chatRespectsCanvasBan;
     public Integer chatCharacterLimit;
+    public List<String> chatBannerText;
     public Boolean snipMode;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<String> palette, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, boolean snipMode) {
+    public CanvasInfo(String canvasCode, Integer width, Integer height, List<String> palette, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
@@ -31,6 +32,7 @@ public class CanvasInfo {
         this.registrationEnabled = registrationEnabled;
         this.chatCharacterLimit = chatCharacterLimit;
         this.chatRespectsCanvasBan = chatRespectsCanvasBan;
+        this.chatBannerText = chatBannerText;
         this.snipMode = snipMode;
     }
 
@@ -76,6 +78,10 @@ public class CanvasInfo {
 
     public Boolean getChatRespectsCanvasBan() {
         return chatRespectsCanvasBan;
+    }
+
+    public List<String> getChatBannerText() {
+        return chatBannerText;
     }
 
     public Boolean getSnipMode() {
