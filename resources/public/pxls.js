@@ -3220,7 +3220,7 @@ window.App = (function() {
                 case 'nuke':
                   return 'Part of a nuke';
                 case 'mod':
-                  return 'Placed by a staff member using cooldown override';
+                  return 'Placed by a staff member using placement overrides';
                 default:
                   return null;
               }
