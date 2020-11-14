@@ -371,6 +371,10 @@ public class User {
         return banExpiryTime;
     }
 
+    public boolean isPermaBanned() {
+        return banExpiryTime == 0;
+    }
+
     private void setBanExpiryTime(Integer timeFromNowSeconds) {
         setBanExpiryTime(timeFromNowSeconds, false);
     }

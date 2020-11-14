@@ -8,7 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.xnio.XnioWorker;
 import space.pxls.data.DBChatMessage;
-import space.pxls.data.DBPixelPlacement;
+import space.pxls.data.DBPixelPlacementFull;
 import space.pxls.data.DBRollbackPixel;
 import space.pxls.data.Database;
 import space.pxls.server.UndertowServer;
@@ -47,6 +47,7 @@ public class App {
     private static byte[] heatmap;
     private static byte[] placemap;
     private static byte[] virginmap;
+    private static byte[] defaultBoard;
     private static boolean havePlacemap;
 
     private static PxlsTimer mapSaveTimer;
@@ -79,7 +80,9 @@ public class App {
         heatmap = new byte[width * height];
         placemap = new byte[width * height];
         virginmap = new byte[width * height];
+        defaultBoard = null;
 
+        loadDefaultMap();
         loadMap();
         loadHeatmap();
         havePlacemap = loadPlacemap();
@@ -249,6 +252,7 @@ public class App {
                 String message = String.join(" ", rest);
                 App.getDatabase().insertServerAdminLog(String.format("Sent a server-wide broadcast with the content: %s", message));
                 server.broadcast(new ServerAlert("console", message));
+                System.out.println("Alert sent");
             } else if (token[0].equalsIgnoreCase("ban")) {
                 if (token.length < 2) {
                     System.out.println("Usage: ban <username> [reason]");
@@ -527,6 +531,7 @@ public class App {
                     if (toFlag != null) {
                         System.out.printf("Flagging %s as %s%n", toFlag.getName(), flagState);
                         toFlag.setRenameRequested(flagState);
+                        App.getDatabase().insertServerAdminLog(String.format("%s %s (%d) for name change", flagState ? "Flagged" : "Unflagged", toFlag.getName(), toFlag.getId()));
                     } else {
                         System.out.println("User doesn't exist");
                     }
@@ -541,6 +546,7 @@ public class App {
                         toRename.setRenameRequested(false);
                         if (toRename.updateUsername(token[2], true)) {
                             App.getServer().send(toRename, new ServerRenameSuccess(toRename.getName()));
+                            App.getDatabase().insertServerAdminLog(String.format("Changed %s's name to %s (uid: %d)", token[1], token[2], toRename.getId()));
                             System.out.println("Name updated");
                         } else {
                             System.out.println("Failed to update name (function returned false. name taken or an error occurred)");
@@ -868,7 +874,7 @@ public class App {
                 forBroadcast.add(new ServerPlace.Pixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color));
                 database.putRollbackPixel(who, rbPixel.fromId, rbPixel.toPixel.id);
             } else { //else rollback to blank canvas
-                DBPixelPlacement fromPixel = database.getPixelByID(null, rbPixel.fromId);
+                DBPixelPlacementFull fromPixel = database.getPixelByID(null, rbPixel.fromId);
                 byte rollbackDefault = getDefaultColor(fromPixel.x, fromPixel.y);
                 putPixel(fromPixel.x, fromPixel.y, rollbackDefault, who, false, "", false, "rollback");
                 forBroadcast.add(new ServerPlace.Pixel(fromPixel.x, fromPixel.y, (int) rollbackDefault));
@@ -885,9 +891,9 @@ public class App {
     }
 
     private static void undoRollback_(User who) {
-        List<DBPixelPlacement> pixels = database.getUndoPixels(who); //get all pixels that can and need to be undone
+        List<DBPixelPlacementFull> pixels = database.getUndoPixels(who); //get all pixels that can and need to be undone
         List<ServerPlace.Pixel> forBroadcast = new ArrayList<>();
-        for (DBPixelPlacement fromPixel : pixels) {
+        for (DBPixelPlacementFull fromPixel : pixels) {
             //restores original pixel
             putPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, false, "", false, "rollback undo"); //in board[]
             forBroadcast.add(new ServerPlace.Pixel(fromPixel.x, fromPixel.y, fromPixel.color)); //in websocket
@@ -923,6 +929,27 @@ public class App {
             }
         }
         server.broadcastNoShadow(new ServerPlace(forBroadcast));
+    }
+
+    private static boolean loadDefaultMap() {
+        Path path = getStorageDir().resolve("default_board.dat").toAbsolutePath();
+        if (!Files.exists(path)) {
+            defaultBoard = null;
+            return false;
+        }
+
+        try {
+            byte[] bytes = Files.readAllBytes(path);
+            defaultBoard = new byte[width * height];
+            System.arraycopy(bytes, 0, defaultBoard, 0, width * height);
+            return true;
+        } catch (ArrayIndexOutOfBoundsException e) {
+            getLogger().error("board.dat dimensions don't match the ones on pxls.conf");
+            return false;
+        } catch (IOException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     private static boolean loadMap() {
@@ -1105,19 +1132,9 @@ public class App {
     }
 
     public static byte getDefaultColor(int x, int y) {
-        Path path = getStorageDir().resolve("default_board.dat").toAbsolutePath();
-        if (Files.exists(path)) {
-            try {
-                RandomAccessFile raf = new RandomAccessFile(path.toString(), "r");
-                raf.seek(x + y * width);
-                byte b = raf.readByte();
-                raf.close();
-                return b;
-            } catch (NoSuchFileException e) {
-            } catch (IOException e) {
-            }
-        }
-        return (byte) config.getInt("board.defaultColor");
+        return App.defaultBoard != null
+            ? App.defaultBoard[x + y * App.width]
+            : (byte) config.getInt("board.defaultColor");
     }
 
     public static Database getDatabase() {

@@ -70,7 +70,7 @@ public class TextFilter {
                 anyHits = true;
                 int index = toReturn.toLowerCase().lastIndexOf(needle.toLowerCase());
                 while (index > -1) {
-                    toReturn = toReturn.substring(0, index) + repeat("*", needle.length()) + toReturn.substring(index+needle.length());
+                    toReturn = toReturn.substring(0, index) + repeat("\\*", needle.length()) + toReturn.substring(index+needle.length());
                     index = toReturn.toLowerCase().lastIndexOf(needle.toLowerCase(), index+1);
                 }
             }
@@ -79,7 +79,7 @@ public class TextFilter {
             Matcher m = p.matcher(toReturn);
             if (m.find()) {
                 anyHits = true;
-                toReturn = m.replaceAll("***");
+                toReturn = m.replaceAll("\\\\*\\\\*\\\\*");
             }
         }
 
