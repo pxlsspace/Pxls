@@ -42,8 +42,23 @@ public class Lookup {
         return null;
     }
 
+    public static Lookup fromDB(int x, int y) {
+        return Lookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null));
+    }
+
     public static Lookup fromDB(DBPixelPlacement pixelPlacement) {
         if (pixelPlacement == null) return null;
-        return new Lookup(pixelPlacement.id, pixelPlacement.x, pixelPlacement.y, originFromPixel(pixelPlacement), pixelPlacement.pixelCount, pixelPlacement.pixelCountAlltime, pixelPlacement.time, pixelPlacement.username, pixelPlacement.discordName, pixelPlacement.faction);
+        return new Lookup(
+            pixelPlacement.id,
+            pixelPlacement.x,
+            pixelPlacement.y,
+            originFromPixel(pixelPlacement),
+            pixelPlacement.pixelCount,
+            pixelPlacement.pixelCountAlltime,
+            pixelPlacement.time,
+            pixelPlacement.username,
+            pixelPlacement.discordName,
+            pixelPlacement.faction
+        );
     }
 }

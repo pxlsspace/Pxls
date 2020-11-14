@@ -1423,9 +1423,10 @@ public class WebHandler {
             if (user != null) {
                 exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
                 exchange.getResponseSender().send(App.getGson().toJson(
-                    new ServerUserInfo(
+                    new ExtendedUserInfo(
                         user.getName(),
                         user.getAllRoles(),
+                        user.getLogins(),
                         user.getPixelCount(),
                         user.getAllTimePixelCount(),
                         user.isBanned(),
@@ -1751,8 +1752,8 @@ public class WebHandler {
         }
 
         var lookup = user != null && user.hasPermission("board.check")
-            ? ExtendedLookup.fromDB(App.getDatabase().getFullPixelAt(x, y).orElse(null))
-            : Lookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null));
+            ? ExtendedLookup.fromDB(x, y)
+            : Lookup.fromDB(x, y);
         exchange.getResponseSender().send(App.getGson().toJson(lookup));
     }
 

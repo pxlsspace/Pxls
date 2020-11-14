@@ -186,7 +186,7 @@
             target: '_blank'
           }, data.username)],
           ['Profile', crel('a', { href: `/profile/${data.username}`, target: '_blank' }, data.username)],
-          ['Logins', data.logins // TODO(netux): add logins to the object returned and remove this check
+          ['Logins', data.logins
             ? data.logins.map(({ serviceID, serviceUserID }) => `${serviceID}:${serviceUserID}`).join(', ')
             : null
           ],
@@ -427,12 +427,20 @@
             : null
         });
         App.lookup.registerHook({
-          id: 'login',
-          name: 'Login',
+          id: 'logins',
+          name: 'Logins',
           sensitive: true,
           get: data => {
             const addMonoClass = localStorage.getItem('monospace_lookup') === 'true' ? ' useMono' : '';
-            return $('<div class="monoVal' + addMonoClass + '">').text(data.login);
+            const elems = $('<div>');
+            for (let i = 0; i < data.logins.length; i++) {
+              const login = data.logins[i];
+              elems.append($('<span class="monoVal' + addMonoClass + '">').text(`${login.serviceID}:${login.serviceUserID}`));
+              if (i !== data.logins.length - 1) {
+                elems.append(', ');
+              }
+            }
+            return elems;
           }
         }, {
           id: 'user_agent',
