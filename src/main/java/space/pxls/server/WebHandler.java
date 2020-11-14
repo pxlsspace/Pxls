@@ -1122,7 +1122,7 @@ public class WebHandler {
         }
 
         toFlag.setRenameRequested(isRequested);
-        App.getDatabase().insertAdminLog(user.getId(), String.format("Flagged %s (%d) for name change", toFlag.getName(), toFlag.getId()));
+        App.getDatabase().insertAdminLog(user.getId(), String.format("%s %s (%d) for name change", isRequested ? "Flagged" : "Unflagged", toFlag.getName(), toFlag.getId()));
 
         exchange.setStatusCode(200);
         exchange.getResponseSender().send("{}");
@@ -1484,14 +1484,21 @@ public class WebHandler {
             return;
         }
 
-        // do additional checks for possible multi here
-        List<String> reports = new ArrayList<String>(); //left in `reports` here for future use, however signup IP checks have been moved to dupe IP checks on auth.
-        if (reports.size() > 0) {
-            String msg = "Potential dupe user. Reasons:\n\n";
-            for (String r : reports) {
-                msg += r + "\n";
+        // Do additional checks below:
+        List<String> reports = new ArrayList<String>();
+
+        // NOTE: Dupe IP checks are done on auth, not just signup.
+
+        // check username for filter hits
+        if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(name)) {
+            reports.add(String.format("Username filter hit on \"%s\"", name));
+        }
+
+        for (String reportMessage : reports) {
+            Integer rid = App.getDatabase().insertServerReport(user.getId(), reportMessage);
+            if (rid != null) {
+                App.getServer().broadcastToStaff(new ServerReceivedReport(rid, ServerReceivedReport.REPORT_TYPE_CANVAS));
             }
-            App.getDatabase().insertServerReport(user.getId(), msg);
         }
 
         String loginToken = App.getUserManager().logIn(user, ip);
@@ -1663,6 +1670,7 @@ public class WebHandler {
             App.getRegistrationEnabled(),
             Math.min(App.getConfig().getInt("chat.characterLimit"), 2048),
             App.getConfig().getBoolean("chat.canvasBanRespected"),
+            App.getConfig().getStringList("chat.bannerText"),
             App.getConfig().getBoolean("oauth.snipMode")
         )));
     }
@@ -1743,8 +1751,8 @@ public class WebHandler {
         }
 
         var lookup = user != null && user.hasPermission("board.check")
-            ? ExtendedLookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null))
-            : Lookup.fromDB(App.getDatabase().getPixelAtUser(x, y).orElse(null));
+            ? ExtendedLookup.fromDB(App.getDatabase().getFullPixelAt(x, y).orElse(null))
+            : Lookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null));
         exchange.getResponseSender().send(App.getGson().toJson(lookup));
     }
 
@@ -1794,7 +1802,7 @@ public class WebHandler {
             exchange.endExchange();
             return;
         }
-        DBPixelPlacement pxl = App.getDatabase().getPixelByID(null, id);
+        DBPixelPlacementFull pxl = App.getDatabase().getPixelByID(null, id);
         if (pxl.x != x || pxl.y != y) {
             exchange.setStatusCode(StatusCodes.BAD_REQUEST);
             exchange.endExchange();

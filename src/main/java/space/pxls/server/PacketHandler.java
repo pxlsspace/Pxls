@@ -7,12 +7,10 @@ import com.mashape.unirest.http.async.Callback;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.typesafe.config.Config;
 import io.undertow.websockets.core.WebSocketChannel;
-import org.apache.commons.text.translate.CharSequenceTranslator;
-import org.apache.commons.text.translate.LookupTranslator;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 import space.pxls.App;
 import space.pxls.data.DBChatMessage;
-import space.pxls.data.DBPixelPlacement;
+import space.pxls.data.DBPixelPlacementFull;
 import space.pxls.server.packets.chat.*;
 import space.pxls.server.packets.socket.*;
 import space.pxls.user.Faction;
@@ -185,8 +183,8 @@ public class PacketHandler {
         boolean gotLock = user.tryGetUndoLock();
         if (gotLock) {
             try {
-                DBPixelPlacement thisPixel = App.getDatabase().getUserUndoPixel(user);
-                Optional<DBPixelPlacement> recentPixel = App.getDatabase().getPixelAt(thisPixel.x, thisPixel.y);
+                DBPixelPlacementFull thisPixel = App.getDatabase().getUserUndoPixel(user);
+                Optional<DBPixelPlacementFull> recentPixel = App.getDatabase().getFullPixelAt(thisPixel.x, thisPixel.y);
                 if (!recentPixel.isPresent()) return;
                 if (thisPixel.id != recentPixel.get().id) return;
 
@@ -195,7 +193,7 @@ public class PacketHandler {
                     sendAvailablePixels(user, "undo");
                 }
                 user.setCooldown(0);
-                DBPixelPlacement lastPixel = App.getDatabase().getPixelByID(null, thisPixel.secondaryId);
+                DBPixelPlacementFull lastPixel = App.getDatabase().getPixelByID(null, thisPixel.secondaryId);
                 if (lastPixel != null) {
                     App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
                     App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, ip, false, "user undo");
