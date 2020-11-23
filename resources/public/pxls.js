@@ -3749,7 +3749,7 @@ window.App = (function() {
       },
       resetBanner: () => {
         self.banner.curElem = 1; // set to 1 so that when we re-enable, we don't show [0] again immediately.
-        self._setBannerElems(self.banner.elements[0]);
+        self._setBannerElems(self.banner.elements[0] || []);
         self.elements.bottomBanner[0].classList.remove('transparent', 'fade', 'fade-rev');
       },
       setBannerEnabled: enabled => {
