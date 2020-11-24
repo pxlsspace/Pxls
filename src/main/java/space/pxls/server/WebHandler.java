@@ -1687,6 +1687,14 @@ public class WebHandler {
         exchange.getResponseSender().send(ByteBuffer.wrap(App.getBoardData()));
     }
 
+    public void initialdata(HttpServerExchange exchange) {
+        exchange.getResponseHeaders()
+                .put(Headers.CONTENT_TYPE, "application/binary")
+                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
+
+        exchange.getResponseSender().send(ByteBuffer.wrap(App.getDefaultBoardData()));
+    }
+
     public void heatmap(HttpServerExchange exchange) {
         exchange.getResponseHeaders()
                 .put(Headers.CONTENT_TYPE, "application/binary")
