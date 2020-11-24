@@ -4167,16 +4167,25 @@ window.App = (function() {
         });
         socket.on('chat_message', e => {
           self._process(e.message);
-          if (!self.elements.chat_panel.hasClass('open')) {
+          const isChatOpen = panels.isOpen('chat');
+          if (!isChatOpen) {
             self.elements.message_icon.addClass('has-notification');
           }
           if (self.stickToBottom) {
             const chatLine = self.elements.body.find(`[data-id="${e.message.id}"]`)[0];
             if (chatLine) {
-              if (self.elements.chat_panel.hasClass('open')) {
+              if (isChatOpen && uiHelper.tabHasFocus()) {
                 ls.set('chat-last_seen_id', e.message.id);
               }
               self._doScroll(chatLine);
+            }
+          }
+        });
+        serviceWorkerHelper.addMessageListener('focus', ({ data }) => {
+          if (uiHelper.tabId === data.id && panels.isOpen('chat')) {
+            const chatLine = self.elements.body.find('.chat-line[data-id]').last()[0];
+            if (chatLine) {
+              ls.set('chat-last_seen_id', chatLine.dataset.id);
             }
           }
         });
