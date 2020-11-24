@@ -12,7 +12,7 @@ html {
     --button-text-color-disabled: var(--button-text-color);
     --button-border-color-disabled: var(--button-border-color);
     --button-background-disabled: var(--button-background);
-    --button-text-color-hover: #141b1f;i
+    --button-text-color-hover: #141b1f;
     --button-border-color-hover: #004e00;
     --button-background-hover: #004e00;
     --dangerous-button-text-color: #141b1f;
@@ -41,7 +41,7 @@ html {
     --input-text-color: #94e044;
     --input-background: #000000;
     --input-border-color: #94e044;
-    --input-placeholder-text-color: #004e00;
+    --input-placeholder-text-color: #00b100;
     --text-blue-color: #004e00;
     --text-green-color: #94e044;
     --text-red-color: #94e044;
@@ -62,7 +62,7 @@ html {
     --panel-header-background: #000000;
     --panel-footer-text-color: var(--text-muted-color);
     --panel-footer-background: var(--panel-header-background);
-    --panel-close-button-color: #004e00;
+    --panel-close-button-color: #5a882a;
     --panel-close-button-color-hover: var(--panel-close-button-color);
     --panel-close-button-color-active: var(--panel-close-button-color);
     --panel-article-background: #000801;
