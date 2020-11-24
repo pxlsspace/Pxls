@@ -1725,7 +1725,7 @@ public class WebHandler {
         Deque<String> xq = exchange.getQueryParameters().get("x");
         Deque<String> yq = exchange.getQueryParameters().get("y");
 
-        if (xq.isEmpty() || yq.isEmpty()) {
+        if (xq == null || xq.isEmpty() || yq == null || yq.isEmpty()) {
             exchange.setStatusCode(StatusCodes.BAD_REQUEST);
             exchange.endExchange();
             return;
