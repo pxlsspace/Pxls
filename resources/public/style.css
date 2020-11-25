@@ -1292,13 +1292,9 @@ aside.panel.horizontal.right {
     border-bottom-right-radius: inherit;
 }
 
-.panel-body article p {
+.panel-body article p, .panel-body article section > h4 {
     padding: 0;
     margin: .5rem 0;
-}
-
-.panel-body article > header ~ :not(footer) > h4 ~ :not(h4) {
-    text-indent: 0.75em;
 }
 
 .panel-body article > header h1, .panel-body article > header h2, .panel-body article > header h3, .panel-body article > header h4, .panel-body article > header h5, .panel-body article > header h6 {
