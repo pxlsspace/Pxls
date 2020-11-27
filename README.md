@@ -91,14 +91,15 @@ You must update the `host` option in your `pxls.conf` otherwise session cookies 
 By default, CAPTCHAs are disabled, and need to be configured in the config to work.
 You will need a [CAPTCHA key and secret][captcha]. The type must be `Invisible reCAPTCHA`.
 
-The `captcha.host` key needs to be one of the approved domains on the reCAPTCHA admin panel. For local testing, this will likely be `localhost` (no port).
+The `host` key also needs to be one of the approved domains on the reCAPTCHA admin panel. For local testing, this will likely be `localhost` (no port).
 
 An example CAPTCHA section could look like this:
+
+    host: "example.com"
 
     captcha {
         key: "6LcedG4UAAAAAKA6l9BbRPvZ2vt3lTrCQwz8rfPe"
         secret: "6LcedG4UAAAAAIXZcNFhnLKvTQwG1E8BzQQt_-MR"
-        host: "example.com"
     }
 
 
