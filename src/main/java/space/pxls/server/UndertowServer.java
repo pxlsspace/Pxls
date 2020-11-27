@@ -177,16 +177,6 @@ public class UndertowServer {
         channel.resumeReceives();
     }
 
-    public void send(WebSocketChannel channel, Object obj) {
-        sendRaw(channel, App.getGson().toJson(obj));
-    }
-
-    public void send(User user, Object obj) {
-        for (WebSocketChannel connection : user.getConnections()) {
-            send(connection, obj);
-        }
-    }
-
     public Set<WebSocketChannel> getConnections() {
         return connections;
     }
@@ -223,6 +213,18 @@ public class UndertowServer {
                 .forEach(user -> user.getConnections()
                         .forEach(con -> WebSockets.sendText(json, con, null))
                 );
+    }
+
+    public void send(WebSocketChannel channel, Object obj) {
+        sendRaw(channel, App.getGson().toJson(obj));
+    }
+
+    public void send(User user, Object obj) {
+        sendRaw(user, App.getGson().toJson(obj));
+    }
+
+    public void sendRaw(User user, String raw) {
+        user.getConnections().forEach(channel -> sendRaw(channel, raw));
     }
 
     private void sendRaw(WebSocketChannel channel, String str) {

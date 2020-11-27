@@ -557,7 +557,22 @@ public class App {
                     System.out.printf("%s raw_packet%n", token[0]);
                     return;
                 }
-                App.getServer().broadcastRaw(line.substring(token[0].length() + 1).trim());
+                String raw = line.substring(token[0].length() + 1);
+                App.getServer().broadcastRaw(raw);
+                System.out.println("Packet broadcast sent.");
+            } else if (token[0].equalsIgnoreCase("up")) {
+                if (token.length < 3) {
+                    System.out.printf("%s username raw_packet%n", token[0]);
+                    return;
+                }
+                User user = userManager.getByName(token[1]);
+                if (user == null) {
+                    System.out.println("User doesn't exist");
+                    return;
+                }
+                String raw = line.substring(token[0].length() + token[1].length() + 2);
+                App.getServer().sendRaw(user, raw);
+                System.out.println(String.format("Packet sent to %s (UID %d)'s connections (#%d).", user.getName(), user.getId(), user.getConnections().size()));
             } else if (token[0].equalsIgnoreCase("f")) {
                 // f $FID [$ACTION[ $VALUE]]
                 String subcommand;
