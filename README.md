@@ -98,6 +98,7 @@ An example CAPTCHA section could look like this:
     host: "example.com"
 
     captcha {
+        enabled: true
         key: "6LcedG4UAAAAAKA6l9BbRPvZ2vt3lTrCQwz8rfPe"
         secret: "6LcedG4UAAAAAIXZcNFhnLKvTQwG1E8BzQQt_-MR"
     }
@@ -122,7 +123,8 @@ Commands are entered directly into the running instance (stdin):
 - `cons [authed]` - Lists the total (or authed) connection count.
 - `users` - Lists all of the authed users, by username.
 - `stack <user> [set <amount>]` - Sets the user's stack count. The user must not be on cooldown before setting.
-- `cd-override list|<user> [on|off]` - Sets or lists the cooldown override status of an user
+- `cd-override list|<user> [on|off]` - Lists all cooldown overrides or sets the cooldown override of an user
+- `captcha-override list|<user> [on|off]` - Lists all captcha overrides or sets the captcha override of an user
 - `broadcast <message>` - Sends a message in chat
 - `chatban <user> <length> <purge> <reason>` - Chat bans the user for `length` in seconds, optionally purges all of their messages
 - `permachatban <user> <purge> <reason>` - Perma chat bans the user, optionally purges all of their messages

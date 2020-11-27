@@ -29,6 +29,7 @@ public class User {
     private int pixelCount;
     private int pixelCountAllTime;
     private boolean overrideCooldown;
+    private boolean overrideCaptcha = false;
     private boolean flaggedForCaptcha = true;
     private boolean justShowedCaptcha;
     private boolean lastPlaceWasStack = false;
@@ -138,6 +139,10 @@ public class User {
         if (hasPermission("board.cooldown.override") && overrideCooldown) return 0;
 
         return Math.max(0, cooldownExpiry - System.currentTimeMillis()) / 1000f;
+    }
+
+    public void setOverrideCaptcha(boolean overrideCaptcha) {
+        this.overrideCaptcha = overrideCaptcha;
     }
 
     public boolean updateCaptchaFlagPrePlace() {
@@ -263,6 +268,10 @@ public class User {
     public boolean isOverridingCooldown() {
         if (hasPermission("board.cooldown.override")) return overrideCooldown;
         return (overrideCooldown = false);
+    }
+
+    public boolean isOverridingCaptcha() {
+        return overrideCaptcha;
     }
 
     public void validateCaptcha() {
