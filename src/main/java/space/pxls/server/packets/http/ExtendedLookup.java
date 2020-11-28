@@ -21,7 +21,7 @@ public class ExtendedLookup extends Lookup {
         this.username = username;
         this.discordName = discordName;
         this.pixelCount = username != null ? pixelCount : null;
-        this.pixelCountAlltime = username != null ? pixelCount : null;
+        this.pixelCountAlltime = username != null ? pixelCountAlltime : null;
     }
 
     public static Lookup fromDB(int x, int y) {

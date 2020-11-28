@@ -1690,6 +1690,14 @@ public class WebHandler {
         exchange.getResponseSender().send(ByteBuffer.wrap(App.getBoardData()));
     }
 
+    public void initialdata(HttpServerExchange exchange) {
+        exchange.getResponseHeaders()
+                .put(Headers.CONTENT_TYPE, "application/binary")
+                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
+
+        exchange.getResponseSender().send(ByteBuffer.wrap(App.getDefaultBoardData()));
+    }
+
     public void heatmap(HttpServerExchange exchange) {
         exchange.getResponseHeaders()
                 .put(Headers.CONTENT_TYPE, "application/binary")
@@ -1728,7 +1736,7 @@ public class WebHandler {
         Deque<String> xq = exchange.getQueryParameters().get("x");
         Deque<String> yq = exchange.getQueryParameters().get("y");
 
-        if (xq.isEmpty() || yq.isEmpty()) {
+        if (xq == null || xq.isEmpty() || yq == null || yq.isEmpty()) {
             exchange.setStatusCode(StatusCodes.BAD_REQUEST);
             exchange.endExchange();
             return;
