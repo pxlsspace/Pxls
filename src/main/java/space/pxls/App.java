@@ -722,14 +722,34 @@ public class App {
         for (ConfigValue colorConfig : paletteConfig.getList("colors")) {
             Map<String, Object> color = (Map<String, Object>) colorConfig.unwrapped();
             colors.add(new Color((String) color.get("name"), (String) color.get("value")));
+        }
 
-            if (defaultIdx == -1 && color.get("background") != null && (boolean) color.get("background")) {
-                defaultIdx = colors.size() - 1;
+        if (paletteConfig.hasPath("backgroundColor")) {
+            var backgroundColor = paletteConfig.getAnyRef("backgroundColor");
+            if (backgroundColor instanceof Integer) {
+                defaultIdx = (int) backgroundColor;
+                if (defaultIdx < 0 || defaultIdx >= colors.size()) {
+                    defaultIdx = -1;
+                    getLogger().warn("Background color index {} is out of bounds", backgroundColor);
+                }
+            } else if (backgroundColor instanceof String) {
+                for (int i = 0; i < colors.size(); i++) {
+                    if (colors.get(i).getName().equalsIgnoreCase((String) backgroundColor)) {
+                        defaultIdx = i;
+                        break;
+                    }
+                }
+
+                if (defaultIdx == -1) {
+                    getLogger().warn("Background color \"{}\" not found", backgroundColor);
+                }
             }
         }
 
         if (defaultIdx == -1) {
             defaultIdx = 0;
+            Color first = colors.get(defaultIdx);
+            getLogger().warn("Defaulting background color to the first color: \"{}\" (#{})", first.getName(), first.getValue());
         }
 
         palette = new Palette(colors, (byte) defaultIdx);
