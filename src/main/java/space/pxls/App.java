@@ -65,6 +65,7 @@ public class App {
         gson = new Gson();
 
         loadConfig();
+        loadPalette();
 
         // ensure JCS reads our configs
         JCS.getInstance("factions");
@@ -94,7 +95,6 @@ public class App {
         userManager = new UserManager();
 
         loadRoles();
-        loadPalette();
 
         new Thread(() -> {
             Scanner s = new Scanner(System.in);
