@@ -664,6 +664,16 @@ window.App = (function() {
     });
 
     return {
+      // utilities
+      filter: {
+        search: (query) => {
+          searchInput.val(query);
+          if (query) {
+            filterSettings(query);
+          }
+        }
+      },
+      // setting objects
       ui: {
         theme: {
           index: setting('ui.theme.index', SettingType.SELECT, '-1', $('#setting-ui-theme-index'))
@@ -689,10 +699,10 @@ window.App = (function() {
         },
         chat: {
           banner: {
-            enable: setting('ui.chat.banner.enable', SettingType.TOGGLE, true)
+            enable: setting('ui.chat.banner.enable', SettingType.TOGGLE, true, $('#setting-ui-chat-banner-enable'))
           },
           horizontal: {
-            enable: setting('ui.chat.horizontal.enable', SettingType.TOGGLE, false)
+            enable: setting('ui.chat.horizontal.enable', SettingType.TOGGLE, false, $('#setting-ui-chat-horizontal-enable'))
           }
         }
       },
@@ -766,31 +776,31 @@ window.App = (function() {
       },
       chat: {
         timestamps: {
-          '24h': setting('chat.timestamps.24h', SettingType.TOGGLE, false)
+          '24h': setting('chat.timestamps.24h', SettingType.TOGGLE, false, $('#setting-chat-timestamps-24h'))
         },
         badges: {
-          enable: setting('chat.badges.enable', SettingType.TOGGLE, false)
+          enable: setting('chat.badges.enable', SettingType.TOGGLE, false, $('#setting-chat-badges-enable'))
         },
         factiontags: {
-          enable: setting('chat.factiontags.enable', SettingType.TOGGLE, true)
+          enable: setting('chat.factiontags.enable', SettingType.TOGGLE, true, $('#setting-chat-factiontags-enable'))
         },
         pings: {
-          enable: setting('chat.pings.enable', SettingType.TOGGLE, true),
+          enable: setting('chat.pings.enable', SettingType.TOGGLE, true, $('#setting-chat-pings-enable')),
           audio: {
-            when: setting('chat.pings.audio.when', SettingType.SELECT, 'off'),
-            volume: setting('chat.pings.audio.volume', SettingType.RANGE, 0.5)
+            when: setting('chat.pings.audio.when', SettingType.SELECT, 'off', $('#setting-chat-pings-audio-when')),
+            volume: setting('chat.pings.audio.volume', SettingType.RANGE, 0.5, $('#setting-chat-pings-audio-volume'))
           }
         },
         links: {
           templates: {
-            preferurls: setting('chat.links.templates.preferurls', SettingType.TOGGLE, false)
+            preferurls: setting('chat.links.templates.preferurls', SettingType.TOGGLE, false, $('#setting-chat-links-templates-preferurls'))
           },
           internal: {
             behavior: setting('chat.links.internal.behavior', SettingType.SELECT, 'ask')
           }
         },
         font: {
-          size: setting('chat.font.size', SettingType.NUMBER, 16)
+          size: setting('chat.font.size', SettingType.NUMBER, 16, $('#setting-chat-font-size'))
         }
       },
       fix: {
@@ -3816,13 +3826,6 @@ window.App = (function() {
       getAvailable() {
         return self._available;
       },
-      updateSelectedNameColor: (colorIdx) => {
-        const selUsernameColor = document.querySelector('.username-color-picker');
-        if (selUsernameColor) {
-          selUsernameColor.value = colorIdx;
-          self.styleElemWithChatNameColor(selUsernameColor, colorIdx);
-        }
-      },
       styleElemWithChatNameColor: (elem, colorIdx, layer = 'bg') => {
         elem.classList.remove(...self.specialChatColorClasses);
         if (colorIdx >= 0) {
@@ -3910,7 +3913,6 @@ window.App = (function() {
       setMax: self.setMax,
       setDiscordName: self.setDiscordName,
       updateAudio: self.updateAudio,
-      updateSelectedNameColor: self.updateSelectedNameColor,
       styleElemWithChatNameColor: self.styleElemWithChatNameColor,
       setBannerEnabled: self.setBannerEnabled,
       get initTitle() {
@@ -4086,7 +4088,12 @@ window.App = (function() {
         jump_button: $('#jump-to-bottom'),
         emoji_button: $('#emojiPanelTrigger'),
         typeahead: $('#typeahead'),
-        typeahead_list: $('#typeahead ul')
+        typeahead_list: $('#typeahead ul'),
+        ping_audio_volume_value: $('#chat-pings-audio-volume-value'),
+        username_color_select: $('#selChatUsernameColor'),
+        user_ignore_select: $('#selChatUserIgnore'),
+        user_unignore_button: $('#btnChatUserUnignore'),
+        user_ignore_feedback_label: $('#lblChatUserIgnoreFeedback')
       },
       picker: null,
       markdownProcessor: null,
@@ -4117,7 +4124,7 @@ window.App = (function() {
             switch (e.updateType) {
               case 'NameColor': {
                 user.setChatNameColor(e.updateValue >> 0);
-                uiHelper.updateSelectedNameColor(e.updateValue >> 0);
+                self.updateSelectedNameColor(e.updateValue >> 0);
                 break;
               }
               default: {
@@ -4593,15 +4600,16 @@ window.App = (function() {
           }
         });
 
-        $(window).on('pxls:panel:closed', (e, which) => {
-          if (which === 'chat') {
-            if (document.querySelector('.chat-settings-title')) {
-              modal.closeAll();
-            }
+        $(window).on('pxls:user:loginState', (e, isLoggedIn) => {
+          self.updateInputLoginState(isLoggedIn);
+
+          self.elements.username_color_select.disabled = isLoggedIn;
+          if (isLoggedIn) {
+            // add role-gated colors
+            self._populateUsernameColor();
+            uiHelper.styleElemWithChatNameColor(self.elements.username_color_select[0], user.getChatNameColor());
           }
         });
-
-        $(window).on('pxls:user:loginState', (e, isLoggedIn) => self.updateInputLoginState(isLoggedIn));
 
         $(window).on('mouseup', e => {
           let target = e.target;
@@ -4633,7 +4641,10 @@ window.App = (function() {
           if (popup) popup.remove();
         });
 
-        self.elements.chat_settings_button[0].addEventListener('click', () => self.popChatSettings());
+        self.elements.chat_settings_button[0].addEventListener('click', () => {
+          settings.filter.search('Chat');
+          panels.toggle('settings');
+        });
 
         self.elements.pings_button[0].addEventListener('click', function() {
           const closeHandler = function() {
@@ -4702,6 +4713,7 @@ window.App = (function() {
           }
         });
 
+        // settings
         settings.chat.font.size.listen(function(value) {
           if (isNaN(value)) {
             modal.showText('Invalid value. Expected a number between 1 and 72');
@@ -4716,12 +4728,54 @@ window.App = (function() {
           }
         });
 
+        settings.chat.pings.audio.volume.listen(function(value) {
+          const parsed = parseFloat(value);
+          const volume = isNaN(parsed) ? 1 : parsed;
+          self.elements.ping_audio_volume_value.text(`${volume * 100 >> 0}%`);
+        });
+
         settings.chat.badges.enable.listen(function() {
           self._toggleTextIconFlairs();
         });
 
         settings.chat.factiontags.enable.listen(function() {
           self._toggleFactionTagFlairs();
+        });
+
+        const selSettingChatLinksInternalBehavior = $('#setting-chat-links-internal-behavior');
+        selSettingChatLinksInternalBehavior.append(
+          Object.values(self.TEMPLATE_ACTIONS).map(action =>
+            crel('option', { value: action.id }, action.pretty)
+          )
+        );
+        settings.chat.links.internal.behavior.controls.add(selSettingChatLinksInternalBehavior);
+
+        self.elements.username_color_select.disabled = true;
+
+        self.elements.user_ignore_select.append(
+          self.getIgnores().sort((a, b) => a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase())).map(x =>
+            crel('option', { value: x }, x)
+          )
+        );
+
+        self.elements.user_unignore_button.on('click', function() {
+          if (self.removeIgnore(self.elements.user_ignore_select.val())) {
+            self.elements.user_ignore_select.find(`option[value="${self.elements.user_ignore_select.val()}"]`).remove();
+            self.elements.user_ignore_feedback_label.text('User unignored.');
+            self.elements.user_ignore_feedback_label.css('color', 'var(--text-red-color)');
+            self.elements.user_ignore_feedback_label.css('display', 'block');
+            setTimeout(() => self.elements.user_ignore_feedback_label.fadeOut(500), 3000);
+          } else if (self.ignored.length === 0) {
+            self.elements.user_ignore_feedback_label.text('You haven\'t ignored any users. Congratulations!');
+            self.elements.user_ignore_feedback_label.css('color', 'var(--text-red-color)');
+            self.elements.user_ignore_feedback_label.css('display', 'block');
+            setTimeout(() => self.elements.user_ignore_feedback_label.fadeOut(500), 3000);
+          } else {
+            self.elements.user_ignore_feedback_label.text('Failed to unignore user. Either they weren\'t actually ignored, or an error occurred. Contact a developer if the problem persists.');
+            self.elements.user_ignore_feedback_label.css('color', 'var(--text-red-color)');
+            self.elements.user_ignore_feedback_label.css('display', 'block');
+            setTimeout(() => self.elements.user_ignore_feedback_label.fadeOut(500), 5000);
+          }
         });
       },
       _handleChatbanVisualState(canChat) {
@@ -4739,6 +4793,12 @@ window.App = (function() {
       webinit(data) {
         self.setCharLimit(data.chatCharacterLimit);
         self.canvasBanRespected = data.chatRespectsCanvasBan;
+
+        self._populateUsernameColor();
+        self.elements.username_color_select.value = user.getChatNameColor();
+        self.elements.username_color_select.on('change', function() {
+          socket.send({ type: 'UserUpdate', updates: { NameColor: String(this.value >> 0) } });
+        });
       },
       initTypeahead() {
         // init DBs
@@ -4956,6 +5016,7 @@ window.App = (function() {
           self.ignored.push(name);
           self.saveIgnores();
           $(window).trigger('pxls:chat:userIgnored', name);
+          self.elements.user_ignore_select.append(crel('option', { value: name }, name));
           return true;
         }
         return false;
@@ -4966,183 +5027,12 @@ window.App = (function() {
           const spliced = self.ignored.splice(index, 1);
           self.saveIgnores();
           $(window).trigger('pxls:chat:userUnignored', spliced && spliced[0] ? spliced[0] : false);
+          self.elements.user_ignore_select.find(`option[value="${name}"]`).remove();
           return spliced && spliced[0];
         }
         return false;
       },
       getIgnores: () => [].concat(self.ignored || []),
-      popChatSettings() {
-        // dom generation
-        const body = crel('div', { class: 'chat-settings-wrapper no-p-margin' });
-
-        const genCheckboxGroup = (label) => {
-          const cb = crel('input', { type: 'checkbox' });
-          const lbl = crel('label', { class: 'input-group' },
-            cb,
-            ' ',
-            crel('span', { class: 'label-text' }, label));
-          return [cb, lbl];
-        };
-
-        const [_cb24hTimestamps, lbl24hTimestamps] = genCheckboxGroup('24 Hour Timestamps');
-        const [_cbPixelPlaceBadges, lblPixelPlaceBadges] = genCheckboxGroup('Show pixel-placed badges');
-        const [_cbFactionTagBadges, lblFactionTagBadges] = genCheckboxGroup('Show faction tags');
-        const [_cbPings, lblPings] = genCheckboxGroup('Enable pings');
-
-        const _cbPingAudio = crel('select', {},
-          crel('option', { value: 'off' }, 'Off'),
-          crel('option', { value: 'discrete' }, 'Only when necessary'),
-          crel('option', { value: 'always' }, 'Always')
-        );
-        const lblPingAudio = crel('label', { class: 'input-group' },
-          crel('span', { class: 'label-text' }, 'Play sound on ping: '),
-          _cbPingAudio
-        );
-
-        const _rgPingAudioVol = crel('input', { type: 'range', min: 0, max: 1, step: 0.01 });
-        const _txtPingAudioVol = crel('span', { class: 'range-text-value' });
-        const lblPingAudioVol = crel('label', { class: 'input-group' },
-          crel('span', { class: 'label-text' }, 'Ping sound volume: '),
-          _rgPingAudioVol,
-          _txtPingAudioVol
-        );
-
-        const [_cbBanner, lblBanner] = genCheckboxGroup('Enable the rotating banner under chat');
-        const [_cbTemplateTitles, lblTemplateTitles] = genCheckboxGroup('Replace template titles with URLs in chat where applicable');
-
-        const _txtFontSize = crel('input', { type: 'number', min: '1', max: '72' });
-        const _btnFontSizeConfirm = crel('button', { class: 'text-button' }, crel('i', { class: 'fas fa-check' }));
-        const lblFontSize = crel('label', { class: 'input-group' },
-          crel('span', { class: 'label-text' }, 'Font Size: '),
-          _txtFontSize
-        );
-
-        const [_cbHorizontal, lblHorizontal] = genCheckboxGroup('Enable horizontal chat');
-
-        const _selInternalClick = crel('select',
-          Object.values(self.TEMPLATE_ACTIONS).map(action =>
-            crel('option', { value: action.id }, action.pretty)
-          )
-        );
-        const lblInternalAction = crel('label', { class: 'input-group' },
-          crel('span', { class: 'label-text' }, 'Default internal link action click: '),
-          _selInternalClick
-        );
-
-        const _selUsernameColor = crel('select', { class: 'username-color-picker' },
-          user.hasPermission('chat.usercolor.rainbow') ? crel('option', { value: -1, class: 'rainbow' }, 'rainbow') : null,
-          user.hasPermission('chat.usercolor.donator') ? crel('option', { value: -2, class: 'donator' }, 'donator') : null,
-          place.getPalette().map((x, i) => crel('option', {
-            value: i,
-            'data-idx': i,
-            style: `background-color: ${x}`
-          }, x))
-        );
-        const lblUsernameColor = crel('label', { class: 'input-group' },
-          crel('span', { class: 'label-text' }, 'Username Color: '),
-          _selUsernameColor
-        );
-
-        const _selIgnores = crel('select', {
-          class: 'user-ignores',
-          style: 'font-family: monospace; padding: 5px; border-radius: 5px;'
-        },
-        self.getIgnores().sort((a, b) => a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase())).map(x =>
-          crel('option', { value: x }, x)
-        )
-        );
-        const _btnUnignore = crel('button', { class: 'text-button' }, 'Unignore');
-        const lblIgnores = crel('label', { class: 'input-group' },
-          crel('span', { class: 'label-text' }, 'Ignores: '),
-          _selIgnores
-        );
-        const lblIgnoresFeedback = crel('label', { for: _selIgnores.id, class: 'extra-label' }, '');
-
-        // events/scaffolding
-        _selUsernameColor.value = user.getChatNameColor();
-        uiHelper.styleElemWithChatNameColor(_selUsernameColor, user.getChatNameColor());
-        _selUsernameColor.addEventListener('change', function() {
-          socket.send({ type: 'UserUpdate', updates: { NameColor: String(this.value >> 0) } });
-        });
-
-        settings.chat.font.size.controls.add(_txtFontSize);
-        _btnFontSizeConfirm.click(() => settings.chat.font.size.set(settings.chat.font.size.get()));
-
-        settings.chat.links.internal.behavior.controls.add(_selInternalClick);
-
-        settings.chat.timestamps['24h'].controls.add(_cb24hTimestamps);
-        settings.chat.badges.enable.controls.add(_cbPixelPlaceBadges);
-        settings.chat.factiontags.enable.controls.add(_cbFactionTagBadges);
-        settings.chat.pings.enable.controls.add(_cbPings);
-        settings.chat.pings.audio.when.controls.add(_cbPingAudio);
-        settings.chat.pings.audio.volume.controls.add(_rgPingAudioVol);
-        settings.ui.chat.banner.enable.controls.add(_cbBanner);
-        settings.chat.links.templates.preferurls.controls.add(_cbTemplateTitles);
-        settings.ui.chat.horizontal.enable.controls.add(_cbHorizontal);
-
-        _txtPingAudioVol.innerText = `${(_rgPingAudioVol.value * 100) >> 0}%`;
-        _rgPingAudioVol.addEventListener('change', function() {
-          _txtPingAudioVol.innerText = `${(this.value * 100) >> 0}%`;
-        });
-        uiHelper.prettifyRange(_rgPingAudioVol);
-
-        _btnUnignore.addEventListener('click', function() {
-          if (self.removeIgnore(_selIgnores.value)) {
-            _selIgnores.querySelector(`option[value="${_selIgnores.value}"]`).remove();
-            lblIgnoresFeedback.innerHTML = 'User unignored.';
-            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
-            lblIgnoresFeedback.style.display = 'block';
-            setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 3000);
-          } else if (self.ignored.length === 0) {
-            lblIgnoresFeedback.innerHTML = 'You haven\'t ignored any users. Congratulations!';
-            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
-            lblIgnoresFeedback.style.display = 'block';
-            setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 3000);
-          } else {
-            lblIgnoresFeedback.innerHTML = 'Failed to unignore user. Either they weren\'t actually ignored, or an error occurred. Contact a developer if the problem persists.';
-            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
-            lblIgnoresFeedback.style.display = 'block';
-            setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 5000);
-          }
-        });
-
-        crel(body,
-          crel('h3', { class: 'chat-settings-title' }, 'Chat Settings'),
-          [
-            lbl24hTimestamps,
-            lblPixelPlaceBadges,
-            lblFactionTagBadges,
-            lblPings,
-            lblHorizontal,
-            lblInternalAction,
-            lblPingAudio,
-            lblPingAudioVol,
-            lblBanner,
-            lblTemplateTitles,
-            lblFontSize,
-            lblUsernameColor,
-            lblIgnores,
-            _btnUnignore,
-            lblIgnoresFeedback
-          ].map(x => crel('div', x))
-        );
-        modal.show(modal.buildDom(
-          crel('h2', { class: 'modal-title' }, 'Chat Settings'),
-          body
-        )).one($.modal.AFTER_CLOSE, function() {
-          settings.chat.font.size.controls.remove(_txtFontSize);
-          settings.chat.links.internal.behavior.controls.remove(_selInternalClick);
-          settings.chat.timestamps['24h'].controls.remove(_cb24hTimestamps);
-          settings.chat.badges.enable.controls.remove(_cbPixelPlaceBadges);
-          settings.chat.factiontags.enable.controls.remove(_cbFactionTagBadges);
-          settings.chat.pings.enable.controls.remove(_cbPings);
-          settings.chat.pings.audio.when.controls.remove(_cbPingAudio);
-          settings.chat.pings.audio.volume.controls.remove(_rgPingAudioVol);
-          settings.ui.chat.banner.enable.controls.remove(_cbBanner);
-          settings.chat.links.templates.preferurls.controls.remove(_cbTemplateTitles);
-          settings.ui.chat.horizontal.enable.controls.remove(_cbHorizontal);
-        });
-      },
       _handlePingJumpClick: function() { // must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
         if (this && this.dataset && this.dataset.id) {
           self.scrollToCMID(this.dataset.id);
@@ -5230,6 +5120,22 @@ window.App = (function() {
         if (zoom) {
           board.setScale(zoom, true);
         }
+      },
+      updateSelectedNameColor: (colorIdx) => {
+        self.elements.username_color_select[0].value = colorIdx;
+        uiHelper.styleElemWithChatNameColor(self.elements.username_color_select[0], colorIdx);
+      },
+      _populateUsernameColor: () => {
+        self.elements.username_color_select.empty().append(
+          user.hasPermission('chat.usercolor.rainbow') ? crel('option', { value: -1, class: 'rainbow' }, 'rainbow') : null,
+          user.hasPermission('chat.usercolor.donator') ? crel('option', { value: -2, class: 'donator' }, 'donator') : null,
+          place.getPalette().map((x, i) => crel('option', {
+            value: i,
+            'data-idx': i,
+            style: `background-color: ${x}`
+          }, x))
+        );
+        self.elements.username_color_select[0].value = user.getChatNameColor();
       },
       _updateAuthorNameColor: (author, colorIdx) => {
         self.elements.body.find(`.chat-line[data-author="${author}"] .user`).each(function() {
@@ -6268,13 +6174,13 @@ window.App = (function() {
       clearPings: self.clearPings,
       setCharLimit: self.setCharLimit,
       processMessage: self.processMessage,
-      popChatSettings: self.popChatSettings,
       saveIgnores: self.saveIgnores,
       reloadIgnores: self.reloadIgnores,
       addIgnore: self.addIgnore,
       removeIgnore: self.removeIgnore,
       getIgnores: self.getIgnores,
       typeahead: self.typeahead,
+      updateSelectedNameColor: self.updateSelectedNameColor,
       updateCanvasBanState: self.updateCanvasBanState,
       registerHook: self.registerHook,
       replaceHook: self.replaceHook,
@@ -6670,7 +6576,8 @@ window.App = (function() {
           self.updatePixelCountElements();
           self.elements.pixelCounts.fadeIn(200);
           self.chatNameColor = data.chatNameColor;
-          uiHelper.updateSelectedNameColor(data.chatNameColor);
+          chat.updateSelectedNameColor(data.chatNameColor);
+          self.roles = data.roles;
           $(window).trigger('pxls:user:loginState', [true]);
           self.renameRequested = data.renameRequested;
           uiHelper.setDiscordName(data.discordName || null);
@@ -6685,7 +6592,6 @@ window.App = (function() {
           } else {
             self.elements.userInfo.fadeIn(200);
           }
-          self.roles = data.roles;
 
           if (data.banExpiry === 0) {
             isBanned = true;

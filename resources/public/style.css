@@ -1701,14 +1701,14 @@ ul.chat-history, ul.chatban-history {
     font-family: monospace;
 }
 
-.username-color-picker {
+#chat-select-username-color {
     font-family: monospace;
     font-size: 1.25rem;
     padding: 5px;
     border-radius: 5px;
 }
 
-.username-color-picker.rainbow {
+#chat-select-username-color.rainbow {
     background-color: black;
     text-shadow: 0 0 0.5em black;
     color: white;
@@ -1725,7 +1725,7 @@ ul.chat-history, ul.chatban-history {
     98%, 100% { background-color: violet; }
 }
 
-.username-color-picker option.rainbow {
+#chat-select-username-color option.rainbow {
     animation: rainbow-transition-bg 4s linear infinite;
     background-color: violet;
 }
@@ -1739,8 +1739,7 @@ ul.chat-history, ul.chatban-history {
     text-shadow: none !important;
 }
 
-/*donator gradient*/
-.username-color-picker.donator {
+#chat-select-username-color.donator {
     background-color: black;
     text-shadow: 0 0 0.5em black;
     color: white;
@@ -1755,7 +1754,7 @@ ul.chat-history, ul.chatban-history {
     90% { background-color: #94E044; }
 }
 
-.username-color-picker option.donator {
+#chat-select-username-color option.donator {
     animation: donator-transition-bg 4s linear infinite;
     background-color: green;
 }

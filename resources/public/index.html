@@ -333,6 +333,84 @@
                 </section>
             </div>
         </article>
+        <article data-keywords="chat;message;ping sound">
+            <header>
+                <h3>Chat Settings</h3>
+            </header>
+            <div class="pad-wrapper">
+                <section data-keywords="username;color;colour">
+                    <div>
+                        <label class="input-group">
+                            <span class="label-text">Username Color: </span>
+                            <select id="selChatUsernameColor"></select>
+                        </label>
+                    </div>
+                </section>
+                <section data-keywords="chat message;chat ui">
+                    <h4>Interface</h4>
+                    <div data-keywords="chat size;chat font">
+                        <label class="input-group">
+                            <span class="label-text">Font Size: </span>
+                            <input id="setting-chat-font-size" class="small-input" type="number" min="1" max="72">
+                        </label>
+                    </div>
+                    <div data-keywords="time;timestamps">
+                        <label class="input-group">
+                            <input id="setting-chat-timestamps-24h" type="checkbox">
+                            <span class="label-text">24 Hour Timestamps</span>
+                        </label>
+                    </div>
+                    <div data-keywords="badges;pixel count;pixels placed">
+                        <label class="input-group">
+                            <input id="setting-chat-badges-enable" type="checkbox">
+                            <span class="label-text">Show pixel-placed badges</span>
+                        </label>
+                    </div>
+                    <div data-keywords="badges;factions">
+                        <label class="input-group">
+                            <input id="setting-chat-factiontags-enable" type="checkbox">
+                            <span class="label-text">Show faction tags</span>
+                        </label>
+                    </div>
+                    <div data-keywords="template urls;template links;template name">
+                        <label class="input-group">
+                            <input id="setting-chat-links-templates-preferurls" type="checkbox">
+                            <span class="label-text">Replace template titles with URLs in chat where applicable</span>
+                        </label>
+                    </div>
+                    <div data-keywords="chat orientation;chat position">
+                        <label class="input-group">
+                            <input id="setting-ui-chat-horizontal-enable" type="checkbox">
+                            <span class="label-text">Enable horizontal chat</span>
+                        </label>
+                    </div>
+                    <div data-keywords="banner;animation">
+                        <label class="input-group">
+                            <input id="setting-ui-chat-banner-enable" type="checkbox">
+                            <span class="label-text">Enable the rotating banner under chat</span>
+                        </label>
+                    </div>
+                    <div data-keywords="link;url;behaviour">
+                        <label class="input-group">
+                            <span class="label-text">Default internal link action click: </span>
+                            <select id="setting-chat-links-internal-behavior"></select>
+                        </label>
+                    </div>
+                </section>
+                <section data-keywords="ignored;ignores;unignore;blocked;blocking;unblock">
+                    <h4>Ignores</h4>
+                    <div data-keywords="unignore;unblock">
+                        <label class="input-group">
+                            <select id="selChatUserIgnore" class="fullwidth" style="font-family: monospace; padding: 5px; border-radius: 5px;"></select>
+                        </label>
+                        <div class="button-bar">
+                            <button class="text-button" id="btnChatUserUnignore">Unignore</button>
+                        </div>
+                        <label id="chat-label-user-ignore-feedback" for="lblChatUserIgnoreFeedback" class="text-red extra-label"></label>
+                    </div>
+                </section>
+            </div>
+        </article>
         <article data-keywords="overlays;virginmap;heatmap;grid">
             <header>
                 <h3>Overlay Settings</h3>
@@ -555,6 +633,32 @@
                         <label class="input-group">
                             <span class="label-text">Delay (seconds):</span>
                             <input type="number" width="30px" value="0" id="setting-place-alert-delay">
+                        </label>
+                    </div>
+                </section>
+                <section data-keywords="chat mentions;chat pings;chat sound">
+                    <h4>Chat Pings</h4>
+                    <div data-keywords="enable mentions">
+                        <label class="input-group">
+                            <input id="setting-chat-pings-enable" type="checkbox">
+                            <span class="label-text">Enable pings</span>
+                        </label>
+                    </div>
+                    <div data-keywords="mention sound">
+                        <label class="input-group">
+                            <span class="label-text">Play sound on ping: </span>
+                            <select id="setting-chat-pings-audio-when">
+                                <option value="off">Off</option>
+                                <option value="discrete">Only when necessary</option>
+                                <option value="always">Always</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div data-keywords="mention sound volume">
+                        <label class="input-group">
+                            <span class="label-text">Ping sound volume: </span>
+                            <input id="setting-chat-pings-audio-volume" type="range" min="0" max="1" step="0.01">
+                            <span class="range-text-value" id="chat-pings-audio-volume-value">50%</span>
                         </label>
                     </div>
                 </section>
