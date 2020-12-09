@@ -3408,6 +3408,11 @@ window.App = (function() {
           name: 'Matte',
           location: '/themes/matte.css',
           color: '#468079'
+        },
+        {
+          name: 'Red',
+          location: '/themes/red.css',
+          color: '#cf0000'
         }
       ],
       specialChatColorClasses: ['rainbow', 'donator'],
