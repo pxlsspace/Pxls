@@ -401,22 +401,20 @@ public class Database {
                 .mapToMap()
                 .map(entry -> {
                     int from = toIntExact((long) entry.get("secondary_id"));
-                    DBPixelPlacementFull fromPixel = handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.undo_action, u.id as u_id, u.username, u.login, u.ban_expiry, u.is_shadow_banned, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.discord_name FROM pixels p LEFT JOIN users u on p.who = u.id WHERE p.id = :id")
+                    return handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.undo_action, u.id as u_id, u.username, u.login, u.ban_expiry, u.is_shadow_banned, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.discord_name FROM pixels p LEFT JOIN users u on p.who = u.id WHERE p.id = :id")
                             .bind("id", from)
                             .map(new DBPixelPlacementFull.Mapper())
                             .first();
-                    boolean canUndo = handle.select("SELECT NOT EXISTS(SELECT 1 FROM pixels WHERE x = :x AND y = :y AND most_recent AND id > :id)")
-                            .bind("x", fromPixel.x)
-                            .bind("y", fromPixel.y)
-                            .bind("id", fromPixel.id)
-                            .mapTo(Boolean.class)
-                            .first();
-                    if (canUndo) {
-                        return fromPixel;
-                    }
-                    return null;
                 })
-                .list());
+                .stream()
+                // Filter out places where pixels were placed after the initial rollback.
+                .filter(fromPixel -> handle.select("SELECT NOT EXISTS(SELECT 1 FROM pixels WHERE x = :x AND y = :y AND most_recent AND id > :id)")
+                    .bind("x", fromPixel.x)
+                    .bind("y", fromPixel.y)
+                    .bind("id", fromPixel.id)
+                    .mapTo(Boolean.class)
+                    .first())
+                .collect(Collectors.toList()));
     }
 
     /**
