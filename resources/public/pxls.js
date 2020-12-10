@@ -5065,7 +5065,6 @@ window.App = (function() {
         _selUsernameColor.value = user.getChatNameColor();
         uiHelper.styleElemWithChatNameColor(_selUsernameColor, user.getChatNameColor());
         _selUsernameColor.addEventListener('change', function() {
-          _selUsernameColor.value = user.getChatNameColor();
           _selUsernameColor.disabled = true;
 
           const color = this.value >> 0;
@@ -5078,7 +5077,6 @@ window.App = (function() {
             success: () => {
               user.setChatNameColor(color);
               uiHelper.updateSelectedNameColor(color);
-              _selUsernameColor.value = user.getChatNameColor();
               _lblUsernameColorFeedback.innerText = 'Color updated';
             },
             error: (data) => {
@@ -5090,6 +5088,7 @@ window.App = (function() {
               }
             },
             complete: () => {
+              _selUsernameColor.value = user.getChatNameColor();
               _selUsernameColor.disabled = false;
             }
           });
