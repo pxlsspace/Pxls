@@ -17,6 +17,7 @@ import space.pxls.server.packets.chat.ClientChatMessage;
 import space.pxls.server.packets.socket.*;
 import space.pxls.user.*;
 import space.pxls.util.*;
+import space.pxls.palette.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +50,7 @@ public class App {
     private static byte[] virginmap;
     private static byte[] defaultBoard;
     private static boolean havePlacemap;
+    private static Palette palette;
 
     private static PxlsTimer mapSaveTimer;
     private static PxlsTimer mapBackupTimer;
@@ -63,6 +65,7 @@ public class App {
         gson = new Gson();
 
         loadConfig();
+        loadPalette();
 
         // ensure JCS reads our configs
         JCS.getInstance("factions");
@@ -708,6 +711,49 @@ public class App {
             role.setInherits(inherits);
         });
     }
+    public static void loadPalette() {
+        // NOTE: This differs from the way pxls.conf is handled, as we don't merge the palette-reference.conf
+        // file into roles.conf, but use it as a default in case palette.conf doesn't exist or is invalid.
+        var paletteConfigFile = new File("palette.conf");
+        var paletteConfig = ConfigFactory.parseFile(paletteConfigFile.exists() ? paletteConfigFile : new File("resources/palette-reference.conf"));
+
+        ArrayList<Color> colors = new ArrayList<Color>();
+        int defaultIdx = -1;
+        for (ConfigValue colorConfig : paletteConfig.getList("colors")) {
+            Map<String, Object> color = (Map<String, Object>) colorConfig.unwrapped();
+            colors.add(new Color((String) color.get("name"), (String) color.get("value")));
+        }
+
+        if (paletteConfig.hasPath("backgroundColor")) {
+            var backgroundColor = paletteConfig.getAnyRef("backgroundColor");
+            if (backgroundColor instanceof Integer) {
+                defaultIdx = (int) backgroundColor;
+                if (defaultIdx < 0 || defaultIdx >= colors.size()) {
+                    defaultIdx = -1;
+                    getLogger().warn("Background color index {} is out of bounds", backgroundColor);
+                }
+            } else if (backgroundColor instanceof String) {
+                for (int i = 0; i < colors.size(); i++) {
+                    if (colors.get(i).getName().equalsIgnoreCase((String) backgroundColor)) {
+                        defaultIdx = i;
+                        break;
+                    }
+                }
+
+                if (defaultIdx == -1) {
+                    getLogger().warn("Background color \"{}\" not found", backgroundColor);
+                }
+            }
+        }
+
+        if (defaultIdx == -1) {
+            defaultIdx = 0;
+            Color first = colors.get(defaultIdx);
+            getLogger().warn("Defaulting background color to the first color: \"{}\" (#{})", first.getName(), first.getValue());
+        }
+
+        palette = new Palette(colors, (byte) defaultIdx);
+    }
 
     public static int getStackMultiplier() {
         return stackMultiplier;
@@ -754,16 +800,16 @@ public class App {
         return board;
     }
 
+    public static byte[] getDefaultBoardData() {
+        return defaultBoard;
+    }
+
     public static boolean getHavePlacemap() {
         return havePlacemap;
     }
 
     public static Path getStorageDir() {
         return Paths.get(config.getString("server.storage"));
-    }
-
-    public static List<String> getPalette() {
-        return config.getStringList("board.palette");
     }
 
     public static boolean isCaptchaEnabled() {
@@ -792,7 +838,7 @@ public class App {
     }
 
     public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase, String action) {
-        if (x < 0 || x >= width || y < 0 || y >= height || (color >= getPalette().size() && !(color == 0xFF || color == -1))) return;
+        if (x < 0 || x >= width || y < 0 || y >= height || (color >= getPalette().getColors().size() && !(color == 0xFF || color == -1))) return;
         String userName = user != null ? user.getName() : "<server>";
 
         if (action.trim().isEmpty()) {
@@ -1097,7 +1143,7 @@ public class App {
     public static byte getDefaultColor(int x, int y) {
         return App.defaultBoard != null
             ? App.defaultBoard[x + y * App.width]
-            : (byte) config.getInt("board.defaultColor");
+            : palette.getDefaultColorIndex();
     }
 
     public static Database getDatabase() {
@@ -1106,6 +1152,10 @@ public class App {
 
     public static UndertowServer getServer() {
         return server;
+    }
+
+    public static Palette getPalette() {
+        return palette;
     }
 
     public static long getUserIdleTimeout() {
