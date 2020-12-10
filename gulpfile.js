@@ -25,7 +25,7 @@ function css () {
 }
 
 function minJS () {
-  return src('resources/publlic/*.min.js')
+  return src('resources/public/*.min.js')
     .pipe(dest('target/classes/public'));
 }
 
