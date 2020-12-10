@@ -15,6 +15,7 @@ virginmap.dat
 placemap.dat
 pxls.conf
 roles.conf
+palette.conf
 index_cache.html
 TODO
 *-canvas-*/

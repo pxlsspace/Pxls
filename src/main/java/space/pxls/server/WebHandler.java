@@ -160,7 +160,7 @@ public class WebHandler {
                     m.put("requested_self", requested_self);
                     m.put("profile_of", profileUser);
                     m.put("factions", factions);
-                    m.put("palette", App.getConfig().getStringList("board.palette"));
+                    m.put("palette", App.getPalette().getColors().stream().map(color -> color.getValue()).collect(Collectors.toList()));
                     m.put("route_root", requested_self ? "/profile" : String.format("/profile/%s", requested));
 
                     if (requested_self) {
@@ -1653,6 +1653,8 @@ public class WebHandler {
     }
 
     public void info(HttpServerExchange exchange) {
+        User user = exchange.getAttachment(AuthReader.USER);
+
         exchange.getResponseHeaders()
                 .add(HttpString.tryFromString("Content-Type"), "application/json")
                 .add(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
@@ -1660,7 +1662,7 @@ public class WebHandler {
             App.getCanvasCode(),
             App.getWidth(),
             App.getHeight(),
-            App.getConfig().getStringList("board.palette"),
+            App.getPalette().getColors(),
             App.getConfig().getString("captcha.key"),
             (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS),
             (int) App.getConfig().getInt("stacking.maxStacked"),
