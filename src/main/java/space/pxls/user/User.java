@@ -104,7 +104,7 @@ public class User {
     }
 
     public boolean canPlaceColor(int color) {
-        return color >= 0 && (color < App.getPalette().size() || (color == 0xFF && placementOverrides.getCanPlaceAnyColor()));
+        return color >= 0 && (color < App.getPalette().getColors().size() || (color == 0xFF && placementOverrides.getCanPlaceAnyColor()));
     }
 
     public boolean canPlace() {

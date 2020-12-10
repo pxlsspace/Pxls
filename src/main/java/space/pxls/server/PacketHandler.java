@@ -390,7 +390,7 @@ public class PacketHandler {
         if (nameColor != null && !nameColor.trim().isEmpty()) {
             try {
                 int t = Integer.parseInt(nameColor);
-                if (t >= -2 && t < App.getConfig().getStringList("board.palette").size()) {
+                if (t >= -2 && t < App.getPalette().getColors().size()) {
                     if (t == -1 && !user.hasPermission("chat.usercolor.rainbow")) {
                         server.send(channel, new ServerACKClientUpdate(false, "Color reserved for staff members", "NameColor", null));
                     }
