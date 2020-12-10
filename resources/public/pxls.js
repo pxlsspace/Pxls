@@ -2674,7 +2674,7 @@ window.App = (function() {
       },
       switch: function(newColorIdx) {
         const isOnPalette = newColorIdx >= 0 && newColorIdx < self.palette.length;
-        const isTransparent = newColorIdx === 0xFF && user.placementOverrides.canPlaceAnyColor;
+        const isTransparent = newColorIdx === 0xFF && user.placementOverrides?.canPlaceAnyColor;
 
         if (!isOnPalette && !isTransparent) {
           newColorIdx = -1;
