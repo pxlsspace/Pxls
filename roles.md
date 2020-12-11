@@ -43,7 +43,6 @@ roleID {
 | Node | Endpoint | Purpose | Default Role |
 | --- | --- | --- | --- |
 | `board.check` | `/admin/check` | Detailed user lookups **\[!\]** | staff |
-| `board.cooldown.override` | | Overrides cooldown | staff |
 | `board.data` | `/boarddata`, `/heatmap`, `/virginmap`, `/placemap` | Access all forms of board data | guest |
 | `board.info` | `/info` | Access to basic board metadata | guest |
 | `board.lookup` | `/lookup` | Pixel information lookups | user |
@@ -51,6 +50,9 @@ roleID {
 | `board.report` | `/report` | Report pixels | user |
 | `board.socket` | `/ws` | Access live board updates | guest |
 | `board.undo` | | Undo pixels | user |
+| `board.cooldown.ignore`, `board.cooldown.override` | | Ignore cooldown (when enabled) | moderator, developer |
+| `board.palette.all` | | Select and place any valid color, including transparent pixels (when enabled) | moderator, developer |
+| `board.placemap.ignore` | | Place on the placemap (when enabled) | administrator, developer |
 
 \[!\] Includes sensitive information (e.g. login method, user-agent, ban data)
 

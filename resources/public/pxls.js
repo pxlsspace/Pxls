@@ -1842,9 +1842,9 @@ window.App = (function() {
         if (!self.loaded) {
           return self.pixelBuffer.findIndex((pix) => pix.x === x && pix.y === y);
         }
-        const colorValue = self.intView[y * self.width + x] & 0x00FFFFFF;
-        const index = place.palette.findIndex(({ value }) => value === colorValue);
-        return index;
+        const colorValue = self.intView[y * self.width + x];
+        const index = self.rgbPalette.indexOf(colorValue);
+        return index !== -1 ? index : 0xFF;
       },
       _setPixelIndex: function(i, c) {
         if (c === -1 || c === 0xFF) {
@@ -2673,6 +2673,13 @@ window.App = (function() {
         self.autoreset = !!v;
       },
       switch: function(newColorIdx) {
+        const isOnPalette = newColorIdx >= 0 && newColorIdx < self.palette.length;
+        const isTransparent = newColorIdx === 0xFF && user.placementOverrides?.canPlaceAnyColor;
+
+        if (!isOnPalette && !isTransparent) {
+          newColorIdx = -1;
+        }
+
         self.color = newColorIdx;
         ls.set('color', newColorIdx);
         $('.palette-color').removeClass('active');
@@ -2690,10 +2697,11 @@ window.App = (function() {
           self.toggleCursor(true);
         }
         if ('setProperty' in document.documentElement.style) {
-          document.documentElement.style.setProperty('--selected-palette-color', `#${self.palette[newColorIdx].value}`);
+          document.documentElement.style.setProperty('--selected-palette-color', isTransparent ? 'transparent' : `#${self.palette[newColorIdx].value}`);
         }
-        self.elements.cursor.css('background-color', `#${self.palette[newColorIdx].value}`);
-        self.elements.reticule.css('background-color', `#${self.palette[newColorIdx].value}`);
+        [self.elements.cursor, self.elements.reticule].forEach((el) => el
+          .css('background-color', isOnPalette ? `#${self.palette[newColorIdx].value}` : (isTransparent ? 'var(--general-background)' : null))
+        );
         if (newColorIdx !== -1) {
           $($('.palette-color[data-idx=' + newColorIdx + '],.palette-color[data-idx=-1]')).addClass('active'); // Select both the new color AND the deselect button. Signifies more that it's a deselect button rather than a "delete pixel" button
           try {
@@ -2797,6 +2805,17 @@ window.App = (function() {
         self.elements.palette.prepend(
           $('<button>')
             .attr('type', 'button')
+            .attr('data-idx', 0xFF)
+            .addClass('palette-color palette-color-special checkerboard-background pixelate')
+            .addClass('ontouchstart' in window ? 'touch' : 'no-touch')
+            .hide()
+            .click(function() {
+              self.switch(0xFF);
+            })
+        );
+        self.elements.palette.prepend(
+          $('<button>')
+            .attr('type', 'button')
             .attr('data-idx', -1)
             .addClass('palette-color no-border deselect-button')
             .addClass('ontouchstart' in window ? 'touch' : 'no-touch').css('background-color', 'transparent')
@@ -2807,6 +2826,9 @@ window.App = (function() {
               self.switch(-1);
             })
         );
+      },
+      togglePaletteSpecialColors: (show) => {
+        self.elements.palette.find('.palette-color.palette-color-special').toggle(show);
       },
       can_undo: false,
       undo: function(evt) {
@@ -2878,6 +2900,12 @@ window.App = (function() {
           }
 
           if (uiHelper.getAvailable() === 0) { uiHelper.setPlaceableText(data.ackFor === 'PLACE' ? 0 : 1); }
+        });
+        socket.on('admin_placement_overrides', function(data) {
+          self.togglePaletteSpecialColors(data.placementOverrides.canPlaceAnyColor);
+          if (!data.placementOverrides.canPlaceAnyColor && self.color === 0xFF) {
+            self.switch(-1);
+          }
         });
         socket.on('captcha_required', function(data) {
           if (!self.isDoingCaptcha) {
@@ -2954,6 +2982,7 @@ window.App = (function() {
       },
       getPaletteColorValue: (idx, def = '000000') => self.palette[idx] ? self.palette[idx].value : def,
       getPaletteABGR: self.getPaletteABGR,
+      togglePaletteSpecialColors: self.togglePaletteSpecialColors,
       setAutoReset: self.setAutoReset,
       setNumberedPaletteEnabled: self.setNumberedPaletteEnabled,
       get color() {
@@ -3198,7 +3227,7 @@ window.App = (function() {
                 case 'nuke':
                   return 'Part of a nuke';
                 case 'mod':
-                  return 'Placed by a staff member using cooldown override';
+                  return 'Placed by a staff member using placement overrides';
                 default:
                   return null;
               }
@@ -6529,6 +6558,7 @@ window.App = (function() {
       pendingSignupToken: null,
       loggedIn: false,
       username: '',
+      placementOverrides: null,
       chatNameColor: 0,
       getRoles: () => self.roles,
       isStaff: () => self.hasPermission('user.admin'),
@@ -6684,6 +6714,8 @@ window.App = (function() {
           self.pixelCountAllTime = data.pixelCountAllTime;
           self.updatePixelCountElements();
           self.elements.pixelCounts.fadeIn(200);
+          self.placementOverrides = data.placementOverrides;
+          place.togglePaletteSpecialColors(data.placementOverrides.canPlaceAnyColor);
           self.chatNameColor = data.chatNameColor;
           uiHelper.updateSelectedNameColor(data.chatNameColor);
           $(window).trigger('pxls:user:loginState', [true]);
@@ -6718,8 +6750,7 @@ window.App = (function() {
                 user: user,
                 modal: modal,
                 lookup: lookup,
-                chat: chat,
-                cdOverride: data.cdOverride
+                chat: chat
               }, admin => { self.admin = admin; });
             });
           } else if (window.deInitAdmin) {
@@ -6758,6 +6789,9 @@ window.App = (function() {
 
           // For userscripts.
           $(window).trigger('pxls:pixelCounts:update', Object.assign({}, data));
+        });
+        socket.on('admin_placement_overrides', function(data) {
+          self.placementOverrides = data.placementOverrides;
         });
         socket.on('rename', function(e) {
           if (e.requested === true) {
@@ -6863,6 +6897,9 @@ window.App = (function() {
       setChatNameColor: c => { self.chatNameColor = c; },
       get admin() {
         return self.admin || false;
+      },
+      get placementOverrides() {
+        return self.placementOverrides;
       }
     };
   })();
