@@ -108,6 +108,15 @@ window.App = (function() {
       return imgCanv.getContext('2d').getImageData(0, 0, w, h);
     }
   };
+  const intToHex = (i) => `#${('000000' + (i >>> 0).toString(16)).slice(-6)}`;
+  const hexToRGB = function(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  };
   const analytics = function() {
     if (window.ga) {
       window.ga.apply(this, arguments);
@@ -1237,7 +1246,7 @@ window.App = (function() {
       },
       replayBuffer: function() {
         $.map(self.pixelBuffer, function(p) {
-          self.setPixel(p.x, p.y, p.c, false);
+          self.setPixelIndex(p.x, p.y, p.c, false);
         });
         self.refresh();
         self.pixelBuffer = [];
@@ -1247,14 +1256,10 @@ window.App = (function() {
         self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
 
         self.intView = new Uint32Array(self.id.data.buffer);
-        self.rgbPalette = place.getPaletteRGB();
+        self.rgbPalette = place.getPaletteABGR();
 
         for (let i = 0; i < self.width * self.height; i++) {
-          if (data[i] === 0xFF) {
-            self.intView[i] = 0x00000000; // transparent pixel!
-          } else {
-            self.intView[i] = self.rgbPalette[data[i]];
-          }
+          self._setPixelIndex(i, data[i]);
         }
 
         self.ctx.putImageData(self.id, 0, 0);
@@ -1353,7 +1358,7 @@ window.App = (function() {
             case 'j':
             case 'J':
               if (place.color < 1) {
-                place.switch(place.getPaletteRGB().length - 1);
+                place.switch(place.palette.length - 1);
               } else {
                 place.switch(place.color - 1);
               }
@@ -1362,7 +1367,7 @@ window.App = (function() {
             case 75: // K
             case 'k':
             case 'K':
-              if (place.color + 1 >= place.getPaletteRGB().length) {
+              if (place.color + 1 >= place.palette.length) {
                 place.switch(0);
               } else {
                 place.switch(place.color + 1);
@@ -1543,7 +1548,7 @@ window.App = (function() {
             if (settings.place.picker.enable.get() === true && event.button === 1 && dx < 15 && dy < 15) {
               // If so, switch to the color at the location.
               const { x, y } = self.fromScreen(event.clientX, event.clientY);
-              place.switch(self.getPixel(x, y));
+              place.switch(self.getPixelIndex(x, y));
             }
           }
         }
@@ -1604,7 +1609,7 @@ window.App = (function() {
         });
       },
       start: function() {
-        $.get('/info', (data) => {
+        $.get('/info', async (data) => {
           overlays.webinit(data);
           user.webinit(data);
           self.width = data.width;
@@ -1630,14 +1635,6 @@ window.App = (function() {
           self.setScale(query.get('scale') || self.scale, false);
           self.centerOn(cx, cy, true);
           socket.init();
-
-          (async function() {
-            try {
-              self.draw(await binaryAjax('/boarddata' + '?_' + (new Date()).getTime()));
-            } catch (e) {
-              socket.reconnect();
-            }
-          })();
 
           if (self.use_js_render) {
             $(window).resize(function() {
@@ -1688,7 +1685,15 @@ window.App = (function() {
             // this rounds the current scale if it needs rounding
             self.setScale(self.getScale());
           });
-        }).fail(function() {
+
+          try {
+            self.draw(await binaryAjax('/boarddata' + '?_' + (new Date()).getTime()));
+          } catch (e) {
+            console.error('Error drawing board:', e);
+            socket.reconnect();
+          }
+        }).fail(function(e) {
+          console.error('Error fetching /info:', e);
           socket.reconnect();
         });
       },
@@ -1831,14 +1836,25 @@ window.App = (function() {
 
         self.setScale(self.scale * zoomBase ** adj);
       },
-      getPixel: function(x, y) {
+      getPixelIndex: function(x, y) {
         x = Math.floor(x);
         y = Math.floor(y);
-        const colorInt = self.intView[y * self.width + x];
-        const index = self.rgbPalette.indexOf(colorInt);
-        return index;
+        if (!self.loaded) {
+          return self.pixelBuffer.findIndex((pix) => pix.x === x && pix.y === y);
+        }
+        const colorValue = self.intView[y * self.width + x];
+        const index = self.rgbPalette.indexOf(colorValue);
+        return index !== -1 ? index : 0xFF;
       },
-      setPixel: function(x, y, c, refresh) {
+      _setPixelIndex: function(i, c) {
+        if (c === -1 || c === 0xFF) {
+          // transparent.
+          self.intView[i] = 0x00000000;
+        } else {
+          self.intView[i] = self.rgbPalette[c];
+        }
+      },
+      setPixelIndex: function(x, y, c, refresh) {
         if (!self.loaded) {
           self.pixelBuffer.push({
             x: x,
@@ -1850,11 +1866,7 @@ window.App = (function() {
         if (refresh === undefined) {
           refresh = true;
         }
-        if (c === -1 || c === 0xFF) {
-          self.intView[y * self.width + x] = 0x00000000;
-        } else {
-          self.intView[y * self.width + x] = self.rgbPalette[c];
-        }
+        self._setPixelIndex(y * self.width + x, c);
         if (refresh) {
           self.ctx.putImageData(self.id, 0, 0);
         }
@@ -1953,8 +1965,8 @@ window.App = (function() {
       getScale: self.getScale,
       nudgeScale: self.nudgeScale,
       setScale: self.setScale,
-      getPixel: self.getPixel,
-      setPixel: self.setPixel,
+      getPixelIndex: self.getPixelIndex,
+      setPixelIndex: self.setPixelIndex,
       fromScreen: self.fromScreen,
       toScreen: self.toScreen,
       save: self.save,
@@ -2660,13 +2672,20 @@ window.App = (function() {
       setAutoReset: function(v) {
         self.autoreset = !!v;
       },
-      switch: function(newColor) {
-        self.color = newColor;
-        ls.set('color', newColor);
+      switch: function(newColorIdx) {
+        const isOnPalette = newColorIdx >= 0 && newColorIdx < self.palette.length;
+        const isTransparent = newColorIdx === 0xFF && user.placementOverrides?.canPlaceAnyColor;
+
+        if (!isOnPalette && !isTransparent) {
+          newColorIdx = -1;
+        }
+
+        self.color = newColorIdx;
+        ls.set('color', newColorIdx);
         $('.palette-color').removeClass('active');
 
-        $('body').toggleClass('show-placeable-bubble', newColor === -1);
-        if (newColor === -1) {
+        $('body').toggleClass('show-placeable-bubble', newColorIdx === -1);
+        if (newColorIdx === -1) {
           self.toggleCursor(false);
           self.toggleReticule(false);
           if ('removeProperty' in document.documentElement.style) {
@@ -2678,19 +2697,20 @@ window.App = (function() {
           self.toggleCursor(true);
         }
         if ('setProperty' in document.documentElement.style) {
-          document.documentElement.style.setProperty('--selected-palette-color', self.palette[newColor]);
+          document.documentElement.style.setProperty('--selected-palette-color', isTransparent ? 'transparent' : `#${self.palette[newColorIdx].value}`);
         }
-        self.elements.cursor.css('background-color', self.palette[newColor]);
-        self.elements.reticule.css('background-color', self.palette[newColor]);
-        if (newColor !== -1) {
-          $($('.palette-color[data-idx=' + newColor + '],.palette-color[data-idx=-1]')).addClass('active'); // Select both the new color AND the deselect button. Signifies more that it's a deselect button rather than a "delete pixel" button
+        [self.elements.cursor, self.elements.reticule].forEach((el) => el
+          .css('background-color', isOnPalette ? `#${self.palette[newColorIdx].value}` : (isTransparent ? 'var(--general-background)' : null))
+        );
+        if (newColorIdx !== -1) {
+          $($('.palette-color[data-idx=' + newColorIdx + '],.palette-color[data-idx=-1]')).addClass('active'); // Select both the new color AND the deselect button. Signifies more that it's a deselect button rather than a "delete pixel" button
           try {
-            $(`.palette-color[data-idx="${newColor}"]`)[0].scrollIntoView({
+            $(`.palette-color[data-idx="${newColorIdx}"]`)[0].scrollIntoView({
               block: 'nearest',
               inline: 'nearest'
             });
           } catch (e) {
-            $(`.palette-color[data-idx="${newColor}"]`)[0].scrollIntoView(false);
+            $(`.palette-color[data-idx="${newColorIdx}"]`)[0].scrollIntoView(false);
           }
         }
       },
@@ -2766,13 +2786,14 @@ window.App = (function() {
       setPalette: function(palette) {
         self.palette = palette;
         self.elements.palette.find('.palette-color').remove().end().append(
-          $.map(self.palette, function(p, idx) {
+          $.map(self.palette, function(color, idx) {
             return $('<button>')
+              .attr('title', color.name)
               .attr('type', 'button')
               .attr('data-idx', idx)
               .addClass('palette-color')
               .addClass('ontouchstart' in window ? 'touch' : 'no-touch')
-              .css('background-color', self.palette[idx])
+              .css('background-color', `#${color.value}`)
               .append(
                 $('<span>').addClass('palette-number').text(idx)
               )
@@ -2780,6 +2801,17 @@ window.App = (function() {
                 self.switch(idx);
               });
           })
+        );
+        self.elements.palette.prepend(
+          $('<button>')
+            .attr('type', 'button')
+            .attr('data-idx', 0xFF)
+            .addClass('palette-color palette-color-special checkerboard-background pixelate')
+            .addClass('ontouchstart' in window ? 'touch' : 'no-touch')
+            .hide()
+            .click(function() {
+              self.switch(0xFF);
+            })
         );
         self.elements.palette.prepend(
           $('<button>')
@@ -2794,6 +2826,9 @@ window.App = (function() {
               self.switch(-1);
             })
         );
+      },
+      togglePaletteSpecialColors: (show) => {
+        self.elements.palette.find('.palette-color.palette-color-special').toggle(show);
       },
       can_undo: false,
       undo: function(evt) {
@@ -2844,7 +2879,7 @@ window.App = (function() {
         });
         socket.on('pixel', function(data) {
           $.map(data.pixels, function(px) {
-            board.setPixel(px.x, px.y, px.color, false);
+            board.setPixelIndex(px.x, px.y, px.color, false);
           });
           board.refresh();
           board.update(true);
@@ -2865,6 +2900,12 @@ window.App = (function() {
           }
 
           if (uiHelper.getAvailable() === 0) { uiHelper.setPlaceableText(data.ackFor === 'PLACE' ? 0 : 1); }
+        });
+        socket.on('admin_placement_overrides', function(data) {
+          self.togglePaletteSpecialColors(data.placementOverrides.canPlaceAnyColor);
+          if (!data.placementOverrides.canPlaceAnyColor && self.color === 0xFF) {
+            self.switch(-1);
+          }
         });
         socket.on('captcha_required', function(data) {
           if (!self.isDoingCaptcha) {
@@ -2921,21 +2962,13 @@ window.App = (function() {
           self.setAutoReset(value);
         });
       },
-      hexToRgb: function(hex) {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16)
-        } : null;
-      },
-      getPaletteRGB: function() {
-        const a = new Uint32Array(self.palette.length);
-        $.map(self.palette, function(c, i) {
-          const rgb = self.hexToRgb(c);
-          a[i] = 0xff000000 | rgb.b << 16 | rgb.g << 8 | rgb.r;
-        });
-        return a;
+      getPaletteABGR: function() {
+        const result = new Uint32Array(self.palette.length);
+        for (const i in self.palette) {
+          const { r, g, b } = hexToRGB(self.palette[i].value);
+          result[i] = 0xFF000000 | b << 16 | g << 8 | r;
+        }
+        return result;
       }
     };
     return {
@@ -2944,9 +2977,12 @@ window.App = (function() {
       place: self.place,
       switch: self.switch,
       setPalette: self.setPalette,
-      getPalette: () => self.palette,
-      getPaletteColor: (n, def = '#000000') => self.palette[n] || def,
-      getPaletteRGB: self.getPaletteRGB,
+      get palette() {
+        return self.palette;
+      },
+      getPaletteColorValue: (idx, def = '000000') => self.palette[idx] ? self.palette[idx].value : def,
+      getPaletteABGR: self.getPaletteABGR,
+      togglePaletteSpecialColors: self.togglePaletteSpecialColors,
       setAutoReset: self.setAutoReset,
       setNumberedPaletteEnabled: self.setNumberedPaletteEnabled,
       get color() {
@@ -3191,7 +3227,7 @@ window.App = (function() {
                 case 'nuke':
                   return 'Part of a nuke';
                 case 'mod':
-                  return 'Placed by a staff member using cooldown override';
+                  return 'Placed by a staff member using placement overrides';
                 default:
                   return null;
               }
@@ -3828,10 +3864,10 @@ window.App = (function() {
         if (colorIdx >= 0) {
           switch (layer) {
             case 'bg':
-              elem.style.backgroundColor = place.getPaletteColor(colorIdx);
+              elem.style.backgroundColor = `#${place.getPaletteColorValue(colorIdx)}`;
               break;
             case 'color':
-              elem.style.color = place.getPaletteColor(colorIdx);
+              elem.style.color = `#${place.getPaletteColorValue(colorIdx)}`;
               break;
           }
         } else {
@@ -5039,13 +5075,13 @@ window.App = (function() {
         );
 
         const _selUsernameColor = crel('select', { class: 'username-color-picker' },
-          user.hasPermission('chat.usercolor.rainbow') ? crel('option', { value: -1, class: 'rainbow' }, 'rainbow') : null,
-          user.hasPermission('chat.usercolor.donator') ? crel('option', { value: -2, class: 'donator' }, 'donator') : null,
-          place.getPalette().map((x, i) => crel('option', {
+          user.hasPermission('chat.usercolor.rainbow') ? crel('option', { value: -1, class: 'rainbow' }, '*. Rainbow') : null,
+          user.hasPermission('chat.usercolor.donator') ? crel('option', { value: -2, class: 'donator' }, '*. Donator') : null,
+          place.palette.map((x, i) => crel('option', {
             value: i,
             'data-idx': i,
-            style: `background-color: ${x}`
-          }, x))
+            style: `background-color: #${x.value}`
+          }, `${i}. ${x.name}`))
         );
         const lblUsernameColor = crel('label', { class: 'input-group' },
           crel('span', { class: 'label-text' }, 'Username Color: '),
@@ -5247,7 +5283,7 @@ window.App = (function() {
       },
       _updateAuthorDisplayedFaction: (author, faction) => {
         const tag = (faction && faction.tag) || '';
-        const color = faction ? self.intToHex(faction && faction.color) : null;
+        const color = faction ? intToHex(faction && faction.color) : null;
         const tagStr = (faction && faction.tag) ? `[${twemoji.parse(faction.tag)}]` : '';
         let ttStr = '';
         if (faction && faction.name != null && faction.id != null) {
@@ -5381,7 +5417,7 @@ window.App = (function() {
         }
 
         const _facTag = packet.strippedFaction ? packet.strippedFaction.tag : '';
-        const _facColor = packet.strippedFaction ? self.intToHex(packet.strippedFaction.color) : 0;
+        const _facColor = packet.strippedFaction ? intToHex(packet.strippedFaction.color) : 0;
         const _facTagShow = packet.strippedFaction && settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
         const _facTitle = packet.strippedFaction ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : '';
 
@@ -5419,7 +5455,7 @@ window.App = (function() {
           flairs,
           crel('span', {
             class: nameClasses,
-            style: `color: ${place.getPaletteColor(packet.authorNameColor)}`,
+            style: `color: #${place.getPaletteColorValue(packet.authorNameColor)}`,
             onclick: self._popUserPanel,
             onmousemiddledown: self._addAuthorMentionToChatbox
           }, packet.author),
@@ -5448,7 +5484,6 @@ window.App = (function() {
           }
         }
       },
-      intToHex: (i) => `#${('000000' + (i >>> 0).toString(16)).slice(-6)}`,
       processMessage: (str, mentionCallback) => {
         let content = str;
         try {
@@ -6523,6 +6558,7 @@ window.App = (function() {
       pendingSignupToken: null,
       loggedIn: false,
       username: '',
+      placementOverrides: null,
       chatNameColor: 0,
       getRoles: () => self.roles,
       isStaff: () => self.hasPermission('user.admin'),
@@ -6678,6 +6714,8 @@ window.App = (function() {
           self.pixelCountAllTime = data.pixelCountAllTime;
           self.updatePixelCountElements();
           self.elements.pixelCounts.fadeIn(200);
+          self.placementOverrides = data.placementOverrides;
+          place.togglePaletteSpecialColors(data.placementOverrides.canPlaceAnyColor);
           self.chatNameColor = data.chatNameColor;
           uiHelper.updateSelectedNameColor(data.chatNameColor);
           $(window).trigger('pxls:user:loginState', [true]);
@@ -6712,8 +6750,7 @@ window.App = (function() {
                 user: user,
                 modal: modal,
                 lookup: lookup,
-                chat: chat,
-                cdOverride: data.cdOverride
+                chat: chat
               }, admin => { self.admin = admin; });
             });
           } else if (window.deInitAdmin) {
@@ -6752,6 +6789,9 @@ window.App = (function() {
 
           // For userscripts.
           $(window).trigger('pxls:pixelCounts:update', Object.assign({}, data));
+        });
+        socket.on('admin_placement_overrides', function(data) {
+          self.placementOverrides = data.placementOverrides;
         });
         socket.on('rename', function(e) {
           if (e.requested === true) {
@@ -6857,6 +6897,9 @@ window.App = (function() {
       setChatNameColor: c => { self.chatNameColor = c; },
       get admin() {
         return self.admin || false;
+      },
+      get placementOverrides() {
+        return self.placementOverrides;
       }
     };
   })();

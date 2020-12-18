@@ -28,7 +28,7 @@ public class User {
     private List<Role> roles;
     private int pixelCount;
     private int pixelCountAllTime;
-    private boolean overrideCooldown;
+    private PlacementOverrides placementOverrides;
     private boolean flaggedForCaptcha = true;
     private boolean justShowedCaptcha;
     private boolean lastPlaceWasStack = false;
@@ -72,6 +72,8 @@ public class User {
         this.displayedFaction = displayedFaction;
         this.discordName = discordName;
         this.factionBlocked = factionBlocked;
+
+        this.placementOverrides = new PlacementOverrides(false, false, false);
     }
 
     public void reloadFromDatabase() {
@@ -101,11 +103,15 @@ public class User {
         return id;
     }
 
+    public boolean canPlaceColor(int color) {
+        return color >= 0 && (color < App.getPalette().getColors().size() || (color == 0xFF && placementOverrides.getCanPlaceAnyColor()));
+    }
+
     public boolean canPlace() {
         if (isRenameRequested) return false;
 
-        if (hasPermission("board.cooldown.override") && overrideCooldown) return true;
         if (!hasPermission("board.place")) return false;
+        if (placementOverrides.hasIgnoreCooldown()) return true;
         return cooldownExpiry < System.currentTimeMillis();
     }
 
@@ -135,7 +141,7 @@ public class User {
     }
 
     public float getRemainingCooldown() {
-        if (hasPermission("board.cooldown.override") && overrideCooldown) return 0;
+        if (placementOverrides.hasIgnoreCooldown()) return 0;
 
         return Math.max(0, cooldownExpiry - System.currentTimeMillis()) / 1000f;
     }
@@ -164,8 +170,28 @@ public class User {
         return flaggedForCaptcha;
     }
 
-    public void setOverrideCooldown(boolean overrideCooldown) {
-        this.overrideCooldown = hasPermission("board.cooldown.override") && overrideCooldown;
+    public void maybeSetIgnoreCooldown(boolean ignoreCooldown) {
+        placementOverrides.setIgnoreCooldown(ignoreCooldown && (hasPermission("board.cooldown.override") || hasPermission("board.cooldown.ignore")));
+    }
+
+    public boolean hasIgnoreCooldown() {
+        return placementOverrides.hasIgnoreCooldown();
+    }
+
+    public void maybeSetCanPlaceAnyColor(boolean canPlaceAnyColor) {
+        placementOverrides.setCanPlaceAnyColor(canPlaceAnyColor && hasPermission("board.palette.all"));
+    }
+
+    public boolean getCanPlaceAnyColor() {
+        return placementOverrides.getCanPlaceAnyColor();
+    }
+
+    public void maybeSetIgnorePlacemap(boolean ignorePlacemap) {
+        placementOverrides.setIgnorePlacemap(ignorePlacemap && hasPermission("board.placemap.ignore"));
+    }
+
+    public boolean hasIgnorePlacemap() {
+        return placementOverrides.hasIgnorePlacemap();
     }
 
     public List<Role> getRoles() {
@@ -260,9 +286,8 @@ public class User {
         cooldownExpiry = System.currentTimeMillis() + (seconds * 1000);
     }
 
-    public boolean isOverridingCooldown() {
-        if (hasPermission("board.cooldown.override")) return overrideCooldown;
-        return (overrideCooldown = false);
+    public PlacementOverrides getPlaceOverrides() {
+        return placementOverrides;
     }
 
     public void validateCaptcha() {
