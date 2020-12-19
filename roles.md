@@ -43,7 +43,6 @@ roleID {
 | Node | Endpoint | Purpose | Default Role |
 | --- | --- | --- | --- |
 | `board.check` | `/admin/check` | Detailed user lookups **\[!\]** | staff |
-| `board.cooldown.override` | | Overrides cooldown | staff |
 | `board.data` | `/boarddata`, `/heatmap`, `/virginmap`, `/placemap` | Access all forms of board data | guest |
 | `board.info` | `/info` | Access to basic board metadata | guest |
 | `board.lookup` | `/lookup` | Pixel information lookups | user |
@@ -51,6 +50,9 @@ roleID {
 | `board.report` | `/report` | Report pixels | user |
 | `board.socket` | `/ws` | Access live board updates | guest |
 | `board.undo` | | Undo pixels | user |
+| `board.cooldown.ignore`, `board.cooldown.override` | | Ignore cooldown (when enabled) | moderator, developer |
+| `board.palette.all` | | Select and place any valid color, including transparent pixels (when enabled) | moderator, developer |
+| `board.placemap.ignore` | | Place on the placemap (when enabled) | administrator, developer |
 
 \[!\] Includes sensitive information (e.g. login method, user-agent, ban data)
 
@@ -61,6 +63,7 @@ roleID {
 | `chat.ban` | `/admin/chatban` | Chat-ban users | staff |
 | `chat.delete` | `/admin/delete` | Delete chat messages | staff |
 | `chat.history` | | Retrieve chat history | user |
+| `chat.history.purged` | | Show purged messages in chat and chat history | staff |
 | `chat.lookup` | | Chat message lookups | staff |
 | `chat.purge` | `/admin/chatPurge` | Purge (multiple) chat messages | staff |
 | `chat.report` | `/reportChat` | Report chat messages | user |
@@ -78,6 +81,7 @@ roleID {
 | `user.auth` | `/auth`, `/signin`, `/signup`, `/logout` | User authentication | guest |
 | `user.auth` | `/whoami` | List own username and ID | guest |
 | `user.ban` | `/admin/ban` | Time-ban users | staff |
+| `user.chatColorChange` | `/chat/setColor` | Change color in chat | user |
 | `user.discordNameChange` | `/setDiscordName` | Change Discord tag | user |
 | `user.namechange` | `/execNameChange` | Execute staff-initiated name changes | staff |
 | `user.namechange.flag` | `/admin/flagNameChange` | Flag users to change their name | staff |

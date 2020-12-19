@@ -108,6 +108,15 @@ window.App = (function() {
       return imgCanv.getContext('2d').getImageData(0, 0, w, h);
     }
   };
+  const intToHex = (i) => `#${('000000' + (i >>> 0).toString(16)).slice(-6)}`;
+  const hexToRGB = function(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  };
   const analytics = function() {
     if (window.ga) {
       window.ga.apply(this, arguments);
@@ -664,6 +673,16 @@ window.App = (function() {
     });
 
     return {
+      // utilities
+      filter: {
+        search: (query) => {
+          searchInput.val(query);
+          if (query) {
+            filterSettings(query);
+          }
+        }
+      },
+      // setting objects
       ui: {
         theme: {
           index: setting('ui.theme.index', SettingType.SELECT, '-1', $('#setting-ui-theme-index'))
@@ -689,10 +708,10 @@ window.App = (function() {
         },
         chat: {
           banner: {
-            enable: setting('ui.chat.banner.enable', SettingType.TOGGLE, true)
+            enable: setting('ui.chat.banner.enable', SettingType.TOGGLE, true, $('#setting-ui-chat-banner-enable'))
           },
           horizontal: {
-            enable: setting('ui.chat.horizontal.enable', SettingType.TOGGLE, false)
+            enable: setting('ui.chat.horizontal.enable', SettingType.TOGGLE, false, $('#setting-ui-chat-horizontal-enable'))
           }
         }
       },
@@ -766,31 +785,31 @@ window.App = (function() {
       },
       chat: {
         timestamps: {
-          '24h': setting('chat.timestamps.24h', SettingType.TOGGLE, false)
+          '24h': setting('chat.timestamps.24h', SettingType.TOGGLE, false, $('#setting-chat-timestamps-24h'))
         },
         badges: {
-          enable: setting('chat.badges.enable', SettingType.TOGGLE, false)
+          enable: setting('chat.badges.enable', SettingType.TOGGLE, false, $('#setting-chat-badges-enable'))
         },
         factiontags: {
-          enable: setting('chat.factiontags.enable', SettingType.TOGGLE, true)
+          enable: setting('chat.factiontags.enable', SettingType.TOGGLE, true, $('#setting-chat-factiontags-enable'))
         },
         pings: {
-          enable: setting('chat.pings.enable', SettingType.TOGGLE, true),
+          enable: setting('chat.pings.enable', SettingType.TOGGLE, true, $('#setting-chat-pings-enable')),
           audio: {
-            when: setting('chat.pings.audio.when', SettingType.SELECT, 'off'),
-            volume: setting('chat.pings.audio.volume', SettingType.RANGE, 0.5)
+            when: setting('chat.pings.audio.when', SettingType.SELECT, 'off', $('#setting-chat-pings-audio-when')),
+            volume: setting('chat.pings.audio.volume', SettingType.RANGE, 0.5, $('#setting-chat-pings-audio-volume'))
           }
         },
         links: {
           templates: {
-            preferurls: setting('chat.links.templates.preferurls', SettingType.TOGGLE, false)
+            preferurls: setting('chat.links.templates.preferurls', SettingType.TOGGLE, false, $('#setting-chat-links-templates-preferurls'))
           },
           internal: {
             behavior: setting('chat.links.internal.behavior', SettingType.SELECT, 'ask')
           }
         },
         font: {
-          size: setting('chat.font.size', SettingType.NUMBER, 16)
+          size: setting('chat.font.size', SettingType.NUMBER, 16, $('#setting-chat-font-size'))
         }
       },
       fix: {
@@ -1237,7 +1256,7 @@ window.App = (function() {
       },
       replayBuffer: function() {
         $.map(self.pixelBuffer, function(p) {
-          self.setPixel(p.x, p.y, p.c, false);
+          self.setPixelIndex(p.x, p.y, p.c, false);
         });
         self.refresh();
         self.pixelBuffer = [];
@@ -1247,14 +1266,10 @@ window.App = (function() {
         self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
 
         self.intView = new Uint32Array(self.id.data.buffer);
-        self.rgbPalette = place.getPaletteRGB();
+        self.rgbPalette = place.getPaletteABGR();
 
         for (let i = 0; i < self.width * self.height; i++) {
-          if (data[i] === 0xFF) {
-            self.intView[i] = 0x00000000; // transparent pixel!
-          } else {
-            self.intView[i] = self.rgbPalette[data[i]];
-          }
+          self._setPixelIndex(i, data[i]);
         }
 
         self.ctx.putImageData(self.id, 0, 0);
@@ -1353,7 +1368,7 @@ window.App = (function() {
             case 'j':
             case 'J':
               if (place.color < 1) {
-                place.switch(place.getPaletteRGB().length - 1);
+                place.switch(place.palette.length - 1);
               } else {
                 place.switch(place.color - 1);
               }
@@ -1362,7 +1377,7 @@ window.App = (function() {
             case 75: // K
             case 'k':
             case 'K':
-              if (place.color + 1 >= place.getPaletteRGB().length) {
+              if (place.color + 1 >= place.palette.length) {
                 place.switch(0);
               } else {
                 place.switch(place.color + 1);
@@ -1543,7 +1558,7 @@ window.App = (function() {
             if (settings.place.picker.enable.get() === true && event.button === 1 && dx < 15 && dy < 15) {
               // If so, switch to the color at the location.
               const { x, y } = self.fromScreen(event.clientX, event.clientY);
-              place.switch(self.getPixel(x, y));
+              place.switch(self.getPixelIndex(x, y));
             }
           }
         }
@@ -1604,7 +1619,7 @@ window.App = (function() {
         });
       },
       start: function() {
-        $.get('/info', (data) => {
+        $.get('/info', async (data) => {
           overlays.webinit(data);
           user.webinit(data);
           self.width = data.width;
@@ -1630,14 +1645,6 @@ window.App = (function() {
           self.setScale(query.get('scale') || self.scale, false);
           self.centerOn(cx, cy, true);
           socket.init();
-
-          (async function() {
-            try {
-              self.draw(await binaryAjax('/boarddata' + '?_' + (new Date()).getTime()));
-            } catch (e) {
-              socket.reconnect();
-            }
-          })();
 
           if (self.use_js_render) {
             $(window).resize(function() {
@@ -1688,7 +1695,15 @@ window.App = (function() {
             // this rounds the current scale if it needs rounding
             self.setScale(self.getScale());
           });
-        }).fail(function() {
+
+          try {
+            self.draw(await binaryAjax('/boarddata' + '?_' + (new Date()).getTime()));
+          } catch (e) {
+            console.error('Error drawing board:', e);
+            socket.reconnect();
+          }
+        }).fail(function(e) {
+          console.error('Error fetching /info:', e);
           socket.reconnect();
         });
       },
@@ -1831,14 +1846,25 @@ window.App = (function() {
 
         self.setScale(self.scale * zoomBase ** adj);
       },
-      getPixel: function(x, y) {
+      getPixelIndex: function(x, y) {
         x = Math.floor(x);
         y = Math.floor(y);
-        const colorInt = self.intView[y * self.width + x];
-        const index = self.rgbPalette.indexOf(colorInt);
-        return index;
+        if (!self.loaded) {
+          return self.pixelBuffer.findIndex((pix) => pix.x === x && pix.y === y);
+        }
+        const colorValue = self.intView[y * self.width + x];
+        const index = self.rgbPalette.indexOf(colorValue);
+        return index !== -1 ? index : 0xFF;
       },
-      setPixel: function(x, y, c, refresh) {
+      _setPixelIndex: function(i, c) {
+        if (c === -1 || c === 0xFF) {
+          // transparent.
+          self.intView[i] = 0x00000000;
+        } else {
+          self.intView[i] = self.rgbPalette[c];
+        }
+      },
+      setPixelIndex: function(x, y, c, refresh) {
         if (!self.loaded) {
           self.pixelBuffer.push({
             x: x,
@@ -1850,11 +1876,7 @@ window.App = (function() {
         if (refresh === undefined) {
           refresh = true;
         }
-        if (c === -1 || c === 0xFF) {
-          self.intView[y * self.width + x] = 0x00000000;
-        } else {
-          self.intView[y * self.width + x] = self.rgbPalette[c];
-        }
+        self._setPixelIndex(y * self.width + x, c);
         if (refresh) {
           self.ctx.putImageData(self.id, 0, 0);
         }
@@ -1953,8 +1975,8 @@ window.App = (function() {
       getScale: self.getScale,
       nudgeScale: self.nudgeScale,
       setScale: self.setScale,
-      getPixel: self.getPixel,
-      setPixel: self.setPixel,
+      getPixelIndex: self.getPixelIndex,
+      setPixelIndex: self.setPixelIndex,
       fromScreen: self.fromScreen,
       toScreen: self.toScreen,
       save: self.save,
@@ -2660,13 +2682,20 @@ window.App = (function() {
       setAutoReset: function(v) {
         self.autoreset = !!v;
       },
-      switch: function(newColor) {
-        self.color = newColor;
-        ls.set('color', newColor);
+      switch: function(newColorIdx) {
+        const isOnPalette = newColorIdx >= 0 && newColorIdx < self.palette.length;
+        const isTransparent = newColorIdx === 0xFF && user.placementOverrides?.canPlaceAnyColor;
+
+        if (!isOnPalette && !isTransparent) {
+          newColorIdx = -1;
+        }
+
+        self.color = newColorIdx;
+        ls.set('color', newColorIdx);
         $('.palette-color').removeClass('active');
 
-        $('body').toggleClass('show-placeable-bubble', newColor === -1);
-        if (newColor === -1) {
+        $('body').toggleClass('show-placeable-bubble', newColorIdx === -1);
+        if (newColorIdx === -1) {
           self.toggleCursor(false);
           self.toggleReticule(false);
           if ('removeProperty' in document.documentElement.style) {
@@ -2678,19 +2707,20 @@ window.App = (function() {
           self.toggleCursor(true);
         }
         if ('setProperty' in document.documentElement.style) {
-          document.documentElement.style.setProperty('--selected-palette-color', self.palette[newColor]);
+          document.documentElement.style.setProperty('--selected-palette-color', isTransparent ? 'transparent' : `#${self.palette[newColorIdx].value}`);
         }
-        self.elements.cursor.css('background-color', self.palette[newColor]);
-        self.elements.reticule.css('background-color', self.palette[newColor]);
-        if (newColor !== -1) {
-          $($('.palette-color[data-idx=' + newColor + '],.palette-color[data-idx=-1]')).addClass('active'); // Select both the new color AND the deselect button. Signifies more that it's a deselect button rather than a "delete pixel" button
+        [self.elements.cursor, self.elements.reticule].forEach((el) => el
+          .css('background-color', isOnPalette ? `#${self.palette[newColorIdx].value}` : (isTransparent ? 'var(--general-background)' : null))
+        );
+        if (newColorIdx !== -1) {
+          $($('.palette-color[data-idx=' + newColorIdx + '],.palette-color[data-idx=-1]')).addClass('active'); // Select both the new color AND the deselect button. Signifies more that it's a deselect button rather than a "delete pixel" button
           try {
-            $(`.palette-color[data-idx="${newColor}"]`)[0].scrollIntoView({
+            $(`.palette-color[data-idx="${newColorIdx}"]`)[0].scrollIntoView({
               block: 'nearest',
               inline: 'nearest'
             });
           } catch (e) {
-            $(`.palette-color[data-idx="${newColor}"]`)[0].scrollIntoView(false);
+            $(`.palette-color[data-idx="${newColorIdx}"]`)[0].scrollIntoView(false);
           }
         }
       },
@@ -2766,13 +2796,14 @@ window.App = (function() {
       setPalette: function(palette) {
         self.palette = palette;
         self.elements.palette.find('.palette-color').remove().end().append(
-          $.map(self.palette, function(p, idx) {
+          $.map(self.palette, function(color, idx) {
             return $('<button>')
+              .attr('title', color.name)
               .attr('type', 'button')
               .attr('data-idx', idx)
               .addClass('palette-color')
               .addClass('ontouchstart' in window ? 'touch' : 'no-touch')
-              .css('background-color', self.palette[idx])
+              .css('background-color', `#${color.value}`)
               .append(
                 $('<span>').addClass('palette-number').text(idx)
               )
@@ -2780,6 +2811,17 @@ window.App = (function() {
                 self.switch(idx);
               });
           })
+        );
+        self.elements.palette.prepend(
+          $('<button>')
+            .attr('type', 'button')
+            .attr('data-idx', 0xFF)
+            .addClass('palette-color palette-color-special checkerboard-background pixelate')
+            .addClass('ontouchstart' in window ? 'touch' : 'no-touch')
+            .hide()
+            .click(function() {
+              self.switch(0xFF);
+            })
         );
         self.elements.palette.prepend(
           $('<button>')
@@ -2794,6 +2836,9 @@ window.App = (function() {
               self.switch(-1);
             })
         );
+      },
+      togglePaletteSpecialColors: (show) => {
+        self.elements.palette.find('.palette-color.palette-color-special').toggle(show);
       },
       can_undo: false,
       undo: function(evt) {
@@ -2844,7 +2889,7 @@ window.App = (function() {
         });
         socket.on('pixel', function(data) {
           $.map(data.pixels, function(px) {
-            board.setPixel(px.x, px.y, px.color, false);
+            board.setPixelIndex(px.x, px.y, px.color, false);
           });
           board.refresh();
           board.update(true);
@@ -2865,6 +2910,12 @@ window.App = (function() {
           }
 
           if (uiHelper.getAvailable() === 0) { uiHelper.setPlaceableText(data.ackFor === 'PLACE' ? 0 : 1); }
+        });
+        socket.on('admin_placement_overrides', function(data) {
+          self.togglePaletteSpecialColors(data.placementOverrides.canPlaceAnyColor);
+          if (!data.placementOverrides.canPlaceAnyColor && self.color === 0xFF) {
+            self.switch(-1);
+          }
         });
         socket.on('captcha_required', function(data) {
           if (!self.isDoingCaptcha) {
@@ -2921,21 +2972,13 @@ window.App = (function() {
           self.setAutoReset(value);
         });
       },
-      hexToRgb: function(hex) {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16)
-        } : null;
-      },
-      getPaletteRGB: function() {
-        const a = new Uint32Array(self.palette.length);
-        $.map(self.palette, function(c, i) {
-          const rgb = self.hexToRgb(c);
-          a[i] = 0xff000000 | rgb.b << 16 | rgb.g << 8 | rgb.r;
-        });
-        return a;
+      getPaletteABGR: function() {
+        const result = new Uint32Array(self.palette.length);
+        for (const i in self.palette) {
+          const { r, g, b } = hexToRGB(self.palette[i].value);
+          result[i] = 0xFF000000 | b << 16 | g << 8 | r;
+        }
+        return result;
       }
     };
     return {
@@ -2944,9 +2987,12 @@ window.App = (function() {
       place: self.place,
       switch: self.switch,
       setPalette: self.setPalette,
-      getPalette: () => self.palette,
-      getPaletteColor: (n, def = '#000000') => self.palette[n] || def,
-      getPaletteRGB: self.getPaletteRGB,
+      get palette() {
+        return self.palette;
+      },
+      getPaletteColorValue: (idx, def = '000000') => self.palette[idx] ? self.palette[idx].value : def,
+      getPaletteABGR: self.getPaletteABGR,
+      togglePaletteSpecialColors: self.togglePaletteSpecialColors,
       setAutoReset: self.setAutoReset,
       setNumberedPaletteEnabled: self.setNumberedPaletteEnabled,
       get color() {
@@ -3191,7 +3237,7 @@ window.App = (function() {
                 case 'nuke':
                   return 'Part of a nuke';
                 case 'mod':
-                  return 'Placed by a staff member using cooldown override';
+                  return 'Placed by a staff member using placement overrides';
                 default:
                   return null;
               }
@@ -3408,6 +3454,11 @@ window.App = (function() {
           name: 'Matte',
           location: '/themes/matte.css',
           color: '#468079'
+        },
+        {
+          name: 'Terminal',
+          location: '/themes/terminal.css',
+          color: '#94e044'
         },
         {
           name: 'Red',
@@ -3821,22 +3872,15 @@ window.App = (function() {
       getAvailable() {
         return self._available;
       },
-      updateSelectedNameColor: (colorIdx) => {
-        const selUsernameColor = document.querySelector('.username-color-picker');
-        if (selUsernameColor) {
-          selUsernameColor.value = colorIdx;
-          self.styleElemWithChatNameColor(selUsernameColor, colorIdx);
-        }
-      },
       styleElemWithChatNameColor: (elem, colorIdx, layer = 'bg') => {
         elem.classList.remove(...self.specialChatColorClasses);
         if (colorIdx >= 0) {
           switch (layer) {
             case 'bg':
-              elem.style.backgroundColor = place.getPaletteColor(colorIdx);
+              elem.style.backgroundColor = `#${place.getPaletteColorValue(colorIdx)}`;
               break;
             case 'color':
-              elem.style.color = place.getPaletteColor(colorIdx);
+              elem.style.color = `#${place.getPaletteColorValue(colorIdx)}`;
               break;
           }
         } else {
@@ -3915,7 +3959,6 @@ window.App = (function() {
       setMax: self.setMax,
       setDiscordName: self.setDiscordName,
       updateAudio: self.updateAudio,
-      updateSelectedNameColor: self.updateSelectedNameColor,
       styleElemWithChatNameColor: self.styleElemWithChatNameColor,
       setBannerEnabled: self.setBannerEnabled,
       get initTitle() {
@@ -4091,7 +4134,12 @@ window.App = (function() {
         jump_button: $('#jump-to-bottom'),
         emoji_button: $('#emojiPanelTrigger'),
         typeahead: $('#typeahead'),
-        typeahead_list: $('#typeahead ul')
+        typeahead_list: $('#typeahead ul'),
+        ping_audio_volume_value: $('#chat-pings-audio-volume-value'),
+        username_color_select: $('#selChatUsernameColor'),
+        user_ignore_select: $('#selChatUserIgnore'),
+        user_unignore_button: $('#btnChatUserUnignore'),
+        user_ignore_feedback_label: $('#lblChatUserIgnoreFeedback')
       },
       picker: null,
       markdownProcessor: null,
@@ -4122,7 +4170,7 @@ window.App = (function() {
             switch (e.updateType) {
               case 'NameColor': {
                 user.setChatNameColor(e.updateValue >> 0);
-                uiHelper.updateSelectedNameColor(e.updateValue >> 0);
+                self.updateSelectedNameColor(e.updateValue >> 0);
                 break;
               }
               default: {
@@ -4344,10 +4392,8 @@ window.App = (function() {
         socket.on('chat_ban_state', handleChatban);
 
         const _doPurge = (elem, e) => {
-          if (user.isStaff()) {
-            elem.classList.add('purged');
-            elem.setAttribute('title', `Purged by ${e.initiator} with reason: ${e.reason || 'none provided'}`);
-            elem.dataset.purgedBy = e.initiator;
+          if (user.hasPermission('chat.history.purged')) {
+            self._markMessagePurged(elem, e);
           } else {
             elem.remove();
           }
@@ -4381,9 +4427,7 @@ window.App = (function() {
           }
           if (lines.length) {
             lines.forEach(x => _doPurge(x, e));
-            if (user.getUsername().toLowerCase().trim() === e.target.toLowerCase().trim()) {
-              self.addServerAction(`${e.IDs.length} message${e.IDs.length !== 1 ? 's were' : ' was'} purged by ${e.initiator}`);
-            }
+            self.addServerAction(`${e.IDs.length} message${e.IDs.length !== 1 ? 's' : ''} from ${e.target} ${e.IDs.length !== 1 ? 'were' : 'was'} purged by ${e.initiator}`);
           }
         });
 
@@ -4391,149 +4435,11 @@ window.App = (function() {
 
         self.elements.rate_limit_overlay.hide();
 
-        const commandsCache = [['tempban', '/tempban  USER  BAN_LENGTH  SHOULD_PURGE  BAN_REASON'], ['permaban', '/permaban  USER  SHOULD_PURGE  BAN_REASON'], ['purge', '/purge  USER  PURGE_AMOUNT  PURGE_REASON']];
         self.elements.input.on('keydown', e => {
           e.stopPropagation();
           const toSend = self.elements.input[0].value;
           const trimmed = toSend.trim();
-          let handling = false;
           if ((e.originalEvent.key === 'Enter' || e.originalEvent.which === 13) && !e.shiftKey) {
-            if (trimmed.startsWith('/') && user.isStaff()) {
-              const args = trimmed.substr(1).split(' ');
-              const command = args.shift();
-              let banReason; // To fix compiler warning
-              handling = true;
-              switch (command.toLowerCase().trim()) {
-                case 'permaban': {
-                  const usage = '/permaban USER SHOULD_PURGE BAN_REASON\n/permaban help';
-                  const help = [
-                    usage,
-                    '    USER:         The username',
-                    '    SHOULD_PURGE: (1|0) Whether or not to remove all chat messages from the user',
-                    '    BAN_REASON:   The reason for the ban',
-                    '',
-                    '    /permaban GlowingSocc 1 just generally don\'t like \'em',
-                    '    /permaban GlowingSocc 0 time for you to go.'
-                  ].join('\n');
-                  if (args.length < 3) {
-                    if (args[0] && args[0].toLowerCase() === 'help') {
-                      self.showHint(help);
-                    } else {
-                      self.showHint(`Missing arguments.\n${usage}`, true);
-                    }
-                  } else {
-                    const user = args.shift();
-                    let shouldPurge = args.shift();
-                    banReason = args.join(' ');
-                    if (!isNaN(shouldPurge)) {
-                      shouldPurge = !!(shouldPurge >> 0);
-                    } else {
-                      return self.showHint(`Invalid shouldPurge. Expected 1 or 0, got ${shouldPurge}`, true);
-                    }
-                    self.elements.input[0].disabled = true;
-                    $.post('/admin/chatban', {
-                      who: user,
-                      type: 'perma',
-                      reason: banReason,
-                      removalAmount: shouldPurge ? -1 : 0,
-                      banLength: 0
-                    }, () => {
-                      modal.showText('Chatban initiated');
-                      self.elements.input[0].value = '';
-                      self.elements.input[0].disabled = false;
-                    }).fail(() => {
-                      modal.showText('Failed to chatban');
-                      self.elements.input[0].disabled = false;
-                    });
-                  }
-                  break;
-                }
-                case 'tempban': {
-                  const usage = '/tempban USER BAN_LENGTH SHOULD_PURGE BAN_REASON\n/tempban help';
-                  const help = [
-                    usage,
-                    '    USER:         The username',
-                    '    BAN_LENGTH:   The banlength in seconds',
-                    '    SHOULD_PURGE: (1|0) Whether or not to remove all chat messages from the user',
-                    '    BAN_REASON:   The reason for the ban',
-                    '',
-                    '    /tempban GlowingSocc 600 1 just generally don\'t like \'em',
-                    '    /tempban GlowingSocc 60 0 take a time out.'
-                  ].join('\n');
-                  if (args.length < 4) {
-                    if (args[0] && args[0].toLowerCase() === 'help') {
-                      self.showHint(help);
-                    } else {
-                      self.showHint(`Missing arguments.\n${usage}`, true);
-                    }
-                  } else {
-                    const user = args.shift();
-                    const banLength = args.shift() >> 0;
-                    let shouldPurge = args.shift();
-                    banReason = args.join(' ');
-                    if (!isNaN(shouldPurge)) {
-                      shouldPurge = !!(shouldPurge >> 0);
-                    } else {
-                      return self.showHint(`Invalid shouldPurge. Expected 1 or 0, got ${shouldPurge}`, true);
-                    }
-                    if (banLength <= 0) {
-                      return self.showHint('Invalid banLength. Should be >0', true);
-                    } else {
-                      $.post('/admin/chatban', {
-                        who: user,
-                        type: 'temp',
-                        reason: banReason,
-                        removalAmount: shouldPurge ? -1 : 0,
-                        banLength: banLength
-                      }, () => {
-                        modal.showText('Chatban initiated');
-                        self.elements.input[0].value = '';
-                        self.elements.input[0].disabled = false;
-                      }).fail(() => {
-                        modal.showText('Failed to chatban');
-                        self.elements.input[0].disabled = false;
-                      });
-                    }
-                  }
-                  break;
-                }
-                case 'purge': {
-                  const usage = '/purge USER PURGE_REASON\n/purge help';
-                  const help = [
-                    usage,
-                    '    USER:         The username',
-                    '    PURGE_REASON: The reason for the purge',
-                    '',
-                    '    /purge GlowingSocc 10 spam'
-                  ].join('\n');
-                  if (args.length < 2) {
-                    if (args[0] && args[0].toLowerCase() === 'help') {
-                      self.showHint(help);
-                    } else {
-                      self.showHint(`Missing arguments.\n${usage}`, true);
-                    }
-                  } else {
-                    const user = args.shift();
-                    const purgeReason = args.join(' ');
-                    $.post('/admin/chatPurge', {
-                      who: user,
-                      reason: purgeReason
-                    }, function() {
-                      modal.showText('Chatpurge initiated');
-                      self.elements.input[0].value = '';
-                      self.elements.input[0].disabled = false;
-                    }).fail(() => {
-                      modal.showText('Failed to chatpurge');
-                      self.elements.input[0].disabled = false;
-                    });
-                  }
-                  break;
-                }
-                default: {
-                  handling = false;
-                }
-              }
-            }
             e.preventDefault();
 
             if (trimmed.length === 0) {
@@ -4544,7 +4450,7 @@ window.App = (function() {
               return;
             }
 
-            if (!self.typeahead.shouldInsert && !handling) {
+            if (!self.typeahead.shouldInsert) {
               self.typeahead.lastLength = -1;
               self._send(trimmed);
               self.elements.input.val('');
@@ -4552,22 +4458,6 @@ window.App = (function() {
           } else if (e.originalEvent.key === 'Tab' || e.originalEvent.which === 9) {
             e.stopPropagation();
             e.preventDefault();
-          }
-        }).on('keyup', e => {
-          const toSend = self.elements.input[0].value;
-          const trimmed = toSend.trim();
-          if (trimmed.length === 0) return self.showHint('');
-          if (!((e.originalEvent.key === 'Enter' || e.originalEvent.which === 13) && !e.originalEvent.shiftKey) && trimmed.startsWith('/') && user.isStaff()) {
-            const searchAgainst = trimmed.substr(1).split(' ').shift();
-            const matches = [];
-            commandsCache.forEach(x => {
-              if (x[0].startsWith(searchAgainst)) {
-                matches.push(x[1]);
-              }
-            });
-            if (matches.length) {
-              self.showHint(matches.join('\n'));
-            }
           }
         }).on('focus', e => {
           if (self.stickToBottom) {
@@ -4607,15 +4497,16 @@ window.App = (function() {
           }
         });
 
-        $(window).on('pxls:panel:closed', (e, which) => {
-          if (which === 'chat') {
-            if (document.querySelector('.chat-settings-title')) {
-              modal.closeAll();
-            }
+        $(window).on('pxls:user:loginState', (e, isLoggedIn) => {
+          self.updateInputLoginState(isLoggedIn);
+
+          self.elements.username_color_select.disabled = isLoggedIn;
+          if (isLoggedIn) {
+            // add role-gated colors
+            self._populateUsernameColor();
+            uiHelper.styleElemWithChatNameColor(self.elements.username_color_select[0], user.getChatNameColor());
           }
         });
-
-        $(window).on('pxls:user:loginState', (e, isLoggedIn) => self.updateInputLoginState(isLoggedIn));
 
         $(window).on('mouseup', e => {
           let target = e.target;
@@ -4647,7 +4538,10 @@ window.App = (function() {
           if (popup) popup.remove();
         });
 
-        self.elements.chat_settings_button[0].addEventListener('click', () => self.popChatSettings());
+        self.elements.chat_settings_button[0].addEventListener('click', () => {
+          settings.filter.search('Chat');
+          panels.toggle('settings');
+        });
 
         self.elements.pings_button[0].addEventListener('click', function() {
           const closeHandler = function() {
@@ -4716,6 +4610,7 @@ window.App = (function() {
           }
         });
 
+        // settings
         settings.chat.font.size.listen(function(value) {
           if (isNaN(value)) {
             modal.showText('Invalid value. Expected a number between 1 and 72');
@@ -4730,12 +4625,54 @@ window.App = (function() {
           }
         });
 
+        settings.chat.pings.audio.volume.listen(function(value) {
+          const parsed = parseFloat(value);
+          const volume = isNaN(parsed) ? 1 : parsed;
+          self.elements.ping_audio_volume_value.text(`${volume * 100 >> 0}%`);
+        });
+
         settings.chat.badges.enable.listen(function() {
           self._toggleTextIconFlairs();
         });
 
         settings.chat.factiontags.enable.listen(function() {
           self._toggleFactionTagFlairs();
+        });
+
+        const selSettingChatLinksInternalBehavior = $('#setting-chat-links-internal-behavior');
+        selSettingChatLinksInternalBehavior.append(
+          Object.values(self.TEMPLATE_ACTIONS).map(action =>
+            crel('option', { value: action.id }, action.pretty)
+          )
+        );
+        settings.chat.links.internal.behavior.controls.add(selSettingChatLinksInternalBehavior);
+
+        self.elements.username_color_select.disabled = true;
+
+        self.elements.user_ignore_select.append(
+          self.getIgnores().sort((a, b) => a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase())).map(x =>
+            crel('option', { value: x }, x)
+          )
+        );
+
+        self.elements.user_unignore_button.on('click', function() {
+          if (self.removeIgnore(self.elements.user_ignore_select.val())) {
+            self.elements.user_ignore_select.find(`option[value="${self.elements.user_ignore_select.val()}"]`).remove();
+            self.elements.user_ignore_feedback_label.text('User unignored.');
+            self.elements.user_ignore_feedback_label.css('color', 'var(--text-red-color)');
+            self.elements.user_ignore_feedback_label.css('display', 'block');
+            setTimeout(() => self.elements.user_ignore_feedback_label.fadeOut(500), 3000);
+          } else if (self.ignored.length === 0) {
+            self.elements.user_ignore_feedback_label.text('You haven\'t ignored any users. Congratulations!');
+            self.elements.user_ignore_feedback_label.css('color', 'var(--text-red-color)');
+            self.elements.user_ignore_feedback_label.css('display', 'block');
+            setTimeout(() => self.elements.user_ignore_feedback_label.fadeOut(500), 3000);
+          } else {
+            self.elements.user_ignore_feedback_label.text('Failed to unignore user. Either they weren\'t actually ignored, or an error occurred. Contact a developer if the problem persists.');
+            self.elements.user_ignore_feedback_label.css('color', 'var(--text-red-color)');
+            self.elements.user_ignore_feedback_label.css('display', 'block');
+            setTimeout(() => self.elements.user_ignore_feedback_label.fadeOut(500), 5000);
+          }
         });
       },
       _handleChatbanVisualState(canChat) {
@@ -4753,6 +4690,12 @@ window.App = (function() {
       webinit(data) {
         self.setCharLimit(data.chatCharacterLimit);
         self.canvasBanRespected = data.chatRespectsCanvasBan;
+
+        self._populateUsernameColor();
+        self.elements.username_color_select.value = user.getChatNameColor();
+        self.elements.username_color_select.on('change', function() {
+          socket.send({ type: 'UserUpdate', updates: { NameColor: String(this.value >> 0) } });
+        });
       },
       initTypeahead() {
         // init DBs
@@ -4970,6 +4913,7 @@ window.App = (function() {
           self.ignored.push(name);
           self.saveIgnores();
           $(window).trigger('pxls:chat:userIgnored', name);
+          self.elements.user_ignore_select.append(crel('option', { value: name }, name));
           return true;
         }
         return false;
@@ -4980,6 +4924,7 @@ window.App = (function() {
           const spliced = self.ignored.splice(index, 1);
           self.saveIgnores();
           $(window).trigger('pxls:chat:userUnignored', spliced && spliced[0] ? spliced[0] : false);
+          self.elements.user_ignore_select.find(`option[value="${name}"]`).remove();
           return spliced && spliced[0];
         }
         return false;
@@ -5044,18 +4989,20 @@ window.App = (function() {
         );
 
         const _selUsernameColor = crel('select', { class: 'username-color-picker' },
-          user.hasPermission('chat.usercolor.rainbow') ? crel('option', { value: -1, class: 'rainbow' }, 'rainbow') : null,
-          user.hasPermission('chat.usercolor.donator') ? crel('option', { value: -2, class: 'donator' }, 'donator') : null,
-          place.getPalette().map((x, i) => crel('option', {
+          user.hasPermission('chat.usercolor.rainbow') ? crel('option', { value: -1, class: 'rainbow' }, '*. Rainbow') : null,
+          user.hasPermission('chat.usercolor.donator') ? crel('option', { value: -2, class: 'donator' }, '*. Donator') : null,
+          place.palette.map((x, i) => crel('option', {
             value: i,
             'data-idx': i,
-            style: `background-color: ${x}`
-          }, x))
+            style: `background-color: #${x.value}`
+          }, `${i}. ${x.name}`))
         );
-        const lblUsernameColor = crel('label', { class: 'input-group' },
+        const _lblUsernameColor = crel('label', { class: 'input-group' },
           crel('span', { class: 'label-text' }, 'Username Color: '),
           _selUsernameColor
         );
+        const _lblUsernameColorFeedback = crel('label', { for: _selUsernameColor.id, class: 'extra-label' }, '');
+        const sectionUsernameColor = crel('div', _lblUsernameColor, _lblUsernameColorFeedback);
 
         const _selIgnores = crel('select', {
           class: 'user-ignores',
@@ -5076,7 +5023,33 @@ window.App = (function() {
         _selUsernameColor.value = user.getChatNameColor();
         uiHelper.styleElemWithChatNameColor(_selUsernameColor, user.getChatNameColor());
         _selUsernameColor.addEventListener('change', function() {
-          socket.send({ type: 'UserUpdate', updates: { NameColor: String(this.value >> 0) } });
+          _selUsernameColor.disabled = true;
+
+          const color = this.value >> 0;
+          $.post({
+            type: 'POST',
+            url: '/chat/setColor',
+            data: {
+              color
+            },
+            success: () => {
+              user.setChatNameColor(color);
+              uiHelper.updateSelectedNameColor(color);
+              _lblUsernameColorFeedback.innerText = 'Color updated';
+            },
+            error: (data) => {
+              const err = data.responseJSON && data.responseJSON.details ? data.responseJSON.details : data.responseText;
+              if (data.status === 200) {
+                _lblUsernameColorFeedback.innerText = err;
+              } else {
+                _lblUsernameColorFeedback.innerText = 'Couldn\'t change chat color: ' + err;
+              }
+            },
+            complete: () => {
+              _selUsernameColor.value = user.getChatNameColor();
+              _selUsernameColor.disabled = false;
+            }
+          });
         });
 
         settings.chat.font.size.controls.add(_txtFontSize);
@@ -5134,7 +5107,7 @@ window.App = (function() {
             lblBanner,
             lblTemplateTitles,
             lblFontSize,
-            lblUsernameColor,
+            sectionUsernameColor,
             lblIgnores,
             _btnUnignore,
             lblIgnoresFeedback
@@ -5245,6 +5218,22 @@ window.App = (function() {
           board.setScale(zoom, true);
         }
       },
+      updateSelectedNameColor: (colorIdx) => {
+        self.elements.username_color_select[0].value = colorIdx;
+        uiHelper.styleElemWithChatNameColor(self.elements.username_color_select[0], colorIdx);
+      },
+      _populateUsernameColor: () => {
+        self.elements.username_color_select.empty().append(
+          user.hasPermission('chat.usercolor.rainbow') ? crel('option', { value: -1, class: 'rainbow' }, '*. Rainbow') : null,
+          user.hasPermission('chat.usercolor.donator') ? crel('option', { value: -2, class: 'donator' }, '*. Donator') : null,
+          place.palette.map(({ name, value: hex }, i) => crel('option', {
+            value: i,
+            'data-idx': i,
+            style: `background-color: #${hex}`
+          }, `${i}. ${name}`))
+        );
+        self.elements.username_color_select[0].value = user.getChatNameColor();
+      },
       _updateAuthorNameColor: (author, colorIdx) => {
         self.elements.body.find(`.chat-line[data-author="${author}"] .user`).each(function() {
           uiHelper.styleElemWithChatNameColor(this, colorIdx, 'color');
@@ -5252,7 +5241,7 @@ window.App = (function() {
       },
       _updateAuthorDisplayedFaction: (author, faction) => {
         const tag = (faction && faction.tag) || '';
-        const color = faction ? self.intToHex(faction && faction.color) : null;
+        const color = faction ? intToHex(faction && faction.color) : null;
         const tagStr = (faction && faction.tag) ? `[${twemoji.parse(faction.tag)}]` : '';
         let ttStr = '';
         if (faction && faction.name != null && faction.id != null) {
@@ -5386,7 +5375,7 @@ window.App = (function() {
         }
 
         const _facTag = packet.strippedFaction ? packet.strippedFaction.tag : '';
-        const _facColor = packet.strippedFaction ? self.intToHex(packet.strippedFaction.color) : 0;
+        const _facColor = packet.strippedFaction ? intToHex(packet.strippedFaction.color) : 0;
         const _facTagShow = packet.strippedFaction && settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
         const _facTitle = packet.strippedFaction ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : '';
 
@@ -5409,30 +5398,32 @@ window.App = (function() {
         let nameClasses = 'user';
         if (Array.isArray(packet.authorNameClass)) nameClasses += ` ${packet.authorNameClass.join(' ')}`;
 
-        self.elements.body.append(
-          crel('li', {
-            'data-id': packet.id,
-            'data-tag': _facTag,
-            'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '',
-            'data-author': packet.author,
-            'data-date': packet.date,
-            'data-badges': JSON.stringify(packet.badges || []),
-            class: `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`
-          },
-          crel('span', { title: when.format('MMM Do YYYY, hh:mm:ss A') }, when.format(settings.chat.timestamps['24h'].get() === true ? 'HH:mm' : 'hh:mm A')),
-          document.createTextNode(' '),
-          flairs,
-          crel('span', {
-            class: nameClasses,
-            style: `color: ${place.getPaletteColor(packet.authorNameColor)}`,
-            onclick: self._popUserPanel,
-            onmousemiddledown: self._addAuthorMentionToChatbox
-          }, packet.author),
-          document.createTextNode(': '),
-          contentSpan,
-          document.createTextNode(' ')
-          )
-        );
+        const chatLine = crel('li', {
+          'data-id': packet.id,
+          'data-tag': _facTag,
+          'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '',
+          'data-author': packet.author,
+          'data-date': packet.date,
+          'data-badges': JSON.stringify(packet.badges || []),
+          class: `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`
+        },
+        crel('span', { title: when.format('MMM Do YYYY, hh:mm:ss A') }, when.format(settings.chat.timestamps['24h'].get() === true ? 'HH:mm' : 'hh:mm A')),
+        document.createTextNode(' '),
+        flairs,
+        crel('span', {
+          class: nameClasses,
+          style: `color: #${place.getPaletteColorValue(packet.authorNameColor)}`,
+          onclick: self._popUserPanel,
+          onmousemiddledown: self._addAuthorMentionToChatbox
+        }, packet.author),
+        document.createTextNode(': '),
+        contentSpan,
+        document.createTextNode(' '));
+        self.elements.body.append(chatLine);
+
+        if (packet.purge) {
+          self._markMessagePurged(chatLine, packet.purge);
+        }
 
         if (hasPing) {
           self.pingsList.push(packet);
@@ -5453,7 +5444,6 @@ window.App = (function() {
           }
         }
       },
-      intToHex: (i) => `#${('000000' + (i >>> 0).toString(16)).slice(-6)}`,
       processMessage: (str, mentionCallback) => {
         let content = str;
         try {
@@ -5466,6 +5456,11 @@ window.App = (function() {
         }
 
         return content;
+      },
+      _markMessagePurged: (elem, purge) => {
+        elem.classList.add('purged');
+        elem.setAttribute('title', `Purged by ${purge.initiator} with reason: ${purge.reason || 'none provided'}`);
+        elem.dataset.purgedBy = purge.initiator;
       },
       _makeCoordinatesElement: (raw, x, y, scale, template, title) => {
         let text = `(${x}, ${y}${scale != null ? `, ${scale}x` : ''})`;
@@ -6282,13 +6277,13 @@ window.App = (function() {
       clearPings: self.clearPings,
       setCharLimit: self.setCharLimit,
       processMessage: self.processMessage,
-      popChatSettings: self.popChatSettings,
       saveIgnores: self.saveIgnores,
       reloadIgnores: self.reloadIgnores,
       addIgnore: self.addIgnore,
       removeIgnore: self.removeIgnore,
       getIgnores: self.getIgnores,
       typeahead: self.typeahead,
+      updateSelectedNameColor: self.updateSelectedNameColor,
       updateCanvasBanState: self.updateCanvasBanState,
       registerHook: self.registerHook,
       replaceHook: self.replaceHook,
@@ -6528,6 +6523,7 @@ window.App = (function() {
       pendingSignupToken: null,
       loggedIn: false,
       username: '',
+      placementOverrides: null,
       chatNameColor: 0,
       getRoles: () => self.roles,
       isStaff: () => self.hasPermission('user.admin'),
@@ -6633,6 +6629,20 @@ window.App = (function() {
         });
         // self.pendingSignupToken = null;
       },
+      doSignOut: function() {
+        return fetch('/logout').then(() => {
+          self.elements.userInfo.fadeOut(200);
+          self.elements.pixelCounts.fadeOut(200);
+          self.elements.userMessage.fadeOut(200);
+          self.elements.loginOverlay.fadeIn(200);
+          if (window.deInitAdmin) {
+            window.deInitAdmin();
+          }
+          self.loggedIn = false;
+          $(window).trigger('pxls:user:loginState', [false]);
+          socket.reconnectSocket();
+        });
+      },
       init: function() {
         self.elements.userMessage.hide();
         self.elements.signup.hide();
@@ -6648,18 +6658,23 @@ window.App = (function() {
         self.elements.userInfo.hide();
         self.elements.userInfo.find('.logout').click(function(evt) {
           evt.preventDefault();
-          $.get('/logout', function() {
-            self.elements.userInfo.fadeOut(200);
-            self.elements.pixelCounts.fadeOut(200);
-            self.elements.userMessage.fadeOut(200);
-            self.elements.loginOverlay.fadeIn(200);
-            if (window.deInitAdmin) {
-              window.deInitAdmin();
-            }
-            self.loggedIn = false;
-            $(window).trigger('pxls:user:loginState', [false]);
-            socket.reconnectSocket();
-          });
+
+          modal.show(modal.buildDom(
+            crel('h2', { class: 'modal-title' }, 'Sign Out'),
+            crel('div',
+              crel('p', 'Are you sure you want to sign out?'),
+              crel('div', { class: 'buttons' },
+                crel('button', {
+                  class: 'dangerous-button text-button',
+                  onclick: () => self.doSignOut().then(() => modal.closeAll())
+                }, 'Yes'),
+                crel('button', {
+                  class: 'text-button',
+                  onclick: () => modal.closeAll()
+                }, 'No')
+              )
+            )
+          ));
         });
         $(window).bind('storage', function(evt) {
           if (evt.originalEvent.key === 'auth') {
@@ -6683,8 +6698,11 @@ window.App = (function() {
           self.pixelCountAllTime = data.pixelCountAllTime;
           self.updatePixelCountElements();
           self.elements.pixelCounts.fadeIn(200);
+          self.placementOverrides = data.placementOverrides;
+          place.togglePaletteSpecialColors(data.placementOverrides.canPlaceAnyColor);
           self.chatNameColor = data.chatNameColor;
-          uiHelper.updateSelectedNameColor(data.chatNameColor);
+          chat.updateSelectedNameColor(data.chatNameColor);
+          self.roles = data.roles;
           $(window).trigger('pxls:user:loginState', [true]);
           self.renameRequested = data.renameRequested;
           uiHelper.setDiscordName(data.discordName || null);
@@ -6699,7 +6717,6 @@ window.App = (function() {
           } else {
             self.elements.userInfo.fadeIn(200);
           }
-          self.roles = data.roles;
 
           if (data.banExpiry === 0) {
             isBanned = true;
@@ -6717,8 +6734,7 @@ window.App = (function() {
                 user: user,
                 modal: modal,
                 lookup: lookup,
-                chat: chat,
-                cdOverride: data.cdOverride
+                chat: chat
               }, admin => { self.admin = admin; });
             });
           } else if (window.deInitAdmin) {
@@ -6757,6 +6773,9 @@ window.App = (function() {
 
           // For userscripts.
           $(window).trigger('pxls:pixelCounts:update', Object.assign({}, data));
+        });
+        socket.on('admin_placement_overrides', function(data) {
+          self.placementOverrides = data.placementOverrides;
         });
         socket.on('rename', function(e) {
           if (e.requested === true) {
@@ -6862,6 +6881,9 @@ window.App = (function() {
       setChatNameColor: c => { self.chatNameColor = c; },
       get admin() {
         return self.admin || false;
+      },
+      get placementOverrides() {
+        return self.placementOverrides;
       }
     };
   })();
