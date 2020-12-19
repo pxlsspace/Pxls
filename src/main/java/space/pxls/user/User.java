@@ -322,7 +322,7 @@ public class User {
 
         if (!App.getConfig().getBoolean("oauth.snipMode")) {
             if (this.pixelCountAllTime >= 1000000) {
-                toReturn.add(new Badge("1m+", "1m+ Pixels Placed", "text", null));
+                toReturn.add(new Badge("1M+", "1M+ Pixels Placed", "text", null));
             } else if (this.pixelCountAllTime >= 900000) {
                 toReturn.add(new Badge("900k+", "900k+ Pixels Placed", "text", null));
             } else if (this.pixelCountAllTime >= 800000) {
