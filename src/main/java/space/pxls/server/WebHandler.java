@@ -160,7 +160,7 @@ public class WebHandler {
                     m.put("requested_self", requested_self);
                     m.put("profile_of", profileUser);
                     m.put("factions", factions);
-                    m.put("palette", App.getConfig().getStringList("board.palette"));
+                    m.put("palette", App.getPalette().getColors().stream().map(color -> color.getValue()).collect(Collectors.toList()));
                     m.put("route_root", requested_self ? "/profile" : String.format("/profile/%s", requested));
 
                     if (requested_self) {
@@ -1010,6 +1010,49 @@ public class WebHandler {
         exchange.endExchange();
     }
 
+    public void chatColorChange(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+
+        FormData.FormValue nameColor = data.getFirst("color");
+        if (nameColor == null || nameColor.getValue().trim().isEmpty()) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        try {
+            int t = Integer.parseInt(nameColor.getValue());
+            if (t >= -2 && t < App.getPalette().getColors().size()) {
+                if (t == -1 && !user.hasPermission("chat.usercolor.rainbow")) {
+                    sendBadRequest(exchange, "Color reserved for staff members");
+                    return;
+                } else if (t == -2 && !user.hasPermission("chat.usercolor.donator")) {
+                    sendBadRequest(exchange, "Color reserved for donators");
+                    return;
+                }
+
+                user.setChatNameColor(t, true, !App.getConfig().getBoolean("oauth.snipMode"));
+
+                exchange.setStatusCode(200);
+                exchange.getResponseSender().send("{}");
+                exchange.endExchange();
+            } else {
+                sendBadRequest(exchange, "Color index out of bounds");
+                return;
+            }
+        } catch (NumberFormatException nfe) {
+            sendBadRequest(exchange, "Invalid color index");
+            return;
+        }
+    }
+
     public void forceNameChange(HttpServerExchange exchange) { //this is the admin endpoint which targets another user.
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
         User user = exchange.getAttachment(AuthReader.USER);
@@ -1429,7 +1472,7 @@ public class WebHandler {
                         user.getBanExpiryTime(),
                         user.getBanReason(),
                         user.getLogin().split(":")[0],
-                        user.isOverridingCooldown(),
+                        user.getPlaceOverrides(),
                         !user.canChat(),
                         App.getDatabase().getChatBanReason(user.getId()),
                         user.isPermaChatbanned(),
@@ -1653,6 +1696,8 @@ public class WebHandler {
     }
 
     public void info(HttpServerExchange exchange) {
+        User user = exchange.getAttachment(AuthReader.USER);
+
         exchange.getResponseHeaders()
                 .add(HttpString.tryFromString("Content-Type"), "application/json")
                 .add(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
@@ -1660,7 +1705,7 @@ public class WebHandler {
             App.getCanvasCode(),
             App.getWidth(),
             App.getHeight(),
-            App.getConfig().getStringList("board.palette"),
+            App.getPalette().getColors(),
             App.getConfig().getString("captcha.key"),
             (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS),
             (int) App.getConfig().getInt("stacking.maxStacked"),

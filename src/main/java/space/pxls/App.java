@@ -17,6 +17,7 @@ import space.pxls.server.packets.chat.ClientChatMessage;
 import space.pxls.server.packets.socket.*;
 import space.pxls.user.*;
 import space.pxls.util.*;
+import space.pxls.palette.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -49,6 +50,7 @@ public class App {
     private static byte[] virginmap;
     private static byte[] defaultBoard;
     private static boolean havePlacemap;
+    private static Palette palette;
 
     private static PxlsTimer mapSaveTimer;
     private static PxlsTimer mapBackupTimer;
@@ -63,6 +65,7 @@ public class App {
         gson = new Gson();
 
         loadConfig();
+        loadPalette();
 
         // ensure JCS reads our configs
         JCS.getInstance("factions");
@@ -152,6 +155,8 @@ public class App {
                     cachedWhoamiOrigin = null;
                     loadConfig();
                     System.out.println("Reloaded configuration");
+                    loadPalette();
+                    System.out.println("Reloaded palette configuration");
                     loadRoles();
                     System.out.println("Reloaded roles configuration");
                     FactionManager.getInstance().invalidateAll();
@@ -371,38 +376,75 @@ public class App {
                         System.out.printf("Unknown user: %s%n", token[1]);
                     }
                 }
-            } else if (token[0].equalsIgnoreCase("cd-override")) {
-                //cd-override list|USERNAME[ STATE]
+            } else if (token[0].equalsIgnoreCase("placementOverride") || token[0].equalsIgnoreCase("placementOverrides")) {
+                //placementOverride list|USERNAME[ NAME STATE]
+                //NAME=placeanycolor|ignorecooldown|ignoreplacemap
                 //STATE=on|off
-                if (token.length > 1) {
+                if (token.length > 1 && !token[1].equalsIgnoreCase("help")) {
                     if (token[1].equalsIgnoreCase("list")) {
                         StringBuilder sb = new StringBuilder();
                         userManager.getAllUsersByToken().forEach((s, user) -> {
-                            if (user.isOverridingCooldown()) sb.append("    ").append(user.getName()).append('\n');
+                            PlacementOverrides po = user.getPlaceOverrides();
+                            ArrayList<String> enabledPOs = new ArrayList<String>();
+                            if (po.getCanPlaceAnyColor()) {
+                                enabledPOs.add("placeAnyColor");
+                            }
+                            if (po.hasIgnoreCooldown()) {
+                                enabledPOs.add("ignoreCooldown");
+                            }
+                            if (po.hasIgnorePlacemap()) {
+                                enabledPOs.add("ignorePlacemap");
+                            }
+
+                            if (enabledPOs.size() > 0) {
+                                sb.append("    ").append(user.getName()).append(": ").append(String.join(", ", enabledPOs)).append("\n");
+                            }
                         });
-                        System.out.println(sb);
-                    } else if (token[1].equalsIgnoreCase("help")) {
-                        System.out.println("cd-override list|USERNAME[ STATE]");
-                        System.out.println("STATE=on|off");
+
+                        System.out.println(sb.length() > 0 ? sb.toString().trim() : "    <no one has any Placement Overrides enabled>");
                     } else {
                         User user = getUserManager().getByName(token[1]);
                         if (user == null) {
                             System.out.printf("Unknown user: %s%n", token[1]);
                         } else {
-                            if (token.length >= 3) {
-                                if (token[2].equalsIgnoreCase("on") || token[2].equalsIgnoreCase("off")) {
-                                    user.setOverrideCooldown(token[2].equalsIgnoreCase("on"));
-                                    System.out.printf("Updated %s's cd-override state to %s%n", user.getName(), token[2].toLowerCase());
+                            PlacementOverrides po = user.getPlaceOverrides();
+                            if (token.length >= 4) {
+                                boolean state = token[3].equalsIgnoreCase("on");
+                                if (token[3].equalsIgnoreCase("on")) {
+                                    state = true;
+                                } else if (token[3].equalsIgnoreCase("off")) {
+                                    state = false;
                                 } else {
-                                    System.out.printf("Invalid state: %s%n", token[2]);
+                                    System.out.printf("Invalid state: %s%n", token[3]);
+                                    return;
                                 }
+
+                                if (token[2].equalsIgnoreCase("placeAnyColor")) {
+                                    po.setCanPlaceAnyColor(state);
+                                } else if (token[2].equalsIgnoreCase("ignoreCooldown")) {
+                                    po.setIgnoreCooldown(state);
+                                } else if (token[2].equalsIgnoreCase("ignorePlacemap")) {
+                                    po.setIgnorePlacemap(state);
+                                } else {
+                                    System.out.printf("Invalid placement override name: %s%n", token[2]);
+                                    return;
+                                }
+
+                                System.out.printf("Updated %s's %s state to %s%n", user.getName(), token[2].toLowerCase(), state ? "on" : "off");
+                                server.getPacketHandler().sendPlacementOverrides(user);
                             } else {
-                                System.out.printf("User's CD Override state is: %s%n", user.isOverridingCooldown() ? "on" : "off");
+                                System.out.printf(
+                                    "User's Placement Overrides:%n    Ignore cooldown: %s%n    Ignore placemap: %s%n    Place any color: %s%n",
+                                    po.hasIgnoreCooldown() ? "on" : "off",
+                                    po.hasIgnorePlacemap() ? "on" : "off",
+                                    po.getCanPlaceAnyColor() ? "on" : "off"
+                                );
                             }
                         }
                     }
                 } else {
-                    System.out.println("cd-override list|USERNAME[ STATE]");
+                    System.out.println("placementOverride list|USERNAME[ NAME STATE]");
+                    System.out.println("NAME=placeAnyColor|ignoreCooldown|ignorePlacemap");
                     System.out.println("STATE=on|off");
                 }
             } else if (token[0].equalsIgnoreCase("captcha-override")) {
@@ -597,7 +639,22 @@ public class App {
                     System.out.printf("%s raw_packet%n", token[0]);
                     return;
                 }
-                App.getServer().broadcastRaw(line.substring(token[0].length() + 1).trim());
+                String raw = line.substring(token[0].length() + 1);
+                App.getServer().broadcastRaw(raw);
+                System.out.println("Packet broadcast sent.");
+            } else if (token[0].equalsIgnoreCase("up")) {
+                if (token.length < 3) {
+                    System.out.printf("%s username raw_packet%n", token[0]);
+                    return;
+                }
+                User user = userManager.getByName(token[1]);
+                if (user == null) {
+                    System.out.println("User doesn't exist");
+                    return;
+                }
+                String raw = line.substring(token[0].length() + token[1].length() + 2);
+                App.getServer().sendRaw(user, raw);
+                System.out.println(String.format("Packet sent to %s (UID %d)'s connections (#%d).", user.getName(), user.getId(), user.getConnections().size()));
             } else if (token[0].equalsIgnoreCase("f")) {
                 // f $FID [$ACTION[ $VALUE]]
                 String subcommand;
@@ -748,6 +805,49 @@ public class App {
             role.setInherits(inherits);
         });
     }
+    public static void loadPalette() {
+        // NOTE: This differs from the way pxls.conf is handled, as we don't merge the palette-reference.conf
+        // file into roles.conf, but use it as a default in case palette.conf doesn't exist or is invalid.
+        var paletteConfigFile = new File("palette.conf");
+        var paletteConfig = ConfigFactory.parseFile(paletteConfigFile.exists() ? paletteConfigFile : new File("resources/palette-reference.conf"));
+
+        ArrayList<Color> colors = new ArrayList<Color>();
+        int defaultIdx = -1;
+        for (ConfigValue colorConfig : paletteConfig.getList("colors")) {
+            Map<String, Object> color = (Map<String, Object>) colorConfig.unwrapped();
+            colors.add(new Color((String) color.get("name"), (String) color.get("value")));
+        }
+
+        if (paletteConfig.hasPath("backgroundColor")) {
+            var backgroundColor = paletteConfig.getAnyRef("backgroundColor");
+            if (backgroundColor instanceof Integer) {
+                defaultIdx = (int) backgroundColor;
+                if (defaultIdx < 0 || defaultIdx >= colors.size()) {
+                    defaultIdx = -1;
+                    getLogger().warn("Background color index {} is out of bounds", backgroundColor);
+                }
+            } else if (backgroundColor instanceof String) {
+                for (int i = 0; i < colors.size(); i++) {
+                    if (colors.get(i).getName().equalsIgnoreCase((String) backgroundColor)) {
+                        defaultIdx = i;
+                        break;
+                    }
+                }
+
+                if (defaultIdx == -1) {
+                    getLogger().warn("Background color \"{}\" not found", backgroundColor);
+                }
+            }
+        }
+
+        if (defaultIdx == -1) {
+            defaultIdx = 0;
+            Color first = colors.get(defaultIdx);
+            getLogger().warn("Defaulting background color to the first color: \"{}\" (#{})", first.getName(), first.getValue());
+        }
+
+        palette = new Palette(colors, (byte) defaultIdx);
+    }
 
     public static int getStackMultiplier() {
         return stackMultiplier;
@@ -806,10 +906,6 @@ public class App {
         return Paths.get(config.getString("server.storage"));
     }
 
-    public static List<String> getPalette() {
-        return config.getStringList("board.palette");
-    }
-
     public static boolean isCaptchaEnabled() {
         return config.getBoolean("captcha.enabled");
     }
@@ -840,7 +936,7 @@ public class App {
     }
 
     public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase, String action) {
-        if (x < 0 || x >= width || y < 0 || y >= height || (color >= getPalette().size() && !(color == 0xFF || color == -1))) return;
+        if (x < 0 || x >= width || y < 0 || y >= height || (color >= getPalette().getColors().size() && !(color == 0xFF || color == -1))) return;
         String userName = user != null ? user.getName() : "<server>";
 
         if (action.trim().isEmpty()) {
@@ -1013,7 +1109,7 @@ public class App {
     private static boolean loadPlacemap() {
         Path path = getStorageDir().resolve("placemap.dat");
         if (!Files.exists(path)) {
-            getLogger().warn("Cannot find placemap.dat in working directory, using blank placemap");
+            getLogger().warn("Cannot find placemap.dat in working directory, assuming transparent pixels are unplaceable");
             return false;
         }
 
@@ -1145,7 +1241,7 @@ public class App {
     public static byte getDefaultColor(int x, int y) {
         return App.defaultBoard != null
             ? App.defaultBoard[x + y * App.width]
-            : (byte) config.getInt("board.defaultColor");
+            : palette.getDefaultColorIndex();
     }
 
     public static Database getDatabase() {
@@ -1154,6 +1250,10 @@ public class App {
 
     public static UndertowServer getServer() {
         return server;
+    }
+
+    public static Palette getPalette() {
+        return palette;
     }
 
     public static long getUserIdleTimeout() {

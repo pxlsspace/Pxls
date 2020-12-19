@@ -123,7 +123,7 @@ Commands are entered directly into the running instance (stdin):
 - `cons [authed]` - Lists the total (or authed) connection count.
 - `users` - Lists all of the authed users, by username.
 - `stack <user> [set <amount>]` - Sets the user's stack count. The user must not be on cooldown before setting.
-- `cd-override list|<user> [on|off]` - Lists all cooldown overrides or sets the cooldown override of an user
+- `placementOverride list|<user> [placeAnyColor|ignoreCooldown|ignorePlacemap] [on|off]` - Sets or lists the placement overrides of an user
 - `captcha-override list|<user> [on|off]` - Lists all captcha overrides or sets the captcha override of an user
 - `broadcast <message>` - Sends a message in chat
 - `chatban <user> <length> <purge> <reason>` - Chat bans the user for `length` in seconds, optionally purges all of their messages
@@ -138,6 +138,7 @@ Commands are entered directly into the running instance (stdin):
 - `senduserdata` - Broadcasts the non-idle user count in chat
 - `addnotification <title> <expiry> <body>` - Adds a notification to the notification panel. A "+x" on the `expiry` makes the expiry now + x in seconds.
 - `bp <json packet>` broadcast a raw packet to everyone online.
+- `up <username> <json packet>` send a raw packet to all active connections from an user.
 - `f <faction_id> [delete|tag|name [<new_value>]]` updates a faction. if <new_value> is omitted, then the console will print the current values.
 
 ## Contributors
