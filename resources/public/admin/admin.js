@@ -356,12 +356,28 @@
             $.map(
               [
                 {
-                  text: 'Override cooldown',
+                  text: 'Ignore cooldown',
                   onChange: function () {
-                    admin.socket.send({ type: 'admin_cdoverride', override: this.checked });
+                    admin.socket.send({ type: 'admin_placement_overrides', ignoreCooldown: this.checked });
                   },
-                  checkState: admin.cdOverride,
-                  disabled: !admin.user.hasPermission('board.cooldown.override')
+                  checkState: admin.user.placementOverrides.ignoreCooldown,
+                  disabled: !(admin.user.hasPermission('board.cooldown.override') || admin.user.hasPermission('board.cooldown.ignore'))
+                },
+                {
+                  text: 'Place any color',
+                  onChange: function () {
+                    admin.socket.send({ type: 'admin_placement_overrides', canPlaceAnyColor: this.checked });
+                  },
+                  checkState: admin.user.placementOverrides.canPlaceAnyColor,
+                  disabled: !admin.user.hasPermission('board.palette.all')
+                },
+                {
+                  text: 'Ignore placemap',
+                  onChange: function () {
+                    admin.socket.send({ type: 'admin_placement_overrides', ignorePlacemap: this.checked });
+                  },
+                  checkState: admin.user.placementOverrides.ignorePlacemap,
+                  disabled: !admin.user.hasPermission('board.placemap.ignore')
                 }
               ],
               function (cbox) {
@@ -409,13 +425,15 @@
        */
       init: function () {
         App.lookup.replaceHook('username', {
-          get: data => crel('span', crel('a', {
-            href: `https://admin.${location.host}/userinfo/${data.username}`,
-            target: '_blank'
-          }, data.username), ' (', crel('a', {
-            href: `/profile/${data.username}`,
-            target: '_blank'
-          }, 'profile'), ')')
+          get: data => data.username
+            ? crel('span', crel('a', {
+              href: `https://admin.${location.host}/userinfo/${data.username}`,
+              target: '_blank'
+            }, data.username), ' (', crel('a', {
+              href: `/profile/${data.username}`,
+              target: '_blank'
+            }, 'profile'), ')')
+            : null
         });
         App.lookup.registerHook({
           id: 'login',

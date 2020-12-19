@@ -1,6 +1,7 @@
 package space.pxls.server.packets.http;
 
 import space.pxls.auth.AuthService;
+import space.pxls.palette.Color;
 
 import java.util.List;
 import java.util.Map;
@@ -9,7 +10,7 @@ public class CanvasInfo {
     public String canvasCode;
     public Integer width;
     public Integer height;
-    public List<String> palette;
+    public List<Color> palette;
     public String captchaKey;
     public Integer heatmapCooldown;
     public Integer maxStacked;
@@ -17,9 +18,10 @@ public class CanvasInfo {
     public Boolean registrationEnabled;
     public Boolean chatRespectsCanvasBan;
     public Integer chatCharacterLimit;
+    public List<String> chatBannerText;
     public Boolean snipMode;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<String> palette, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, boolean snipMode) {
+    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
@@ -31,6 +33,7 @@ public class CanvasInfo {
         this.registrationEnabled = registrationEnabled;
         this.chatCharacterLimit = chatCharacterLimit;
         this.chatRespectsCanvasBan = chatRespectsCanvasBan;
+        this.chatBannerText = chatBannerText;
         this.snipMode = snipMode;
     }
 
@@ -46,7 +49,7 @@ public class CanvasInfo {
         return height;
     }
 
-    public List<String> getPalette() {
+    public List<Color> getPalette() {
         return palette;
     }
 
@@ -76,6 +79,10 @@ public class CanvasInfo {
 
     public Boolean getChatRespectsCanvasBan() {
         return chatRespectsCanvasBan;
+    }
+
+    public List<String> getChatBannerText() {
+        return chatBannerText;
     }
 
     public Boolean getSnipMode() {
