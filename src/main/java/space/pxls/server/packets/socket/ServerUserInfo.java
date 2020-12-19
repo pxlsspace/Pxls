@@ -1,6 +1,7 @@
 package space.pxls.server.packets.socket;
 
 import space.pxls.user.Role;
+import space.pxls.user.PlacementOverrides;
 
 import java.util.List;
 
@@ -15,7 +16,7 @@ public class ServerUserInfo {
     public Long banExpiry;
     public String banReason;
     public String method;
-    public Boolean cdOverride;
+    public PlacementOverrides placementOverrides;
     public Boolean chatBanned;
     public String chatbanReason;
     public Boolean chatbanIsPerma;
@@ -25,7 +26,7 @@ public class ServerUserInfo {
     public Number chatNameColor;
 
     public ServerUserInfo(String username, String login, List<Role> roles, int pixelCount, int pixelCountAllTime,
-                          Boolean banned, Long banExpiry, String banReason, String method, Boolean cdOverride,
+                          Boolean banned, Long banExpiry, String banReason, String method, PlacementOverrides placementOverrides,
                           Boolean chatBanned, String chatbanReason, Boolean chatbanIsPerma, Long chatbanExpiry,
                           Boolean renameRequested, String discordName, Number chatNameColor) {
         this.username = username;
@@ -37,7 +38,7 @@ public class ServerUserInfo {
         this.banExpiry = banExpiry;
         this.banReason = banReason;
         this.method = method;
-        this.cdOverride = cdOverride;
+        this.placementOverrides = placementOverrides;
         this.chatBanned = chatBanned;
         this.chatbanReason = chatbanReason;
         this.chatbanIsPerma = chatbanIsPerma;
@@ -79,8 +80,8 @@ public class ServerUserInfo {
         return method;
     }
 
-    public Boolean getCdOverride() {
-        return cdOverride;
+    public PlacementOverrides getPlacementOverrides() {
+        return placementOverrides;
     }
 
     public Boolean getChatBanned() {

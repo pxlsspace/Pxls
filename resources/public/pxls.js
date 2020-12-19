@@ -1852,9 +1852,9 @@ window.App = (function() {
         if (!self.loaded) {
           return self.pixelBuffer.findIndex((pix) => pix.x === x && pix.y === y);
         }
-        const colorValue = self.intView[y * self.width + x] & 0x00FFFFFF;
-        const index = place.palette.findIndex(({ value }) => value === colorValue);
-        return index;
+        const colorValue = self.intView[y * self.width + x];
+        const index = self.rgbPalette.indexOf(colorValue);
+        return index !== -1 ? index : 0xFF;
       },
       _setPixelIndex: function(i, c) {
         if (c === -1 || c === 0xFF) {
@@ -2683,6 +2683,13 @@ window.App = (function() {
         self.autoreset = !!v;
       },
       switch: function(newColorIdx) {
+        const isOnPalette = newColorIdx >= 0 && newColorIdx < self.palette.length;
+        const isTransparent = newColorIdx === 0xFF && user.placementOverrides?.canPlaceAnyColor;
+
+        if (!isOnPalette && !isTransparent) {
+          newColorIdx = -1;
+        }
+
         self.color = newColorIdx;
         ls.set('color', newColorIdx);
         $('.palette-color').removeClass('active');
@@ -2700,10 +2707,11 @@ window.App = (function() {
           self.toggleCursor(true);
         }
         if ('setProperty' in document.documentElement.style) {
-          document.documentElement.style.setProperty('--selected-palette-color', `#${self.palette[newColorIdx].value}`);
+          document.documentElement.style.setProperty('--selected-palette-color', isTransparent ? 'transparent' : `#${self.palette[newColorIdx].value}`);
         }
-        self.elements.cursor.css('background-color', `#${self.palette[newColorIdx].value}`);
-        self.elements.reticule.css('background-color', `#${self.palette[newColorIdx].value}`);
+        [self.elements.cursor, self.elements.reticule].forEach((el) => el
+          .css('background-color', isOnPalette ? `#${self.palette[newColorIdx].value}` : (isTransparent ? 'var(--general-background)' : null))
+        );
         if (newColorIdx !== -1) {
           $($('.palette-color[data-idx=' + newColorIdx + '],.palette-color[data-idx=-1]')).addClass('active'); // Select both the new color AND the deselect button. Signifies more that it's a deselect button rather than a "delete pixel" button
           try {
@@ -2807,6 +2815,17 @@ window.App = (function() {
         self.elements.palette.prepend(
           $('<button>')
             .attr('type', 'button')
+            .attr('data-idx', 0xFF)
+            .addClass('palette-color palette-color-special checkerboard-background pixelate')
+            .addClass('ontouchstart' in window ? 'touch' : 'no-touch')
+            .hide()
+            .click(function() {
+              self.switch(0xFF);
+            })
+        );
+        self.elements.palette.prepend(
+          $('<button>')
+            .attr('type', 'button')
             .attr('data-idx', -1)
             .addClass('palette-color no-border deselect-button')
             .addClass('ontouchstart' in window ? 'touch' : 'no-touch').css('background-color', 'transparent')
@@ -2817,6 +2836,9 @@ window.App = (function() {
               self.switch(-1);
             })
         );
+      },
+      togglePaletteSpecialColors: (show) => {
+        self.elements.palette.find('.palette-color.palette-color-special').toggle(show);
       },
       can_undo: false,
       undo: function(evt) {
@@ -2888,6 +2910,12 @@ window.App = (function() {
           }
 
           if (uiHelper.getAvailable() === 0) { uiHelper.setPlaceableText(data.ackFor === 'PLACE' ? 0 : 1); }
+        });
+        socket.on('admin_placement_overrides', function(data) {
+          self.togglePaletteSpecialColors(data.placementOverrides.canPlaceAnyColor);
+          if (!data.placementOverrides.canPlaceAnyColor && self.color === 0xFF) {
+            self.switch(-1);
+          }
         });
         socket.on('captcha_required', function(data) {
           if (!self.isDoingCaptcha) {
@@ -2964,6 +2992,7 @@ window.App = (function() {
       },
       getPaletteColorValue: (idx, def = '000000') => self.palette[idx] ? self.palette[idx].value : def,
       getPaletteABGR: self.getPaletteABGR,
+      togglePaletteSpecialColors: self.togglePaletteSpecialColors,
       setAutoReset: self.setAutoReset,
       setNumberedPaletteEnabled: self.setNumberedPaletteEnabled,
       get color() {
@@ -3208,7 +3237,7 @@ window.App = (function() {
                 case 'nuke':
                   return 'Part of a nuke';
                 case 'mod':
-                  return 'Placed by a staff member using cooldown override';
+                  return 'Placed by a staff member using placement overrides';
                 default:
                   return null;
               }
@@ -4353,10 +4382,8 @@ window.App = (function() {
         socket.on('chat_ban_state', handleChatban);
 
         const _doPurge = (elem, e) => {
-          if (user.isStaff()) {
-            elem.classList.add('purged');
-            elem.setAttribute('title', `Purged by ${e.initiator} with reason: ${e.reason || 'none provided'}`);
-            elem.dataset.purgedBy = e.initiator;
+          if (user.hasPermission('chat.history.purged')) {
+            self._markMessagePurged(elem, e);
           } else {
             elem.remove();
           }
@@ -4390,9 +4417,7 @@ window.App = (function() {
           }
           if (lines.length) {
             lines.forEach(x => _doPurge(x, e));
-            if (user.getUsername().toLowerCase().trim() === e.target.toLowerCase().trim()) {
-              self.addServerAction(`${e.IDs.length} message${e.IDs.length !== 1 ? 's were' : ' was'} purged by ${e.initiator}`);
-            }
+            self.addServerAction(`${e.IDs.length} message${e.IDs.length !== 1 ? 's' : ''} from ${e.target} ${e.IDs.length !== 1 ? 'were' : 'was'} purged by ${e.initiator}`);
           }
         });
 
@@ -5049,6 +5074,206 @@ window.App = (function() {
         return false;
       },
       getIgnores: () => [].concat(self.ignored || []),
+      popChatSettings() {
+        // dom generation
+        const body = crel('div', { class: 'chat-settings-wrapper no-p-margin' });
+
+        const genCheckboxGroup = (label) => {
+          const cb = crel('input', { type: 'checkbox' });
+          const lbl = crel('label', { class: 'input-group' },
+            cb,
+            ' ',
+            crel('span', { class: 'label-text' }, label));
+          return [cb, lbl];
+        };
+
+        const [_cb24hTimestamps, lbl24hTimestamps] = genCheckboxGroup('24 Hour Timestamps');
+        const [_cbPixelPlaceBadges, lblPixelPlaceBadges] = genCheckboxGroup('Show pixel-placed badges');
+        const [_cbFactionTagBadges, lblFactionTagBadges] = genCheckboxGroup('Show faction tags');
+        const [_cbPings, lblPings] = genCheckboxGroup('Enable pings');
+
+        const _cbPingAudio = crel('select', {},
+          crel('option', { value: 'off' }, 'Off'),
+          crel('option', { value: 'discrete' }, 'Only when necessary'),
+          crel('option', { value: 'always' }, 'Always')
+        );
+        const lblPingAudio = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Play sound on ping: '),
+          _cbPingAudio
+        );
+
+        const _rgPingAudioVol = crel('input', { type: 'range', min: 0, max: 1, step: 0.01 });
+        const _txtPingAudioVol = crel('span', { class: 'range-text-value' });
+        const lblPingAudioVol = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Ping sound volume: '),
+          _rgPingAudioVol,
+          _txtPingAudioVol
+        );
+
+        const [_cbBanner, lblBanner] = genCheckboxGroup('Enable the rotating banner under chat');
+        const [_cbTemplateTitles, lblTemplateTitles] = genCheckboxGroup('Replace template titles with URLs in chat where applicable');
+
+        const _txtFontSize = crel('input', { type: 'number', min: '1', max: '72' });
+        const _btnFontSizeConfirm = crel('button', { class: 'text-button' }, crel('i', { class: 'fas fa-check' }));
+        const lblFontSize = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Font Size: '),
+          _txtFontSize
+        );
+
+        const [_cbHorizontal, lblHorizontal] = genCheckboxGroup('Enable horizontal chat');
+
+        const _selInternalClick = crel('select',
+          Object.values(self.TEMPLATE_ACTIONS).map(action =>
+            crel('option', { value: action.id }, action.pretty)
+          )
+        );
+        const lblInternalAction = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Default internal link action click: '),
+          _selInternalClick
+        );
+
+        const _selUsernameColor = crel('select', { class: 'username-color-picker' },
+          user.hasPermission('chat.usercolor.rainbow') ? crel('option', { value: -1, class: 'rainbow' }, '*. Rainbow') : null,
+          user.hasPermission('chat.usercolor.donator') ? crel('option', { value: -2, class: 'donator' }, '*. Donator') : null,
+          place.palette.map((x, i) => crel('option', {
+            value: i,
+            'data-idx': i,
+            style: `background-color: #${x.value}`
+          }, `${i}. ${x.name}`))
+        );
+        const _lblUsernameColor = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Username Color: '),
+          _selUsernameColor
+        );
+        const _lblUsernameColorFeedback = crel('label', { for: _selUsernameColor.id, class: 'extra-label' }, '');
+        const sectionUsernameColor = crel('div', _lblUsernameColor, _lblUsernameColorFeedback);
+
+        const _selIgnores = crel('select', {
+          class: 'user-ignores',
+          style: 'font-family: monospace; padding: 5px; border-radius: 5px;'
+        },
+        self.getIgnores().sort((a, b) => a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase())).map(x =>
+          crel('option', { value: x }, x)
+        )
+        );
+        const _btnUnignore = crel('button', { class: 'text-button' }, 'Unignore');
+        const lblIgnores = crel('label', { class: 'input-group' },
+          crel('span', { class: 'label-text' }, 'Ignores: '),
+          _selIgnores
+        );
+        const lblIgnoresFeedback = crel('label', { for: _selIgnores.id, class: 'extra-label' }, '');
+
+        // events/scaffolding
+        _selUsernameColor.value = user.getChatNameColor();
+        uiHelper.styleElemWithChatNameColor(_selUsernameColor, user.getChatNameColor());
+        _selUsernameColor.addEventListener('change', function() {
+          _selUsernameColor.disabled = true;
+
+          const color = this.value >> 0;
+          $.post({
+            type: 'POST',
+            url: '/chat/setColor',
+            data: {
+              color
+            },
+            success: () => {
+              user.setChatNameColor(color);
+              uiHelper.updateSelectedNameColor(color);
+              _lblUsernameColorFeedback.innerText = 'Color updated';
+            },
+            error: (data) => {
+              const err = data.responseJSON && data.responseJSON.details ? data.responseJSON.details : data.responseText;
+              if (data.status === 200) {
+                _lblUsernameColorFeedback.innerText = err;
+              } else {
+                _lblUsernameColorFeedback.innerText = 'Couldn\'t change chat color: ' + err;
+              }
+            },
+            complete: () => {
+              _selUsernameColor.value = user.getChatNameColor();
+              _selUsernameColor.disabled = false;
+            }
+          });
+        });
+
+        settings.chat.font.size.controls.add(_txtFontSize);
+        _btnFontSizeConfirm.click(() => settings.chat.font.size.set(settings.chat.font.size.get()));
+
+        settings.chat.links.internal.behavior.controls.add(_selInternalClick);
+
+        settings.chat.timestamps['24h'].controls.add(_cb24hTimestamps);
+        settings.chat.badges.enable.controls.add(_cbPixelPlaceBadges);
+        settings.chat.factiontags.enable.controls.add(_cbFactionTagBadges);
+        settings.chat.pings.enable.controls.add(_cbPings);
+        settings.chat.pings.audio.when.controls.add(_cbPingAudio);
+        settings.chat.pings.audio.volume.controls.add(_rgPingAudioVol);
+        settings.ui.chat.banner.enable.controls.add(_cbBanner);
+        settings.chat.links.templates.preferurls.controls.add(_cbTemplateTitles);
+        settings.ui.chat.horizontal.enable.controls.add(_cbHorizontal);
+
+        _txtPingAudioVol.innerText = `${(_rgPingAudioVol.value * 100) >> 0}%`;
+        _rgPingAudioVol.addEventListener('change', function() {
+          _txtPingAudioVol.innerText = `${(this.value * 100) >> 0}%`;
+        });
+        uiHelper.prettifyRange(_rgPingAudioVol);
+
+        _btnUnignore.addEventListener('click', function() {
+          if (self.removeIgnore(_selIgnores.value)) {
+            _selIgnores.querySelector(`option[value="${_selIgnores.value}"]`).remove();
+            lblIgnoresFeedback.innerHTML = 'User unignored.';
+            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
+            lblIgnoresFeedback.style.display = 'block';
+            setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 3000);
+          } else if (self.ignored.length === 0) {
+            lblIgnoresFeedback.innerHTML = 'You haven\'t ignored any users. Congratulations!';
+            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
+            lblIgnoresFeedback.style.display = 'block';
+            setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 3000);
+          } else {
+            lblIgnoresFeedback.innerHTML = 'Failed to unignore user. Either they weren\'t actually ignored, or an error occurred. Contact a developer if the problem persists.';
+            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
+            lblIgnoresFeedback.style.display = 'block';
+            setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 5000);
+          }
+        });
+
+        crel(body,
+          crel('h3', { class: 'chat-settings-title' }, 'Chat Settings'),
+          [
+            lbl24hTimestamps,
+            lblPixelPlaceBadges,
+            lblFactionTagBadges,
+            lblPings,
+            lblHorizontal,
+            lblInternalAction,
+            lblPingAudio,
+            lblPingAudioVol,
+            lblBanner,
+            lblTemplateTitles,
+            lblFontSize,
+            sectionUsernameColor,
+            lblIgnores,
+            _btnUnignore,
+            lblIgnoresFeedback
+          ].map(x => crel('div', x))
+        );
+        modal.show(modal.buildDom(
+          crel('h2', { class: 'modal-title' }, 'Chat Settings'),
+          body
+        )).one($.modal.AFTER_CLOSE, function() {
+          settings.chat.font.size.controls.remove(_txtFontSize);
+          settings.chat.links.internal.behavior.controls.remove(_selInternalClick);
+          settings.chat.timestamps['24h'].controls.remove(_cb24hTimestamps);
+          settings.chat.badges.enable.controls.remove(_cbPixelPlaceBadges);
+          settings.chat.factiontags.enable.controls.remove(_cbFactionTagBadges);
+          settings.chat.pings.enable.controls.remove(_cbPings);
+          settings.chat.pings.audio.when.controls.remove(_cbPingAudio);
+          settings.chat.pings.audio.volume.controls.remove(_rgPingAudioVol);
+          settings.ui.chat.banner.enable.controls.remove(_cbBanner);
+          settings.chat.links.templates.preferurls.controls.remove(_cbTemplateTitles);
+          settings.ui.chat.horizontal.enable.controls.remove(_cbHorizontal);
+        });
+      },
       _handlePingJumpClick: function() { // must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
         if (this && this.dataset && this.dataset.id) {
           self.scrollToCMID(this.dataset.id);
@@ -5317,30 +5542,32 @@ window.App = (function() {
         let nameClasses = 'user';
         if (Array.isArray(packet.authorNameClass)) nameClasses += ` ${packet.authorNameClass.join(' ')}`;
 
-        self.elements.body.append(
-          crel('li', {
-            'data-id': packet.id,
-            'data-tag': _facTag,
-            'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '',
-            'data-author': packet.author,
-            'data-date': packet.date,
-            'data-badges': JSON.stringify(packet.badges || []),
-            class: `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`
-          },
-          crel('span', { title: when.format('MMM Do YYYY, hh:mm:ss A') }, when.format(settings.chat.timestamps['24h'].get() === true ? 'HH:mm' : 'hh:mm A')),
-          document.createTextNode(' '),
-          flairs,
-          crel('span', {
-            class: nameClasses,
-            style: `color: #${place.getPaletteColorValue(packet.authorNameColor)}`,
-            onclick: self._popUserPanel,
-            onmousemiddledown: self._addAuthorMentionToChatbox
-          }, packet.author),
-          document.createTextNode(': '),
-          contentSpan,
-          document.createTextNode(' ')
-          )
-        );
+        const chatLine = crel('li', {
+          'data-id': packet.id,
+          'data-tag': _facTag,
+          'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '',
+          'data-author': packet.author,
+          'data-date': packet.date,
+          'data-badges': JSON.stringify(packet.badges || []),
+          class: `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`
+        },
+        crel('span', { title: when.format('MMM Do YYYY, hh:mm:ss A') }, when.format(settings.chat.timestamps['24h'].get() === true ? 'HH:mm' : 'hh:mm A')),
+        document.createTextNode(' '),
+        flairs,
+        crel('span', {
+          class: nameClasses,
+          style: `color: #${place.getPaletteColorValue(packet.authorNameColor)}`,
+          onclick: self._popUserPanel,
+          onmousemiddledown: self._addAuthorMentionToChatbox
+        }, packet.author),
+        document.createTextNode(': '),
+        contentSpan,
+        document.createTextNode(' '));
+        self.elements.body.append(chatLine);
+
+        if (packet.purge) {
+          self._markMessagePurged(chatLine, packet.purge);
+        }
 
         if (hasPing) {
           self.pingsList.push(packet);
@@ -5373,6 +5600,11 @@ window.App = (function() {
         }
 
         return content;
+      },
+      _markMessagePurged: (elem, purge) => {
+        elem.classList.add('purged');
+        elem.setAttribute('title', `Purged by ${purge.initiator} with reason: ${purge.reason || 'none provided'}`);
+        elem.dataset.purgedBy = purge.initiator;
       },
       _makeCoordinatesElement: (raw, x, y, scale, template, title) => {
         let text = `(${x}, ${y}${scale != null ? `, ${scale}x` : ''})`;
@@ -6435,6 +6667,7 @@ window.App = (function() {
       pendingSignupToken: null,
       loggedIn: false,
       username: '',
+      placementOverrides: null,
       chatNameColor: 0,
       getRoles: () => self.roles,
       isStaff: () => self.hasPermission('user.admin'),
@@ -6590,6 +6823,8 @@ window.App = (function() {
           self.pixelCountAllTime = data.pixelCountAllTime;
           self.updatePixelCountElements();
           self.elements.pixelCounts.fadeIn(200);
+          self.placementOverrides = data.placementOverrides;
+          place.togglePaletteSpecialColors(data.placementOverrides.canPlaceAnyColor);
           self.chatNameColor = data.chatNameColor;
           chat.updateSelectedNameColor(data.chatNameColor);
           self.roles = data.roles;
@@ -6624,8 +6859,7 @@ window.App = (function() {
                 user: user,
                 modal: modal,
                 lookup: lookup,
-                chat: chat,
-                cdOverride: data.cdOverride
+                chat: chat
               }, admin => { self.admin = admin; });
             });
           } else if (window.deInitAdmin) {
@@ -6664,6 +6898,9 @@ window.App = (function() {
 
           // For userscripts.
           $(window).trigger('pxls:pixelCounts:update', Object.assign({}, data));
+        });
+        socket.on('admin_placement_overrides', function(data) {
+          self.placementOverrides = data.placementOverrides;
         });
         socket.on('rename', function(e) {
           if (e.requested === true) {
@@ -6769,6 +7006,9 @@ window.App = (function() {
       setChatNameColor: c => { self.chatNameColor = c; },
       get admin() {
         return self.admin || false;
+      },
+      get placementOverrides() {
+        return self.placementOverrides;
       }
     };
   })();
