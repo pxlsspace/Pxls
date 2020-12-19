@@ -1,0 +1,315 @@
+/* "Terminal" theme by https://github.com/SoftwareKitten */
+
+html {
+    --general-text-color: #94e044;
+    --general-background: #000801;
+    --kbd-background: #000801;
+    --kbd-border-color: #004e00;
+    --kbd-text-color: #53a200;
+    --button-background: #004e00;
+    --button-border-color: #004e00;
+    --button-text-color: #94e044;
+    --button-text-color-disabled: var(--button-text-color);
+    --button-border-color-disabled: var(--button-border-color);
+    --button-background-disabled: var(--button-background);
+    --button-text-color-hover: #141b1f;
+    --button-border-color-hover: #004e00;
+    --button-background-hover: #004e00;
+    --dangerous-button-text-color: #141b1f;
+    --dangerous-button-background: #468079;
+    --dangerous-button-border-color: #468079;
+    --dangerous-button-text-color-hover: #468079;
+    --dangerous-button-background-hover: #141b1f;
+    --dangerous-button-border-color-hover: var(--dangerous-button-border-color);
+    --floating-panel-text-color: inherit;
+    --floating-panel-border-color: #94e044;
+    --floating-panel-background: #000801;
+    --bubble-background: #000801;
+    --bubble-text-color: #94e044;
+    --palette-background: #000801cc;
+    --palette-item-border-color: #004e00;
+    --palette-overlay-background: #141b1fcc;
+    --palette-overlay-text-color: inherit;
+    --palette-deselect-button-color: #94e044;
+    --palette-number-text-color: #94e044;
+    --palette-number-background-color: #000801;
+    --cursor-text-color: #94e044;
+    --cursor-text-background-color: #000801;
+    --undo-text-color: #94e044;
+    --undo-background: var(--palette-background);
+    --undo-border-color: #94e044;
+    --input-text-color: #94e044;
+    --input-background: #000000;
+    --input-border-color: #94e044;
+    --input-placeholder-text-color: #00b100;
+    --text-blue-color: #004e00;
+    --text-green-color: #94e044;
+    --text-red-color: #94e044;
+    --text-muted-color: #008e00;
+    --text-yellow-color: #94e044;
+    --text-orange-color: #94e044;
+    --copypulse-color: #94e044;
+    --error-color: #02be01;
+    --notification-color: #94e044;
+    --ping-highlight-color: #004e00;
+    --ping-flash-color: #94e044;
+    --ping-counter-color: #004e00;
+    --notification-expiry-color: var(--text-orange-color);
+    --panel-background: #000801;
+    --panel-text-color: inherit;
+    --panel-border-color: #94e044;
+    --panel-header-text-color: inherit;
+    --panel-header-background: #000000;
+    --panel-footer-text-color: var(--text-muted-color);
+    --panel-footer-background: var(--panel-header-background);
+    --panel-close-button-color: #5a882a;
+    --panel-close-button-color-hover: var(--panel-close-button-color);
+    --panel-close-button-color-active: var(--panel-close-button-color);
+    --panel-article-background: #000801;
+    --panel-article-text-color: var(--panel-text-color);
+    --panel-article-border-color: var(--panel-border-color);
+    --panel-article-header-text-color: inherit;
+    --panel-article-header-background: var(--panel-header-background);
+    --panel-article-footer-text-color: var(--panel-footer-text-color);
+    --panel-article-footer-background: var(--panel-footer-background);
+    --panel-trigger-outline-color: #94e044;
+    --chat-separator-color: #004e00;
+    --chat-odd-background: rgba(0, 0, 0, 0.1);
+    --chat-abbr-underline-color: var(--general-text-color);
+    --chat-badge-background: #152900;
+    --chat-badge-text-color: #01ce00;
+    --chat-server-action-text-color: var(--text-muted-color);
+    --chat-user-text-shadow-color: #000801;
+    --chat-purged-text-color: var(--text-muted-color);
+    --chat-tobottom-text-color: #004e00;
+    --chat-tobottom-background: #000000;
+    --chat-tobottom-text-color-hover: #000801;
+    --chat-tobottom-background-hover: #94e044;
+
+    --chat-typeahead-menu-background: var(--panel-article-background);
+    --chat-typeahead-item-text-color: inherit;
+    --chat-typeahead-item-background: #1f272e;
+    --chat-typeahead-item-background-hover: #242d35;
+    --chat-typeahead-item-background-active: #242d35;
+
+    --emoji-picker-border-color: var(--floating-panel-border-color);
+    --emoji-picker-shadow-color: #000801;
+    --emoji-picker-background: var(--floating-panel-background);
+    --emoji-picker-preview-name-text-color: var(--text-muted-color);
+    --emoji-picker-tab-icon-color: #004e00;
+    --emoji-picker-tab-icon-color-selected: #94e044;
+    --emoji-picker-section-text-color: var(--general-text-color);
+    --emoji-picker-emoji-color: var(--general-text-color);
+    --emoji-picker-emoji-background: transparent;
+    --emoji-picker-emoji-background-hover: #94e044;
+    --emoji-picker-search-input-border-color: var(--input-border-color);
+    --emoji-picker-search-input-background: var(--input-background);
+    --emoji-picker-search-input-text-color: var(--input-text-color);
+    --emoji-picker-search-icon-color: var(--text-muted-color);
+    --emoji-picker-search-no-results-color: var(--text-muted-color);
+    --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
+    --emoji-picker-variant-popup-background: var(--floating-panel-background);
+    --emoji-picker-variant-close-button-color: var(--text-red-color);
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    -webkit-appearance: none;
+    outline-style: none;
+    outline-width: 0 !important;
+    outline-color: none !important;
+}
+
+:active,
+:hover,
+:focus {
+    outline: 0;
+    outline-offset: 0;
+}
+
+:focus {
+	outline-style: none;
+	outline-width: 0 !important;
+	outline-color: none !important;
+}
+
+::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+}
+
+a {
+    color: #026102;
+}
+
+#reticule {
+    border: 2px solid #000801;
+}
+
+.panel-trigger:hover {
+    color: #004e00;
+}
+
+.panel-trigger {
+    color: #000000;
+}
+
+#loading {
+    background-color: #242d35;
+    color: #94e044;
+}
+
+.palette-number {
+    border: 1px solid #004e00;
+}
+
+.chat-ratelimit-overlay {
+    color: #468079;
+    font-size: 1.2rem;
+}
+
+.chat-settings-wrapper input:not([type=checkbox]) {
+    border: none;
+}
+
+#reconnecting {
+    background-color: #002705;
+    color: #94e044;
+}
+
+.palette-color {
+    border: 1px solid var(--palette-item-border-color)
+}
+
+input:disabled {
+    opacity: .65;
+}
+
+.chat-settings-wrapper input[type="number"] {
+    border: 1px solid #004e00;
+}
+
+input[type="checkbox"] {
+    display: none;
+}
+
+input[type="checkbox"]+span {
+    position: relative;
+    padding-left: 20px;
+    cursor: pointer;
+}
+
+select {
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' version='1.1' id='Capa_1' x='0px' y='0px' width='8px' height='8px' viewBox='0 0 284.929 284.929' style='enable-background:new 0 0 284.929 284.929;' xml:space='preserve'%3E%3Cg%3E%3Cpath xmlns='http://www.w3.org/2000/svg' style='fill:%2340726e;' d='M282.082,76.511l-14.274-14.273c-1.902-1.906-4.093-2.856-6.57-2.856c-2.471,0-4.661,0.95-6.563,2.856L142.466,174.441 L30.262,62.241c-1.903-1.906-4.093-2.856-6.567-2.856c-2.475,0-4.665,0.95-6.567,2.856L2.856,76.515C0.95,78.417,0,80.607,0,83.082 c0,2.473,0.953,4.663,2.856,6.565l133.043,133.046c1.902,1.903,4.093,2.854,6.567,2.854s4.661-0.951,6.562-2.854L282.082,89.647 c1.902-1.903,2.847-4.093,2.847-6.565C284.929,80.607,283.984,78.417,282.082,76.511z'/%3E%3C/g%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 3px center;
+    padding: 7px 10px 7px 10px;
+}
+
+select:focus {
+    background-image: url("data:image/svg+xml,%3C%3Fxml version='1.0' encoding='UTF-8'%3F%3E%3Csvg width='8px' height='8px' enable-background='new 0 0 284.929 284.929' version='1.1' viewBox='0 0 284.93 284.93' xml:space='preserve' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='m282.08 76.511-14.274-14.273c-1.902-1.906-4.093-2.856-6.57-2.856-2.471 0-4.661 0.95-6.563 2.856l-112.21 112.2-112.2-112.2c-1.903-1.906-4.093-2.856-6.567-2.856-2.475 0-4.665 0.95-6.567 2.856l-14.272 14.274c-1.906 1.902-2.856 4.092-2.856 6.567 0 2.473 0.953 4.663 2.856 6.565l133.04 133.05c1.902 1.903 4.093 2.854 6.567 2.854s4.661-0.951 6.562-2.854l133.05-133.05c1.902-1.903 2.847-4.093 2.847-6.565 0-2.475-0.945-4.665-2.847-6.571z' fill='%2340726e' style='transform-origin:center center;transform:rotate(180deg)' xmlns='http://www.w3.org/2000/svg'/%3E%3C/svg%3E");
+}
+
+input[type="checkbox"]+span:last-child {
+    margin-bottom: 0;
+}
+
+input[type="checkbox"]+span:before {
+    content: '';
+    display: block;
+    width: 12px;
+    height: 12px;
+    border: 1px solid #007300;
+    position: absolute;
+    left: 0;
+    top: 2px;
+    -webkit-transition: all .20s, border-color .14s;
+    transition: all .20s, border-color .14s;
+}
+
+input[type="checkbox"]:checked+span:before {
+    width: 6px;
+    left: 4px;
+    top: -1px;
+    border-top-color: transparent;
+    border-left-color: transparent;
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+}
+
+input[type=range] {
+    margin: auto;
+    outline: 0;
+    height: 6px;
+    background-color: #004e00;
+    background-image: linear-gradient(#94e044, #004e00);
+    background-repeat: no-repeat;
+    border-radius: 10px;
+    cursor: default;
+    -webkit-appearance: none;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+    box-shadow: none;
+    border: 0;
+    background: #ff000000;
+    -webkit-appearance: none;
+}
+
+input[type=range]::-moz-range-track {
+    box-shadow: none;
+    border: 0;
+    background: transparent;
+}
+
+input[type=range]::-moz-focus-outer {
+    border: 0;
+}
+
+input[type=range]::-webkit-slider-thumb {
+    width: 14px;
+    height: 14px;
+    border: 0;
+    background: linear-gradient(#94e044,#004e00);
+    border-radius: 100%;
+    box-shadow: 0 0 1px 0 rgba(0, 0, 0, 0.1);
+    -webkit-appearance: none;
+}
+
+input[type=range]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: 0;
+    background: #468079;
+    border-radius: 100%;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
+input[type='number'] {
+    background: #000000;
+    border: 1px solid #004e00;
+    height: 25px;
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
+@keyframes -scrolled-flash {
+    from {
+        background: #94e044;
+    }
+    to {
+        background: #004e00;
+    }
+}
+
+.admin input {
+    background: #000000;
+    border-color: #94e044;
+    color: #94e044;
+}
