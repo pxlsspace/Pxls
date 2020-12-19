@@ -4430,149 +4430,11 @@ window.App = (function() {
 
         self.elements.rate_limit_overlay.hide();
 
-        const commandsCache = [['tempban', '/tempban  USER  BAN_LENGTH  SHOULD_PURGE  BAN_REASON'], ['permaban', '/permaban  USER  SHOULD_PURGE  BAN_REASON'], ['purge', '/purge  USER  PURGE_AMOUNT  PURGE_REASON']];
         self.elements.input.on('keydown', e => {
           e.stopPropagation();
           const toSend = self.elements.input[0].value;
           const trimmed = toSend.trim();
-          let handling = false;
           if ((e.originalEvent.key === 'Enter' || e.originalEvent.which === 13) && !e.shiftKey) {
-            if (trimmed.startsWith('/') && user.isStaff()) {
-              const args = trimmed.substr(1).split(' ');
-              const command = args.shift();
-              let banReason; // To fix compiler warning
-              handling = true;
-              switch (command.toLowerCase().trim()) {
-                case 'permaban': {
-                  const usage = '/permaban USER SHOULD_PURGE BAN_REASON\n/permaban help';
-                  const help = [
-                    usage,
-                    '    USER:         The username',
-                    '    SHOULD_PURGE: (1|0) Whether or not to remove all chat messages from the user',
-                    '    BAN_REASON:   The reason for the ban',
-                    '',
-                    '    /permaban GlowingSocc 1 just generally don\'t like \'em',
-                    '    /permaban GlowingSocc 0 time for you to go.'
-                  ].join('\n');
-                  if (args.length < 3) {
-                    if (args[0] && args[0].toLowerCase() === 'help') {
-                      self.showHint(help);
-                    } else {
-                      self.showHint(`Missing arguments.\n${usage}`, true);
-                    }
-                  } else {
-                    const user = args.shift();
-                    let shouldPurge = args.shift();
-                    banReason = args.join(' ');
-                    if (!isNaN(shouldPurge)) {
-                      shouldPurge = !!(shouldPurge >> 0);
-                    } else {
-                      return self.showHint(`Invalid shouldPurge. Expected 1 or 0, got ${shouldPurge}`, true);
-                    }
-                    self.elements.input[0].disabled = true;
-                    $.post('/admin/chatban', {
-                      who: user,
-                      type: 'perma',
-                      reason: banReason,
-                      removalAmount: shouldPurge ? -1 : 0,
-                      banLength: 0
-                    }, () => {
-                      modal.showText('Chatban initiated');
-                      self.elements.input[0].value = '';
-                      self.elements.input[0].disabled = false;
-                    }).fail(() => {
-                      modal.showText('Failed to chatban');
-                      self.elements.input[0].disabled = false;
-                    });
-                  }
-                  break;
-                }
-                case 'tempban': {
-                  const usage = '/tempban USER BAN_LENGTH SHOULD_PURGE BAN_REASON\n/tempban help';
-                  const help = [
-                    usage,
-                    '    USER:         The username',
-                    '    BAN_LENGTH:   The banlength in seconds',
-                    '    SHOULD_PURGE: (1|0) Whether or not to remove all chat messages from the user',
-                    '    BAN_REASON:   The reason for the ban',
-                    '',
-                    '    /tempban GlowingSocc 600 1 just generally don\'t like \'em',
-                    '    /tempban GlowingSocc 60 0 take a time out.'
-                  ].join('\n');
-                  if (args.length < 4) {
-                    if (args[0] && args[0].toLowerCase() === 'help') {
-                      self.showHint(help);
-                    } else {
-                      self.showHint(`Missing arguments.\n${usage}`, true);
-                    }
-                  } else {
-                    const user = args.shift();
-                    const banLength = args.shift() >> 0;
-                    let shouldPurge = args.shift();
-                    banReason = args.join(' ');
-                    if (!isNaN(shouldPurge)) {
-                      shouldPurge = !!(shouldPurge >> 0);
-                    } else {
-                      return self.showHint(`Invalid shouldPurge. Expected 1 or 0, got ${shouldPurge}`, true);
-                    }
-                    if (banLength <= 0) {
-                      return self.showHint('Invalid banLength. Should be >0', true);
-                    } else {
-                      $.post('/admin/chatban', {
-                        who: user,
-                        type: 'temp',
-                        reason: banReason,
-                        removalAmount: shouldPurge ? -1 : 0,
-                        banLength: banLength
-                      }, () => {
-                        modal.showText('Chatban initiated');
-                        self.elements.input[0].value = '';
-                        self.elements.input[0].disabled = false;
-                      }).fail(() => {
-                        modal.showText('Failed to chatban');
-                        self.elements.input[0].disabled = false;
-                      });
-                    }
-                  }
-                  break;
-                }
-                case 'purge': {
-                  const usage = '/purge USER PURGE_REASON\n/purge help';
-                  const help = [
-                    usage,
-                    '    USER:         The username',
-                    '    PURGE_REASON: The reason for the purge',
-                    '',
-                    '    /purge GlowingSocc 10 spam'
-                  ].join('\n');
-                  if (args.length < 2) {
-                    if (args[0] && args[0].toLowerCase() === 'help') {
-                      self.showHint(help);
-                    } else {
-                      self.showHint(`Missing arguments.\n${usage}`, true);
-                    }
-                  } else {
-                    const user = args.shift();
-                    const purgeReason = args.join(' ');
-                    $.post('/admin/chatPurge', {
-                      who: user,
-                      reason: purgeReason
-                    }, function() {
-                      modal.showText('Chatpurge initiated');
-                      self.elements.input[0].value = '';
-                      self.elements.input[0].disabled = false;
-                    }).fail(() => {
-                      modal.showText('Failed to chatpurge');
-                      self.elements.input[0].disabled = false;
-                    });
-                  }
-                  break;
-                }
-                default: {
-                  handling = false;
-                }
-              }
-            }
             e.preventDefault();
 
             if (trimmed.length === 0) {
@@ -4583,7 +4445,7 @@ window.App = (function() {
               return;
             }
 
-            if (!self.typeahead.shouldInsert && !handling) {
+            if (!self.typeahead.shouldInsert) {
               self.typeahead.lastLength = -1;
               self._send(trimmed);
               self.elements.input.val('');
@@ -4591,22 +4453,6 @@ window.App = (function() {
           } else if (e.originalEvent.key === 'Tab' || e.originalEvent.which === 9) {
             e.stopPropagation();
             e.preventDefault();
-          }
-        }).on('keyup', e => {
-          const toSend = self.elements.input[0].value;
-          const trimmed = toSend.trim();
-          if (trimmed.length === 0) return self.showHint('');
-          if (!((e.originalEvent.key === 'Enter' || e.originalEvent.which === 13) && !e.originalEvent.shiftKey) && trimmed.startsWith('/') && user.isStaff()) {
-            const searchAgainst = trimmed.substr(1).split(' ').shift();
-            const matches = [];
-            commandsCache.forEach(x => {
-              if (x[0].startsWith(searchAgainst)) {
-                matches.push(x[1]);
-              }
-            });
-            if (matches.length) {
-              self.showHint(matches.join('\n'));
-            }
           }
         }).on('focus', e => {
           if (self.stickToBottom) {
