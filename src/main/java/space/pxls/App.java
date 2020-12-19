@@ -155,6 +155,8 @@ public class App {
                     cachedWhoamiOrigin = null;
                     loadConfig();
                     System.out.println("Reloaded configuration");
+                    loadPalette();
+                    System.out.println("Reloaded palette configuration");
                     loadRoles();
                     System.out.println("Reloaded roles configuration");
                     FactionManager.getInstance().invalidateAll();
