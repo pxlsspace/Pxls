@@ -6778,6 +6778,20 @@ window.App = (function() {
         });
         // self.pendingSignupToken = null;
       },
+      doSignOut: function() {
+        return fetch('/logout').then(() => {
+          self.elements.userInfo.fadeOut(200);
+          self.elements.pixelCounts.fadeOut(200);
+          self.elements.userMessage.fadeOut(200);
+          self.elements.loginOverlay.fadeIn(200);
+          if (window.deInitAdmin) {
+            window.deInitAdmin();
+          }
+          self.loggedIn = false;
+          $(window).trigger('pxls:user:loginState', [false]);
+          socket.reconnectSocket();
+        });
+      },
       init: function() {
         self.elements.userMessage.hide();
         self.elements.signup.hide();
@@ -6793,18 +6807,23 @@ window.App = (function() {
         self.elements.userInfo.hide();
         self.elements.userInfo.find('.logout').click(function(evt) {
           evt.preventDefault();
-          $.get('/logout', function() {
-            self.elements.userInfo.fadeOut(200);
-            self.elements.pixelCounts.fadeOut(200);
-            self.elements.userMessage.fadeOut(200);
-            self.elements.loginOverlay.fadeIn(200);
-            if (window.deInitAdmin) {
-              window.deInitAdmin();
-            }
-            self.loggedIn = false;
-            $(window).trigger('pxls:user:loginState', [false]);
-            socket.reconnectSocket();
-          });
+
+          modal.show(modal.buildDom(
+            crel('h2', { class: 'modal-title' }, 'Sign Out'),
+            crel('div',
+              crel('p', 'Are you sure you want to sign out?'),
+              crel('div', { class: 'buttons' },
+                crel('button', {
+                  class: 'dangerous-button text-button',
+                  onclick: () => self.doSignOut().then(() => modal.closeAll())
+                }, 'Yes'),
+                crel('button', {
+                  class: 'text-button',
+                  onclick: () => modal.closeAll()
+                }, 'No')
+              )
+            )
+          ));
         });
         $(window).bind('storage', function(evt) {
           if (evt.originalEvent.key === 'auth') {
