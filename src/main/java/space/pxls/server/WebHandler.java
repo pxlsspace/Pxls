@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.loader.ClasspathLoader;
+import com.typesafe.config.ConfigList;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 public class WebHandler {
     private PebbleEngine engine;
     private Map<String, AuthService> services = new ConcurrentHashMap<>();
+    private List<Object> emoji = App.getConfig().getList("chat.customEmoji").unwrapped();
     public static final String TEMPLATE_PROFILE = "public/pebble_templates/profile.html";
     public static final String TEMPLATE_40X = "public/pebble_templates/40x.html";
 
@@ -1661,7 +1663,8 @@ public class WebHandler {
             App.getRegistrationEnabled(),
             Math.min(App.getConfig().getInt("chat.characterLimit"), 2048),
             App.getConfig().getBoolean("chat.canvasBanRespected"),
-            App.getConfig().getBoolean("oauth.snipMode")
+            App.getConfig().getBoolean("oauth.snipMode"),
+            emoji
         )));
     }
 

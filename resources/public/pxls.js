@@ -247,11 +247,11 @@ window.App = (function() {
           }));
       };
       this.addEntry = (key, value) => {
-        key = fixKey(key);
+        key = key.trim();
         this.initData[key] = value;
       };
       this.removeEntry = (key, value) => {
-        key = fixKey(key);
+        key = key.trim();
         delete this.initData[key];
       };
     }
@@ -4064,8 +4064,17 @@ window.App = (function() {
         })
         .use(function() {
           this.Compiler.prototype.visitors.emoji = (node, next) => {
-            const el = twemoji.parse(crel('span', node.value)).children[0];
-            el.title = `:${node.emojiName}:`;
+            let el = twemoji.parse(crel('span', node.value)).children[0];
+            if (twemoji.test(node.value)) {
+              el.title = `:${node.emojiName}:`;
+            } else {
+              el = document.createElement('img');
+              el.draggable = false;
+              el.className = 'emoji';
+              el.alt = node.emojiName;
+              el.src = node.value;
+              el.title = `:${node.emojiName}:`;
+            }
             return el;
           };
 
@@ -4109,7 +4118,6 @@ window.App = (function() {
         }
       },
       init: () => {
-        self.initTypeahead();
         self.reloadIgnores();
         socket.on('ack_client_update', e => {
           if (e.updateType && e.updateValue) {
@@ -4683,24 +4691,6 @@ window.App = (function() {
           self.elements.jump_button[0].style.display = self.stickToBottom ? 'none' : 'block';
         });
 
-        self.picker = new EmojiButton({
-          position: 'left-start',
-          style: 'twemoji',
-          zIndex: 30,
-          emojiVersion: '13.0'
-        });
-        self.picker.on('emoji', emojiStr => {
-          self.elements.input[0].value += emojiStr;
-          self.elements.input[0].focus();
-        });
-        self.elements.emoji_button.on('click', function() {
-          self.picker.pickerVisible ? self.picker.hidePicker() : self.picker.showPicker(this);
-          const searchEl = self.picker.pickerEl.querySelector('.emoji-picker__search'); // searchEl is destroyed every time the picker closes. have to re-attach
-          if (searchEl) {
-            searchEl.addEventListener('keydown', e => e.stopPropagation());
-          }
-        });
-
         settings.chat.font.size.listen(function(value) {
           if (isNaN(value)) {
             modal.showText('Invalid value. Expected a number between 1 and 72');
@@ -4738,12 +4728,26 @@ window.App = (function() {
       webinit(data) {
         self.setCharLimit(data.chatCharacterLimit);
         self.canvasBanRespected = data.chatRespectsCanvasBan;
+        const customEmoji = [];
+        data.customEmoji.forEach(function (emoji) {
+          customEmoji.push({ name: emoji.name, emoji: './emoji/' + emoji.emoji });
+        });
+        self.customEmoji = customEmoji;
+        self.initEmojiPicker();
+        self.initTypeahead();
       },
       initTypeahead() {
         // init DBs
-        const dbEmojis = new TH.Database('emoji', {}, false, false, (x) => x.value, (x) => `${twemoji.parse(x.value)} :${x.key}:`);
+        const dbEmojis = new TH.Database('emoji', {}, false, false, (x) => (twemoji.test(x.value)) ? x.value : ':' + x.key + ':', (x) => (twemoji.test(x.value)) ? `${twemoji.parse(x.value)} :${x.key}:` : `${'<img class="emoji" draggable="false" alt="' + x.key + '" src="' + x.value + '"/>'} :${x.key}:`);
         const dbUsers = new TH.Database('users', {}, false, false, (x) => `@${x.value} `, (x) => `@${x.value}`);
 
+        // add emoji to emoji DB
+        if (self.customEmoji.length > 0) {
+          self.customEmoji.forEach(function (emoji) {
+            window.emojiDB[emoji.name.toLowerCase()] = emoji.emoji;
+            dbEmojis.addEntry(emoji.name, emoji.emoji);
+          });
+        }
         if (window.emojiDB) {
           Object.keys(window.emojiDB)
             .sort((a, b) => a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase()))
@@ -4907,6 +4911,31 @@ window.App = (function() {
         self.elements.typeahead[0].style.display = 'none';
         self.elements.typeahead_list[0].innerHTML = '';
         document.body.classList.remove('typeahead-open');
+      },
+      initEmojiPicker() {
+        self.picker = new EmojiButton.EmojiButton({
+          position: 'left-start',
+          style: 'twemoji',
+          zIndex: 30,
+          emojiVersion: '13.0',
+          custom: self.customEmoji
+        });
+        self.picker.on('emoji', emojiObj => {
+          if (emojiObj.custom) {
+            self.elements.input[0].value += ':' + emojiObj.name + ':';
+            self.elements.input[0].focus();
+          } else {
+            self.elements.input[0].value += emojiObj.emoji;
+            self.elements.input[0].focus();
+          }
+        });
+        self.elements.emoji_button.on('click', function() {
+          self.picker.pickerVisible ? self.picker.hidePicker() : self.picker.showPicker(this);
+          const searchEl = self.picker.pickerEl.querySelector('.emoji-picker__search'); // searchEl is destroyed every time the picker closes. have to re-attach
+          if (searchEl) {
+            searchEl.addEventListener('keydown', e => e.stopPropagation());
+          }
+        });
       },
       reloadIgnores: () => { self.ignored = (ls.get('chat.ignored') || '').split(','); },
       saveIgnores: () => ls.set('chat.ignored', (self.ignored || []).join(',')),
