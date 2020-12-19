@@ -3459,6 +3459,11 @@ window.App = (function() {
           name: 'Terminal',
           location: '/themes/terminal.css',
           color: '#94e044'
+        },
+        {
+          name: 'Red',
+          location: '/themes/red.css',
+          color: '#cf0000'
         }
       ],
       specialChatColorClasses: ['rainbow', 'donator'],

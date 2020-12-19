@@ -1,0 +1,112 @@
+html {
+    --general-text-color: #fff;
+    --general-background: #9f1400;
+
+    --kbd-background: #e41400;
+    --kbd-border-color: #000;
+    --kbd-text-color: #fff;
+
+    --input-text-color: #eee;
+    --input-background: #b81700;
+    --input-border-color: #840a0a;
+    --input-placeholder-text-color: #bbb;
+
+    --button-background: #be1200;
+    --button-text-color: #fff;
+    --button-border-color: #000;
+    --button-background-hover: #ff3b3b;
+    --button-border-color-hover: var(--button-border-color);
+
+    --floating-panel-text-color: #eee;
+    --floating-panel-border-color: #cd0000;
+    --floating-panel-background: #e41b00;
+
+    --dangerous-button-border-color: #000;
+    --dangerous-button-background: var(--text-orange-color);
+    --dangerous-button-text-color: #000;
+    --dangerous-button-background-hover: var(--input-background);
+    --dangerous-button-text-color-hover: #fff;
+
+    --palette-background: rgba(202, 25, 0, .5);
+    --palette-overlay-background: rgba(178, 0, 0, .9);
+    --palette-deselect-button-color: #DDD;
+    --palette-number-text-color: #ffffff;
+    --palette-number-background-color: #920000;
+    
+    --cursor-text-color: #fff;
+    --cursor-text-background-color: #850000;
+    
+    --selection-color: #000;
+    --selection-background-color: #e63200;
+    
+    --undo-background: linear-gradient(to top, rgba(202, 25, 0, .5), rgb(230, 28, 0));
+    --undo-text-color: #fff;
+
+    --text-red-color: #ffb300;
+    --text-yellow-color: #cc0;
+    --text-orange-color: #fe0;
+    --ping-highlight-color: #ff4e49c9;
+    --ping-counter-color: #ffc800d4;
+
+    --panel-header-background: linear-gradient(to bottom, #b30000fc, #b32727);
+    --panel-background: #9c0000;
+    --panel-text-color: #eee;
+    --panel-article-footer-background: #7a0000;
+    --panel-article-footer-text-color: #ffffff;
+    --panel-footer-background: #810000;
+    --panel-close-button-color: #fff;
+
+    --option-bubble-position-background-selected: #b70505;
+    --bubble-background: rgba(195, 0, 0, .75);
+    --bubble-text-color: #ffffff;
+
+    --chat-separator-color: #bd1313;
+    --chat-odd-background: #bc1818;
+    --chat-mention-text-color: #ffdd01;
+    --chat-server-action-text-color: #dae0ec;
+    --chat-user-text-shadow-color: rgba(18, 17, 17, .3);
+    --chat-badge-background: #6a1000;
+    --chat-badge-text-color: #fff;
+
+    --emoji-picker-border-color: #b02121;
+    --emoji-picker-background: #a31c00;
+    --emoji-picker-preview-name-text-color: #fff;
+    --emoji-picker-tab-icon-color: #fff;
+    --emoji-picker-tab-icon-color-selected: #ff6e00;
+    --emoji-picker-section-text-color: #fff;
+    --emoji-picker-emoji-background-hover: #c61300;
+    --emoji-picker-search-input-border-color: #ff4443;
+    --emoji-picker-search-input-background: #802118;
+    --emoji-picker-search-input-text-color: #fff;
+    --emoji-picker-search-icon-color: #fff;
+    --emoji-picker-search-no-results-color: #fff;
+    --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
+    --emoji-picker-variant-popup-background: #FFFFFF;
+
+    --chat-typeahead-menu-background: #000;
+    --chat-typeahead-item-background: #c31910;
+    --chat-typeahead-item-background-hover: #cc3030;
+    --chat-typeahead-item-background-active: #b00000;
+
+    --notification-expiry-color: #ff8d31;
+    
+}
+
+hr {
+    border: none;
+    border-top: 1px solid #000;
+}
+
+@keyframes -scrolled-flash {
+    from {
+        background: #5b5345;
+    }
+    to {
+        background: #58a78a;
+    }
+}
+
+    ::selection {
+    background-color: var(--selection-background-color);
+    color:var(--selection-color);
+}
