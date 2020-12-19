@@ -1297,13 +1297,9 @@ aside.panel.horizontal.right {
     border-bottom-right-radius: inherit;
 }
 
-.panel-body article p {
+.panel-body article p, .panel-body article section > h4 {
     padding: 0;
     margin: .5rem 0;
-}
-
-.panel-body article > header ~ :not(footer) > h4 ~ :not(h4) {
-    text-indent: 0.75em;
 }
 
 .panel-body article > header h1, .panel-body article > header h2, .panel-body article > header h3, .panel-body article > header h4, .panel-body article > header h5, .panel-body article > header h6 {
@@ -1710,14 +1706,14 @@ ul.chat-history, ul.chatban-history {
     font-family: monospace;
 }
 
-.username-color-picker {
+#chat-select-username-color {
     font-family: monospace;
     font-size: 1.25rem;
     padding: 5px;
     border-radius: 5px;
 }
 
-.username-color-picker.rainbow {
+#chat-select-username-color.rainbow {
     background-color: black;
     text-shadow: 0 0 0.5em black;
     color: white;
@@ -1734,7 +1730,7 @@ ul.chat-history, ul.chatban-history {
     98%, 100% { background-color: violet; }
 }
 
-.username-color-picker option.rainbow {
+#chat-select-username-color option.rainbow {
     animation: rainbow-transition-bg 4s linear infinite;
     background-color: violet;
 }
@@ -1748,8 +1744,7 @@ ul.chat-history, ul.chatban-history {
     text-shadow: none !important;
 }
 
-/*donator gradient*/
-.username-color-picker.donator {
+#chat-select-username-color.donator {
     background-color: black;
     text-shadow: 0 0 0.5em black;
     color: white;
@@ -1764,7 +1759,7 @@ ul.chat-history, ul.chatban-history {
     90% { background-color: #94E044; }
 }
 
-.username-color-picker option.donator {
+#chat-select-username-color option.donator {
     animation: donator-transition-bg 4s linear infinite;
     background-color: green;
 }

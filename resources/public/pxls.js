@@ -673,6 +673,16 @@ window.App = (function() {
     });
 
     return {
+      // utilities
+      filter: {
+        search: (query) => {
+          searchInput.val(query);
+          if (query) {
+            filterSettings(query);
+          }
+        }
+      },
+      // setting objects
       ui: {
         theme: {
           index: setting('ui.theme.index', SettingType.SELECT, '-1', $('#setting-ui-theme-index'))
@@ -698,10 +708,10 @@ window.App = (function() {
         },
         chat: {
           banner: {
-            enable: setting('ui.chat.banner.enable', SettingType.TOGGLE, true)
+            enable: setting('ui.chat.banner.enable', SettingType.TOGGLE, true, $('#setting-ui-chat-banner-enable'))
           },
           horizontal: {
-            enable: setting('ui.chat.horizontal.enable', SettingType.TOGGLE, false)
+            enable: setting('ui.chat.horizontal.enable', SettingType.TOGGLE, false, $('#setting-ui-chat-horizontal-enable'))
           }
         }
       },
@@ -775,31 +785,31 @@ window.App = (function() {
       },
       chat: {
         timestamps: {
-          '24h': setting('chat.timestamps.24h', SettingType.TOGGLE, false)
+          '24h': setting('chat.timestamps.24h', SettingType.TOGGLE, false, $('#setting-chat-timestamps-24h'))
         },
         badges: {
-          enable: setting('chat.badges.enable', SettingType.TOGGLE, false)
+          enable: setting('chat.badges.enable', SettingType.TOGGLE, false, $('#setting-chat-badges-enable'))
         },
         factiontags: {
-          enable: setting('chat.factiontags.enable', SettingType.TOGGLE, true)
+          enable: setting('chat.factiontags.enable', SettingType.TOGGLE, true, $('#setting-chat-factiontags-enable'))
         },
         pings: {
-          enable: setting('chat.pings.enable', SettingType.TOGGLE, true),
+          enable: setting('chat.pings.enable', SettingType.TOGGLE, true, $('#setting-chat-pings-enable')),
           audio: {
-            when: setting('chat.pings.audio.when', SettingType.SELECT, 'off'),
-            volume: setting('chat.pings.audio.volume', SettingType.RANGE, 0.5)
+            when: setting('chat.pings.audio.when', SettingType.SELECT, 'off', $('#setting-chat-pings-audio-when')),
+            volume: setting('chat.pings.audio.volume', SettingType.RANGE, 0.5, $('#setting-chat-pings-audio-volume'))
           }
         },
         links: {
           templates: {
-            preferurls: setting('chat.links.templates.preferurls', SettingType.TOGGLE, false)
+            preferurls: setting('chat.links.templates.preferurls', SettingType.TOGGLE, false, $('#setting-chat-links-templates-preferurls'))
           },
           internal: {
             behavior: setting('chat.links.internal.behavior', SettingType.SELECT, 'ask')
           }
         },
         font: {
-          size: setting('chat.font.size', SettingType.NUMBER, 16)
+          size: setting('chat.font.size', SettingType.NUMBER, 16, $('#setting-chat-font-size'))
         }
       },
       fix: {
@@ -3852,13 +3862,6 @@ window.App = (function() {
       getAvailable() {
         return self._available;
       },
-      updateSelectedNameColor: (colorIdx) => {
-        const selUsernameColor = document.querySelector('.username-color-picker');
-        if (selUsernameColor) {
-          selUsernameColor.value = colorIdx;
-          self.styleElemWithChatNameColor(selUsernameColor, colorIdx);
-        }
-      },
       styleElemWithChatNameColor: (elem, colorIdx, layer = 'bg') => {
         elem.classList.remove(...self.specialChatColorClasses);
         if (colorIdx >= 0) {
@@ -3946,7 +3949,6 @@ window.App = (function() {
       setMax: self.setMax,
       setDiscordName: self.setDiscordName,
       updateAudio: self.updateAudio,
-      updateSelectedNameColor: self.updateSelectedNameColor,
       styleElemWithChatNameColor: self.styleElemWithChatNameColor,
       setBannerEnabled: self.setBannerEnabled,
       get initTitle() {
@@ -4122,7 +4124,12 @@ window.App = (function() {
         jump_button: $('#jump-to-bottom'),
         emoji_button: $('#emojiPanelTrigger'),
         typeahead: $('#typeahead'),
-        typeahead_list: $('#typeahead ul')
+        typeahead_list: $('#typeahead ul'),
+        ping_audio_volume_value: $('#chat-pings-audio-volume-value'),
+        username_color_select: $('#selChatUsernameColor'),
+        user_ignore_select: $('#selChatUserIgnore'),
+        user_unignore_button: $('#btnChatUserUnignore'),
+        user_ignore_feedback_label: $('#lblChatUserIgnoreFeedback')
       },
       picker: null,
       markdownProcessor: null,
@@ -4148,6 +4155,21 @@ window.App = (function() {
         self.initTypeahead();
         self.markdownProcessor = self.makeMarkdownProcessor();
         self.reloadIgnores();
+        socket.on('ack_client_update', e => {
+          if (e.updateType && e.updateValue) {
+            switch (e.updateType) {
+              case 'NameColor': {
+                user.setChatNameColor(e.updateValue >> 0);
+                self.updateSelectedNameColor(e.updateValue >> 0);
+                break;
+              }
+              default: {
+                console.warn('got unknown updateType on ack_client_update: %o', e);
+                break;
+              }
+            }
+          }
+        });
         socket.on('chat_user_update', e => {
           if (e.who && e.updates && typeof (e.updates) === 'object') {
             for (const update of Object.entries(e.updates)) {
@@ -4619,15 +4641,16 @@ window.App = (function() {
           }
         });
 
-        $(window).on('pxls:panel:closed', (e, which) => {
-          if (which === 'chat') {
-            if (document.querySelector('.chat-settings-title')) {
-              modal.closeAll();
-            }
+        $(window).on('pxls:user:loginState', (e, isLoggedIn) => {
+          self.updateInputLoginState(isLoggedIn);
+
+          self.elements.username_color_select.disabled = isLoggedIn;
+          if (isLoggedIn) {
+            // add role-gated colors
+            self._populateUsernameColor();
+            uiHelper.styleElemWithChatNameColor(self.elements.username_color_select[0], user.getChatNameColor());
           }
         });
-
-        $(window).on('pxls:user:loginState', (e, isLoggedIn) => self.updateInputLoginState(isLoggedIn));
 
         $(window).on('mouseup', e => {
           let target = e.target;
@@ -4659,7 +4682,10 @@ window.App = (function() {
           if (popup) popup.remove();
         });
 
-        self.elements.chat_settings_button[0].addEventListener('click', () => self.popChatSettings());
+        self.elements.chat_settings_button[0].addEventListener('click', () => {
+          settings.filter.search('Chat');
+          panels.toggle('settings');
+        });
 
         self.elements.pings_button[0].addEventListener('click', function() {
           const closeHandler = function() {
@@ -4728,6 +4754,7 @@ window.App = (function() {
           }
         });
 
+        // settings
         settings.chat.font.size.listen(function(value) {
           if (isNaN(value)) {
             modal.showText('Invalid value. Expected a number between 1 and 72');
@@ -4742,12 +4769,54 @@ window.App = (function() {
           }
         });
 
+        settings.chat.pings.audio.volume.listen(function(value) {
+          const parsed = parseFloat(value);
+          const volume = isNaN(parsed) ? 1 : parsed;
+          self.elements.ping_audio_volume_value.text(`${volume * 100 >> 0}%`);
+        });
+
         settings.chat.badges.enable.listen(function() {
           self._toggleTextIconFlairs();
         });
 
         settings.chat.factiontags.enable.listen(function() {
           self._toggleFactionTagFlairs();
+        });
+
+        const selSettingChatLinksInternalBehavior = $('#setting-chat-links-internal-behavior');
+        selSettingChatLinksInternalBehavior.append(
+          Object.values(self.TEMPLATE_ACTIONS).map(action =>
+            crel('option', { value: action.id }, action.pretty)
+          )
+        );
+        settings.chat.links.internal.behavior.controls.add(selSettingChatLinksInternalBehavior);
+
+        self.elements.username_color_select.disabled = true;
+
+        self.elements.user_ignore_select.append(
+          self.getIgnores().sort((a, b) => a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase())).map(x =>
+            crel('option', { value: x }, x)
+          )
+        );
+
+        self.elements.user_unignore_button.on('click', function() {
+          if (self.removeIgnore(self.elements.user_ignore_select.val())) {
+            self.elements.user_ignore_select.find(`option[value="${self.elements.user_ignore_select.val()}"]`).remove();
+            self.elements.user_ignore_feedback_label.text('User unignored.');
+            self.elements.user_ignore_feedback_label.css('color', 'var(--text-red-color)');
+            self.elements.user_ignore_feedback_label.css('display', 'block');
+            setTimeout(() => self.elements.user_ignore_feedback_label.fadeOut(500), 3000);
+          } else if (self.ignored.length === 0) {
+            self.elements.user_ignore_feedback_label.text('You haven\'t ignored any users. Congratulations!');
+            self.elements.user_ignore_feedback_label.css('color', 'var(--text-red-color)');
+            self.elements.user_ignore_feedback_label.css('display', 'block');
+            setTimeout(() => self.elements.user_ignore_feedback_label.fadeOut(500), 3000);
+          } else {
+            self.elements.user_ignore_feedback_label.text('Failed to unignore user. Either they weren\'t actually ignored, or an error occurred. Contact a developer if the problem persists.');
+            self.elements.user_ignore_feedback_label.css('color', 'var(--text-red-color)');
+            self.elements.user_ignore_feedback_label.css('display', 'block');
+            setTimeout(() => self.elements.user_ignore_feedback_label.fadeOut(500), 5000);
+          }
         });
       },
       _handleChatbanVisualState(canChat) {
@@ -4765,6 +4834,12 @@ window.App = (function() {
       webinit(data) {
         self.setCharLimit(data.chatCharacterLimit);
         self.canvasBanRespected = data.chatRespectsCanvasBan;
+
+        self._populateUsernameColor();
+        self.elements.username_color_select.value = user.getChatNameColor();
+        self.elements.username_color_select.on('change', function() {
+          socket.send({ type: 'UserUpdate', updates: { NameColor: String(this.value >> 0) } });
+        });
       },
       initTypeahead() {
         // init DBs
@@ -4982,6 +5057,7 @@ window.App = (function() {
           self.ignored.push(name);
           self.saveIgnores();
           $(window).trigger('pxls:chat:userIgnored', name);
+          self.elements.user_ignore_select.append(crel('option', { value: name }, name));
           return true;
         }
         return false;
@@ -4992,6 +5068,7 @@ window.App = (function() {
           const spliced = self.ignored.splice(index, 1);
           self.saveIgnores();
           $(window).trigger('pxls:chat:userUnignored', spliced && spliced[0] ? spliced[0] : false);
+          self.elements.user_ignore_select.find(`option[value="${name}"]`).remove();
           return spliced && spliced[0];
         }
         return false;
@@ -5284,6 +5361,22 @@ window.App = (function() {
         if (zoom) {
           board.setScale(zoom, true);
         }
+      },
+      updateSelectedNameColor: (colorIdx) => {
+        self.elements.username_color_select[0].value = colorIdx;
+        uiHelper.styleElemWithChatNameColor(self.elements.username_color_select[0], colorIdx);
+      },
+      _populateUsernameColor: () => {
+        self.elements.username_color_select.empty().append(
+          user.hasPermission('chat.usercolor.rainbow') ? crel('option', { value: -1, class: 'rainbow' }, '*. Rainbow') : null,
+          user.hasPermission('chat.usercolor.donator') ? crel('option', { value: -2, class: 'donator' }, '*. Donator') : null,
+          place.palette.map(({ name, value: hex }, i) => crel('option', {
+            value: i,
+            'data-idx': i,
+            style: `background-color: #${hex}`
+          }, `${i}. ${name}`))
+        );
+        self.elements.username_color_select[0].value = user.getChatNameColor();
       },
       _updateAuthorNameColor: (author, colorIdx) => {
         self.elements.body.find(`.chat-line[data-author="${author}"] .user`).each(function() {
@@ -6328,13 +6421,13 @@ window.App = (function() {
       clearPings: self.clearPings,
       setCharLimit: self.setCharLimit,
       processMessage: self.processMessage,
-      popChatSettings: self.popChatSettings,
       saveIgnores: self.saveIgnores,
       reloadIgnores: self.reloadIgnores,
       addIgnore: self.addIgnore,
       removeIgnore: self.removeIgnore,
       getIgnores: self.getIgnores,
       typeahead: self.typeahead,
+      updateSelectedNameColor: self.updateSelectedNameColor,
       updateCanvasBanState: self.updateCanvasBanState,
       registerHook: self.registerHook,
       replaceHook: self.replaceHook,
@@ -6733,7 +6826,8 @@ window.App = (function() {
           self.placementOverrides = data.placementOverrides;
           place.togglePaletteSpecialColors(data.placementOverrides.canPlaceAnyColor);
           self.chatNameColor = data.chatNameColor;
-          uiHelper.updateSelectedNameColor(data.chatNameColor);
+          chat.updateSelectedNameColor(data.chatNameColor);
+          self.roles = data.roles;
           $(window).trigger('pxls:user:loginState', [true]);
           self.renameRequested = data.renameRequested;
           uiHelper.setDiscordName(data.discordName || null);
@@ -6748,7 +6842,6 @@ window.App = (function() {
           } else {
             self.elements.userInfo.fadeIn(200);
           }
-          self.roles = data.roles;
 
           if (data.banExpiry === 0) {
             isBanned = true;
