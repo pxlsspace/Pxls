@@ -135,6 +135,7 @@ Commands are entered directly into the running instance (stdin):
 - `senduserdata` - Broadcasts the non-idle user count in chat
 - `addnotification <title> <expiry> <body>` - Adds a notification to the notification panel. A "+x" on the `expiry` makes the expiry now + x in seconds.
 - `bp <json packet>` broadcast a raw packet to everyone online.
+- `up <username> <json packet>` send a raw packet to all active connections from an user.
 - `f <faction_id> [delete|tag|name [<new_value>]]` updates a faction. if <new_value> is omitted, then the console will print the current values.
 
 ## Contributors
