@@ -241,10 +241,10 @@ public class PacketHandler {
             boolean gotLock = user.tryGetPlacingLock();
             if (gotLock) {
                 try {
-                    boolean doCaptcha = App.isCaptchaEnabled();
+                    boolean doCaptcha = (user.isOverridingCaptcha() || App.isCaptchaEnabled()) && App.isCaptchaConfigured();
                     if (doCaptcha) {
                         int pixels = App.getConfig().getInt("captcha.maxPixels");
-                        if (pixels != 0) {
+                        if (!user.isOverridingCaptcha() && pixels != 0) {
                             boolean allTime = App.getConfig().getBoolean("captcha.allTime");
                             doCaptcha = (allTime ? user.getAllTimePixelCount() : user.getPixelCount()) < pixels;
                         }

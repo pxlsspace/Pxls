@@ -29,6 +29,7 @@ public class User {
     private int pixelCount;
     private int pixelCountAllTime;
     private PlacementOverrides placementOverrides;
+    private boolean overrideCaptcha = false;
     private boolean flaggedForCaptcha = true;
     private boolean justShowedCaptcha;
     private boolean lastPlaceWasStack = false;
@@ -144,6 +145,10 @@ public class User {
         if (placementOverrides.hasIgnoreCooldown()) return 0;
 
         return Math.max(0, cooldownExpiry - System.currentTimeMillis()) / 1000f;
+    }
+
+    public void setOverrideCaptcha(boolean overrideCaptcha) {
+        this.overrideCaptcha = overrideCaptcha;
     }
 
     public boolean updateCaptchaFlagPrePlace() {
@@ -288,6 +293,10 @@ public class User {
 
     public PlacementOverrides getPlaceOverrides() {
         return placementOverrides;
+    }
+
+    public boolean isOverridingCaptcha() {
+        return overrideCaptcha;
     }
 
     public void validateCaptcha() {
