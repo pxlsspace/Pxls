@@ -5463,7 +5463,7 @@ window.App = (function() {
         flairs,
         crel('span', {
           class: nameClasses,
-          style: `color: ${place.getPaletteColorValue(packet.authorNameColor)}`,
+          style: `color: #${place.getPaletteColorValue(packet.authorNameColor)}`,
           onclick: self._popUserPanel,
           onmousemiddledown: self._addAuthorMentionToChatbox
         }, packet.author),
