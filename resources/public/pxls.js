@@ -4148,21 +4148,6 @@ window.App = (function() {
         self.initTypeahead();
         self.markdownProcessor = self.makeMarkdownProcessor();
         self.reloadIgnores();
-        socket.on('ack_client_update', e => {
-          if (e.updateType && e.updateValue) {
-            switch (e.updateType) {
-              case 'NameColor': {
-                user.setChatNameColor(e.updateValue >> 0);
-                uiHelper.updateSelectedNameColor(e.updateValue >> 0);
-                break;
-              }
-              default: {
-                console.warn('got unknown updateType on ack_client_update: %o', e);
-                break;
-              }
-            }
-          }
-        });
         socket.on('chat_user_update', e => {
           if (e.who && e.updates && typeof (e.updates) === 'object') {
             for (const update of Object.entries(e.updates)) {
@@ -5083,10 +5068,12 @@ window.App = (function() {
             style: `background-color: #${x.value}`
           }, `${i}. ${x.name}`))
         );
-        const lblUsernameColor = crel('label', { class: 'input-group' },
+        const _lblUsernameColor = crel('label', { class: 'input-group' },
           crel('span', { class: 'label-text' }, 'Username Color: '),
           _selUsernameColor
         );
+        const _lblUsernameColorFeedback = crel('label', { for: _selUsernameColor.id, class: 'extra-label' }, '');
+        const sectionUsernameColor = crel('div', _lblUsernameColor, _lblUsernameColorFeedback);
 
         const _selIgnores = crel('select', {
           class: 'user-ignores',
@@ -5107,7 +5094,33 @@ window.App = (function() {
         _selUsernameColor.value = user.getChatNameColor();
         uiHelper.styleElemWithChatNameColor(_selUsernameColor, user.getChatNameColor());
         _selUsernameColor.addEventListener('change', function() {
-          socket.send({ type: 'UserUpdate', updates: { NameColor: String(this.value >> 0) } });
+          _selUsernameColor.disabled = true;
+
+          const color = this.value >> 0;
+          $.post({
+            type: 'POST',
+            url: '/chat/setColor',
+            data: {
+              color
+            },
+            success: () => {
+              user.setChatNameColor(color);
+              uiHelper.updateSelectedNameColor(color);
+              _lblUsernameColorFeedback.innerText = 'Color updated';
+            },
+            error: (data) => {
+              const err = data.responseJSON && data.responseJSON.details ? data.responseJSON.details : data.responseText;
+              if (data.status === 200) {
+                _lblUsernameColorFeedback.innerText = err;
+              } else {
+                _lblUsernameColorFeedback.innerText = 'Couldn\'t change chat color: ' + err;
+              }
+            },
+            complete: () => {
+              _selUsernameColor.value = user.getChatNameColor();
+              _selUsernameColor.disabled = false;
+            }
+          });
         });
 
         settings.chat.font.size.controls.add(_txtFontSize);
@@ -5165,7 +5178,7 @@ window.App = (function() {
             lblBanner,
             lblTemplateTitles,
             lblFontSize,
-            lblUsernameColor,
+            sectionUsernameColor,
             lblIgnores,
             _btnUnignore,
             lblIgnoresFeedback

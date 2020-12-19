@@ -114,7 +114,6 @@ public class PacketHandler {
         if (obj instanceof ClientChatHistory && user.hasPermission("chat.history")) handleChatHistory(channel, user, ((ClientChatHistory) obj));
         if (obj instanceof ClientChatbanState) handleChatbanState(channel, user, ((ClientChatbanState) obj));
         if (obj instanceof ClientChatMessage && user.hasPermission("chat.send")) handleChatMessage(channel, user, ((ClientChatMessage) obj));
-        if (obj instanceof ClientUserUpdate) handleClientUserUpdate(channel, user, ((ClientUserUpdate) obj));
         if (obj instanceof ClientChatLookup && user.hasPermission("chat.lookup")) handleChatLookup(channel, user, ((ClientChatLookup) obj));
         if (obj instanceof ClientAdminPlacementOverrides && user.hasPermission("user.admin")) handlePlacementOverrides(channel, user, ((ClientAdminPlacementOverrides) obj));
         if (obj instanceof ClientAdminMessage && user.hasPermission("user.alert")) handleAdminMessage(channel, user, ((ClientAdminMessage) obj));
@@ -380,38 +379,6 @@ public class PacketHandler {
 
     public void handleChatbanState(WebSocketChannel channel, User user, ClientChatbanState clientChatbanState) {
         server.send(channel, new ServerChatbanState(user.isPermaChatbanned(), user.getChatbanReason(), user.getChatbanExpiryTime()));
-    }
-
-    public void handleClientUserUpdate(WebSocketChannel channel, User user, ClientUserUpdate clientUserUpdate) {
-        Map<String,String> map = clientUserUpdate.getUpdates();
-        Map<String,Object> toBroadcast = new HashMap<>();
-
-        String nameColor = map.get("NameColor");
-        if (nameColor != null && !nameColor.trim().isEmpty()) {
-            try {
-                int t = Integer.parseInt(nameColor);
-                if (t >= -2 && t < App.getPalette().getColors().size()) {
-                    if (t == -1 && !user.hasPermission("chat.usercolor.rainbow")) {
-                        server.send(channel, new ServerACKClientUpdate(false, "Color reserved for staff members", "NameColor", null));
-                    }
-                    if (t == -2 && !user.hasPermission("chat.usercolor.donator")) {
-                        server.send(channel, new ServerACKClientUpdate(false, "Color reserved for donators", "NameColor", null));
-                        return;
-                    }
-                    user.setChatNameColor(t, true);
-                    server.send(channel, new ServerACKClientUpdate(true, null, "NameColor", String.valueOf(t)));
-                    toBroadcast.put("NameColor", String.valueOf(t));
-                } else {
-                    server.send(channel, new ServerACKClientUpdate(false, "Color index out of bounds", "NameColor", null));
-                }
-            } catch (NumberFormatException nfe) {
-                server.send(channel, new ServerACKClientUpdate(false, "Invalid color index", "NameColor", null));
-            }
-        }
-
-        if (!App.getConfig().getBoolean("oauth.snipMode") && toBroadcast.size() > 0) {
-            server.broadcast(new ServerChatUserUpdate(user.getName(), toBroadcast));
-        }
     }
 
     public void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {

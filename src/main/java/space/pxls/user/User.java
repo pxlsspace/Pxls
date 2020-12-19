@@ -5,7 +5,7 @@ import space.pxls.App;
 import space.pxls.data.DBUser;
 import space.pxls.data.DBUserPixelCounts;
 import space.pxls.server.packets.chat.Badge;
-import space.pxls.server.packets.chat.ServerChatUserUpdate;
+import space.pxls.server.packets.chat.ServerChatUserUpdateBuilder;
 import space.pxls.server.packets.socket.ClientUndo;
 import space.pxls.server.packets.chat.ServerChatBan;
 import space.pxls.server.packets.socket.ServerRename;
@@ -671,10 +671,16 @@ public class User {
         return toReturn.size() != 0 ? toReturn : null;
     }
 
-    public void setChatNameColor(int colorIndex, boolean callDB) {
+    public void setChatNameColor(int colorIndex, boolean callDB, boolean broadcast) {
         this.chatNameColor = colorIndex;
         if (callDB) {
             App.getDatabase().setChatNameColor(id, colorIndex);
+        }
+        if (broadcast) {
+            App.getServer().broadcast(new ServerChatUserUpdateBuilder(getName())
+                .set("NameColor", colorIndex)
+                .build()
+            );
         }
     }
 
@@ -765,7 +771,10 @@ public class User {
             App.getDatabase().setDisplayedFactionForUID(id, displayedFaction);
         }
         if (broadcast) {
-            App.getServer().broadcast(new ServerChatUserUpdate(getName(), new HashMap<String, Object>() {{put("DisplayedFaction", (displayedFaction == null || displayedFaction == 0) ? "" : fetchDisplayedFaction());}}));
+            App.getServer().broadcast(new ServerChatUserUpdateBuilder(getName())
+                .set("DisplayedFaction", (displayedFaction == null || displayedFaction == 0) ? "" : fetchDisplayedFaction())
+                .build()
+            );
         }
     }
 
