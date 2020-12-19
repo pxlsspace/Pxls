@@ -124,7 +124,7 @@ Commands are entered directly into the running instance (stdin):
 - `users` - Lists all of the authed users, by username.
 - `stack <user> [set <amount>]` - Sets the user's stack count. The user must not be on cooldown before setting.
 - `placementOverride list|<user> [placeAnyColor|ignoreCooldown|ignorePlacemap] [on|off]` - Sets or lists the placement overrides of an user
-- `captcha-override list|<user> [on|off]` - Lists all captcha overrides or sets the captcha override of an user
+- `captchaOverride list|<user> [on|off]` - Lists all captcha overrides or sets the captcha override of an user
 - `broadcast <message>` - Sends a message in chat
 - `chatban <user> <length> <purge> <reason>` - Chat bans the user for `length` in seconds, optionally purges all of their messages
 - `permachatban <user> <purge> <reason>` - Perma chat bans the user, optionally purges all of their messages

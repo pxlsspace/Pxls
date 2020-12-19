@@ -447,13 +447,13 @@ public class App {
                     System.out.println("NAME=placeAnyColor|ignoreCooldown|ignorePlacemap");
                     System.out.println("STATE=on|off");
                 }
-            } else if (token[0].equalsIgnoreCase("captcha-override")) {
-                //captcha-override list|USERNAME[ STATE]
+            } else if (token[0].equalsIgnoreCase("captchaOverride")) {
+                //captchaOverride list|USERNAME[ STATE]
                 //STATE=on|off
                 if (!isCaptchaConfigured()) {
                     System.out.println(
                         "NOTE: captcha is not configured (missing key and/or secret). " +
-                        "Users with captcha-override on won't receive any captchas."
+                        "Users with captchaOverride on won't receive any captchas."
                     );
                 }
                 if (token.length > 1) {
@@ -464,7 +464,7 @@ public class App {
                         });
                         System.out.println(sb);
                     } else if (token[1].equalsIgnoreCase("help")) {
-                        System.out.println("captcha-override list|USERNAME[ STATE]");
+                        System.out.println("captchaOverride list|USERNAME[ STATE]");
                         System.out.println("STATE=on|off");
                     } else {
                         User user = getUserManager().getByName(token[1]);
@@ -474,7 +474,7 @@ public class App {
                             if (token.length >= 3) {
                                 if (token[2].equalsIgnoreCase("on") || token[2].equalsIgnoreCase("off")) {
                                     user.setOverrideCaptcha(token[2].equalsIgnoreCase("on"));
-                                    System.out.printf("Updated %s's captcha-override state to %s%n", user.getName(), token[2].toLowerCase());
+                                    System.out.printf("Updated %s's captchaOverride state to %s%n", user.getName(), token[2].toLowerCase());
                                 } else {
                                     System.out.printf("Invalid state: %s%n", token[2]);
                                 }
@@ -484,7 +484,7 @@ public class App {
                         }
                     }
                 } else {
-                    System.out.println("captcha-override list|USERNAME[ STATE]");
+                    System.out.println("captchaOverride list|USERNAME[ STATE]");
                     System.out.println("STATE=on|off");
                 }
             } else if (token[0].equalsIgnoreCase("broadcast")) {
