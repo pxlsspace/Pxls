@@ -4360,10 +4360,8 @@ window.App = (function() {
         socket.on('chat_ban_state', handleChatban);
 
         const _doPurge = (elem, e) => {
-          if (user.isStaff()) {
-            elem.classList.add('purged');
-            elem.setAttribute('title', `Purged by ${e.initiator} with reason: ${e.reason || 'none provided'}`);
-            elem.dataset.purgedBy = e.initiator;
+          if (user.hasPermission('chat.history.purged')) {
+            self._markMessagePurged(elem, e);
           } else {
             elem.remove();
           }
@@ -4397,9 +4395,7 @@ window.App = (function() {
           }
           if (lines.length) {
             lines.forEach(x => _doPurge(x, e));
-            if (user.getUsername().toLowerCase().trim() === e.target.toLowerCase().trim()) {
-              self.addServerAction(`${e.IDs.length} message${e.IDs.length !== 1 ? 's were' : ' was'} purged by ${e.initiator}`);
-            }
+            self.addServerAction(`${e.IDs.length} message${e.IDs.length !== 1 ? 's' : ''} from ${e.target} ${e.IDs.length !== 1 ? 'were' : 'was'} purged by ${e.initiator}`);
           }
         });
 
@@ -5453,30 +5449,32 @@ window.App = (function() {
         let nameClasses = 'user';
         if (Array.isArray(packet.authorNameClass)) nameClasses += ` ${packet.authorNameClass.join(' ')}`;
 
-        self.elements.body.append(
-          crel('li', {
-            'data-id': packet.id,
-            'data-tag': _facTag,
-            'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '',
-            'data-author': packet.author,
-            'data-date': packet.date,
-            'data-badges': JSON.stringify(packet.badges || []),
-            class: `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`
-          },
-          crel('span', { title: when.format('MMM Do YYYY, hh:mm:ss A') }, when.format(settings.chat.timestamps['24h'].get() === true ? 'HH:mm' : 'hh:mm A')),
-          document.createTextNode(' '),
-          flairs,
-          crel('span', {
-            class: nameClasses,
-            style: `color: #${place.getPaletteColorValue(packet.authorNameColor)}`,
-            onclick: self._popUserPanel,
-            onmousemiddledown: self._addAuthorMentionToChatbox
-          }, packet.author),
-          document.createTextNode(': '),
-          contentSpan,
-          document.createTextNode(' ')
-          )
-        );
+        const chatLine = crel('li', {
+          'data-id': packet.id,
+          'data-tag': _facTag,
+          'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '',
+          'data-author': packet.author,
+          'data-date': packet.date,
+          'data-badges': JSON.stringify(packet.badges || []),
+          class: `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`
+        },
+        crel('span', { title: when.format('MMM Do YYYY, hh:mm:ss A') }, when.format(settings.chat.timestamps['24h'].get() === true ? 'HH:mm' : 'hh:mm A')),
+        document.createTextNode(' '),
+        flairs,
+        crel('span', {
+          class: nameClasses,
+          style: `color: #${place.getPaletteColorValue(packet.authorNameColor)}`,
+          onclick: self._popUserPanel,
+          onmousemiddledown: self._addAuthorMentionToChatbox
+        }, packet.author),
+        document.createTextNode(': '),
+        contentSpan,
+        document.createTextNode(' '));
+        self.elements.body.append(chatLine);
+
+        if (packet.purge) {
+          self._markMessagePurged(chatLine, packet.purge);
+        }
 
         if (hasPing) {
           self.pingsList.push(packet);
@@ -5509,6 +5507,11 @@ window.App = (function() {
         }
 
         return content;
+      },
+      _markMessagePurged: (elem, purge) => {
+        elem.classList.add('purged');
+        elem.setAttribute('title', `Purged by ${purge.initiator} with reason: ${purge.reason || 'none provided'}`);
+        elem.dataset.purgedBy = purge.initiator;
       },
       _makeCoordinatesElement: (raw, x, y, scale, template, title) => {
         let text = `(${x}, ${y}${scale != null ? `, ${scale}x` : ''})`;
