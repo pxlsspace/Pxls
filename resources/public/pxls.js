@@ -4728,11 +4728,7 @@ window.App = (function() {
       webinit(data) {
         self.setCharLimit(data.chatCharacterLimit);
         self.canvasBanRespected = data.chatRespectsCanvasBan;
-        const customEmoji = [];
-        data.customEmoji.forEach(function (emoji) {
-          customEmoji.push({ name: emoji.name, emoji: './emoji/' + emoji.emoji });
-        });
-        self.customEmoji = customEmoji;
+        data.customEmoji.map(({ name, emoji }) => ({ name, emoji: `./emoji/${emoji}` }));
         self.initEmojiPicker();
         self.initTypeahead();
       },

@@ -34,7 +34,6 @@ import java.util.stream.Collectors;
 public class WebHandler {
     private PebbleEngine engine;
     private Map<String, AuthService> services = new ConcurrentHashMap<>();
-    private List<Object> emoji = App.getConfig().getList("chat.customEmoji").unwrapped();
     public static final String TEMPLATE_PROFILE = "public/pebble_templates/profile.html";
     public static final String TEMPLATE_40X = "public/pebble_templates/40x.html";
 
@@ -1664,7 +1663,7 @@ public class WebHandler {
             Math.min(App.getConfig().getInt("chat.characterLimit"), 2048),
             App.getConfig().getBoolean("chat.canvasBanRespected"),
             App.getConfig().getBoolean("oauth.snipMode"),
-            emoji
+            App.getConfig().getList("chat.customEmoji").unwrapped()
         )));
     }
 
