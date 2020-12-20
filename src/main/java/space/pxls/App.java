@@ -155,6 +155,8 @@ public class App {
                     cachedWhoamiOrigin = null;
                     loadConfig();
                     System.out.println("Reloaded configuration");
+                    loadPalette();
+                    System.out.println("Reloaded palette configuration");
                     loadRoles();
                     System.out.println("Reloaded roles configuration");
                     FactionManager.getInstance().invalidateAll();
@@ -445,6 +447,46 @@ public class App {
                     System.out.println("NAME=placeAnyColor|ignoreCooldown|ignorePlacemap");
                     System.out.println("STATE=on|off");
                 }
+            } else if (token[0].equalsIgnoreCase("captchaOverride")) {
+                //captchaOverride list|USERNAME[ STATE]
+                //STATE=on|off
+                if (!isCaptchaConfigured()) {
+                    System.out.println(
+                        "NOTE: captcha is not configured (missing key and/or secret). " +
+                        "Users with captchaOverride on won't receive any captchas."
+                    );
+                }
+                if (token.length > 1) {
+                    if (token[1].equalsIgnoreCase("list")) {
+                        StringBuilder sb = new StringBuilder();
+                        userManager.getAllUsersByToken().forEach((s, user) -> {
+                            if (user.isOverridingCaptcha()) sb.append("    ").append(user.getName()).append('\n');
+                        });
+                        System.out.println(sb);
+                    } else if (token[1].equalsIgnoreCase("help")) {
+                        System.out.println("captchaOverride list|USERNAME[ STATE]");
+                        System.out.println("STATE=on|off");
+                    } else {
+                        User user = getUserManager().getByName(token[1]);
+                        if (user == null) {
+                            System.out.printf("Unknown user: %s%n", token[1]);
+                        } else {
+                            if (token.length >= 3) {
+                                if (token[2].equalsIgnoreCase("on") || token[2].equalsIgnoreCase("off")) {
+                                    user.setOverrideCaptcha(token[2].equalsIgnoreCase("on"));
+                                    System.out.printf("Updated %s's captchaOverride state to %s%n", user.getName(), token[2].toLowerCase());
+                                } else {
+                                    System.out.printf("Invalid state: %s%n", token[2]);
+                                }
+                            } else {
+                                System.out.printf("User's Captcha Override state is: %s%n", user.isOverridingCaptcha() ? "on" : "off");
+                            }
+                        }
+                    }
+                } else {
+                    System.out.println("captchaOverride list|USERNAME[ STATE]");
+                    System.out.println("STATE=on|off");
+                }
             } else if (token[0].equalsIgnoreCase("broadcast")) {
                 //broadcast MESSAGE
                 if (token.length > 1) {
@@ -597,7 +639,22 @@ public class App {
                     System.out.printf("%s raw_packet%n", token[0]);
                     return;
                 }
-                App.getServer().broadcastRaw(line.substring(token[0].length() + 1).trim());
+                String raw = line.substring(token[0].length() + 1);
+                App.getServer().broadcastRaw(raw);
+                System.out.println("Packet broadcast sent.");
+            } else if (token[0].equalsIgnoreCase("up")) {
+                if (token.length < 3) {
+                    System.out.printf("%s username raw_packet%n", token[0]);
+                    return;
+                }
+                User user = userManager.getByName(token[1]);
+                if (user == null) {
+                    System.out.println("User doesn't exist");
+                    return;
+                }
+                String raw = line.substring(token[0].length() + token[1].length() + 2);
+                App.getServer().sendRaw(user, raw);
+                System.out.println(String.format("Packet sent to %s (UID %d)'s connections (#%d).", user.getName(), user.getId(), user.getConnections().size()));
             } else if (token[0].equalsIgnoreCase("f")) {
                 // f $FID [$ACTION[ $VALUE]]
                 String subcommand;
@@ -850,6 +907,10 @@ public class App {
     }
 
     public static boolean isCaptchaEnabled() {
+        return config.getBoolean("captcha.enabled");
+    }
+
+    public static boolean isCaptchaConfigured() {
         return !config.getString("captcha.key").isEmpty() && !config.getString("captcha.secret").isEmpty();
     }
 
