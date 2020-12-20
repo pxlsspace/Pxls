@@ -4963,13 +4963,14 @@ window.App = (function() {
         document.body.classList.remove('typeahead-open');
       },
       initEmojiPicker() {
-        self.picker = new EmojiButton.EmojiButton({
+        const pickerOptions = {
           position: 'left-start',
           style: 'twemoji',
           zIndex: 30,
-          emojiVersion: '13.0',
-          custom: self.customEmoji
-        });
+          emojiVersion: '13.0'
+        };
+        if (self.customEmoji.length > 0) pickerOptions.custom = self.customEmoji;
+        self.picker = new EmojiButton.EmojiButton(pickerOptions);
         self.picker.on('emoji', emojiObj => {
           if (emojiObj.custom) {
             self.elements.input[0].value += ':' + emojiObj.name + ':';

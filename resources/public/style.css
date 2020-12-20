@@ -1823,6 +1823,11 @@ body .emoji-picker {
     --secondary-text-color: var(--emoji-picker-section-text-color);
 }
 
+.emoji-picker__custom-emoji {
+    width: 1em !important;
+    height: auto !important;
+}
+
 /* CHAT ACTIONS POPUP */
 
 .popup {
