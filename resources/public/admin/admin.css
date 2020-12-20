@@ -38,6 +38,10 @@
     left: 172px;
 }
 
+.admin label {
+    display: block;
+}
+
 .admin input[type=text] {
     width: 80%;
     margin-top: 4px;
