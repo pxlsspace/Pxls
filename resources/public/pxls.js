@@ -4181,7 +4181,7 @@ window.App = (function() {
             } else {
               el = document.createElement('img');
               el.draggable = false;
-              el.className = 'emoji';
+              el.className = 'customEmoji';
               el.alt = node.emojiName;
               el.src = node.value;
               el.title = `:${node.emojiName}:`;
@@ -4737,7 +4737,7 @@ window.App = (function() {
       webinit(data) {
         self.setCharLimit(data.chatCharacterLimit);
         self.canvasBanRespected = data.chatRespectsCanvasBan;
-        data.customEmoji.map(({ name, emoji }) => ({ name, emoji: `./emoji/${emoji}` }));
+        self.customEmoji = data.customEmoji.map(({ name, emoji }) => ({ name, emoji: `./emoji/${emoji}` }));
         self.initEmojiPicker();
         self.initTypeahead();
         self._populateUsernameColor();
@@ -4748,22 +4748,22 @@ window.App = (function() {
       },
       initTypeahead() {
         // init DBs
-        const dbEmojis = new TH.Database('emoji', {}, false, false, (x) => (twemoji.test(x.value)) ? x.value : ':' + x.key + ':', (x) => (twemoji.test(x.value)) ? `${twemoji.parse(x.value)} :${x.key}:` : `${'<img class="emoji" draggable="false" alt="' + x.key + '" src="' + x.value + '"/>'} :${x.key}:`);
+        const dbEmojis = new TH.Database('emoji', {}, false, false, (x) => (twemoji.test(x.value)) ? x.value : ':' + x.key + ':', (x) => (twemoji.test(x.value)) ? `${twemoji.parse(x.value)} :${x.key}:` : `${'<img class="customEmoji" draggable="false" alt="' + x.key + '" src="' + x.value + '"/>'} :${x.key}:`);
         const dbUsers = new TH.Database('users', {}, false, false, (x) => `@${x.value} `, (x) => `@${x.value}`);
 
         // add emoji to emoji DB
-        if (self.customEmoji.length > 0) {
-          self.customEmoji.forEach(function (emoji) {
-            window.emojiDB[emoji.name.toLowerCase()] = emoji.emoji;
-            dbEmojis.addEntry(emoji.name, emoji.emoji);
-          });
-        }
         if (window.emojiDB) {
           Object.keys(window.emojiDB)
             .sort((a, b) => a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase()))
             .forEach(name => {
               dbEmojis.addEntry(name, window.emojiDB[name]);
             });
+        }
+        if (self.customEmoji.length > 0) {
+          self.customEmoji.forEach(function (emoji) {
+            window.emojiDB[emoji.name.toLowerCase()] = emoji.emoji;
+            dbEmojis.addEntry(emoji.name, emoji.emoji);
+          });
         }
 
         // init triggers

@@ -237,6 +237,13 @@ img.emoji {
     vertical-align: -0.1em;
 }
 
+img.customEmoji {
+    height: auto;
+    width: 1.5em;
+    margin: 0 .05em 0 .1em;
+    vertical-align: middle;
+}
+
 .fake-indent {
     margin-left:1.2rem;
 }
