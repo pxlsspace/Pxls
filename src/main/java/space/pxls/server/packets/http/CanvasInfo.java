@@ -1,5 +1,6 @@
 package space.pxls.server.packets.http;
 
+import com.typesafe.config.ConfigList;
 import space.pxls.auth.AuthService;
 import space.pxls.palette.Color;
 
@@ -20,8 +21,9 @@ public class CanvasInfo {
     public Integer chatCharacterLimit;
     public List<String> chatBannerText;
     public Boolean snipMode;
+    public List<Object> customEmoji;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode) {
+    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, List<Object> customEmoji) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
@@ -35,6 +37,7 @@ public class CanvasInfo {
         this.chatRespectsCanvasBan = chatRespectsCanvasBan;
         this.chatBannerText = chatBannerText;
         this.snipMode = snipMode;
+        this.customEmoji = customEmoji;
     }
 
     public String getCanvasCode() {
@@ -87,5 +90,9 @@ public class CanvasInfo {
 
     public Boolean getSnipMode() {
         return snipMode;
+    }
+
+    public List<Object> getCustomEmoji() {
+        return customEmoji;
     }
 }

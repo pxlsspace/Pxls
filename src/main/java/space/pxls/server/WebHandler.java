@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.loader.ClasspathLoader;
+import com.typesafe.config.ConfigList;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
@@ -1714,7 +1715,8 @@ public class WebHandler {
             Math.min(App.getConfig().getInt("chat.characterLimit"), 2048),
             App.getConfig().getBoolean("chat.canvasBanRespected"),
             App.getConfig().getStringList("chat.bannerText"),
-            App.getConfig().getBoolean("oauth.snipMode")
+            App.getConfig().getBoolean("oauth.snipMode"),
+            App.getConfig().getList("chat.customEmoji").unwrapped()
         )));
     }
 

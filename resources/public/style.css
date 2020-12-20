@@ -237,6 +237,13 @@ img.emoji {
     vertical-align: -0.1em;
 }
 
+img.customEmoji {
+    height: auto;
+    width: 1.5em;
+    margin: 0 .05em 0 .1em;
+    vertical-align: middle;
+}
+
 .fake-indent {
     margin-left:1.2rem;
 }
@@ -1814,6 +1821,11 @@ body .emoji-picker {
 
 .emoji-picker__emojis h2.emoji-picker__category-name {
     --secondary-text-color: var(--emoji-picker-section-text-color);
+}
+
+.emoji-picker__custom-emoji {
+    width: 1em !important;
+    height: auto !important;
 }
 
 /* CHAT ACTIONS POPUP */

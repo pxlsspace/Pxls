@@ -7,6 +7,7 @@ import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.AllowedMethodsHandler;
 import io.undertow.server.handlers.form.EagerFormParsingHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
+import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.util.Headers;
 import io.undertow.util.Methods;
 import io.undertow.websockets.core.AbstractReceiveListener;
@@ -21,6 +22,7 @@ import space.pxls.tasks.UserAuthedTask;
 import space.pxls.user.User;
 import space.pxls.util.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -90,7 +92,8 @@ public class UndertowServer {
                 .addExactPath("/", webHandler::index)
                 .addExactPath("/index.html", webHandler::index)
                 .addExactPath("/factions", new AllowedMethodsHandler(webHandler::getRequestingUserFactions, Methods.GET))
-                .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/")).setCacheTime(10));
+                .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/")).setCacheTime(10))
+                .addPrefixPath("/emoji", Handlers.resource(new FileResourceManager(new File(App.getStorageDir().resolve("emoji").toString()))).setCacheTime(10));
         RoutingHandler routingHandler = Handlers.routing()
             .get("/profile", webHandler::profileView)
             .get("/profile/{who}", webHandler::profileView)
