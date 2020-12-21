@@ -98,8 +98,13 @@ public class App {
 
         new Thread(() -> {
             Scanner s = new Scanner(System.in);
-            while (true) {
-                handleCommand(s.nextLine());
+            try {
+                while (true) {
+                    handleCommand(s.nextLine());
+                }
+            } catch (NoSuchElementException ex) {
+                // System.in closed, program is shutting down.
+                s.close();
             }
         }).start();
 
@@ -111,6 +116,7 @@ public class App {
         new Timer().schedule(new HeatmapTimer(), 0, heatmap_timer_cd * 1000 / 256);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            System.out.println("Saving map before shutdown...");
             saveMapBackup();
             saveMapForce();
         }));
