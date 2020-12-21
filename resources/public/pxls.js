@@ -4181,7 +4181,7 @@ window.App = (function() {
             } else {
               el = document.createElement('img');
               el.draggable = false;
-              el.className = 'customEmoji';
+              el.className = 'emoji emoji--custom';
               el.alt = node.emojiName;
               el.src = node.value;
               el.title = `:${node.emojiName}:`;
@@ -4759,7 +4759,7 @@ window.App = (function() {
       },
       initTypeahead() {
         // init DBs
-        const dbEmojis = new TH.Database('emoji', {}, false, false, (x) => (twemoji.test(x.value)) ? x.value : ':' + x.key + ':', (x) => (twemoji.test(x.value)) ? `${twemoji.parse(x.value)} :${x.key}:` : `${'<img class="customEmoji" draggable="false" alt="' + x.key + '" src="' + x.value + '"/>'} :${x.key}:`);
+        const dbEmojis = new TH.Database('emoji', {}, false, false, (x) => (twemoji.test(x.value)) ? x.value : ':' + x.key + ':', (x) => (twemoji.test(x.value)) ? `${twemoji.parse(x.value)} :${x.key}:` : `${'<img class="emoji emoji--custom" draggable="false" alt="' + x.key + '" src="' + x.value + '"/>'} :${x.key}:`);
         const dbUsers = new TH.Database('users', {}, false, false, (x) => `@${x.value} `, (x) => `@${x.value}`);
 
         // add emoji to emoji DB
