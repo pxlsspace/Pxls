@@ -2379,6 +2379,7 @@ window.App = (function() {
     const self = {
       elements: {
         template: null,
+        sourceImage: $('<img>'),
         useCheckbox: $('#template-use'),
         titleInput: $('#template-title'),
         urlInput: $('#template-url'),
@@ -2389,6 +2390,14 @@ window.App = (function() {
         opacityPercentage: $('#template-opacity-percentage'),
         widthInput: $('#template-width'),
         widthResetBtn: $('#template-width-reset')
+      },
+      gl: {
+        context: null,
+        source: null,
+        // this is the buffer into which a 1-to-1 template image is drawn.
+        intermediate: null,
+        vbo: null,
+        downscaleProgram: null
       },
       queueTimer: 0,
       _queuedUpdates: {},
@@ -2414,15 +2423,12 @@ window.App = (function() {
           x: 0,
           y: 0
         };
-        self.elements.template = $('<img>').addClass('noselect').attr({
-          id: 'board-template',
-          src: self.options.url,
-          alt: 'template'
+        self.elements.template = $('<canvas>').addClass('noselect').attr({
+          id: 'board-template'
         }).css({
           top: self.options.y,
           left: self.options.x,
-          opacity: self.options.opacity,
-          width: self.options.width === -1 ? 'auto' : self.options.width
+          opacity: self.options.opacity
         }).data('dragging', false).on('mousedown pointerdown', function(evt) {
           evt.preventDefault();
           $(this).data('dragging', true);
@@ -2455,7 +2461,18 @@ window.App = (function() {
               drag.y = evt.clientY;
             }
           }
+        });
+
+        self.initGl(self.elements.template[0].getContext('webgl2', {
+          premultipliedAlpha: false
+        }));
+
+        self.elements.sourceImage.attr({
+          crossOrigin: '',
+          src: self.options.url
         }).on('load', (e) => {
+          self.updateSize();
+          self.rasterizeTemplate();
           if (self.options.width < 0) {
             self.elements.widthInput.val(self.elements.template.width());
           }
@@ -2494,7 +2511,7 @@ window.App = (function() {
         if (self.options.width >= 0) {
           self.elements.widthInput.val(self.options.width);
         } else if (self.elements.template) {
-          self.elements.widthInput.val(self.elements.template.width());
+          self.elements.widthInput.val(self.getSourceWidth());
         } else {
           self.elements.widthInput.val(null);
         }
@@ -2575,12 +2592,19 @@ window.App = (function() {
             self.elements.template.remove(); // necessary so everything gets redrawn properly 'n whatnot. could probably just update the url directly...
             self.elements.template = null;
           }
+          // TODO ([  ]): this will cause a rebuild of GL state
+          // it would be preferable to just update the url directly (as pointed out above)
+          // and then rasterise once done
           self.lazy_init();
 
           [['left', 'x'], ['top', 'y'], ['opacity', 'opacity']].forEach(x => {
             self.elements.template.css(x[0], options[x[1]]);
           });
-          self.elements.template.css('width', options.width > 0 ? options.width : 'auto');
+
+          if (urlUpdated !== true) {
+            self.updateSize();
+            self.rasterizeTemplate();
+          }
 
           [['url', 'template'], ['x', 'ox'], ['y', 'oy'], ['width', 'tw'], ['opacity', 'oo'], ['title', 'title']].forEach(x => {
             query.set(x[1], self.options[x[0]], true);
@@ -2592,6 +2616,14 @@ window.App = (function() {
         document.title = uiHelper.getTitle();
 
         self.setPixelated(query.get('scale') >= self.getWidthRatio());
+      },
+      updateSize: function() {
+        self.elements.template.css({
+          width: self.getDisplayWidth()
+        }).attr({
+          width: self.getInternalWidth(),
+          height: self.getInternalHeight()
+        });
       },
       disableTemplate: function() {
         self._update({ url: null });
@@ -2685,11 +2717,149 @@ window.App = (function() {
         }
       },
       getWidthRatio: function() {
-        if (self.elements.template === null || self.options.width === -1) {
+        if (self.elements.template === null) {
           return 1;
         }
 
-        return self.elements.template[0].naturalWidth / self.options.width;
+        return self.getInternalWidth() / self.getDisplayWidth();
+      },
+      getDisplayWidth: function() {
+        return self.options.width < 0 ? self.getSourceWidth() : self.options.width;
+      },
+      getStyleScale: function() {
+        // TODO
+        return 1;
+      },
+      getSourceWidth: function() {
+        return self.elements.sourceImage[0].naturalWidth;
+      },
+      getSourceHeight: function() {
+        return self.elements.sourceImage[0].naturalHeight;
+      },
+      getAspectRatio: function() {
+        return self.getSourceHeight() / self.getSourceWidth();
+      },
+      getInternalWidth: function() {
+        return self.getDisplayWidth() * self.getStyleScale();
+      },
+      getInternalHeight: function() {
+        return self.getInternalWidth() * self.getAspectRatio();
+      },
+      initGl: function(context) {
+        self.gl.context = context;
+        self.gl.source = self.gl.context.createTexture();
+        self.gl.intermediate = self.gl.context.createFramebuffer();
+        self.gl.vbo = self.gl.context.createBuffer();
+
+        self.gl.context.clearColor(0, 0, 0, 0);
+
+        self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.source);
+        self.gl.context.texParameteri(self.gl.context.TEXTURE_2D, self.gl.context.TEXTURE_WRAP_S, self.gl.context.CLAMP_TO_EDGE);
+        self.gl.context.texParameteri(self.gl.context.TEXTURE_2D, self.gl.context.TEXTURE_WRAP_T, self.gl.context.CLAMP_TO_EDGE);
+        self.gl.context.texParameteri(self.gl.context.TEXTURE_2D, self.gl.context.TEXTURE_MIN_FILTER, self.gl.context.NEAREST);
+
+        self.gl.context.bindBuffer(self.gl.context.ARRAY_BUFFER, self.gl.vbo);
+        self.gl.context.bufferData(
+          self.gl.context.ARRAY_BUFFER,
+          new Float32Array([
+            -1, -1,
+            -1, 1,
+            1, -1,
+            1, 1
+          ]),
+          self.gl.context.STATIC_DRAW
+        );
+
+        self.gl.downscaleProgram = self.createGlProgram(`
+          attribute vec2 a_Pos;
+
+          varying vec2 v_TexCoord;
+
+          void main() {
+            v_TexCoord = a_Pos * vec2(0.5, -0.5) + vec2(0.5, 0.5);
+            gl_Position = vec4(a_Pos, 0.0, 1.0);
+          }
+        `, `
+          precision mediump float;
+
+          uniform sampler2D u_Template;
+
+          varying vec2 v_TexCoord;
+
+          void main () {
+            gl_FragColor = texture2D(u_Template, v_TexCoord);
+          }
+        `);
+        self.gl.context.useProgram(self.gl.downscaleProgram);
+
+        const downscalePosLocation = self.gl.context.getAttribLocation(self.gl.downscaleProgram, 'a_Pos');
+        self.gl.context.vertexAttribPointer(
+          downscalePosLocation,
+          2,
+          self.gl.context.FLOAT,
+          false,
+          0,
+          0
+        );
+        self.gl.context.enableVertexAttribArray(downscalePosLocation);
+
+        self.gl.context.activeTexture(self.gl.context.TEXTURE0);
+        self.gl.context.uniform1i(self.gl.context.getUniformLocation(self.gl.downscaleProgram, 'u_Template'), 0);
+      },
+      createGlProgram(vertexSource, fragmentSource) {
+        const program = self.gl.context.createProgram();
+
+        self.gl.context.attachShader(program, self.createGlShader(self.gl.context.VERTEX_SHADER, vertexSource));
+        self.gl.context.attachShader(program, self.createGlShader(self.gl.context.FRAGMENT_SHADER, fragmentSource));
+
+        self.gl.context.linkProgram(program);
+
+        if (!self.gl.context.getProgramParameter(program, self.gl.context.LINK_STATUS)) {
+          throw new Error('Failed to link WebGL template program:\n\n' + self.gl.context.getProgramInfoLog(program));
+        }
+
+        return program;
+      },
+      createGlShader(type, source) {
+        const shader = self.gl.context.createShader(type);
+
+        self.gl.context.shaderSource(shader, source);
+        self.gl.context.compileShader(shader);
+
+        if (!self.gl.context.getShaderParameter(shader, self.gl.context.COMPILE_STATUS)) {
+          throw new Error('Failed to compile WebGL template shader:\n\n' + self.gl.context.getShaderInfoLog(shader));
+        }
+
+        return shader;
+      },
+      rasterizeTemplate: function() {
+        self.gl.context.clear(self.gl.context.COLOR_BUFFER_BIT);
+        self.gl.context.viewport(
+          0,
+          0,
+          self.gl.context.drawingBufferWidth,
+          self.gl.context.drawingBufferHeight
+        );
+
+        self.gl.context.useProgram(self.gl.downscaleProgram);
+
+        self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.source);
+
+        const texture = self.elements.sourceImage[0];
+
+        self.gl.context.texImage2D(
+          self.gl.context.TEXTURE_2D,
+          0,
+          self.gl.context.RGBA,
+          texture.naturalWidth,
+          texture.naturalHeight,
+          0,
+          self.gl.context.RGBA,
+          self.gl.context.UNSIGNED_BYTE,
+          texture
+        );
+
+        self.gl.context.drawArrays(self.gl.context.TRIANGLE_STRIP, 0, 4);
       }
     };
     return {
