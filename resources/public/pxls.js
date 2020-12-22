@@ -2396,10 +2396,14 @@ window.App = (function() {
         source: null,
         // this is the buffer into which a 1-to-1 template image is drawn.
         intermediate: null,
+        downscaled: null,
+        style: null,
         vbo: null,
-        downscaleProgram: null
+        downscaleProgram: null,
+        templateStyleProgram: null
       },
       queueTimer: 0,
+      loading: false,
       _queuedUpdates: {},
       _defaults: {
         url: '',
@@ -2412,9 +2416,14 @@ window.App = (function() {
       options: {},
       lazy_init: function() {
         if (self.elements.template != null) { // already inited
+          if (!self.loading) {
+            self.updateSize();
+            self.rasterizeTemplate();
+          }
           return;
         }
         self.options.use = true;
+        self.loading = true;
 
         self.elements.imageErrorWarning.empty();
         self.elements.imageErrorWarning.hide();
@@ -2471,6 +2480,7 @@ window.App = (function() {
           crossOrigin: '',
           src: self.options.url
         }).on('load', (e) => {
+          self.loading = false;
           self.updateSize();
           self.rasterizeTemplate();
           if (self.options.width < 0) {
@@ -2478,6 +2488,7 @@ window.App = (function() {
           }
           self.elements.template.toggleClass('pixelate', query.get('scale') > self.getWidthRatio());
         }).on('error', () => {
+          self.loading = false;
           self.elements.imageErrorWarning.show();
           self.elements.imageErrorWarning.text('There was an error getting the image');
           self.elements.template.remove();
@@ -2601,11 +2612,6 @@ window.App = (function() {
             self.elements.template.css(x[0], options[x[1]]);
           });
 
-          if (urlUpdated !== true) {
-            self.updateSize();
-            self.rasterizeTemplate();
-          }
-
           [['url', 'template'], ['x', 'ox'], ['y', 'oy'], ['width', 'tw'], ['opacity', 'oo'], ['title', 'title']].forEach(x => {
             query.set(x[1], self.options[x[0]], true);
           });
@@ -2716,6 +2722,7 @@ window.App = (function() {
           self.elements.template.toggleClass('pixelate', pixelate);
         }
       },
+      // NOTE ([  ]): this is functionally the same as getStyleScale now
       getWidthRatio: function() {
         if (self.elements.template === null) {
           return 1;
@@ -2726,9 +2733,12 @@ window.App = (function() {
       getDisplayWidth: function() {
         return self.options.width < 0 ? self.getSourceWidth() : self.options.width;
       },
+      getDisplayHeight: function() {
+        return Math.round(self.getDisplayWidth() * self.getAspectRatio());
+      },
       getStyleScale: function() {
         // TODO
-        return 1;
+        return 3;
       },
       getSourceWidth: function() {
         return self.elements.sourceImage[0].naturalWidth;
@@ -2743,21 +2753,45 @@ window.App = (function() {
         return self.getDisplayWidth() * self.getStyleScale();
       },
       getInternalHeight: function() {
-        return self.getInternalWidth() * self.getAspectRatio();
+        return self.getDisplayHeight() * self.getStyleScale();
       },
       initGl: function(context) {
         self.gl.context = context;
-        self.gl.source = self.gl.context.createTexture();
-        self.gl.intermediate = self.gl.context.createFramebuffer();
-        self.gl.vbo = self.gl.context.createBuffer();
 
         self.gl.context.clearColor(0, 0, 0, 0);
 
-        self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.source);
-        self.gl.context.texParameteri(self.gl.context.TEXTURE_2D, self.gl.context.TEXTURE_WRAP_S, self.gl.context.CLAMP_TO_EDGE);
-        self.gl.context.texParameteri(self.gl.context.TEXTURE_2D, self.gl.context.TEXTURE_WRAP_T, self.gl.context.CLAMP_TO_EDGE);
-        self.gl.context.texParameteri(self.gl.context.TEXTURE_2D, self.gl.context.TEXTURE_MIN_FILTER, self.gl.context.NEAREST);
+        self.gl.source = self.createGlTexture();
 
+        self.gl.downscaled = self.createGlTexture();
+
+        self.gl.intermediate = self.gl.context.createFramebuffer();
+        self.gl.context.bindFramebuffer(self.gl.context.FRAMEBUFFER, self.gl.intermediate);
+        self.gl.context.framebufferTexture2D(
+          self.gl.context.FRAMEBUFFER,
+          self.gl.context.COLOR_ATTACHMENT0,
+          self.gl.context.TEXTURE_2D,
+          self.gl.downscaled,
+          0
+        );
+
+        self.gl.style = self.createGlTexture();
+        self.gl.context.texImage2D(
+          self.gl.context.TEXTURE_2D,
+          0,
+          self.gl.context.RGBA,
+          self.getStyleScale(),
+          self.getStyleScale(),
+          0,
+          self.gl.context.RGBA,
+          self.gl.context.UNSIGNED_BYTE,
+          new Uint8Array([
+            0, 0, 0,
+            0, 1, 0,
+            0, 0, 0
+          ].flatMap(a => [0, 0, 0, a ? 255 : 0]))
+        );
+
+        self.gl.vbo = self.gl.context.createBuffer();
         self.gl.context.bindBuffer(self.gl.context.ARRAY_BUFFER, self.gl.vbo);
         self.gl.context.bufferData(
           self.gl.context.ARRAY_BUFFER,
@@ -2770,16 +2804,21 @@ window.App = (function() {
           self.gl.context.STATIC_DRAW
         );
 
-        self.gl.downscaleProgram = self.createGlProgram(`
+        // NOTE ([  ]): not sure why, but the initial texture is flipped
+        // I would understand if all textures were but it seems to just be the first.
+        // I'm sure someone can work out what I'm doing wrong at some point but for now I'll just use this hack:
+        const identityVertexShader = (flip) => `
           attribute vec2 a_Pos;
 
           varying vec2 v_TexCoord;
 
           void main() {
-            v_TexCoord = a_Pos * vec2(0.5, -0.5) + vec2(0.5, 0.5);
+            v_TexCoord = a_Pos * vec2(0.5, ${flip ? '-' : ''}0.5) + vec2(0.5, 0.5);
             gl_Position = vec4(a_Pos, 0.0, 1.0);
           }
-        `, `
+        `;
+
+        self.gl.downscaleProgram = self.createGlProgram(identityVertexShader(true), `
           precision mediump float;
 
           uniform sampler2D u_Template;
@@ -2793,20 +2832,36 @@ window.App = (function() {
         self.gl.context.useProgram(self.gl.downscaleProgram);
 
         const downscalePosLocation = self.gl.context.getAttribLocation(self.gl.downscaleProgram, 'a_Pos');
-        self.gl.context.vertexAttribPointer(
-          downscalePosLocation,
-          2,
-          self.gl.context.FLOAT,
-          false,
-          0,
-          0
-        );
+        self.gl.context.vertexAttribPointer(downscalePosLocation, 2, self.gl.context.FLOAT, false, 0, 0);
         self.gl.context.enableVertexAttribArray(downscalePosLocation);
 
-        self.gl.context.activeTexture(self.gl.context.TEXTURE0);
         self.gl.context.uniform1i(self.gl.context.getUniformLocation(self.gl.downscaleProgram, 'u_Template'), 0);
+
+        self.gl.templateStyleProgram = self.createGlProgram(identityVertexShader(false), `
+          precision mediump float;
+
+          uniform sampler2D u_Template;
+          uniform sampler2D u_Style;
+
+          uniform vec2 u_TexelSize;
+
+          varying vec2 v_TexCoord;
+
+          void main () {
+            vec2 subTexCoord = mod(v_TexCoord, u_TexelSize) / u_TexelSize;
+            gl_FragColor = texture2D(u_Template, v_TexCoord) * vec4(1.0, 1.0, 1.0, texture2D(u_Style, subTexCoord).a);
+          }
+        `);
+        self.gl.context.useProgram(self.gl.templateStyleProgram);
+
+        const stylePosLocation = self.gl.context.getAttribLocation(self.gl.templateStyleProgram, 'a_Pos');
+        self.gl.context.vertexAttribPointer(stylePosLocation, 2, self.gl.context.FLOAT, false, 0, 0);
+        self.gl.context.enableVertexAttribArray(stylePosLocation);
+
+        self.gl.context.uniform1i(self.gl.context.getUniformLocation(self.gl.templateStyleProgram, 'u_Template'), 0);
+        self.gl.context.uniform1i(self.gl.context.getUniformLocation(self.gl.templateStyleProgram, 'u_Style'), 1);
       },
-      createGlProgram(vertexSource, fragmentSource) {
+      createGlProgram: function(vertexSource, fragmentSource) {
         const program = self.gl.context.createProgram();
 
         self.gl.context.attachShader(program, self.createGlShader(self.gl.context.VERTEX_SHADER, vertexSource));
@@ -2820,7 +2875,7 @@ window.App = (function() {
 
         return program;
       },
-      createGlShader(type, source) {
+      createGlShader: function(type, source) {
         const shader = self.gl.context.createShader(type);
 
         self.gl.context.shaderSource(shader, source);
@@ -2832,14 +2887,41 @@ window.App = (function() {
 
         return shader;
       },
+      createGlTexture: function() {
+        const texture = self.gl.context.createTexture();
+        self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, texture);
+        self.gl.context.texParameteri(self.gl.context.TEXTURE_2D, self.gl.context.TEXTURE_WRAP_S, self.gl.context.CLAMP_TO_EDGE);
+        self.gl.context.texParameteri(self.gl.context.TEXTURE_2D, self.gl.context.TEXTURE_WRAP_T, self.gl.context.CLAMP_TO_EDGE);
+        self.gl.context.texParameteri(self.gl.context.TEXTURE_2D, self.gl.context.TEXTURE_MIN_FILTER, self.gl.context.NEAREST);
+        self.gl.context.texParameteri(self.gl.context.TEXTURE_2D, self.gl.context.TEXTURE_MAG_FILTER, self.gl.context.NEAREST);
+        return texture;
+      },
       rasterizeTemplate: function() {
-        self.gl.context.clear(self.gl.context.COLOR_BUFFER_BIT);
-        self.gl.context.viewport(
+        self.downscaleTemplate();
+        self.stylizeTemplate();
+      },
+      downscaleTemplate: function() {
+        const width = self.getDisplayWidth();
+        const height = self.getDisplayHeight();
+
+        // set the framebuffer size before rendering to it
+        self.gl.context.activeTexture(self.gl.context.TEXTURE0);
+        self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.downscaled);
+        self.gl.context.texImage2D(
+          self.gl.context.TEXTURE_2D,
           0,
+          self.gl.context.RGBA,
+          width,
+          height,
           0,
-          self.gl.context.drawingBufferWidth,
-          self.gl.context.drawingBufferHeight
+          self.gl.context.RGBA,
+          self.gl.context.UNSIGNED_BYTE,
+          null
         );
+
+        self.gl.context.bindFramebuffer(self.gl.context.FRAMEBUFFER, self.gl.intermediate);
+        self.gl.context.clear(self.gl.context.COLOR_BUFFER_BIT);
+        self.gl.context.viewport(0, 0, width, height);
 
         self.gl.context.useProgram(self.gl.downscaleProgram);
 
@@ -2858,6 +2940,30 @@ window.App = (function() {
           self.gl.context.UNSIGNED_BYTE,
           texture
         );
+
+        self.gl.context.drawArrays(self.gl.context.TRIANGLE_STRIP, 0, 4);
+      },
+      stylizeTemplate: function() {
+        const width = self.getInternalWidth();
+        const height = self.getInternalHeight();
+
+        self.gl.context.bindFramebuffer(self.gl.context.FRAMEBUFFER, null);
+        self.gl.context.clear(self.gl.context.COLOR_BUFFER_BIT);
+        self.gl.context.viewport(0, 0, width, height);
+
+        self.gl.context.useProgram(self.gl.templateStyleProgram);
+
+        self.gl.context.uniform2f(
+          self.gl.context.getUniformLocation(self.gl.templateStyleProgram, 'u_TexelSize'),
+          1 / self.getDisplayWidth(),
+          1 / self.getDisplayHeight()
+        );
+
+        self.gl.context.activeTexture(self.gl.context.TEXTURE0);
+        self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.downscaled);
+
+        self.gl.context.activeTexture(self.gl.context.TEXTURE1);
+        self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.style);
 
         self.gl.context.drawArrays(self.gl.context.TRIANGLE_STRIP, 0, 4);
       }
