@@ -2376,10 +2376,12 @@ window.App = (function() {
   })();
     // here all the template stuff happens
   const template = (function() {
+    const SMALL_DOTTED = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAADCAQAAAD8IX00AAAAAmJLR0QA/4ePzL8AAAAOSURBVAjXY2CAg/9wFgAKCwEAu3gdDQAAAABJRU5ErkJggg==';
     const self = {
       elements: {
         template: null,
         sourceImage: $('<img>'),
+        styleImage: $('<img>').attr({ src: SMALL_DOTTED }),
         useCheckbox: $('#template-use'),
         titleInput: $('#template-title'),
         urlInput: $('#template-url'),
@@ -2416,8 +2418,7 @@ window.App = (function() {
       options: {},
       lazy_init: function() {
         if (self.elements.template != null) { // already inited
-          if (!self.loading) {
-            self.updateSize();
+          if (!self.loading && self.isDirty()) {
             self.rasterizeTemplate();
           }
           return;
@@ -2481,7 +2482,6 @@ window.App = (function() {
           src: self.options.url
         }).on('load', (e) => {
           self.loading = false;
-          self.updateSize();
           self.rasterizeTemplate();
           if (self.options.width < 0) {
             self.elements.widthInput.val(self.elements.template.width());
@@ -2631,6 +2631,11 @@ window.App = (function() {
           height: self.getInternalHeight()
         });
       },
+      isDirty: function() {
+        return parseFloat(self.elements.template.css('width')) !== self.getDisplayWidth() ||
+          parseFloat(self.elements.template.attr('width')) !== self.getInternalWidth() ||
+          parseFloat(self.elements.template.attr('height')) !== self.getInternalHeight();
+      },
       disableTemplate: function() {
         self._update({ url: null });
       },
@@ -2722,7 +2727,7 @@ window.App = (function() {
           self.elements.template.toggleClass('pixelate', pixelate);
         }
       },
-      // NOTE ([  ]): this is functionally the same as getStyleScale now
+      // NOTE ([  ]): this is functionally the same as getStyleWidth now
       getWidthRatio: function() {
         if (self.elements.template === null) {
           return 1;
@@ -2736,9 +2741,11 @@ window.App = (function() {
       getDisplayHeight: function() {
         return Math.round(self.getDisplayWidth() * self.getAspectRatio());
       },
-      getStyleScale: function() {
-        // TODO
-        return 3;
+      getStyleWidth: function() {
+        return self.elements.styleImage[0].naturalWidth;
+      },
+      getStyleHeight: function() {
+        return self.elements.styleImage[0].naturalHeight;
       },
       getSourceWidth: function() {
         return self.elements.sourceImage[0].naturalWidth;
@@ -2750,10 +2757,29 @@ window.App = (function() {
         return self.getSourceHeight() / self.getSourceWidth();
       },
       getInternalWidth: function() {
-        return self.getDisplayWidth() * self.getStyleScale();
+        return self.getDisplayWidth() * self.getStyleWidth();
       },
       getInternalHeight: function() {
-        return self.getDisplayHeight() * self.getStyleScale();
+        return self.getDisplayHeight() * self.getStyleHeight();
+      },
+      setStyle: function(image, redraw = true) {
+        self.elements.styleImage = $(image);
+        if (self.gl.style !== null) {
+          self.gl.context.texImage2D(
+            self.gl.context.TEXTURE_2D,
+            0,
+            self.gl.context.RGBA,
+            image.naturalWidth,
+            image.naturalHeight,
+            0,
+            self.gl.context.RGBA,
+            self.gl.context.UNSIGNED_BYTE,
+            image
+          );
+          if (redraw) {
+            self.stylizeTemplate();
+          }
+        }
       },
       initGl: function(context) {
         self.gl.context = context;
@@ -2775,21 +2801,7 @@ window.App = (function() {
         );
 
         self.gl.style = self.createGlTexture();
-        self.gl.context.texImage2D(
-          self.gl.context.TEXTURE_2D,
-          0,
-          self.gl.context.RGBA,
-          self.getStyleScale(),
-          self.getStyleScale(),
-          0,
-          self.gl.context.RGBA,
-          self.gl.context.UNSIGNED_BYTE,
-          new Uint8Array([
-            0, 0, 0,
-            0, 1, 0,
-            0, 0, 0
-          ].flatMap(a => [0, 0, 0, a ? 255 : 0]))
-        );
+        self.setStyle(self.elements.styleImage[0], false);
 
         self.gl.vbo = self.gl.context.createBuffer();
         self.gl.context.bindBuffer(self.gl.context.ARRAY_BUFFER, self.gl.vbo);
@@ -2944,6 +2956,9 @@ window.App = (function() {
         self.gl.context.drawArrays(self.gl.context.TRIANGLE_STRIP, 0, 4);
       },
       stylizeTemplate: function() {
+        self.updateSize();
+        console.debug('stylize');
+
         const width = self.getInternalWidth();
         const height = self.getInternalHeight();
 
@@ -2976,7 +2991,8 @@ window.App = (function() {
       queueUpdate: self.queueUpdate,
       getOptions: () => self.options,
       setPixelated: self.setPixelated,
-      getWidthRatio: self.getWidthRatio
+      getWidthRatio: self.getWidthRatio,
+      setStyle: self.setStyle
     };
   })();
     // here all the grid stuff happens
@@ -7499,6 +7515,9 @@ window.App = (function() {
       },
       normalize: function(obj, dir = true) {
         return template.normalizeTemplateObj(obj, dir);
+      },
+      setStyle: function(image) {
+        template.setStyle(image);
       }
     },
     lookup: {
