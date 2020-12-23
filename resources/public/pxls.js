@@ -2735,8 +2735,14 @@ window.App = (function() {
 
         return self.getInternalWidth() / self.getDisplayWidth();
       },
+      getDownscaleWidthRatio: function() {
+        return self.getSourceWidth() / self.getDisplayWidth();
+      },
+      getDownscaleHeightRatio: function() {
+        return self.getSourceHeight() / self.getDisplayHeight();
+      },
       getDisplayWidth: function() {
-        return self.options.width < 0 ? self.getSourceWidth() : self.options.width;
+        return Math.round(self.options.width < 0 ? self.getSourceWidth() : self.options.width);
       },
       getDisplayHeight: function() {
         return Math.round(self.getDisplayWidth() * self.getAspectRatio());
@@ -2833,12 +2839,54 @@ window.App = (function() {
         self.gl.downscaleProgram = self.createGlProgram(identityVertexShader(true), `
           precision mediump float;
 
+          // GLES (and thus WebGL) does not support dynamic for loops
+          // the workaround is to specify the condition as an upper bound
+          // then break the loop early if we reach our dynamic limit 
+          #define MAX_SAMPLE_SIZE 16.0
+
           uniform sampler2D u_Template;
+
+          uniform vec2 u_TexelSize;
+          uniform vec2 u_SampleSize;
 
           varying vec2 v_TexCoord;
 
           void main () {
-            gl_FragColor = texture2D(u_Template, v_TexCoord);
+            vec4 color = vec4(0.0);
+
+            vec2 actualSampleSize = min(u_SampleSize, vec2(MAX_SAMPLE_SIZE));
+            vec2 sampleTexSize = u_TexelSize / actualSampleSize;
+            // sample is taken from center of fragment
+            // this moves the coordinates to the starting corner and to the center of the sample texel
+            vec2 sampleOrigin = v_TexCoord - sampleTexSize * (actualSampleSize / 2.0 - 0.5);
+
+            float sampleCount = 0.0;
+
+            for(float x = 0.0; x < MAX_SAMPLE_SIZE; x++) {
+              if(x >= u_SampleSize.x) {
+                break;
+              }
+              for(float y = 0.0; y < MAX_SAMPLE_SIZE; y++) {
+                if(y >= u_SampleSize.y) {
+                  break;
+                }
+
+                vec4 sample = texture2D(u_Template, sampleOrigin + sampleTexSize * vec2(x, y));
+
+                if(sample.a == 0.0) {
+                  continue;
+                }
+
+                color += sample;
+                sampleCount++;
+              }
+            }
+
+            if(sampleCount == 0.0) {
+              discard;
+            }
+
+            gl_FragColor = color / sampleCount;
           }
         `);
         self.gl.context.useProgram(self.gl.downscaleProgram);
@@ -2937,6 +2985,17 @@ window.App = (function() {
 
         self.gl.context.useProgram(self.gl.downscaleProgram);
 
+        self.gl.context.uniform2f(
+          self.gl.context.getUniformLocation(self.gl.downscaleProgram, 'u_SampleSize'),
+          Math.max(1, self.getDownscaleWidthRatio()),
+          Math.max(1, self.getDownscaleHeightRatio())
+        );
+        self.gl.context.uniform2f(
+          self.gl.context.getUniformLocation(self.gl.downscaleProgram, 'u_TexelSize'),
+          1 / self.getDisplayWidth(),
+          1 / self.getDisplayHeight()
+        );
+
         self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.source);
 
         const texture = self.elements.sourceImage[0];
@@ -2957,7 +3016,6 @@ window.App = (function() {
       },
       stylizeTemplate: function() {
         self.updateSize();
-        console.debug('stylize');
 
         const width = self.getInternalWidth();
         const height = self.getInternalHeight();
