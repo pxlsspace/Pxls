@@ -2379,8 +2379,8 @@ window.App = (function() {
     const SMALL_DOTTED = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAADCAQAAAD8IX00AAAAAmJLR0QA/4ePzL8AAAAOSURBVAjXY2CAg/9wFgAKCwEAu3gdDQAAAABJRU5ErkJggg==';
     const self = {
       elements: {
-        template: null,
-        sourceImage: $('<img>'),
+        template: $('<canvas>').addClass('noselect').attr({ id: 'board-template' }),
+        sourceImage: $('<img>').attr({ crossOrigin: '' }),
         styleImage: $('<img>').attr({ src: SMALL_DOTTED }),
         useCheckbox: $('#template-use'),
         titleInput: $('#template-title'),
@@ -2416,87 +2416,17 @@ window.App = (function() {
         title: ''
       },
       options: {},
-      lazy_init: function() {
-        if (self.elements.template != null) { // already inited
-          if (!self.loading && self.isDirty()) {
-            self.rasterizeTemplate();
-          }
-          return;
-        }
-        self.options.use = true;
+      loadImage: function() {
         self.loading = true;
+
+        self.options.use = true;
 
         self.elements.imageErrorWarning.empty();
         self.elements.imageErrorWarning.hide();
 
-        const drag = {
-          x: 0,
-          y: 0
-        };
-        self.elements.template = $('<canvas>').addClass('noselect').attr({
-          id: 'board-template'
-        }).css({
-          top: self.options.y,
-          left: self.options.x,
-          opacity: self.options.opacity
-        }).data('dragging', false).on('mousedown pointerdown', function(evt) {
-          evt.preventDefault();
-          $(this).data('dragging', true);
-          drag.x = evt.clientX;
-          drag.y = evt.clientY;
-          evt.stopPropagation();
-        }).on('mouseup pointerup', function(evt) {
-          evt.preventDefault();
-          $(this).data('dragging', false);
-          evt.stopPropagation();
-        }).on('mousemove pointermove', function(evt) {
-          evt.preventDefault();
-          if ($(this).data('dragging')) {
-            if (!evt.ctrlKey && !evt.altKey) {
-              self.stopDragging();
-              return;
-            }
-            const pxOld = board.fromScreen(drag.x, drag.y);
-            const pxNew = board.fromScreen(evt.clientX, evt.clientY);
-            const dx = (pxNew.x) - (pxOld.x);
-            const dy = (pxNew.y) - (pxOld.y);
-            const newX = self.options.x + dx;
-            const newY = self.options.y + dy;
-            self._update({ x: newX, y: newY });
-            query.set({ ox: newX, oy: newY }, true);
-            if (dx !== 0) {
-              drag.x = evt.clientX;
-            }
-            if (dy !== 0) {
-              drag.y = evt.clientY;
-            }
-          }
-        });
-
-        self.initGl(self.elements.template[0].getContext('webgl2', {
-          premultipliedAlpha: false
-        }));
-
         self.elements.sourceImage.attr({
-          crossOrigin: '',
           src: self.options.url
-        }).on('load', (e) => {
-          self.loading = false;
-          self.rasterizeTemplate();
-          if (self.options.width < 0) {
-            self.elements.widthInput.val(self.elements.template.width());
-          }
-          self.elements.template.toggleClass('pixelate', query.get('scale') > self.getWidthRatio());
-        }).on('error', () => {
-          self.loading = false;
-          self.elements.imageErrorWarning.show();
-          self.elements.imageErrorWarning.text('There was an error getting the image');
-          self.elements.template.remove();
         });
-        if (board.update(true)) {
-          return;
-        }
-        board.getRenderBoard().parent().prepend(self.elements.template);
       },
       updateSettings: function() {
         self.elements.useCheckbox.prop('checked', self.options.use);
@@ -2563,7 +2493,7 @@ window.App = (function() {
           return;
         }
 
-        const urlUpdated = (options.url !== self.options.url && decodeURIComponent(options.url) !== self.options.url && options.url != null && self.options.url != null);
+        const urlUpdated = (options.url !== self.options.url && decodeURIComponent(options.url) !== self.options.url && options.url != null);
         if (options.url != null && options.url.length > 0) {
           options.url = decodeURIComponent(options.url);
         }
@@ -2591,37 +2521,40 @@ window.App = (function() {
 
         if (options.url.length === 0 || options.use === false) {
           self.options.use = false;
-          if (self.elements.template) {
-            self.elements.template.remove();
-            self.elements.template = null;
-          }
           board.update(true);
           ['template', 'ox', 'oy', 'oo', 'tw', 'title'].forEach(x => query.remove(x, true));
         } else {
           self.options.use = true;
-          if (urlUpdated === true && self.elements.template != null) {
-            self.elements.template.remove(); // necessary so everything gets redrawn properly 'n whatnot. could probably just update the url directly...
-            self.elements.template = null;
+          if (urlUpdated === true) {
+            self.loadImage();
           }
-          // TODO ([  ]): this will cause a rebuild of GL state
-          // it would be preferable to just update the url directly (as pointed out above)
-          // and then rasterise once done
-          self.lazy_init();
 
-          [['left', 'x'], ['top', 'y'], ['opacity', 'opacity']].forEach(x => {
-            self.elements.template.css(x[0], options[x[1]]);
-          });
+          if (!self.loading && self.isDirty()) {
+            self.rasterizeTemplate();
+          }
 
           [['url', 'template'], ['x', 'ox'], ['y', 'oy'], ['width', 'tw'], ['opacity', 'oo'], ['title', 'title']].forEach(x => {
             query.set(x[1], self.options[x[0]], true);
           });
         }
+
+        self.applyOptions();
+
         if (updateSettings) {
           self.updateSettings();
         }
         document.title = uiHelper.getTitle();
 
         self.setPixelated(query.get('scale') >= self.getWidthRatio());
+      },
+      applyOptions() {
+        if (self.options.use) {
+          [['left', 'x'], ['top', 'y'], ['opacity', 'opacity']].forEach(x => {
+            self.elements.template.css(x[0], self.options[x[1]]);
+          });
+        }
+
+        self.elements.template.toggleClass('hidden', !self.options.use);
       },
       updateSize: function() {
         self.elements.template.css({
@@ -2716,6 +2649,75 @@ window.App = (function() {
               break;
           }
         }).on('keyup blur', self.stopDragging);
+
+        const drag = {
+          x: 0,
+          y: 0
+        };
+        self.elements.template.data(
+          'dragging', false
+        ).on('mousedown pointerdown', function(evt) {
+          evt.preventDefault();
+          $(this).data('dragging', true);
+          drag.x = evt.clientX;
+          drag.y = evt.clientY;
+          evt.stopPropagation();
+        }).on('mouseup pointerup', function(evt) {
+          evt.preventDefault();
+          $(this).data('dragging', false);
+          evt.stopPropagation();
+        }).on('mousemove pointermove', function(evt) {
+          evt.preventDefault();
+          if ($(this).data('dragging')) {
+            if (!evt.ctrlKey && !evt.altKey) {
+              self.stopDragging();
+              return;
+            }
+            const pxOld = board.fromScreen(drag.x, drag.y);
+            const pxNew = board.fromScreen(evt.clientX, evt.clientY);
+            const dx = (pxNew.x) - (pxOld.x);
+            const dy = (pxNew.y) - (pxOld.y);
+            const newX = self.options.x + dx;
+            const newY = self.options.y + dy;
+            self._update({ x: newX, y: newY });
+            query.set({ ox: newX, oy: newY }, true);
+            if (dx !== 0) {
+              drag.x = evt.clientX;
+            }
+            if (dy !== 0) {
+              drag.y = evt.clientY;
+            }
+          }
+        });
+
+        self.initGl(self.elements.template[0].getContext('webgl2', {
+          premultipliedAlpha: false
+        }));
+
+        const style = self.elements.styleImage.on('load', function(e) {
+          if (self.elements.styleImage === style) {
+            self.setStyle(style[0], !self.loading);
+          }
+        });
+
+        self.elements.sourceImage.on('load', (e) => {
+          self.loading = false;
+          self.rasterizeTemplate();
+          if (self.options.width < 0) {
+            self.elements.widthInput.val(self.elements.sourceImage[0].naturalWidth);
+          }
+          self.elements.template.toggleClass('pixelate', query.get('scale') > self.getWidthRatio());
+        }).on('error', () => {
+          self.loading = false;
+          self.elements.imageErrorWarning.show();
+          self.elements.imageErrorWarning.text('There was an error getting the image');
+          self._update({ use: false });
+        });
+
+        if (board.update(true)) {
+          return;
+        }
+        board.getRenderBoard().parent().prepend(self.elements.template);
       },
       stopDragging: function() {
         if (self.options.use) {
@@ -2807,7 +2809,17 @@ window.App = (function() {
         );
 
         self.gl.style = self.createGlTexture();
-        self.setStyle(self.elements.styleImage[0], false);
+        self.gl.context.texImage2D(
+          self.gl.context.TEXTURE_2D,
+          0,
+          self.gl.context.RGBA,
+          1,
+          1,
+          0,
+          self.gl.context.RGBA,
+          self.gl.context.UNSIGNED_BYTE,
+          null
+        );
 
         self.gl.vbo = self.gl.context.createBuffer();
         self.gl.context.bindBuffer(self.gl.context.ARRAY_BUFFER, self.gl.vbo);
