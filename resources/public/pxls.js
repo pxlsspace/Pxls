@@ -3486,7 +3486,7 @@ window.App = (function() {
           color: '#cf0000'
         }
       ],
-      specialChatColorClasses: ['rainbow', 'donator'],
+      specialChatColorClasses: ['rainbow', ['donator', 'donator--green'], ['donator', 'donator--gray']],
       init: function() {
         self.initTitle = document.title;
         self._initThemes();
@@ -3893,7 +3893,10 @@ window.App = (function() {
         return self._available;
       },
       styleElemWithChatNameColor: (elem, colorIdx, layer = 'bg') => {
-        elem.classList.remove(...self.specialChatColorClasses);
+        elem.classList.remove(...self.specialChatColorClasses.reduce((acc, val) => {
+          acc.push(...(Array.isArray(val) ? val : [val]));
+          return acc;
+        }, []));
         if (colorIdx >= 0) {
           switch (layer) {
             case 'bg':
@@ -3906,7 +3909,8 @@ window.App = (function() {
         } else {
           elem.style.backgroundColor = null;
           elem.style.color = null;
-          elem.classList.add(self.specialChatColorClasses[-colorIdx - 1]);
+          const classes = self.specialChatColorClasses[-colorIdx - 1];
+          elem.classList.add(...(Array.isArray(classes) ? classes : [classes]));
         }
       },
       setLoadingBubbleState: (process, state) => {
@@ -5111,9 +5115,12 @@ window.App = (function() {
         uiHelper.styleElemWithChatNameColor(self.elements.username_color_select[0], colorIdx);
       },
       _populateUsernameColor: () => {
+        const hasPermForColor = (name) => user.hasPermission(`chat.usercolor.${name}`);
+        const hasAllDonatorColors = hasPermForColor('donator') || hasPermForColor('donator.*');
         self.elements.username_color_select.empty().append(
-          user.hasPermission('chat.usercolor.rainbow') ? crel('option', { value: -1, class: 'rainbow' }, '*. Rainbow') : null,
-          user.hasPermission('chat.usercolor.donator') ? crel('option', { value: -2, class: 'donator' }, '*. Donator') : null,
+          hasPermForColor('rainbow') ? crel('option', { value: -1, class: 'rainbow' }, '*. Rainbow') : null,
+          hasAllDonatorColors || hasPermForColor('donator.green') ? crel('option', { value: -2, class: 'donator donator--green' }, '*. Donator Green') : null,
+          hasAllDonatorColors || hasPermForColor('donator.gray') ? crel('option', { value: -3, class: 'donator donator--gray' }, '*. Donator Gray') : null,
           place.palette.map(({ name, value: hex }, i) => crel('option', {
             value: i,
             'data-idx': i,
