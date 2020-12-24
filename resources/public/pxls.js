@@ -1653,6 +1653,7 @@ window.App = (function() {
           self.width = data.width;
           self.height = data.height;
           place.setPalette(data.palette);
+          template.webinit(data);
           uiHelper.setMax(data.maxStacked);
           chat.webinit(data);
           uiHelper.initBanner(data.chatBannerText);
@@ -2690,10 +2691,6 @@ window.App = (function() {
           }
         });
 
-        self.initGl(self.elements.template[0].getContext('webgl2', {
-          premultipliedAlpha: false
-        }));
-
         const style = self.elements.styleImage.on('load', function(e) {
           if (self.elements.styleImage === style) {
             self.setStyle(style[0], !self.loading);
@@ -2703,7 +2700,7 @@ window.App = (function() {
         self.elements.sourceImage.on('load', (e) => {
           self.loading = false;
           self.rasterizeTemplate();
-          if (self.options.width < 0) {
+          if (!(self.options.width >= 0)) {
             self.elements.widthInput.val(self.elements.sourceImage[0].naturalWidth);
           }
           self.elements.template.toggleClass('pixelate', query.get('scale') > self.getWidthRatio());
@@ -2718,6 +2715,15 @@ window.App = (function() {
           return;
         }
         board.getRenderBoard().parent().prepend(self.elements.template);
+      },
+      webinit: function(data) {
+        self.initGl(self.elements.template[0].getContext('webgl2', {
+          premultipliedAlpha: false
+        }), data.palette);
+
+        if (!self.loading) {
+          self.rasterizeTemplate();
+        }
       },
       stopDragging: function() {
         if (self.options.use) {
@@ -2744,7 +2750,7 @@ window.App = (function() {
         return self.getSourceHeight() / self.getDisplayHeight();
       },
       getDisplayWidth: function() {
-        return Math.round(self.options.width < 0 ? self.getSourceWidth() : self.options.width);
+        return Math.round(self.options.width >= 0 ? self.options.width : self.getSourceWidth());
       },
       getDisplayHeight: function() {
         return Math.round(self.getDisplayWidth() * self.getAspectRatio());
@@ -2762,7 +2768,7 @@ window.App = (function() {
         return self.elements.sourceImage[0].naturalHeight;
       },
       getAspectRatio: function() {
-        return self.getSourceHeight() / self.getSourceWidth();
+        return self.getSourceWidth() === 0 ? 1 : self.getSourceHeight() / self.getSourceWidth();
       },
       getInternalWidth: function() {
         return self.getDisplayWidth() * self.getStyleWidth();
@@ -2772,7 +2778,9 @@ window.App = (function() {
       },
       setStyle: function(image, redraw = true) {
         self.elements.styleImage = $(image);
-        if (self.gl.style !== null) {
+        if (self.gl.context !== null) {
+          self.gl.context.activeTexture(self.gl.context.TEXTURE1);
+          self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.style);
           self.gl.context.texImage2D(
             self.gl.context.TEXTURE_2D,
             0,
@@ -2789,10 +2797,12 @@ window.App = (function() {
           }
         }
       },
-      initGl: function(context) {
+      initGl: function(context, palette) {
         self.gl.context = context;
 
         self.gl.context.clearColor(0, 0, 0, 0);
+        // self.gl.context.pixelStorei(self.gl.context.UNPACK_COLORSPACE_CONVERSION_WEBGL, self.gl.context.NONE);
+        self.gl.context.pixelStorei(self.gl.context.UNPACK_FLIP_Y_WEBGL, true);
 
         self.gl.source = self.createGlTexture();
 
@@ -2809,17 +2819,7 @@ window.App = (function() {
         );
 
         self.gl.style = self.createGlTexture();
-        self.gl.context.texImage2D(
-          self.gl.context.TEXTURE_2D,
-          0,
-          self.gl.context.RGBA,
-          1,
-          1,
-          0,
-          self.gl.context.RGBA,
-          self.gl.context.UNSIGNED_BYTE,
-          null
-        );
+        self.setStyle(self.elements.styleImage[0], false);
 
         self.gl.vbo = self.gl.context.createBuffer();
         self.gl.context.bindBuffer(self.gl.context.ARRAY_BUFFER, self.gl.vbo);
@@ -2834,34 +2834,36 @@ window.App = (function() {
           self.gl.context.STATIC_DRAW
         );
 
-        // NOTE ([  ]): not sure why, but the initial texture is flipped
-        // I would understand if all textures were but it seems to just be the first.
-        // I'm sure someone can work out what I'm doing wrong at some point but for now I'll just use this hack:
-        const identityVertexShader = (flip) => `
+        const identityVertexShader = `
           attribute vec2 a_Pos;
 
           varying vec2 v_TexCoord;
 
           void main() {
-            v_TexCoord = a_Pos * vec2(0.5, ${flip ? '-' : ''}0.5) + vec2(0.5, 0.5);
+            v_TexCoord = a_Pos * vec2(0.5, 0.5) + vec2(0.5, 0.5);
             gl_Position = vec4(a_Pos, 0.0, 1.0);
           }
         `;
 
-        self.gl.downscaleProgram = self.createGlProgram(identityVertexShader(true), `
+        self.gl.downscaleProgram = self.createGlProgram(identityVertexShader, `
           precision mediump float;
 
           // GLES (and thus WebGL) does not support dynamic for loops
           // the workaround is to specify the condition as an upper bound
           // then break the loop early if we reach our dynamic limit 
           #define MAX_SAMPLE_SIZE 16.0
+          #define PALETTE_LENGTH ${palette.length}
 
           uniform sampler2D u_Template;
 
           uniform vec2 u_TexelSize;
           uniform vec2 u_SampleSize;
 
+          uniform vec3 u_Palette[PALETTE_LENGTH];
+
           varying vec2 v_TexCoord;
+
+          const float epsilon = 1.0 / 128.0;
 
           void main () {
             vec4 color = vec4(0.0);
@@ -2898,7 +2900,16 @@ window.App = (function() {
               discard;
             }
 
-            gl_FragColor = color / sampleCount;
+            color /= sampleCount;
+
+            for(int i = 0; i < PALETTE_LENGTH; i++) {
+              if(all(lessThan(abs(u_Palette[i] - color.rgb), vec3(epsilon)))) {
+                gl_FragColor = vec4(u_Palette[i], 1.0);
+                return;
+              }
+            }
+
+            gl_FragColor = vec4(0.0);
           }
         `);
         self.gl.context.useProgram(self.gl.downscaleProgram);
@@ -2909,7 +2920,13 @@ window.App = (function() {
 
         self.gl.context.uniform1i(self.gl.context.getUniformLocation(self.gl.downscaleProgram, 'u_Template'), 0);
 
-        self.gl.templateStyleProgram = self.createGlProgram(identityVertexShader(false), `
+        const int2rgb = i => [(i >> 16) & 0xFF, (i >> 8) & 0xFF, i & 0xFF];
+        self.gl.context.uniform3fv(
+          self.gl.context.getUniformLocation(self.gl.downscaleProgram, 'u_Palette'),
+          new Float32Array(palette.flatMap(c => int2rgb(parseInt(c.value, 16)).map(c => c / 255)))
+        );
+
+        self.gl.templateStyleProgram = self.createGlProgram(identityVertexShader, `
           precision mediump float;
 
           uniform sampler2D u_Template;
@@ -2976,6 +2993,10 @@ window.App = (function() {
         const width = self.getDisplayWidth();
         const height = self.getDisplayHeight();
 
+        if (self.gl.context == null || width === 0 || height === 0) {
+          return;
+        }
+
         // set the framebuffer size before rendering to it
         self.gl.context.activeTexture(self.gl.context.TEXTURE0);
         self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.downscaled);
@@ -3032,6 +3053,10 @@ window.App = (function() {
         const width = self.getInternalWidth();
         const height = self.getInternalHeight();
 
+        if (self.gl.context == null || width === 0 || height === 0) {
+          return;
+        }
+
         self.gl.context.bindFramebuffer(self.gl.context.FRAMEBUFFER, null);
         self.gl.context.clear(self.gl.context.COLOR_BUFFER_BIT);
         self.gl.context.viewport(0, 0, width, height);
@@ -3058,6 +3083,7 @@ window.App = (function() {
       update: self._update,
       draw: self.draw,
       init: self.init,
+      webinit: self.webinit,
       queueUpdate: self.queueUpdate,
       getOptions: () => self.options,
       setPixelated: self.setPixelated,
