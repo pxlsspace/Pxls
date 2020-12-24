@@ -2377,7 +2377,9 @@ window.App = (function() {
   })();
     // here all the template stuff happens
   const template = (function() {
-    const SMALL_DOTTED = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAADCAQAAAD8IX00AAAAAmJLR0QA/4ePzL8AAAAOSURBVAjXY2CAg/9wFgAKCwEAu3gdDQAAAABJRU5ErkJggg==';
+    const SMALL_DOTTED = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAAAAmJLR0QA/4ePzL8AAAAzSURBVFjD7dBBDQAACMSw828aVEAI6R4T0GShGv6DECFChAgRIkSIECFChAgRIkSIruA0nub+AuTzLZoAAAAASUVORK5CYII=';
+    const STYLES_X = 16;
+    const STYLES_Y = 16;
     const self = {
       elements: {
         template: $('<canvas>').addClass('noselect').attr({ id: 'board-template' }),
@@ -2756,10 +2758,10 @@ window.App = (function() {
         return Math.round(self.getDisplayWidth() * self.getAspectRatio());
       },
       getStyleWidth: function() {
-        return self.elements.styleImage[0].naturalWidth;
+        return self.elements.styleImage[0].naturalWidth / STYLES_X;
       },
       getStyleHeight: function() {
-        return self.elements.styleImage[0].naturalHeight;
+        return self.elements.styleImage[0].naturalHeight / STYLES_Y;
       },
       getSourceWidth: function() {
         return self.elements.sourceImage[0].naturalWidth;
@@ -2845,6 +2847,13 @@ window.App = (function() {
           }
         `;
 
+        const paletteDefs = `
+          #define PALETTE_LENGTH ${palette.length}
+          #define PALETTE_MAXSIZE 255.0
+          #define PALETTE_TRANSPARENT (PALETTE_MAXSIZE - 1.0) / PALETTE_MAXSIZE
+          #define PALETTE_UNKNOWN 1.0
+        `;
+
         self.gl.downscaleProgram = self.createGlProgram(identityVertexShader, `
           precision mediump float;
 
@@ -2852,7 +2861,8 @@ window.App = (function() {
           // the workaround is to specify the condition as an upper bound
           // then break the loop early if we reach our dynamic limit 
           #define MAX_SAMPLE_SIZE 16.0
-          #define PALETTE_LENGTH ${palette.length}
+          
+          ${paletteDefs}
 
           uniform sampler2D u_Template;
 
@@ -2864,6 +2874,9 @@ window.App = (function() {
           varying vec2 v_TexCoord;
 
           const float epsilon = 1.0 / 128.0;
+
+          // The alpha channel is used to index the palette: 
+          const vec4 transparentColor = vec4(0.0, 0.0, 0.0, PALETTE_TRANSPARENT);
 
           void main () {
             vec4 color = vec4(0.0);
@@ -2897,19 +2910,20 @@ window.App = (function() {
             }
 
             if(sampleCount == 0.0) {
-              discard;
+              gl_FragColor = transparentColor;
+              return;
             }
 
             color /= sampleCount;
 
             for(int i = 0; i < PALETTE_LENGTH; i++) {
               if(all(lessThan(abs(u_Palette[i] - color.rgb), vec3(epsilon)))) {
-                gl_FragColor = vec4(u_Palette[i], 1.0);
+                gl_FragColor = vec4(u_Palette[i], float(i) / PALETTE_MAXSIZE);
                 return;
               }
             }
 
-            gl_FragColor = vec4(0.0);
+            gl_FragColor = vec4(color.rgb, PALETTE_UNKNOWN);
           }
         `);
         self.gl.context.useProgram(self.gl.downscaleProgram);
@@ -2929,6 +2943,11 @@ window.App = (function() {
         self.gl.templateStyleProgram = self.createGlProgram(identityVertexShader, `
           precision mediump float;
 
+          #define STYLES_X float(${STYLES_X})
+          #define STYLES_Y float(${STYLES_Y})
+
+          ${paletteDefs}
+
           uniform sampler2D u_Template;
           uniform sampler2D u_Style;
 
@@ -2936,9 +2955,20 @@ window.App = (function() {
 
           varying vec2 v_TexCoord;
 
+          const vec2 styleSize = vec2(1.0 / STYLES_X, 1.0 / STYLES_Y);
+
           void main () {
+            vec4 templateSample = texture2D(u_Template, v_TexCoord);
+
+            float index = floor(templateSample.a * PALETTE_MAXSIZE + 0.5);
+            vec2 indexCoord = vec2(mod(index, STYLES_X), STYLES_Y - floor(index / STYLES_Y) - 1.0);
+
             vec2 subTexCoord = mod(v_TexCoord, u_TexelSize) / u_TexelSize;
-            gl_FragColor = texture2D(u_Template, v_TexCoord) * vec4(1.0, 1.0, 1.0, texture2D(u_Style, subTexCoord).a);
+            vec2 styleCoord = (indexCoord + subTexCoord) * styleSize;
+            
+            vec4 styleMask = vec4(1.0, 1.0, 1.0, texture2D(u_Style, styleCoord).a);
+
+            gl_FragColor = vec4(templateSample.rgb, templateSample.a == PALETTE_TRANSPARENT ? 0.0 : 1.0) * styleMask;
           }
         `);
         self.gl.context.useProgram(self.gl.templateStyleProgram);
