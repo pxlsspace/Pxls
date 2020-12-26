@@ -2414,10 +2414,14 @@ window.App = (function() {
           vertex: null
         },
         programs: {
-          downscale: null,
+          downscaling: {
+            unconverted: null,
+            nearestCustom: null
+          },
           stylize: null
         }
       },
+      convertMode: 'unconverted',
       queueTimer: 0,
       loading: false,
       _queuedUpdates: {},
@@ -2810,6 +2814,14 @@ window.App = (function() {
           }
         }
       },
+      setConvertMode: function(mode) {
+        if (!(mode in self.gl.programs.downscaling)) {
+          throw new Error(`Invalid mode: ${mode}\nOptions are: ${Object.keys(self.gl.programs.downscaling).join(', ')}`);
+        }
+
+        self.convertMode = mode;
+        self.rasterizeTemplate();
+      },
       initGl: function(context, palette) {
         self.gl.context = context;
 
@@ -2865,7 +2877,30 @@ window.App = (function() {
           #define PALETTE_UNKNOWN 1.0
         `;
 
-        self.gl.programs.downscale = self.createGlProgram(identityVertexShader, `
+        const diffCustom = `
+          #define LUMA_WEIGHTS vec3(0.299, 0.587, 0.114)
+
+          // a simple custom colorspace that stores:
+          // - brightness
+          // - red/green-ness
+          // - blue/yellow-ness
+          // this storing of contrasts is similar to how humans
+          // see color difference and provides a simple difference function
+          // with decent results.
+          vec3 rgb2Custom(vec3 rgb) {
+            return vec3(
+              length(rgb * LUMA_WEIGHTS),
+              rgb.r - rgb.g,
+              rgb.b - (rgb.r + rgb.g) / 2.0
+            );
+          }
+
+          float diffCustom(vec3 col1, vec3 col2) {
+            return length(rgb2Custom(col1) - rgb2Custom(col2));
+          }
+        `;
+
+        const downscalingFragmentShader = (comparisonFunctionName = null) => `
           precision mediump float;
 
           // GLES (and thus WebGL) does not support dynamic for loops
@@ -2874,6 +2909,9 @@ window.App = (function() {
           #define MAX_SAMPLE_SIZE 16.0
           
           ${paletteDefs}
+
+          ${comparisonFunctionName !== null ? '#define CONVERT_COLORS' : ''}
+          #define HIGHEST_DIFF 999999.9
 
           uniform sampler2D u_Template;
 
@@ -2888,6 +2926,8 @@ window.App = (function() {
 
           // The alpha channel is used to index the palette: 
           const vec4 transparentColor = vec4(0.0, 0.0, 0.0, PALETTE_TRANSPARENT);
+
+          ${diffCustom}
 
           void main () {
             vec4 color = vec4(0.0);
@@ -2937,29 +2977,50 @@ window.App = (function() {
 
             color /= sampleCount;
 
-            for(int i = 0; i < PALETTE_LENGTH; i++) {
-              if(all(lessThan(abs(u_Palette[i] - color.rgb), vec3(epsilon)))) {
-                gl_FragColor = vec4(u_Palette[i], float(i) / PALETTE_MAXSIZE);
-                return;
+            #ifdef CONVERT_COLORS
+              float bestDiff = HIGHEST_DIFF;
+              int bestIndex = int(PALETTE_MAXSIZE);
+              vec3 bestColor = vec3(0.0);
+              for(int i = 0; i < PALETTE_LENGTH; i++) {
+                float diff = ${comparisonFunctionName}(color.rgb, u_Palette[i]);
+                if(diff < bestDiff) {
+                  bestDiff = diff;
+                  bestIndex = i;
+                  bestColor = u_Palette[i];
+                }
               }
-            }
 
-            gl_FragColor = vec4(color.rgb, PALETTE_UNKNOWN);
+              gl_FragColor = vec4(bestColor, float(bestIndex) / PALETTE_MAXSIZE);
+            #else
+              for(int i = 0; i < PALETTE_LENGTH; i++) {
+                if(all(lessThan(abs(u_Palette[i] - color.rgb), vec3(epsilon)))) {
+                  gl_FragColor = vec4(u_Palette[i], float(i) / PALETTE_MAXSIZE);
+                  return;
+                }
+              }
+
+              gl_FragColor = vec4(color.rgb, PALETTE_UNKNOWN);
+            #endif
           }
-        `);
-        self.gl.context.useProgram(self.gl.programs.downscale);
+        `;
 
-        const downscalePosLocation = self.gl.context.getAttribLocation(self.gl.programs.downscale, 'a_Pos');
-        self.gl.context.vertexAttribPointer(downscalePosLocation, 2, self.gl.context.FLOAT, false, 0, 0);
-        self.gl.context.enableVertexAttribArray(downscalePosLocation);
-
-        self.gl.context.uniform1i(self.gl.context.getUniformLocation(self.gl.programs.downscale, 'u_Template'), 0);
+        self.gl.programs.downscaling.unconverted = self.createGlProgram(identityVertexShader, downscalingFragmentShader(null));
+        self.gl.programs.downscaling.nearestCustom = self.createGlProgram(identityVertexShader, downscalingFragmentShader('diffCustom'));
 
         const int2rgb = i => [(i >> 16) & 0xFF, (i >> 8) & 0xFF, i & 0xFF];
-        self.gl.context.uniform3fv(
-          self.gl.context.getUniformLocation(self.gl.programs.downscale, 'u_Palette'),
-          new Float32Array(palette.flatMap(c => int2rgb(parseInt(c.value, 16)).map(c => c / 255)))
-        );
+        const paletteBuffer = new Float32Array(palette.flatMap(c => int2rgb(parseInt(c.value, 16)).map(c => c / 255)));
+
+        for (const program of Object.values(self.gl.programs.downscaling)) {
+          self.gl.context.useProgram(program);
+
+          const posLocation = self.gl.context.getAttribLocation(program, 'a_Pos');
+          self.gl.context.vertexAttribPointer(posLocation, 2, self.gl.context.FLOAT, false, 0, 0);
+          self.gl.context.enableVertexAttribArray(posLocation);
+
+          self.gl.context.uniform1i(self.gl.context.getUniformLocation(program, 'u_Template'), 0);
+
+          self.gl.context.uniform3fv(self.gl.context.getUniformLocation(program, 'u_Palette'), paletteBuffer);
+        }
 
         self.gl.programs.stylize = self.createGlProgram(identityVertexShader, `
           precision mediump float;
@@ -3067,15 +3128,17 @@ window.App = (function() {
         self.gl.context.clear(self.gl.context.COLOR_BUFFER_BIT);
         self.gl.context.viewport(0, 0, width, height);
 
-        self.gl.context.useProgram(self.gl.programs.downscale);
+        const program = self.gl.programs.downscaling[self.convertMode];
+
+        self.gl.context.useProgram(program);
 
         self.gl.context.uniform2f(
-          self.gl.context.getUniformLocation(self.gl.programs.downscale, 'u_SampleSize'),
+          self.gl.context.getUniformLocation(program, 'u_SampleSize'),
           Math.max(1, self.getDownscaleWidthRatio()),
           Math.max(1, self.getDownscaleHeightRatio())
         );
         self.gl.context.uniform2f(
-          self.gl.context.getUniformLocation(self.gl.programs.downscale, 'u_TexelSize'),
+          self.gl.context.getUniformLocation(program, 'u_TexelSize'),
           1 / self.getDisplayWidth(),
           1 / self.getDisplayHeight()
         );
@@ -3139,7 +3202,8 @@ window.App = (function() {
       getOptions: () => self.options,
       setPixelated: self.setPixelated,
       getWidthRatio: self.getWidthRatio,
-      setStyle: self.setStyle
+      setStyle: self.setStyle,
+      setConvertMode: self.setConvertMode
     };
   })();
     // here all the grid stuff happens
@@ -7665,7 +7729,8 @@ window.App = (function() {
       },
       setStyle: function(image) {
         template.setStyle(image);
-      }
+      },
+      setConvertMode: template.setConvertMode
     },
     lookup: {
       registerHook: function() {
