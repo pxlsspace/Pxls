@@ -2898,7 +2898,17 @@ window.App = (function() {
                   break;
                 }
 
-                vec4 sample = texture2D(u_Template, sampleOrigin + sampleTexSize * vec2(x, y));
+                vec2 pos = sampleOrigin + sampleTexSize * vec2(x, y);
+                vec4 sample = texture2D(u_Template, pos);
+
+                // pxlsfiddle uses the alpha channel of the first pixel to store
+                // scale information. This can affect color sampling, so drop the
+                // top-left-most subtexel unless its alpha is typical (1 or 0 exactly).
+                if(x == 0.0 && y == 0.0
+                  && pos.x < u_TexelSize.x && (1.0 - pos.y) < u_TexelSize.y
+                  && sample.a != 1.0) {
+                  continue;
+                }
 
                 if(sample.a == 0.0) {
                   continue;
