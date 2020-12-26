@@ -2398,14 +2398,25 @@ window.App = (function() {
       },
       gl: {
         context: null,
-        source: null,
-        // this is the buffer into which a 1-to-1 template image is drawn.
-        intermediate: null,
-        downscaled: null,
-        style: null,
-        vbo: null,
-        downscaleProgram: null,
-        templateStyleProgram: null
+        textures: {
+          source: null,
+          // this is used as the color attachment of the intermediate framebuffer
+          downscaled: null,
+          style: null
+        },
+        framebuffers: {
+          // this null is final - it's how the default framebuffer is specified in WebGL
+          main: null,
+          // this is the buffer into which a 1-to-1 template image is drawn.
+          intermediate: null
+        },
+        buffers: {
+          vertex: null
+        },
+        programs: {
+          downscale: null,
+          stylize: null
+        }
       },
       queueTimer: 0,
       loading: false,
@@ -2782,7 +2793,7 @@ window.App = (function() {
         self.elements.styleImage = $(image);
         if (self.gl.context !== null) {
           self.gl.context.activeTexture(self.gl.context.TEXTURE1);
-          self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.style);
+          self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.textures.style);
           self.gl.context.texImage2D(
             self.gl.context.TEXTURE_2D,
             0,
@@ -2806,25 +2817,25 @@ window.App = (function() {
         // self.gl.context.pixelStorei(self.gl.context.UNPACK_COLORSPACE_CONVERSION_WEBGL, self.gl.context.NONE);
         self.gl.context.pixelStorei(self.gl.context.UNPACK_FLIP_Y_WEBGL, true);
 
-        self.gl.source = self.createGlTexture();
+        self.gl.textures.source = self.createGlTexture();
 
-        self.gl.downscaled = self.createGlTexture();
+        self.gl.textures.downscaled = self.createGlTexture();
 
-        self.gl.intermediate = self.gl.context.createFramebuffer();
-        self.gl.context.bindFramebuffer(self.gl.context.FRAMEBUFFER, self.gl.intermediate);
+        self.gl.framebuffers.intermediate = self.gl.context.createFramebuffer();
+        self.gl.context.bindFramebuffer(self.gl.context.FRAMEBUFFER, self.gl.framebuffers.intermediate);
         self.gl.context.framebufferTexture2D(
           self.gl.context.FRAMEBUFFER,
           self.gl.context.COLOR_ATTACHMENT0,
           self.gl.context.TEXTURE_2D,
-          self.gl.downscaled,
+          self.gl.textures.downscaled,
           0
         );
 
-        self.gl.style = self.createGlTexture();
+        self.gl.textures.style = self.createGlTexture();
         self.setStyle(self.elements.styleImage[0], false);
 
-        self.gl.vbo = self.gl.context.createBuffer();
-        self.gl.context.bindBuffer(self.gl.context.ARRAY_BUFFER, self.gl.vbo);
+        self.gl.buffers.vertex = self.gl.context.createBuffer();
+        self.gl.context.bindBuffer(self.gl.context.ARRAY_BUFFER, self.gl.buffers.vertex);
         self.gl.context.bufferData(
           self.gl.context.ARRAY_BUFFER,
           new Float32Array([
@@ -2854,7 +2865,7 @@ window.App = (function() {
           #define PALETTE_UNKNOWN 1.0
         `;
 
-        self.gl.downscaleProgram = self.createGlProgram(identityVertexShader, `
+        self.gl.programs.downscale = self.createGlProgram(identityVertexShader, `
           precision mediump float;
 
           // GLES (and thus WebGL) does not support dynamic for loops
@@ -2936,21 +2947,21 @@ window.App = (function() {
             gl_FragColor = vec4(color.rgb, PALETTE_UNKNOWN);
           }
         `);
-        self.gl.context.useProgram(self.gl.downscaleProgram);
+        self.gl.context.useProgram(self.gl.programs.downscale);
 
-        const downscalePosLocation = self.gl.context.getAttribLocation(self.gl.downscaleProgram, 'a_Pos');
+        const downscalePosLocation = self.gl.context.getAttribLocation(self.gl.programs.downscale, 'a_Pos');
         self.gl.context.vertexAttribPointer(downscalePosLocation, 2, self.gl.context.FLOAT, false, 0, 0);
         self.gl.context.enableVertexAttribArray(downscalePosLocation);
 
-        self.gl.context.uniform1i(self.gl.context.getUniformLocation(self.gl.downscaleProgram, 'u_Template'), 0);
+        self.gl.context.uniform1i(self.gl.context.getUniformLocation(self.gl.programs.downscale, 'u_Template'), 0);
 
         const int2rgb = i => [(i >> 16) & 0xFF, (i >> 8) & 0xFF, i & 0xFF];
         self.gl.context.uniform3fv(
-          self.gl.context.getUniformLocation(self.gl.downscaleProgram, 'u_Palette'),
+          self.gl.context.getUniformLocation(self.gl.programs.downscale, 'u_Palette'),
           new Float32Array(palette.flatMap(c => int2rgb(parseInt(c.value, 16)).map(c => c / 255)))
         );
 
-        self.gl.templateStyleProgram = self.createGlProgram(identityVertexShader, `
+        self.gl.programs.stylize = self.createGlProgram(identityVertexShader, `
           precision mediump float;
 
           #define STYLES_X float(${STYLES_X})
@@ -2981,14 +2992,14 @@ window.App = (function() {
             gl_FragColor = vec4(templateSample.rgb, templateSample.a == PALETTE_TRANSPARENT ? 0.0 : 1.0) * styleMask;
           }
         `);
-        self.gl.context.useProgram(self.gl.templateStyleProgram);
+        self.gl.context.useProgram(self.gl.programs.stylize);
 
-        const stylePosLocation = self.gl.context.getAttribLocation(self.gl.templateStyleProgram, 'a_Pos');
+        const stylePosLocation = self.gl.context.getAttribLocation(self.gl.programs.stylize, 'a_Pos');
         self.gl.context.vertexAttribPointer(stylePosLocation, 2, self.gl.context.FLOAT, false, 0, 0);
         self.gl.context.enableVertexAttribArray(stylePosLocation);
 
-        self.gl.context.uniform1i(self.gl.context.getUniformLocation(self.gl.templateStyleProgram, 'u_Template'), 0);
-        self.gl.context.uniform1i(self.gl.context.getUniformLocation(self.gl.templateStyleProgram, 'u_Style'), 1);
+        self.gl.context.uniform1i(self.gl.context.getUniformLocation(self.gl.programs.stylize, 'u_Template'), 0);
+        self.gl.context.uniform1i(self.gl.context.getUniformLocation(self.gl.programs.stylize, 'u_Style'), 1);
       },
       createGlProgram: function(vertexSource, fragmentSource) {
         const program = self.gl.context.createProgram();
@@ -3039,7 +3050,7 @@ window.App = (function() {
 
         // set the framebuffer size before rendering to it
         self.gl.context.activeTexture(self.gl.context.TEXTURE0);
-        self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.downscaled);
+        self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.textures.downscaled);
         self.gl.context.texImage2D(
           self.gl.context.TEXTURE_2D,
           0,
@@ -3052,24 +3063,24 @@ window.App = (function() {
           null
         );
 
-        self.gl.context.bindFramebuffer(self.gl.context.FRAMEBUFFER, self.gl.intermediate);
+        self.gl.context.bindFramebuffer(self.gl.context.FRAMEBUFFER, self.gl.framebuffers.intermediate);
         self.gl.context.clear(self.gl.context.COLOR_BUFFER_BIT);
         self.gl.context.viewport(0, 0, width, height);
 
-        self.gl.context.useProgram(self.gl.downscaleProgram);
+        self.gl.context.useProgram(self.gl.programs.downscale);
 
         self.gl.context.uniform2f(
-          self.gl.context.getUniformLocation(self.gl.downscaleProgram, 'u_SampleSize'),
+          self.gl.context.getUniformLocation(self.gl.programs.downscale, 'u_SampleSize'),
           Math.max(1, self.getDownscaleWidthRatio()),
           Math.max(1, self.getDownscaleHeightRatio())
         );
         self.gl.context.uniform2f(
-          self.gl.context.getUniformLocation(self.gl.downscaleProgram, 'u_TexelSize'),
+          self.gl.context.getUniformLocation(self.gl.programs.downscale, 'u_TexelSize'),
           1 / self.getDisplayWidth(),
           1 / self.getDisplayHeight()
         );
 
-        self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.source);
+        self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.textures.source);
 
         const texture = self.elements.sourceImage[0];
 
@@ -3097,23 +3108,23 @@ window.App = (function() {
           return;
         }
 
-        self.gl.context.bindFramebuffer(self.gl.context.FRAMEBUFFER, null);
+        self.gl.context.bindFramebuffer(self.gl.context.FRAMEBUFFER, self.gl.framebuffers.main);
         self.gl.context.clear(self.gl.context.COLOR_BUFFER_BIT);
         self.gl.context.viewport(0, 0, width, height);
 
-        self.gl.context.useProgram(self.gl.templateStyleProgram);
+        self.gl.context.useProgram(self.gl.programs.stylize);
 
         self.gl.context.uniform2f(
-          self.gl.context.getUniformLocation(self.gl.templateStyleProgram, 'u_TexelSize'),
+          self.gl.context.getUniformLocation(self.gl.programs.stylize, 'u_TexelSize'),
           1 / self.getDisplayWidth(),
           1 / self.getDisplayHeight()
         );
 
         self.gl.context.activeTexture(self.gl.context.TEXTURE0);
-        self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.downscaled);
+        self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.textures.downscaled);
 
         self.gl.context.activeTexture(self.gl.context.TEXTURE1);
-        self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.style);
+        self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.textures.style);
 
         self.gl.context.drawArrays(self.gl.context.TRIANGLE_STRIP, 0, 4);
       }
