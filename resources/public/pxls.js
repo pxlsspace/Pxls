@@ -2811,13 +2811,12 @@ window.App = (function() {
           self.elements.visibles.toggleClass('pixelate', pixelate);
         }
       },
-      // NOTE ([  ]): this is functionally the same as getStyleWidth now
       getWidthRatio: function() {
-        if (self.elements.template === null) {
-          return 1;
+        if (self.options.direct) {
+          return self.getInternalWidth() / self.getSourceWidth();
+        } else {
+          return self.getInternalWidth() / self.getDisplayWidth();
         }
-
-        return self.getInternalWidth() / self.getDisplayWidth();
       },
       getDownscaleWidthRatio: function() {
         return self.getSourceWidth() / self.getDisplayWidth();
