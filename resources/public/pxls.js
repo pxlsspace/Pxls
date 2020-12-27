@@ -2385,7 +2385,7 @@ window.App = (function() {
         visibles: null, // set to a collection of template and sourceImage in init
         template: $('<canvas>'),
         sourceImage: $('<img>').attr({ crossOrigin: '' }),
-        styleImage: $('<img>').attr({ src: SMALL_DOTTED }),
+        styleImage: $('<img>'),
         useCheckbox: $('#template-use'),
         titleInput: $('#template-title'),
         urlInput: $('#template-url'),
@@ -2431,7 +2431,6 @@ window.App = (function() {
           window.location.host
         ].map(h => new RegExp(`^https?://([^./]+\\.)?${h.replace('.', '\\.')}`, 'i'))
       },
-      convertMode: 'unconverted',
       queueTimer: 0,
       loading: false,
       _queuedUpdates: {},
@@ -2442,7 +2441,9 @@ window.App = (function() {
         width: -1,
         opacity: 0.5,
         title: '',
-        direct: false
+        direct: false,
+        convertMode: 'unconverted',
+        style: SMALL_DOTTED
       },
       options: {},
       initCORS: function(base, param) {
@@ -2565,6 +2566,13 @@ window.App = (function() {
           }
         });
         options.opacity = parseFloat(options.opacity.toFixed(2)); // cleans up opacity for the URL, e.g. 1.3877787807814457e-16 => 0
+
+        if (!(options.convertMode in self.gl.programs.downscaling)) {
+          options.convertMode = self._defaults.convertMode;
+        }
+
+        const newConvertMode = options.convertMode !== self.options.convertMode;
+
         self.options = options;
 
         if (options.url.length === 0 || options.use === false) {
@@ -2577,7 +2585,7 @@ window.App = (function() {
             self.loadImage();
           }
 
-          if (!self.loading && self.isDirty()) {
+          if (!self.loading && (self.isDirty() || newConvertMode)) {
             self.rasterizeTemplate();
           }
 
@@ -2585,6 +2593,8 @@ window.App = (function() {
             query.set(x[1], self.options[x[0]], true);
           });
         }
+
+        self.elements.styleImage.attr({ src: self.options.style });
 
         self.applyOptions();
 
@@ -2742,10 +2752,8 @@ window.App = (function() {
           }
         });
 
-        const style = self.elements.styleImage.on('load', function(e) {
-          if (self.elements.styleImage === style) {
-            self.setStyle(style[0], !self.loading);
-          }
+        self.elements.styleImage.on('load', function(e) {
+          self.loadStyle(!self.loading);
         });
 
         self.elements.sourceImage.on('load', (e) => {
@@ -2829,34 +2837,26 @@ window.App = (function() {
       getInternalHeight: function() {
         return self.getDisplayHeight() * self.getStyleHeight();
       },
-      setStyle: function(image, redraw = true) {
-        self.elements.styleImage = $(image);
-        if (self.gl.context !== null) {
+      loadStyle: function(redraw = true) {
+        const style = self.elements.styleImage[0];
+        if (self.gl.context !== null && style.naturalWidth !== 0 && style.naturalHeight !== 0) {
           self.gl.context.activeTexture(self.gl.context.TEXTURE1);
           self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, self.gl.textures.style);
           self.gl.context.texImage2D(
             self.gl.context.TEXTURE_2D,
             0,
             self.gl.context.RGBA,
-            image.naturalWidth,
-            image.naturalHeight,
+            style.naturalWidth,
+            style.naturalHeight,
             0,
             self.gl.context.RGBA,
             self.gl.context.UNSIGNED_BYTE,
-            image
+            style
           );
           if (redraw) {
             self.stylizeTemplate();
           }
         }
-      },
-      setConvertMode: function(mode) {
-        if (!(mode in self.gl.programs.downscaling)) {
-          throw new Error(`Invalid mode: ${mode}\nOptions are: ${Object.keys(self.gl.programs.downscaling).join(', ')}`);
-        }
-
-        self.convertMode = mode;
-        self.rasterizeTemplate();
       },
       initGl: function(context, palette) {
         self.gl.context = context;
@@ -2880,7 +2880,7 @@ window.App = (function() {
         );
 
         self.gl.textures.style = self.createGlTexture();
-        self.setStyle(self.elements.styleImage[0], false);
+        self.loadStyle(false);
 
         self.gl.buffers.vertex = self.gl.context.createBuffer();
         self.gl.context.bindBuffer(self.gl.context.ARRAY_BUFFER, self.gl.buffers.vertex);
@@ -3164,7 +3164,7 @@ window.App = (function() {
         self.gl.context.clear(self.gl.context.COLOR_BUFFER_BIT);
         self.gl.context.viewport(0, 0, width, height);
 
-        const program = self.gl.programs.downscaling[self.convertMode];
+        const program = self.gl.programs.downscaling[self.options.convertMode];
 
         self.gl.context.useProgram(program);
 
@@ -3237,9 +3237,7 @@ window.App = (function() {
       queueUpdate: self.queueUpdate,
       getOptions: () => self.options,
       setPixelated: self.setPixelated,
-      getWidthRatio: self.getWidthRatio,
-      setStyle: self.setStyle,
-      setConvertMode: self.setConvertMode
+      getWidthRatio: self.getWidthRatio
     };
   })();
     // here all the grid stuff happens
@@ -7762,11 +7760,7 @@ window.App = (function() {
       },
       normalize: function(obj, dir = true) {
         return template.normalizeTemplateObj(obj, dir);
-      },
-      setStyle: function(image) {
-        template.setStyle(image);
-      },
-      setConvertMode: template.setConvertMode
+      }
     },
     lookup: {
       registerHook: function() {
