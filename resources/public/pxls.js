@@ -2382,7 +2382,8 @@ window.App = (function() {
     const STYLES_Y = 16;
     const self = {
       elements: {
-        template: $('<canvas>').addClass('noselect').attr({ id: 'board-template' }),
+        visibles: null, // set to a collection of template and sourceImage in init
+        template: $('<canvas>'),
         sourceImage: $('<img>').attr({ crossOrigin: '' }),
         styleImage: $('<img>').attr({ src: SMALL_DOTTED }),
         useCheckbox: $('#template-use'),
@@ -2440,7 +2441,8 @@ window.App = (function() {
         y: 0,
         width: -1,
         opacity: 0.5,
-        title: ''
+        title: '',
+        direct: false
       },
       options: {},
       initCORS: function(base, param) {
@@ -2596,24 +2598,26 @@ window.App = (function() {
       applyOptions() {
         if (self.options.use) {
           [['left', 'x'], ['top', 'y'], ['opacity', 'opacity']].forEach(x => {
-            self.elements.template.css(x[0], self.options[x[1]]);
+            self.elements.visibles.css(x[0], self.options[x[1]]);
           });
         }
 
-        self.elements.template.toggleClass('hidden', !self.options.use);
+        self.elements.template.toggleClass('hidden', !self.options.use || self.options.direct);
+        self.elements.sourceImage.toggleClass('hidden', !self.options.use || !self.options.direct);
       },
       updateSize: function() {
-        self.elements.template.css({
+        self.elements.visibles.css({
           width: self.getDisplayWidth()
-        }).attr({
+        });
+        self.elements.template.attr({
           width: self.getInternalWidth(),
           height: self.getInternalHeight()
         });
       },
       isDirty: function() {
-        return parseFloat(self.elements.template.css('width')) !== self.getDisplayWidth() ||
-          parseFloat(self.elements.template.attr('width')) !== self.getInternalWidth() ||
-          parseFloat(self.elements.template.attr('height')) !== self.getInternalHeight();
+        return parseFloat(self.elements.visibles.css('width')) !== self.getDisplayWidth() ||
+          parseFloat(self.elements.visibles.attr('width')) !== self.getInternalWidth() ||
+          parseFloat(self.elements.visibles.attr('height')) !== self.getInternalHeight();
       },
       disableTemplate: function() {
         self._update({ url: null });
@@ -2633,6 +2637,8 @@ window.App = (function() {
         ctx2.drawImage(self.elements.template[0], (self.options.x - pxlX) * scale, (self.options.y - pxlY) * scale, width * scale, height * scale);
       },
       init: function() {
+        self.elements.visibles = $().add(self.elements.template).add(self.elements.sourceImage).addClass('noselect board-template');
+
         self.elements.imageErrorWarning.hide();
 
         self.elements.useCheckbox.change((e) => self._update({ use: e.target.checked }));
@@ -2669,7 +2675,7 @@ window.App = (function() {
               case 'Alt':
               case 18:
                 evt.preventDefault();
-                self.elements.template.css('pointer-events', 'initial');
+                self.elements.visibles.css('pointer-events', 'initial');
                 break;
             }
           }
@@ -2700,7 +2706,7 @@ window.App = (function() {
           x: 0,
           y: 0
         };
-        self.elements.template.data(
+        self.elements.visibles.data(
           'dragging', false
         ).on('mousedown pointerdown', function(evt) {
           evt.preventDefault();
@@ -2748,7 +2754,7 @@ window.App = (function() {
           if (!(self.options.width >= 0)) {
             self.elements.widthInput.val(self.elements.sourceImage[0].naturalWidth);
           }
-          self.elements.template.toggleClass('pixelate', query.get('scale') > self.getWidthRatio());
+          self.elements.visibles.toggleClass('pixelate', query.get('scale') > self.getWidthRatio());
         }).on('error', () => {
           self.loading = false;
           self.elements.imageErrorWarning.show();
@@ -2759,7 +2765,7 @@ window.App = (function() {
         if (board.update(true)) {
           return;
         }
-        board.getRenderBoard().parent().prepend(self.elements.template);
+        board.getRenderBoard().parent().prepend(self.elements.visibles);
       },
       webinit: function(data) {
         self.initGl(self.elements.template[0].getContext('webgl2', {
@@ -2774,12 +2780,12 @@ window.App = (function() {
       },
       stopDragging: function() {
         if (self.options.use) {
-          self.elements.template.css('pointer-events', 'none').data('dragging', false);
+          self.elements.visibles.css('pointer-events', 'none').data('dragging', false);
         }
       },
       setPixelated: function(pixelate = true) {
         if (self.elements.template !== null) {
-          self.elements.template.toggleClass('pixelate', pixelate);
+          self.elements.visibles.toggleClass('pixelate', pixelate);
         }
       },
       // NOTE ([  ]): this is functionally the same as getStyleWidth now
