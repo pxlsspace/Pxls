@@ -1593,6 +1593,7 @@ window.App = (function() {
       },
       init: function() {
         $(window).on('pxls:queryUpdated', (evt, propName, oldValue, newValue) => {
+          const nullish = newValue == null;
           switch (propName.toLowerCase()) {
             case 'x':
             case 'y':
@@ -1605,16 +1606,16 @@ window.App = (function() {
               template.queueUpdate({ template: newValue, use: newValue !== null });
               break;
             case 'ox':
-              template.queueUpdate({ ox: newValue == null ? null : newValue >> 0 });
+              template.queueUpdate({ ox: nullish ? null : newValue >> 0 });
               break;
             case 'oy':
-              template.queueUpdate({ oy: newValue == null ? null : newValue >> 0 });
+              template.queueUpdate({ oy: nullish ? null : newValue >> 0 });
               break;
             case 'tw':
-              template.queueUpdate({ tw: newValue == null ? null : newValue >> 0 });
+              template.queueUpdate({ tw: nullish ? null : newValue >> 0 });
               break;
             case 'title':
-              template.queueUpdate({ title: newValue == null ? '' : newValue });
+              template.queueUpdate({ title: nullish ? '' : newValue });
               break;
             case 'oo': {
               let parsed = parseFloat(newValue);
@@ -1622,6 +1623,15 @@ window.App = (function() {
               template.queueUpdate({ oo: parsed == null ? null : parsed });
               break;
             }
+            case 'direct': {
+              const comparable = nullish ? '' : newValue.toLowerCase().trim();
+              const isFalse = ['false', '0', 'no'].indexOf(comparable) !== -1;
+              template.queueUpdate({ direct: nullish ? null : isFalse ? false : !!newValue });
+              break;
+            }
+            case 'convert':
+              template.queueUpdate({ convert: newValue });
+              break;
           }
         });
         $('#ui').hide();
@@ -1694,7 +1704,9 @@ window.App = (function() {
               opacity: parseFloat(query.get('oo')),
               width: parseFloat(query.get('tw')),
               title: query.get('title'),
-              url: url
+              url: url,
+              direct: query.get('direct'),
+              convertMode: query.get('convert')
             });
           }
           let spin = parseFloat(query.get('spin'));
@@ -2510,7 +2522,7 @@ window.App = (function() {
         // direction: true = url_to_template_obj, else = template_obj_to_url
         // normalize the given update object with settings that may be present from someone guessing options based on the URL
 
-        const iterOver = [['tw', 'width'], ['ox', 'x'], ['oy', 'y'], ['oo', 'opacity'], ['template', 'url'], ['title', 'title']];
+        const iterOver = [['tw', 'width'], ['ox', 'x'], ['oy', 'y'], ['oo', 'opacity'], ['template', 'url'], ['title', 'title'], ['convert', 'convertMode']];
         if (direction !== true) {
           for (let i = 0; i < iterOver.length; i++) { iterOver[i].reverse(); }
         }
@@ -2549,10 +2561,13 @@ window.App = (function() {
         if (options.title != null && options.title.length > 0) {
           options.title = decodeURIComponent(options.title);
         }
+        if ('direct' in options) {
+          options.direct = !!options.direct;
+        }
 
         // fix for `width` and other props being set after disabling template with the 'v' key then enabling a template without said prop set in the URL.
         if (urlUpdated && !self.options.use) {
-          ['width', 'x', 'y', 'opacity'].forEach(x => {
+          ['width', 'x', 'y', 'opacity', 'convertMode', 'direct'].forEach(x => {
             if (!Object.prototype.hasOwnProperty.call(options, x)) {
               options[x] = self._defaults[x];
             }
@@ -2578,7 +2593,7 @@ window.App = (function() {
         if (options.url.length === 0 || options.use === false) {
           self.options.use = false;
           board.update(true);
-          ['template', 'ox', 'oy', 'oo', 'tw', 'title'].forEach(x => query.remove(x, true));
+          ['template', 'ox', 'oy', 'oo', 'tw', 'title', 'convert', 'direct'].forEach(x => query.remove(x, true));
         } else {
           self.options.use = true;
           if (urlUpdated === true) {
@@ -2589,7 +2604,7 @@ window.App = (function() {
             self.rasterizeTemplate();
           }
 
-          [['url', 'template'], ['x', 'ox'], ['y', 'oy'], ['width', 'tw'], ['opacity', 'oo'], ['title', 'title']].forEach(x => {
+          [['url', 'template'], ['x', 'ox'], ['y', 'oy'], ['width', 'tw'], ['opacity', 'oo'], ['title', 'title'], ['convertMode', 'convert'], ['direct', 'direct']].forEach(x => {
             query.set(x[1], self.options[x[0]], true);
           });
         }
