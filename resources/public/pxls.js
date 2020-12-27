@@ -1367,8 +1367,7 @@ window.App = (function() {
             case 'R': {
               const tempOpts = template.getOptions();
               if (tempOpts.use) {
-                const tempElem = $('#board-template');
-                self.centerOn(tempOpts.x + (tempElem.width() / 2), tempOpts.y + (tempElem.height() / 2));
+                self.centerOn(tempOpts.x + (template.getDisplayWidth() / 2), tempOpts.y + (template.getDisplayHeight() / 2));
               } else if (place.lastPixel) {
                 self.centerOn(place.lastPixel.x, place.lastPixel.y);
               }
@@ -3251,6 +3250,8 @@ window.App = (function() {
       queueUpdate: self.queueUpdate,
       getOptions: () => self.options,
       setPixelated: self.setPixelated,
+      getDisplayWidth: self.getDisplayWidth,
+      getDisplayHeight: self.getDisplayHeight,
       getWidthRatio: self.getWidthRatio
     };
   })();
