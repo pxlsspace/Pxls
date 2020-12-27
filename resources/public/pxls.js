@@ -2790,7 +2790,7 @@ window.App = (function() {
         board.getRenderBoard().parent().prepend(self.elements.visibles);
       },
       webinit: function(data) {
-        self.initGl(self.elements.template[0].getContext('webgl2', {
+        self.initGl(self.elements.template[0].getContext('webgl', {
           premultipliedAlpha: false
         }), data.palette);
 
@@ -2859,9 +2859,6 @@ window.App = (function() {
             self.gl.context.TEXTURE_2D,
             0,
             self.gl.context.RGBA,
-            style.naturalWidth,
-            style.naturalHeight,
-            0,
             self.gl.context.RGBA,
             self.gl.context.UNSIGNED_BYTE,
             style
@@ -3200,9 +3197,6 @@ window.App = (function() {
           self.gl.context.TEXTURE_2D,
           0,
           self.gl.context.RGBA,
-          texture.naturalWidth,
-          texture.naturalHeight,
-          0,
           self.gl.context.RGBA,
           self.gl.context.UNSIGNED_BYTE,
           texture
