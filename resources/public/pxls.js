@@ -2421,6 +2421,15 @@ window.App = (function() {
           stylize: null
         }
       },
+      corsProxy: {
+        base: undefined,
+        param: null,
+        // a list of sites that will already serve cors-enabled content
+        safeHosts: [
+          'imgur.com',
+          window.location.host
+        ].map(h => new RegExp(`^https?://([^./]+\\.)?${h.replace('.', '\\.')}`, 'i'))
+      },
       convertMode: 'unconverted',
       queueTimer: 0,
       loading: false,
@@ -2434,17 +2443,36 @@ window.App = (function() {
         title: ''
       },
       options: {},
+      initCORS: function(base, param) {
+        self.corsProxy.base = base;
+        self.corsProxy.param = param;
+
+        self.loadImage();
+      },
+      cors: function(url) {
+        if (!url || /^\s*(data:|$)/i.test(url) || self.corsProxy.safeHosts.some(h => h.test(url))) {
+          return url;
+        } else {
+          if (self.corsProxy.param) {
+            return `${self.corsProxy.base}?${self.corsProxy.param}=${encodeURIComponent(url)}`;
+          } else {
+            return `${self.corsProxy.base}/${url}`;
+          }
+        }
+      },
       loadImage: function() {
-        self.loading = true;
+        if (self.corsProxy.base !== undefined) {
+          self.loading = true;
 
-        self.options.use = true;
+          self.options.use = true;
 
-        self.elements.imageErrorWarning.empty();
-        self.elements.imageErrorWarning.hide();
+          self.elements.imageErrorWarning.empty();
+          self.elements.imageErrorWarning.hide();
 
-        self.elements.sourceImage.attr({
-          src: self.options.url
-        });
+          self.elements.sourceImage.attr({
+            src: self.cors(self.options.url)
+          });
+        }
       },
       updateSettings: function() {
         self.elements.useCheckbox.prop('checked', self.options.use);
@@ -2737,6 +2765,8 @@ window.App = (function() {
         self.initGl(self.elements.template[0].getContext('webgl2', {
           premultipliedAlpha: false
         }), data.palette);
+
+        self.initCORS(data.corsBase, data.corsParam);
 
         if (!self.loading) {
           self.rasterizeTemplate();
