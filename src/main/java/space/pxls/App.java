@@ -85,6 +85,7 @@ public class App {
         virginmap = new byte[width * height];
         defaultBoard = null;
 
+        initStorage();
         loadDefaultMap();
         loadMap();
         loadHeatmap();
@@ -1042,6 +1043,10 @@ public class App {
             }
         }
         server.broadcastNoShadow(new ServerPlace(forBroadcast));
+    }
+
+    private static boolean initStorage() {
+        return new File(getStorageDir().toString()).mkdirs();
     }
 
     private static boolean loadDefaultMap() {
