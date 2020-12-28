@@ -113,8 +113,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!-- Latest LTS as of 2019-01-23 -->
-                    <nodeVersion>v12.14.1</nodeVersion>
+                    <!-- Latest LTS as of 2020-12-18 -->
+                    <nodeVersion>v14.15.3</nodeVersion>
                 </configuration>
             </plugin>
         </plugins>
