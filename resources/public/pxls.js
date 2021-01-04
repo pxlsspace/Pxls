@@ -3342,13 +3342,17 @@ window.App = (function() {
           return;
         }
 
-        navigator.serviceWorker.register('/serviceWorker.js')
-          .then(() => {
-            self.isInit = true;
-          })
-          .catch((err) => {
-            console.error('Failed to register Service Worker:', err);
-          });
+        if (navigator.serviceWorker.controller == null) {
+          navigator.serviceWorker.register('/serviceWorker.js')
+            .then(() => {
+              self.isInit = true;
+            })
+            .catch((err) => {
+              console.error('Failed to register Service Worker:', err);
+            });
+        } else {
+          self.isInit = true;
+        }
 
         navigator.serviceWorker.addEventListener('message', (ev) => {
           if (typeof ev.data !== 'object' || !('type' in ev.data)) {
@@ -3406,7 +3410,11 @@ window.App = (function() {
         return self.hasSupport;
       },
       get readyPromise() {
-        return navigator.serviceWorker.ready;
+        return navigator.serviceWorker.ready.then((v) => {
+          // fail safe
+          self.isInit = true;
+          return v;
+        });
       },
       init: self.init,
       addMessageListener: self.addMessageListener,
