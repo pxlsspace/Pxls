@@ -2858,8 +2858,8 @@ window.App = (function() {
           self.gl.context.texImage2D(
             self.gl.context.TEXTURE_2D,
             0,
-            self.gl.context.RGBA,
-            self.gl.context.RGBA,
+            self.gl.context.ALPHA,
+            self.gl.context.ALPHA,
             self.gl.context.UNSIGNED_BYTE,
             style
           );
