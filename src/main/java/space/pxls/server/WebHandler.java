@@ -6,10 +6,10 @@ import com.google.gson.JsonParser;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.loader.ClasspathLoader;
-import com.typesafe.config.ConfigList;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
+import io.undertow.server.handlers.CookieSameSiteMode;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
 import io.undertow.util.*;
@@ -659,14 +659,35 @@ public class WebHandler {
     }
 
     private void setAuthCookie(HttpServerExchange exchange, String loginToken, int days) {
-        Calendar cal2 = Calendar.getInstance();
-        cal2.add(Calendar.DATE, -1);
-        exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setPath("/").setExpires(cal2.getTime()));
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, days);
+        Calendar pastCalendar = Calendar.getInstance();
+        pastCalendar.add(Calendar.DATE, -1);
+        exchange.setResponseCookie(
+            new CookieImpl("pxls-token", "")
+                .setPath("/")
+                .setExpires(pastCalendar.getTime())
+        );
+
+        Calendar futureCalendar = Calendar.getInstance();
+        futureCalendar.add(Calendar.DATE, days);
         String hostname = App.getConfig().getString("host");
-        exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setHttpOnly(true).setPath("/").setDomain("." + hostname).setExpires(cal.getTime()));
-        exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setHttpOnly(true).setPath("/").setDomain(hostname).setExpires(cal.getTime()));
+        exchange.setResponseCookie(
+            new CookieImpl("pxls-token", loginToken)
+                .setHttpOnly(true)
+                .setSameSiteMode((exchange.isSecure() ? CookieSameSiteMode.NONE : CookieSameSiteMode.LAX).toString())
+                .setSecure(exchange.isSecure())
+                .setPath("/")
+                .setDomain("." + hostname)
+                .setExpires(futureCalendar.getTime())
+        );
+        exchange.setResponseCookie(
+            new CookieImpl("pxls-token", loginToken)
+                .setHttpOnly(true)
+                .setSameSiteMode((exchange.isSecure() ? CookieSameSiteMode.NONE : CookieSameSiteMode.LAX).toString())
+                .setSecure(exchange.isSecure())
+                .setPath("/")
+                .setDomain(hostname)
+                .setExpires(futureCalendar.getTime())
+        );
     }
 
     public void ban(HttpServerExchange exchange) {
@@ -1576,9 +1597,13 @@ public class WebHandler {
                 redirect = redirectCookie != null;
             }
             // let's just delete the redirect cookie
-            Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.DATE, -1);
-            exchange.setResponseCookie(new CookieImpl("pxls-auth-redirect", "").setPath("/").setExpires(cal.getTime()));
+            Calendar pastCalendar = Calendar.getInstance();
+            pastCalendar.add(Calendar.DATE, -1);
+            exchange.setResponseCookie(
+                new CookieImpl("pxls-auth-redirect", "")
+                    .setPath("/")
+                    .setExpires(pastCalendar.getTime())
+            );
 
             if (!redirect && exchange.getQueryParameters().get("json") == null) {
                 exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
@@ -1686,7 +1711,12 @@ public class WebHandler {
         if (service != null) {
             String state = service.generateState();
             if (redirect) {
-                exchange.setResponseCookie(new CookieImpl("pxls-auth-redirect", "1").setPath("/"));
+                exchange.setResponseCookie(
+                    new CookieImpl("pxls-auth-redirect", "1")
+                        .setSameSiteMode((exchange.isSecure() ? CookieSameSiteMode.NONE : CookieSameSiteMode.LAX).toString())
+                        .setSecure(exchange.isSecure())
+                        .setPath("/")
+                );
                 redirect(exchange, service.getRedirectUrl(state + "|redirect"));
             } else {
                 respond(exchange, StatusCodes.OK, new SignInResponse(service.getRedirectUrl(state + "|json")));
