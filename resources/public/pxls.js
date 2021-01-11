@@ -5003,6 +5003,11 @@ window.App = (function() {
         const obj = self.elements.body[0];
         self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
       },
+      _handlePingJumpClick: function() { // must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
+        if (this && this.dataset && this.dataset.id) {
+          self.scrollToCMID(this.dataset.id);
+        }
+      },
       scrollToCMID(cmid) {
         const elem = self.elements.body[0].querySelector(`.chat-line[data-id="${cmid}"]`);
         if (elem) {
