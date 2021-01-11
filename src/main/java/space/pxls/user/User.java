@@ -653,15 +653,19 @@ public class User {
         App.getDatabase().setDiscordName(id, discordName);
     }
 
+    public boolean canUseDonatorCharNameColors() {
+        return hasPermission("chat.usercolor.donator") || hasPermission("chat.usercolor.donator.*");
+    }
+
     public boolean hasRainbowChatNameColor() {
         return hasPermission("chat.usercolor.rainbow")
                 && this.chatNameColor == -1;
 
     }
 
-     public boolean hasDonatorChatNameColor() {
-        return hasPermission("chat.usercolor.donator")
-                && this.chatNameColor == -2;
+    public boolean hasDonatorChatNameColor(String name, Integer idx) {
+        return (canUseDonatorCharNameColors() || hasPermission("chat.usercolor.donator." + name))
+                && this.chatNameColor == -idx;
 
     }
 
@@ -673,9 +677,12 @@ public class User {
         List<String> toReturn = new ArrayList<>();
         if (this.hasRainbowChatNameColor()) {
             toReturn.add("rainbow");
-        }
-        if (this.hasDonatorChatNameColor()) {
+        } else if (this.hasDonatorChatNameColor("green", 2)) {
             toReturn.add("donator");
+            toReturn.add("donator--green");
+        } else if (this.hasDonatorChatNameColor("gray", 3)) {
+            toReturn.add("donator");
+            toReturn.add("donator--gray");
         }
         return toReturn.size() != 0 ? toReturn : null;
     }

@@ -1030,11 +1030,15 @@ public class WebHandler {
 
         try {
             int t = Integer.parseInt(nameColor.getValue());
-            if (t >= -2 && t < App.getPalette().getColors().size()) {
+            if (t >= -3 && t < App.getPalette().getColors().size()) {
+                var hasAllDonatorColors = user.hasPermission("chat.usercolor.donator") || user.hasPermission("chat.usercolor.donator.*");
                 if (t == -1 && !user.hasPermission("chat.usercolor.rainbow")) {
                     sendBadRequest(exchange, "Color reserved for staff members");
                     return;
-                } else if (t == -2 && !user.hasPermission("chat.usercolor.donator")) {
+                } else if (t == -2 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.green"))) {
+                    sendBadRequest(exchange, "Color reserved for donators");
+                    return;
+                } else if (t == -3 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.gray"))) {
                     sendBadRequest(exchange, "Color reserved for donators");
                     return;
                 }
