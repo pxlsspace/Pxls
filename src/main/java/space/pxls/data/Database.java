@@ -622,7 +622,7 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> getUserByLogin(String service, String serviceUserID) {
-        return jdbi.withHandle(handle -> handle.select("SELECT * FROM users WHERE id = (SELECT id FROM user_logins WHERE service = :service AND service_uid = :service_uid)")
+        return jdbi.withHandle(handle -> handle.select("SELECT * FROM users WHERE id = (SELECT uid FROM user_logins WHERE service = :service AND service_uid = :service_uid)")
                 .bind("service", service)
                 .bind("service_uid", serviceUserID)
                 .map(new DBUser.Mapper())
