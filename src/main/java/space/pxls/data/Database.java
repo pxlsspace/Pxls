@@ -18,6 +18,7 @@ import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -685,6 +686,7 @@ public class Database {
      * @return The user.
      */
     public DBUser createUser(String name, UserLogin login, String ip) {
+        // TODO(netux): use jdbi.inTransaction
         return jdbi.withHandle(handle -> {
             DBUser user = handle.createQuery("INSERT INTO users (username, login_with_ip, signup_ip, last_ip, chat_name_color) VALUES (:username, :login_with_ip, :ip::INET, :ip::INET, :chat_name_color) RETURNING *")
                 .bind("username", name)
@@ -695,11 +697,7 @@ public class Database {
                 .findFirst()
                 .orElse(null);
             if (user != null) {
-                handle.createUpdate("INSERT INTO user_logins (uid, service, service_uid) VALUES (:uid, :service, :service_uid)")
-                    .bind("uid", user.id)
-                    .bind("service", login.getServiceID())
-                    .bind("service_uid", login.getServiceUserID())
-                    .execute();
+                addUserLogin(handle, user.id, login);
             }
             return user;
         });
@@ -727,6 +725,106 @@ public class Database {
                 .bind("service", who)
                 .map(new DBUserLogin.Mapper())
                 .findFirst());
+    }
+
+    private int bulkAddUserLogins(Handle handle, int userID, List<UserLogin> logins) {
+        var batch = handle.prepareBatch("INSERT INTO user_logins (uid, service, service_uid) VALUES (:uid, :service, :service_uid)");
+        for (UserLogin login : logins) {
+            batch.bind("uid", userID)
+                .bind("service", login.getServiceID())
+                .bind("service_uid", login.getServiceUserID())
+                .add();
+        }
+        return Arrays.stream(batch.execute()).reduce(0, (left, right) -> left + right);
+    }
+
+    /**
+     * Adds a list of login methods to the user.
+     * @param userID The user's ID.
+     * @param roles The new roles.
+     * @return The amount of logins added.
+     */
+    public int bulkAddUserLogins(int userID, List<UserLogin> logins) {
+        return jdbi.withHandle(handle -> bulkAddUserLogins(handle, userID, logins));
+    }
+
+    private boolean addUserLogin(Handle handle, int userID, UserLogin login) {
+        return bulkAddUserLogins(handle, userID, List.of(login)) != 0;
+    }
+
+    /**
+     * Add a single login method to the user.
+     * @param userID The user's ID.
+     * @param roles The new roles.
+     * @return Whenever or not the login method was added.
+     */
+    public boolean addUserLogin(int userID, UserLogin login) {
+        return jdbi.withHandle(handle -> addUserLogin(handle, userID, login));
+    }
+
+    private int bulkRemoveUserLogins(Handle handle, int userID, List<UserLogin> logins) {
+        var batch = handle.prepareBatch("DELETE FROM user_logins WHERE uid = :uid AND service = :service AND service_uid = :service_uid");
+        for (UserLogin login : logins) {
+            batch.bind("uid", userID)
+                .bind("service", login.getServiceID())
+                .bind("service_uid", login.getServiceUserID())
+                .add();
+        }
+        return Arrays.stream(batch.execute())
+            .reduce(0, (left, right) -> left + right);
+    }
+
+    /**
+     * Removes a list of login methods of the user.
+     * @param userID The user's ID.
+     * @param roles The new roles.
+     * @return The amount of logins removed.
+     */
+    public int bulkRemoveUserLogins(int userID, List<UserLogin> logins) {
+        return jdbi.withHandle(handle -> bulkRemoveUserLogins(handle, userID, logins));
+    }
+
+    private boolean removeUserLogin(Handle handle, int userID, UserLogin login) {
+        return bulkRemoveUserLogins(handle, userID, List.of(login)) != 0;
+    }
+
+    /**
+     * Removes a single login method of the user.
+     * @param userID The user's ID.
+     * @param roles The new roles.
+     * @return Whenever or not the user had the login method.
+     */
+    public boolean removeUserLogin(int userID, UserLogin login) {
+        return jdbi.withHandle(handle -> removeUserLogin(handle, userID, login));
+    }
+
+    private Integer removeAllUserLogins(Handle handle, int userID) {
+        return handle.createUpdate("DELETE FROM user_logins WHERE uid = :uid")
+                    .bind("uid", userID)
+                    .execute();
+    }
+
+    /**
+     * Removes all of the user's login methods.
+     * @param userID The user's ID.
+     * @param roles The new roles.
+     */
+    public Integer removeAllUserLogins(int userID) {
+        return jdbi.withHandle(handle -> removeAllUserLogins(handle, userID));
+    }
+
+    /**
+     * Updates the user's login methods.
+     *
+     * @param userID The user's ID.
+     * @param roles  The new roles.
+     * @return The amount of logins the user has after the action.
+     */
+    public Integer setUserLogins(int userID, List<UserLogin> logins) {
+        return jdbi.inTransaction(handle -> {
+            removeAllUserLogins(handle, userID);
+            return bulkAddUserLogins(handle, userID, logins);
+        });
     }
 
     /**

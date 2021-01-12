@@ -110,6 +110,9 @@ Commands are entered directly into the running instance (stdin):
 
 - `reload` - Reloads the main configuration, applying _most_ changes immediately. Also reloads the user and faction cache.
 - `save` - Saves the map.
+- `logins <username> [serviceID:serviceUserID ...]` - Gets or sets the user's login method(s).
+- `addlogins <username> <serviceID:serviceUserID ...>` - Adds login method(s) to the user.
+- `removelogins <username> <serviceID:serviceUserID ...>` - Removes login method(s) from the user.
 - `roles <username> [role ID ...]` - Gets or sets the user's role(s).
 - `addroles <username> <role ID ...>` - Adds role(s) to the user.
 - `removeroles <username> <role ID ...>` - Removes role(s) from the user.
