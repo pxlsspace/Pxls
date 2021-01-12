@@ -65,7 +65,7 @@ public class PacketHandler {
                     user.getBanExpiryTime(),
                     user.getBanReason(),
                     user.loginsWithIP() ? "ip" : "service",
-                    user.isOverridingCooldown(),
+                    user.getPlaceOverrides(),
                     user.isChatbanned(),
                     App.getDatabase().getChatBanReason(user.getId()),
                     user.isPermaChatbanned(),
@@ -113,9 +113,8 @@ public class PacketHandler {
         if (obj instanceof ClientChatHistory && user.hasPermission("chat.history")) handleChatHistory(channel, user, ((ClientChatHistory) obj));
         if (obj instanceof ClientChatbanState) handleChatbanState(channel, user, ((ClientChatbanState) obj));
         if (obj instanceof ClientChatMessage && user.hasPermission("chat.send")) handleChatMessage(channel, user, ((ClientChatMessage) obj));
-        if (obj instanceof ClientUserUpdate) handleClientUserUpdate(channel, user, ((ClientUserUpdate) obj));
         if (obj instanceof ClientChatLookup && user.hasPermission("chat.lookup")) handleChatLookup(channel, user, ((ClientChatLookup) obj));
-        if (obj instanceof ClientAdminCooldownOverride && user.hasPermission("board.cooldown.override")) handleCooldownOverride(channel, user, ((ClientAdminCooldownOverride) obj));
+        if (obj instanceof ClientAdminPlacementOverrides && user.hasPermission("user.admin")) handlePlacementOverrides(channel, user, ((ClientAdminPlacementOverrides) obj));
         if (obj instanceof ClientAdminMessage && user.hasPermission("user.alert")) handleAdminMessage(channel, user, ((ClientAdminMessage) obj));
     }
 
@@ -165,9 +164,21 @@ public class PacketHandler {
         user.ban(0, String.format("auto-ban via script; %s", app), 0, user);
     }
 
-    private void handleCooldownOverride(WebSocketChannel channel, User user, ClientAdminCooldownOverride obj) {
-        user.setOverrideCooldown(obj.getOverride());
-        sendCooldownData(user);
+    private void handlePlacementOverrides(WebSocketChannel channel, User user, ClientAdminPlacementOverrides obj) {
+        if (obj.hasIgnoreCooldown() != null) {
+            user.maybeSetIgnoreCooldown(obj.hasIgnoreCooldown());
+        }
+        if (obj.getCanPlaceAnyColor() != null) {
+            user.maybeSetCanPlaceAnyColor(obj.getCanPlaceAnyColor());
+        }
+        if (obj.hasIgnorePlacemap() != null) {
+            user.maybeSetIgnorePlacemap(obj.hasIgnorePlacemap());
+        }
+
+        for (WebSocketChannel ch : user.getConnections()) {
+            sendPlacementOverrides(ch, user);
+            sendCooldownData(ch, user);
+        }
     }
 
     private void handleUndo(WebSocketChannel channel, User user, ClientUndo cu, String ip){
@@ -222,17 +233,17 @@ public class PacketHandler {
             handlePlaceMaybe(channel, user, cp, ip);
         }
         if (cp.getX() < 0 || cp.getX() >= App.getWidth() || cp.getY() < 0 || cp.getY() >= App.getHeight()) return;
-        if (cp.getColor() < 0 || cp.getColor() >= App.getConfig().getStringList("board.palette").size()) return;
         if (user.isBanned()) return;
+        if (!user.canPlaceColor(cp.getColor())) return;
 
         if (user.canPlace()) {
             boolean gotLock = user.tryGetPlacingLock();
             if (gotLock) {
                 try {
-                    boolean doCaptcha = App.isCaptchaEnabled();
+                    boolean doCaptcha = (user.isOverridingCaptcha() || App.isCaptchaEnabled()) && App.isCaptchaConfigured();
                     if (doCaptcha) {
                         int pixels = App.getConfig().getInt("captcha.maxPixels");
-                        if (pixels != 0) {
+                        if (!user.isOverridingCaptcha() && pixels != 0) {
                             boolean allTime = App.getConfig().getBoolean("captcha.allTime");
                             doCaptcha = (allTime ? user.getAllTimePixelCount() : user.getPixelCount()) < pixels;
                         }
@@ -241,13 +252,13 @@ public class PacketHandler {
                         server.send(channel, new ServerCaptchaRequired());
                     } else {
                         int c = App.getPixel(cp.getX(), cp.getY());
-                        boolean canPlace = false;
+                        boolean isInsidePlacemap = false;
                         if (App.getHavePlacemap()) {
                             int placemapType = App.getPlacemap(cp.getX(), cp.getY());
                             switch (placemapType) {
                                 case 0:
                                     // Allow normal placement
-                                    canPlace = c != cp.getColor();
+                                    isInsidePlacemap = c != cp.getColor();
                                     break;
                                 case 2:
                                     // Allow tendril placement
@@ -262,15 +273,15 @@ public class PacketHandler {
                                     int defaultBottom = App.getDefaultColor(cp.getX(), cp.getY() - 1);
                                     if (top != defaultTop || left != defaultLeft || right != defaultRight || bottom != defaultBottom) {
                                         // The pixel has at least one other attached pixel
-                                        canPlace = c != cp.getColor() && c != 0xFF && c != -1;
+                                        isInsidePlacemap = c != cp.getColor() && c != 0xFF && c != -1;
                                     }
                                     break;
                             }
                         } else {
-                            canPlace = c != cp.getColor() && c != 0xFF && c != -1;
+                            isInsidePlacemap = c != cp.getColor() && c != 0xFF && c != -1;
                         }
                         int c_old = c;
-                        if (canPlace) {
+                        if (user.hasIgnorePlacemap() || isInsidePlacemap) {
                             int seconds = getCooldown();
                             if (c_old != 0xFF && c_old != -1 && App.getDatabase().shouldPixelTimeIncrease(user.getId(), cp.getX(), cp.getY()) && App.getConfig().getBoolean("backgroundPixel.enabled")) {
                                 seconds = (int)Math.round(seconds * App.getConfig().getDouble("backgroundPixel.multiplier"));
@@ -287,14 +298,14 @@ public class PacketHandler {
                                     server.send(channel, new ServerCanUndo(App.getConfig().getDuration("undo.window", TimeUnit.SECONDS)));
                                 }
                             } else {
-                                boolean mod_action = user.isOverridingCooldown();
-                                App.putPixel(cp.getX(), cp.getY(), cp.getColor(), user, mod_action, ip, true, "");
+                                boolean modAction = cp.getColor() == 0xFF || user.hasIgnoreCooldown() || (user.hasIgnorePlacemap() && !isInsidePlacemap);
+                                App.putPixel(cp.getX(), cp.getY(), cp.getColor(), user, modAction, ip, true, "");
                                 App.saveMap();
                                 broadcastPixelUpdate(cp.getX(), cp.getY(), cp.getColor());
                                 ackPlace(user, cp.getX(), cp.getY());
                                 sendPixelCountUpdate(user);
                             }
-                            if (!user.isOverridingCooldown()) {
+                            if (!user.hasIgnoreCooldown()) {
                                 if (user.isIdled()) {
                                     user.setIdled(false);
                                     updateUserData();
@@ -369,40 +380,8 @@ public class PacketHandler {
         server.send(channel, new ServerChatbanState(user.isPermaChatbanned(), user.getChatbanReason(), user.getChatbanExpiryTime()));
     }
 
-    public void handleClientUserUpdate(WebSocketChannel channel, User user, ClientUserUpdate clientUserUpdate) {
-        Map<String,String> map = clientUserUpdate.getUpdates();
-        Map<String,Object> toBroadcast = new HashMap<>();
-
-        String nameColor = map.get("NameColor");
-        if (nameColor != null && !nameColor.trim().isEmpty()) {
-            try {
-                int t = Integer.parseInt(nameColor);
-                if (t >= -2 && t < App.getConfig().getStringList("board.palette").size()) {
-                    if (t == -1 && !user.hasPermission("chat.usercolor.rainbow")) {
-                        server.send(channel, new ServerACKClientUpdate(false, "Color reserved for staff members", "NameColor", null));
-                    }
-                    if (t == -2 && !user.hasPermission("chat.usercolor.donator")) {
-                        server.send(channel, new ServerACKClientUpdate(false, "Color reserved for donators", "NameColor", null));
-                        return;
-                    }
-                    user.setChatNameColor(t, true);
-                    server.send(channel, new ServerACKClientUpdate(true, null, "NameColor", String.valueOf(t)));
-                    toBroadcast.put("NameColor", String.valueOf(t));
-                } else {
-                    server.send(channel, new ServerACKClientUpdate(false, "Color index out of bounds", "NameColor", null));
-                }
-            } catch (NumberFormatException nfe) {
-                server.send(channel, new ServerACKClientUpdate(false, "Invalid color index", "NameColor", null));
-            }
-        }
-
-        if (!App.getConfig().getBoolean("oauth.snipMode") && toBroadcast.size() > 0) {
-            server.broadcast(new ServerChatUserUpdate(user.getName(), toBroadcast));
-        }
-    }
-
     public void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
-        server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, false, false)));
+        server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, user.hasPermission("chat.history.purged"), false)));
     }
 
     public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
@@ -417,7 +396,7 @@ public class PacketHandler {
         if (message.length() > charLimit) message = message.substring(0, charLimit);
         if (user == null) { //console
             Integer cmid = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "");
-            server.broadcast(new ServerChatMessage(new ChatMessage(cmid, "CONSOLE", nowMS / 1000L, message, null, null, 0, null)));
+            server.broadcast(new ServerChatMessage(new ChatMessage(cmid, "CONSOLE", nowMS / 1000L, message, null, null, null, 0, null)));
         } else {
             if (!user.canChat()) return;
             if (message.trim().length() == 0) return;
@@ -439,7 +418,7 @@ public class PacketHandler {
                     toFilter = toSend;
                 }
                 Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter);
-                server.broadcast(new ServerChatMessage(new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction)));
+                server.broadcast(new ServerChatMessage(new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction)));
             } catch (UnableToExecuteStatementException utese) {
                 utese.printStackTrace();
                 System.err.println("Failed to execute the ChatMessage insert statement.");
@@ -467,12 +446,22 @@ public class PacketHandler {
         server.broadcast(new ServerUsers(App.getServer().getNonIdledUsersCount()));
     }
 
+    private void sendPlacementOverrides(WebSocketChannel channel, User user) {
+        server.send(channel, new ServerAdminPlacementOverrides(user.getPlaceOverrides()));
+    }
+
+    public void sendPlacementOverrides(User user) {
+        for (WebSocketChannel ch : user.getConnections()) {
+            sendPlacementOverrides(ch, user);
+        }
+    }
+
     private void sendCooldownData(WebSocketChannel channel, User user) {
         server.send(channel, new ServerCooldown(user.getRemainingCooldown()));
     }
 
     private void sendCooldownData(User user) {
-        for (WebSocketChannel ch: user.getConnections()) {
+        for (WebSocketChannel ch : user.getConnections()) {
             sendCooldownData(ch, user);
         }
     }

@@ -108,6 +108,15 @@ window.App = (function() {
       return imgCanv.getContext('2d').getImageData(0, 0, w, h);
     }
   };
+  const intToHex = (i) => `#${('000000' + (i >>> 0).toString(16)).slice(-6)}`;
+  const hexToRGB = function(hex) {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result ? {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    } : null;
+  };
   const analytics = function() {
     if (window.ga) {
       window.ga.apply(this, arguments);
@@ -247,11 +256,11 @@ window.App = (function() {
           }));
       };
       this.addEntry = (key, value) => {
-        key = fixKey(key);
+        key = key.trim();
         this.initData[key] = value;
       };
       this.removeEntry = (key, value) => {
-        key = fixKey(key);
+        key = key.trim();
         delete this.initData[key];
       };
     }
@@ -664,6 +673,16 @@ window.App = (function() {
     });
 
     return {
+      // utilities
+      filter: {
+        search: (query) => {
+          searchInput.val(query);
+          if (query) {
+            filterSettings(query);
+          }
+        }
+      },
+      // setting objects
       ui: {
         theme: {
           index: setting('ui.theme.index', SettingType.SELECT, '-1', $('#setting-ui-theme-index'))
@@ -689,10 +708,10 @@ window.App = (function() {
         },
         chat: {
           banner: {
-            enable: setting('ui.chat.banner.enable', SettingType.TOGGLE, true)
+            enable: setting('ui.chat.banner.enable', SettingType.TOGGLE, true, $('#setting-ui-chat-banner-enable'))
           },
           horizontal: {
-            enable: setting('ui.chat.horizontal.enable', SettingType.TOGGLE, false)
+            enable: setting('ui.chat.horizontal.enable', SettingType.TOGGLE, false, $('#setting-ui-chat-horizontal-enable'))
           }
         }
       },
@@ -766,31 +785,31 @@ window.App = (function() {
       },
       chat: {
         timestamps: {
-          '24h': setting('chat.timestamps.24h', SettingType.TOGGLE, false)
+          '24h': setting('chat.timestamps.24h', SettingType.TOGGLE, false, $('#setting-chat-timestamps-24h'))
         },
         badges: {
-          enable: setting('chat.badges.enable', SettingType.TOGGLE, false)
+          enable: setting('chat.badges.enable', SettingType.TOGGLE, false, $('#setting-chat-badges-enable'))
         },
         factiontags: {
-          enable: setting('chat.factiontags.enable', SettingType.TOGGLE, true)
+          enable: setting('chat.factiontags.enable', SettingType.TOGGLE, true, $('#setting-chat-factiontags-enable'))
         },
         pings: {
-          enable: setting('chat.pings.enable', SettingType.TOGGLE, true),
+          enable: setting('chat.pings.enable', SettingType.TOGGLE, true, $('#setting-chat-pings-enable')),
           audio: {
-            when: setting('chat.pings.audio.when', SettingType.SELECT, 'off'),
-            volume: setting('chat.pings.audio.volume', SettingType.RANGE, 0.5)
+            when: setting('chat.pings.audio.when', SettingType.SELECT, 'off', $('#setting-chat-pings-audio-when')),
+            volume: setting('chat.pings.audio.volume', SettingType.RANGE, 0.5, $('#setting-chat-pings-audio-volume'))
           }
         },
         links: {
           templates: {
-            preferurls: setting('chat.links.templates.preferurls', SettingType.TOGGLE, false)
+            preferurls: setting('chat.links.templates.preferurls', SettingType.TOGGLE, false, $('#setting-chat-links-templates-preferurls'))
           },
           internal: {
             behavior: setting('chat.links.internal.behavior', SettingType.SELECT, 'ask')
           }
         },
         font: {
-          size: setting('chat.font.size', SettingType.NUMBER, 16)
+          size: setting('chat.font.size', SettingType.NUMBER, 16, $('#setting-chat-font-size'))
         }
       },
       fix: {
@@ -1237,7 +1256,7 @@ window.App = (function() {
       },
       replayBuffer: function() {
         $.map(self.pixelBuffer, function(p) {
-          self.setPixel(p.x, p.y, p.c, false);
+          self.setPixelIndex(p.x, p.y, p.c, false);
         });
         self.refresh();
         self.pixelBuffer = [];
@@ -1247,14 +1266,10 @@ window.App = (function() {
         self.ctx.mozImageSmoothingEnabled = self.ctx.webkitImageSmoothingEnabled = self.ctx.msImageSmoothingEnabled = self.ctx.imageSmoothingEnabled = false;
 
         self.intView = new Uint32Array(self.id.data.buffer);
-        self.rgbPalette = place.getPaletteRGB();
+        self.rgbPalette = place.getPaletteABGR();
 
         for (let i = 0; i < self.width * self.height; i++) {
-          if (data[i] === 0xFF) {
-            self.intView[i] = 0x00000000; // transparent pixel!
-          } else {
-            self.intView[i] = self.rgbPalette[data[i]];
-          }
+          self._setPixelIndex(i, data[i]);
         }
 
         self.ctx.putImageData(self.id, 0, 0);
@@ -1353,7 +1368,7 @@ window.App = (function() {
             case 'j':
             case 'J':
               if (place.color < 1) {
-                place.switch(place.getPaletteRGB().length - 1);
+                place.switch(place.palette.length - 1);
               } else {
                 place.switch(place.color - 1);
               }
@@ -1362,7 +1377,7 @@ window.App = (function() {
             case 75: // K
             case 'k':
             case 'K':
-              if (place.color + 1 >= place.getPaletteRGB().length) {
+              if (place.color + 1 >= place.palette.length) {
                 place.switch(0);
               } else {
                 place.switch(place.color + 1);
@@ -1543,7 +1558,7 @@ window.App = (function() {
             if (settings.place.picker.enable.get() === true && event.button === 1 && dx < 15 && dy < 15) {
               // If so, switch to the color at the location.
               const { x, y } = self.fromScreen(event.clientX, event.clientY);
-              place.switch(self.getPixel(x, y));
+              place.switch(self.getPixelIndex(x, y));
             }
           }
         }
@@ -1604,7 +1619,7 @@ window.App = (function() {
         });
       },
       start: function() {
-        $.get('/info', (data) => {
+        $.get('/info', async (data) => {
           overlays.webinit(data);
           user.webinit(data);
           self.width = data.width;
@@ -1630,14 +1645,6 @@ window.App = (function() {
           self.setScale(query.get('scale') || self.scale, false);
           self.centerOn(cx, cy, true);
           socket.init();
-
-          (async function() {
-            try {
-              self.draw(await binaryAjax('/boarddata' + '?_' + (new Date()).getTime()));
-            } catch (e) {
-              socket.reconnect();
-            }
-          })();
 
           if (self.use_js_render) {
             $(window).resize(function() {
@@ -1688,19 +1695,29 @@ window.App = (function() {
             // this rounds the current scale if it needs rounding
             self.setScale(self.getScale());
           });
-        }).fail(function() {
+
+          try {
+            self.draw(await binaryAjax('/boarddata' + '?_' + (new Date()).getTime()));
+          } catch (e) {
+            console.error('Error drawing board:', e);
+            socket.reconnect();
+          }
+        }).fail(function(e) {
+          console.error('Error fetching /info:', e);
           socket.reconnect();
         });
       },
       update: function(optional, ignoreCanvasLock = false) {
-        self.pan.x = Math.min(self.width / 2, Math.max(-self.width / 2, self.pan.x));
-        self.pan.y = Math.min(self.height / 2, Math.max(-self.height / 2, self.pan.y));
         const scale = self.getScale();
-        query.set({
-          x: Math.round((self.width / 2) - self.pan.x),
-          y: Math.round((self.height / 2) - self.pan.y),
-          scale: Math.round(scale * 100) / 100
-        }, true);
+        if (self.loaded) {
+          self.pan.x = Math.min(self.width / 2, Math.max(-self.width / 2, self.pan.x));
+          self.pan.y = Math.min(self.height / 2, Math.max(-self.height / 2, self.pan.y));
+          query.set({
+            x: Math.round((self.width / 2) - self.pan.x),
+            y: Math.round((self.height / 2) - self.pan.y),
+            scale: Math.round(scale * 100) / 100
+          }, true);
+        }
         if (self.use_js_render) {
           const ctx2 = self.elements.board_render[0].getContext('2d');
           let pxlX = -self.pan.x + ((self.width - (window.innerWidth / scale)) / 2);
@@ -1766,7 +1783,9 @@ window.App = (function() {
 
         self.elements.board.toggleClass('pixelate', scale > 1);
         overlays.heatmap.setPixelated(scale >= 1);
+        overlays.heatbackground.setPixelated(scale >= 1);
         overlays.virginmap.setPixelated(scale >= 1);
+        overlays.virginbackground.setPixelated(scale >= 1);
         template.setPixelated(scale >= template.getWidthRatio());
 
         if (ignoreCanvasLock || self.allowDrag || (!self.allowDrag && self.pannedWithKeys)) {
@@ -1831,14 +1850,25 @@ window.App = (function() {
 
         self.setScale(self.scale * zoomBase ** adj);
       },
-      getPixel: function(x, y) {
+      getPixelIndex: function(x, y) {
         x = Math.floor(x);
         y = Math.floor(y);
-        const colorInt = self.intView[y * self.width + x];
-        const index = self.rgbPalette.indexOf(colorInt);
-        return index;
+        if (!self.loaded) {
+          return self.pixelBuffer.findIndex((pix) => pix.x === x && pix.y === y);
+        }
+        const colorValue = self.intView[y * self.width + x];
+        const index = self.rgbPalette.indexOf(colorValue);
+        return index !== -1 ? index : 0xFF;
       },
-      setPixel: function(x, y, c, refresh) {
+      _setPixelIndex: function(i, c) {
+        if (c === -1 || c === 0xFF) {
+          // transparent.
+          self.intView[i] = 0x00000000;
+        } else {
+          self.intView[i] = self.rgbPalette[c];
+        }
+      },
+      setPixelIndex: function(x, y, c, refresh) {
         if (!self.loaded) {
           self.pixelBuffer.push({
             x: x,
@@ -1850,11 +1880,7 @@ window.App = (function() {
         if (refresh === undefined) {
           refresh = true;
         }
-        if (c === -1 || c === 0xFF) {
-          self.intView[y * self.width + x] = 0x00000000;
-        } else {
-          self.intView[y * self.width + x] = self.rgbPalette[c];
-        }
+        self._setPixelIndex(y * self.width + x, c);
         if (refresh) {
           self.ctx.putImageData(self.id, 0, 0);
         }
@@ -1953,8 +1979,8 @@ window.App = (function() {
       getScale: self.getScale,
       nudgeScale: self.nudgeScale,
       setScale: self.setScale,
-      getPixel: self.getPixel,
-      setPixel: self.setPixel,
+      getPixelIndex: self.getPixelIndex,
+      setPixelIndex: self.setPixelIndex,
       fromScreen: self.fromScreen,
       toScreen: self.toScreen,
       save: self.save,
@@ -2036,8 +2062,8 @@ window.App = (function() {
             self.setImageData(createImageData(self.width, self.height));
           }
         },
-        setBackgroundColor: function(color) {
-          $(self.elements.overlay).css('background-color', color);
+        setOpacity: function(opacity) {
+          $(self.elements.overlay).css('opacity', opacity);
         },
         setShown: function(value = self.isShown, fadeTime = 200) {
           self.isShown = value === true;
@@ -2083,7 +2109,7 @@ window.App = (function() {
         getImageData: self.getImageData,
         setImageData: self.setImageData,
         clear: self.clear,
-        setBackgroundColor: self.setBackgroundColor,
+        setOpacity: self.setOpacity,
         show: function() {
           self.setShown(true);
         },
@@ -2125,22 +2151,27 @@ window.App = (function() {
 
         // create default overlays
 
-        async function createOverlayImageData(basepath, color, dataXOR = 0) {
+        async function createOverlayImageData(basepath, placepath, color, dataXOR = 0) {
           // we use xhr directly because of jquery being weird on raw binary
           const overlayData = await binaryAjax(basepath + '?_' + (new Date()).getTime());
           const imageData = createImageData(width, height);
+          const placemapData = await binaryAjax(placepath + '?_' + (new Date()).getTime());
 
           const intView = new Uint32Array(imageData.data.buffer);
           for (let i = 0; i < width * height; i++) {
-            // this assignement uses the data as the alpha channel for the color
-            intView[i] = ((overlayData[i] ^ dataXOR) << 24) | color;
+            if (placemapData[i] === 255) {
+              intView[i] = 0x00000000;
+            } else {
+              // this assignment uses the data as the alpha channel for the color
+              intView[i] = ((overlayData[i] ^ dataXOR) << 24) | color;
+            }
           }
 
           return imageData;
         }
 
         // heatmap stuff
-        const heatmap = self.add('heatmap', () => createOverlayImageData('/heatmap', 0x005C5CCD), (width, height, isReload) => {
+        const heatmap = self.add('heatmap', () => createOverlayImageData('/heatmap', '/placemap', 0x005C5CCD), (width, height, isReload) => {
           // Ran when lazy init finshes
           if (isReload) {
             return;
@@ -2176,8 +2207,10 @@ window.App = (function() {
           });
         });
 
+        const heatbackground = self.add('heatbackground', () => createOverlayImageData('/heatmap', '/placemap', 0xFF000000));
+
         settings.board.heatmap.opacity.listen(function(value) {
-          heatmap.setBackgroundColor(`rgba(0, 0, 0, ${value})`);
+          heatbackground.setOpacity(value);
         });
         $('#hmapClear').click(function() {
           heatmap.clear();
@@ -2185,8 +2218,10 @@ window.App = (function() {
         settings.board.heatmap.enable.listen(function(value) {
           if (value) {
             heatmap.show();
+            heatbackground.show();
           } else {
             heatmap.hide();
+            heatbackground.hide();
           }
         });
 
@@ -2202,7 +2237,7 @@ window.App = (function() {
         });
 
         // virginmap stuff
-        const virginmap = self.add('virginmap', () => createOverlayImageData('/virginmap', 0x00000000, 0xff), (width, height, isReload) => {
+        const virginmap = self.add('virginmap', () => createOverlayImageData('/virginmap', '/placemap', 0x00000000, 0xff), (width, height, isReload) => {
           if (isReload) {
             return;
           }
@@ -2224,8 +2259,10 @@ window.App = (function() {
           });
         });
 
+        const virginbackground = self.add('virginbackground', () => createOverlayImageData('/virginmap', '/placemap', 0x0000FF00, 0x00));
+
         settings.board.virginmap.opacity.listen(function(value) {
-          virginmap.setBackgroundColor(`rgba(0, 255, 0, ${value})`);
+          virginbackground.setOpacity(value);
         });
         $('#vmapClear').click(function() {
           virginmap.clear();
@@ -2234,8 +2271,10 @@ window.App = (function() {
         settings.board.virginmap.enable.listen(function(value) {
           if (value) {
             virginmap.show();
+            virginbackground.show();
           } else {
             virginmap.hide();
+            virginbackground.hide();
           }
         });
 
@@ -2260,8 +2299,14 @@ window.App = (function() {
       get heatmap() {
         return self.overlays.heatmap;
       },
+      get heatbackground() {
+        return self.overlays.heatbackground;
+      },
       get virginmap() {
         return self.overlays.virginmap;
+      },
+      get virginbackground() {
+        return self.overlays.virginbackground;
       }
     };
   })();
@@ -2660,13 +2705,20 @@ window.App = (function() {
       setAutoReset: function(v) {
         self.autoreset = !!v;
       },
-      switch: function(newColor) {
-        self.color = newColor;
-        ls.set('color', newColor);
+      switch: function(newColorIdx) {
+        const isOnPalette = newColorIdx >= 0 && newColorIdx < self.palette.length;
+        const isTransparent = newColorIdx === 0xFF && user.placementOverrides && user.placementOverrides.canPlaceAnyColor;
+
+        if (!isOnPalette && !isTransparent) {
+          newColorIdx = -1;
+        }
+
+        self.color = newColorIdx;
+        ls.set('color', newColorIdx);
         $('.palette-color').removeClass('active');
 
-        $('body').toggleClass('show-placeable-bubble', newColor === -1);
-        if (newColor === -1) {
+        $('body').toggleClass('show-placeable-bubble', newColorIdx === -1);
+        if (newColorIdx === -1) {
           self.toggleCursor(false);
           self.toggleReticule(false);
           if ('removeProperty' in document.documentElement.style) {
@@ -2678,19 +2730,20 @@ window.App = (function() {
           self.toggleCursor(true);
         }
         if ('setProperty' in document.documentElement.style) {
-          document.documentElement.style.setProperty('--selected-palette-color', self.palette[newColor]);
+          document.documentElement.style.setProperty('--selected-palette-color', isTransparent ? 'transparent' : `#${self.palette[newColorIdx].value}`);
         }
-        self.elements.cursor.css('background-color', self.palette[newColor]);
-        self.elements.reticule.css('background-color', self.palette[newColor]);
-        if (newColor !== -1) {
-          $($('.palette-color[data-idx=' + newColor + '],.palette-color[data-idx=-1]')).addClass('active'); // Select both the new color AND the deselect button. Signifies more that it's a deselect button rather than a "delete pixel" button
+        [self.elements.cursor, self.elements.reticule].forEach((el) => el
+          .css('background-color', isOnPalette ? `#${self.palette[newColorIdx].value}` : (isTransparent ? 'var(--general-background)' : null))
+        );
+        if (newColorIdx !== -1) {
+          $($('.palette-color[data-idx=' + newColorIdx + '],.palette-color[data-idx=-1]')).addClass('active'); // Select both the new color AND the deselect button. Signifies more that it's a deselect button rather than a "delete pixel" button
           try {
-            $(`.palette-color[data-idx="${newColor}"]`)[0].scrollIntoView({
+            $(`.palette-color[data-idx="${newColorIdx}"]`)[0].scrollIntoView({
               block: 'nearest',
               inline: 'nearest'
             });
           } catch (e) {
-            $(`.palette-color[data-idx="${newColor}"]`)[0].scrollIntoView(false);
+            $(`.palette-color[data-idx="${newColorIdx}"]`)[0].scrollIntoView(false);
           }
         }
       },
@@ -2766,13 +2819,14 @@ window.App = (function() {
       setPalette: function(palette) {
         self.palette = palette;
         self.elements.palette.find('.palette-color').remove().end().append(
-          $.map(self.palette, function(p, idx) {
+          $.map(self.palette, function(color, idx) {
             return $('<button>')
+              .attr('title', color.name)
               .attr('type', 'button')
               .attr('data-idx', idx)
               .addClass('palette-color')
               .addClass('ontouchstart' in window ? 'touch' : 'no-touch')
-              .css('background-color', self.palette[idx])
+              .css('background-color', `#${color.value}`)
               .append(
                 $('<span>').addClass('palette-number').text(idx)
               )
@@ -2780,6 +2834,17 @@ window.App = (function() {
                 self.switch(idx);
               });
           })
+        );
+        self.elements.palette.prepend(
+          $('<button>')
+            .attr('type', 'button')
+            .attr('data-idx', 0xFF)
+            .addClass('palette-color palette-color-special checkerboard-background pixelate')
+            .addClass('ontouchstart' in window ? 'touch' : 'no-touch')
+            .hide()
+            .click(function() {
+              self.switch(0xFF);
+            })
         );
         self.elements.palette.prepend(
           $('<button>')
@@ -2794,6 +2859,9 @@ window.App = (function() {
               self.switch(-1);
             })
         );
+      },
+      togglePaletteSpecialColors: (show) => {
+        self.elements.palette.find('.palette-color.palette-color-special').toggle(show);
       },
       can_undo: false,
       undo: function(evt) {
@@ -2844,7 +2912,7 @@ window.App = (function() {
         });
         socket.on('pixel', function(data) {
           $.map(data.pixels, function(px) {
-            board.setPixel(px.x, px.y, px.color, false);
+            board.setPixelIndex(px.x, px.y, px.color, false);
           });
           board.refresh();
           board.update(true);
@@ -2865,6 +2933,12 @@ window.App = (function() {
           }
 
           if (uiHelper.getAvailable() === 0) { uiHelper.setPlaceableText(data.ackFor === 'PLACE' ? 0 : 1); }
+        });
+        socket.on('admin_placement_overrides', function(data) {
+          self.togglePaletteSpecialColors(data.placementOverrides.canPlaceAnyColor);
+          if (!data.placementOverrides.canPlaceAnyColor && self.color === 0xFF) {
+            self.switch(-1);
+          }
         });
         socket.on('captcha_required', function(data) {
           if (!self.isDoingCaptcha) {
@@ -2921,21 +2995,13 @@ window.App = (function() {
           self.setAutoReset(value);
         });
       },
-      hexToRgb: function(hex) {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16)
-        } : null;
-      },
-      getPaletteRGB: function() {
-        const a = new Uint32Array(self.palette.length);
-        $.map(self.palette, function(c, i) {
-          const rgb = self.hexToRgb(c);
-          a[i] = 0xff000000 | rgb.b << 16 | rgb.g << 8 | rgb.r;
-        });
-        return a;
+      getPaletteABGR: function() {
+        const result = new Uint32Array(self.palette.length);
+        for (const i in self.palette) {
+          const { r, g, b } = hexToRGB(self.palette[i].value);
+          result[i] = 0xFF000000 | b << 16 | g << 8 | r;
+        }
+        return result;
       }
     };
     return {
@@ -2944,9 +3010,12 @@ window.App = (function() {
       place: self.place,
       switch: self.switch,
       setPalette: self.setPalette,
-      getPalette: () => self.palette,
-      getPaletteColor: (n, def = '#000000') => self.palette[n] || def,
-      getPaletteRGB: self.getPaletteRGB,
+      get palette() {
+        return self.palette;
+      },
+      getPaletteColorValue: (idx, def = '000000') => self.palette[idx] ? self.palette[idx].value : def,
+      getPaletteABGR: self.getPaletteABGR,
+      togglePaletteSpecialColors: self.togglePaletteSpecialColors,
       setAutoReset: self.setAutoReset,
       setNumberedPaletteEnabled: self.setNumberedPaletteEnabled,
       get color() {
@@ -3191,7 +3260,7 @@ window.App = (function() {
                 case 'nuke':
                   return 'Part of a nuke';
                 case 'mod':
-                  return 'Placed by a staff member using cooldown override';
+                  return 'Placed by a staff member using placement overrides';
                 default:
                   return null;
               }
@@ -3275,13 +3344,17 @@ window.App = (function() {
           return;
         }
 
-        navigator.serviceWorker.register('/serviceWorker.js')
-          .then(() => {
-            self.isInit = true;
-          })
-          .catch((err) => {
-            console.error('Failed to register Service Worker:', err);
-          });
+        if (navigator.serviceWorker.controller == null) {
+          navigator.serviceWorker.register('/serviceWorker.js')
+            .then(() => {
+              self.isInit = true;
+            })
+            .catch((err) => {
+              console.error('Failed to register Service Worker:', err);
+            });
+        } else {
+          self.isInit = true;
+        }
 
         navigator.serviceWorker.addEventListener('message', (ev) => {
           if (typeof ev.data !== 'object' || !('type' in ev.data)) {
@@ -3339,7 +3412,11 @@ window.App = (function() {
         return self.hasSupport;
       },
       get readyPromise() {
-        return navigator.serviceWorker.ready;
+        return navigator.serviceWorker.ready.then((v) => {
+          // fail safe
+          self.isInit = true;
+          return v;
+        });
       },
       init: self.init,
       addMessageListener: self.addMessageListener,
@@ -3375,7 +3452,6 @@ window.App = (function() {
         themeSelect: $('#setting-ui-theme-index'),
         themeColorMeta: $('meta[name="theme-color"]'),
         txtDiscordName: $('#txtDiscordName'),
-        selUsernameColor: $('#selUsernameColor'),
         bottomBanner: $('#bottom-banner')
       },
       themes: [
@@ -3408,9 +3484,19 @@ window.App = (function() {
           name: 'Matte',
           location: '/themes/matte.css',
           color: '#468079'
+        },
+        {
+          name: 'Terminal',
+          location: '/themes/terminal.css',
+          color: '#94e044'
+        },
+        {
+          name: 'Red',
+          location: '/themes/red.css',
+          color: '#cf0000'
         }
       ],
-      specialChatColorClasses: ['rainbow', 'donator'],
+      specialChatColorClasses: ['rainbow', ['donator', 'donator--green'], ['donator', 'donator--gray']],
       init: function() {
         self.initTitle = document.title;
         self._initThemes();
@@ -3622,11 +3708,9 @@ window.App = (function() {
       initBanner(textList) {
         self.banner.enabled = settings.ui.chat.banner.enable.get() !== false;
 
-        const processor = chat.makeMarkdownProcessor()
-          .use(pxlsMarkdown.plugins.methodWhitelist, {
-            block: ['blankLine'],
-            inline: ['coordinate', 'emoji_raw', 'emoji_name', 'mention', 'escape', 'autoLink', 'link', 'url', 'underline', 'strong', 'emphasis', 'deletion', 'code', 'fontAwesomeIcon']
-          });
+        const processor = uiHelper.makeMarkdownProcessor({
+          inline: ['coordinate', 'emoji_raw', 'emoji_name', 'mention', 'escape', 'autoLink', 'link', 'url', 'underline', 'strong', 'emphasis', 'deletion', 'code', 'fontAwesomeIcon']
+        });
 
         self.banner.elements = [];
         for (const i in textList) {
@@ -3816,28 +3900,25 @@ window.App = (function() {
       getAvailable() {
         return self._available;
       },
-      updateSelectedNameColor: (colorIdx) => {
-        const selUsernameColor = document.querySelector('.username-color-picker');
-        if (selUsernameColor) {
-          selUsernameColor.value = colorIdx;
-          self.styleElemWithChatNameColor(selUsernameColor, colorIdx);
-        }
-      },
       styleElemWithChatNameColor: (elem, colorIdx, layer = 'bg') => {
-        elem.classList.remove(...self.specialChatColorClasses);
+        elem.classList.remove(...self.specialChatColorClasses.reduce((acc, val) => {
+          acc.push(...(Array.isArray(val) ? val : [val]));
+          return acc;
+        }, []));
         if (colorIdx >= 0) {
           switch (layer) {
             case 'bg':
-              elem.style.backgroundColor = place.getPaletteColor(colorIdx);
+              elem.style.backgroundColor = `#${place.getPaletteColorValue(colorIdx)}`;
               break;
             case 'color':
-              elem.style.color = place.getPaletteColor(colorIdx);
+              elem.style.color = `#${place.getPaletteColorValue(colorIdx)}`;
               break;
           }
         } else {
           elem.style.backgroundColor = null;
           elem.style.color = null;
-          elem.classList.add(self.specialChatColorClasses[-colorIdx - 1]);
+          const classes = self.specialChatColorClasses[-colorIdx - 1];
+          elem.classList.add(...(Array.isArray(classes) ? classes : [classes]));
         }
       },
       setLoadingBubbleState: (process, state) => {
@@ -3897,6 +3978,37 @@ window.App = (function() {
           self.elements.themeColorMeta.attr('content', theme.color);
         }
         $(`*[data-theme]:not([data-theme=${index}])`).prop('disabled', true);
+      },
+      makeMarkdownProcessor(whitelist = {}) {
+        whitelist = {
+          block: (whitelist && whitelist.block) || ['blankLine'],
+          inline: (whitelist && whitelist.inline) || ['coordinate', 'emoji_raw', 'emoji_name', 'mention', 'escape', 'autoLink', 'url', 'underline', 'strong', 'emphasis', 'deletion', 'code']
+        };
+
+        return pxlsMarkdown.processor()
+          .use(pxlsMarkdown.plugins.emoji, {
+            emojiDB: window.emojiDB,
+            // from Twemoji 13.0.0
+            emojiRegex: /(?:\ud83d\udc68\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffc-\udfff]|\ud83d\udc68\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb\udffd-\udfff]|\ud83d\udc68\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb\udffc\udffe\udfff]|\ud83d\udc68\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb-\udffd\udfff]|\ud83d\udc68\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb-\udffe]|\ud83d\udc69\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffc-\udfff]|\ud83d\udc69\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffc-\udfff]|\ud83d\udc69\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb\udffd-\udfff]|\ud83d\udc69\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffb\udffd-\udfff]|\ud83d\udc69\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb\udffc\udffe\udfff]|\ud83d\udc69\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffb\udffc\udffe\udfff]|\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb-\udffd\udfff]|\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffb-\udffd\udfff]|\ud83d\udc69\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb-\udffe]|\ud83d\udc69\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffb-\udffe]|\ud83e\uddd1\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\u200d\ud83e\udd1d\u200d\ud83e\uddd1|\ud83d\udc6b\ud83c[\udffb-\udfff]|\ud83d\udc6c\ud83c[\udffb-\udfff]|\ud83d\udc6d\ud83c[\udffb-\udfff]|\ud83d[\udc6b-\udc6d])|(?:\ud83d[\udc68\udc69]|\ud83e\uddd1)(?:\ud83c[\udffb-\udfff])?\u200d(?:\u2695\ufe0f|\u2696\ufe0f|\u2708\ufe0f|\ud83c[\udf3e\udf73\udf7c\udf84\udf93\udfa4\udfa8\udfeb\udfed]|\ud83d[\udcbb\udcbc\udd27\udd2c\ude80\ude92]|\ud83e[\uddaf-\uddb3\uddbc\uddbd])|(?:\ud83c[\udfcb\udfcc]|\ud83d[\udd74\udd75]|\u26f9)((?:\ud83c[\udffb-\udfff]|\ufe0f)\u200d[\u2640\u2642]\ufe0f)|(?:\ud83c[\udfc3\udfc4\udfca]|\ud83d[\udc6e\udc70\udc71\udc73\udc77\udc81\udc82\udc86\udc87\ude45-\ude47\ude4b\ude4d\ude4e\udea3\udeb4-\udeb6]|\ud83e[\udd26\udd35\udd37-\udd39\udd3d\udd3e\uddb8\uddb9\uddcd-\uddcf\uddd6-\udddd])(?:\ud83c[\udffb-\udfff])?\u200d[\u2640\u2642]\ufe0f|(?:\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68|\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d[\udc68\udc69]|\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc68|\ud83d\udc68\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc68\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d[\udc66\udc67]|\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d[\udc66\udc67]|\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d[\udc68\udc69]|\ud83d\udc69\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d[\udc66\udc67]|\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f|\ud83c\udff3\ufe0f\u200d\ud83c\udf08|\ud83c\udff4\u200d\u2620\ufe0f|\ud83d\udc15\u200d\ud83e\uddba|\ud83d\udc3b\u200d\u2744\ufe0f|\ud83d\udc41\u200d\ud83d\udde8|\ud83d\udc68\u200d\ud83d[\udc66\udc67]|\ud83d\udc69\u200d\ud83d[\udc66\udc67]|\ud83d\udc6f\u200d\u2640\ufe0f|\ud83d\udc6f\u200d\u2642\ufe0f|\ud83e\udd3c\u200d\u2640\ufe0f|\ud83e\udd3c\u200d\u2642\ufe0f|\ud83e\uddde\u200d\u2640\ufe0f|\ud83e\uddde\u200d\u2642\ufe0f|\ud83e\udddf\u200d\u2640\ufe0f|\ud83e\udddf\u200d\u2642\ufe0f|\ud83d\udc08\u200d\u2b1b)|[#*0-9]\ufe0f?\u20e3|(?:[©®\u2122\u265f]\ufe0f)|(?:\ud83c[\udc04\udd70\udd71\udd7e\udd7f\ude02\ude1a\ude2f\ude37\udf21\udf24-\udf2c\udf36\udf7d\udf96\udf97\udf99-\udf9b\udf9e\udf9f\udfcd\udfce\udfd4-\udfdf\udff3\udff5\udff7]|\ud83d[\udc3f\udc41\udcfd\udd49\udd4a\udd6f\udd70\udd73\udd76-\udd79\udd87\udd8a-\udd8d\udda5\udda8\uddb1\uddb2\uddbc\uddc2-\uddc4\uddd1-\uddd3\udddc-\uddde\udde1\udde3\udde8\uddef\uddf3\uddfa\udecb\udecd-\udecf\udee0-\udee5\udee9\udef0\udef3]|[\u203c\u2049\u2139\u2194-\u2199\u21a9\u21aa\u231a\u231b\u2328\u23cf\u23ed-\u23ef\u23f1\u23f2\u23f8-\u23fa\u24c2\u25aa\u25ab\u25b6\u25c0\u25fb-\u25fe\u2600-\u2604\u260e\u2611\u2614\u2615\u2618\u2620\u2622\u2623\u2626\u262a\u262e\u262f\u2638-\u263a\u2640\u2642\u2648-\u2653\u2660\u2663\u2665\u2666\u2668\u267b\u267f\u2692-\u2697\u2699\u269b\u269c\u26a0\u26a1\u26a7\u26aa\u26ab\u26b0\u26b1\u26bd\u26be\u26c4\u26c5\u26c8\u26cf\u26d1\u26d3\u26d4\u26e9\u26ea\u26f0-\u26f5\u26f8\u26fa\u26fd\u2702\u2708\u2709\u270f\u2712\u2714\u2716\u271d\u2721\u2733\u2734\u2744\u2747\u2757\u2763\u2764\u27a1\u2934\u2935\u2b05-\u2b07\u2b1b\u2b1c\u2b50\u2b55\u3030\u303d\u3297\u3299])(?:\ufe0f|(?!\ufe0e))|(?:(?:\ud83c[\udfcb\udfcc]|\ud83d[\udd74\udd75\udd90]|[\u261d\u26f7\u26f9\u270c\u270d])(?:\ufe0f|(?!\ufe0e))|(?:\ud83c[\udf85\udfc2-\udfc4\udfc7\udfca]|\ud83d[\udc42\udc43\udc46-\udc50\udc66-\udc69\udc6e\udc70-\udc78\udc7c\udc81-\udc83\udc85-\udc87\udcaa\udd7a\udd95\udd96\ude45-\ude47\ude4b-\ude4f\udea3\udeb4-\udeb6\udec0\udecc]|\ud83e[\udd0c\udd0f\udd18-\udd1c\udd1e\udd1f\udd26\udd30-\udd39\udd3d\udd3e\udd77\uddb5\uddb6\uddb8\uddb9\uddbb\uddcd-\uddcf\uddd1-\udddd]|[\u270a\u270b]))(?:\ud83c[\udffb-\udfff])?|(?:\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f|\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc73\udb40\udc63\udb40\udc74\udb40\udc7f|\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc77\udb40\udc6c\udb40\udc73\udb40\udc7f|\ud83c\udde6\ud83c[\udde8-\uddec\uddee\uddf1\uddf2\uddf4\uddf6-\uddfa\uddfc\uddfd\uddff]|\ud83c\udde7\ud83c[\udde6\udde7\udde9-\uddef\uddf1-\uddf4\uddf6-\uddf9\uddfb\uddfc\uddfe\uddff]|\ud83c\udde8\ud83c[\udde6\udde8\udde9\uddeb-\uddee\uddf0-\uddf5\uddf7\uddfa-\uddff]|\ud83c\udde9\ud83c[\uddea\uddec\uddef\uddf0\uddf2\uddf4\uddff]|\ud83c\uddea\ud83c[\udde6\udde8\uddea\uddec\udded\uddf7-\uddfa]|\ud83c\uddeb\ud83c[\uddee-\uddf0\uddf2\uddf4\uddf7]|\ud83c\uddec\ud83c[\udde6\udde7\udde9-\uddee\uddf1-\uddf3\uddf5-\uddfa\uddfc\uddfe]|\ud83c\udded\ud83c[\uddf0\uddf2\uddf3\uddf7\uddf9\uddfa]|\ud83c\uddee\ud83c[\udde8-\uddea\uddf1-\uddf4\uddf6-\uddf9]|\ud83c\uddef\ud83c[\uddea\uddf2\uddf4\uddf5]|\ud83c\uddf0\ud83c[\uddea\uddec-\uddee\uddf2\uddf3\uddf5\uddf7\uddfc\uddfe\uddff]|\ud83c\uddf1\ud83c[\udde6-\udde8\uddee\uddf0\uddf7-\uddfb\uddfe]|\ud83c\uddf2\ud83c[\udde6\udde8-\udded\uddf0-\uddff]|\ud83c\uddf3\ud83c[\udde6\udde8\uddea-\uddec\uddee\uddf1\uddf4\uddf5\uddf7\uddfa\uddff]|\ud83c\uddf4\ud83c\uddf2|\ud83c\uddf5\ud83c[\udde6\uddea-\udded\uddf0-\uddf3\uddf7-\uddf9\uddfc\uddfe]|\ud83c\uddf6\ud83c\udde6|\ud83c\uddf7\ud83c[\uddea\uddf4\uddf8\uddfa\uddfc]|\ud83c\uddf8\ud83c[\udde6-\uddea\uddec-\uddf4\uddf7-\uddf9\uddfb\uddfd-\uddff]|\ud83c\uddf9\ud83c[\udde6\udde8\udde9\uddeb-\udded\uddef-\uddf4\uddf7\uddf9\uddfb\uddfc\uddff]|\ud83c\uddfa\ud83c[\udde6\uddec\uddf2\uddf3\uddf8\uddfe\uddff]|\ud83c\uddfb\ud83c[\udde6\udde8\uddea\uddec\uddee\uddf3\uddfa]|\ud83c\uddfc\ud83c[\uddeb\uddf8]|\ud83c\uddfd\ud83c\uddf0|\ud83c\uddfe\ud83c[\uddea\uddf9]|\ud83c\uddff\ud83c[\udde6\uddf2\uddfc]|\ud83c[\udccf\udd8e\udd91-\udd9a\udde6-\uddff\ude01\ude32-\ude36\ude38-\ude3a\ude50\ude51\udf00-\udf20\udf2d-\udf35\udf37-\udf7c\udf7e-\udf84\udf86-\udf93\udfa0-\udfc1\udfc5\udfc6\udfc8\udfc9\udfcf-\udfd3\udfe0-\udff0\udff4\udff8-\udfff]|\ud83d[\udc00-\udc3e\udc40\udc44\udc45\udc51-\udc65\udc6a\udc6f\udc79-\udc7b\udc7d-\udc80\udc84\udc88-\udca9\udcab-\udcfc\udcff-\udd3d\udd4b-\udd4e\udd50-\udd67\udda4\uddfb-\ude44\ude48-\ude4a\ude80-\udea2\udea4-\udeb3\udeb7-\udebf\udec1-\udec5\uded0-\uded2\uded5-\uded7\udeeb\udeec\udef4-\udefc\udfe0-\udfeb]|\ud83e[\udd0d\udd0e\udd10-\udd17\udd1d\udd20-\udd25\udd27-\udd2f\udd3a\udd3c\udd3f-\udd45\udd47-\udd76\udd78\udd7a-\uddb4\uddb7\uddba\uddbc-\uddcb\uddd0\uddde-\uddff\ude70-\ude74\ude78-\ude7a\ude80-\ude86\ude90-\udea8\udeb0-\udeb6\udec0-\udec2\uded0-\uded6]|[\u23e9-\u23ec\u23f0\u23f3\u267e\u26ce\u2705\u2728\u274c\u274e\u2753-\u2755\u2795-\u2797\u27b0\u27bf\ue50a])|\ufe0f/
+          })
+          .use(pxlsMarkdown.plugins.methodWhitelist, whitelist)
+          .use(function() {
+            this.Compiler.prototype.visitors.emoji = (node, next) => {
+              if (twemoji.test(node.value)) {
+                const el = twemoji.parse(crel('span', node.value)).children[0];
+                el.title = `:${node.emojiName}:`;
+                return el;
+              } else {
+                return crel('img', {
+                  draggable: false,
+                  class: 'emoji emoji--custom',
+                  alt: `:${node.emojiName}:`,
+                  src: node.value,
+                  title: `:${node.emojiName}:`
+                });
+              }
+            };
+          });
       }
     };
 
@@ -3910,7 +4022,6 @@ window.App = (function() {
       setMax: self.setMax,
       setDiscordName: self.setDiscordName,
       updateAudio: self.updateAudio,
-      updateSelectedNameColor: self.updateSelectedNameColor,
       styleElemWithChatNameColor: self.styleElemWithChatNameColor,
       setBannerEnabled: self.setBannerEnabled,
       get initTitle() {
@@ -3926,6 +4037,7 @@ window.App = (function() {
         return `${prepend ? prepend + ' ' : ''}${decodeURIComponent(append)}`;
       },
       setLoadingBubbleState: self.setLoadingBubbleState,
+      makeMarkdownProcessor: self.makeMarkdownProcessor,
       toggleCaptchaLoading: self.toggleCaptchaLoading,
       get tabId() {
         return self.tabId;
@@ -4086,7 +4198,13 @@ window.App = (function() {
         jump_button: $('#jump-to-bottom'),
         emoji_button: $('#emojiPanelTrigger'),
         typeahead: $('#typeahead'),
-        typeahead_list: $('#typeahead ul')
+        typeahead_list: $('#typeahead ul'),
+        ping_audio_volume_value: $('#chat-pings-audio-volume-value'),
+        username_color_select: $('#selChatUsernameColor'),
+        username_color_feedback_label: $('#lblChatUsernameColorFeedback'),
+        user_ignore_select: $('#selChatUserIgnore'),
+        user_unignore_button: $('#btnChatUserUnignore'),
+        user_ignore_feedback_label: $('#lblChatUserIgnoreFeedback')
       },
       picker: null,
       markdownProcessor: null,
@@ -4109,24 +4227,33 @@ window.App = (function() {
         }
       },
       init: () => {
-        self.initTypeahead();
-        self.markdownProcessor = self.makeMarkdownProcessor();
+        // NOTE(netux): The processor is deriverately left unfrozen to allow for extending
+        // it through third party extensions.
+        self.markdownProcessor = uiHelper.makeMarkdownProcessor()
+          .use(function() {
+            this.Compiler.prototype.visitors.link = (node, next) => {
+              const url = new URL(node.url, location.href);
+
+              const hashParams = new URLSearchParams(url.hash.substr(1));
+              const getParam = (name) => hashParams.has(name) ? hashParams.get(name) : url.searchParams.get(name);
+
+              const coordsX = parseFloat(getParam('x'));
+              const coordsY = parseFloat(getParam('y'));
+
+              const isSameOrigin = location.origin && url.origin && location.origin === url.origin;
+              if (isSameOrigin && !isNaN(coordsX) && !isNaN(coordsY) && board.validateCoordinates(coordsX, coordsY)) {
+                const scale = parseFloat(getParam('scale'));
+                return self._makeCoordinatesElement(url.toString(), coordsX, coordsY, isNaN(scale) ? 20 : scale, getParam('template'), getParam('title'));
+              } else {
+                return crel('a', { href: node.url, target: '_blank' }, next());
+              }
+            };
+
+            this.Compiler.prototype.visitors.coordinate =
+              (node, next) => self._makeCoordinatesElement(node.url, node.x, node.y, node.scale);
+          });
+
         self.reloadIgnores();
-        socket.on('ack_client_update', e => {
-          if (e.updateType && e.updateValue) {
-            switch (e.updateType) {
-              case 'NameColor': {
-                user.setChatNameColor(e.updateValue >> 0);
-                uiHelper.updateSelectedNameColor(e.updateValue >> 0);
-                break;
-              }
-              default: {
-                console.warn('got unknown updateType on ack_client_update: %o', e);
-                break;
-              }
-            }
-          }
-        });
         socket.on('chat_user_update', e => {
           if (e.who && e.updates && typeof (e.updates) === 'object') {
             for (const update of Object.entries(e.updates)) {
@@ -4339,10 +4466,8 @@ window.App = (function() {
         socket.on('chat_ban_state', handleChatban);
 
         const _doPurge = (elem, e) => {
-          if (user.isStaff()) {
-            elem.classList.add('purged');
-            elem.setAttribute('title', `Purged by ${e.initiator} with reason: ${e.reason || 'none provided'}`);
-            elem.dataset.purgedBy = e.initiator;
+          if (user.hasPermission('chat.history.purged')) {
+            self._markMessagePurged(elem, e);
           } else {
             elem.remove();
           }
@@ -4376,9 +4501,7 @@ window.App = (function() {
           }
           if (lines.length) {
             lines.forEach(x => _doPurge(x, e));
-            if (user.getUsername().toLowerCase().trim() === e.target.toLowerCase().trim()) {
-              self.addServerAction(`${e.IDs.length} message${e.IDs.length !== 1 ? 's were' : ' was'} purged by ${e.initiator}`);
-            }
+            self.addServerAction(`${e.IDs.length} message${e.IDs.length !== 1 ? 's' : ''} from ${e.target} ${e.IDs.length !== 1 ? 'were' : 'was'} purged by ${e.initiator}`);
           }
         });
 
@@ -4386,149 +4509,11 @@ window.App = (function() {
 
         self.elements.rate_limit_overlay.hide();
 
-        const commandsCache = [['tempban', '/tempban  USER  BAN_LENGTH  SHOULD_PURGE  BAN_REASON'], ['permaban', '/permaban  USER  SHOULD_PURGE  BAN_REASON'], ['purge', '/purge  USER  PURGE_AMOUNT  PURGE_REASON']];
         self.elements.input.on('keydown', e => {
           e.stopPropagation();
           const toSend = self.elements.input[0].value;
           const trimmed = toSend.trim();
-          let handling = false;
           if ((e.originalEvent.key === 'Enter' || e.originalEvent.which === 13) && !e.shiftKey) {
-            if (trimmed.startsWith('/') && user.isStaff()) {
-              const args = trimmed.substr(1).split(' ');
-              const command = args.shift();
-              let banReason; // To fix compiler warning
-              handling = true;
-              switch (command.toLowerCase().trim()) {
-                case 'permaban': {
-                  const usage = '/permaban USER SHOULD_PURGE BAN_REASON\n/permaban help';
-                  const help = [
-                    usage,
-                    '    USER:         The username',
-                    '    SHOULD_PURGE: (1|0) Whether or not to remove all chat messages from the user',
-                    '    BAN_REASON:   The reason for the ban',
-                    '',
-                    '    /permaban GlowingSocc 1 just generally don\'t like \'em',
-                    '    /permaban GlowingSocc 0 time for you to go.'
-                  ].join('\n');
-                  if (args.length < 3) {
-                    if (args[0] && args[0].toLowerCase() === 'help') {
-                      self.showHint(help);
-                    } else {
-                      self.showHint(`Missing arguments.\n${usage}`, true);
-                    }
-                  } else {
-                    const user = args.shift();
-                    let shouldPurge = args.shift();
-                    banReason = args.join(' ');
-                    if (!isNaN(shouldPurge)) {
-                      shouldPurge = !!(shouldPurge >> 0);
-                    } else {
-                      return self.showHint(`Invalid shouldPurge. Expected 1 or 0, got ${shouldPurge}`, true);
-                    }
-                    self.elements.input[0].disabled = true;
-                    $.post('/admin/chatban', {
-                      who: user,
-                      type: 'perma',
-                      reason: banReason,
-                      removalAmount: shouldPurge ? -1 : 0,
-                      banLength: 0
-                    }, () => {
-                      modal.showText('Chatban initiated');
-                      self.elements.input[0].value = '';
-                      self.elements.input[0].disabled = false;
-                    }).fail(() => {
-                      modal.showText('Failed to chatban');
-                      self.elements.input[0].disabled = false;
-                    });
-                  }
-                  break;
-                }
-                case 'tempban': {
-                  const usage = '/tempban USER BAN_LENGTH SHOULD_PURGE BAN_REASON\n/tempban help';
-                  const help = [
-                    usage,
-                    '    USER:         The username',
-                    '    BAN_LENGTH:   The banlength in seconds',
-                    '    SHOULD_PURGE: (1|0) Whether or not to remove all chat messages from the user',
-                    '    BAN_REASON:   The reason for the ban',
-                    '',
-                    '    /tempban GlowingSocc 600 1 just generally don\'t like \'em',
-                    '    /tempban GlowingSocc 60 0 take a time out.'
-                  ].join('\n');
-                  if (args.length < 4) {
-                    if (args[0] && args[0].toLowerCase() === 'help') {
-                      self.showHint(help);
-                    } else {
-                      self.showHint(`Missing arguments.\n${usage}`, true);
-                    }
-                  } else {
-                    const user = args.shift();
-                    const banLength = args.shift() >> 0;
-                    let shouldPurge = args.shift();
-                    banReason = args.join(' ');
-                    if (!isNaN(shouldPurge)) {
-                      shouldPurge = !!(shouldPurge >> 0);
-                    } else {
-                      return self.showHint(`Invalid shouldPurge. Expected 1 or 0, got ${shouldPurge}`, true);
-                    }
-                    if (banLength <= 0) {
-                      return self.showHint('Invalid banLength. Should be >0', true);
-                    } else {
-                      $.post('/admin/chatban', {
-                        who: user,
-                        type: 'temp',
-                        reason: banReason,
-                        removalAmount: shouldPurge ? -1 : 0,
-                        banLength: banLength
-                      }, () => {
-                        modal.showText('Chatban initiated');
-                        self.elements.input[0].value = '';
-                        self.elements.input[0].disabled = false;
-                      }).fail(() => {
-                        modal.showText('Failed to chatban');
-                        self.elements.input[0].disabled = false;
-                      });
-                    }
-                  }
-                  break;
-                }
-                case 'purge': {
-                  const usage = '/purge USER PURGE_REASON\n/purge help';
-                  const help = [
-                    usage,
-                    '    USER:         The username',
-                    '    PURGE_REASON: The reason for the purge',
-                    '',
-                    '    /purge GlowingSocc 10 spam'
-                  ].join('\n');
-                  if (args.length < 2) {
-                    if (args[0] && args[0].toLowerCase() === 'help') {
-                      self.showHint(help);
-                    } else {
-                      self.showHint(`Missing arguments.\n${usage}`, true);
-                    }
-                  } else {
-                    const user = args.shift();
-                    const purgeReason = args.join(' ');
-                    $.post('/admin/chatPurge', {
-                      who: user,
-                      reason: purgeReason
-                    }, function() {
-                      modal.showText('Chatpurge initiated');
-                      self.elements.input[0].value = '';
-                      self.elements.input[0].disabled = false;
-                    }).fail(() => {
-                      modal.showText('Failed to chatpurge');
-                      self.elements.input[0].disabled = false;
-                    });
-                  }
-                  break;
-                }
-                default: {
-                  handling = false;
-                }
-              }
-            }
             e.preventDefault();
 
             if (trimmed.length === 0) {
@@ -4539,7 +4524,7 @@ window.App = (function() {
               return;
             }
 
-            if (!self.typeahead.shouldInsert && !handling) {
+            if (!self.typeahead.shouldInsert) {
               self.typeahead.lastLength = -1;
               self._send(trimmed);
               self.elements.input.val('');
@@ -4547,22 +4532,6 @@ window.App = (function() {
           } else if (e.originalEvent.key === 'Tab' || e.originalEvent.which === 9) {
             e.stopPropagation();
             e.preventDefault();
-          }
-        }).on('keyup', e => {
-          const toSend = self.elements.input[0].value;
-          const trimmed = toSend.trim();
-          if (trimmed.length === 0) return self.showHint('');
-          if (!((e.originalEvent.key === 'Enter' || e.originalEvent.which === 13) && !e.originalEvent.shiftKey) && trimmed.startsWith('/') && user.isStaff()) {
-            const searchAgainst = trimmed.substr(1).split(' ').shift();
-            const matches = [];
-            commandsCache.forEach(x => {
-              if (x[0].startsWith(searchAgainst)) {
-                matches.push(x[1]);
-              }
-            });
-            if (matches.length) {
-              self.showHint(matches.join('\n'));
-            }
           }
         }).on('focus', e => {
           if (self.stickToBottom) {
@@ -4602,15 +4571,16 @@ window.App = (function() {
           }
         });
 
-        $(window).on('pxls:panel:closed', (e, which) => {
-          if (which === 'chat') {
-            if (document.querySelector('.chat-settings-title')) {
-              modal.closeAll();
-            }
+        $(window).on('pxls:user:loginState', (e, isLoggedIn) => {
+          self.updateInputLoginState(isLoggedIn);
+
+          self.elements.username_color_select.disabled = isLoggedIn;
+          if (isLoggedIn) {
+            // add role-gated colors
+            self._populateUsernameColor();
+            uiHelper.styleElemWithChatNameColor(self.elements.username_color_select[0], user.getChatNameColor());
           }
         });
-
-        $(window).on('pxls:user:loginState', (e, isLoggedIn) => self.updateInputLoginState(isLoggedIn));
 
         $(window).on('mouseup', e => {
           let target = e.target;
@@ -4642,7 +4612,10 @@ window.App = (function() {
           if (popup) popup.remove();
         });
 
-        self.elements.chat_settings_button[0].addEventListener('click', () => self.popChatSettings());
+        self.elements.chat_settings_button[0].addEventListener('click', () => {
+          settings.filter.search('Chat');
+          panels.toggle('settings');
+        });
 
         self.elements.pings_button[0].addEventListener('click', function() {
           const closeHandler = function() {
@@ -4693,24 +4666,7 @@ window.App = (function() {
           self.elements.jump_button[0].style.display = self.stickToBottom ? 'none' : 'block';
         });
 
-        self.picker = new EmojiButton({
-          position: 'left-start',
-          style: 'twemoji',
-          zIndex: 30,
-          emojiVersion: '13.0'
-        });
-        self.picker.on('emoji', emojiStr => {
-          self.elements.input[0].value += emojiStr;
-          self.elements.input[0].focus();
-        });
-        self.elements.emoji_button.on('click', function() {
-          self.picker.pickerVisible ? self.picker.hidePicker() : self.picker.showPicker(this);
-          const searchEl = self.picker.pickerEl.querySelector('.emoji-picker__search'); // searchEl is destroyed every time the picker closes. have to re-attach
-          if (searchEl) {
-            searchEl.addEventListener('keydown', e => e.stopPropagation());
-          }
-        });
-
+        // settings
         settings.chat.font.size.listen(function(value) {
           if (isNaN(value)) {
             modal.showText('Invalid value. Expected a number between 1 and 72');
@@ -4725,12 +4681,54 @@ window.App = (function() {
           }
         });
 
+        settings.chat.pings.audio.volume.listen(function(value) {
+          const parsed = parseFloat(value);
+          const volume = isNaN(parsed) ? 1 : parsed;
+          self.elements.ping_audio_volume_value.text(`${volume * 100 >> 0}%`);
+        });
+
         settings.chat.badges.enable.listen(function() {
           self._toggleTextIconFlairs();
         });
 
         settings.chat.factiontags.enable.listen(function() {
           self._toggleFactionTagFlairs();
+        });
+
+        const selSettingChatLinksInternalBehavior = $('#setting-chat-links-internal-behavior');
+        selSettingChatLinksInternalBehavior.append(
+          Object.values(self.TEMPLATE_ACTIONS).map(action =>
+            crel('option', { value: action.id }, action.pretty)
+          )
+        );
+        settings.chat.links.internal.behavior.controls.add(selSettingChatLinksInternalBehavior);
+
+        self.elements.username_color_select.disabled = true;
+
+        self.elements.user_ignore_select.append(
+          self.getIgnores().sort((a, b) => a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase())).map(x =>
+            crel('option', { value: x }, x)
+          )
+        );
+
+        self.elements.user_unignore_button.on('click', function() {
+          if (self.removeIgnore(self.elements.user_ignore_select.val())) {
+            self.elements.user_ignore_select.find(`option[value="${self.elements.user_ignore_select.val()}"]`).remove();
+            self.elements.user_ignore_feedback_label.text('User unignored.');
+            self.elements.user_ignore_feedback_label.css('color', 'var(--text-red-color)');
+            self.elements.user_ignore_feedback_label.css('display', 'block');
+            setTimeout(() => self.elements.user_ignore_feedback_label.fadeOut(500), 3000);
+          } else if (self.ignored.length === 0) {
+            self.elements.user_ignore_feedback_label.text('You haven\'t ignored any users. Congratulations!');
+            self.elements.user_ignore_feedback_label.css('color', 'var(--text-red-color)');
+            self.elements.user_ignore_feedback_label.css('display', 'block');
+            setTimeout(() => self.elements.user_ignore_feedback_label.fadeOut(500), 3000);
+          } else {
+            self.elements.user_ignore_feedback_label.text('Failed to unignore user. Either they weren\'t actually ignored, or an error occurred. Contact a developer if the problem persists.');
+            self.elements.user_ignore_feedback_label.css('color', 'var(--text-red-color)');
+            self.elements.user_ignore_feedback_label.css('display', 'block');
+            setTimeout(() => self.elements.user_ignore_feedback_label.fadeOut(500), 5000);
+          }
         });
       },
       _handleChatbanVisualState(canChat) {
@@ -4748,18 +4746,59 @@ window.App = (function() {
       webinit(data) {
         self.setCharLimit(data.chatCharacterLimit);
         self.canvasBanRespected = data.chatRespectsCanvasBan;
+        self.customEmoji = data.customEmoji.map(({ name, emoji }) => ({ name, emoji: `./emoji/${emoji}` }));
+        self.initEmojiPicker();
+        self.initTypeahead();
+        self._populateUsernameColor();
+        self.elements.username_color_select.value = user.getChatNameColor();
+        self.elements.username_color_select.on('change', function() {
+          self.elements.username_color_select.disabled = true;
+
+          const color = this.value >> 0;
+          $.post({
+            type: 'POST',
+            url: '/chat/setColor',
+            data: {
+              color
+            },
+            success: () => {
+              user.setChatNameColor(color);
+              self.updateSelectedNameColor(color);
+              self.elements.username_color_feedback_label.innerText = 'Color updated';
+            },
+            error: (data) => {
+              const err = data.responseJSON && data.responseJSON.details ? data.responseJSON.details : data.responseText;
+              if (data.status === 200) {
+                self.elements.username_color_feedback_label.innerText = err;
+              } else {
+                self.elements.username_color_feedback_label.innerText = 'Couldn\'t change chat color: ' + err;
+              }
+            },
+            complete: () => {
+              self.elements.username_color_select.value = user.getChatNameColor();
+              self.elements.username_color_select.disabled = false;
+            }
+          });
+        });
       },
       initTypeahead() {
         // init DBs
-        const dbEmojis = new TH.Database('emoji', {}, false, false, (x) => x.value, (x) => `${twemoji.parse(x.value)} :${x.key}:`);
+        const dbEmojis = new TH.Database('emoji', {}, false, false, (x) => (twemoji.test(x.value)) ? x.value : ':' + x.key + ':', (x) => (twemoji.test(x.value)) ? `${twemoji.parse(x.value)} :${x.key}:` : `${'<img class="emoji emoji--custom" draggable="false" alt="' + x.key + '" src="' + x.value + '"/>'} :${x.key}:`);
         const dbUsers = new TH.Database('users', {}, false, false, (x) => `@${x.value} `, (x) => `@${x.value}`);
 
+        // add emoji to emoji DB
         if (window.emojiDB) {
           Object.keys(window.emojiDB)
             .sort((a, b) => a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase()))
             .forEach(name => {
               dbEmojis.addEntry(name, window.emojiDB[name]);
             });
+        }
+        if (self.customEmoji.length > 0) {
+          self.customEmoji.forEach(function (emoji) {
+            window.emojiDB[emoji.name.toLowerCase()] = emoji.emoji;
+            dbEmojis.addEntry(emoji.name, emoji.emoji);
+          });
         }
 
         // init triggers
@@ -4881,46 +4920,6 @@ window.App = (function() {
           document.body.classList.toggle('typeahead-open', self.typeahead.suggesting);
         }
       },
-      makeMarkdownProcessor() {
-        return pxlsMarkdown.processor()
-          .use(pxlsMarkdown.plugins.emoji, {
-            emojiDB: window.emojiDB,
-            // from Twemoji 13.0.0
-            emojiRegex: /(?:\ud83d\udc68\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffc-\udfff]|\ud83d\udc68\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb\udffd-\udfff]|\ud83d\udc68\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb\udffc\udffe\udfff]|\ud83d\udc68\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb-\udffd\udfff]|\ud83d\udc68\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb-\udffe]|\ud83d\udc69\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffc-\udfff]|\ud83d\udc69\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffc-\udfff]|\ud83d\udc69\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb\udffd-\udfff]|\ud83d\udc69\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffb\udffd-\udfff]|\ud83d\udc69\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb\udffc\udffe\udfff]|\ud83d\udc69\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffb\udffc\udffe\udfff]|\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb-\udffd\udfff]|\ud83d\udc69\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffb-\udffd\udfff]|\ud83d\udc69\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc68\ud83c[\udffb-\udffe]|\ud83d\udc69\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83d\udc69\ud83c[\udffb-\udffe]|\ud83e\uddd1\ud83c\udffb\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\ud83c\udffc\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\ud83c\udffd\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\ud83c\udffe\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\ud83c\udfff\u200d\ud83e\udd1d\u200d\ud83e\uddd1\ud83c[\udffb-\udfff]|\ud83e\uddd1\u200d\ud83e\udd1d\u200d\ud83e\uddd1|\ud83d\udc6b\ud83c[\udffb-\udfff]|\ud83d\udc6c\ud83c[\udffb-\udfff]|\ud83d\udc6d\ud83c[\udffb-\udfff]|\ud83d[\udc6b-\udc6d])|(?:\ud83d[\udc68\udc69]|\ud83e\uddd1)(?:\ud83c[\udffb-\udfff])?\u200d(?:\u2695\ufe0f|\u2696\ufe0f|\u2708\ufe0f|\ud83c[\udf3e\udf73\udf7c\udf84\udf93\udfa4\udfa8\udfeb\udfed]|\ud83d[\udcbb\udcbc\udd27\udd2c\ude80\ude92]|\ud83e[\uddaf-\uddb3\uddbc\uddbd])|(?:\ud83c[\udfcb\udfcc]|\ud83d[\udd74\udd75]|\u26f9)((?:\ud83c[\udffb-\udfff]|\ufe0f)\u200d[\u2640\u2642]\ufe0f)|(?:\ud83c[\udfc3\udfc4\udfca]|\ud83d[\udc6e\udc70\udc71\udc73\udc77\udc81\udc82\udc86\udc87\ude45-\ude47\ude4b\ude4d\ude4e\udea3\udeb4-\udeb6]|\ud83e[\udd26\udd35\udd37-\udd39\udd3d\udd3e\uddb8\uddb9\uddcd-\uddcf\uddd6-\udddd])(?:\ud83c[\udffb-\udfff])?\u200d[\u2640\u2642]\ufe0f|(?:\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d\udc68|\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d\udc8b\u200d\ud83d[\udc68\udc69]|\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc68\u200d\u2764\ufe0f\u200d\ud83d\udc68|\ud83d\udc68\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc68\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc68\u200d\ud83d\udc68\u200d\ud83d[\udc66\udc67]|\ud83d\udc68\u200d\ud83d\udc69\u200d\ud83d[\udc66\udc67]|\ud83d\udc69\u200d\u2764\ufe0f\u200d\ud83d[\udc68\udc69]|\ud83d\udc69\u200d\ud83d\udc66\u200d\ud83d\udc66|\ud83d\udc69\u200d\ud83d\udc67\u200d\ud83d[\udc66\udc67]|\ud83d\udc69\u200d\ud83d\udc69\u200d\ud83d[\udc66\udc67]|\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f|\ud83c\udff3\ufe0f\u200d\ud83c\udf08|\ud83c\udff4\u200d\u2620\ufe0f|\ud83d\udc15\u200d\ud83e\uddba|\ud83d\udc3b\u200d\u2744\ufe0f|\ud83d\udc41\u200d\ud83d\udde8|\ud83d\udc68\u200d\ud83d[\udc66\udc67]|\ud83d\udc69\u200d\ud83d[\udc66\udc67]|\ud83d\udc6f\u200d\u2640\ufe0f|\ud83d\udc6f\u200d\u2642\ufe0f|\ud83e\udd3c\u200d\u2640\ufe0f|\ud83e\udd3c\u200d\u2642\ufe0f|\ud83e\uddde\u200d\u2640\ufe0f|\ud83e\uddde\u200d\u2642\ufe0f|\ud83e\udddf\u200d\u2640\ufe0f|\ud83e\udddf\u200d\u2642\ufe0f|\ud83d\udc08\u200d\u2b1b)|[#*0-9]\ufe0f?\u20e3|(?:[©®\u2122\u265f]\ufe0f)|(?:\ud83c[\udc04\udd70\udd71\udd7e\udd7f\ude02\ude1a\ude2f\ude37\udf21\udf24-\udf2c\udf36\udf7d\udf96\udf97\udf99-\udf9b\udf9e\udf9f\udfcd\udfce\udfd4-\udfdf\udff3\udff5\udff7]|\ud83d[\udc3f\udc41\udcfd\udd49\udd4a\udd6f\udd70\udd73\udd76-\udd79\udd87\udd8a-\udd8d\udda5\udda8\uddb1\uddb2\uddbc\uddc2-\uddc4\uddd1-\uddd3\udddc-\uddde\udde1\udde3\udde8\uddef\uddf3\uddfa\udecb\udecd-\udecf\udee0-\udee5\udee9\udef0\udef3]|[\u203c\u2049\u2139\u2194-\u2199\u21a9\u21aa\u231a\u231b\u2328\u23cf\u23ed-\u23ef\u23f1\u23f2\u23f8-\u23fa\u24c2\u25aa\u25ab\u25b6\u25c0\u25fb-\u25fe\u2600-\u2604\u260e\u2611\u2614\u2615\u2618\u2620\u2622\u2623\u2626\u262a\u262e\u262f\u2638-\u263a\u2640\u2642\u2648-\u2653\u2660\u2663\u2665\u2666\u2668\u267b\u267f\u2692-\u2697\u2699\u269b\u269c\u26a0\u26a1\u26a7\u26aa\u26ab\u26b0\u26b1\u26bd\u26be\u26c4\u26c5\u26c8\u26cf\u26d1\u26d3\u26d4\u26e9\u26ea\u26f0-\u26f5\u26f8\u26fa\u26fd\u2702\u2708\u2709\u270f\u2712\u2714\u2716\u271d\u2721\u2733\u2734\u2744\u2747\u2757\u2763\u2764\u27a1\u2934\u2935\u2b05-\u2b07\u2b1b\u2b1c\u2b50\u2b55\u3030\u303d\u3297\u3299])(?:\ufe0f|(?!\ufe0e))|(?:(?:\ud83c[\udfcb\udfcc]|\ud83d[\udd74\udd75\udd90]|[\u261d\u26f7\u26f9\u270c\u270d])(?:\ufe0f|(?!\ufe0e))|(?:\ud83c[\udf85\udfc2-\udfc4\udfc7\udfca]|\ud83d[\udc42\udc43\udc46-\udc50\udc66-\udc69\udc6e\udc70-\udc78\udc7c\udc81-\udc83\udc85-\udc87\udcaa\udd7a\udd95\udd96\ude45-\ude47\ude4b-\ude4f\udea3\udeb4-\udeb6\udec0\udecc]|\ud83e[\udd0c\udd0f\udd18-\udd1c\udd1e\udd1f\udd26\udd30-\udd39\udd3d\udd3e\udd77\uddb5\uddb6\uddb8\uddb9\uddbb\uddcd-\uddcf\uddd1-\udddd]|[\u270a\u270b]))(?:\ud83c[\udffb-\udfff])?|(?:\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f|\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc73\udb40\udc63\udb40\udc74\udb40\udc7f|\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc77\udb40\udc6c\udb40\udc73\udb40\udc7f|\ud83c\udde6\ud83c[\udde8-\uddec\uddee\uddf1\uddf2\uddf4\uddf6-\uddfa\uddfc\uddfd\uddff]|\ud83c\udde7\ud83c[\udde6\udde7\udde9-\uddef\uddf1-\uddf4\uddf6-\uddf9\uddfb\uddfc\uddfe\uddff]|\ud83c\udde8\ud83c[\udde6\udde8\udde9\uddeb-\uddee\uddf0-\uddf5\uddf7\uddfa-\uddff]|\ud83c\udde9\ud83c[\uddea\uddec\uddef\uddf0\uddf2\uddf4\uddff]|\ud83c\uddea\ud83c[\udde6\udde8\uddea\uddec\udded\uddf7-\uddfa]|\ud83c\uddeb\ud83c[\uddee-\uddf0\uddf2\uddf4\uddf7]|\ud83c\uddec\ud83c[\udde6\udde7\udde9-\uddee\uddf1-\uddf3\uddf5-\uddfa\uddfc\uddfe]|\ud83c\udded\ud83c[\uddf0\uddf2\uddf3\uddf7\uddf9\uddfa]|\ud83c\uddee\ud83c[\udde8-\uddea\uddf1-\uddf4\uddf6-\uddf9]|\ud83c\uddef\ud83c[\uddea\uddf2\uddf4\uddf5]|\ud83c\uddf0\ud83c[\uddea\uddec-\uddee\uddf2\uddf3\uddf5\uddf7\uddfc\uddfe\uddff]|\ud83c\uddf1\ud83c[\udde6-\udde8\uddee\uddf0\uddf7-\uddfb\uddfe]|\ud83c\uddf2\ud83c[\udde6\udde8-\udded\uddf0-\uddff]|\ud83c\uddf3\ud83c[\udde6\udde8\uddea-\uddec\uddee\uddf1\uddf4\uddf5\uddf7\uddfa\uddff]|\ud83c\uddf4\ud83c\uddf2|\ud83c\uddf5\ud83c[\udde6\uddea-\udded\uddf0-\uddf3\uddf7-\uddf9\uddfc\uddfe]|\ud83c\uddf6\ud83c\udde6|\ud83c\uddf7\ud83c[\uddea\uddf4\uddf8\uddfa\uddfc]|\ud83c\uddf8\ud83c[\udde6-\uddea\uddec-\uddf4\uddf7-\uddf9\uddfb\uddfd-\uddff]|\ud83c\uddf9\ud83c[\udde6\udde8\udde9\uddeb-\udded\uddef-\uddf4\uddf7\uddf9\uddfb\uddfc\uddff]|\ud83c\uddfa\ud83c[\udde6\uddec\uddf2\uddf3\uddf8\uddfe\uddff]|\ud83c\uddfb\ud83c[\udde6\udde8\uddea\uddec\uddee\uddf3\uddfa]|\ud83c\uddfc\ud83c[\uddeb\uddf8]|\ud83c\uddfd\ud83c\uddf0|\ud83c\uddfe\ud83c[\uddea\uddf9]|\ud83c\uddff\ud83c[\udde6\uddf2\uddfc]|\ud83c[\udccf\udd8e\udd91-\udd9a\udde6-\uddff\ude01\ude32-\ude36\ude38-\ude3a\ude50\ude51\udf00-\udf20\udf2d-\udf35\udf37-\udf7c\udf7e-\udf84\udf86-\udf93\udfa0-\udfc1\udfc5\udfc6\udfc8\udfc9\udfcf-\udfd3\udfe0-\udff0\udff4\udff8-\udfff]|\ud83d[\udc00-\udc3e\udc40\udc44\udc45\udc51-\udc65\udc6a\udc6f\udc79-\udc7b\udc7d-\udc80\udc84\udc88-\udca9\udcab-\udcfc\udcff-\udd3d\udd4b-\udd4e\udd50-\udd67\udda4\uddfb-\ude44\ude48-\ude4a\ude80-\udea2\udea4-\udeb3\udeb7-\udebf\udec1-\udec5\uded0-\uded2\uded5-\uded7\udeeb\udeec\udef4-\udefc\udfe0-\udfeb]|\ud83e[\udd0d\udd0e\udd10-\udd17\udd1d\udd20-\udd25\udd27-\udd2f\udd3a\udd3c\udd3f-\udd45\udd47-\udd76\udd78\udd7a-\uddb4\uddb7\uddba\uddbc-\uddcb\uddd0\uddde-\uddff\ude70-\ude74\ude78-\ude7a\ude80-\ude86\ude90-\udea8\udeb0-\udeb6\udec0-\udec2\uded0-\uded6]|[\u23e9-\u23ec\u23f0\u23f3\u267e\u26ce\u2705\u2728\u274c\u274e\u2753-\u2755\u2795-\u2797\u27b0\u27bf\ue50a])|\ufe0f/
-          })
-          .use(pxlsMarkdown.plugins.methodWhitelist, {
-            block: ['blankLine'],
-            inline: ['coordinate', 'emoji_raw', 'emoji_name', 'mention', 'escape', 'autoLink', 'url', 'underline', 'strong', 'emphasis', 'deletion', 'code']
-          })
-          .use(function() {
-            this.Compiler.prototype.visitors.emoji = (node, next) => {
-              const el = twemoji.parse(crel('span', node.value)).children[0];
-              el.title = `:${node.emojiName}:`;
-              return el;
-            };
-
-            this.Compiler.prototype.visitors.link = (node, next) => {
-              const url = new URL(node.url, location.href);
-
-              const hashParams = new URLSearchParams(url.hash.substr(1));
-              const getParam = (name) => hashParams.has(name) ? hashParams.get(name) : url.searchParams.get(name);
-
-              const coordsX = parseFloat(getParam('x'));
-              const coordsY = parseFloat(getParam('y'));
-
-              const isSameOrigin = location.origin && url.origin && location.origin === url.origin;
-              if (isSameOrigin && !isNaN(coordsX) && !isNaN(coordsY) && board.validateCoordinates(coordsX, coordsY)) {
-                const scale = parseFloat(getParam('scale'));
-                return self._makeCoordinatesElement(url.toString(), coordsX, coordsY, isNaN(scale) ? 20 : scale, getParam('template'), getParam('title'));
-              } else {
-                return crel('a', { href: node.url, target: '_blank' }, next());
-              }
-            };
-
-            this.Compiler.prototype.visitors.coordinate =
-              (node, next) => self._makeCoordinatesElement(node.url, node.x, node.y, node.scale);
-          });
-      },
       _handleTypeaheadInsert: function(elem) {
         if (this instanceof HTMLElement) elem = this;
         else if (!(elem instanceof HTMLElement)) return console.warn('Got non-elem on handleTypeaheadInsert: %o', elem);
@@ -4958,6 +4957,32 @@ window.App = (function() {
         self.elements.typeahead_list[0].innerHTML = '';
         document.body.classList.remove('typeahead-open');
       },
+      initEmojiPicker() {
+        const pickerOptions = {
+          position: 'left-start',
+          style: 'twemoji',
+          zIndex: 30,
+          emojiVersion: '13.0'
+        };
+        if (self.customEmoji.length > 0) pickerOptions.custom = self.customEmoji;
+        self.picker = new EmojiButton.EmojiButton(pickerOptions);
+        self.picker.on('emoji', emojiObj => {
+          if (emojiObj.custom) {
+            self.elements.input[0].value += ':' + emojiObj.name + ':';
+            self.elements.input[0].focus();
+          } else {
+            self.elements.input[0].value += emojiObj.emoji;
+            self.elements.input[0].focus();
+          }
+        });
+        self.elements.emoji_button.on('click', function() {
+          self.picker.pickerVisible ? self.picker.hidePicker() : self.picker.showPicker(this);
+          const searchEl = self.picker.pickerEl.querySelector('.emoji-picker__search'); // searchEl is destroyed every time the picker closes. have to re-attach
+          if (searchEl) {
+            searchEl.addEventListener('keydown', e => e.stopPropagation());
+          }
+        });
+      },
       reloadIgnores: () => { self.ignored = (ls.get('chat.ignored') || '').split(','); },
       saveIgnores: () => ls.set('chat.ignored', (self.ignored || []).join(',')),
       addIgnore: name => {
@@ -4965,6 +4990,7 @@ window.App = (function() {
           self.ignored.push(name);
           self.saveIgnores();
           $(window).trigger('pxls:chat:userIgnored', name);
+          self.elements.user_ignore_select.append(crel('option', { value: name }, name));
           return true;
         }
         return false;
@@ -4975,191 +5001,20 @@ window.App = (function() {
           const spliced = self.ignored.splice(index, 1);
           self.saveIgnores();
           $(window).trigger('pxls:chat:userUnignored', spliced && spliced[0] ? spliced[0] : false);
+          self.elements.user_ignore_select.find(`option[value="${name}"]`).remove();
           return spliced && spliced[0];
         }
         return false;
       },
       getIgnores: () => [].concat(self.ignored || []),
-      popChatSettings() {
-        // dom generation
-        const body = crel('div', { class: 'chat-settings-wrapper no-p-margin' });
-
-        const genCheckboxGroup = (label) => {
-          const cb = crel('input', { type: 'checkbox' });
-          const lbl = crel('label', { class: 'input-group' },
-            cb,
-            ' ',
-            crel('span', { class: 'label-text' }, label));
-          return [cb, lbl];
-        };
-
-        const [_cb24hTimestamps, lbl24hTimestamps] = genCheckboxGroup('24 Hour Timestamps');
-        const [_cbPixelPlaceBadges, lblPixelPlaceBadges] = genCheckboxGroup('Show pixel-placed badges');
-        const [_cbFactionTagBadges, lblFactionTagBadges] = genCheckboxGroup('Show faction tags');
-        const [_cbPings, lblPings] = genCheckboxGroup('Enable pings');
-
-        const _cbPingAudio = crel('select', {},
-          crel('option', { value: 'off' }, 'Off'),
-          crel('option', { value: 'discrete' }, 'Only when necessary'),
-          crel('option', { value: 'always' }, 'Always')
-        );
-        const lblPingAudio = crel('label', { class: 'input-group' },
-          crel('span', { class: 'label-text' }, 'Play sound on ping: '),
-          _cbPingAudio
-        );
-
-        const _rgPingAudioVol = crel('input', { type: 'range', min: 0, max: 1, step: 0.01 });
-        const _txtPingAudioVol = crel('span', { class: 'range-text-value' });
-        const lblPingAudioVol = crel('label', { class: 'input-group' },
-          crel('span', { class: 'label-text' }, 'Ping sound volume: '),
-          _rgPingAudioVol,
-          _txtPingAudioVol
-        );
-
-        const [_cbBanner, lblBanner] = genCheckboxGroup('Enable the rotating banner under chat');
-        const [_cbTemplateTitles, lblTemplateTitles] = genCheckboxGroup('Replace template titles with URLs in chat where applicable');
-
-        const _txtFontSize = crel('input', { type: 'number', min: '1', max: '72' });
-        const _btnFontSizeConfirm = crel('button', { class: 'text-button' }, crel('i', { class: 'fas fa-check' }));
-        const lblFontSize = crel('label', { class: 'input-group' },
-          crel('span', { class: 'label-text' }, 'Font Size: '),
-          _txtFontSize
-        );
-
-        const [_cbHorizontal, lblHorizontal] = genCheckboxGroup('Enable horizontal chat');
-
-        const _selInternalClick = crel('select',
-          Object.values(self.TEMPLATE_ACTIONS).map(action =>
-            crel('option', { value: action.id }, action.pretty)
-          )
-        );
-        const lblInternalAction = crel('label', { class: 'input-group' },
-          crel('span', { class: 'label-text' }, 'Default internal link action click: '),
-          _selInternalClick
-        );
-
-        const _selUsernameColor = crel('select', { class: 'username-color-picker' },
-          user.hasPermission('chat.usercolor.rainbow') ? crel('option', { value: -1, class: 'rainbow' }, 'rainbow') : null,
-          user.hasPermission('chat.usercolor.donator') ? crel('option', { value: -2, class: 'donator' }, 'donator') : null,
-          place.getPalette().map((x, i) => crel('option', {
-            value: i,
-            'data-idx': i,
-            style: `background-color: ${x}`
-          }, x))
-        );
-        const lblUsernameColor = crel('label', { class: 'input-group' },
-          crel('span', { class: 'label-text' }, 'Username Color: '),
-          _selUsernameColor
-        );
-
-        const _selIgnores = crel('select', {
-          class: 'user-ignores',
-          style: 'font-family: monospace; padding: 5px; border-radius: 5px;'
-        },
-        self.getIgnores().sort((a, b) => a.toLocaleLowerCase().localeCompare(b.toLocaleLowerCase())).map(x =>
-          crel('option', { value: x }, x)
-        )
-        );
-        const _btnUnignore = crel('button', { class: 'text-button' }, 'Unignore');
-        const lblIgnores = crel('label', { class: 'input-group' },
-          crel('span', { class: 'label-text' }, 'Ignores: '),
-          _selIgnores
-        );
-        const lblIgnoresFeedback = crel('label', { for: _selIgnores.id, class: 'extra-label' }, '');
-
-        // events/scaffolding
-        _selUsernameColor.value = user.getChatNameColor();
-        uiHelper.styleElemWithChatNameColor(_selUsernameColor, user.getChatNameColor());
-        _selUsernameColor.addEventListener('change', function() {
-          socket.send({ type: 'UserUpdate', updates: { NameColor: String(this.value >> 0) } });
-        });
-
-        settings.chat.font.size.controls.add(_txtFontSize);
-        _btnFontSizeConfirm.click(() => settings.chat.font.size.set(settings.chat.font.size.get()));
-
-        settings.chat.links.internal.behavior.controls.add(_selInternalClick);
-
-        settings.chat.timestamps['24h'].controls.add(_cb24hTimestamps);
-        settings.chat.badges.enable.controls.add(_cbPixelPlaceBadges);
-        settings.chat.factiontags.enable.controls.add(_cbFactionTagBadges);
-        settings.chat.pings.enable.controls.add(_cbPings);
-        settings.chat.pings.audio.when.controls.add(_cbPingAudio);
-        settings.chat.pings.audio.volume.controls.add(_rgPingAudioVol);
-        settings.ui.chat.banner.enable.controls.add(_cbBanner);
-        settings.chat.links.templates.preferurls.controls.add(_cbTemplateTitles);
-        settings.ui.chat.horizontal.enable.controls.add(_cbHorizontal);
-
-        _txtPingAudioVol.innerText = `${(_rgPingAudioVol.value * 100) >> 0}%`;
-        _rgPingAudioVol.addEventListener('change', function() {
-          _txtPingAudioVol.innerText = `${(this.value * 100) >> 0}%`;
-        });
-        uiHelper.prettifyRange(_rgPingAudioVol);
-
-        _btnUnignore.addEventListener('click', function() {
-          if (self.removeIgnore(_selIgnores.value)) {
-            _selIgnores.querySelector(`option[value="${_selIgnores.value}"]`).remove();
-            lblIgnoresFeedback.innerHTML = 'User unignored.';
-            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
-            lblIgnoresFeedback.style.display = 'block';
-            setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 3000);
-          } else if (self.ignored.length === 0) {
-            lblIgnoresFeedback.innerHTML = 'You haven\'t ignored any users. Congratulations!';
-            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
-            lblIgnoresFeedback.style.display = 'block';
-            setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 3000);
-          } else {
-            lblIgnoresFeedback.innerHTML = 'Failed to unignore user. Either they weren\'t actually ignored, or an error occurred. Contact a developer if the problem persists.';
-            lblIgnoresFeedback.style.color = 'var(--text-red-color)';
-            lblIgnoresFeedback.style.display = 'block';
-            setTimeout(() => $(lblIgnoresFeedback).fadeOut(500), 5000);
-          }
-        });
-
-        crel(body,
-          crel('h3', { class: 'chat-settings-title' }, 'Chat Settings'),
-          [
-            lbl24hTimestamps,
-            lblPixelPlaceBadges,
-            lblFactionTagBadges,
-            lblPings,
-            lblHorizontal,
-            lblInternalAction,
-            lblPingAudio,
-            lblPingAudioVol,
-            lblBanner,
-            lblTemplateTitles,
-            lblFontSize,
-            lblUsernameColor,
-            lblIgnores,
-            _btnUnignore,
-            lblIgnoresFeedback
-          ].map(x => crel('div', x))
-        );
-        modal.show(modal.buildDom(
-          crel('h2', { class: 'modal-title' }, 'Chat Settings'),
-          body
-        )).one($.modal.AFTER_CLOSE, function() {
-          settings.chat.font.size.controls.remove(_txtFontSize);
-          settings.chat.links.internal.behavior.controls.remove(_selInternalClick);
-          settings.chat.timestamps['24h'].controls.remove(_cb24hTimestamps);
-          settings.chat.badges.enable.controls.remove(_cbPixelPlaceBadges);
-          settings.chat.factiontags.enable.controls.remove(_cbFactionTagBadges);
-          settings.chat.pings.enable.controls.remove(_cbPings);
-          settings.chat.pings.audio.when.controls.remove(_cbPingAudio);
-          settings.chat.pings.audio.volume.controls.remove(_rgPingAudioVol);
-          settings.ui.chat.banner.enable.controls.remove(_cbBanner);
-          settings.chat.links.templates.preferurls.controls.remove(_cbTemplateTitles);
-          settings.ui.chat.horizontal.enable.controls.remove(_cbHorizontal);
-        });
+      updateStickToBottom() {
+        const obj = self.elements.body[0];
+        self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
       },
       _handlePingJumpClick: function() { // must be es5 for expected behavior. don't upgrade syntax, this is attached as an onclick and we need `this` to be bound by dom bubbles.
         if (this && this.dataset && this.dataset.id) {
           self.scrollToCMID(this.dataset.id);
         }
-      },
-      updateStickToBottom() {
-        const obj = self.elements.body[0];
-        self.stickToBottom = self._numWithinDrift(obj.scrollTop >> 0, obj.scrollHeight - obj.offsetHeight, 2);
       },
       scrollToCMID(cmid) {
         const elem = self.elements.body[0].querySelector(`.chat-line[data-id="${cmid}"]`);
@@ -5240,6 +5095,25 @@ window.App = (function() {
           board.setScale(zoom, true);
         }
       },
+      updateSelectedNameColor: (colorIdx) => {
+        self.elements.username_color_select[0].value = colorIdx;
+        uiHelper.styleElemWithChatNameColor(self.elements.username_color_select[0], colorIdx);
+      },
+      _populateUsernameColor: () => {
+        const hasPermForColor = (name) => user.hasPermission(`chat.usercolor.${name}`);
+        const hasAllDonatorColors = hasPermForColor('donator') || hasPermForColor('donator.*');
+        self.elements.username_color_select.empty().append(
+          hasPermForColor('rainbow') ? crel('option', { value: -1, class: 'rainbow' }, '*. Rainbow') : null,
+          hasAllDonatorColors || hasPermForColor('donator.green') ? crel('option', { value: -2, class: 'donator donator--green' }, '*. Donator Green') : null,
+          hasAllDonatorColors || hasPermForColor('donator.gray') ? crel('option', { value: -3, class: 'donator donator--gray' }, '*. Donator Gray') : null,
+          place.palette.map(({ name, value: hex }, i) => crel('option', {
+            value: i,
+            'data-idx': i,
+            style: `background-color: #${hex}`
+          }, `${i}. ${name}`))
+        );
+        self.elements.username_color_select[0].value = user.getChatNameColor();
+      },
       _updateAuthorNameColor: (author, colorIdx) => {
         self.elements.body.find(`.chat-line[data-author="${author}"] .user`).each(function() {
           uiHelper.styleElemWithChatNameColor(this, colorIdx, 'color');
@@ -5247,7 +5121,7 @@ window.App = (function() {
       },
       _updateAuthorDisplayedFaction: (author, faction) => {
         const tag = (faction && faction.tag) || '';
-        const color = faction ? self.intToHex(faction && faction.color) : null;
+        const color = faction ? intToHex(faction && faction.color) : null;
         const tagStr = (faction && faction.tag) ? `[${twemoji.parse(faction.tag)}]` : '';
         let ttStr = '';
         if (faction && faction.name != null && faction.id != null) {
@@ -5381,7 +5255,7 @@ window.App = (function() {
         }
 
         const _facTag = packet.strippedFaction ? packet.strippedFaction.tag : '';
-        const _facColor = packet.strippedFaction ? self.intToHex(packet.strippedFaction.color) : 0;
+        const _facColor = packet.strippedFaction ? intToHex(packet.strippedFaction.color) : 0;
         const _facTagShow = packet.strippedFaction && settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
         const _facTitle = packet.strippedFaction ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : '';
 
@@ -5404,30 +5278,32 @@ window.App = (function() {
         let nameClasses = 'user';
         if (Array.isArray(packet.authorNameClass)) nameClasses += ` ${packet.authorNameClass.join(' ')}`;
 
-        self.elements.body.append(
-          crel('li', {
-            'data-id': packet.id,
-            'data-tag': _facTag,
-            'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '',
-            'data-author': packet.author,
-            'data-date': packet.date,
-            'data-badges': JSON.stringify(packet.badges || []),
-            class: `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`
-          },
-          crel('span', { title: when.format('MMM Do YYYY, hh:mm:ss A') }, when.format(settings.chat.timestamps['24h'].get() === true ? 'HH:mm' : 'hh:mm A')),
-          document.createTextNode(' '),
-          flairs,
-          crel('span', {
-            class: nameClasses,
-            style: `color: ${place.getPaletteColor(packet.authorNameColor)}`,
-            onclick: self._popUserPanel,
-            onmousemiddledown: self._addAuthorMentionToChatbox
-          }, packet.author),
-          document.createTextNode(': '),
-          contentSpan,
-          document.createTextNode(' ')
-          )
-        );
+        const chatLine = crel('li', {
+          'data-id': packet.id,
+          'data-tag': _facTag,
+          'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '',
+          'data-author': packet.author,
+          'data-date': packet.date,
+          'data-badges': JSON.stringify(packet.badges || []),
+          class: `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`
+        },
+        crel('span', { title: when.format('MMM Do YYYY, hh:mm:ss A') }, when.format(settings.chat.timestamps['24h'].get() === true ? 'HH:mm' : 'hh:mm A')),
+        document.createTextNode(' '),
+        flairs,
+        crel('span', {
+          class: nameClasses,
+          style: `color: #${place.getPaletteColorValue(packet.authorNameColor)}`,
+          onclick: self._popUserPanel,
+          onmousemiddledown: self._addAuthorMentionToChatbox
+        }, packet.author),
+        document.createTextNode(': '),
+        contentSpan,
+        document.createTextNode(' '));
+        self.elements.body.append(chatLine);
+
+        if (packet.purge) {
+          self._markMessagePurged(chatLine, packet.purge);
+        }
 
         if (hasPing) {
           self.pingsList.push(packet);
@@ -5448,7 +5324,6 @@ window.App = (function() {
           }
         }
       },
-      intToHex: (i) => `#${('000000' + (i >>> 0).toString(16)).slice(-6)}`,
       processMessage: (str, mentionCallback) => {
         let content = str;
         try {
@@ -5461,6 +5336,11 @@ window.App = (function() {
         }
 
         return content;
+      },
+      _markMessagePurged: (elem, purge) => {
+        elem.classList.add('purged');
+        elem.setAttribute('title', `Purged by ${purge.initiator} with reason: ${purge.reason || 'none provided'}`);
+        elem.dataset.purgedBy = purge.initiator;
       },
       _makeCoordinatesElement: (raw, x, y, scale, template, title) => {
         let text = `(${x}, ${y}${scale != null ? `, ${scale}x` : ''})`;
@@ -6272,18 +6152,17 @@ window.App = (function() {
     return {
       init: self.init,
       webinit: self.webinit,
-      makeMarkdownProcessor: self.makeMarkdownProcessor,
       _handleActionClick: self._handleActionClick,
       clearPings: self.clearPings,
       setCharLimit: self.setCharLimit,
       processMessage: self.processMessage,
-      popChatSettings: self.popChatSettings,
       saveIgnores: self.saveIgnores,
       reloadIgnores: self.reloadIgnores,
       addIgnore: self.addIgnore,
       removeIgnore: self.removeIgnore,
       getIgnores: self.getIgnores,
       typeahead: self.typeahead,
+      updateSelectedNameColor: self.updateSelectedNameColor,
       updateCanvasBanState: self.updateCanvasBanState,
       registerHook: self.registerHook,
       replaceHook: self.replaceHook,
@@ -6523,6 +6402,7 @@ window.App = (function() {
       pendingSignupToken: null,
       loggedIn: false,
       username: '',
+      placementOverrides: null,
       chatNameColor: 0,
       getRoles: () => self.roles,
       isStaff: () => self.hasPermission('user.admin'),
@@ -6628,6 +6508,20 @@ window.App = (function() {
         });
         // self.pendingSignupToken = null;
       },
+      doSignOut: function() {
+        return fetch('/logout').then(() => {
+          self.elements.userInfo.fadeOut(200);
+          self.elements.pixelCounts.fadeOut(200);
+          self.elements.userMessage.fadeOut(200);
+          self.elements.loginOverlay.fadeIn(200);
+          if (window.deInitAdmin) {
+            window.deInitAdmin();
+          }
+          self.loggedIn = false;
+          $(window).trigger('pxls:user:loginState', [false]);
+          socket.reconnectSocket();
+        });
+      },
       init: function() {
         self.elements.userMessage.hide();
         self.elements.signup.hide();
@@ -6643,18 +6537,23 @@ window.App = (function() {
         self.elements.userInfo.hide();
         self.elements.userInfo.find('.logout').click(function(evt) {
           evt.preventDefault();
-          $.get('/logout', function() {
-            self.elements.userInfo.fadeOut(200);
-            self.elements.pixelCounts.fadeOut(200);
-            self.elements.userMessage.fadeOut(200);
-            self.elements.loginOverlay.fadeIn(200);
-            if (window.deInitAdmin) {
-              window.deInitAdmin();
-            }
-            self.loggedIn = false;
-            $(window).trigger('pxls:user:loginState', [false]);
-            socket.reconnectSocket();
-          });
+
+          modal.show(modal.buildDom(
+            crel('h2', { class: 'modal-title' }, 'Sign Out'),
+            crel('div',
+              crel('p', 'Are you sure you want to sign out?'),
+              crel('div', { class: 'buttons' },
+                crel('button', {
+                  class: 'dangerous-button text-button',
+                  onclick: () => self.doSignOut().then(() => modal.closeAll())
+                }, 'Yes'),
+                crel('button', {
+                  class: 'text-button',
+                  onclick: () => modal.closeAll()
+                }, 'No')
+              )
+            )
+          ));
         });
         $(window).bind('storage', function(evt) {
           if (evt.originalEvent.key === 'auth') {
@@ -6678,8 +6577,11 @@ window.App = (function() {
           self.pixelCountAllTime = data.pixelCountAllTime;
           self.updatePixelCountElements();
           self.elements.pixelCounts.fadeIn(200);
+          self.placementOverrides = data.placementOverrides;
+          place.togglePaletteSpecialColors(data.placementOverrides.canPlaceAnyColor);
           self.chatNameColor = data.chatNameColor;
-          uiHelper.updateSelectedNameColor(data.chatNameColor);
+          chat.updateSelectedNameColor(data.chatNameColor);
+          self.roles = data.roles;
           $(window).trigger('pxls:user:loginState', [true]);
           self.renameRequested = data.renameRequested;
           uiHelper.setDiscordName(data.discordName || null);
@@ -6694,7 +6596,6 @@ window.App = (function() {
           } else {
             self.elements.userInfo.fadeIn(200);
           }
-          self.roles = data.roles;
 
           if (data.banExpiry === 0) {
             isBanned = true;
@@ -6712,8 +6613,7 @@ window.App = (function() {
                 user: user,
                 modal: modal,
                 lookup: lookup,
-                chat: chat,
-                cdOverride: data.cdOverride
+                chat: chat
               }, admin => { self.admin = admin; });
             });
           } else if (window.deInitAdmin) {
@@ -6752,6 +6652,9 @@ window.App = (function() {
 
           // For userscripts.
           $(window).trigger('pxls:pixelCounts:update', Object.assign({}, data));
+        });
+        socket.on('admin_placement_overrides', function(data) {
+          self.placementOverrides = data.placementOverrides;
         });
         socket.on('rename', function(e) {
           if (e.requested === true) {
@@ -6857,6 +6760,9 @@ window.App = (function() {
       setChatNameColor: c => { self.chatNameColor = c; },
       get admin() {
         return self.admin || false;
+      },
+      get placementOverrides() {
+        return self.placementOverrides;
       }
     };
   })();
@@ -7135,10 +7041,20 @@ window.App = (function() {
           reload: overlays.heatmap.reload
         };
       },
+      get heatbackground() {
+        return {
+          reload: overlays.heatbackground.reload
+        };
+      },
       get virginmap() {
         return {
           clear: overlays.virginmap.clear,
           reload: overlays.virginmap.reload
+        };
+      },
+      get virginbackground() {
+        return {
+          reload: overlays.virginbackground.reload
         };
       }
     },

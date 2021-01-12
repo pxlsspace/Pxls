@@ -113,8 +113,8 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!-- Latest LTS as of 2019-01-23 -->
-                    <nodeVersion>v12.14.1</nodeVersion>
+                    <!-- Latest LTS as of 2020-12-28 -->
+                    <nodeVersion>v14.15.3</nodeVersion>
                 </configuration>
             </plugin>
         </plugins>
@@ -124,7 +124,7 @@
         <dependency>
             <groupId>io.undertow</groupId>
             <artifactId>undertow-core</artifactId>
-            <version>2.0.23.Final</version>
+            <version>2.2.3.Final</version>
         </dependency>
 
         <dependency>
@@ -203,6 +203,18 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-jcs-jcache</artifactId>
             <version>2.2.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.30</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>1.7.30</version>
         </dependency>
     </dependencies>
 </project>

@@ -177,7 +177,8 @@ public class Database {
                     "content VARCHAR(2048) NOT NULL," +
                     "filtered VARCHAR(2048) NOT NULL DEFAULT ''," +
                     "purged BOOL NOT NULL DEFAULT false," +
-                    "purged_by INT)")
+                    "purged_by INT," +
+                    "purge_reason TEXT)")
                     .execute();
             // chat_reports
             handle.createUpdate("CREATE TABLE IF NOT EXISTS chat_reports (" +
@@ -410,22 +411,20 @@ public class Database {
                 .mapToMap()
                 .map(entry -> {
                     int from = toIntExact((long) entry.get("secondary_id"));
-                    DBPixelPlacementFull fromPixel = handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.undo_action, u.id as u_id, u.username, u.login_with_ip, u.ban_expiry, u.is_shadow_banned, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.discord_name FROM pixels p LEFT JOIN users u on p.who = u.id WHERE p.id = :id")
+                    return handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.undo_action, u.id as u_id, u.username, u.login_with_ip, u.ban_expiry, u.is_shadow_banned, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.discord_name FROM pixels p LEFT JOIN users u on p.who = u.id WHERE p.id = :id")
                             .bind("id", from)
                             .map(new DBPixelPlacementFull.Mapper())
                             .first();
-                    boolean canUndo = handle.select("SELECT NOT EXISTS(SELECT 1 FROM pixels WHERE x = :x AND y = :y AND most_recent AND id > :id)")
-                            .bind("x", fromPixel.x)
-                            .bind("y", fromPixel.y)
-                            .bind("id", fromPixel.id)
-                            .mapTo(Boolean.class)
-                            .first();
-                    if (canUndo) {
-                        return fromPixel;
-                    }
-                    return null;
                 })
-                .list());
+                .stream()
+                // Filter out places where pixels were placed after the initial rollback.
+                .filter(fromPixel -> handle.select("SELECT NOT EXISTS(SELECT 1 FROM pixels WHERE x = :x AND y = :y AND most_recent AND id > :id)")
+                    .bind("x", fromPixel.x)
+                    .bind("y", fromPixel.y)
+                    .bind("id", fromPixel.id)
+                    .mapTo(Boolean.class)
+                    .first())
+                .collect(Collectors.toList()));
     }
 
     /**
@@ -1241,7 +1240,7 @@ public class Database {
      * @return The retrieved {@link DBChatMessage}.
      */
     public DBChatMessage getChatMessageByID(int id) {
-        return jdbi.withHandle(handle -> handle.select("SELECT id, author, sent, content, filtered, purged, purged_by FROM chat_messages WHERE id = :id LIMIT 1")
+        return jdbi.withHandle(handle -> handle.select("SELECT * FROM chat_messages WHERE id = :id LIMIT 1")
                 .bind("id", id)
                 .map(new DBChatMessage.Mapper())
                 .first());
@@ -1253,7 +1252,7 @@ public class Database {
      * @return The retrieved {@link DBChatMessage}s.
      */
     public DBChatMessage[] getChatMessagesByAuthor(int authorID) {
-        return jdbi.withHandle(handle -> handle.select("SELECT id, author, sent, content, filtered, purged, purged_by FROM chat_messages WHERE author = :author ORDER BY sent ASC")
+        return jdbi.withHandle(handle -> handle.select("SELECT * FROM chat_messages WHERE author = :author ORDER BY sent ASC")
                 .bind("author", authorID)
                 .map(new DBChatMessage.Mapper())
                 .list()
@@ -1275,7 +1274,7 @@ public class Database {
      * @return The retrieved {@link DBChatMessage}s. The length is determined by the {@link ResultSet} size.
      */
     public DBChatMessage[] getLastXMessages(int x, boolean includePurged) {
-        return jdbi.withHandle(handle -> handle.select("SELECT id, author, sent, content, filtered, purged, purged_by FROM chat_messages WHERE CASE WHEN :includePurged THEN true ELSE purged = false END ORDER BY sent DESC LIMIT :limit")
+        return jdbi.withHandle(handle -> handle.select("SELECT * FROM chat_messages WHERE CASE WHEN :includePurged THEN true ELSE purged = false END ORDER BY sent DESC LIMIT :limit")
                 .bind("includePurged", includePurged)
                 .bind("limit", x)
                 .map(new DBChatMessage.Mapper())
@@ -1298,7 +1297,6 @@ public class Database {
             String author = "CONSOLE";
             int nameColor = 0;
             Faction faction = null;
-            String parsedMessage = dbChatMessage.content; //TODO https://github.com/atlassian/commonmark-java
             List<String> nameClass = null;
             if (dbChatMessage.author_uid > 0) {
                 author = "$Unknown";
@@ -1311,7 +1309,17 @@ public class Database {
                     faction = temp.fetchDisplayedFaction();
                 }
             }
-            toReturn.add(new ChatMessage(dbChatMessage.id, author, dbChatMessage.sent, App.getConfig().getBoolean("textFilter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content, badges, nameClass, nameColor, faction));
+            toReturn.add(new ChatMessage(
+                dbChatMessage.id,
+                author,
+                dbChatMessage.sent,
+                App.getConfig().getBoolean("textFilter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content,
+                dbChatMessage.purged ? new ChatMessage.Purge(dbChatMessage.purged_by_uid, dbChatMessage.purge_reason) : null,
+                badges,
+                nameClass,
+                nameColor,
+                faction
+            ));
         }
         return toReturn;
     }
@@ -1397,9 +1405,10 @@ public class Database {
      * @param broadcast Whether or not to broadcast a purge message.
      */
     public void purgeChat(User target, User initiator, int amount, String reason, boolean broadcast) {
-        jdbi.useHandle(handle -> handle.createUpdate("UPDATE chat_messages SET purged = true, purged_by = :initiator WHERE author = :who")
+        jdbi.useHandle(handle -> handle.createUpdate("UPDATE chat_messages SET purged = true, purged_by = :initiator, purge_reason = :reason WHERE author = :who")
                 .bind("initiator", initiator == null ? 0 : initiator.getId())
                 .bind("who", target.getId())
+                .bind("reason", reason)
                 .execute());
         String initiatorName = initiator == null ? "CONSOLE" : initiator.getName();
         int initiatorID = initiator == null ? 0 : initiator.getId();
@@ -1424,9 +1433,10 @@ public class Database {
      * @param broadcast Whether or not to broadcast a purge message.
      */
     public void purgeChatID(User target, User initiator, Integer id, String reason, boolean broadcast) {
-        jdbi.useHandle(handle -> handle.createUpdate("UPDATE chat_messages SET purged = true, purged_by = :initiator WHERE id = :id")
+        jdbi.useHandle(handle -> handle.createUpdate("UPDATE chat_messages SET purged = true, purged_by = :initiator, purge_reason = :reason WHERE id = :id")
                 .bind("initiator", initiator.getId())
                 .bind("id", id)
+                .bind("reason", reason)
                 .execute());
         String initiatorName = initiator == null ? "CONSOLE" : initiator.getName();
         int initiatorID = initiator == null ? 0 : initiator.getId();

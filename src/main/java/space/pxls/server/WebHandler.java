@@ -9,6 +9,7 @@ import com.mitchellbosecke.pebble.loader.ClasspathLoader;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
+import io.undertow.server.handlers.CookieSameSiteMode;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
 import io.undertow.util.*;
@@ -160,7 +161,7 @@ public class WebHandler {
                     m.put("requested_self", requested_self);
                     m.put("profile_of", profileUser);
                     m.put("factions", factions);
-                    m.put("palette", App.getConfig().getStringList("board.palette"));
+                    m.put("palette", App.getPalette().getColors().stream().map(color -> color.getValue()).collect(Collectors.toList()));
                     m.put("route_root", requested_self ? "/profile" : String.format("/profile/%s", requested));
 
                     if (requested_self) {
@@ -662,14 +663,35 @@ public class WebHandler {
     }
 
     private void setAuthCookie(HttpServerExchange exchange, String loginToken, int days) {
-        Calendar cal2 = Calendar.getInstance();
-        cal2.add(Calendar.DATE, -1);
-        exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setPath("/").setExpires(cal2.getTime()));
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, days);
+        Calendar pastCalendar = Calendar.getInstance();
+        pastCalendar.add(Calendar.DATE, -1);
+        exchange.setResponseCookie(
+            new CookieImpl("pxls-token", "")
+                .setPath("/")
+                .setExpires(pastCalendar.getTime())
+        );
+
+        Calendar futureCalendar = Calendar.getInstance();
+        futureCalendar.add(Calendar.DATE, days);
         String hostname = App.getConfig().getString("host");
-        exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setHttpOnly(true).setPath("/").setDomain("." + hostname).setExpires(cal.getTime()));
-        exchange.setResponseCookie(new CookieImpl("pxls-token", loginToken).setHttpOnly(true).setPath("/").setDomain(hostname).setExpires(cal.getTime()));
+        exchange.setResponseCookie(
+            new CookieImpl("pxls-token", loginToken)
+                .setHttpOnly(true)
+                .setSameSiteMode((exchange.isSecure() ? CookieSameSiteMode.NONE : CookieSameSiteMode.LAX).toString())
+                .setSecure(exchange.isSecure())
+                .setPath("/")
+                .setDomain("." + hostname)
+                .setExpires(futureCalendar.getTime())
+        );
+        exchange.setResponseCookie(
+            new CookieImpl("pxls-token", loginToken)
+                .setHttpOnly(true)
+                .setSameSiteMode((exchange.isSecure() ? CookieSameSiteMode.NONE : CookieSameSiteMode.LAX).toString())
+                .setSecure(exchange.isSecure())
+                .setPath("/")
+                .setDomain(hostname)
+                .setExpires(futureCalendar.getTime())
+        );
     }
 
     public void ban(HttpServerExchange exchange) {
@@ -1012,6 +1034,53 @@ public class WebHandler {
         exchange.setStatusCode(200);
         exchange.getResponseSender().send("{}");
         exchange.endExchange();
+    }
+
+    public void chatColorChange(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+
+        FormData.FormValue nameColor = data.getFirst("color");
+        if (nameColor == null || nameColor.getValue().trim().isEmpty()) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        try {
+            int t = Integer.parseInt(nameColor.getValue());
+            if (t >= -3 && t < App.getPalette().getColors().size()) {
+                var hasAllDonatorColors = user.hasPermission("chat.usercolor.donator") || user.hasPermission("chat.usercolor.donator.*");
+                if (t == -1 && !user.hasPermission("chat.usercolor.rainbow")) {
+                    sendBadRequest(exchange, "Color reserved for staff members");
+                    return;
+                } else if (t == -2 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.green"))) {
+                    sendBadRequest(exchange, "Color reserved for donators");
+                    return;
+                } else if (t == -3 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.gray"))) {
+                    sendBadRequest(exchange, "Color reserved for donators");
+                    return;
+                }
+
+                user.setChatNameColor(t, true, !App.getConfig().getBoolean("oauth.snipMode"));
+
+                exchange.setStatusCode(200);
+                exchange.getResponseSender().send("{}");
+                exchange.endExchange();
+            } else {
+                sendBadRequest(exchange, "Color index out of bounds");
+                return;
+            }
+        } catch (NumberFormatException nfe) {
+            sendBadRequest(exchange, "Invalid color index");
+            return;
+        }
     }
 
     public void forceNameChange(HttpServerExchange exchange) { //this is the admin endpoint which targets another user.
@@ -1433,7 +1502,7 @@ public class WebHandler {
                         user.getBanExpiryTime(),
                         user.getBanReason(),
                         user.loginsWithIP() ? "ip" : "service",
-                        user.isOverridingCooldown(),
+                        user.getPlaceOverrides(),
                         !user.canChat(),
                         App.getDatabase().getChatBanReason(user.getId()),
                         user.isPermaChatbanned(),
@@ -1536,9 +1605,13 @@ public class WebHandler {
                 redirect = redirectCookie != null;
             }
             // let's just delete the redirect cookie
-            Calendar cal = Calendar.getInstance();
-            cal.add(Calendar.DATE, -1);
-            exchange.setResponseCookie(new CookieImpl("pxls-auth-redirect", "").setPath("/").setExpires(cal.getTime()));
+            Calendar pastCalendar = Calendar.getInstance();
+            pastCalendar.add(Calendar.DATE, -1);
+            exchange.setResponseCookie(
+                new CookieImpl("pxls-auth-redirect", "")
+                    .setPath("/")
+                    .setExpires(pastCalendar.getTime())
+            );
 
             if (!redirect && exchange.getQueryParameters().get("json") == null) {
                 exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
@@ -1645,7 +1718,12 @@ public class WebHandler {
         if (service != null) {
             String state = service.generateState();
             if (redirect) {
-                exchange.setResponseCookie(new CookieImpl("pxls-auth-redirect", "1").setPath("/"));
+                exchange.setResponseCookie(
+                    new CookieImpl("pxls-auth-redirect", "1")
+                        .setSameSiteMode((exchange.isSecure() ? CookieSameSiteMode.NONE : CookieSameSiteMode.LAX).toString())
+                        .setSecure(exchange.isSecure())
+                        .setPath("/")
+                );
                 redirect(exchange, service.getRedirectUrl(state + "|redirect"));
             } else {
                 respond(exchange, StatusCodes.OK, new SignInResponse(service.getRedirectUrl(state + "|json")));
@@ -1656,6 +1734,8 @@ public class WebHandler {
     }
 
     public void info(HttpServerExchange exchange) {
+        User user = exchange.getAttachment(AuthReader.USER);
+
         exchange.getResponseHeaders()
                 .add(HttpString.tryFromString("Content-Type"), "application/json")
                 .add(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
@@ -1663,7 +1743,7 @@ public class WebHandler {
             App.getCanvasCode(),
             App.getWidth(),
             App.getHeight(),
-            App.getConfig().getStringList("board.palette"),
+            App.getPalette().getColors(),
             App.getConfig().getString("captcha.key"),
             (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS),
             (int) App.getConfig().getInt("stacking.maxStacked"),
@@ -1672,7 +1752,8 @@ public class WebHandler {
             Math.min(App.getConfig().getInt("chat.characterLimit"), 2048),
             App.getConfig().getBoolean("chat.canvasBanRespected"),
             App.getConfig().getStringList("chat.bannerText"),
-            App.getConfig().getBoolean("oauth.snipMode")
+            App.getConfig().getBoolean("oauth.snipMode"),
+            App.getConfig().getList("chat.customEmoji").unwrapped()
         )));
     }
 

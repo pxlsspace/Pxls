@@ -237,6 +237,12 @@ img.emoji {
     vertical-align: -0.1em;
 }
 
+img.emoji.emoji--custom {
+    height: 1.5em;
+    width: auto;
+    vertical-align: middle;
+}
+
 .fake-indent {
     margin-left:1.2rem;
 }
@@ -374,11 +380,16 @@ dt {
     }
 }
 
+.checkerboard-background {
+    background-image: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAVSURBVBhXY1i/fv39+/cZgfjChQsAQicJuS/hrEUAAAAASUVORK5CYII=');
+    background-size: cover;
+}
+
 .rainbow {
     background-image: linear-gradient(45deg, violet, #308dff, cyan, green, yellow, orange, red, orange, yellow, green, cyan, #308dff, violet, violet);
     background-size: 500px 100%;
     animation: rainbow-move 4s linear 1ms infinite;
-    transform: rotateZ(360deg); /* force rainbow rendering onto GPU if available */
+    transform: rotateZ(360deg); /* force rendering onto GPU if available */
 }
 
 @keyframes donator-move {
@@ -391,10 +402,15 @@ dt {
 }
 
 .donator {
-    background-image: linear-gradient(45deg, #94E044, #02BE01 25%, #005F00 50%, #02BE01 75%, #94E044 90%);
     background-size: 500px 100%;
     animation: donator-move 4s linear 1ms infinite;
-    transform: rotateZ(360deg); /* force donator rendering onto GPU if available */
+    transform: rotateZ(360deg); /* force rendering onto GPU if available */
+}
+.donator.donator--green {
+    background-image: linear-gradient(45deg, #94E044, #02BE01 25%, #005F00 50%, #02BE01 75%, #94E044 90%);
+}
+.donator.donator--gray {
+    background-image: linear-gradient(45deg, hsl(0, 0%, 42.5%) 0, hsl(0, 0%, 63.5%) 50%, hsl(0, 0%, 42.5%) 100%);
 }
 
 .error {
@@ -918,7 +934,19 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     user-select: none;
 }
 
+#heatbackground {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+}
+
 #virginmap {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+}
+
+#virginbackground {
     position: absolute;
     pointer-events: none;
     user-select: none;
@@ -1292,13 +1320,9 @@ aside.panel.horizontal.right {
     border-bottom-right-radius: inherit;
 }
 
-.panel-body article p {
+.panel-body article p, .panel-body article section > h4 {
     padding: 0;
     margin: .5rem 0;
-}
-
-.panel-body article > header ~ :not(footer) > h4 ~ :not(h4) {
-    text-indent: 0.75em;
 }
 
 .panel-body article > header h1, .panel-body article > header h2, .panel-body article > header h3, .panel-body article > header h4, .panel-body article > header h5, .panel-body article > header h6 {
@@ -1705,14 +1729,14 @@ ul.chat-history, ul.chatban-history {
     font-family: monospace;
 }
 
-.username-color-picker {
+#chat-select-username-color {
     font-family: monospace;
     font-size: 1.25rem;
     padding: 5px;
     border-radius: 5px;
 }
 
-.username-color-picker.rainbow {
+#chat-select-username-color.rainbow {
     background-color: black;
     text-shadow: 0 0 0.5em black;
     color: white;
@@ -1729,7 +1753,7 @@ ul.chat-history, ul.chatban-history {
     98%, 100% { background-color: violet; }
 }
 
-.username-color-picker option.rainbow {
+#chat-select-username-color option.rainbow {
     animation: rainbow-transition-bg 4s linear infinite;
     background-color: violet;
 }
@@ -1743,8 +1767,7 @@ ul.chat-history, ul.chatban-history {
     text-shadow: none !important;
 }
 
-/*donator gradient*/
-.username-color-picker.donator {
+#chat-select-username-color.donator {
     background-color: black;
     text-shadow: 0 0 0.5em black;
     color: white;
@@ -1759,7 +1782,7 @@ ul.chat-history, ul.chatban-history {
     90% { background-color: #94E044; }
 }
 
-.username-color-picker option.donator {
+#chat-select-username-color option.donator {
     animation: donator-transition-bg 4s linear infinite;
     background-color: green;
 }
@@ -1802,6 +1825,11 @@ body .emoji-picker {
 
 .emoji-picker__emojis h2.emoji-picker__category-name {
     --secondary-text-color: var(--emoji-picker-section-text-color);
+}
+
+.emoji-picker__custom-emoji {
+    width: 1em !important;
+    height: auto !important;
 }
 
 /* CHAT ACTIONS POPUP */

@@ -5,7 +5,7 @@ import space.pxls.App;
 import space.pxls.data.DBUser;
 import space.pxls.data.DBUserPixelCounts;
 import space.pxls.server.packets.chat.Badge;
-import space.pxls.server.packets.chat.ServerChatUserUpdate;
+import space.pxls.server.packets.chat.ServerChatUserUpdateBuilder;
 import space.pxls.server.packets.socket.ClientUndo;
 import space.pxls.server.packets.chat.ServerChatBan;
 import space.pxls.server.packets.socket.ServerRename;
@@ -28,7 +28,8 @@ public class User {
     private int pixelCount;
     private int pixelCountAllTime;
     private boolean loginWithIP;
-    private boolean overrideCooldown;
+    private PlacementOverrides placementOverrides;
+    private boolean overrideCaptcha = false;
     private boolean flaggedForCaptcha = true;
     private boolean justShowedCaptcha;
     private boolean lastPlaceWasStack = false;
@@ -72,6 +73,8 @@ public class User {
         this.displayedFaction = displayedFaction;
         this.discordName = discordName;
         this.factionBlocked = factionBlocked;
+
+        this.placementOverrides = new PlacementOverrides(false, false, false);
     }
 
     public void reloadFromDatabase() {
@@ -100,11 +103,15 @@ public class User {
         return id;
     }
 
+    public boolean canPlaceColor(int color) {
+        return color >= 0 && (color < App.getPalette().getColors().size() || (color == 0xFF && placementOverrides.getCanPlaceAnyColor()));
+    }
+
     public boolean canPlace() {
         if (isRenameRequested) return false;
 
-        if (hasPermission("board.cooldown.override") && overrideCooldown) return true;
         if (!hasPermission("board.place")) return false;
+        if (placementOverrides.hasIgnoreCooldown()) return true;
         return cooldownExpiry < System.currentTimeMillis();
     }
 
@@ -134,9 +141,13 @@ public class User {
     }
 
     public float getRemainingCooldown() {
-        if (hasPermission("board.cooldown.override") && overrideCooldown) return 0;
+        if (placementOverrides.hasIgnoreCooldown()) return 0;
 
         return Math.max(0, cooldownExpiry - System.currentTimeMillis()) / 1000f;
+    }
+
+    public void setOverrideCaptcha(boolean overrideCaptcha) {
+        this.overrideCaptcha = overrideCaptcha;
     }
 
     public boolean updateCaptchaFlagPrePlace() {
@@ -163,8 +174,28 @@ public class User {
         return flaggedForCaptcha;
     }
 
-    public void setOverrideCooldown(boolean overrideCooldown) {
-        this.overrideCooldown = hasPermission("board.cooldown.override") && overrideCooldown;
+    public void maybeSetIgnoreCooldown(boolean ignoreCooldown) {
+        placementOverrides.setIgnoreCooldown(ignoreCooldown && (hasPermission("board.cooldown.override") || hasPermission("board.cooldown.ignore")));
+    }
+
+    public boolean hasIgnoreCooldown() {
+        return placementOverrides.hasIgnoreCooldown();
+    }
+
+    public void maybeSetCanPlaceAnyColor(boolean canPlaceAnyColor) {
+        placementOverrides.setCanPlaceAnyColor(canPlaceAnyColor && hasPermission("board.palette.all"));
+    }
+
+    public boolean getCanPlaceAnyColor() {
+        return placementOverrides.getCanPlaceAnyColor();
+    }
+
+    public void maybeSetIgnorePlacemap(boolean ignorePlacemap) {
+        placementOverrides.setIgnorePlacemap(ignorePlacemap && hasPermission("board.placemap.ignore"));
+    }
+
+    public boolean hasIgnorePlacemap() {
+        return placementOverrides.hasIgnorePlacemap();
     }
 
     public List<Role> getRoles() {
@@ -265,9 +296,12 @@ public class User {
         cooldownExpiry = System.currentTimeMillis() + (seconds * 1000);
     }
 
-    public boolean isOverridingCooldown() {
-        if (hasPermission("board.cooldown.override")) return overrideCooldown;
-        return (overrideCooldown = false);
+    public PlacementOverrides getPlaceOverrides() {
+        return placementOverrides;
+    }
+
+    public boolean isOverridingCaptcha() {
+        return overrideCaptcha;
     }
 
     public void validateCaptcha() {
@@ -302,7 +336,7 @@ public class User {
 
         if (!App.getConfig().getBoolean("oauth.snipMode")) {
             if (this.pixelCountAllTime >= 1000000) {
-                toReturn.add(new Badge("1m+", "1m+ Pixels Placed", "text", null));
+                toReturn.add(new Badge("1M+", "1M+ Pixels Placed", "text", null));
             } else if (this.pixelCountAllTime >= 900000) {
                 toReturn.add(new Badge("900k+", "900k+ Pixels Placed", "text", null));
             } else if (this.pixelCountAllTime >= 800000) {
@@ -624,15 +658,19 @@ public class User {
         App.getDatabase().setDiscordName(id, discordName);
     }
 
+    public boolean canUseDonatorCharNameColors() {
+        return hasPermission("chat.usercolor.donator") || hasPermission("chat.usercolor.donator.*");
+    }
+
     public boolean hasRainbowChatNameColor() {
         return hasPermission("chat.usercolor.rainbow")
                 && this.chatNameColor == -1;
 
     }
 
-     public boolean hasDonatorChatNameColor() {
-        return hasPermission("chat.usercolor.donator")
-                && this.chatNameColor == -2;
+    public boolean hasDonatorChatNameColor(String name, Integer idx) {
+        return (canUseDonatorCharNameColors() || hasPermission("chat.usercolor.donator." + name))
+                && this.chatNameColor == -idx;
 
     }
 
@@ -644,17 +682,26 @@ public class User {
         List<String> toReturn = new ArrayList<>();
         if (this.hasRainbowChatNameColor()) {
             toReturn.add("rainbow");
-        }
-        if (this.hasDonatorChatNameColor()) {
+        } else if (this.hasDonatorChatNameColor("green", 2)) {
             toReturn.add("donator");
+            toReturn.add("donator--green");
+        } else if (this.hasDonatorChatNameColor("gray", 3)) {
+            toReturn.add("donator");
+            toReturn.add("donator--gray");
         }
         return toReturn.size() != 0 ? toReturn : null;
     }
 
-    public void setChatNameColor(int colorIndex, boolean callDB) {
+    public void setChatNameColor(int colorIndex, boolean callDB, boolean broadcast) {
         this.chatNameColor = colorIndex;
         if (callDB) {
             App.getDatabase().setChatNameColor(id, colorIndex);
+        }
+        if (broadcast) {
+            App.getServer().broadcast(new ServerChatUserUpdateBuilder(getName())
+                .set("NameColor", colorIndex)
+                .build()
+            );
         }
     }
 
@@ -745,7 +792,10 @@ public class User {
             App.getDatabase().setDisplayedFactionForUID(id, displayedFaction);
         }
         if (broadcast) {
-            App.getServer().broadcast(new ServerChatUserUpdate(getName(), new HashMap<String, Object>() {{put("DisplayedFaction", (displayedFaction == null || displayedFaction == 0) ? "" : fetchDisplayedFaction());}}));
+            App.getServer().broadcast(new ServerChatUserUpdateBuilder(getName())
+                .set("DisplayedFaction", (displayedFaction == null || displayedFaction == 0) ? "" : fetchDisplayedFaction())
+                .build()
+            );
         }
     }
 

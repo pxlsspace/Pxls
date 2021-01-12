@@ -91,14 +91,16 @@ You must update the `host` option in your `pxls.conf` otherwise session cookies 
 By default, CAPTCHAs are disabled, and need to be configured in the config to work.
 You will need a [CAPTCHA key and secret][captcha]. The type must be `Invisible reCAPTCHA`.
 
-The `captcha.host` key needs to be one of the approved domains on the reCAPTCHA admin panel. For local testing, this will likely be `localhost` (no port).
+The `host` key also needs to be one of the approved domains on the reCAPTCHA admin panel. For local testing, this will likely be `localhost` (no port).
 
 An example CAPTCHA section could look like this:
 
+    host: "example.com"
+
     captcha {
+        enabled: true
         key: "6LcedG4UAAAAAKA6l9BbRPvZ2vt3lTrCQwz8rfPe"
         secret: "6LcedG4UAAAAAIXZcNFhnLKvTQwG1E8BzQQt_-MR"
-        host: "example.com"
     }
 
 
@@ -121,7 +123,8 @@ Commands are entered directly into the running instance (stdin):
 - `cons [authed]` - Lists the total (or authed) connection count.
 - `users` - Lists all of the authed users, by username.
 - `stack <user> [set <amount>]` - Sets the user's stack count. The user must not be on cooldown before setting.
-- `cd-override list|<user> [on|off]` - Sets or lists the cooldown override status of an user
+- `placementOverride list|<user> [placeAnyColor|ignoreCooldown|ignorePlacemap] [on|off]` - Sets or lists the placement overrides of an user
+- `captchaOverride list|<user> [on|off]` - Lists all captcha overrides or sets the captcha override of an user
 - `broadcast <message>` - Sends a message in chat
 - `chatban <user> <length> <purge> <reason>` - Chat bans the user for `length` in seconds, optionally purges all of their messages
 - `permachatban <user> <purge> <reason>` - Perma chat bans the user, optionally purges all of their messages
@@ -135,6 +138,7 @@ Commands are entered directly into the running instance (stdin):
 - `senduserdata` - Broadcasts the non-idle user count in chat
 - `addnotification <title> <expiry> <body>` - Adds a notification to the notification panel. A "+x" on the `expiry` makes the expiry now + x in seconds.
 - `bp <json packet>` broadcast a raw packet to everyone online.
+- `up <username> <json packet>` send a raw packet to all active connections from an user.
 - `f <faction_id> [delete|tag|name [<new_value>]]` updates a faction. if <new_value> is omitted, then the console will print the current values.
 
 ## Contributors

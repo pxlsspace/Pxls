@@ -7,6 +7,7 @@ import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.AllowedMethodsHandler;
 import io.undertow.server.handlers.form.EagerFormParsingHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
+import io.undertow.server.handlers.resource.FileResourceManager;
 import io.undertow.util.Headers;
 import io.undertow.util.Methods;
 import io.undertow.websockets.core.AbstractReceiveListener;
@@ -21,6 +22,7 @@ import space.pxls.tasks.UserAuthedTask;
 import space.pxls.user.User;
 import space.pxls.util.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -66,6 +68,7 @@ public class UndertowServer {
                 .addPermGatedPrefixPath("/reportChat", "chat.report", webHandler::chatReport)
                 .addPermGatedPrefixPath("/whoami", "user.auth", webHandler::whoami)
                 .addPermGatedPrefixPath("/users", "user.online", webHandler::users)
+                .addPermGatedPrefixPath("/chat/setColor", "user.chatColorChange", new RateLimitingHandler(webHandler::chatColorChange, "http:chatColorChange", (int) App.getConfig().getDuration("server.limits.chatColorChange.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.chatColorChange.count")))
                 .addPermGatedPrefixPath("/setDiscordName", "user.discordNameChange", new RateLimitingHandler(webHandler::discordNameChange, "http:discordName", (int) App.getConfig().getDuration("server.limits.discordNameChange.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.discordNameChange.count")))
                 .addPermGatedPrefixPath("/admin", "user.admin", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/")).setCacheTime(10))
                 .addPermGatedPrefixPath("/admin/ban", "user.ban", webHandler::ban)
@@ -89,7 +92,8 @@ public class UndertowServer {
                 .addExactPath("/", webHandler::index)
                 .addExactPath("/index.html", webHandler::index)
                 .addExactPath("/factions", new AllowedMethodsHandler(webHandler::getRequestingUserFactions, Methods.GET))
-                .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/")).setCacheTime(10));
+                .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/")).setCacheTime(10))
+                .addPrefixPath("/emoji", Handlers.resource(new FileResourceManager(new File(App.getStorageDir().resolve("emoji").toString()))).setCacheTime(10));
         RoutingHandler routingHandler = Handlers.routing()
             .get("/profile", webHandler::profileView)
             .get("/profile/{who}", webHandler::profileView)
@@ -146,14 +150,13 @@ public class UndertowServer {
                 if (type.equals("pixel")) obj = App.getGson().fromJson(jsonObj, ClientPlace.class);
                 if (type.equals("undo")) obj = App.getGson().fromJson(jsonObj, ClientUndo.class);
                 if (type.equals("captcha")) obj = App.getGson().fromJson(jsonObj, ClientCaptcha.class);
-                if (type.equals("admin_cdoverride")) obj = App.getGson().fromJson(jsonObj, ClientAdminCooldownOverride.class);
+                if (type.equals("admin_placement_overrides")) obj = App.getGson().fromJson(jsonObj, ClientAdminPlacementOverrides.class);
                 if (type.equals("admin_message")) obj = App.getGson().fromJson(jsonObj, ClientAdminMessage.class);
                 if (type.equals("shadowbanme")) obj = App.getGson().fromJson(jsonObj, ClientShadowBanMe.class);
                 if (type.equals("banme")) obj = App.getGson().fromJson(jsonObj, ClientBanMe.class);
                 if (type.equalsIgnoreCase("ChatHistory")) obj = App.getGson().fromJson(jsonObj, ClientChatHistory.class);
                 if (type.equalsIgnoreCase("ChatbanState")) obj = App.getGson().fromJson(jsonObj, ClientChatbanState.class);
                 if (type.equalsIgnoreCase("ChatMessage")) obj = App.getGson().fromJson(jsonObj, ClientChatMessage.class);
-                if (type.equalsIgnoreCase("UserUpdate")) obj = App.getGson().fromJson(jsonObj, ClientUserUpdate.class);
                 if (type.equalsIgnoreCase("ChatLookup")) obj = App.getGson().fromJson(jsonObj, ClientChatLookup.class);
 
                 // old thing, will auto-shadowban
@@ -175,16 +178,6 @@ public class UndertowServer {
             socketHandler.disconnect(channel, user);
         });
         channel.resumeReceives();
-    }
-
-    public void send(WebSocketChannel channel, Object obj) {
-        sendRaw(channel, App.getGson().toJson(obj));
-    }
-
-    public void send(User user, Object obj) {
-        for (WebSocketChannel connection : user.getConnections()) {
-            send(connection, obj);
-        }
     }
 
     public Set<WebSocketChannel> getConnections() {
@@ -223,6 +216,18 @@ public class UndertowServer {
                 .forEach(user -> user.getConnections()
                         .forEach(con -> WebSockets.sendText(json, con, null))
                 );
+    }
+
+    public void send(WebSocketChannel channel, Object obj) {
+        sendRaw(channel, App.getGson().toJson(obj));
+    }
+
+    public void send(User user, Object obj) {
+        sendRaw(user, App.getGson().toJson(obj));
+    }
+
+    public void sendRaw(User user, String raw) {
+        user.getConnections().forEach(channel -> sendRaw(channel, raw));
     }
 
     private void sendRaw(WebSocketChannel channel, String str) {
