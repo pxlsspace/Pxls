@@ -184,7 +184,7 @@ public class App {
                 }
             } else if (token[0].equalsIgnoreCase("logins") || token[0].equalsIgnoreCase("login")) {
                 if (token.length < 2) {
-                    System.out.println("Usage: logins <username> [serviceID:serviceUserID ...]");
+                    System.out.println("Usage: logins <username> [{service ID}:{service user ID} ...]");
                     return;
                 }
                 User user = userManager.getByName(token[1]);
@@ -229,7 +229,7 @@ public class App {
                 System.out.println(logMessage);
             } else if (token[0].equalsIgnoreCase("addlogins") || token[0].equalsIgnoreCase("addlogin")) {
                 if (token.length < 3) {
-                    System.out.println("Usage: addlogins <username> [serviceID:serviceUserID ...]");
+                    System.out.println("Usage: addlogins <username> [{service ID}:{service user ID} ...]");
                     return;
                 }
                 User user = userManager.getByName(token[1]);
@@ -255,7 +255,7 @@ public class App {
                 System.out.println(message);
             } else if (token[0].equalsIgnoreCase("removelogins") || token[0].equalsIgnoreCase("removelogin")) {
                 if (token.length < 3) {
-                    System.out.println("Usage: removelogins <username> [serviceID:serviceUserID ...]");
+                    System.out.println("Usage: removelogins <username> [service ID ...]");
                     return;
                 }
                 User user = userManager.getByName(token[1]);
@@ -264,19 +264,8 @@ public class App {
                     return;
                 }
                 var rest = Arrays.copyOfRange(token, 2, token.length);
-                List<UserLogin> removedLogins;
-                try {
-                    removedLogins = Arrays.stream(rest)
-                        .distinct()
-                        .map(UserLogin::fromString)
-                        .collect(Collectors.toList());
-                } catch (IllegalArgumentException ex) {
-                    System.out.println(ex);
-                    return;
-                }
-                String prettyLogins = removedLogins.stream().map(UserLogin::toString).collect(Collectors.joining(", "));
-                database.bulkRemoveUserLogins(user.getId(), removedLogins);
-                String message = "Removed login methods \"" + prettyLogins + "\" to " + user.getName();
+                database.bulkRemoveUserLoginServices(user.getId(), List.of(rest));
+                String message = "Removed login methods \"" + String.join(", ", rest) + "\" from " + user.getName();
                 database.insertServerAdminLog(message);
                 System.out.println(message);
             } else if (token[0].equalsIgnoreCase("roles") || token[0].equalsIgnoreCase("role")) {

@@ -741,7 +741,7 @@ public class Database {
     /**
      * Adds a list of login methods to the user.
      * @param userID The user's ID.
-     * @param roles The new roles.
+     * @param login The new {@link UserLogin}s.
      * @return The amount of logins added.
      */
     public int bulkAddUserLogins(int userID, List<UserLogin> logins) {
@@ -755,19 +755,18 @@ public class Database {
     /**
      * Add a single login method to the user.
      * @param userID The user's ID.
-     * @param roles The new roles.
+     * @param login The new {@link UserLogin}.
      * @return Whenever or not the login method was added.
      */
     public boolean addUserLogin(int userID, UserLogin login) {
         return jdbi.withHandle(handle -> addUserLogin(handle, userID, login));
     }
 
-    private int bulkRemoveUserLogins(Handle handle, int userID, List<UserLogin> logins) {
-        var batch = handle.prepareBatch("DELETE FROM user_logins WHERE uid = :uid AND service = :service AND service_uid = :service_uid");
-        for (UserLogin login : logins) {
+    private int bulkRemoveUserLoginServices(Handle handle, int userID, List<String> loginServiceIDs) {
+        var batch = handle.prepareBatch("DELETE FROM user_logins WHERE uid = :uid AND service = :service");
+        for (String serviceID : loginServiceIDs) {
             batch.bind("uid", userID)
-                .bind("service", login.getServiceID())
-                .bind("service_uid", login.getServiceUserID())
+                .bind("service", serviceID)
                 .add();
         }
         return Arrays.stream(batch.execute())
@@ -777,25 +776,25 @@ public class Database {
     /**
      * Removes a list of login methods of the user.
      * @param userID The user's ID.
-     * @param roles The new roles.
+     * @param loginServiceIDs The services to remove the login of.
      * @return The amount of logins removed.
      */
-    public int bulkRemoveUserLogins(int userID, List<UserLogin> logins) {
-        return jdbi.withHandle(handle -> bulkRemoveUserLogins(handle, userID, logins));
+    public int bulkRemoveUserLoginServices(int userID, List<String> loginServiceIDs) {
+        return jdbi.withHandle(handle -> bulkRemoveUserLoginServices(handle, userID, loginServiceIDs));
     }
 
-    private boolean removeUserLogin(Handle handle, int userID, UserLogin login) {
-        return bulkRemoveUserLogins(handle, userID, List.of(login)) != 0;
+    private boolean removeUserLoginService(Handle handle, int userID, String loginServiceID) {
+        return bulkRemoveUserLoginServices(handle, userID, List.of(loginServiceID)) != 0;
     }
 
     /**
      * Removes a single login method of the user.
      * @param userID The user's ID.
-     * @param roles The new roles.
+     * @param loginServiceIDs The services to remove the login of.
      * @return Whenever or not the user had the login method.
      */
-    public boolean removeUserLogin(int userID, UserLogin login) {
-        return jdbi.withHandle(handle -> removeUserLogin(handle, userID, login));
+    public boolean removeUserLoginService(int userID, String loginServiceID) {
+        return jdbi.withHandle(handle -> removeUserLoginService(handle, userID, loginServiceID));
     }
 
     private Integer removeAllUserLogins(Handle handle, int userID) {
@@ -807,7 +806,6 @@ public class Database {
     /**
      * Removes all of the user's login methods.
      * @param userID The user's ID.
-     * @param roles The new roles.
      */
     public Integer removeAllUserLogins(int userID) {
         return jdbi.withHandle(handle -> removeAllUserLogins(handle, userID));
@@ -817,7 +815,7 @@ public class Database {
      * Updates the user's login methods.
      *
      * @param userID The user's ID.
-     * @param roles  The new roles.
+     * @param logins The new {@link UserLogin}s.
      * @return The amount of logins the user has after the action.
      */
     public Integer setUserLogins(int userID, List<UserLogin> logins) {
