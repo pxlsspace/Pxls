@@ -29,6 +29,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class WebHandler {
@@ -1911,8 +1912,14 @@ public class WebHandler {
     public void whoami(HttpServerExchange exchange) {
         exchange.getResponseHeaders()
                 .put(Headers.CONTENT_TYPE, "application/json")
-                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), App.getWhoamiAllowedOrigin())
                 .put(HttpString.tryFromString("Access-Control-Allow-Credentials"), "true");
+
+        String origin = exchange.getRequestHeaders().getFirst(HttpString.tryFromString("Origin"));
+        if (origin != null && App.getWhoamiAllowedOrigins().stream().anyMatch(Predicate.isEqual(origin))) {
+            exchange.getResponseHeaders()
+                    .put(HttpString.tryFromString("Access-Control-Allow-Origin"), origin);
+        }
+
         User user = exchange.getAttachment(AuthReader.USER);
         if (user != null) {
             exchange.getResponseSender().send(App.getGson().toJson(new WhoAmI(user.getName(), user.getId())));
