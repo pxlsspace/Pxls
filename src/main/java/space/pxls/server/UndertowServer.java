@@ -207,6 +207,10 @@ public class UndertowServer {
         broadcastToUserPredicate(obj, user -> user.hasPermission("user.receivestaffbroadcasts"));
     }
 
+    public void broadcastToNonStaff(Object obj) {
+        broadcastToUserPredicate(obj, user -> !user.hasPermission("user.receivestaffbroadcasts"));
+    }
+
     public void broadcastToUserPredicate(Object obj, Predicate<User> predicate) {
         String json = App.getGson().toJson(obj);
         getAuthedUsers()

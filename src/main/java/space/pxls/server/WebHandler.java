@@ -1064,7 +1064,7 @@ public class WebHandler {
                     return;
                 }
 
-                user.setChatNameColor(t, true, !App.getConfig().getBoolean("oauth.snipMode"));
+                user.setChatNameColor(t, true, !App.getSnipMode());
 
                 exchange.setStatusCode(200);
                 exchange.getResponseSender().send("{}");
@@ -1749,7 +1749,7 @@ public class WebHandler {
             Math.min(App.getConfig().getInt("chat.characterLimit"), 2048),
             App.getConfig().getBoolean("chat.canvasBanRespected"),
             App.getConfig().getStringList("chat.bannerText"),
-            App.getConfig().getBoolean("oauth.snipMode"),
+            App.getSnipMode(),
             App.getConfig().getList("chat.customEmoji").unwrapped()
         )));
     }
