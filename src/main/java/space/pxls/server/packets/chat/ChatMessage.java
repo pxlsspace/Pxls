@@ -18,7 +18,7 @@ public class ChatMessage {
     public StrippedFaction strippedFaction;
 
     public ChatMessage(int id, String author, Long date, String message_raw, Purge purge, List<Badge> badges, List<String> authorNameClass, Number authorNameColor, Faction faction) {
-        boolean isSnip = App.getConfig().getBoolean("oauth.snipMode");
+        boolean isSnip = App.getSnipMode();
         this.id = id;
         this.author = isSnip ? "-snip-" : author;
         this.date = date;

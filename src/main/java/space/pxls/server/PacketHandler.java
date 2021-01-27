@@ -434,7 +434,7 @@ public class PacketHandler {
     public void sendChatPurge(User target, User initiator, int amount, String reason) {
         var obj = new ServerChatPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), amount, reason);
         server.broadcastToStaff(obj);
-        if (App.getConfig().getBoolean("oauth.snipMode")) {
+        if (App.getSnipMode()) {
             obj.initiator = "-snip-";
             obj.target = "-snip-";
         }
@@ -448,7 +448,7 @@ public class PacketHandler {
     public void sendSpecificPurge(User target, User initiator, List<Integer> cmids, String reason) {
         var obj = new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), cmids, reason);
         server.broadcastToStaff(obj);
-        if (App.getConfig().getBoolean("oauth.snipMode")) {
+        if (App.getSnipMode()) {
             obj.initiator = "-snip-";
             obj.target = "-snip-";
         }

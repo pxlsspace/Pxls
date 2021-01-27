@@ -936,6 +936,10 @@ public class App {
         return virginmap[x + y * width];
     }
 
+    public static boolean getSnipMode() {
+        return getConfig().getBoolean("oauth.snipMode");
+    }
+
     public static boolean getRegistrationEnabled() {
         return getConfig().getBoolean("oauth.enableRegistration");
     }

@@ -19,7 +19,7 @@ public class Lookup {
     public String faction;
 
     public Lookup(int id, int x, int y, String origin, int pixelCount, int pixelCountAlltime, long time, String username, String discordName, String faction) {
-        boolean isSnip = App.getConfig().getBoolean("oauth.snipMode");
+        boolean isSnip = App.getSnipMode();
         this.id = id;
         this.x = x;
         this.y = y;
