@@ -1838,9 +1838,15 @@ public class WebHandler {
             App.getDatabase().insertLookup(user.getId(), exchange.getAttachment(IPReader.IP));
         }
 
-        var lookup = user != null && user.hasPermission("board.check")
-            ? ExtendedLookup.fromDB(App.getDatabase().getFullPixelAt(x, y).orElse(null))
-            : Lookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null));
+        Lookup lookup;
+        if (user != null && user.hasPermission("board.check")) {
+            lookup = ExtendedLookup.fromDB(App.getDatabase().getFullPixelAt(x, y).orElse(null));
+        } else {
+            lookup = Lookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null));
+            if (App.getSnipMode()) {
+                lookup = lookup.asSnipRedacted();
+            }
+        }
         exchange.getResponseSender().send(App.getGson().toJson(lookup));
     }
 

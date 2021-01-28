@@ -1251,7 +1251,7 @@ public class Database {
                     faction = temp.fetchDisplayedFaction();
                 }
             }
-            toReturn.add(new ChatMessage(
+            var message = new ChatMessage(
                 dbChatMessage.id,
                 author,
                 dbChatMessage.sent,
@@ -1261,7 +1261,11 @@ public class Database {
                 nameClass,
                 nameColor,
                 faction
-            ));
+            );
+            if (!includePurged && App.getSnipMode()) {
+                message = message.asSnipRedacted();
+            }
+            toReturn.add(message);
         }
         return toReturn;
     }

@@ -33,4 +33,8 @@ public class ServerChatPurge {
     public String getReason() {
         return reason;
     }
+
+    public ServerChatPurge asSnipRedacted() {
+        return new ServerChatPurge("-snip-", "-snip-", this.amount, this.reason);
+    }
 }

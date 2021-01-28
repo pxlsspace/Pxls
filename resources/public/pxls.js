@@ -4643,7 +4643,7 @@ window.App = (function() {
               style: 'font-size: .65rem; cursor: pointer;',
               'data-id': packet.id,
               onclick: self._handlePingJumpClick
-            }), `${packet.author}: `, _processed);
+            }), `${board.snipMode ? '-snip-' : packet.author}: `, _processed);
           }));
           const popup = crel(popupWrapper, panelHeader, crel('div', { class: 'pane pane-full' }, pingsList));
           document.body.appendChild(popup);
@@ -5227,8 +5227,11 @@ window.App = (function() {
 
         const hookDatas = self.hooks.map((hook) => Object.assign({}, { pings: [] }, hook.get(packet)));
 
-        self.typeahead.helper.getDatabase('users').addEntry(packet.author, packet.author);
-        if (self.ignored.indexOf(packet.author) >= 0) return;
+        if (!board.snipMode) {
+          self.typeahead.helper.getDatabase('users').addEntry(packet.author, packet.author);
+
+          if (self.ignored.indexOf(packet.author) >= 0) return;
+        }
         let hasPing = !board.snipMode && settings.chat.pings.enable.get() === true && user.isLoggedIn() && hookDatas.some((data) => data.pings.length > 0);
         const when = moment.unix(packet.date);
         const flairs = crel('span', { class: 'flairs' });
@@ -5255,18 +5258,20 @@ window.App = (function() {
         }
 
         const _facTag = packet.strippedFaction ? packet.strippedFaction.tag : '';
-        const _facColor = packet.strippedFaction ? intToHex(packet.strippedFaction.color) : 0;
-        const _facTagShow = packet.strippedFaction && settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
-        const _facTitle = packet.strippedFaction ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : '';
+        if (!board.snipMode) {
+          const _facColor = packet.strippedFaction ? intToHex(packet.strippedFaction.color) : 0;
+          const _facTagShow = packet.strippedFaction && settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
+          const _facTitle = packet.strippedFaction ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : '';
 
-        const _facFlair = crel('span', {
-          class: 'flair faction-tag',
-          'data-tag': _facTag,
-          style: `color: ${_facColor}; display: ${_facTagShow}`,
-          title: _facTitle
-        });
-        _facFlair.innerHTML = `[${twemoji.parse(_facTag)}]`;
-        crel(flairs, _facFlair);
+          const _facFlair = crel('span', {
+            class: 'flair faction-tag',
+            'data-tag': _facTag,
+            style: `color: ${_facColor}; display: ${_facTagShow}`,
+            title: _facTitle
+          });
+          _facFlair.innerHTML = `[${twemoji.parse(_facTag)}]`;
+          crel(flairs, _facFlair);
+        }
 
         const contentSpan = crel('span', { class: 'content' },
           self.processMessage(packet.message_raw, (username) => {
@@ -5280,8 +5285,8 @@ window.App = (function() {
 
         const chatLine = crel('li', {
           'data-id': packet.id,
-          'data-tag': _facTag,
-          'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '',
+          'data-tag': !board.snipMode ? _facTag : '',
+          'data-faction': !board.snipMode ? (packet.strippedFaction && packet.strippedFaction.id) || '' : '',
           'data-author': packet.author,
           'data-date': packet.date,
           'data-badges': JSON.stringify(packet.badges || []),
@@ -5295,7 +5300,7 @@ window.App = (function() {
           style: `color: #${place.getPaletteColorValue(packet.authorNameColor)}`,
           onclick: self._popUserPanel,
           onmousemiddledown: self._addAuthorMentionToChatbox
-        }, packet.author),
+        }, board.snipMode ? '-snip-' : packet.author),
         document.createTextNode(': '),
         contentSpan,
         document.createTextNode(' '));
