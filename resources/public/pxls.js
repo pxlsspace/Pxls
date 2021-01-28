@@ -5777,10 +5777,17 @@ window.App = (function() {
               _selBanReason,
               crel(_additionalReasonInfoWrap, _txtAdditionalReason)
             ),
-            board.snipMode ? null : crel(_purgeWrap,
+            crel(_purgeWrap,
               crel('h5', 'Purge Messages'),
-              crel('label', { style: 'display: inline;' }, _rbPurgeYes, 'Yes'),
-              crel('label', { style: 'display: inline;' }, _rbPurgeNo, 'No')
+              board.snipMode
+                ? crel('span', { class: 'text-orange extra-warning' },
+                  crel('i', { class: 'fas fa-exclamation-triangle' }),
+                  ' Purging all messages is disabled during snip mode'
+                )
+                : [
+                  crel('label', { style: 'display: inline;' }, _rbPurgeYes, 'Yes'),
+                  crel('label', { style: 'display: inline;' }, _rbPurgeNo, 'No')
+                ]
             ),
             crel('div', { class: 'buttons' },
               _btnCancel,
@@ -5818,6 +5825,7 @@ window.App = (function() {
               const postData = {
                 type: 'temp',
                 reason: 'none provided',
+                // TODO(netux): Fix infraestructure and allow to purge during snip mode
                 removalAmount: !board.snipMode ? (_rbPurgeYes.checked ? -1 : 0) : 0, // message purges are based on username, so if we purge when everyone in chat is -snip-, we aren't gonna have a good time
                 banLength: 0
               };
