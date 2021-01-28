@@ -24,11 +24,11 @@ public class Lookup {
         this.x = x;
         this.y = y;
         this.origin = origin;
-        this.pixelCount = username != null ? (isSnip ? 0 : pixelCount) : null;
-        this.pixelCountAlltime = username != null ? (isSnip ? 0 : pixelCountAlltime) : null;
+        this.pixelCount = username != null && !isSnip ? pixelCount : null;
+        this.pixelCountAlltime = username != null && !isSnip ? pixelCountAlltime : null;
         this.time = time;
         this.username = isSnip ? "-snip-" : username;
-        this.discordName = isSnip ? (discordName != null ? "-snip-" : null) : discordName; // if we're in snip mode, we want to filter the name, otherwise we'll just accept whatever was thrown at us. original serialization utilized nulls.
+        this.discordName = isSnip ? null : discordName;
         this.faction = isSnip ? null : faction;
     }
 
