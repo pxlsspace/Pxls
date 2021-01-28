@@ -76,6 +76,7 @@
                                         <th class="text-right pr-3">Registration Date</th>
                                         <td class="text-left">{{profile_of.signupTime | date("LLL d, y, hh:mm:s a (z)")}}</td>
                                     </tr>
+                                    {% if not snip_mode %}
                                     <tr>
                                         <th class="text-right pr-3">Alltime Pixels</th>
                                         <td class="text-left">{{profile_of.allTimePixelCount | numberformat("#,###")}}</td>
@@ -84,6 +85,7 @@
                                         <th class="text-right pr-3">Current Canvas Pixels</th>
                                         <td class="text-left">{{profile_of.pixelCount | numberformat("#,###")}}</td>
                                     </tr>
+                                    {% endif %}
                                     <tr>
                                         <th class="text-right pr-3">Discord Tag</th>
                                         <td class="text-left">{{profile_of.discordName | default("Not Set")}}</td>

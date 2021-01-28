@@ -158,6 +158,7 @@ public class WebHandler {
                     List<DBCanvasReport> canvasReports = new ArrayList<>();
                     List<Faction> factions = App.getDatabase().getFactionsForUID(profileUser.getId()).stream().map(Faction::new).collect(Collectors.toList());
 
+                    m.put("snip_mode", App.getSnipMode());
                     m.put("requested_self", requested_self);
                     m.put("profile_of", profileUser);
                     m.put("factions", factions);
