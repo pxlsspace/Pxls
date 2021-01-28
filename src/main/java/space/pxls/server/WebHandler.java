@@ -905,6 +905,12 @@ public class WebHandler {
 
         boolean _removal = removal == -1 || removal > 0;
 
+        // TODO(netux): Fix infraestructure and allow to purge during snip mode
+        if (_removal && App.getSnipMode()) {
+            sendForbidden(exchange, "Cannot purge during snip mode");
+            return;
+        }
+
         Chatban chatban;
         if (isUnban) {
             chatban = Chatban.UNBAN(target, user, reason);
@@ -987,6 +993,12 @@ public class WebHandler {
     public void chatPurge(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
 
+        // TODO(netux): Fix infraestructure and allow to purge during snip mode
+        if (App.getSnipMode()) {
+            sendForbidden(exchange, "Cannot purge chat during snip mode");
+            return;
+        }
+
         User user = exchange.getAttachment(AuthReader.USER);
         if (user == null) {
             sendBadRequest(exchange);
@@ -1019,11 +1031,6 @@ public class WebHandler {
         if (target == null) {
             sendBadRequest(exchange);
             return;
-        }
-
-        String purgeReason = "$No reason provided.";
-        if (data.contains("reason")) {
-            purgeReason = data.getFirst("reason").getValue();
         }
 
         App.getDatabase().purgeChat(target, user, Integer.MAX_VALUE, reasonData.getValue(), true);

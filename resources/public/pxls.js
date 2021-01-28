@@ -5536,7 +5536,8 @@ window.App = (function() {
             { label: 'Ignore', action: 'ignore' },
             { label: 'Profile', action: 'profile' },
             { label: 'Chat (un)ban', action: 'chatban', staffaction: true },
-            { label: 'Purge User', action: 'purge', staffaction: true },
+            // TODO(netux): Fix infraestructure and allow to purge during snip mode
+            !board.snipMode ? { label: 'Purge User', action: 'purge', staffaction: true } : null,
             { label: 'Delete', action: 'delete', staffaction: true },
             { label: 'Mod Lookup', action: 'lookup-mod', staffaction: true },
             { label: 'Chat Lookup', action: 'lookup-chat', staffaction: true }
@@ -5546,7 +5547,7 @@ window.App = (function() {
           crel(leftPanel, crel('p', { class: 'content', style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector('.content').textContent));
 
           crel(actionsList, actions
-            .filter((action) => user.isStaff() || !action.staffaction)
+            .filter((action) => action && (user.isStaff() || !action.staffaction))
             .map((action) => crel('li', crel('button', {
               type: 'button',
               class: 'text-button fullwidth ' + (action.class || ''),
