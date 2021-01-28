@@ -1,6 +1,5 @@
 package space.pxls.server.packets.http;
 
-import com.typesafe.config.ConfigList;
 import space.pxls.auth.AuthService;
 import space.pxls.palette.Color;
 
@@ -17,13 +16,14 @@ public class CanvasInfo {
     public Integer maxStacked;
     public Map<String, AuthService> authServices;
     public Boolean registrationEnabled;
+    public Boolean chatEnabled;
     public Boolean chatRespectsCanvasBan;
     public Integer chatCharacterLimit;
     public List<String> chatBannerText;
     public Boolean snipMode;
     public List<Object> customEmoji;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, List<Object> customEmoji) {
+    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, List<Object> customEmoji) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
@@ -33,6 +33,7 @@ public class CanvasInfo {
         this.maxStacked = maxStacked;
         this.authServices = authServices;
         this.registrationEnabled = registrationEnabled;
+        this.chatEnabled = chatEnabled;
         this.chatCharacterLimit = chatCharacterLimit;
         this.chatRespectsCanvasBan = chatRespectsCanvasBan;
         this.chatBannerText = chatBannerText;
@@ -74,6 +75,10 @@ public class CanvasInfo {
 
     public Boolean getRegistrationEnabled() {
         return registrationEnabled;
+    }
+
+    public Boolean getChatEnabled() {
+        return chatEnabled;
     }
 
     public Integer getChatCharacterLimit() {
