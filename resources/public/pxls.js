@@ -3242,11 +3242,13 @@ window.App = (function() {
             id: 'username',
             name: 'Username',
             get: data => data.username
-              ? crel('a', {
-                href: `/profile/${data.username}`,
-                target: '_blank',
-                title: 'View Profile'
-              }, data.username)
+              ? !board.snipMode
+                ? crel('a', {
+                  href: `/profile/${data.username}`,
+                  target: '_blank',
+                  title: 'View Profile'
+                }, data.username)
+                : data.username
               : null
           }, {
             id: 'faction',
@@ -5534,10 +5536,10 @@ window.App = (function() {
             { label: 'Report', action: 'report', class: 'dangerous-button' },
             { label: 'Mention', action: 'mention' },
             { label: 'Ignore', action: 'ignore' },
-            { label: 'Profile', action: 'profile' },
+            (!board.snipMode || App.user.hasPermission('user.receivestaffbroadcasts')) && { label: 'Profile', action: 'profile' },
             { label: 'Chat (un)ban', action: 'chatban', staffaction: true },
             // TODO(netux): Fix infraestructure and allow to purge during snip mode
-            !board.snipMode ? { label: 'Purge User', action: 'purge', staffaction: true } : null,
+            !board.snipMode && { label: 'Purge User', action: 'purge', staffaction: true },
             { label: 'Delete', action: 'delete', staffaction: true },
             { label: 'Mod Lookup', action: 'lookup-mod', staffaction: true },
             { label: 'Chat Lookup', action: 'lookup-chat', staffaction: true }
