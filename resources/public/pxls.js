@@ -704,6 +704,11 @@ window.App = (function() {
         palette: {
           numbers: {
             enable: setting('ui.palette.numbers.enable', SettingType.TOGGLE, false, $('#setting-ui-palette-numbers-enable'))
+          },
+          scrollbar: {
+            thin: {
+              enable: setting('ui.palette.scrollbar.thin.enable', SettingType.TOGGLE, true, $('#setting-ui-palette-scrollbar-thin-enable'))
+            }
           }
         },
         chat: {
@@ -3527,6 +3532,10 @@ window.App = (function() {
 
         settings.ui.palette.numbers.enable.listen(function(value) {
           place.setNumberedPaletteEnabled(value);
+        });
+
+        settings.ui.palette.scrollbar.thin.enable.listen(function(value) {
+          document.querySelector('#palette').classList.toggle('thin-scrollbar', value);
         });
 
         settings.board.lock.enable.listen((value) => board.setAllowDrag(!value));

@@ -730,8 +730,10 @@ body .message {
     text-align: center;
     white-space: nowrap;
     background: var(--palette-background);
+}
 
-    /* Scrollbar, Firefox only */
+/* Scrollbar, Firefox only */
+.thin-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: #aaa transparent;
 }
