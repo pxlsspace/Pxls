@@ -1878,7 +1878,7 @@ public class WebHandler {
             lookup = ExtendedLookup.fromDB(App.getDatabase().getFullPixelAt(x, y).orElse(null));
         } else {
             lookup = Lookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null));
-            if (App.getSnipMode()) {
+            if (lookup != null && App.getSnipMode()) {
                 lookup = lookup.asSnipRedacted();
             }
         }
