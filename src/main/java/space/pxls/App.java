@@ -919,9 +919,8 @@ public class App {
         return !config.getString("captcha.key").isEmpty() && !config.getString("captcha.secret").isEmpty();
     }
 
-    public static String getWhoamiAllowedOrigin() {
-        if (cachedWhoamiOrigin == null) cachedWhoamiOrigin = config.getString("whoamiAllowedOrigin");
-        return cachedWhoamiOrigin;
+    public static List<String> getWhoamiAllowedOrigins() {
+        return config.getStringList("whoamiAllowedOrigins");
     }
 
     public static int getPixel(int x, int y) {
