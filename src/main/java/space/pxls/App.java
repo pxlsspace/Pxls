@@ -944,6 +944,10 @@ public class App {
         return getConfig().getBoolean("oauth.enableRegistration");
     }
 
+    public static boolean isChatEnabled() {
+        return getConfig().getBoolean("chat.enabled");
+    }
+
     public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase, String action) {
         if (x < 0 || x >= width || y < 0 || y >= height || (color >= getPalette().getColors().size() && !(color == 0xFF || color == -1))) return;
         String userName = user != null ? user.getName() : "<server>";

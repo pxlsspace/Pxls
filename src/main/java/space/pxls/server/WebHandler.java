@@ -767,6 +767,11 @@ public class WebHandler {
     public void chatReport(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
 
+        if (!App.isChatEnabled()) {
+            sendForbidden(exchange, "Chatting and chat actions are disabled");
+            return;
+        }
+
         User user = exchange.getAttachment(AuthReader.USER);
         if (user == null) {
             sendUnauthorized(exchange, "User must be logged in to report chat messages");
@@ -819,6 +824,13 @@ public class WebHandler {
     }
 
     public void chatban(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+
+        if (!App.isChatEnabled()) {
+            sendForbidden(exchange, "Chatting and chat actions are disabled");
+            return;
+        }
+
         User user = exchange.getAttachment(AuthReader.USER);
         if (user == null) {
             sendBadRequest(exchange);
@@ -915,7 +927,6 @@ public class WebHandler {
 
         chatban.commit();
 
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
         exchange.setStatusCode(200);
         exchange.getResponseSender().send("{}");
         exchange.endExchange();
@@ -923,6 +934,11 @@ public class WebHandler {
 
     public void deleteChatMessage(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+
+        if (!App.isChatEnabled()) {
+            sendForbidden(exchange, "Chatting and chat actions are disabled");
+            return;
+        }
 
         User user = exchange.getAttachment(AuthReader.USER);
         if (user == null) {
@@ -986,6 +1002,11 @@ public class WebHandler {
     public void chatPurge(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
 
+        if (!App.isChatEnabled()) {
+            sendForbidden(exchange, "Chatting and chat actions are disabled");
+            return;
+        }
+
         User user = exchange.getAttachment(AuthReader.USER);
         if (user == null) {
             sendBadRequest(exchange);
@@ -1034,6 +1055,11 @@ public class WebHandler {
 
     public void chatColorChange(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+
+        if (!App.isChatEnabled()) {
+            sendForbidden(exchange, "Chatting and chat actions are disabled");
+            return;
+        }
 
         User user = exchange.getAttachment(AuthReader.USER);
         if (user == null) {
@@ -1746,6 +1772,7 @@ public class WebHandler {
             (int) App.getConfig().getInt("stacking.maxStacked"),
             services,
             App.getRegistrationEnabled(),
+            App.isChatEnabled(),
             Math.min(App.getConfig().getInt("chat.characterLimit"), 2048),
             App.getConfig().getBoolean("chat.canvasBanRespected"),
             App.getConfig().getStringList("chat.bannerText"),
