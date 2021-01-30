@@ -35,4 +35,8 @@ public class ServerChatSpecificPurge {
     public String getReason() {
         return reason;
     }
+
+    public ServerChatSpecificPurge asSnipRedacted() {
+        return new ServerChatSpecificPurge("-snip-", "-snip-", this.IDs, this.reason);
+    }
 }

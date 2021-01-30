@@ -421,7 +421,12 @@ public class PacketHandler {
                     toFilter = toSend;
                 }
                 Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter);
-                server.broadcast(new ServerChatMessage(new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction)));
+                var messageObj = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction);
+                server.broadcastToStaff(new ServerChatMessage(messageObj));
+                if (App.getSnipMode()) {
+                    messageObj = messageObj.asSnipRedacted();
+                }
+                server.broadcastToNonStaff(new ServerChatMessage(messageObj));
             } catch (UnableToExecuteStatementException utese) {
                 utese.printStackTrace();
                 System.err.println("Failed to execute the ChatMessage insert statement.");
@@ -437,8 +442,7 @@ public class PacketHandler {
         var obj = new ServerChatPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), amount, reason);
         server.broadcastToStaff(obj);
         if (App.getSnipMode()) {
-            obj.initiator = "-snip-";
-            obj.target = "-snip-";
+            obj = obj.asSnipRedacted();
         }
         server.broadcastToNonStaff(obj);
     }
@@ -451,8 +455,7 @@ public class PacketHandler {
         var obj = new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), cmids, reason);
         server.broadcastToStaff(obj);
         if (App.getSnipMode()) {
-            obj.initiator = "-snip-";
-            obj.target = "-snip-";
+            obj = obj.asSnipRedacted();
         }
         server.broadcastToNonStaff(obj);
     }

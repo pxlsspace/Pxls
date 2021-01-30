@@ -159,6 +159,7 @@ public class WebHandler {
                     List<DBCanvasReport> canvasReports = new ArrayList<>();
                     List<Faction> factions = App.getDatabase().getFactionsForUID(profileUser.getId()).stream().map(Faction::new).collect(Collectors.toList());
 
+                    m.put("snip_mode", App.getSnipMode());
                     m.put("requested_self", requested_self);
                     m.put("profile_of", profileUser);
                     m.put("factions", factions);
@@ -917,6 +918,12 @@ public class WebHandler {
 
         boolean _removal = removal == -1 || removal > 0;
 
+        // TODO(netux): Fix infraestructure and allow to purge during snip mode
+        if (_removal && App.getSnipMode()) {
+            sendForbidden(exchange, "Cannot purge during snip mode");
+            return;
+        }
+
         Chatban chatban;
         if (isUnban) {
             chatban = Chatban.UNBAN(target, user, reason);
@@ -1008,6 +1015,12 @@ public class WebHandler {
             return;
         }
 
+        // TODO(netux): Fix infraestructure and allow to purge during snip mode
+        if (App.getSnipMode()) {
+            sendForbidden(exchange, "Cannot purge chat during snip mode");
+            return;
+        }
+
         User user = exchange.getAttachment(AuthReader.USER);
         if (user == null) {
             sendBadRequest(exchange);
@@ -1040,11 +1053,6 @@ public class WebHandler {
         if (target == null) {
             sendBadRequest(exchange);
             return;
-        }
-
-        String purgeReason = "$No reason provided.";
-        if (data.contains("reason")) {
-            purgeReason = data.getFirst("reason").getValue();
         }
 
         App.getDatabase().purgeChat(target, user, Integer.MAX_VALUE, reasonData.getValue(), true);
@@ -1865,9 +1873,15 @@ public class WebHandler {
             App.getDatabase().insertLookup(user.getId(), exchange.getAttachment(IPReader.IP));
         }
 
-        var lookup = user != null && user.hasPermission("board.check")
-            ? ExtendedLookup.fromDB(App.getDatabase().getFullPixelAt(x, y).orElse(null))
-            : Lookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null));
+        Lookup lookup;
+        if (user != null && user.hasPermission("board.check")) {
+            lookup = ExtendedLookup.fromDB(App.getDatabase().getFullPixelAt(x, y).orElse(null));
+        } else {
+            lookup = Lookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null));
+            if (App.getSnipMode()) {
+                lookup = lookup.asSnipRedacted();
+            }
+        }
         exchange.getResponseSender().send(App.getGson().toJson(lookup));
     }
 

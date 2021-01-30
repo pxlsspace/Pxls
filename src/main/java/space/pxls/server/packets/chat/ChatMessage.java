@@ -18,16 +18,15 @@ public class ChatMessage {
     public StrippedFaction strippedFaction;
 
     public ChatMessage(int id, String author, Long date, String message_raw, Purge purge, List<Badge> badges, List<String> authorNameClass, Number authorNameColor, Faction faction) {
-        boolean isSnip = App.getSnipMode();
         this.id = id;
-        this.author = isSnip ? "-snip-" : author;
+        this.author = author;
         this.date = date;
         this.message_raw = message_raw;
         this.purge = purge;
         this.badges = badges;
         this.authorNameClass = authorNameClass;
         this.authorNameColor = authorNameColor;
-        this.strippedFaction = !isSnip && faction != null ? new StrippedFaction(faction) : null;
+        this.strippedFaction = faction != null ? new StrippedFaction(faction) : null;
     }
 
     public int getId() {
@@ -60,6 +59,10 @@ public class ChatMessage {
 
     public StrippedFaction getStrippedFaction() {
         return strippedFaction;
+    }
+
+    public ChatMessage asSnipRedacted() {
+        return new ChatMessage(id, "-snip-", date, message_raw, purge, badges, authorNameClass, authorNameColor, null);
     }
 
     public static class StrippedFaction {

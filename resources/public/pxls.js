@@ -3242,11 +3242,13 @@ window.App = (function() {
             id: 'username',
             name: 'Username',
             get: data => data.username
-              ? crel('a', {
-                href: `/profile/${data.username}`,
-                target: '_blank',
-                title: 'View Profile'
-              }, data.username)
+              ? !board.snipMode
+                ? crel('a', {
+                  href: `/profile/${data.username}`,
+                  target: '_blank',
+                  title: 'View Profile'
+                }, data.username)
+                : data.username
               : null
           }, {
             id: 'faction',
@@ -4665,7 +4667,7 @@ window.App = (function() {
               style: 'font-size: .65rem; cursor: pointer;',
               'data-id': packet.id,
               onclick: self._handlePingJumpClick
-            }), `${packet.author}: `, _processed);
+            }), `${board.snipMode ? '-snip-' : packet.author}: `, _processed);
           }));
           const popup = crel(popupWrapper, panelHeader, crel('div', { class: 'pane pane-full' }, pingsList));
           document.body.appendChild(popup);
@@ -5258,8 +5260,11 @@ window.App = (function() {
 
         const hookDatas = self.hooks.map((hook) => Object.assign({}, { pings: [] }, hook.get(packet)));
 
-        self.typeahead.helper.getDatabase('users').addEntry(packet.author, packet.author);
-        if (self.ignored.indexOf(packet.author) >= 0) return;
+        if (!board.snipMode) {
+          self.typeahead.helper.getDatabase('users').addEntry(packet.author, packet.author);
+
+          if (self.ignored.indexOf(packet.author) >= 0) return;
+        }
         let hasPing = !board.snipMode && settings.chat.pings.enable.get() === true && user.isLoggedIn() && hookDatas.some((data) => data.pings.length > 0);
         const when = moment.unix(packet.date);
         const flairs = crel('span', { class: 'flairs' });
@@ -5286,18 +5291,20 @@ window.App = (function() {
         }
 
         const _facTag = packet.strippedFaction ? packet.strippedFaction.tag : '';
-        const _facColor = packet.strippedFaction ? intToHex(packet.strippedFaction.color) : 0;
-        const _facTagShow = packet.strippedFaction && settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
-        const _facTitle = packet.strippedFaction ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : '';
+        if (!board.snipMode) {
+          const _facColor = packet.strippedFaction ? intToHex(packet.strippedFaction.color) : 0;
+          const _facTagShow = packet.strippedFaction && settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
+          const _facTitle = packet.strippedFaction ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : '';
 
-        const _facFlair = crel('span', {
-          class: 'flair faction-tag',
-          'data-tag': _facTag,
-          style: `color: ${_facColor}; display: ${_facTagShow}`,
-          title: _facTitle
-        });
-        _facFlair.innerHTML = `[${twemoji.parse(_facTag)}]`;
-        crel(flairs, _facFlair);
+          const _facFlair = crel('span', {
+            class: 'flair faction-tag',
+            'data-tag': _facTag,
+            style: `color: ${_facColor}; display: ${_facTagShow}`,
+            title: _facTitle
+          });
+          _facFlair.innerHTML = `[${twemoji.parse(_facTag)}]`;
+          crel(flairs, _facFlair);
+        }
 
         const contentSpan = crel('span', { class: 'content' },
           self.processMessage(packet.message_raw, (username) => {
@@ -5311,8 +5318,8 @@ window.App = (function() {
 
         const chatLine = crel('li', {
           'data-id': packet.id,
-          'data-tag': _facTag,
-          'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '',
+          'data-tag': !board.snipMode ? _facTag : '',
+          'data-faction': !board.snipMode ? (packet.strippedFaction && packet.strippedFaction.id) || '' : '',
           'data-author': packet.author,
           'data-date': packet.date,
           'data-badges': JSON.stringify(packet.badges || []),
@@ -5326,7 +5333,7 @@ window.App = (function() {
           style: `color: #${place.getPaletteColorValue(packet.authorNameColor)}`,
           onclick: self._popUserPanel,
           onmousemiddledown: self._addAuthorMentionToChatbox
-        }, packet.author),
+        }, board.snipMode ? '-snip-' : packet.author),
         document.createTextNode(': '),
         contentSpan,
         document.createTextNode(' '));
@@ -5560,9 +5567,10 @@ window.App = (function() {
             { label: 'Report', action: 'report', class: 'dangerous-button' },
             { label: 'Mention', action: 'mention' },
             { label: 'Ignore', action: 'ignore' },
-            { label: 'Profile', action: 'profile' },
+            (!board.snipMode || App.user.hasPermission('user.receivestaffbroadcasts')) && { label: 'Profile', action: 'profile' },
             { label: 'Chat (un)ban', action: 'chatban', staffaction: true },
-            { label: 'Purge User', action: 'purge', staffaction: true },
+            // TODO(netux): Fix infraestructure and allow to purge during snip mode
+            !board.snipMode && { label: 'Purge User', action: 'purge', staffaction: true },
             { label: 'Delete', action: 'delete', staffaction: true },
             { label: 'Mod Lookup', action: 'lookup-mod', staffaction: true },
             { label: 'Chat Lookup', action: 'lookup-chat', staffaction: true }
@@ -5572,7 +5580,7 @@ window.App = (function() {
           crel(leftPanel, crel('p', { class: 'content', style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector('.content').textContent));
 
           crel(actionsList, actions
-            .filter((action) => user.isStaff() || !action.staffaction)
+            .filter((action) => action && (user.isStaff() || !action.staffaction))
             .map((action) => crel('li', crel('button', {
               type: 'button',
               class: 'text-button fullwidth ' + (action.class || ''),
@@ -5802,10 +5810,17 @@ window.App = (function() {
               _selBanReason,
               crel(_additionalReasonInfoWrap, _txtAdditionalReason)
             ),
-            board.snipMode ? null : crel(_purgeWrap,
+            crel(_purgeWrap,
               crel('h5', 'Purge Messages'),
-              crel('label', { style: 'display: inline;' }, _rbPurgeYes, 'Yes'),
-              crel('label', { style: 'display: inline;' }, _rbPurgeNo, 'No')
+              board.snipMode
+                ? crel('span', { class: 'text-orange extra-warning' },
+                  crel('i', { class: 'fas fa-exclamation-triangle' }),
+                  ' Purging all messages is disabled during snip mode'
+                )
+                : [
+                  crel('label', { style: 'display: inline;' }, _rbPurgeYes, 'Yes'),
+                  crel('label', { style: 'display: inline;' }, _rbPurgeNo, 'No')
+                ]
             ),
             crel('div', { class: 'buttons' },
               _btnCancel,
@@ -5843,6 +5858,7 @@ window.App = (function() {
               const postData = {
                 type: 'temp',
                 reason: 'none provided',
+                // TODO(netux): Fix infraestructure and allow to purge during snip mode
                 removalAmount: !board.snipMode ? (_rbPurgeYes.checked ? -1 : 0) : 0, // message purges are based on username, so if we purge when everyone in chat is -snip-, we aren't gonna have a good time
                 banLength: 0
               };
