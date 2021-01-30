@@ -3226,7 +3226,7 @@ window.App = (function() {
             self.create(data);
           }
         }).fail(function() {
-          self._makeShell(false).find('.content').first().append($('<p>').css('color', '#c00').text("An error occurred, either you aren't logged in or you may be attempting to look up users too fast. Please try again in 60 seconds"));
+          self._makeShell({ x: pos.x, y: pos.y }).find('.content').first().append($('<p>').css('color', '#c00').text("An error occurred, either you aren't logged in or you may be attempting to look up users too fast. Please try again in 60 seconds"));
           self.elements.lookup.fadeIn(200);
         });
       },
