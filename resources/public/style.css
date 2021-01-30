@@ -723,7 +723,7 @@ body .message {
 #palette {
     position: relative;
     z-index: 6;
-    padding: 15px 0;
+    padding: 10px 0;
     margin: 0 auto;
 
     overflow-x: auto;
@@ -736,6 +736,10 @@ body .message {
 .thin-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: #aaa transparent;
+}
+
+.palette-stacking {
+    white-space: normal !important;
 }
 
 /* Scrollbar, Chrome only */
@@ -760,7 +764,7 @@ body .message {
     min-height: 32px;
     border: 2px solid var(--palette-item-border-color);
     border-radius: 3px;
-    margin-right: 10px;
+    margin: 5px;
     cursor: pointer;
     bottom: 0;
     /* the default of `baseline` causes the deselect button to be raised on Firefox */

@@ -709,6 +709,9 @@ window.App = (function() {
             thin: {
               enable: setting('ui.palette.scrollbar.thin.enable', SettingType.TOGGLE, true, $('#setting-ui-palette-scrollbar-thin-enable'))
             }
+          },
+          stacking: {
+            enable: setting('ui.palette.stacking.enable', SettingType.TOGGLE, false, $('#setting-ui-palette-stacking-enable'))
           }
         },
         chat: {
@@ -3536,6 +3539,10 @@ window.App = (function() {
 
         settings.ui.palette.scrollbar.thin.enable.listen(function(value) {
           document.querySelector('#palette').classList.toggle('thin-scrollbar', value);
+        });
+
+        settings.ui.palette.stacking.enable.listen(function(value) {
+          document.querySelector('#palette').classList.toggle('palette-stacking', value);
         });
 
         settings.board.lock.enable.listen((value) => board.setAllowDrag(!value));
