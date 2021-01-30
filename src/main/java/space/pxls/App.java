@@ -919,9 +919,8 @@ public class App {
         return !config.getString("captcha.key").isEmpty() && !config.getString("captcha.secret").isEmpty();
     }
 
-    public static String getWhoamiAllowedOrigin() {
-        if (cachedWhoamiOrigin == null) cachedWhoamiOrigin = config.getString("whoamiAllowedOrigin");
-        return cachedWhoamiOrigin;
+    public static List<String> getWhoamiAllowedOrigins() {
+        return config.getStringList("whoamiAllowedOrigins");
     }
 
     public static int getPixel(int x, int y) {
@@ -942,6 +941,10 @@ public class App {
 
     public static boolean getRegistrationEnabled() {
         return getConfig().getBoolean("oauth.enableRegistration");
+    }
+
+    public static boolean isChatEnabled() {
+        return getConfig().getBoolean("chat.enabled");
     }
 
     public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase, String action) {

@@ -4097,27 +4097,47 @@ window.App = (function() {
           self._setOpenState('info', true);
         }
       },
+      _getPanelElement: (panel) => panel instanceof HTMLElement ? panel : document.querySelector(`.panel[data-panel="${panel}"]`),
+      _getPanelTriggerElement: (panel) => {
+        panel = self._getPanelElement(panel);
+        if (!panel) {
+          return null;
+        }
+        return document.querySelector(`.panel-trigger[data-panel="${panel.dataset.panel}"]`);
+      },
+      setEnabled: (panel, enabled) => {
+        panel = self._getPanelElement(panel);
+        if (enabled) {
+          delete panel.dataset.disabled;
+        } else {
+          panel.dataset.disabled = '';
+        }
+
+        const panelTrigger = self._getPanelTriggerElement(panel);
+        if (panelTrigger) {
+          panelTrigger.style.display = enabled ? '' : 'none';
+        }
+      },
+      isEnabled: (panel) => {
+        panel = self._getPanelElement(panel);
+        return panel && panel.dataset.disabled == null;
+      },
       isOpen: panel => {
-        if (!(panel instanceof HTMLElement)) panel = document.querySelector(`.panel[data-panel="${panel}"]`);
-        return panel && panel.classList.contains('open');
+        panel = self._getPanelElement(panel);
+        return panel && self.isEnabled(panel) && panel.classList.contains('open');
       },
       _toggleOpenState: (panel, exclusive = true) => {
-        if (!(panel instanceof HTMLElement)) panel = document.querySelector(`.panel[data-panel="${panel}"]`);
-        if (panel) {
+        panel = self._getPanelElement(panel);
+        if (panel && self.isEnabled(panel)) {
           self._setOpenState(panel, !panel.classList.contains('open'), exclusive);
         }
       },
       _setOpenState: (panel, state, exclusive = true) => {
         state = !!state;
 
-        let panelDescriptor = panel;
-        if (panel instanceof HTMLElement) {
-          panelDescriptor = panel.dataset.panel;
-        } else {
-          panel = document.querySelector(`.panel[data-panel="${panel}"]`);
-        }
-
+        panel = self._getPanelElement(panel);
         if (panel) {
+          const panelDescriptor = panel.dataset.panel;
           const panelPosition = panel.classList.contains('right') ? 'right' : 'left';
 
           if (state) {
@@ -4147,7 +4167,9 @@ window.App = (function() {
       open: panel => self._setOpenState(panel, true),
       close: panel => self._setOpenState(panel, false),
       toggle: (panel, exclusive = true) => self._toggleOpenState(panel, exclusive),
-      isOpen: self.isOpen
+      isOpen: self.isOpen,
+      setEnabled: self.setEnabled,
+      isEnabled: self.isEnabled
     };
   })();
   const chat = (function() {
@@ -4733,6 +4755,10 @@ window.App = (function() {
           }
         });
       },
+      disable: () => {
+        panels.setEnabled('chat', false);
+        self.elements.username_color_select.attr('disabled', '');
+      },
       _handleChatbanVisualState(canChat) {
         if (canChat) {
           self.elements.input.prop('disabled', false);
@@ -4748,9 +4774,6 @@ window.App = (function() {
       webinit(data) {
         self.setCharLimit(data.chatCharacterLimit);
         self.canvasBanRespected = data.chatRespectsCanvasBan;
-        self.customEmoji = data.customEmoji.map(({ name, emoji }) => ({ name, emoji: `./emoji/${emoji}` }));
-        self.initEmojiPicker();
-        self.initTypeahead();
         self._populateUsernameColor();
         self.elements.username_color_select.value = user.getChatNameColor();
         self.elements.username_color_select.on('change', function() {
@@ -4782,6 +4805,14 @@ window.App = (function() {
             }
           });
         });
+
+        if (data.chatEnabled) {
+          self.customEmoji = data.customEmoji.map(({ name, emoji }) => ({ name, emoji: `./emoji/${emoji}` }));
+          self.initEmojiPicker();
+          self.initTypeahead();
+        } else {
+          self.disable();
+        }
       },
       initTypeahead() {
         // init DBs

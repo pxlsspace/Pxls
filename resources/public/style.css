@@ -1165,6 +1165,10 @@ aside.panel {
     cursor: initial !important;
 }
 
+aside.panel[data-disabled] {
+    display: none;
+}
+
 aside.panel.left {
     right: initial;
     transition: left ease-in-out .25s;

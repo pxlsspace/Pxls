@@ -29,6 +29,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class WebHandler {
@@ -261,7 +262,7 @@ public class WebHandler {
                         } else if (App.getDatabase().getOwnedFactionCountForUID(user.getId()) >= App.getConfig().getInt("factions.maxOwned")) {
                             sendBadRequest(exchange, String.format("You've reached the maximum number of owned factions (%d).", App.getConfig().getInt("factions.maxOwned")));
                         } else if (App.getConfig().getInt("factions.minPixelsToCreate") > user.getAllTimePixelCount()) {
-                            send(403, exchange, String.format("You do not meet the minimum all-time pixel requirements to create a faction. The current minimum is %d.", App.getConfig().getInt("chat.minPixelsToCreate")));
+                            sendForbidden(exchange, String.format("You do not meet the minimum all-time pixel requirements to create a faction. The current minimum is %d.", App.getConfig().getInt("factions.minPixelsToCreate")));
                         } else {
                             Optional<Faction> faction = FactionManager.getInstance().create(name, tag, user.getId(), color);
                             if (faction.isPresent()) {
@@ -768,6 +769,11 @@ public class WebHandler {
     public void chatReport(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
 
+        if (!App.isChatEnabled()) {
+            sendForbidden(exchange, "Chatting and chat actions are disabled");
+            return;
+        }
+
         User user = exchange.getAttachment(AuthReader.USER);
         if (user == null) {
             sendUnauthorized(exchange, "User must be logged in to report chat messages");
@@ -820,6 +826,13 @@ public class WebHandler {
     }
 
     public void chatban(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+
+        if (!App.isChatEnabled()) {
+            sendForbidden(exchange, "Chatting and chat actions are disabled");
+            return;
+        }
+
         User user = exchange.getAttachment(AuthReader.USER);
         if (user == null) {
             sendBadRequest(exchange);
@@ -922,7 +935,6 @@ public class WebHandler {
 
         chatban.commit();
 
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
         exchange.setStatusCode(200);
         exchange.getResponseSender().send("{}");
         exchange.endExchange();
@@ -930,6 +942,11 @@ public class WebHandler {
 
     public void deleteChatMessage(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+
+        if (!App.isChatEnabled()) {
+            sendForbidden(exchange, "Chatting and chat actions are disabled");
+            return;
+        }
 
         User user = exchange.getAttachment(AuthReader.USER);
         if (user == null) {
@@ -993,6 +1010,11 @@ public class WebHandler {
     public void chatPurge(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
 
+        if (!App.isChatEnabled()) {
+            sendForbidden(exchange, "Chatting and chat actions are disabled");
+            return;
+        }
+
         // TODO(netux): Fix infraestructure and allow to purge during snip mode
         if (App.getSnipMode()) {
             sendForbidden(exchange, "Cannot purge chat during snip mode");
@@ -1042,6 +1064,11 @@ public class WebHandler {
 
     public void chatColorChange(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+
+        if (!App.isChatEnabled()) {
+            sendForbidden(exchange, "Chatting and chat actions are disabled");
+            return;
+        }
 
         User user = exchange.getAttachment(AuthReader.USER);
         if (user == null) {
@@ -1754,6 +1781,7 @@ public class WebHandler {
             (int) App.getConfig().getInt("stacking.maxStacked"),
             services,
             App.getRegistrationEnabled(),
+            App.isChatEnabled(),
             Math.min(App.getConfig().getInt("chat.characterLimit"), 2048),
             App.getConfig().getBoolean("chat.canvasBanRespected"),
             App.getConfig().getStringList("chat.bannerText"),
@@ -1925,8 +1953,14 @@ public class WebHandler {
     public void whoami(HttpServerExchange exchange) {
         exchange.getResponseHeaders()
                 .put(Headers.CONTENT_TYPE, "application/json")
-                .put(HttpString.tryFromString("Access-Control-Allow-Origin"), App.getWhoamiAllowedOrigin())
                 .put(HttpString.tryFromString("Access-Control-Allow-Credentials"), "true");
+
+        String origin = exchange.getRequestHeaders().getFirst(HttpString.tryFromString("Origin"));
+        if (origin != null && App.getWhoamiAllowedOrigins().stream().anyMatch(Predicate.isEqual(origin))) {
+            exchange.getResponseHeaders()
+                    .put(HttpString.tryFromString("Access-Control-Allow-Origin"), origin);
+        }
+
         User user = exchange.getAttachment(AuthReader.USER);
         if (user != null) {
             exchange.getResponseSender().send(App.getGson().toJson(new WhoAmI(user.getName(), user.getId())));
