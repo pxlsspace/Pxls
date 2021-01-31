@@ -37,7 +37,7 @@ public class UndertowServer {
     private WebHandler webHandler;
     private ConcurrentHashMap<Integer, User> authedUsers = new ConcurrentHashMap<Integer, User>();
 
-    private Set<WebSocketChannel> connections;
+    private Set<PxlsWebSocketChannel> connections;
     private Undertow server;
 
     private ExecutorService userTaskExecutor = Executors.newFixedThreadPool(4);
@@ -47,6 +47,7 @@ public class UndertowServer {
 
         webHandler = new WebHandler();
         socketHandler = new PacketHandler(this);
+        connections = ConcurrentHashMap.newKeySet();
     }
 
     public void start() {
@@ -112,12 +113,13 @@ public class UndertowServer {
     }
 
     private void webSocketHandler(WebSocketHttpExchange exchange, WebSocketChannel channel) {
-        connections = exchange.getPeerConnections();
-
         User user = exchange.getAttachment(AuthReader.USER);
         String ip = exchange.getAttachment(IPReader.IP);
 
         socketHandler.connect(channel, user);
+
+        PxlsWebSocketChannel wrappedChannel = new PxlsWebSocketChannel(channel, user);
+        connections.add(wrappedChannel);
 
         if (user != null) {
             user.getConnections().add(channel);
@@ -171,6 +173,8 @@ public class UndertowServer {
             }
         });
         channel.getCloseSetter().set(c -> {
+            connections.remove(wrappedChannel);
+
             if (user != null) {
                 user.getConnections().remove(channel);
             }
@@ -180,14 +184,14 @@ public class UndertowServer {
         channel.resumeReceives();
     }
 
-    public Set<WebSocketChannel> getConnections() {
+    public Set<PxlsWebSocketChannel> getConnections() {
         return connections;
     }
 
     public void broadcast(Object obj) {
         String json = App.getGson().toJson(obj);
         if (connections != null) {
-            for (WebSocketChannel channel : connections) {
+            for (PxlsWebSocketChannel channel : connections) {
                 sendRaw(channel, json);
             }
         }
@@ -232,6 +236,10 @@ public class UndertowServer {
 
     public void sendRaw(User user, String raw) {
         user.getConnections().forEach(channel -> sendRaw(channel, raw));
+    }
+
+    private void sendRaw(PxlsWebSocketChannel channel, String str) {
+        WebSockets.sendText(str, channel.getUnderlyingChannel(), null);
     }
 
     private void sendRaw(WebSocketChannel channel, String str) {
