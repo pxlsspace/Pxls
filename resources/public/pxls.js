@@ -2440,7 +2440,7 @@ window.App = (function() {
         safeHosts: [
           'imgur.com',
           window.location.host
-        ].map(h => new RegExp(`^https?://([^./]+\\.)?${h.replace('.', '\\.')}`, 'i'))
+        ]
       },
       queueTimer: 0,
       loading: false,
@@ -2463,15 +2463,21 @@ window.App = (function() {
 
         self.loadImage();
       },
-      cors: function(url) {
-        if (!url || /^\s*(data:|$)/i.test(url) || self.corsProxy.safeHosts.some(h => h.test(url))) {
-          return url;
-        } else {
-          if (self.corsProxy.param) {
-            return `${self.corsProxy.base}?${self.corsProxy.param}=${encodeURIComponent(url)}`;
+      cors: function(location) {
+        try {
+          const url = new URL(location);
+          if (self.corsProxy.safeHosts.some(h => url.hostname.endsWith(h))) {
+            return url.href;
           } else {
-            return `${self.corsProxy.base}/${url}`;
+            if (self.corsProxy.param) {
+              return `${self.corsProxy.base}?${self.corsProxy.param}=${encodeURIComponent(url.href)}`;
+            } else {
+              return `${self.corsProxy.base}/${url.href}`;
+            }
           }
+        } catch (e) {
+          // invalid URLs fail silently.
+          return location;
         }
       },
       loadImage: function() {
