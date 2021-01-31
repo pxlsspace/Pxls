@@ -2439,6 +2439,7 @@ window.App = (function() {
         // a list of sites that will already serve cors-enabled content
         safeHosts: [
           'imgur.com',
+          'pxlsfiddle.com',
           window.location.host
         ]
       },
