@@ -15,4 +15,8 @@ public class ServerChatMessage {
     public ChatMessage getMessage() {
         return message;
     }
+
+    public ServerChatMessage asSnipRedacted() {
+        return new ServerChatMessage(message.asSnipRedacted());
+    }
 }

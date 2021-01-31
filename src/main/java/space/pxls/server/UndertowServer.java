@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class UndertowServer {
@@ -207,12 +208,10 @@ public class UndertowServer {
         broadcastToUserPredicate(obj, user -> !user.isShadowBanned());
     }
 
-    public void broadcastToStaff(Object obj) {
-        broadcastToUserPredicate(obj, user -> user.hasPermission("user.receivestaffbroadcasts"));
-    }
+    private Predicate<User> userCanReceiveStaffBroadcasts = user -> user.hasPermission("user.receivestaffbroadcasts");
 
-    public void broadcastToNonStaff(Object obj) {
-        broadcastToUserPredicate(obj, user -> !user.hasPermission("user.receivestaffbroadcasts"));
+    public void broadcastToStaff(Object obj) {
+        broadcastToUserPredicate(obj, userCanReceiveStaffBroadcasts);
     }
 
     public void broadcastToUserPredicate(Object obj, Predicate<User> predicate) {
@@ -224,6 +223,32 @@ public class UndertowServer {
                 .forEach(user -> user.getConnections()
                         .forEach(con -> WebSockets.sendText(json, con, null))
                 );
+    }
+
+    public void broadcastPredicate(Object obj, Predicate<PxlsWebSocketChannel> predicate) {
+        String json = App.getGson().toJson(obj);
+        connections.parallelStream()
+                .filter(predicate)
+                .forEach(con -> WebSockets.sendText(json, con.getUnderlyingChannel(), null));
+    }
+
+    public void broadcastSeparateForStaff(Object nonStaffObj, Object staffObj) {
+        String nonStaffJSON = App.getGson().toJson(nonStaffObj);
+        String staffJSON = App.getGson().toJson(staffObj);
+        broadcastMapped(con -> {
+            boolean sendStaffObject = con.getUser().isPresent() && userCanReceiveStaffBroadcasts.test(con.getUser().get());
+            return sendStaffObject ? staffJSON : nonStaffJSON;
+        });
+    }
+
+    public void broadcastMapped(Function<PxlsWebSocketChannel, String> mapper) {
+        connections.parallelStream()
+                .forEach(con -> {
+                    String json = mapper.apply(con);
+                    if (json != null) {
+                        WebSockets.sendText(json, con.getUnderlyingChannel(), null);
+                    }
+                });
     }
 
     public void send(WebSocketChannel channel, Object obj) {
