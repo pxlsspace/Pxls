@@ -704,6 +704,14 @@ window.App = (function() {
         palette: {
           numbers: {
             enable: setting('ui.palette.numbers.enable', SettingType.TOGGLE, false, $('#setting-ui-palette-numbers-enable'))
+          },
+          scrollbar: {
+            thin: {
+              enable: setting('ui.palette.scrollbar.thin.enable', SettingType.TOGGLE, true, $('#setting-ui-palette-scrollbar-thin-enable'))
+            }
+          },
+          stacking: {
+            enable: setting('ui.palette.stacking.enable', SettingType.TOGGLE, false, $('#setting-ui-palette-stacking-enable'))
           }
         },
         chat: {
@@ -3226,7 +3234,7 @@ window.App = (function() {
             self.create(data);
           }
         }).fail(function() {
-          self._makeShell(false).find('.content').first().append($('<p>').css('color', '#c00').text("An error occurred, either you aren't logged in or you may be attempting to look up users too fast. Please try again in 60 seconds"));
+          self._makeShell({ x: pos.x, y: pos.y }).find('.content').first().append($('<p>').css('color', '#c00').text("An error occurred, either you aren't logged in or you may be attempting to look up users too fast. Please try again in 60 seconds"));
           self.elements.lookup.fadeIn(200);
         });
       },
@@ -3527,6 +3535,14 @@ window.App = (function() {
 
         settings.ui.palette.numbers.enable.listen(function(value) {
           place.setNumberedPaletteEnabled(value);
+        });
+
+        settings.ui.palette.scrollbar.thin.enable.listen(function(value) {
+          document.querySelector('#palette').classList.toggle('thin-scrollbar', value);
+        });
+
+        settings.ui.palette.stacking.enable.listen(function(value) {
+          document.querySelector('#palette').classList.toggle('palette-stacking', value);
         });
 
         settings.board.lock.enable.listen((value) => board.setAllowDrag(!value));
