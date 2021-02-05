@@ -421,12 +421,11 @@ public class PacketHandler {
                     toFilter = toSend;
                 }
                 Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter);
-                var messageObj = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction);
-                server.broadcastToStaff(new ServerChatMessage(messageObj));
-                if (App.getSnipMode()) {
-                    messageObj = messageObj.asSnipRedacted();
-                }
-                server.broadcastToNonStaff(new ServerChatMessage(messageObj));
+                var chatMessage = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction);
+
+                var barePacket = new ServerChatMessage(chatMessage);
+                var redactedPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
+                server.broadcastSeparateForStaff(redactedPacket, barePacket);
             } catch (UnableToExecuteStatementException utese) {
                 utese.printStackTrace();
                 System.err.println("Failed to execute the ChatMessage insert statement.");
@@ -439,12 +438,9 @@ public class PacketHandler {
     }
 
     public void sendChatPurge(User target, User initiator, int amount, String reason) {
-        var obj = new ServerChatPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), amount, reason);
-        server.broadcastToStaff(obj);
-        if (App.getSnipMode()) {
-            obj = obj.asSnipRedacted();
-        }
-        server.broadcastToNonStaff(obj);
+        var barePacket = new ServerChatPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), amount, reason);
+        var redactedPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
+        server.broadcastSeparateForStaff(redactedPacket, barePacket);
     }
 
     public void sendSpecificPurge(User target, User initiator, Integer cmid, String reason) {
@@ -452,12 +448,9 @@ public class PacketHandler {
     }
 
     public void sendSpecificPurge(User target, User initiator, List<Integer> cmids, String reason) {
-        var obj = new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), cmids, reason);
-        server.broadcastToStaff(obj);
-        if (App.getSnipMode()) {
-            obj = obj.asSnipRedacted();
-        }
-        server.broadcastToNonStaff(obj);
+        var barePacket = new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), cmids, reason);
+        var redactedPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
+        server.broadcastSeparateForStaff(redactedPacket, barePacket);
     }
 
     public void updateUserData() {
