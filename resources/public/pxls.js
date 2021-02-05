@@ -5358,6 +5358,9 @@ window.App = (function() {
         if (packet.purge) {
           self._markMessagePurged(chatLine, packet.purge);
         }
+        if (packet.authorIsShadowBanned) {
+          self._markMessageShadowBanned(chatLine);
+        }
 
         if (hasPing) {
           self.pingsList.push(packet);
@@ -5395,6 +5398,10 @@ window.App = (function() {
         elem.classList.add('purged');
         elem.setAttribute('title', `Purged by ${purge.initiator} with reason: ${purge.reason || 'none provided'}`);
         elem.dataset.purgedBy = purge.initiator;
+      },
+      _markMessageShadowBanned: (elem) => {
+        elem.classList.add('shadow-banned');
+        elem.dataset.shadowBanned = 'true';
       },
       _makeCoordinatesElement: (raw, x, y, scale, template, title) => {
         let text = `(${x}, ${y}${scale != null ? `, ${scale}x` : ''})`;

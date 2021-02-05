@@ -384,7 +384,7 @@ public class PacketHandler {
     }
 
     public void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
-        server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, user.hasPermission("chat.history.purged"), false)));
+        server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, user.hasPermission("chat.history.purged"), user.hasPermission("chat.history.shadowbanned"), false)));
     }
 
     public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
@@ -398,8 +398,8 @@ public class PacketHandler {
         if (message.endsWith("\n")) message = message.replaceFirst("\n$", "");
         if (message.length() > charLimit) message = message.substring(0, charLimit);
         if (user == null) { //console
-            Integer cmid = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "");
-            server.broadcast(new ServerChatMessage(new ChatMessage(cmid, "CONSOLE", nowMS / 1000L, message, null, null, null, 0, null)));
+            Integer cmid = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "", false);
+            server.broadcast(new ServerChatMessage(new ChatMessage(cmid, "CONSOLE", nowMS / 1000L, message, null, null, null, null, 0, null)));
         } else {
             if (!user.canChat()) return;
             if (message.trim().length() == 0) return;
@@ -420,11 +420,12 @@ public class PacketHandler {
                     toSend = result.filterHit ? result.filtered : result.original;
                     toFilter = toSend;
                 }
-                Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter);
-                var chatMessage = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction);
+                Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter, user.isShadowBanned());
+                var chatMessage = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, user.isShadowBanned(), null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction);
 
                 var barePacket = new ServerChatMessage(chatMessage);
                 var redactedPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
+                redactedPacket = user.isShadowBanned() ? redactedPacket.asShadowBanned() : redactedPacket;
                 server.broadcastSeparateForStaff(redactedPacket, barePacket);
             } catch (UnableToExecuteStatementException utese) {
                 utese.printStackTrace();

@@ -132,6 +132,7 @@ html {
     --chat-server-action-text-color: #555;
     --chat-user-text-shadow-color: #ccc;
     --chat-purged-text-color: #888;
+    --chat-shadowbanned-text-color: #F44;
 
     --chat-tobottom-text-color: #fff;
     --chat-tobottom-background: #66a;
@@ -1573,6 +1574,11 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     font-size: .9em;
     color: var(--chat-purged-text-color);
     text-decoration: line-through;
+}
+
+.chat-line.shadow-banned {
+    font-size: .9em;
+    color: var(--chat-shadowbanned-text-color);
 }
 
 #jump-to-bottom {

@@ -169,7 +169,8 @@ public class Database {
                     "filtered VARCHAR(2048) NOT NULL DEFAULT ''," +
                     "purged BOOL NOT NULL DEFAULT false," +
                     "purged_by INT," +
-                    "purge_reason TEXT)")
+                    "purge_reason TEXT," +
+                    "shadow_banned BOOL NOT NULL DEFAULT false)")
                     .execute();
             // chat_reports
             handle.createUpdate("CREATE TABLE IF NOT EXISTS chat_reports (" +
@@ -1152,14 +1153,16 @@ public class Database {
      * @param sent The chat message's creation epoch.
      * @param content The chat contents.
      * @param filtered The filtered chat contents.
+     * @param shadowBanned Whether or not the user sending the message is shadow-banned.
      * @return The new chat message's ID.
      */
-    public Integer createChatMessage(int authorID, long sent, String content, String filtered) {
-        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO chat_messages (author, sent, content, filtered) VALUES (:author, :sent, :content, :filtered)")
+    public Integer createChatMessage(int authorID, long sent, String content, String filtered, boolean shadowBanned) {
+        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO chat_messages (author, sent, content, filtered, shadow_banned) VALUES (:author, :sent, :content, :filtered, :shadow_banned)")
                 .bind("author", authorID)
                 .bind("sent", sent)
                 .bind("content", content)
                 .bind("filtered", filtered)
+                .bind("shadow_banned", shadowBanned)
                 .executeAndReturnGeneratedKeys("id")
                     .mapTo(Integer.TYPE)
                     .first());
@@ -1170,10 +1173,11 @@ public class Database {
      * @param sent The chat message's creation epoch.
      * @param content The chat contents.
      * @param filtered The filtered chat contents.
+     * @param shadowBanned Whether or not the user sending the message is shadow-banned.
      * @return The new chat message's ID.
      */
-    public Integer createChatMessage(User author, long sent, String content, String filtered) {
-        return createChatMessage(author == null ? -1 : author.getId(), sent / 1000L, content, filtered);
+    public Integer createChatMessage(User author, long sent, String content, String filtered, boolean shadowBanned) {
+        return createChatMessage(author == null ? -1 : author.getId(), sent / 1000L, content, filtered, shadowBanned);
     }
 
     /**
@@ -1215,9 +1219,10 @@ public class Database {
      * @param includePurged Whether or not to include purged messages.
      * @return The retrieved {@link DBChatMessage}s. The length is determined by the {@link ResultSet} size.
      */
-    public DBChatMessage[] getLastXMessages(int x, boolean includePurged) {
-        return jdbi.withHandle(handle -> handle.select("SELECT * FROM chat_messages WHERE CASE WHEN :includePurged THEN true ELSE purged = false END ORDER BY sent DESC LIMIT :limit")
+    public DBChatMessage[] getLastXMessages(int x, boolean includePurged, boolean includeShadowBanned) {
+        return jdbi.withHandle(handle -> handle.select("SELECT * FROM chat_messages cm WHERE CASE WHEN :includePurged THEN true ELSE purged = false END AND CASE WHEN :includeShadowBanned THEN true ELSE NOT (SELECT is_shadow_banned FROM users u WHERE cm.author = u.id) END ORDER BY sent DESC LIMIT :limit")
                 .bind("includePurged", includePurged)
+                .bind("includeShadowBanned", includeShadowBanned)
                 .bind("limit", x)
                 .map(new DBChatMessage.Mapper())
                 .list()
@@ -1231,8 +1236,8 @@ public class Database {
      * @param ignoreFilter Whether or not the chat filter should apply to messages being returned.
      * @return The retrieved {@link DBChatMessage}s. The length is determined by the {@link ResultSet} size.
      */
-    public List<ChatMessage> getlastXMessagesForSocket(int x, boolean includePurged, boolean ignoreFilter) {
-        DBChatMessage[] fromDB = getLastXMessages(x, includePurged);
+    public List<ChatMessage> getlastXMessagesForSocket(int x, boolean includePurged, boolean includeShadowBanned, boolean ignoreFilter) {
+        DBChatMessage[] fromDB = getLastXMessages(x, includePurged, includeShadowBanned);
         List<ChatMessage> toReturn = new ArrayList<>();
         for (DBChatMessage dbChatMessage : fromDB) {
             List<Badge> badges = new ArrayList<>();
@@ -1240,6 +1245,7 @@ public class Database {
             int nameColor = 0;
             Faction faction = null;
             List<String> nameClass = null;
+            Boolean isAuthorShadowBanned = false;
             if (dbChatMessage.author_uid > 0) {
                 author = "$Unknown";
                 User temp = App.getUserManager().getByID(dbChatMessage.author_uid);
@@ -1249,6 +1255,7 @@ public class Database {
                     nameColor = temp.getChatNameColor();
                     nameClass = temp.getChatNameClasses();
                     faction = temp.fetchDisplayedFaction();
+                    isAuthorShadowBanned = temp.isShadowBanned();
                 }
             }
             var message = new ChatMessage(
@@ -1256,6 +1263,7 @@ public class Database {
                 author,
                 dbChatMessage.sent,
                 App.getConfig().getBoolean("textFilter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content,
+                isAuthorShadowBanned,
                 dbChatMessage.purged ? new ChatMessage.Purge(dbChatMessage.purged_by_uid, dbChatMessage.purge_reason) : null,
                 badges,
                 nameClass,

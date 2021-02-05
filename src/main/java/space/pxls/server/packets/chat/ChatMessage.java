@@ -11,17 +11,19 @@ public class ChatMessage {
     public String author;
     public Long date;
     public String message_raw;
+    public Boolean authorIsShadowBanned;
     public Purge purge;
     public List<Badge> badges;
     public List<String> authorNameClass;
     public Number authorNameColor;
     public StrippedFaction strippedFaction;
 
-    public ChatMessage(int id, String author, Long date, String message_raw, Purge purge, List<Badge> badges, List<String> authorNameClass, Number authorNameColor, Faction faction) {
+    public ChatMessage(int id, String author, Long date, String message_raw, Boolean authorIsShadowBanned, Purge purge, List<Badge> badges, List<String> authorNameClass, Number authorNameColor, Faction faction) {
         this.id = id;
         this.author = author;
         this.date = date;
         this.message_raw = message_raw;
+        this.authorIsShadowBanned = authorIsShadowBanned;
         this.purge = purge;
         this.badges = badges;
         this.authorNameClass = authorNameClass;
@@ -62,7 +64,12 @@ public class ChatMessage {
     }
 
     public ChatMessage asSnipRedacted() {
-        return new ChatMessage(id, "-snip-", date, message_raw, purge, badges, authorNameClass, authorNameColor, null);
+        return new ChatMessage(id, "-snip-", date, message_raw, authorIsShadowBanned, purge, badges, authorNameClass, authorNameColor, null);
+    }
+
+    public ChatMessage asShadowBanned() {
+        // If authorIsShadowBanned is null, it is automatically skipped by Gson
+        return new ChatMessage(id, author, date, message_raw, null, purge, badges, authorNameClass, authorNameColor, null);
     }
 
     public static class StrippedFaction {
