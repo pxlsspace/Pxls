@@ -1173,11 +1173,10 @@ public class Database {
      * @param sent The chat message's creation epoch.
      * @param content The chat contents.
      * @param filtered The filtered chat contents.
-     * @param shadowBanned Whether or not the user sending the message is shadow-banned.
      * @return The new chat message's ID.
      */
-    public Integer createChatMessage(User author, long sent, String content, String filtered, boolean shadowBanned) {
-        return createChatMessage(author == null ? -1 : author.getId(), sent / 1000L, content, filtered, shadowBanned);
+    public Integer createChatMessage(User author, long sent, String content, String filtered) {
+        return createChatMessage(author == null ? -1 : author.getId(), sent / 1000L, content, filtered, author != null && author.isShadowBanned());
     }
 
     /**
