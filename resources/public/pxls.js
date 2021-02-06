@@ -5358,7 +5358,7 @@ window.App = (function() {
         if (packet.purge) {
           self._markMessagePurged(chatLine, packet.purge);
         }
-        if (packet.authorIsShadowBanned) {
+        if (packet.authorWasShadowBanned) {
           self._markMessageShadowBanned(chatLine);
         }
 

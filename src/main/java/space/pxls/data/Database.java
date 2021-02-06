@@ -1196,12 +1196,11 @@ public class Database {
      * @param authorID The author's {@link User} ID.
      * @return The retrieved {@link DBChatMessage}s.
      */
-    public DBChatMessage[] getChatMessagesByAuthor(int authorID) {
+    public List<DBChatMessage> getChatMessagesByAuthor(int authorID) {
         return jdbi.withHandle(handle -> handle.select("SELECT * FROM chat_messages WHERE author = :author ORDER BY sent ASC")
                 .bind("author", authorID)
                 .map(new DBChatMessage.Mapper())
-                .list()
-                .toArray(new DBChatMessage[0]));
+                .list());
     }
 
     public List<DBChatMessage> getLastXMessagesFromUID(int authorID, int limit) {
@@ -1218,62 +1217,12 @@ public class Database {
      * @param includePurged Whether or not to include purged messages.
      * @return The retrieved {@link DBChatMessage}s. The length is determined by the {@link ResultSet} size.
      */
-    public DBChatMessage[] getLastXMessages(int x, boolean includePurged) {
+    public List<DBChatMessage> getLastXMessages(int x, boolean includePurged) {
         return jdbi.withHandle(handle -> handle.select("SELECT * FROM chat_messages cm WHERE CASE WHEN :includePurged THEN true ELSE purged = false END ORDER BY sent DESC LIMIT :limit")
                 .bind("includePurged", includePurged)
                 .bind("limit", x)
                 .map(new DBChatMessage.Mapper())
-                .list()
-                .toArray(new DBChatMessage[0]));
-    }
-
-    /**
-     * Retrieves the last <pre>x</pre> of chat messages and parses them for easier frontend handling.
-     * @param x The amount of chat messages to retrieve.
-     * @param includePurged Whether or not to include purged messages.
-     * @param ignoreFilter Whether or not the chat filter should apply to messages being returned.
-     * @return The retrieved {@link DBChatMessage}s. The length is determined by the {@link ResultSet} size.
-     */
-    public List<ChatMessage> getLastXMessagesForSocket(int x, boolean includePurged, boolean ignoreFilter) {
-        DBChatMessage[] fromDB = getLastXMessages(x, includePurged);
-        List<ChatMessage> toReturn = new ArrayList<>();
-        for (DBChatMessage dbChatMessage : fromDB) {
-            List<Badge> badges = new ArrayList<>();
-            String author = "CONSOLE";
-            int nameColor = 0;
-            Faction faction = null;
-            List<String> nameClass = null;
-            boolean isAuthorShadowBanned = false;
-            if (dbChatMessage.author_uid > 0) {
-                author = "$Unknown";
-                User temp = App.getUserManager().getByID(dbChatMessage.author_uid);
-                if (temp != null) {
-                    author = temp.getName();
-                    badges = temp.getChatBadges();
-                    nameColor = temp.getChatNameColor();
-                    nameClass = temp.getChatNameClasses();
-                    faction = temp.fetchDisplayedFaction();
-                    isAuthorShadowBanned = temp.isShadowBanned();
-                }
-            }
-            var message = new ChatMessage(
-                dbChatMessage.id,
-                author,
-                dbChatMessage.sent,
-                App.getConfig().getBoolean("textFilter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content,
-                isAuthorShadowBanned,
-                dbChatMessage.purged ? new ChatMessage.Purge(dbChatMessage.purged_by_uid, dbChatMessage.purge_reason) : null,
-                badges,
-                nameClass,
-                nameColor,
-                faction
-            );
-            if (!includePurged && App.getSnipMode()) {
-                message = message.asSnipRedacted();
-            }
-            toReturn.add(message);
-        }
-        return toReturn;
+                .list());
     }
 
     /**
