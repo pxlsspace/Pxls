@@ -424,17 +424,17 @@ public class PacketHandler {
                 var chatMessage = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, user.isShadowBanned(), null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction);
 
                 var barePacket = new ServerChatMessage(chatMessage);
-                var staffPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
-                staffPacket = user.isShadowBanned() ? staffPacket.asShadowBanned() : staffPacket;
+                var userPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
+                var staffPacket = barePacket;
                 if (user.isShadowBanned()) {
-                    // If the message author is shadow-banned, it should be visible to staff only.
-                    staffPacket = staffPacket.asShadowBanned();
-                    barePacket = null;
-                    if (!App.getConfig().getBoolean("chat.showShadowBannedMessagesToStaff")) {
-                        staffPacket = null;
-                    }
+                    // To the user, it looks like their message was sent successfully.
+                    server.send(user, userPacket.asShadowBanned());
+                    // To other users, nothing was sent.
+                    userPacket = null;
+                    // To staff, if enabled in the config, they will be the only ones to also get the message.
+                    staffPacket = App.getConfig().getBoolean("chat.showShadowBannedMessagesToStaff") ? staffPacket : null;
                 }
-                server.broadcastSeparateForStaff(staffPacket, barePacket);
+                server.broadcastSeparateForStaff(userPacket, staffPacket);
             } catch (UnableToExecuteStatementException utese) {
                 utese.printStackTrace();
                 System.err.println("Failed to execute the ChatMessage insert statement.");
