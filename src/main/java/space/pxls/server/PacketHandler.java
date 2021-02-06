@@ -434,7 +434,10 @@ public class PacketHandler {
                     // To staff, if enabled in the config, they will be the only ones to also get the message.
                     staffPacket = App.getConfig().getBoolean("chat.showShadowBannedMessagesToStaff") ? staffPacket : null;
                 }
-                server.broadcastSeparateForStaff(userPacket, staffPacket);
+                //noinspection ConstantConditions
+                if (userPacket != null && staffPacket != null) {
+                    server.broadcastSeparateForStaff(userPacket, staffPacket);
+                }
             } catch (UnableToExecuteStatementException utese) {
                 utese.printStackTrace();
                 System.err.println("Failed to execute the ChatMessage insert statement.");
