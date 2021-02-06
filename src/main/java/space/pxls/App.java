@@ -1,9 +1,6 @@
 package space.pxls;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.typesafe.config.*;
 import org.apache.commons.jcs.JCS;
 import org.apache.logging.log4j.Level;
@@ -24,9 +21,7 @@ import space.pxls.palette.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
