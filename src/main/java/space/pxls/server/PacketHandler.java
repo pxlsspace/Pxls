@@ -393,6 +393,7 @@ public class PacketHandler {
                     // sent messages normally.
                     if (user.isShadowBanned() && message.authorIsShadowBanned) message.authorIsShadowBanned = null;
                 })
+                .filter(message -> !(message.authorIsShadowBanned != null && message.authorIsShadowBanned && !user.hasPermission("chat.history.shadowbanned")))
                 .collect(Collectors.toList());
         server.send(channel, new ServerChatHistory(filtered));
     }
