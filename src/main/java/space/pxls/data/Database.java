@@ -1234,6 +1234,7 @@ public class Database {
      * @param x The amount of chat messages to retrieve.
      * @param includePurged Whether or not to include purged messages.
      * @param ignoreFilter Whether or not the chat filter should apply to messages being returned.
+     * @param includeShadowBanned Whether or not to include shadow-banned messages.
      * @return The retrieved {@link DBChatMessage}s. The length is determined by the {@link ResultSet} size.
      */
     public List<ChatMessage> getlastXMessagesForSocket(int x, boolean includePurged, boolean includeShadowBanned, boolean ignoreFilter) {
@@ -1245,7 +1246,7 @@ public class Database {
             int nameColor = 0;
             Faction faction = null;
             List<String> nameClass = null;
-            Boolean isAuthorShadowBanned = false;
+            boolean isAuthorShadowBanned = false;
             if (dbChatMessage.author_uid > 0) {
                 author = "$Unknown";
                 User temp = App.getUserManager().getByID(dbChatMessage.author_uid);
@@ -1258,12 +1259,13 @@ public class Database {
                     isAuthorShadowBanned = temp.isShadowBanned();
                 }
             }
+            if (isAuthorShadowBanned && !includeShadowBanned) continue;
             var message = new ChatMessage(
                 dbChatMessage.id,
                 author,
                 dbChatMessage.sent,
                 App.getConfig().getBoolean("textFilter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content,
-                isAuthorShadowBanned,
+                isAuthorShadowBanned ? true : null,
                 dbChatMessage.purged ? new ChatMessage.Purge(dbChatMessage.purged_by_uid, dbChatMessage.purge_reason) : null,
                 badges,
                 nameClass,
