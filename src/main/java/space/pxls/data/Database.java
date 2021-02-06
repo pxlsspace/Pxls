@@ -1236,7 +1236,7 @@ public class Database {
      * @param includeShadowBanned Whether or not to include shadow-banned messages.
      * @return The retrieved {@link DBChatMessage}s. The length is determined by the {@link ResultSet} size.
      */
-    public List<ChatMessage> getlastXMessagesForSocket(int x, boolean includePurged, boolean includeShadowBanned, boolean ignoreFilter) {
+    public List<ChatMessage> getLastXMessagesForSocket(int x, boolean includePurged, boolean includeShadowBanned, boolean ignoreFilter) {
         DBChatMessage[] fromDB = getLastXMessages(x, includePurged, includeShadowBanned);
         List<ChatMessage> toReturn = new ArrayList<>();
         for (DBChatMessage dbChatMessage : fromDB) {

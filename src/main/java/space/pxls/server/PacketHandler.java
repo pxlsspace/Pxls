@@ -384,7 +384,7 @@ public class PacketHandler {
     }
 
     public void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
-        server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, user.hasPermission("chat.history.purged"), user.hasPermission("chat.history.shadowbanned"), false)));
+        server.send(channel, new ServerChatHistory(App.getDatabase().getLastXMessagesForSocket(100, user.hasPermission("chat.history.purged"), user.hasPermission("chat.history.shadowbanned"), false)));
     }
 
     public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
