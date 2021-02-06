@@ -1218,10 +1218,9 @@ public class Database {
      * @param includePurged Whether or not to include purged messages.
      * @return The retrieved {@link DBChatMessage}s. The length is determined by the {@link ResultSet} size.
      */
-    public DBChatMessage[] getLastXMessages(int x, boolean includePurged, boolean includeShadowBanned) {
-        return jdbi.withHandle(handle -> handle.select("SELECT * FROM chat_messages cm WHERE CASE WHEN :includePurged THEN true ELSE purged = false END AND CASE WHEN :includeShadowBanned THEN true ELSE NOT (SELECT is_shadow_banned FROM users u WHERE cm.author = u.id) END ORDER BY sent DESC LIMIT :limit")
+    public DBChatMessage[] getLastXMessages(int x, boolean includePurged) {
+        return jdbi.withHandle(handle -> handle.select("SELECT * FROM chat_messages cm WHERE CASE WHEN :includePurged THEN true ELSE purged = false END ORDER BY sent DESC LIMIT :limit")
                 .bind("includePurged", includePurged)
-                .bind("includeShadowBanned", includeShadowBanned)
                 .bind("limit", x)
                 .map(new DBChatMessage.Mapper())
                 .list()
@@ -1233,11 +1232,10 @@ public class Database {
      * @param x The amount of chat messages to retrieve.
      * @param includePurged Whether or not to include purged messages.
      * @param ignoreFilter Whether or not the chat filter should apply to messages being returned.
-     * @param includeShadowBanned Whether or not to include shadow-banned messages.
      * @return The retrieved {@link DBChatMessage}s. The length is determined by the {@link ResultSet} size.
      */
-    public List<ChatMessage> getLastXMessagesForSocket(int x, boolean includePurged, boolean includeShadowBanned, boolean ignoreFilter) {
-        DBChatMessage[] fromDB = getLastXMessages(x, includePurged, includeShadowBanned);
+    public List<ChatMessage> getLastXMessagesForSocket(int x, boolean includePurged, boolean ignoreFilter) {
+        DBChatMessage[] fromDB = getLastXMessages(x, includePurged);
         List<ChatMessage> toReturn = new ArrayList<>();
         for (DBChatMessage dbChatMessage : fromDB) {
             List<Badge> badges = new ArrayList<>();
@@ -1258,13 +1256,12 @@ public class Database {
                     isAuthorShadowBanned = temp.isShadowBanned();
                 }
             }
-            if (isAuthorShadowBanned && !includeShadowBanned) continue;
             var message = new ChatMessage(
                 dbChatMessage.id,
                 author,
                 dbChatMessage.sent,
                 App.getConfig().getBoolean("textFilter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content,
-                isAuthorShadowBanned ? true : null,
+                isAuthorShadowBanned,
                 dbChatMessage.purged ? new ChatMessage.Purge(dbChatMessage.purged_by_uid, dbChatMessage.purge_reason) : null,
                 badges,
                 nameClass,

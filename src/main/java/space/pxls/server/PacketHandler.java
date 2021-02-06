@@ -20,6 +20,7 @@ import space.pxls.util.RateLimitFactory;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
@@ -384,7 +385,16 @@ public class PacketHandler {
     }
 
     public void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
-        server.send(channel, new ServerChatHistory(App.getDatabase().getLastXMessagesForSocket(100, user.hasPermission("chat.history.purged"), user.hasPermission("chat.history.shadowbanned"), false)));
+        var messages = App.getDatabase().getLastXMessagesForSocket(100, user.hasPermission("chat.history.purged"), false);
+        var filtered = messages.stream()
+                .peek(message -> {
+                    // If the user requesting the history is shadow-banned, they should receive all messages, but with
+                    // their own shadow-banned messages NOT marked as shadow-banned. This gives the illusion that they
+                    // sent messages normally.
+                    if (user.isShadowBanned() && message.authorIsShadowBanned) message.authorIsShadowBanned = null;
+                })
+                .collect(Collectors.toList());
+        server.send(channel, new ServerChatHistory(filtered));
     }
 
     public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
