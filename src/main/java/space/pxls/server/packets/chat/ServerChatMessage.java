@@ -19,4 +19,8 @@ public class ServerChatMessage {
     public ServerChatMessage asSnipRedacted() {
         return new ServerChatMessage(message.asSnipRedacted());
     }
+
+    public ServerChatMessage asShadowBanned() {
+        return new ServerChatMessage(message.asShadowBanned());
+    }
 }

@@ -233,8 +233,8 @@ public class UndertowServer {
     }
 
     public void broadcastSeparateForStaff(Object nonStaffObj, Object staffObj) {
-        String nonStaffJSON = App.getGson().toJson(nonStaffObj);
-        String staffJSON = App.getGson().toJson(staffObj);
+        String nonStaffJSON = nonStaffObj != null ? App.getGson().toJson(nonStaffObj) : null;
+        String staffJSON = staffObj != null ? App.getGson().toJson(staffObj) : null;
         broadcastMapped(con -> {
             boolean sendStaffObject = con.getUser().isPresent() && userCanReceiveStaffBroadcasts.test(con.getUser().get());
             return sendStaffObject ? staffJSON : nonStaffJSON;
