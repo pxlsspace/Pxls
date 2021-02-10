@@ -84,24 +84,30 @@ public class WebHandler {
     }
 
     public void index(HttpServerExchange exchange) {
-        File index_cache = new File(App.getStorageDir().resolve("index_cache.html").toString());
+        Locale locale = Util.negotiateLocale(exchange);
+        String languageTag = locale.toLanguageTag();
+
+        File index_cache = new File(App.getStorageDir().resolve("index_" + languageTag + "_cache.html").toString());
         if (index_cache.exists()) {
+            exchange.getResponseHeaders().put(Headers.CONTENT_LANGUAGE, languageTag);
             exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
             exchange.getResponseSender().send(fileToString(index_cache));
             return;
         }
-        Map<String,Object> replacements = new HashMap<>();
+        
+        Map<String,Object> variables = new HashMap<>();
+
         String[] keys = {"title", "head", "info", "faq"};
         for (String p : keys) {
             String r = App.getConfig().getString("html." + p);
             if (r == null) {
                 r = "";
             }
-            replacements.put(p, r);
+            variables.put(p, r);
         }
         try {
             FileWriter fw = new FileWriter(index_cache);
-            engine.getTemplate(TEMPLATE_INDEX).evaluate(fw, replacements);
+            engine.getTemplate(TEMPLATE_INDEX).evaluate(fw, variables, locale);
             fw.flush();
             fw.close();
             index(exchange); // we created the file, now output it!
@@ -122,8 +128,14 @@ public class WebHandler {
         String toRet = String.format("<p style=\"text-align: center;\">Socc broke the %d page! Let someone know please :) <a href=\"/\">Back to Root</a></p>", x);
         try {
             Writer writer = new StringWriter();
-            engine.getTemplate(TEMPLATE_40X).evaluate(writer, m);
+            
+            Locale locale = Util.negotiateLocale(exchange);
+            String languageTag = locale.toLanguageTag();
+
+            engine.getTemplate(TEMPLATE_40X).evaluate(writer, m, locale);
             toRet = writer.toString();
+
+            exchange.getResponseHeaders().put(Headers.CONTENT_LANGUAGE, languageTag);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -180,9 +192,14 @@ public class WebHandler {
                         m.put("canvas_reports_open_count", canvasReports.stream().filter(dbCanvasReport -> !dbCanvasReport.closed).count());
                     }
 
+                    Locale locale = Util.negotiateLocale(exchange);
+                    String languageTag = locale.toLanguageTag();
+
                     Writer writer = new StringWriter();
-                    engine.getTemplate(TEMPLATE_PROFILE).evaluate(writer, m);
+                    engine.getTemplate(TEMPLATE_PROFILE).evaluate(writer, m, locale);
                     toRet = writer.toString();
+
+                    exchange.getResponseHeaders().put(Headers.CONTENT_LANGUAGE, languageTag);
                 } catch (Exception e) {
                     e.printStackTrace();
                 }

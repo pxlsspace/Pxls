@@ -1,10 +1,11 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{locale.getLanguage()}}">
 <head>
     <meta charset="UTF-8">
     <title>{{title}}</title>
     <meta name="keywords" content="pxls, pixels, place, art">
-    <meta name="description" content="Place pixels with people to create art">
+    {# Site description #}
+    <meta name="description" content="{{i18n('Localization', 'Place pixels with people to create art') | raw}}">
     <meta name="google-play-app" content="app-id=space.pxls.android">
     <link rel="stylesheet" href="jquery.modal.min.css">
     <link rel="stylesheet" href="fontawesome-all.min.css">
@@ -52,7 +53,7 @@
     </div>
 </header>
 
-<div id="reconnecting">Lost connection to server, reconnecting...</div>
+<div id="reconnecting">{{i18n('Localization', 'Lost connection to server, reconnecting...') | raw}}</div>
 
 <main>
     <div id="board-container" style="touch-action: none">
@@ -67,8 +68,8 @@
     <div id="ui">
         <div id="ui-top">
             <div id="loading-bubble" class="bubble">
-                <div class="loading-bubble-item" data-process="heatmap">Loading Heatmap (press <kbd>H</kbd> to cancel)</div>
-                <div class="loading-bubble-item" data-process="virginmap">Loading Virginmap (press <kbd>X</kbd> to cancel)</div>
+                <div class="loading-bubble-item" data-process="heatmap">{{i18n('Localization', 'Loading Heatmap (press <kbd>H</kbd> to cancel)') | raw}}</div>
+                <div class="loading-bubble-item" data-process="virginmap">{{i18n('Localization', 'Loading Virginmap (press <kbd>X</kbd> to cancel)') | raw}}</div>
             </div>
             <div id="main-bubble" class="bubble">
                 <button id="setting-ui-bubble-compact"><i class="fas fa-angle-down"></i></button>
@@ -76,26 +77,28 @@
                     <i class="fas fa-user"></i>
                     <!-- TODO: link to position on stats page -->
                     <span id="username"></span>
-                    <a href="/logout" class="logout"><i title="Logout" class="fas fa-sign-out-alt" id="logout-icon"></i></a>
+                    <a href="/logout" class="logout"><i title="{{i18n('Localization', 'Logout') | raw}}" class="fas fa-sign-out-alt" id="logout-icon"></i></a>
                 </div>
                 <div id="pixel-counts" class="toggeable">
                     <i class="fas fa-chart-line"></i>
                     <ul>
-                        <li><span>Canvas: </span><span id="current-pixel-count">N/A</span></li>
-                        <li><span>All Time: </span><span id="alltime-pixel-count">N/A</span></li>
+                        {# Canvas pixel count #}
+                        <li><span>{{i18n('Localization', 'Canvas:') | raw}} </span><span id="current-pixel-count">{{i18n('Localization', 'N/A') | raw}}</span></li>
+                        {# All time pixel count #}
+                        <li><span>{{i18n('Localization', 'All Time:') | raw}} </span><span id="alltime-pixel-count">{{i18n('Localization', 'N/A') | raw}}</span></li>
                     </ul>
                 </div>
                 <div class="toggeable">
                     <i class="fas fa-users"></i>
-                    <span id="online-count">Loading online user count&hellip;</span>
+                    <span id="online-count">{{i18n('Localization', 'Loading online user count&hellip;') | raw}}</span>
                 </div>
                 <div id="coords-info" class="toggeable">
                     <a class="coords"></a>
                     <i id="canvas-lock-icon" class="fas fa-lock"></i>
                 </div>
                 <div id="placement-info">
-                    <span id="placeable-count">N/A</span>
-                    <span>Pixels</span>
+                    <span id="placeable-count">{{i18n('Localization', 'N/A') | raw}}</span>
+                    <span>{{i18n('Localization', 'Pixels') | raw}}</span>
                     <i class="fas fa-spinner fa-spin captcha-loading-icon"></i>
                 </div>
                 <div id="cooldown">
@@ -106,9 +109,9 @@
         </div>
 
         <div id="ui-bottom">
-            <button type="button" id="undo"><span>Undo</span></button>
+            <button type="button" id="undo"><span>{{i18n('Localization', 'Undo') | raw}}</span></button>
             <div id="login-overlay" class="palette-overlay">
-                You are not signed in.&nbsp;<a href="#">Sign in with...</a>
+                {{i18n('Localization', 'You are not signed in.&nbsp;<a href="#">Sign in with...</a>') | raw}}
             </div>
             <div id="user-message" class="palette-overlay"></div>
             <div id="palette"></div>
@@ -118,25 +121,25 @@
 
 
 <div id="lookup" class="floating-panel"></div>
-<div id="loading"><span>Loading...</span></div>
+<div id="loading"><span>{{i18n('Localization', 'Loading...') | raw}}</span></div>
 <div id="cursor">
-    <div id="cursor-text"><i class="fas fa-spinner fa-spin captcha-loading-icon"></i> <span id="placeableCount-cursor">N/A</span></div>
+    <div id="cursor-text"><i class="fas fa-spinner fa-spin captcha-loading-icon"></i> <span id="placeableCount-cursor">{{i18n('Localization', 'N/A') | raw}}</span></div>
 </div>
 <div id="reticule"></div>
 <div id="prompt" class="message floating-panel"></div>
 <div id="signup" class="message floating-panel">
     <div class="content">
-      <h1>Sign up</h1>
-      <h4>Pick a username</h4>
+      <h1>{{i18n('Localization', 'Sign up') | raw}}</h1>
+      <h4>{{i18n('Localization', 'Pick a username') | raw}}</h4>
       <p>
           <label class="input-group">
-              <span class="label-text">Username:</span>
+              <span class="label-text">{{i18n('Localization', 'Username:') | raw}}</span>
               <input id="signup-username-input" type="text" maxlength="32">
           </label>
       </p>
       <div class="error" id="error"></div>
     </div>
-    <button id="signup-button" class="float-right text-button">Sign up</button>
+    <button id="signup-button" class="float-right text-button">{{i18n('Localization', 'Sign up') | raw}}</button>
 </div>
 
 
@@ -148,7 +151,7 @@
     <header class="panel-header">
         <div class="left"></div>
         <div class="mid">
-            <h2><i class="fas fa-info-circle fa-is-left"></i>Info</h2>
+            <h2><i class="fas fa-info-circle fa-is-left"></i>{{i18n('Localization', 'Info') | raw}}</h2>
         </div>
         <div class="right">
             <button type="button" class="panel-closer"><i class="fas fa-times"></i></button>
@@ -162,12 +165,12 @@
 <aside id="chat" data-panel="chat" class="panel right">
     <header class="panel-header">
         <div class="left">
-            <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
+            <button type="button" class="panel-closer" title="{{i18n('Localization', 'Close Panel') | raw}}"><i class="fas fa-times"></i></button>
         </div>
-        <h2><i class="fas fa-comment-alt fa-is-left"></i>Chat <span class="mobile-only" id="txtMobileChatCooldown"></span></h2>
+        <h2><i class="fas fa-comment-alt fa-is-left"></i>{{i18n('Localization', 'Chat') | raw}} <span class="mobile-only" id="txtMobileChatCooldown"></span></h2>
         <div class="right">
-            <button type="button" title="Pings"><i class="fas fa-at" id="btnPings"></i></i></button>
-            <button type="button" title="Settings"><i class="fas fa-cogs" id="btnChatSettings"></i></button>
+            <button type="button" title="{{i18n('Localization', 'Pings') | raw}}"><i class="fas fa-at" id="btnPings"></i></i></button>
+            <button type="button" title="{{i18n('Localization', 'Settings') | raw}}"><i class="fas fa-cogs" id="btnChatSettings"></i></button>
         </div>
     </header>
     <div class="panel-body">
@@ -180,14 +183,15 @@
                 <div class="chat-ratelimit-overlay"><span id="chat-ratelimit">3s</span></div>
                 <button type="button" class="fullwidth" id="jump-to-bottom" style="display: none;">
                     <i class="fas fa-arrow-down fa-is-right" style="float: left; margin-top: 4px;"></i>
-                    <span>Jump To Bottom</span>
+                    <span>{{i18n('Localization', 'Jump To Bottom') | raw}}</span>
                     <i class="fas fa-arrow-down fa-is-left" style="float: right; margin-top: 4px;"></i>
                 </button>
                 <div id="typeahead" style="display: none;">
                     <button data-dismiss="typeahead" class="text-muted" style="width: 100%; font-size: inherit; display:block; padding-top: .25rem; padding-bottom: .25rem; margin: 0 0 .5rem 0rem; text-align: center; font-style: italic;">Tap here or press ESC to cancel</button>
                     <ul></ul>
                 </div>
-                <button type="button" title="Emoji" id="emojiPanelTrigger"><i class="far fa-grin"></i></button>
+                {# Open emoji picker #}
+                <button type="button" title="{{i18n('Localization', 'Emoji') | raw}}" id="emojiPanelTrigger"><i class="far fa-grin"></i></button>
                 <label><textarea name="txtChatContent" id="txtChatContent" placeholder="Press ENTER to send..."></textarea></label>
                 <div class="bottom-banner" id="bottom-banner"></div>
             </div>
@@ -199,482 +203,482 @@
 <aside id="settings" data-panel="settings" class="panel right">
     <header class="panel-header">
         <div class="left">
-            <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
+            <button type="button" class="panel-closer" title="{{i18n('Localization', 'Close Panel') | raw}}"><i class="fas fa-times"></i></button>
         </div>
         <div class="mid">
-            <h2><i class="fas fa-cogs fa-is-left"></i>Settings</h2>
+            <h2><i class="fas fa-cogs fa-is-left"></i>{{i18n('Localization', 'Settings') | raw}}</h2>
         </div>
         <div class="right"></div>
     </header>
     <div class="panel-body">
-        <input id="settings-search-input" type="search" placeholder="Search" class="fullwidth" />
-        <article class="no-p-margin" data-keywords="keybinds;keys;keyboard;hotkeys">
+        <input id="settings-search-input" type="search" placeholder="{{i18n('Localization', 'Search') | raw}}" class="fullwidth" />
+        <article class="no-p-margin" data-keywords="{{i18n('Localization', 'keybinds;keys;keyboard;hotkeys') | raw}}">
             <header>
-                <h3>Keybinds</h3>
+                <h3>{{i18n('Localization', 'Keybinds') | raw}}</h3>
             </header>
             <div class="pad-wrapper">
-                <section data-keywords="general">
-                    <h4>General</h4>
-                    <p data-keywords="move;moving;panning;drag">Mouse/arrows/wasd to pan</p>
-                    <p data-keywords="mousewheel;zooming">Scroll/pinch to zoom</p>
-                    <p data-keywords="scroll;zooming"><kbd>+</kbd>/<kbd>-</kbd> or <kbd>Q</kbd>/<kbd>E</kbd> to zoom</p>
-                    <p data-keywords="lookups"><kbd>Shift</kbd> + Click/Hold touch to lookup pixel</p>
-                    <p data-keywords="overlays;alignment;grid hidden;grid shown;hide grid;show grid"><kbd>G</kbd> to toggle grid</p>
-                    <p data-keywords="close;information shown;information hidden;info shown;info hidden;hide information;show information"><kbd>I</kbd> to open info</p>
-                    <p data-keywords="close;settings hidden;settings shown;hide settings;show settings"><kbd>T</kbd> to open settings</p>
-                    <p data-keywords="close;chat hidden;chat shown;hide chat;show chat"><kbd>B</kbd> to open chat</p>
-                    <p data-keywords="canvas locked;move;moving;zoom;zooming"><kbd>L</kbd> to toggle locking panning of the canvas</p>
-                    <p data-keywords="take screenshot;image;download;picture;canvas"><kbd>P</kbd> to take a snapshot</p>
-                    <p data-keywords="overlays;user activity;pixels placed pixels;heatmap hidden;heatmap shown;hide heatmap;show heatmap"><kbd>H</kbd> to toggle heatmap</p>
-                    <p data-keywords="overlays;user activity;pixels unplaced pixels;virginmap hidden;virginmap shown;hide virginmap;show virginmap"><kbd>X</kbd> to toggle virginmap</p>
-                    <p data-keywords="overlays;user activity;pixels placed pixels;wipe;clean;"><kbd>O</kbd> to clear heatmap</p>
-                    <p data-keywords="overlays;user activity;pixels unplaced pixels;wipe;clean;"><kbd>U</kbd> to clear virginmap</p>
-                    <p data-keywords="next color;previous color"><kbd>J</kbd>/<kbd>K</kbd> to cycle through palette colors</p>
-                    <p data-keywords="current coordinates;coords"><kbd>C</kbd> to copy link of moused-over coordinates</p>
-                    <p data-keywords="cancel selection"><kbd>ESC</kbd> to deselect current pixel</p>
-                    <p data-keywords="recenter;jump;center on template;guides;focus"><kbd>R</kbd> to center the board on the current template</p>
+                <section data-keywords="{{i18n('Localization', 'general') | raw}}">
+                    {# General settings #}
+                    <h4>{{i18n('Localization', 'General') | raw}}</h4>
+                    <p data-keywords="{{i18n('Localization', 'move;moving;panning;drag') | raw}}">{{i18n('Localization', 'Mouse/arrows/wasd to pan') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'mousewheel;zooming') | raw}}">{{i18n('Localization', 'Scroll/pinch to zoom') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'scroll;zooming') | raw}}">{{i18n('Localization', '<kbd>+</kbd>/<kbd>-</kbd> or <kbd>Q</kbd>/<kbd>E</kbd> to zoom') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'lookups') | raw}}">{{i18n('Localization', '<kbd>Shift</kbd> + Click/Hold touch to lookup pixel') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'overlays;alignment;grid hidden;grid shown;hide grid;show grid') | raw}}">{{i18n('Localization', '<kbd>G</kbd> to toggle grid') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'close;information shown;information hidden;info shown;info hidden;hide information;show information') | raw}}">{{i18n('Localization', '<kbd>I</kbd> to open info') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'close;settings hidden;settings shown;hide settings;show settings') | raw}}">{{i18n('Localization', '<kbd>T</kbd> to open settings') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'close;chat hidden;chat shown;hide chat;show chat') | raw}}">{{i18n('Localization', '<kbd>B</kbd> to open chat') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'canvas locked;move;moving;zoom;zooming') | raw}}">{{i18n('Localization', '<kbd>L</kbd> to toggle locking panning of the canvas') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'take screenshot;image;download;picture;canvas') | raw}}">{{i18n('Localization', '<kbd>P</kbd> to take a snapshot') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'overlays;user activity;pixels placed pixels;heatmap hidden;heatmap shown;hide heatmap;show heatmap') | raw}}">{{i18n('Localization', '<kbd>H</kbd> to toggle heatmap') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'overlays;user activity;pixels unplaced pixels;virginmap hidden;virginmap shown;hide virginmap;show virginmap') | raw}}">{{i18n('Localization', '<kbd>X</kbd> to toggle virginmap') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'overlays;user activity;pixels placed pixels;wipe;clean;') | raw}}">{{i18n('Localization', '<kbd>O</kbd> to clear heatmap') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'overlays;user activity;pixels unplaced pixels;wipe;clean;') | raw}}">{{i18n('Localization', '<kbd>U</kbd> to clear virginmap') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'next color;previous color') | raw}}">{{i18n('Localization', '<kbd>J</kbd>/<kbd>K</kbd> to cycle through palette colors') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'current coordinates;coords') | raw}}">{{i18n('Localization', '<kbd>C</kbd> to copy link of moused-over coordinates') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'cancel selection') | raw}}">{{i18n('Localization', '<kbd>ESC</kbd> to deselect current pixel') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'recenter;jump;center on template;guides;focus') | raw}}">{{i18n('Localization', '<kbd>R</kbd> to center the board on the current template') | raw}}</p>
                 </section>
 
-                <section data-keywords="templates;guides">
-                    <h4>Template</h4>
-                    <p data-keywords="transparency"><kbd>Page Up</kbd> to increase opacity</p>
-                    <p data-keywords="transparency"><kbd>Page Down</kbd> to decrease opacity</p>
-                    <p data-keywords="hidden;shown;hide;show"><kbd>V</kbd> to toggle visibility</p>
+                <section data-keywords="{{i18n('Localization', 'templates;guides') | raw}}">
+                    <h4>{{i18n('Localization', 'Template') | raw}}</h4>
+                    <p data-keywords="{{i18n('Localization', 'transparency') | raw}}">{{i18n('Localization', '<kbd>Page Up</kbd> to increase opacity') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'transparency') | raw}}">{{i18n('Localization', '<kbd>Page Down</kbd> to decrease opacity') | raw}}</p>
+                    <p data-keywords="{{i18n('Localization', 'hidden;shown;hide;show') | raw}}">{{i18n('Localization', '<kbd>V</kbd> to toggle visibility') | raw}}</p>
                 </section>
 
                 <br/>
                 <small>
-                    Note: These values are based on QWERTY keyboards.
-                    For other layouts, use the keys corresponding to the same position on a QWERTY keyboard.
+                    {{i18n('Localization', 'Note: These values are based on QWERTY keyboards.\nFor other layouts, use the keys corresponding to the same position on a QWERTY keyboard.') | raw}}
                 </small>
             </div>
         </article>
-        <article data-keywords="ui;interface">
+        <article data-keywords="{{i18n('Localization', 'ui;interface') | raw}}">
             <header>
-                <h3>UI Settings</h3>
+                <h3>{{i18n('Localization', 'UI Settings') | raw}}</h3>
             </header>
             <div class="pad-wrapper">
                 <section>
-                    <div data-keywords="themes;look;stylesheets;visuals">
+                    <div data-keywords="{{i18n('Localization', 'themes;look;stylesheets;visuals') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">Theme:</span>
+                            <span class="label-text">{{i18n('Localization', 'Theme:') | raw}}</span>
                             <select id="setting-ui-theme-index">
-                                <option value="-1" selected>Default</option>
+                                <option value="-1" selected>{{i18n('Localization', 'Default') | raw}}</option>
                             </select>
                         </label>
                     </div>
-                    <div data-keywords="hide reticule;hide reticle;reticule shown reticle shown;reticule hidden;reticle hidden">
+                    <div data-keywords="{{i18n('Localization', 'hide reticule;hide reticle;reticule shown reticle shown;reticule hidden;reticle hidden') | raw}}">
                         <label class="input-group">
                             <input id="setting-ui-reticule-enable" type="checkbox"/>
-                            <span class="label-text">Show reticule</span>
+                            <span class="label-text">{{i18n('Localization', 'Show reticule') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="hide cursor;cursor shown;cursor hidden">
+                    <div data-keywords="{{i18n('Localization', 'hide cursor;cursor shown;cursor hidden') | raw}}">
                         <label class="input-group">
                             <input id="setting-ui-cursor-enable" type="checkbox"/>
-                            <span class="label-text">Show cursor</span>
+                            <span class="label-text">{{i18n('Localization', 'Show cursor') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="darkness filter">
+                    <div data-keywords="{{i18n('Localization', 'darkness filter') | raw}}">
                         <label class="input-group">
                             <input type="checkbox" id="setting-ui-brightness-enable">
-                            <span class="label-text">Enable color brightness</span>
+                            <span class="label-text">{{i18n('Localization', 'Enable color brightness') | raw}}</span>
                         </label>
                         <label for="setting-ui-brightness-enable" class="text-orange extra-label">
-                            <i class="fas fa-exclamation-triangle"></i> Warning: Known to cause fuzziness in Chrome on some Mac/Linux installs
+                            <i class="fas fa-exclamation-triangle"></i> {{i18n('Localization', 'Warning: Known to cause fuzziness in Chrome on some Mac/Linux installs') | raw}}
                         </label>
                         <label class="input-group fake-indent">
-                            <span class="label-text">Color brightness:</span>
+                            <span class="label-text">{{i18n('Localization', 'Color brightness:') | raw}}</span>
                             <input type="range" min="0" max="1" step="0.01" value="1" id="setting-ui-brightness-value">
                         </label>
                     </div>
-                    <div data-keywords="keep current selected;keep curent color;place">
+                    <div data-keywords="{{i18n('Localization', 'keep current selected;keep curent color;place') | raw}}">
                         <label class="input-group">
                             <input id="setting-place-deselectonplace-enable" type="checkbox"/>
-                            <span class="label-text">Deselect color after placing</span>
+                            <span class="label-text">{{i18n('Localization', 'Deselect color after placing') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="mousewheel;palette scrolling">
+                    <div data-keywords="{{i18n('Localization', 'mousewheel;palette scrolling') | raw}}">
                         <label class="input-group">
                             <input id="setting-place-palette-scrolling-enable" type="checkbox"/>
-                            <span class="label-text">Enable scrolling on the palette to switch colors</span>
+                            <span class="label-text">{{i18n('Localization', 'Enable scrolling on the palette to switch colors') | raw}}</span>
                         </label>
-                        <div class="fake-indent" data-keywords="reverse scrolling;mousewheel;palette scrolling;enable scrolling on the palette to switch colors">
+                        <div class="fake-indent" data-keywords="{{i18n('Localization', 'reverse scrolling;mousewheel;palette scrolling;enable scrolling on the palette to switch colors') | raw}}">
                             <label class="input-group">
                                 <input id="setting-place-palette-scrolling-invert" type="checkbox"/>
-                                <span class="label-text">Invert scroll direction</span>
+                                <span class="label-text">{{i18n('Localization', 'Invert scroll direction') | raw}}</span>
                             </label>
                         </div>
                     </div>
-                    <div data-keywords="indexed colors;palette indicies">
+                    <div data-keywords="{{i18n('Localization', 'indexed colors;palette indicies') | raw}}">
                         <label class="input-group">
                             <input id="setting-ui-palette-numbers-enable" type="checkbox">
-                            <span class="label-text">Add numbers to palette entries</span>
+                            <span class="label-text">{{i18n('Localization', 'Add numbers to palette entries') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="scrollbar;palette scrolling">
+                    <div data-keywords="{{i18n('Localization', 'scrollbar;palette scrolling') | raw}}">
                         <label class="input-group">
                             <input id="setting-ui-palette-scrollbar-thin-enable" type="checkbox">
-                            <span class="label-text">Enable thin scrollbar</span>
+                            <span class="label-text">{{i18n('Localization', 'Enable thin scrollbar') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="scrollbar;palette scrolling;palette stack">
+                    <div data-keywords="{{i18n('Localization', 'scrollbar;palette scrolling;palette stack') | raw}}">
                         <label class="input-group">
                             <input id="setting-ui-palette-stacking-enable" type="checkbox">
-                            <span class="label-text">Enable palette stacking</span>
+                            <span class="label-text">{{i18n('Localization', 'Enable palette stacking') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="enable monospace;disable monospace">
+                    <div data-keywords="{{i18n('Localization', 'enable monospace;disable monospace') | raw}}">
                         <label class="input-group">
                             <input id="setting-lookup-monospace-enable" type="checkbox"/>
-                            <span class="label-text">Toggle monospace font for lookups</span>
+                            <span class="label-text">{{i18n('Localization', 'Toggle monospace font for lookups') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="floating bubble location">
+                    <div data-keywords="{{i18n('Localization', 'floating bubble location') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">Bubble position:</span>
+                            <span class="label-text">{{i18n('Localization', 'Bubble position:') | raw}}</span>
                             <select id="setting-ui-bubble-position">
-                                <option value="top left">Top left</option>
-                                <option value="top right">Top right</option>
-                                <option value="bottom left" selected>Bottom left</option>
-                                <option value="bottom right">Bottom right</option>
+                                <option value="top left">{{i18n('Localization', 'Top left') | raw}}</option>
+                                <option value="top right">{{i18n('Localization', 'Top right') | raw}}</option>
+                                <option value="bottom left" selected>{{i18n('Localization', 'Bottom left') | raw}}</option>
+                                <option value="bottom right">{{i18n('Localization', 'Bottom right') | raw}}</option>
                             </select>
                         </label>
                     </div>
-                    <div data-keywords="broken;offset workaround">
+                    <div data-keywords="{{i18n('Localization', 'broken;offset workaround') | raw}}">
                         <label class="input-group" id="chrome-canvas-offset-setting">
                             <input id="setting-fix-chrome-offset-enable" type="checkbox"/>
-                            <span class="label-text">Attempt to fix canvas displacement bug in Chrome 78+</span>
+                            <span class="label-text">{{i18n('Localization', 'Attempt to fix canvas displacement bug in Chrome 78+') | raw}}</span>
                         </label>
                     </div>
                 </section>
             </div>
         </article>
-        <article data-keywords="chat;message;ping sound">
+        <article data-keywords="{{i18n('Localization', 'chat;message;ping sound') | raw}}">
             <header>
-                <h3>Chat Settings</h3>
+                <h3>{{i18n('Localization', 'Chat Settings') | raw}}</h3>
             </header>
             <div class="pad-wrapper">
-                <section data-keywords="username;color;colour">
+                <section data-keywords="{{i18n('Localization', 'username;color;colour') | raw}}">
                     <div>
                         <label class="input-group">
-                            <span class="label-text">Username Color: </span>
+                            <span class="label-text">{{i18n('Localization', 'Username Color:') | raw}} </span>
                             <select id="selChatUsernameColor"></select>
                         </label>
                         <label id="lblChatUsernameColorFeedback" class="text-red extra-label"></label>
                     </div>
                 </section>
-                <section data-keywords="chat message;chat ui">
-                    <h4>Interface</h4>
-                    <div data-keywords="chat size;chat font">
+                <section data-keywords="{{i18n('Localization', 'chat message;chat ui') | raw}}">
+                    <h4>{{i18n('Localization', 'Interface') | raw}}</h4>
+                    <div data-keywords="{{i18n('Localization', 'chat size;chat font') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">Font Size: </span>
+                            <span class="label-text">{{i18n('Localization', 'Font Size:') | raw}} </span>
                             <input id="setting-chat-font-size" class="small-input" type="number" min="1" max="72">
                         </label>
                     </div>
-                    <div data-keywords="time;timestamps">
+                    <div data-keywords="{{i18n('Localization', 'time;timestamps') | raw}}">
                         <label class="input-group">
                             <input id="setting-chat-timestamps-24h" type="checkbox">
-                            <span class="label-text">24 Hour Timestamps</span>
+                            <span class="label-text">{{i18n('Localization', '24 Hour Timestamps') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="badges;pixel count;pixels placed">
+                    <div data-keywords="{{i18n('Localization', 'badges;pixel count;pixels placed') | raw}}">
                         <label class="input-group">
                             <input id="setting-chat-badges-enable" type="checkbox">
-                            <span class="label-text">Show pixel-placed badges</span>
+                            <span class="label-text">{{i18n('Localization', 'Show pixel-placed badges') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="badges;factions">
+                    <div data-keywords="{{i18n('Localization', 'badges;factions') | raw}}">
                         <label class="input-group">
                             <input id="setting-chat-factiontags-enable" type="checkbox">
-                            <span class="label-text">Show faction tags</span>
+                            <span class="label-text">{{i18n('Localization', 'Show faction tags') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="template urls;template links;template name">
+                    <div data-keywords="{{i18n('Localization', 'template urls;template links;template name') | raw}}">
                         <label class="input-group">
                             <input id="setting-chat-links-templates-preferurls" type="checkbox">
-                            <span class="label-text">Replace template titles with URLs in chat where applicable</span>
+                            <span class="label-text">{{i18n('Localization', 'Replace template titles with URLs in chat where applicable') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="chat orientation;chat position">
+                    <div data-keywords="{{i18n('Localization', 'chat orientation;chat position') | raw}}">
                         <label class="input-group">
                             <input id="setting-ui-chat-horizontal-enable" type="checkbox">
-                            <span class="label-text">Enable horizontal chat</span>
+                            <span class="label-text">{{i18n('Localization', 'Enable horizontal chat') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="banner;animation">
+                    <div data-keywords="{{i18n('Localization', 'banner;animation') | raw}}">
                         <label class="input-group">
                             <input id="setting-ui-chat-banner-enable" type="checkbox">
-                            <span class="label-text">Enable the rotating banner under chat</span>
+                            <span class="label-text">{{i18n('Localization', 'Enable the rotating banner under chat') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="link;url;behaviour">
+                    <div data-keywords="{{i18n('Localization', 'link;url;behaviour') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">Default internal link action click: </span>
+                            <span class="label-text">{{i18n("Localization", "Default internal link action click:" ) | raw}}</span>
                             <select id="setting-chat-links-internal-behavior"></select>
                         </label>
                     </div>
                 </section>
-                <section data-keywords="ignored;ignores;unignore;blocked;blocking;unblock">
-                    <h4>Ignores</h4>
-                    <div data-keywords="unignore;unblock">
+                <section data-keywords="{{i18n('Localization', 'ignored;ignores;unignore;blocked;blocking;unblock') | raw}}">
+                    <h4>{{i18n('Localization', 'Ignores') | raw}}</h4>
+                    <div data-keywords="{{i18n('Localization', 'unignore;unblock') | raw}}">
                         <label class="input-group">
                             <select id="selChatUserIgnore" class="fullwidth" style="font-family: monospace; padding: 5px; border-radius: 5px;"></select>
                         </label>
                         <div class="button-bar">
-                            <button class="text-button" id="btnChatUserUnignore">Unignore</button>
+                            <button class="text-button" id="btnChatUserUnignore">{{i18n('Localization', 'Unignore') | raw}}</button>
                         </div>
                         <label id="lblChatUserIgnoreFeedback" class="text-red extra-label"></label>
                     </div>
                 </section>
             </div>
         </article>
-        <article data-keywords="overlays;virginmap;heatmap;grid">
+        <article data-keywords="{{i18n('Localization', 'overlays;virginmap;heatmap;grid') | raw}}">
             <header>
-                <h3>Overlay Settings</h3>
+                <h3>{{i18n('Localization', 'Overlay Settings') | raw}}</h3>
             </header>
             <div class="pad-wrapper">
-                <section data-keywords="heatmap;heatmap opacity;clear heatmap">
-                    <h4>Heatmap</h4>
-                    <div data-keywords="overlays;user activity;pixels placed pixels;heatmap hidden;heatmap shown;hide heatmap;show heatmap">
+                <section data-keywords="{{i18n('Localization', 'heatmap;heatmap opacity;clear heatmap') | raw}}">
+                    <h4>{{i18n('Localization', 'Heatmap') | raw}}</h4>
+                    <div data-keywords="{{i18n('Localization', 'overlays;user activity;pixels placed pixels;heatmap hidden;heatmap shown;hide heatmap;show heatmap') | raw}}">
                         <label class="input-group">
                             <input id="setting-board-heatmap-enable" type="checkbox"/>
-                            <span class="label-text">Turn on heatmap</span>
+                            <span class="label-text">{{i18n('Localization', 'Turn on heatmap') | raw}}</span>
                         </label>
-                        <label for="setting-board-heatmap-enable">(toggle with <kbd>H</kbd>)</label>
+                        <label for="setting-board-heatmap-enable">{{i18n('Localization', '(toggle with <kbd>H</kbd>)') | raw}}</label>
                     </div>
-                    <div data-keywords="overlays;activity;pixels placed pixels;wipe;clean">
-                        <button class="text-button" id="hmapClear">Clear heatmap</button>
-                        <label for="hmapClear">(hotkey: <kbd>O</kbd>)</label>
+                    <div data-keywords="{{i18n('Localization', 'overlays;activity;pixels placed pixels;wipe;clean') | raw}}">
+                        <button class="text-button" id="hmapClear">{{i18n('Localization', 'Clear heatmap') | raw}}</button>
+                        <label for="hmapClear">{{i18n('Localization', '(hotkey: <kbd>O</kbd>)') | raw}}</label>
                     </div>
-                    <div data-keywords="overlays;user activity;pixels placed pixels;transparency">
+                    <div data-keywords="{{i18n('Localization', 'overlays;user activity;pixels placed pixels;transparency') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">Heatmap background opacity:</span>
+                            <span class="label-text">{{i18n('Localization', 'Heatmap background opacity:') | raw}}</span>
                             <input type="range" min="0" max="1" step="0.01" id="setting-board-heatmap-opacity">
                         </label>
                     </div>
                 </section>
-                <section data-keywords="virginmap;virginmap opacity;clear virginmap">
-                    <h4>Virginmap</h4>
-                    <div data-keywords="overlays;user activity;pixels unplaced pixels;virginmap hidden;virginmap shown;hide virginmap;show virginmap">
+                <section data-keywords="{{i18n('Localization', 'virginmap;virginmap opacity;clear virginmap') | raw}}">
+                    <h4>{{i18n('Localization', 'Virginmap') | raw}}</h4>
+                    <div data-keywords="{{i18n('Localization', 'overlays;user activity;pixels unplaced pixels;virginmap hidden;virginmap shown;hide virginmap;show virginmap') | raw}}">
                         <label class="input-group">
                             <input id="setting-board-virginmap-enable" type="checkbox"/>
-                            <span class="label-text">Turn on virginmap</span>
+                            <span class="label-text">{{i18n('Localization', 'Turn on virginmap') | raw}}</span>
                         </label>
-                        <label for="setting-board-virginmap-enable">(toggle with <kbd>X</kbd>)</label>
+                        <label for="setting-board-virginmap-enable">{{i18n('Localization', '(toggle with <kbd>X</kbd>)') | raw}}</label>
                     </div>
-                    <div data-keywords="overlays;user activity;pixels unplaced pixels;transparency">
+                    <div data-keywords="{{i18n('Localization', 'overlays;user activity;pixels unplaced pixels;transparency') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">Virginmap background opacity:</span>
+                            <span class="label-text">{{i18n('Localization', 'Virginmap background opacity:') | raw}}</span>
                             <input type="range" min="0" max="1" step="0.01" id="setting-board-virginmap-opacity">
                         </label>
                     </div>
-                    <div data-keywords="overlays;activity;pixels unplaced pixels;wipe;clean">
-                        <button class="text-button" id="vmapClear">Clear virginmap</button>
-                        <label for="vmapClear">(hotkey: <kbd>U</kbd>)</label>
+                    <div data-keywords="{{i18n('Localization', 'overlays;activity;pixels unplaced pixels;wipe;clean') | raw}}">
+                        <button class="text-button" id="vmapClear">{{i18n('Localization', 'Clear virginmap') | raw}}</button>
+                        <label for="vmapClear">{{i18n('Localization', '(hotkey: <kbd>U</kbd>)') | raw}}</label>
                     </div>
                     <div data-keywords="overlays;virginmap;beneath;ontop of;on top of">
                         <label class="input-group">
                             <input id="setting-board-template-beneathoverlays" type="checkbox"/>
-                            <span class="label-text">Layer template underneath heatmap</span>
+                            <span class="label-text">{{i18n('Localization', 'Layer template underneath heatmap') | raw}}</span>
                         </label>
                     </div>
                 </section>
-                <section data-keywords="grid;toggle grid">
-                    <h4>Grid</h4>
-                    <div data-keywords="overlays;alignment;grid hidden;grid shown;hide grid;show grid">
+                <section data-keywords="{{i18n('Localization', 'grid;toggle grid') | raw}}">
+                    <h4>{{i18n('Localization', 'Grid') | raw}}</h4>
+                    <div data-keywords="{{i18n('Localization', 'overlays;alignment;grid hidden;grid shown;hide grid;show grid') | raw}}">
                         <label class="input-group">
                             <input id="setting-board-grid-enable" type="checkbox"/>
-                            <span class="label-text">Turn on grid</span>
+                            <span class="label-text">{{i18n('Localization', 'Turn on grid') | raw}}</span>
                         </label>
-                        <label for="setting-board-grid-enable">(toggle with <kbd>G</kbd>)</label>
+                        <label for="setting-board-grid-enable">{{i18n('Localization', '(toggle with <kbd>G</kbd>)') | raw}}</label>
                     </div>
                 </section>
             </div>
         </article>
-        <article data-keywords="controls;zooming;panning;movement">
+        <article data-keywords="{{i18n('Localization', 'controls;zooming;panning;movement') | raw}}">
             <header>
-                <h3>Control Settings</h3>
+                <h3>{{i18n('Localization', 'Control Settings') | raw}}</h3>
             </header>
             <div class="pad-wrapper">
-                <section data-keywords="zooming;scrolling;scale;scaling">
-                    <h4>Zooming</h4>
-                    <div data-keywords="scrolling sensitivity;zooming sensitivity;mousewheel sensitivity">
+                <section data-keywords="{{i18n('Localization', 'zooming;scrolling;scale;scaling') | raw}}">
+                    <h4>{{i18n('Localization', 'Zooming') | raw}}</h4>
+                    <div data-keywords="{{i18n('Localization', 'scrolling sensitivity;zooming sensitivity;mousewheel sensitivity') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">Zoom sensitivity:</span>
+                            <span class="label-text">{{i18n('Localization', 'Zoom sensitivity:') | raw}}</span>
                             <input id="setting-board-zoom-sensitivity" type="range" min="1.01" max="3" step="0.01"/>
                         </label>
                     </div>
-                    <div data-keywords="zooming limit;scrolling limit;mousewheel;zooming maximum">
+                    <div data-keywords="{{i18n('Localization', 'zooming limit;scrolling limit;mousewheel;zooming maximum') | raw}}">
                         <label class="input-group">
                             <input id="setting-board-zoom-limit-enable" type="checkbox"/>
-                            <span class="label-text">Limit zoom to 50x</span>
+                            <span class="label-text">{{i18n('Localization', 'Limit zoom to 50x') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="rounding;zooming;scrolling;mousewheel;integer;decimal">
+                    <div data-keywords="{{i18n('Localization', 'rounding;zooming;scrolling;mousewheel;integer;decimal') | raw}}">
                         <label class="input-group">
                             <input id="setting-board-zoom-rounding-enable" type="checkbox"/>
-                            <span class="label-text">Round zoom values to nearest whole number</span>
+                            <span class="label-text">{{i18n('Localization', 'Round zoom values to nearest whole number') | raw}}</span>
                         </label>
                     </div>
                 </section>
-                <section data-keywords="controls;miscellaneous">
+                <section data-keywords="{{i18n('Localization', 'controls;miscellaneous') | raw}}">
                     <h4>Miscellaneous</h4>
                     <div data-keywords="locked;move;zoom;panning">
                         <label class="input-group">
                             <input type="checkbox" id="setting-board-lock-enable">
-                            <span class="label-text">Lock the canvas (disallow canvas drag/zoom with mouse/fingers)</span>
+                            <span class="label-text">{{i18n('Localization', 'Lock the canvas (disallow canvas drag/zoom with mouse/fingers)') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="MMB picker;mouse picker;selection;palette picker">
+                    <div data-keywords="{{i18n('Localization', 'MMB picker;mouse picker;selection;palette picker') | raw}}">
                         <label class="input-group">
                             <input id="setting-place-picker-enable" type="checkbox">
-                            <span class="label-text">Enable middle mouse button selecting color from board</span>
+                            <span class="label-text">{{i18n('Localization', 'Enable middle mouse button selecting color from board') | raw}}</span>
                         </label>
                     </div>
                 </section>
             </div>
         </article>
-        <article data-keywords="snapshots;screenshot;download;picture;canvas">
+        <article data-keywords="{{i18n('Localization', 'snapshots;screenshot;download;picture;canvas') | raw}}">
             <header>
-                <h3>Snapshot Settings</h3>
+                <h3>{{i18n('Localization', 'Snapshot Settings') | raw}}</h3>
             </header>
             <div class="pad-wrapper">
-                <section data-keywords="screenshot;snapshot;download;board;canvas"></section>
-                    <div data-keywords="take screenshot;image;download format;picture;canvas;board">
+                <section data-keywords="{{i18n('Localization', 'screenshot;snapshot;download;board;canvas') | raw}}"></section>
+                    <div data-keywords="{{i18n('Localization', 'take screenshot;image;download format;picture;canvas;board') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">Snapshot image format:</span>
+                            <span class="label-text">{{i18n('Localization', 'Snapshot image format:') | raw}}</span>
                             <select id="setting-board-snapshot-format">
-                                <option value="image/png" selected>PNG</option>
-                                <option value="image/jpeg">JPEG</option>
-                                <option value="image/webp">WEBP (Chrome only)</option>
+                                <option value="image/png" selected>{{i18n('Localization', 'PNG') | raw}}</option>
+                                <option value="image/jpeg">{{i18n('Localization', 'JPEG') | raw}}</option>
+                                <option value="image/webp">{{i18n('Localization', 'WEBP (Chrome only)') | raw}}</option>
                             </select>
                         </label>
                     </div>
                 </section>
             </div>
         </article>
-        <article data-keywords="templates;overlays;guides">
+        <article data-keywords="{{i18n('Localization', 'templates;overlays;guides') | raw}}">
             <header>
-                <h3>Template</h3>
+                <h3>{{i18n('Localization', 'Template') | raw}}</h3>
             </header>
             <div class="pad-wrapper">
-                <section data-keywords="templates;overlays;image;pixel art">
-                    <div data-keywords="template enabled;template disabled;show template;hide template;template shown;template hidden">
+                <section data-keywords="{{i18n('Localization', 'templates;overlays;image;pixel art') | raw}}">
+                    <div data-keywords="{{i18n('Localization', 'template enabled;template disabled;show template;hide template;template shown;template hidden') | raw}}">
                         <label class="input-group">
                             <input type="checkbox" id="template-use">
-                            <span class="label-text">Use template</span>
+                            <span class="label-text">{{i18n('Localization', 'Use template') | raw}}</span>
                         </label>
                     </div>
-                    <p>Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around</p>
-                    <div data-keywords="template title;template name;tab name;tab title;title=">
+                    <p>{{i18n('Localization', 'Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around') | raw}}</p>
+                    <div data-keywords="{{i18n('Localization', 'template title;template name;tab name;tab title;title=') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">Title:</span>
+                            <span class="label-text">{{i18n('Localization', 'Title:') | raw}}</span>
                             <input class="fullwidth" type="text" id="template-title">
                         </label>
                     </div>
-                    <div data-keywords="template location;template source;template=">
+                    <div data-keywords="{{i18n('Localization', 'template location;template source;template=') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">URL:</span>
+                            <span class="label-text">{{i18n('Localization', 'URL:') | raw}}</span>
                             <input class="fullwidth" type="text" id="template-url">
                         </label>
                         <label id="template-image-error-warning" for="template-url" class="text-red extra-label"></label>
                     </div>
-                    <div data-keywords="template position;template x;template y;template location; template vertical; template horizontal;ox=;oy=">
+                    <div data-keywords="{{i18n('Localization', 'template position;template x;template y;template location; template vertical; template horizontal;ox=;oy=') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">Horizontal position:</span>
+                            <span class="label-text">{{i18n('Localization', 'Horizontal position:') | raw}}</span>
                             <input type="number" min="0" class="template-coords small-input" id="template-coords-x">
                         </label>
                         <label class="input-group">
-                            <span class="label-text">Vertical position:</span>
+                            <span class="label-text">{{i18n('Localization', 'Vertical position:') | raw}}</span>
                             <input type="number" min="0" class="template-coords small-input" id="template-coords-y">
                         </label>
                     </div>
-                    <div data-keywords="template transparency;template opacity;oo=">
+                    <div data-keywords="{{i18n('Localization', 'template transparency;template opacity;oo=') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">Opacity:</span>
+                            <span class="label-text">{{i18n('Localization', 'Opacity:') | raw}}</span>
                             <input type="range" id="template-opacity" min="0" max="1" step="0.01" value="0.5">
                             <span class="range-text-value" id="template-opacity-percentage">50%</span>
                         </label>
                     </div>
-                    <div data-keywords="template width;tw=">
+                    <div data-keywords="{{i18n('Localization', 'template width;tw=') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">Width:</span>
+                            <span class="label-text">{{i18n('Localization', 'Width:') | raw}}</span>
                             <input type="number" id="template-width" class="small-input" min="0">
                         </label>
-                        <button class="text-button" id="template-width-reset">Reset</button>
+                        <button class="text-button" id="template-width-reset">{{i18n('Localization', 'Reset') | raw}}</button>
                     </div>
                 </div>
             </section>
         </article>
-        <article data-keywords="sound;notification;alert;notify;ping">
+        <article data-keywords="{{i18n('Localization', 'sound;notification;alert;notify;ping') | raw}}">
             <header>
-                <h3>Sound and Notification Settings</h3>
+                <h3>{{i18n('Localization', 'Sound and Notification Settings') | raw}}</h3>
             </header>
             <div class="pad-wrapper">
                 <section data-keywords="sound;volume">
-                    <h4>General</h4>
-                    <div data-keywords="audio;mute;noise;volume">
+                    <h4>{{i18n('Localization', 'General') | raw}}</h4>
+                    <div data-keywords="{{i18n('Localization', 'audio;mute;noise;volume') | raw}}">
                         <label class="input-group">
                             <input id="setting-audio-enable" type="checkbox"/>
-                            <span class="label-text">Enable sound</span>
+                            <span class="label-text">{{i18n('Localization', 'Enable sound') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="notifs;notify;pixel notification">
+                    <div data-keywords="{{i18n('Localization', 'notifs;notify;pixel notification') | raw}}">
                         <label class="input-group">
                             <input id="setting-place-notification-enable" type="checkbox"/>
-                            <span class="label-text">Enable pixel available notification</span>
+                            <span class="label-text">{{i18n('Localization', 'Enable pixel available notification') | raw}}</span>
                         </label>
                     </div>
                 </section>
-                <section data-keywords="notification;pixel ready;alert">
-                    <h4>Pixel Ready Notification</h4>
-                    <div data-keywords="alert source;notify url;notify source;notification url;notification source">
+                <section data-keywords="{{i18n('Localization', 'notification;pixel ready;alert') | raw}}">
+                    <h4>{{i18n('Localization', 'Pixel Ready Notification') | raw}}</h4>
+                    <div data-keywords="{{i18n('Localization', 'alert source;notify url;notify source;notification url;notification source') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">Alert URL:</span>
+                            <span class="label-text">{{i18n('Localization', 'Alert URL:') | raw}}</span>
                             <input class="fullwidth" type="text" placeholder="notify.wav" id="setting-audio-alert-src">
                         </label>
                         <div class="button-bar">
-                            <button class="text-button" id="btnForceAudioUpdate">Update</button>
-                            <button class="text-button" id="btnAlertAudioTest">Test</button>
-                            <button class="text-button" id="btnAlertReset">Reset</button>
+                            <button class="text-button" id="btnForceAudioUpdate">{{i18n('Localization', 'Update') | raw}}</button>
+                            <button class="text-button" id="btnAlertAudioTest">{{i18n('Localization', 'Test') | raw}}</button>
+                            <button class="text-button" id="btnAlertReset">{{i18n('Localization', 'Reset') | raw}}</button>
                         </div>
                     </div>
-                    <div data-keywords="sound level;audio level;mute audio;mute sound">
+                    <div data-keywords="{{i18n('Localization', 'sound level;audio level;mute audio;mute sound') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">Volume:</span>
+                            <span class="label-text">{{i18n('Localization', 'Volume:') | raw}}</span>
                             <input type="range" id="setting-audio-alert-volume" min=0 max=1 step=".01" value="1">
                             <span class="range-text-value" id="lblAlertVolume">100%</span>
                         </label>
                     </div>
-                    <div data-keywords="alert forewarning;alert delay; notification delay; notification forewarning">
+                    <div data-keywords="{{i18n('Localization', 'alert forewarning;alert delay; notification delay; notification forewarning') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">Delay (seconds):</span>
+                            <span class="label-text">{{i18n('Localization', 'Delay (seconds):') | raw}}</span>
                             <input type="number" width="30px" value="0" id="setting-place-alert-delay">
                         </label>
                     </div>
                 </section>
-                <section data-keywords="chat mentions;chat pings;chat sound">
-                    <h4>Chat Pings</h4>
+                <section data-keywords="{{i18n('Localization', 'chat mentions;chat pings;chat sound') | raw}}">
+                    <h4>{{i18n('Localization', 'Chat Pings') | raw}}</h4>
                     <div data-keywords="enable mentions">
                         <label class="input-group">
                             <input id="setting-chat-pings-enable" type="checkbox">
-                            <span class="label-text">Enable pings</span>
+                            <span class="label-text">{{i18n('Localization', 'Enable pings') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="mention sound">
+                    <div data-keywords="{{i18n('Localization', 'mention sound') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">Play sound on ping: </span>
+                            <span class="label-text">{{i18n('Localization', 'Play sound on ping:') | raw}} </span>
                             <select id="setting-chat-pings-audio-when">
-                                <option value="off">Off</option>
-                                <option value="discrete">Only when necessary</option>
-                                <option value="always">Always</option>
+                                <option value="off">{{i18n('Localization', 'Off') | raw}}</option>
+                                <option value="discrete">{{i18n('Localization', 'Only when necessary') | raw}}</option>
+                                <option value="always">{{i18n('Localization', 'Always') | raw}}</option>
                             </select>
                         </label>
                     </div>
-                    <div data-keywords="mention sound volume">
+                    <div data-keywords="{{i18n('Localization', 'mention sound volume') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">Ping sound volume: </span>
+                            <span class="label-text">{{i18n('Localization', 'Ping sound volume:') | raw}} </span>
                             <input id="setting-chat-pings-audio-volume" type="range" min="0" max="1" step="0.01">
                             <span class="range-text-value" id="chat-pings-audio-volume-value">50%</span>
                         </label>
@@ -682,20 +686,20 @@
                 </section>
             </div>
         </article>
-        <article data-keywords="personal account">
+        <article data-keywords="{{i18n('Localization', 'personal account') | raw}}">
             <header>
-                <h3>Account Settings</h3>
+                <h3>{{i18n('Localization', 'Account Settings') | raw}}</h3>
             </header>
             <div class="pad-wrapper">
                 <section data-keywords="personal;account;user">
                     <div data-keywords="discord username">
                         <label class="input-group">
-                            <span class="label-text">Public Discord name:<span>
+                            <span class="label-text">{{i18n('Localization', 'Public Discord name:') | raw}}<span>
                             <input class="fullwidth" type="text" placeholder="pxlslover#1337" id="txtDiscordName">
                         </label>
                         <div class="button-bar">
-                            <button class="text-button" id="btnDiscordNameSet">Set</button>
-                            <button class="text-button" id="btnDiscordNameRemove">Remove</button>
+                            <button class="text-button" id="btnDiscordNameSet">{{i18n('Localization', 'Set') | raw}}</button>
+                            <button class="text-button" id="btnDiscordNameRemove">{{i18n('Localization', 'Remove') | raw}}</button>
                         </div>
                     </div>
                 </section>
@@ -707,9 +711,10 @@
 <aside id="faq" data-panel="faq" class="panel left half-width">
     <header class="panel-header">
         <div class="left"></div>
-        <h3><i class="fas fa-question-circle fa-is-left"></i>Help</h3>
+        {# FAQ panel #}
+        <h3><i class="fas fa-question-circle fa-is-left"></i>{{i18n('Localization', 'Help') | raw}}</h3>
         <div class="right">
-            <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
+            <button type="button" class="panel-closer" title="{{i18n('Localization', 'Close Panel') | raw}}"><i class="fas fa-times"></i></button>
         </div>
     </header>
     <div class="panel-body">
@@ -720,9 +725,9 @@
 <aside id="notifications" data-panel="notifications" class="panel left">
     <header class="panel-header">
         <div class="left"></div>
-        <h3><i class="fas fa-bell fa-is-left"></i>Notifications</h3>
+        <h3><i class="fas fa-bell fa-is-left"></i>{{i18n('Localization', 'Notifications') | raw}}</h3>
         <div class="right">
-            <button type="button" class="panel-closer" title="Close Panel"><i class="fas fa-times"></i></button>
+            <button type="button" class="panel-closer" title="{{i18n('Localization', 'Close Panel') | raw}}"><i class="fas fa-times"></i></button>
         </div>
     </header>
     <div class="panel-body"></div>
