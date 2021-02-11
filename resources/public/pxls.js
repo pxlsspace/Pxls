@@ -1622,12 +1622,6 @@ window.App = (function() {
               template.queueUpdate({ oo: parsed == null ? null : parsed });
               break;
             }
-            case 'direct': {
-              const comparable = nullish ? '' : newValue.toLowerCase().trim();
-              const isFalse = ['false', '0', 'no'].indexOf(comparable) !== -1;
-              template.queueUpdate({ direct: nullish ? null : isFalse ? false : !!newValue });
-              break;
-            }
             case 'convert':
               template.queueUpdate({ convert: newValue });
               break;
@@ -2388,7 +2382,6 @@ window.App = (function() {
   })();
     // here all the template stuff happens
   const template = (function() {
-    const SMALL_DOTTED = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAQAAAD9CzEMAAAAAmJLR0QA/4ePzL8AAAAzSURBVFjD7dBBDQAACMSw828aVEAI6R4T0GShGv6DECFChAgRIkSIECFChAgRIkSIruA0nub+AuTzLZoAAAAASUVORK5CYII=';
     const STYLES_X = 16;
     const STYLES_Y = 16;
     const self = {
@@ -2403,10 +2396,14 @@ window.App = (function() {
         imageErrorWarning: $('#template-image-error-warning'),
         coordsXInput: $('#template-coords-x'),
         coordsYInput: $('#template-coords-y'),
-        opacityInput: $('#template-opacity'),
-        opacityPercentage: $('#template-opacity-percentage'),
         widthInput: $('#template-width'),
-        widthResetBtn: $('#template-width-reset')
+        widthResetBtn: $('#template-width-reset'),
+        styleSelect: $('#template-style-mode'),
+        styleOptionCustom: $('#template-style-mode-custom'),
+        customStyleInput: $('#template-custom-style-url'),
+        conversionModeSelect: $('#template-conversion-mode-select'),
+        opacityInput: $('#template-opacity'),
+        opacityPercentage: $('#template-opacity-percentage')
       },
       gl: {
         context: null,
@@ -2453,9 +2450,8 @@ window.App = (function() {
         width: -1,
         opacity: 0.5,
         title: '',
-        direct: false,
         convertMode: 'unconverted',
-        style: SMALL_DOTTED
+        style: undefined
       },
       options: {},
       initCORS: function(base, param) {
@@ -2523,6 +2519,15 @@ window.App = (function() {
         } else {
           self.elements.widthInput.val(null);
         }
+
+        self.elements.conversionModeSelect.val(self.options.convertMode);
+        const styles = Array.from(self.elements.styleSelect.children('option')).map(o => o.value);
+        const style = self.elements.styleImage.attr('src');
+
+        if (!styles.includes(style)) {
+          self.elements.customStyleInput.val(style);
+        }
+        self.elements.styleSelect.val(style);
       },
       normalizeTemplateObj(objectToNormalize, direction) {
         // direction: true = url_to_template_obj, else = template_obj_to_url
@@ -2567,13 +2572,10 @@ window.App = (function() {
         if (options.title != null && options.title.length > 0) {
           options.title = decodeURIComponent(options.title);
         }
-        if ('direct' in options) {
-          options.direct = !!options.direct;
-        }
 
         // fix for `width` and other props being set after disabling template with the 'v' key then enabling a template without said prop set in the URL.
         if (urlUpdated && !self.options.use) {
-          ['width', 'x', 'y', 'opacity', 'convertMode', 'direct'].forEach(x => {
+          ['width', 'x', 'y', 'opacity', 'convertMode'].forEach(x => {
             if (!Object.prototype.hasOwnProperty.call(options, x)) {
               options[x] = self._defaults[x];
             }
@@ -2599,7 +2601,7 @@ window.App = (function() {
         if (options.url.length === 0 || options.use === false) {
           self.options.use = false;
           board.update(true);
-          ['template', 'ox', 'oy', 'oo', 'tw', 'title', 'convert', 'direct'].forEach(x => query.remove(x, true));
+          ['template', 'ox', 'oy', 'oo', 'tw', 'title', 'convert'].forEach(x => query.remove(x, true));
         } else {
           self.options.use = true;
           if (urlUpdated === true) {
@@ -2610,7 +2612,7 @@ window.App = (function() {
             self.rasterizeTemplate();
           }
 
-          [['url', 'template'], ['x', 'ox'], ['y', 'oy'], ['width', 'tw'], ['opacity', 'oo'], ['title', 'title'], ['convertMode', 'convert'], ['direct', 'direct']].forEach(x => {
+          [['url', 'template'], ['x', 'ox'], ['y', 'oy'], ['width', 'tw'], ['opacity', 'oo'], ['title', 'title'], ['convertMode', 'convert']].forEach(x => {
             query.set(x[1], self.options[x[0]], true);
           });
         }
@@ -2626,6 +2628,9 @@ window.App = (function() {
 
         self.setPixelated(query.get('scale') >= self.getWidthRatio());
       },
+      usesStyle() {
+        return !!self.options.style;
+      },
       applyOptions() {
         if (self.options.use) {
           [['left', 'x'], ['top', 'y'], ['opacity', 'opacity']].forEach(x => {
@@ -2633,8 +2638,8 @@ window.App = (function() {
           });
         }
 
-        self.elements.template.toggleClass('hidden', !self.options.use || self.options.direct);
-        self.elements.sourceImage.toggleClass('hidden', !self.options.use || !self.options.direct);
+        self.elements.template.toggleClass('hidden', !self.options.use || !self.usesStyle());
+        self.elements.sourceImage.toggleClass('hidden', !self.options.use || self.usesStyle());
       },
       updateSize: function() {
         self.elements.visibles.css({
@@ -2686,6 +2691,9 @@ window.App = (function() {
 
         self.elements.widthInput.on('change input', (e) => self._update({ width: parseFloat(e.target.value) }, false));
         self.elements.widthResetBtn.on('click', (e) => self._update({ width: -1 }));
+
+        self.elements.styleSelect.on('change input', (e) => self._update({ style: e.target.value }));
+        self.elements.customStyleInput.on('change input', (e) => self.elements.styleOptionCustom.attr({ value: e.target.value }));
 
         self.updateSettings();
 
@@ -2818,7 +2826,7 @@ window.App = (function() {
         }
       },
       getWidthRatio: function() {
-        if (self.options.direct) {
+        if (self.usesStyle()) {
           return self.getInternalWidth() / self.getSourceWidth();
         } else {
           return self.getInternalWidth() / self.getDisplayWidth();
