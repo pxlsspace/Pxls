@@ -16,8 +16,9 @@ public class DBUser {
     public int chatNameColor;
     public Timestamp signup_time;
     public String username;
-    public String login;
     public long cooldownExpiry;
+    public boolean loginWithIP;
+    public String signupIP;
     public int pixelCount;
     public int pixelCountAllTime;
     public Long banExpiry;
@@ -30,13 +31,14 @@ public class DBUser {
     public Integer displayedFaction;
     public Boolean factionBlocked;
 
-    public DBUser(int id, int stacked, String username, String login, Timestamp signup, long cooldownExpiry, int pixelCount, int pixelCountAllTime, Long banExpiry, boolean shadowBanned, boolean isPermaChatbanned, long chatbanExpiry, boolean isRenameRequested, String discordName, String chatbanReason, int chatNameColor, Integer displayedFaction, Boolean factionBlocked) {
+    public DBUser(int id, int stacked, String username, Timestamp signup, long cooldownExpiry, boolean loginWithIP, String signupIP, int pixelCount, int pixelCountAllTime, Long banExpiry, boolean shadowBanned, boolean isPermaChatbanned, long chatbanExpiry, boolean isRenameRequested, String discordName, String chatbanReason, int chatNameColor, Integer displayedFaction, Boolean factionBlocked) {
         this.id = id;
         this.stacked = stacked;
         this.username = username;
-        this.login = login;
         this.signup_time = signup;
         this.cooldownExpiry = cooldownExpiry;
+        this.loginWithIP = loginWithIP;
+        this.signupIP = signupIP;
         this.pixelCount = pixelCount;
         this.pixelCountAllTime = pixelCountAllTime;
         this.banExpiry = banExpiry;
@@ -65,9 +67,10 @@ public class DBUser {
                     r.getInt("id"),
                     r.getInt("stacked"),
                     r.getString("username"),
-                    r.getString("login"),
                     r.getTimestamp("signup_time"),
                     stamp == null ? 0 : stamp.getTime(),
+                    r.getBoolean("login_with_ip"),
+                    r.getString("signup_ip"),
                     r.getInt("pixel_count"),
                     r.getInt("pixel_count_alltime"),
                     ban == null ? null : ban.getTime(),
