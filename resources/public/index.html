@@ -505,10 +505,14 @@
                             <input id="setting-board-zoom-sensitivity" type="range" min="1.01" max="3" step="0.01"/>
                         </label>
                     </div>
-                    <div data-keywords="zooming limit;scrolling limit;mousewheel;zooming maximum">
+                    <div data-keywords="zooming limit;scrolling limit;mousewheel;zooming minimum;zooming maximum">
                         <label class="input-group">
-                            <input id="setting-board-zoom-limit-enable" type="checkbox"/>
-                            <span class="label-text">Limit zoom to 50x</span>
+                            <span class="label-text">Minimum scale:</span>
+                            <input type="number" placeholder="0.5" step="any" class="template-coords small-input" id="setting-board-zoom-limit-minimum">
+                        </label>
+                        <label class="input-group">
+                            <span class="label-text">Maximum scale:</span>
+                            <input type="number" placeholder="50" step="any" class="template-coords small-input" id="setting-board-zoom-limit-maximum">
                         </label>
                     </div>
                     <div data-keywords="rounding;zooming;scrolling;mousewheel;integer;decimal">
