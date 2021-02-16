@@ -54,7 +54,7 @@
 
 <div id="reconnecting">Lost connection to server, reconnecting...</div>
 
-</main>
+<main>
     <div id="board-container" style="touch-action: none">
         <div id="grid"></div>
         <div id="board-zoomer">
@@ -312,6 +312,18 @@
                             <span class="label-text">Add numbers to palette entries</span>
                         </label>
                     </div>
+                    <div data-keywords="scrollbar;palette scrolling">
+                        <label class="input-group">
+                            <input id="setting-ui-palette-scrollbar-thin-enable" type="checkbox">
+                            <span class="label-text">Enable thin scrollbar</span>
+                        </label>
+                    </div>
+                    <div data-keywords="scrollbar;palette scrolling;palette stack">
+                        <label class="input-group">
+                            <input id="setting-ui-palette-stacking-enable" type="checkbox">
+                            <span class="label-text">Enable palette stacking</span>
+                        </label>
+                    </div>
                     <div data-keywords="enable monospace;disable monospace">
                         <label class="input-group">
                             <input id="setting-lookup-monospace-enable" type="checkbox"/>
@@ -493,10 +505,14 @@
                             <input id="setting-board-zoom-sensitivity" type="range" min="1.01" max="3" step="0.01"/>
                         </label>
                     </div>
-                    <div data-keywords="zooming limit;scrolling limit;mousewheel;zooming maximum">
+                    <div data-keywords="zooming limit;scrolling limit;mousewheel;zooming minimum;zooming maximum">
                         <label class="input-group">
-                            <input id="setting-board-zoom-limit-enable" type="checkbox"/>
-                            <span class="label-text">Limit zoom to 50x</span>
+                            <span class="label-text">Minimum scale:</span>
+                            <input type="number" placeholder="0.5" step="any" class="template-coords small-input" id="setting-board-zoom-limit-minimum">
+                        </label>
+                        <label class="input-group">
+                            <span class="label-text">Maximum scale:</span>
+                            <input type="number" placeholder="50" step="any" class="template-coords small-input" id="setting-board-zoom-limit-maximum">
                         </label>
                     </div>
                     <div data-keywords="rounding;zooming;scrolling;mousewheel;integer;decimal">

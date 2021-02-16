@@ -334,7 +334,7 @@ public class User {
 
         getRoles().forEach(role -> toReturn.addAll(role.getBadges()));
 
-        if (!App.getConfig().getBoolean("oauth.snipMode")) {
+        if (!App.getSnipMode()) {
             if (this.pixelCountAllTime >= 1000000) {
                 toReturn.add(new Badge("1M+", "1M+ Pixels Placed", "text", null));
             } else if (this.pixelCountAllTime >= 900000) {

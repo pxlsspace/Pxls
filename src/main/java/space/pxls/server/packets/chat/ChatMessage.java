@@ -15,17 +15,20 @@ public class ChatMessage {
     public List<Badge> badges;
     public List<String> authorNameClass;
     public Number authorNameColor;
+    public Boolean authorWasShadowBanned;
     public StrippedFaction strippedFaction;
 
-    public ChatMessage(int id, String author, Long date, String message_raw, Purge purge, List<Badge> badges, List<String> authorNameClass, Number authorNameColor, Faction faction) {
+    public ChatMessage(int id, String author, Long date, String message_raw, Purge purge, List<Badge> badges, List<String> authorNameClass, Number authorNameColor, boolean authorWasShadowBanned, Faction faction) {
         this.id = id;
-        this.author = App.getConfig().getBoolean("oauth.snipMode") ? "-snip-" : author;
+        this.author = author;
         this.date = date;
         this.message_raw = message_raw;
         this.purge = purge;
         this.badges = badges;
         this.authorNameClass = authorNameClass;
         this.authorNameColor = authorNameColor;
+        // set authorIsShadowBanned to null when false so that it is skipped by Gson
+        this.authorWasShadowBanned = authorWasShadowBanned ? true : null;
         this.strippedFaction = faction != null ? new StrippedFaction(faction) : null;
     }
 
@@ -57,8 +60,22 @@ public class ChatMessage {
         return authorNameColor;
     }
 
+    public boolean getAuthorWasShadowBanned() {
+        return authorWasShadowBanned != null && authorWasShadowBanned;
+    }
+
     public StrippedFaction getStrippedFaction() {
         return strippedFaction;
+    }
+
+    public ChatMessage asSnipRedacted() {
+        // Redact username.
+        return new ChatMessage(id, "-snip-", date, message_raw, purge, badges, authorNameClass, authorNameColor, authorWasShadowBanned, null);
+    }
+
+    public ChatMessage asShadowBanned() {
+        // Hide the fact that the user is shadow banned.
+        return new ChatMessage(id, author, date, message_raw, purge, badges, authorNameClass, authorNameColor, false, null);
     }
 
     public static class StrippedFaction {

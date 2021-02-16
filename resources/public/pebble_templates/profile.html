@@ -76,6 +76,7 @@
                                         <th class="text-right pr-3">Registration Date</th>
                                         <td class="text-left">{{profile_of.signupTime | date("LLL d, y, hh:mm:s a (z)")}}</td>
                                     </tr>
+                                    {% if not snip_mode %}
                                     <tr>
                                         <th class="text-right pr-3">Alltime Pixels</th>
                                         <td class="text-left">{{profile_of.allTimePixelCount | numberformat("#,###")}}</td>
@@ -84,6 +85,7 @@
                                         <th class="text-right pr-3">Current Canvas Pixels</th>
                                         <td class="text-left">{{profile_of.pixelCount | numberformat("#,###")}}</td>
                                     </tr>
+                                    {% endif %}
                                     <tr>
                                         <th class="text-right pr-3">Discord Tag</th>
                                         <td class="text-left">{{profile_of.discordName | default("Not Set")}}</td>
@@ -129,14 +131,15 @@
                                 <div class="card-body p-0 body-collapse-target collapse">
                                     <div class="p-3">
                                         {% for report in canvas_reports %}
+                                        {% set reportedName = snip_mode ? '-snip-' : report.reportedName %}
                                         <div class="card collapseable mb-2">
                                             <div class="card-header">
                                                 <button class="btn btn-sm mr-2 btn-info" data-action="collapse"><i class="fas fa-chevron-down"></i></button>
-                                                <span class="{% if report.closed %}text-success{% else %}text-warning{% endif %}">Report on {{ report.reportedName }} ({% if report.closed %}closed{% else %}open{% endif %})</span>
+                                                <span class="{% if report.closed %}text-success{% else %}text-warning{% endif %}">Report on {{ reportedName }} ({% if report.closed %}closed{% else %}open{% endif %})</span>
                                             </div>
                                             <div class="card-body p-0 body-collapse-target collapse">
                                                 <div class="p-3">
-                                                    <h6>Reported {{report.reportedName}} on {{(report.time*1000)|date("LLL d, y, hh:m:s a (z)")}}</h6>
+                                                    <h6>Reported {{reportedName}} on {{(report.time*1000)|date("LLL d, y, hh:m:s a (z)")}}</h6>
                                                     <p>{{report.message}}</p>
                                                 </div>
                                             </div>
@@ -155,14 +158,15 @@
                                 <div class="card-body p-0 body-collapse-target collapse">
                                     <div class="p-3">
                                         {% for report in chat_reports %}
+                                        {% set reportedName = snip_mode ? '-snip-' : report.reportedName %}
                                         <div class="card collapseable mb-2">
                                             <div class="card-header">
                                                 <button class="btn btn-sm mr-2 btn-info" data-action="collapse"><i class="fas fa-chevron-down"></i></button>
-                                                <span class="{% if report.closed %}text-success{% else %}text-warning{% endif %}">Report on {{ report.reportedName }} ({% if report.closed %}closed{% else %}open{% endif %})</span>
+                                                <span class="{% if report.closed %}text-success{% else %}text-warning{% endif %}">Report on {{ reportedName }} ({% if report.closed %}closed{% else %}open{% endif %})</span>
                                             </div>
                                             <div class="card-body p-0 body-collapse-target collapse">
                                                 <div class="p-3">
-                                                    <h6>Reported {{report.reportedName}} on {{(report.time*1000)|date("LLL d, y, h:mm:s a (z)")}}</h6>
+                                                    <h6>Reported {{reportedName}} on {{(report.time*1000)|date("LLL d, y, h:mm:s a (z)")}}</h6>
                                                     <p>{{report.report_message}}</p>
                                                 </div>
                                             </div>

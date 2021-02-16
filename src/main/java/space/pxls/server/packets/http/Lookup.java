@@ -18,18 +18,21 @@ public class Lookup {
     public String discordName = null;
     public String faction;
 
-    public Lookup(int id, int x, int y, String origin, int pixelCount, int pixelCountAlltime, long time, String username, String discordName, String faction) {
-        boolean isSnip = App.getConfig().getBoolean("oauth.snipMode");
+    public Lookup(int id, int x, int y, String origin, Integer pixelCount, Integer pixelCountAlltime, long time, String username, String discordName, String faction) {
         this.id = id;
         this.x = x;
         this.y = y;
         this.origin = origin;
-        this.pixelCount = username != null ? (isSnip ? 0 : pixelCount) : null;
-        this.pixelCountAlltime = username != null ? (isSnip ? 0 : pixelCountAlltime) : null;
+        this.pixelCount = username != null ? pixelCount : null;
+        this.pixelCountAlltime = username != null ? pixelCountAlltime : null;
         this.time = time;
-        this.username = isSnip ? "-snip-" : username;
-        this.discordName = isSnip ? (discordName != null ? "-snip-" : null) : discordName; // if we're in snip mode, we want to filter the name, otherwise we'll just accept whatever was thrown at us. original serialization utilized nulls.
+        this.username = username;
+        this.discordName = discordName;
         this.faction = faction;
+    }
+
+    public Lookup asSnipRedacted() {
+        return new Lookup(id, x, y, origin, null, null, time, "-snip-", null, null);
     }
 
     public static String originFromPixel(DBPixelPlacement pixelPlacement) {

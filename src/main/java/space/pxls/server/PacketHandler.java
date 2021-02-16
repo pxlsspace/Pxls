@@ -20,6 +20,7 @@ import space.pxls.util.RateLimitFactory;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
@@ -110,10 +111,12 @@ public class PacketHandler {
         if (obj instanceof ClientCaptcha) handleCaptcha(channel, user, ((ClientCaptcha) obj));
         if (obj instanceof ClientShadowBanMe) handleShadowBanMe(channel, user, ((ClientShadowBanMe) obj));
         if (obj instanceof ClientBanMe) handleBanMe(channel, user, ((ClientBanMe) obj));
-        if (obj instanceof ClientChatHistory && user.hasPermission("chat.history")) handleChatHistory(channel, user, ((ClientChatHistory) obj));
-        if (obj instanceof ClientChatbanState) handleChatbanState(channel, user, ((ClientChatbanState) obj));
-        if (obj instanceof ClientChatMessage && user.hasPermission("chat.send")) handleChatMessage(channel, user, ((ClientChatMessage) obj));
-        if (obj instanceof ClientChatLookup && user.hasPermission("chat.lookup")) handleChatLookup(channel, user, ((ClientChatLookup) obj));
+        if (App.isChatEnabled()) {
+            if (obj instanceof ClientChatHistory && user.hasPermission("chat.history")) handleChatHistory(channel, user, ((ClientChatHistory) obj));
+            if (obj instanceof ClientChatbanState) handleChatbanState(channel, user, ((ClientChatbanState) obj));
+            if (obj instanceof ClientChatMessage && user.hasPermission("chat.send")) handleChatMessage(channel, user, ((ClientChatMessage) obj));
+            if (obj instanceof ClientChatLookup && user.hasPermission("chat.lookup")) handleChatLookup(channel, user, ((ClientChatLookup) obj));
+        }
         if (obj instanceof ClientAdminPlacementOverrides && user.hasPermission("user.admin")) handlePlacementOverrides(channel, user, ((ClientAdminPlacementOverrides) obj));
         if (obj instanceof ClientAdminMessage && user.hasPermission("user.alert")) handleAdminMessage(channel, user, ((ClientAdminMessage) obj));
     }
@@ -381,7 +384,52 @@ public class PacketHandler {
     }
 
     public void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
-        server.send(channel, new ServerChatHistory(App.getDatabase().getlastXMessagesForSocket(100, user.hasPermission("chat.history.purged"), false)));
+        boolean includePurged = user.hasPermission("chat.history.purged");
+        var messages = App.getDatabase().getLastXMessages(100, includePurged).stream()
+                .map(dbChatMessage -> {
+                    List<Badge> badges = new ArrayList<>();
+                    String authorName = "CONSOLE";
+                    int nameColor = 0;
+                    Faction faction = null;
+                    List<String> nameClass = null;
+                    if (dbChatMessage.author_uid > 0) {
+                        authorName = "$Unknown";
+                        User author = App.getUserManager().getByID(dbChatMessage.author_uid);
+                        if (author != null) {
+                            authorName = author.getName();
+                            badges = author.getChatBadges();
+                            nameColor = author.getChatNameColor();
+                            nameClass = author.getChatNameClasses();
+                            faction = author.fetchDisplayedFaction();
+                        }
+                    }
+                    var message = new ChatMessage(
+                        dbChatMessage.id,
+                        authorName,
+                        dbChatMessage.sent,
+                        App.getConfig().getBoolean("textFilter.enabled") && dbChatMessage.filtered_content.length() > 0
+                            ? dbChatMessage.filtered_content
+                            : dbChatMessage.content,
+                        dbChatMessage.purged
+                            ? new ChatMessage.Purge(dbChatMessage.purged_by_uid, dbChatMessage.purge_reason)
+                            : null,
+                        badges,
+                        nameClass,
+                        nameColor,
+                        dbChatMessage.author_was_shadow_banned,
+                        faction
+                    );
+                    if (user.isShadowBanned() && dbChatMessage.author_uid == user.getId()) {
+                        message = message.asShadowBanned();
+                    }
+                    if (!includePurged && App.getSnipMode()) {
+                        message = message.asSnipRedacted();
+                    }
+                    return message;
+                })
+                .filter(message -> !message.getAuthorWasShadowBanned() || user.hasPermission("chat.history.shadowbanned"))
+                .collect(Collectors.toList());
+        server.send(channel, new ServerChatHistory(messages));
     }
 
     public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
@@ -395,8 +443,8 @@ public class PacketHandler {
         if (message.endsWith("\n")) message = message.replaceFirst("\n$", "");
         if (message.length() > charLimit) message = message.substring(0, charLimit);
         if (user == null) { //console
-            Integer cmid = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "");
-            server.broadcast(new ServerChatMessage(new ChatMessage(cmid, "CONSOLE", nowMS / 1000L, message, null, null, null, 0, null)));
+            Integer cmid = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "", false);
+            server.broadcast(new ServerChatMessage(new ChatMessage(cmid, "CONSOLE", nowMS / 1000L, message, null, null, null, 0, false, null)));
         } else {
             if (!user.canChat()) return;
             if (message.trim().length() == 0) return;
@@ -417,8 +465,23 @@ public class PacketHandler {
                     toSend = result.filterHit ? result.filtered : result.original;
                     toFilter = toSend;
                 }
-                Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter);
-                server.broadcast(new ServerChatMessage(new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), usersFaction)));
+                Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter, user.isShadowBanned());
+                var chatMessage = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), user.isShadowBanned(), usersFaction);
+
+                var barePacket = new ServerChatMessage(chatMessage);
+                var userPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
+                var staffPacket = barePacket;
+                if (user.isShadowBanned()) {
+                    // To the user, it looks like their message was sent successfully.
+                    server.send(user, userPacket.asShadowBanned());
+                    // To other users, nothing was sent.
+                    userPacket = null;
+                    // To staff, if enabled in the config, they will be the only ones to also get the message.
+                    staffPacket = App.getConfig().getBoolean("chat.showShadowBannedMessagesToStaff") ? staffPacket : null;
+                }
+                if (userPacket != null || staffPacket != null) {
+                    server.broadcastSeparateForStaff(userPacket, staffPacket);
+                }
             } catch (UnableToExecuteStatementException utese) {
                 utese.printStackTrace();
                 System.err.println("Failed to execute the ChatMessage insert statement.");
@@ -431,7 +494,9 @@ public class PacketHandler {
     }
 
     public void sendChatPurge(User target, User initiator, int amount, String reason) {
-        server.broadcast(new ServerChatPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), amount, reason));
+        var barePacket = new ServerChatPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), amount, reason);
+        var redactedPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
+        server.broadcastSeparateForStaff(redactedPacket, barePacket);
     }
 
     public void sendSpecificPurge(User target, User initiator, Integer cmid, String reason) {
@@ -439,7 +504,9 @@ public class PacketHandler {
     }
 
     public void sendSpecificPurge(User target, User initiator, List<Integer> cmids, String reason) {
-        server.broadcast(new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), cmids, reason));
+        var barePacket = new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), cmids, reason);
+        var redactedPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
+        server.broadcastSeparateForStaff(redactedPacket, barePacket);
     }
 
     public void updateUserData() {

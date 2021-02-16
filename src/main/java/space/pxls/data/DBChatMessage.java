@@ -15,8 +15,9 @@ public class DBChatMessage {
     public final boolean purged;
     public final int purged_by_uid;
     public final String purge_reason;
+    public final boolean author_was_shadow_banned;
 
-    public DBChatMessage(int id, int author_uid, Long sent, String content, String filtered_content, boolean purged, int purged_by_uid, String purge_reason) {
+    public DBChatMessage(int id, int author_uid, Long sent, String content, String filtered_content, boolean purged, int purged_by_uid, String purge_reason, boolean author_was_shadow_banned) {
         this.id = id;
         this.author_uid = author_uid;
         this.sent = sent;
@@ -25,6 +26,7 @@ public class DBChatMessage {
         this.purged = purged;
         this.purged_by_uid = purged_by_uid;
         this.purge_reason = purge_reason;
+        this.author_was_shadow_banned = author_was_shadow_banned;
     }
 
     public static class Mapper implements RowMapper<DBChatMessage> {
@@ -38,7 +40,8 @@ public class DBChatMessage {
                     r.getString("filtered"),
                     r.getBoolean("purged"),
                     r.getInt("purged_by"),
-                    r.getString("purge_reason")
+                    r.getString("purge_reason"),
+                    r.getBoolean("shadow_banned")
             );
         }
     }

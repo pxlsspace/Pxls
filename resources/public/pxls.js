@@ -704,6 +704,14 @@ window.App = (function() {
         palette: {
           numbers: {
             enable: setting('ui.palette.numbers.enable', SettingType.TOGGLE, false, $('#setting-ui-palette-numbers-enable'))
+          },
+          scrollbar: {
+            thin: {
+              enable: setting('ui.palette.scrollbar.thin.enable', SettingType.TOGGLE, true, $('#setting-ui-palette-scrollbar-thin-enable'))
+            }
+          },
+          stacking: {
+            enable: setting('ui.palette.stacking.enable', SettingType.TOGGLE, false, $('#setting-ui-palette-stacking-enable'))
           }
         },
         chat: {
@@ -740,7 +748,8 @@ window.App = (function() {
         zoom: {
           sensitivity: setting('board.zoom.sensitivity', SettingType.RANGE, 1.5, $('#setting-board-zoom-sensitivity')),
           limit: {
-            enable: setting('board.zoom.limit.enable', SettingType.TOGGLE, true, $('#setting-board-zoom-limit-enable'))
+            minimum: setting('board.zoom.limit.minimum', SettingType.NUMBER, 0.5, $('#setting-board-zoom-limit-minimum')),
+            maximum: setting('board.zoom.limit.maximum', SettingType.NUMBER, 50, $('#setting-board-zoom-limit-maximum'))
           },
           rounding: {
             enable: setting('board.zoom.rounding.enable', SettingType.TOGGLE, false, $('#setting-board-zoom-rounding-enable'))
@@ -1809,8 +1818,9 @@ window.App = (function() {
         return Math.abs(self.scale);
       },
       setScale: function(scale, doUpdate = true) {
-        if (settings.board.zoom.limit.enable.get() !== false && scale > 50) scale = 50;
-        else if (scale <= 0.01) scale = 0.01; // enforce the [0.01, 50] limit without blindly resetting to 0.01 when the user was trying to zoom in farther than 50x
+        const { minimum, maximum } = settings.board.zoom.limit;
+        if (scale > maximum.get()) scale = maximum.get();
+        else if (scale <= minimum.get()) scale = minimum.get(); // enforce the [x, y] limit without blindly resetting to x when the user was trying to zoom in farther than y
 
         if (settings.board.zoom.rounding.enable.get()) {
           // We round up if zooming in and round down if zooming out to ensure that the level does change
@@ -3226,7 +3236,7 @@ window.App = (function() {
             self.create(data);
           }
         }).fail(function() {
-          self._makeShell(false).find('.content').first().append($('<p>').css('color', '#c00').text("An error occurred, either you aren't logged in or you may be attempting to look up users too fast. Please try again in 60 seconds"));
+          self._makeShell({ x: pos.x, y: pos.y }).find('.content').first().append($('<p>').css('color', '#c00').text("An error occurred, either you aren't logged in or you may be attempting to look up users too fast. Please try again in 60 seconds"));
           self.elements.lookup.fadeIn(200);
         });
       },
@@ -3242,11 +3252,13 @@ window.App = (function() {
             id: 'username',
             name: 'Username',
             get: data => data.username
-              ? crel('a', {
-                href: `/profile/${data.username}`,
-                target: '_blank',
-                title: 'View Profile'
-              }, data.username)
+              ? !board.snipMode
+                ? crel('a', {
+                  href: `/profile/${data.username}`,
+                  target: '_blank',
+                  title: 'View Profile'
+                }, data.username)
+                : data.username
               : null
           }, {
             id: 'faction',
@@ -3525,6 +3537,14 @@ window.App = (function() {
 
         settings.ui.palette.numbers.enable.listen(function(value) {
           place.setNumberedPaletteEnabled(value);
+        });
+
+        settings.ui.palette.scrollbar.thin.enable.listen(function(value) {
+          document.querySelector('#palette').classList.toggle('thin-scrollbar', value);
+        });
+
+        settings.ui.palette.stacking.enable.listen(function(value) {
+          document.querySelector('#palette').classList.toggle('palette-stacking', value);
         });
 
         settings.board.lock.enable.listen((value) => board.setAllowDrag(!value));
@@ -4095,27 +4115,47 @@ window.App = (function() {
           self._setOpenState('info', true);
         }
       },
+      _getPanelElement: (panel) => panel instanceof HTMLElement ? panel : document.querySelector(`.panel[data-panel="${panel}"]`),
+      _getPanelTriggerElement: (panel) => {
+        panel = self._getPanelElement(panel);
+        if (!panel) {
+          return null;
+        }
+        return document.querySelector(`.panel-trigger[data-panel="${panel.dataset.panel}"]`);
+      },
+      setEnabled: (panel, enabled) => {
+        panel = self._getPanelElement(panel);
+        if (enabled) {
+          delete panel.dataset.disabled;
+        } else {
+          panel.dataset.disabled = '';
+        }
+
+        const panelTrigger = self._getPanelTriggerElement(panel);
+        if (panelTrigger) {
+          panelTrigger.style.display = enabled ? '' : 'none';
+        }
+      },
+      isEnabled: (panel) => {
+        panel = self._getPanelElement(panel);
+        return panel && panel.dataset.disabled == null;
+      },
       isOpen: panel => {
-        if (!(panel instanceof HTMLElement)) panel = document.querySelector(`.panel[data-panel="${panel}"]`);
-        return panel && panel.classList.contains('open');
+        panel = self._getPanelElement(panel);
+        return panel && self.isEnabled(panel) && panel.classList.contains('open');
       },
       _toggleOpenState: (panel, exclusive = true) => {
-        if (!(panel instanceof HTMLElement)) panel = document.querySelector(`.panel[data-panel="${panel}"]`);
-        if (panel) {
+        panel = self._getPanelElement(panel);
+        if (panel && self.isEnabled(panel)) {
           self._setOpenState(panel, !panel.classList.contains('open'), exclusive);
         }
       },
       _setOpenState: (panel, state, exclusive = true) => {
         state = !!state;
 
-        let panelDescriptor = panel;
-        if (panel instanceof HTMLElement) {
-          panelDescriptor = panel.dataset.panel;
-        } else {
-          panel = document.querySelector(`.panel[data-panel="${panel}"]`);
-        }
-
+        panel = self._getPanelElement(panel);
         if (panel) {
+          const panelDescriptor = panel.dataset.panel;
           const panelPosition = panel.classList.contains('right') ? 'right' : 'left';
 
           if (state) {
@@ -4145,7 +4185,9 @@ window.App = (function() {
       open: panel => self._setOpenState(panel, true),
       close: panel => self._setOpenState(panel, false),
       toggle: (panel, exclusive = true) => self._toggleOpenState(panel, exclusive),
-      isOpen: self.isOpen
+      isOpen: self.isOpen,
+      setEnabled: self.setEnabled,
+      isEnabled: self.isEnabled
     };
   })();
   const chat = (function() {
@@ -4643,7 +4685,7 @@ window.App = (function() {
               style: 'font-size: .65rem; cursor: pointer;',
               'data-id': packet.id,
               onclick: self._handlePingJumpClick
-            }), `${packet.author}: `, _processed);
+            }), `${board.snipMode ? '-snip-' : packet.author}: `, _processed);
           }));
           const popup = crel(popupWrapper, panelHeader, crel('div', { class: 'pane pane-full' }, pingsList));
           document.body.appendChild(popup);
@@ -4731,6 +4773,10 @@ window.App = (function() {
           }
         });
       },
+      disable: () => {
+        panels.setEnabled('chat', false);
+        self.elements.username_color_select.attr('disabled', '');
+      },
       _handleChatbanVisualState(canChat) {
         if (canChat) {
           self.elements.input.prop('disabled', false);
@@ -4746,9 +4792,6 @@ window.App = (function() {
       webinit(data) {
         self.setCharLimit(data.chatCharacterLimit);
         self.canvasBanRespected = data.chatRespectsCanvasBan;
-        self.customEmoji = data.customEmoji.map(({ name, emoji }) => ({ name, emoji: `./emoji/${emoji}` }));
-        self.initEmojiPicker();
-        self.initTypeahead();
         self._populateUsernameColor();
         self.elements.username_color_select.value = user.getChatNameColor();
         self.elements.username_color_select.on('change', function() {
@@ -4780,6 +4823,14 @@ window.App = (function() {
             }
           });
         });
+
+        if (data.chatEnabled) {
+          self.customEmoji = data.customEmoji.map(({ name, emoji }) => ({ name, emoji: `./emoji/${emoji}` }));
+          self.initEmojiPicker();
+          self.initTypeahead();
+        } else {
+          self.disable();
+        }
       },
       initTypeahead() {
         // init DBs
@@ -5227,8 +5278,11 @@ window.App = (function() {
 
         const hookDatas = self.hooks.map((hook) => Object.assign({}, { pings: [] }, hook.get(packet)));
 
-        self.typeahead.helper.getDatabase('users').addEntry(packet.author, packet.author);
-        if (self.ignored.indexOf(packet.author) >= 0) return;
+        if (!board.snipMode) {
+          self.typeahead.helper.getDatabase('users').addEntry(packet.author, packet.author);
+
+          if (self.ignored.indexOf(packet.author) >= 0) return;
+        }
         let hasPing = !board.snipMode && settings.chat.pings.enable.get() === true && user.isLoggedIn() && hookDatas.some((data) => data.pings.length > 0);
         const when = moment.unix(packet.date);
         const flairs = crel('span', { class: 'flairs' });
@@ -5255,18 +5309,20 @@ window.App = (function() {
         }
 
         const _facTag = packet.strippedFaction ? packet.strippedFaction.tag : '';
-        const _facColor = packet.strippedFaction ? intToHex(packet.strippedFaction.color) : 0;
-        const _facTagShow = packet.strippedFaction && settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
-        const _facTitle = packet.strippedFaction ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : '';
+        if (!board.snipMode) {
+          const _facColor = packet.strippedFaction ? intToHex(packet.strippedFaction.color) : 0;
+          const _facTagShow = packet.strippedFaction && settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
+          const _facTitle = packet.strippedFaction ? `${packet.strippedFaction.name} (ID: ${packet.strippedFaction.id})` : '';
 
-        const _facFlair = crel('span', {
-          class: 'flair faction-tag',
-          'data-tag': _facTag,
-          style: `color: ${_facColor}; display: ${_facTagShow}`,
-          title: _facTitle
-        });
-        _facFlair.innerHTML = `[${twemoji.parse(_facTag)}]`;
-        crel(flairs, _facFlair);
+          const _facFlair = crel('span', {
+            class: 'flair faction-tag',
+            'data-tag': _facTag,
+            style: `color: ${_facColor}; display: ${_facTagShow}`,
+            title: _facTitle
+          });
+          _facFlair.innerHTML = `[${twemoji.parse(_facTag)}]`;
+          crel(flairs, _facFlair);
+        }
 
         const contentSpan = crel('span', { class: 'content' },
           self.processMessage(packet.message_raw, (username) => {
@@ -5280,8 +5336,8 @@ window.App = (function() {
 
         const chatLine = crel('li', {
           'data-id': packet.id,
-          'data-tag': _facTag,
-          'data-faction': (packet.strippedFaction && packet.strippedFaction.id) || '',
+          'data-tag': !board.snipMode ? _facTag : '',
+          'data-faction': !board.snipMode ? (packet.strippedFaction && packet.strippedFaction.id) || '' : '',
           'data-author': packet.author,
           'data-date': packet.date,
           'data-badges': JSON.stringify(packet.badges || []),
@@ -5295,7 +5351,7 @@ window.App = (function() {
           style: `color: #${place.getPaletteColorValue(packet.authorNameColor)}`,
           onclick: self._popUserPanel,
           onmousemiddledown: self._addAuthorMentionToChatbox
-        }, packet.author),
+        }, board.snipMode ? '-snip-' : packet.author),
         document.createTextNode(': '),
         contentSpan,
         document.createTextNode(' '));
@@ -5303,6 +5359,9 @@ window.App = (function() {
 
         if (packet.purge) {
           self._markMessagePurged(chatLine, packet.purge);
+        }
+        if (packet.authorWasShadowBanned) {
+          self._markMessageShadowBanned(chatLine);
         }
 
         if (hasPing) {
@@ -5341,6 +5400,10 @@ window.App = (function() {
         elem.classList.add('purged');
         elem.setAttribute('title', `Purged by ${purge.initiator} with reason: ${purge.reason || 'none provided'}`);
         elem.dataset.purgedBy = purge.initiator;
+      },
+      _markMessageShadowBanned: (elem) => {
+        elem.classList.add('shadow-banned');
+        elem.dataset.shadowBanned = 'true';
       },
       _makeCoordinatesElement: (raw, x, y, scale, template, title) => {
         let text = `(${x}, ${y}${scale != null ? `, ${scale}x` : ''})`;
@@ -5529,9 +5592,10 @@ window.App = (function() {
             { label: 'Report', action: 'report', class: 'dangerous-button' },
             { label: 'Mention', action: 'mention' },
             { label: 'Ignore', action: 'ignore' },
-            { label: 'Profile', action: 'profile' },
+            (!board.snipMode || App.user.hasPermission('user.receivestaffbroadcasts')) && { label: 'Profile', action: 'profile' },
             { label: 'Chat (un)ban', action: 'chatban', staffaction: true },
-            { label: 'Purge User', action: 'purge', staffaction: true },
+            // TODO(netux): Fix infraestructure and allow to purge during snip mode
+            !board.snipMode && { label: 'Purge User', action: 'purge', staffaction: true },
             { label: 'Delete', action: 'delete', staffaction: true },
             { label: 'Mod Lookup', action: 'lookup-mod', staffaction: true },
             { label: 'Chat Lookup', action: 'lookup-chat', staffaction: true }
@@ -5541,7 +5605,7 @@ window.App = (function() {
           crel(leftPanel, crel('p', { class: 'content', style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector('.content').textContent));
 
           crel(actionsList, actions
-            .filter((action) => user.isStaff() || !action.staffaction)
+            .filter((action) => action && (user.isStaff() || !action.staffaction))
             .map((action) => crel('li', crel('button', {
               type: 'button',
               class: 'text-button fullwidth ' + (action.class || ''),
@@ -5771,10 +5835,17 @@ window.App = (function() {
               _selBanReason,
               crel(_additionalReasonInfoWrap, _txtAdditionalReason)
             ),
-            board.snipMode ? null : crel(_purgeWrap,
+            crel(_purgeWrap,
               crel('h5', 'Purge Messages'),
-              crel('label', { style: 'display: inline;' }, _rbPurgeYes, 'Yes'),
-              crel('label', { style: 'display: inline;' }, _rbPurgeNo, 'No')
+              board.snipMode
+                ? crel('span', { class: 'text-orange extra-warning' },
+                  crel('i', { class: 'fas fa-exclamation-triangle' }),
+                  ' Purging all messages is disabled during snip mode'
+                )
+                : [
+                  crel('label', { style: 'display: inline;' }, _rbPurgeYes, 'Yes'),
+                  crel('label', { style: 'display: inline;' }, _rbPurgeNo, 'No')
+                ]
             ),
             crel('div', { class: 'buttons' },
               _btnCancel,
@@ -5812,6 +5883,7 @@ window.App = (function() {
               const postData = {
                 type: 'temp',
                 reason: 'none provided',
+                // TODO(netux): Fix infraestructure and allow to purge during snip mode
                 removalAmount: !board.snipMode ? (_rbPurgeYes.checked ? -1 : 0) : 0, // message purges are based on username, so if we purge when everyone in chat is -snip-, we aren't gonna have a good time
                 banLength: 0
               };

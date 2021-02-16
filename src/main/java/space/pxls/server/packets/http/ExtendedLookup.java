@@ -16,12 +16,6 @@ public class ExtendedLookup extends Lookup {
         super(id, x, y, origin, pixelCount, pixelCountAllTime, time, username, discordName, faction);
         this.logins = logins;
         this.userAgent = userAgent;
-
-        // override for staff
-        this.username = username;
-        this.discordName = discordName;
-        this.pixelCount = username != null ? pixelCount : null;
-        this.pixelCountAlltime = username != null ? pixelCountAlltime : null;
     }
 
     public static Lookup fromDB(int x, int y) {

@@ -132,6 +132,7 @@ html {
     --chat-server-action-text-color: #555;
     --chat-user-text-shadow-color: #ccc;
     --chat-purged-text-color: #888;
+    --chat-shadowbanned-text-color: #F66;
 
     --chat-tobottom-text-color: #fff;
     --chat-tobottom-background: #66a;
@@ -723,17 +724,23 @@ body .message {
 #palette {
     position: relative;
     z-index: 6;
-    padding: 15px 0;
+    padding: 10px 0;
     margin: 0 auto;
 
     overflow-x: auto;
     text-align: center;
     white-space: nowrap;
     background: var(--palette-background);
+}
 
-    /* Scrollbar, Firefox only */
+/* Scrollbar, Firefox only */
+.thin-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: #aaa transparent;
+}
+
+.palette-stacking {
+    white-space: normal !important;
 }
 
 /* Scrollbar, Chrome only */
@@ -758,7 +765,7 @@ body .message {
     min-height: 32px;
     border: 2px solid var(--palette-item-border-color);
     border-radius: 3px;
-    margin-right: 10px;
+    margin: 5px;
     cursor: pointer;
     bottom: 0;
     /* the default of `baseline` causes the deselect button to be raised on Firefox */
@@ -1165,6 +1172,10 @@ aside.panel {
     cursor: initial !important;
 }
 
+aside.panel[data-disabled] {
+    display: none;
+}
+
 aside.panel.left {
     right: initial;
     transition: left ease-in-out .25s;
@@ -1563,6 +1574,11 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     font-size: .9em;
     color: var(--chat-purged-text-color);
     text-decoration: line-through;
+}
+
+.chat-line.shadow-banned {
+    font-size: .9em;
+    color: var(--chat-shadowbanned-text-color);
 }
 
 #jump-to-bottom {

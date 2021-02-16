@@ -179,7 +179,8 @@ public class Database {
                     "filtered VARCHAR(2048) NOT NULL DEFAULT ''," +
                     "purged BOOL NOT NULL DEFAULT false," +
                     "purged_by INT," +
-                    "purge_reason TEXT)")
+                    "purge_reason TEXT," +
+                    "shadow_banned BOOL NOT NULL DEFAULT false)")
                     .execute();
             // chat_reports
             handle.createUpdate("CREATE TABLE IF NOT EXISTS chat_reports (" +
@@ -1306,14 +1307,16 @@ public class Database {
      * @param sent The chat message's creation epoch.
      * @param content The chat contents.
      * @param filtered The filtered chat contents.
+     * @param shadowBanned Whether or not the user sending the message is shadow-banned.
      * @return The new chat message's ID.
      */
-    public Integer createChatMessage(int authorID, long sent, String content, String filtered) {
-        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO chat_messages (author, sent, content, filtered) VALUES (:author, :sent, :content, :filtered)")
+    public Integer createChatMessage(int authorID, long sent, String content, String filtered, boolean shadowBanned) {
+        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO chat_messages (author, sent, content, filtered, shadow_banned) VALUES (:author, :sent, :content, :filtered, :shadow_banned)")
                 .bind("author", authorID)
                 .bind("sent", sent)
                 .bind("content", content)
                 .bind("filtered", filtered)
+                .bind("shadow_banned", shadowBanned)
                 .executeAndReturnGeneratedKeys("id")
                     .mapTo(Integer.TYPE)
                     .first());
@@ -1327,7 +1330,7 @@ public class Database {
      * @return The new chat message's ID.
      */
     public Integer createChatMessage(User author, long sent, String content, String filtered) {
-        return createChatMessage(author == null ? -1 : author.getId(), sent / 1000L, content, filtered);
+        return createChatMessage(author == null ? -1 : author.getId(), sent / 1000L, content, filtered, author != null && author.isShadowBanned());
     }
 
     /**
@@ -1347,12 +1350,11 @@ public class Database {
      * @param authorID The author's {@link User} ID.
      * @return The retrieved {@link DBChatMessage}s.
      */
-    public DBChatMessage[] getChatMessagesByAuthor(int authorID) {
+    public List<DBChatMessage> getChatMessagesByAuthor(int authorID) {
         return jdbi.withHandle(handle -> handle.select("SELECT * FROM chat_messages WHERE author = :author ORDER BY sent ASC")
                 .bind("author", authorID)
                 .map(new DBChatMessage.Mapper())
-                .list()
-                .toArray(new DBChatMessage[0]));
+                .list());
     }
 
     public List<DBChatMessage> getLastXMessagesFromUID(int authorID, int limit) {
@@ -1369,55 +1371,12 @@ public class Database {
      * @param includePurged Whether or not to include purged messages.
      * @return The retrieved {@link DBChatMessage}s. The length is determined by the {@link ResultSet} size.
      */
-    public DBChatMessage[] getLastXMessages(int x, boolean includePurged) {
-        return jdbi.withHandle(handle -> handle.select("SELECT * FROM chat_messages WHERE CASE WHEN :includePurged THEN true ELSE purged = false END ORDER BY sent DESC LIMIT :limit")
+    public List<DBChatMessage> getLastXMessages(int x, boolean includePurged) {
+        return jdbi.withHandle(handle -> handle.select("SELECT * FROM chat_messages cm WHERE CASE WHEN :includePurged THEN true ELSE purged = false END ORDER BY sent DESC LIMIT :limit")
                 .bind("includePurged", includePurged)
                 .bind("limit", x)
                 .map(new DBChatMessage.Mapper())
-                .list()
-                .toArray(new DBChatMessage[0]));
-    }
-
-    /**
-     * Retrieves the last <pre>x</pre> of chat messages and parses them for easier frontend handling.
-     * @param x The amount of chat messages to retrieve.
-     * @param includePurged Whether or not to include purged messages.
-     * @param ignoreFilter Whether or not the chat filter should apply to messages being returned.
-     * @return The retrieved {@link DBChatMessage}s. The length is determined by the {@link ResultSet} size.
-     */
-    public List<ChatMessage> getlastXMessagesForSocket(int x, boolean includePurged, boolean ignoreFilter) {
-        DBChatMessage[] fromDB = getLastXMessages(x, includePurged);
-        List<ChatMessage> toReturn = new ArrayList<>();
-        for (DBChatMessage dbChatMessage : fromDB) {
-            List<Badge> badges = new ArrayList<>();
-            String author = "CONSOLE";
-            int nameColor = 0;
-            Faction faction = null;
-            List<String> nameClass = null;
-            if (dbChatMessage.author_uid > 0) {
-                author = "$Unknown";
-                User temp = App.getUserManager().getByID(dbChatMessage.author_uid);
-                if (temp != null) {
-                    author = temp.getName();
-                    badges = temp.getChatBadges();
-                    nameColor = temp.getChatNameColor();
-                    nameClass = temp.getChatNameClasses();
-                    faction = temp.fetchDisplayedFaction();
-                }
-            }
-            toReturn.add(new ChatMessage(
-                dbChatMessage.id,
-                author,
-                dbChatMessage.sent,
-                App.getConfig().getBoolean("textFilter.enabled") && !ignoreFilter && dbChatMessage.filtered_content.length() > 0 ? dbChatMessage.filtered_content : dbChatMessage.content,
-                dbChatMessage.purged ? new ChatMessage.Purge(dbChatMessage.purged_by_uid, dbChatMessage.purge_reason) : null,
-                badges,
-                nameClass,
-                nameColor,
-                faction
-            ));
-        }
-        return toReturn;
+                .list());
     }
 
     /**

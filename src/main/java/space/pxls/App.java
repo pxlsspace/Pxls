@@ -21,9 +21,7 @@ import space.pxls.palette.*;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.nio.file.Files;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -110,8 +108,6 @@ public class App {
         }).start();
 
         new Timer().schedule(new SessionTimer(), 0, 1000 * 3600); // execute once every hour
-
-        new Timer().schedule(new DatabaseTimer(), 0, 1000 * 60 * 2);
 
         int heatmap_timer_cd = (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS);
         new Timer().schedule(new HeatmapTimer(), 0, heatmap_timer_cd * 1000 / 256);
@@ -1007,9 +1003,8 @@ public class App {
         return !config.getString("captcha.key").isEmpty() && !config.getString("captcha.secret").isEmpty();
     }
 
-    public static String getWhoamiAllowedOrigin() {
-        if (cachedWhoamiOrigin == null) cachedWhoamiOrigin = config.getString("whoamiAllowedOrigin");
-        return cachedWhoamiOrigin;
+    public static List<String> getWhoamiAllowedOrigins() {
+        return config.getStringList("whoamiAllowedOrigins");
     }
 
     public static int getPixel(int x, int y) {
@@ -1024,8 +1019,16 @@ public class App {
         return virginmap[x + y * width];
     }
 
+    public static boolean getSnipMode() {
+        return getConfig().getBoolean("oauth.snipMode");
+    }
+
     public static boolean getRegistrationEnabled() {
         return getConfig().getBoolean("oauth.enableRegistration");
+    }
+
+    public static boolean isChatEnabled() {
+        return getConfig().getBoolean("chat.enabled");
     }
 
     public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase, String action) {
