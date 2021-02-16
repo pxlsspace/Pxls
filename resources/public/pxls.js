@@ -748,7 +748,8 @@ window.App = (function() {
         zoom: {
           sensitivity: setting('board.zoom.sensitivity', SettingType.RANGE, 1.5, $('#setting-board-zoom-sensitivity')),
           limit: {
-            enable: setting('board.zoom.limit.enable', SettingType.TOGGLE, true, $('#setting-board-zoom-limit-enable'))
+            minimum: setting('board.zoom.limit.minimum', SettingType.NUMBER, 0.5, $('#setting-board-zoom-limit-minimum')),
+            maximum: setting('board.zoom.limit.maximum', SettingType.NUMBER, 50, $('#setting-board-zoom-limit-maximum'))
           },
           rounding: {
             enable: setting('board.zoom.rounding.enable', SettingType.TOGGLE, false, $('#setting-board-zoom-rounding-enable'))
@@ -1817,8 +1818,9 @@ window.App = (function() {
         return Math.abs(self.scale);
       },
       setScale: function(scale, doUpdate = true) {
-        if (settings.board.zoom.limit.enable.get() !== false && scale > 50) scale = 50;
-        else if (scale <= 0.01) scale = 0.01; // enforce the [0.01, 50] limit without blindly resetting to 0.01 when the user was trying to zoom in farther than 50x
+        const { minimum, maximum } = settings.board.zoom.limit;
+        if (scale > maximum.get()) scale = maximum.get();
+        else if (scale <= minimum.get()) scale = minimum.get(); // enforce the [x, y] limit without blindly resetting to x when the user was trying to zoom in farther than y
 
         if (settings.board.zoom.rounding.enable.get()) {
           // We round up if zooming in and round down if zooming out to ensure that the level does change
