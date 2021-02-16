@@ -49,7 +49,7 @@ public class DBPixelPlacement {
                     r.getInt("y"),
                     r.getInt("color"),
                     time == null ? 0 : time.getTime(),
-                    r.getString("u_login").startsWith("ip:") ? "-snip-" : r.getString("username"),
+                    r.getBoolean("login_with_ip") ? "-snip-" : r.getString("username"),
                     r.getBoolean("mod_action"),
                     r.getInt("pixel_count"),
                     r.getInt("pixel_count_alltime"),

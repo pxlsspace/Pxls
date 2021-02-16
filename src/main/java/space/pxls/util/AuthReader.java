@@ -6,6 +6,7 @@ import io.undertow.server.handlers.Cookie;
 import io.undertow.util.AttachmentKey;
 import space.pxls.App;
 import space.pxls.user.User;
+import space.pxls.user.UserLogin;
 
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -38,10 +39,10 @@ public class AuthReader implements HttpHandler {
                 user[0] = App.getUserManager().getByToken(loginCache.get(ip));
             } else {
                 loginCache.compute(ip, (key, old) -> {
-                    user[0] = App.getUserManager().getByLogin("ip:" + ip);
+                    user[0] = App.getUserManager().getSnipByIP(ip);
 
                     if (user[0] == null) {
-                        String signupToken = App.getUserManager().generateUserCreationToken("ip:" + ip);
+                        String signupToken = App.getUserManager().generateUserCreationToken(new UserLogin("ip", ip));
                         user[0] = App.getUserManager().signUp(MD5.compute(ip), signupToken, ip);
                     }
 

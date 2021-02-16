@@ -59,14 +59,13 @@ public class PacketHandler {
         if (user != null) {
             server.send(channel, new ServerUserInfo(
                     user.getName(),
-                    user.getLogin(),
                     user.getAllRoles(),
                     user.getPixelCount(),
                     user.getAllTimePixelCount(),
                     user.isBanned(),
                     user.getBanExpiryTime(),
                     user.getBanReason(),
-                    user.getLogin().split(":")[0],
+                    user.loginsWithIP() ? "ip" : "service",
                     user.getPlaceOverrides(),
                     user.isChatbanned(),
                     App.getDatabase().getChatBanReason(user.getId()),

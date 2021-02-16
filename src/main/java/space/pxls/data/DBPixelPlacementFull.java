@@ -10,7 +10,6 @@ import java.sql.Timestamp;
 public class DBPixelPlacementFull extends DBPixelPlacement {
     public final int secondaryId;
     public final int userId;
-    public final String login;
     //public final List<Role> roles;
     public final long ban_expiry;
     public final String ban_reason;
@@ -18,11 +17,10 @@ public class DBPixelPlacementFull extends DBPixelPlacement {
     public final boolean undoAction;
     public final String userAgent;
 
-    public DBPixelPlacementFull(int id, int x, int y, int color, int secondaryId, long time, int userId, String username, String login, /* List<Role> roles, */ long ban_expiry, int pixelCount, int pixelCountAlltime, String ban_reason, boolean banned, boolean modAction, boolean undoAction, String userAgent, String discordName, String faction) {
+    public DBPixelPlacementFull(int id, int x, int y, int color, int secondaryId, long time, int userId, String username, /* List<Role> roles, */ long ban_expiry, int pixelCount, int pixelCountAlltime, String ban_reason, boolean banned, boolean modAction, boolean undoAction, String userAgent, String discordName, String faction) {
         super(id, x, y, color, time, username, modAction, pixelCount, pixelCountAlltime, discordName, faction);
         this.secondaryId = secondaryId;
         this.userId = userId;
-        this.login = login;
         //this.roles = roles;
         this.ban_expiry = ban_expiry;
         this.ban_reason = ban_reason;
@@ -50,7 +48,6 @@ public class DBPixelPlacementFull extends DBPixelPlacement {
                     time == null ? 0 : time.getTime(),
                     r.getInt("u_id"),
                     r.getString("username"),
-                    r.getString("login"),
                     //App.getDatabase().getUserRoles(r.getInt("u_id")),
                     ban_expiry == null ? 0 : ban_expiry.getTime(),
                     r.getInt("pixel_count"),
