@@ -2821,15 +2821,13 @@ window.App = (function() {
         }
       },
       setPixelated: function(pixelate = true) {
-        if (self.elements.template !== null) {
-          self.elements.visibles.toggleClass('pixelate', pixelate);
-        }
+        self.elements.visibles.toggleClass('pixelate', pixelate);
       },
       getWidthRatio: function() {
         if (self.usesStyle()) {
-          return self.getInternalWidth() / self.getSourceWidth();
-        } else {
           return self.getInternalWidth() / self.getDisplayWidth();
+        } else {
+          return self.getSourceWidth() / self.getDisplayWidth();
         }
       },
       getDownscaleWidthRatio: function() {
