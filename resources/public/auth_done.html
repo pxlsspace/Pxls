@@ -1,109 +1,35 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Pxls login</title>
+    <title>Pxls Login</title>
 </head>
 <body>
-    Authenticating...
+    <p>Authenticating...</p>
+    <p>If you see this for more than a few seconds, it may have worked and your browser didn't close this window.</p>
+    <p>If it didn't work, please contact a developer on our Discord (linked under the info panel).</p>
     <script type="text/javascript">
-        var storageFactory = function(storageType, prefix, exdays) {
-                var getCookie = function(c_name) {
-                    var i, x, y, ARRcookies = document.cookie.split(";");
-                        for (i = 0; i < ARRcookies.length; i++) {
-                            x = ARRcookies[i].substr(0, ARRcookies[i].indexOf("="));
-                            y = ARRcookies[i].substr(ARRcookies[i].indexOf("=") + 1);
-                            x = x.replace(/^\s+|\s+$/g,"");
-                            if (x == c_name){
-                                return unescape(y);
-                            }
-                    }
-                },
-                setCookie = function(c_name, value, exdays) {
-                    var exdate = new Date(),
-                        c_value = escape(value);
-                    exdate.setDate(exdate.getDate() + exdays);
-                    c_value += ((exdays===null) ? '' : '; expires=' + exdate.toUTCString());
-                    document.cookie = c_name + '=' + c_value;
-                };
-                return {
-                    haveSupport: null,
-                    support: function () {
-                        if (this.haveSupport === null) {
-                            try {
-                                storageType.setItem('test', 1);
-                                this.haveSupport = (storageType.getItem('test') == 1);
-                                storageType.removeItem('test');
-                            } catch(e) {
-                                this.haveSupport = false;
-                            }
-                        }
-                        return this.haveSupport;
-                    },
-                    get: function(name) {
-                        var s;
-                        if (this.support()) {
-                            s = storageType.getItem(name)
-                        } else {
-                            s = getCookie(prefix+name);
-                        }
-                        if (s === undefined) {
-                            s = null;
-                        }
-                        try {
-                            return JSON.parse(s);
-                        } catch(e) {
-                            return null;
-                        }
-                    },
-                    set: function(name, value) {
-                        value = JSON.stringify(value);
-                        if (this.support()) {
-                            storageType.setItem(name, value);
-                        } else {
-                            setCookie(prefix+name, value, exdays)
-                        }
-                    },
-                    remove: function(name) {
-                        if (this.support()) {
-                            storageType.removeItem(name);
-                        } else {
-                            setCookie(prefix+name, '', -1);
-                        }
-                    }
-                };
-            },
-            ls = storageFactory(localStorage, 'ls_', 99),
-            query_params = {},
-            s = window.location.hash.substring(1)+"&"+window.location.search.substring(1),
-            vars = s.split("&");
-        for (var i = 0; i < vars.length; i++) {
-            if (vars[i]) {
-                var pair = vars[i].split('='),
-                    n = decodeURIComponent(pair[0]),
-                    v = decodeURIComponent(pair[1]) || null;
-                if (!query_params.hasOwnProperty(n)) {
-                    query_params[n] = v;
-                }
-            }
-        }
-        if (query_params['nologin']) {
-            if (ls.get("auth_same_window")) {
-                ls.remove("auth_same_window");
-                window.location = "/";
+        const search = location.search.substring(1);
+        // https://stackoverflow.com/a/8649003/6901668
+        const queryParams = JSON.parse('{"' + decodeURI(search).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g,'":"') + '"}');
+
+        if (queryParams['nologin'] != null) {
+            if (localStorage.getItem('auth_same_window') != null) {
+                localStorage.removeItem('auth_same_window');
+                window.location = '/';
             } else {
                 window.close();
             }
         } else {
-            ls.set("auth_respond", {
-                signup: query_params["signup"] && query_params["signup"] == "true" ? true : false,
-                token: query_params["token"]
-            });
-            if (ls.get("auth_same_window")) {
-                ls.remove("auth_same_window");
-                ls.set("auth_proceed", true);
-                window.location = "/";
+            localStorage.setItem('auth_respond', JSON.stringify({
+                signup: queryParams["signup"] === "true",
+                token: queryParams["token"]
+            }));
+            if (localStorage.getItem('auth_same_window') != null) {
+                localStorage.removeItem('auth_same_window');
+                localStorage.setItem('auth_proceed', 'true');
+                window.location = '/';
             } else {
-                localStorage.setItem("auth", (new Date()).toString());
+                localStorage.setItem('auth', (new Date()).toString());
                 window.close();
             }
         }
