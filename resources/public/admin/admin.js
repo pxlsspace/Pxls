@@ -447,6 +447,10 @@
           name: 'Logins',
           sensitive: true,
           get: data => {
+            if (data.logins == null) {
+              return null;
+            }
+
             const addMonoClass = localStorage.getItem('monospace_lookup') === 'true' ? ' useMono' : '';
             const elems = $('<div>');
             for (let i = 0; i < data.logins.length; i++) {
