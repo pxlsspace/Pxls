@@ -778,6 +778,9 @@ window.App = (function() {
         picker: {
           enable: setting('place.picker.enable', SettingType.TOGGLE, true, $('#setting-place-picker-enable'))
         },
+        rightclick: {
+          action: setting('ui.rightclick.action', SettingType.SELECT, 'nothing', $('#setting-ui-right-click-action'))
+        },
         alert: {
           delay: setting('place.alert.delay', SettingType.NUMBER, 0, $('#setting-place-alert-delay'))
         }
@@ -1482,7 +1485,24 @@ window.App = (function() {
           .on('pointerup mouseup touchend', handleInputUp)
           .contextmenu(function(evt) {
             evt.preventDefault();
-            place.switch(-1);
+            switch (settings.place.rightclick.action.get()) {
+              case 'clear':
+                place.switch(-1);
+                break;
+              case 'copy': {
+                const coordinates = board.fromScreen(evt.clientX, evt.clientY, true);
+                const index = board.getPixelIndex(coordinates.x, coordinates.y);
+                place.switch(index);
+                break;
+              }
+              case 'lookup':
+                lookup.runLookup(evt.clientX, evt.clientY);
+                break;
+              case 'clearlookup':
+                place.switch(-1);
+                lookup.runLookup(evt.clientX, evt.clientY);
+                break;
+            }
           });
 
         // Separated some of these events from jQuery to deal with chrome's complaints about passive event violations.
