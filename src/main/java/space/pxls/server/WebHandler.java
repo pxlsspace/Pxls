@@ -1878,9 +1878,9 @@ public class WebHandler {
 
         Lookup lookup;
         if (user != null && user.hasPermission("board.check")) {
-            lookup = ExtendedLookup.fromDB(App.getDatabase().getFullPixelAt(x, y).orElse(null));
+            lookup = ExtendedLookup.fromDB(x, y);
         } else {
-            lookup = Lookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null));
+            lookup = Lookup.fromDB(x, y);
             if (lookup != null && App.getSnipMode()) {
                 lookup = lookup.asSnipRedacted();
             }

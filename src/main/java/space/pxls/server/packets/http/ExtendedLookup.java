@@ -18,7 +18,7 @@ public class ExtendedLookup extends Lookup {
         this.userAgent = userAgent;
     }
 
-    public static Lookup fromDB(int x, int y) {
+    public static ExtendedLookup fromDB(int x, int y) {
         var pixelPlacement = App.getDatabase().getFullPixelAt(x, y).orElse(null);
         if (pixelPlacement == null) return null;
         var logins = App.getDatabase().getUserLogins(pixelPlacement.userId);
