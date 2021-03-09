@@ -2886,6 +2886,11 @@ window.App = (function() {
       initGl: function(context, palette) {
         self.gl.context = context;
 
+        if (self.gl.context === null) {
+          console.info('WebGL is unsupported on this system');
+          return;
+        }
+
         self.gl.context.clearColor(0, 0, 0, 0);
         // self.gl.context.pixelStorei(self.gl.context.UNPACK_COLORSPACE_CONVERSION_WEBGL, self.gl.context.NONE);
         self.gl.context.pixelStorei(self.gl.context.UNPACK_FLIP_Y_WEBGL, true);
