@@ -2695,6 +2695,8 @@ window.App = (function() {
         self.elements.styleSelect.on('change input', (e) => self._update({ style: e.target.value }));
         self.elements.customStyleInput.on('change input', (e) => self.elements.styleOptionCustom.attr({ value: e.target.value }));
 
+        self.elements.conversionModeSelect.on('change input', (e) => self._update({ convertMode: e.target.value }));
+
         self.updateSettings();
 
         $(window).keydown(function(evt) {
