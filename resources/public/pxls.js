@@ -1838,9 +1838,17 @@ window.App = (function() {
         return Math.abs(self.scale);
       },
       setScale: function(scale, doUpdate = true) {
-        const { minimum, maximum } = settings.board.zoom.limit;
-        if (scale > maximum.get()) scale = maximum.get();
-        else if (scale <= minimum.get()) scale = minimum.get(); // enforce the [x, y] limit without blindly resetting to x when the user was trying to zoom in farther than y
+        // TODO: Determine why these values are being returned as strings rather than their appropriate type (float)
+        const minimum = parseFloat(settings.board.zoom.limit.minimum.get());
+        const maximum = parseFloat(settings.board.zoom.limit.maximum.get());
+        // TODO: Determine why scale is a string
+        scale = parseFloat(scale);
+        if (scale > maximum) {
+          scale = maximum;
+        } else if (scale <= minimum) {
+          // enforce the [x, y] limit without blindly resetting to x when the user was trying to zoom in farther than y
+          scale = minimum;
+        }
 
         if (settings.board.zoom.rounding.enable.get()) {
           // We round up if zooming in and round down if zooming out to ensure that the level does change
