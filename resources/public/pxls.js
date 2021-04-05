@@ -546,7 +546,6 @@ window.App = (function() {
       'canvas.unlocked': 'board.lock.enable',
       'nativenotifications.pixel-avail': 'place.notification.enable',
       autoReset: 'place.deselectonplace.enable',
-      monospace_lookup: 'lookup.monospace.enable',
       zoomBaseValue: 'board.zoom.sensitivity',
       increased_zoom: 'board.zoom.limit.enable',
       scrollSwitchEnabled: 'place.palette.scrolling.enable',
@@ -786,9 +785,6 @@ window.App = (function() {
         }
       },
       lookup: {
-        monospace: {
-          enable: setting('lookup.monospace.enable', SettingType.TOGGLE, false, $('#setting-lookup-monospace-enable'))
-        },
         filter: {
           sensitive: {
             enable: setting('lookup.filter.sensitive.enable', SettingType.TOGGLE, false)
@@ -3557,10 +3553,6 @@ window.App = (function() {
         });
         socket.on('received_report', (data) => {
           new SLIDEIN.Slidein(`A new ${data.report_type.toLowerCase()} report has been received.`, 'info-circle').show().closeAfter(3000);
-        });
-
-        settings.lookup.monospace.enable.listen(function(value) {
-          $('.monoVal').toggleClass('useMono', value);
         });
 
         settings.ui.palette.numbers.enable.listen(function(value) {

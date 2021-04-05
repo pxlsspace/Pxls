@@ -451,11 +451,10 @@
               return null;
             }
 
-            const addMonoClass = localStorage.getItem('monospace_lookup') === 'true' ? ' useMono' : '';
             const elems = $('<div>');
             for (let i = 0; i < data.logins.length; i++) {
               const login = data.logins[i];
-              elems.append($('<span class="monoVal' + addMonoClass + '">').text(`${login.serviceID}:${login.serviceUserID}`));
+              elems.append($('<span>').text(`${login.serviceID}:${login.serviceUserID}`));
               if (i !== data.logins.length - 1) {
                 elems.append(', ');
               }
@@ -466,10 +465,7 @@
           id: 'user_agent',
           name: 'User Agent',
           sensitive: true,
-          get: data => {
-            const addMonoClass = localStorage.getItem('monospace_lookup') === 'true' ? ' useMono' : '';
-            return $('<div class="monoVal' + addMonoClass + '">').text(data.userAgent);
-          }
+          get: data => $('<div>').text(data.userAgent)
         }, {
           id: 'alert',
           name: 'Send Alert',

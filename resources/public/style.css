@@ -252,10 +252,6 @@ img.emoji.emoji--custom {
     display: block !important;
 }
 
-.useMono {
-  font-family: monospace;
-}
-
 #settings-search-input {
   margin: 0.5em 0;
   padding-left: 1em;
@@ -357,10 +353,6 @@ button.dangerous-button:hover {
     color: var(--dangerous-button-text-color-hover);
     background: var(--dangerous-button-background-hover);
     border-color: var(--dangerous-button-border-color-hover);
-}
-
-.use-mono {
-    font-family: monospace;
 }
 
 dt:not(:first-of-type) {
