@@ -74,7 +74,7 @@
                                 <tbody>
                                     <tr>
                                         <th class="text-right pr-3">Registration Date</th>
-                                        <td class="text-left">{{profile_of.signupTime | date("LLL d, y, hh:mm:s a (z)")}}</td>
+                                        <td class="text-left">{{profile_of.signupTime | date("LLL d, y, hh:mm:ss a (z)")}}</td>
                                     </tr>
                                     {% if not snip_mode %}
                                     <tr>
@@ -101,13 +101,13 @@
                                     {% if profile_of.isBanned() %}
                                     <tr>
                                         <th class="text-right pr-3">Canvas Ban Expiry</th>
-                                        <td class="text-left">{% if profile_of.isPermaBanned() %}Never{% else %}{{profile_of.getBanExpiryTime() | date("LLL d, y, hh:mm:s a (z)")}}{% endif %}</td>
+                                        <td class="text-left">{% if profile_of.isPermaBanned() %}Never{% else %}{{profile_of.getBanExpiryTime() | date("LLL d, y, hh:mm:ss a (z)")}}{% endif %}</td>
                                     </tr>
                                     {% endif %}
                                     {% if profile_of.isChatbanned() %}
                                     <tr>
                                         <th class="text-right pr-3">Chat Ban Expiry</th>
-                                        <td class="text-left">{% if profile_of.isPermaChatbanned() %}Never{% else %}{{profile_of.getChatBanExpiryTime() | date("LLL d, y, hh:mm:s a (z)")}}{% endif %}</td>
+                                        <td class="text-left">{% if profile_of.isPermaChatbanned() %}Never{% else %}{{profile_of.getChatBanExpiryTime() | date("LLL d, y, hh:mm:ss a (z)")}}{% endif %}</td>
                                     </tr>
                                     {% endif %}
                                 </tbody>
@@ -139,7 +139,7 @@
                                             </div>
                                             <div class="card-body p-0 body-collapse-target collapse">
                                                 <div class="p-3">
-                                                    <h6>Reported {{reportedName}} on {{(report.time*1000)|date("LLL d, y, hh:m:s a (z)")}}</h6>
+                                                    <h6>Reported {{reportedName}} on {{(report.time*1000)|date("LLL d, y, hh:m:ss a (z)")}}</h6>
                                                     <p>{{report.message}}</p>
                                                 </div>
                                             </div>
@@ -166,7 +166,7 @@
                                             </div>
                                             <div class="card-body p-0 body-collapse-target collapse">
                                                 <div class="p-3">
-                                                    <h6>Reported {{reportedName}} on {{(report.time*1000)|date("LLL d, y, h:mm:s a (z)")}}</h6>
+                                                    <h6>Reported {{reportedName}} on {{(report.time*1000)|date("LLL d, y, h:mm:ss a (z)")}}</h6>
                                                     <p>{{report.report_message}}</p>
                                                 </div>
                                             </div>
