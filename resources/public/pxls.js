@@ -3251,7 +3251,7 @@ window.App = (function() {
         const pos = board.fromScreen(clientX, clientY);
         $.get('/lookup', pos, function(data) {
           data = data || { x: pos.x, y: pos.y, bg: true };
-          if (data && data.username) {
+          if (data && data.username && chat.typeahead.helper) {
             chat.typeahead.helper.getDatabase('users').addEntry(data.username, data.username);
           }
           if (self.handle) {
