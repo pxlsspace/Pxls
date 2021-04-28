@@ -1042,7 +1042,7 @@ public class App {
         board[x + y * width] = (byte) color;
         heatmap[x + y * width] = (byte) 0xFF;
         virginmap[x + y * width] = (byte) 0x00;
-        pixelLogger.log(Level.INFO, String.format("%s\t%d\t%d\t%d\t%s\t%s", userName, x, y, color, ip, action));
+        pixelLogger.log(Level.INFO, String.format("%s\t%d\t%d\t%d\t%s", userName, x, y, color, action));
         if (updateDatabase) {
             database.placePixel(x, y, color, user, mod_action);
             if (!mod_action) {
