@@ -818,6 +818,9 @@ window.App = (function() {
         },
         font: {
           size: setting('chat.font.size', SettingType.NUMBER, 16, $('#setting-chat-font-size'))
+        },
+        truncate: {
+          max: setting('chat.truncate.max', SettingType.NUMBER, 250, $('#setting-chat-truncate-max'))
         }
       },
       fix: {
@@ -4743,6 +4746,17 @@ window.App = (function() {
           }
         });
 
+        settings.chat.truncate.max.listen(function(value) {
+          if (isNaN(value)) {
+            modal.showText('Invalid value. Expected a number greater than 50.');
+          } else {
+            const val = value >> 0;
+            if (val < 50) {
+              modal.showText('Invalid value. Expected a number greater than 50.');
+            }
+          }
+        });
+
         settings.chat.pings.audio.volume.listen(function(value) {
           const parsed = parseFloat(value);
           const volume = isNaN(parsed) ? 1 : parsed;
@@ -5353,6 +5367,12 @@ window.App = (function() {
         );
         let nameClasses = 'user';
         if (Array.isArray(packet.authorNameClass)) nameClasses += ` ${packet.authorNameClass.join(' ')}`;
+
+        // Truncate older chat messages by removing the diff of the current message count and the maximum count.
+        const diff = self.elements.body.children().length - settings.chat.truncate.max.get();
+        if (diff > 0) {
+          self.elements.body.children().slice(0, diff).remove();
+        }
 
         const chatLine = crel('li', {
           'data-id': packet.id,
