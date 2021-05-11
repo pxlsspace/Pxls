@@ -5711,7 +5711,7 @@ window.App = (function() {
             }, 'Report');
             const textArea = crel('textarea', {
               placeholder: 'Enter a reason for your report',
-              style: 'width: 100%; border: 1px solid #999;'
+              style: 'width: 100%; border: 1px solid #999;',
               onkeydown: e => e.stopPropagation()
             });
 
