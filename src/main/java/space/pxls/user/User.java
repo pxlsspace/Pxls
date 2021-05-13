@@ -335,7 +335,15 @@ public class User {
         getRoles().forEach(role -> toReturn.addAll(role.getBadges()));
 
         if (!App.getSnipMode()) {
-            if (this.pixelCountAllTime >= 1000000) {
+            if (this.pixelCountAllTime >= 2000000) {
+                toReturn.add(new Badge("2M+", "2M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 1750000) {
+                toReturn.add(new Badge("1.75M+", "1.75M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 1500000) {
+                toReturn.add(new Badge("1.5M+", "1.5M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 1250000) {
+                toReturn.add(new Badge("1.25M+", "1.25M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 1000000) {
                 toReturn.add(new Badge("1M+", "1M+ Pixels Placed", "text", null));
             } else if (this.pixelCountAllTime >= 900000) {
                 toReturn.add(new Badge("900k+", "900k+ Pixels Placed", "text", null));
