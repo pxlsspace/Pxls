@@ -4734,12 +4734,12 @@ window.App = (function() {
         // settings
         settings.chat.font.size.listen(function(value) {
           if (isNaN(value)) {
-            modal.showText('Invalid value. Expected a number between 1 and 72');
+            modal.showText('Invalid chat font size. Expected a number between 1 and 72.');
             settings.chat.font.size.set(16);
           } else {
             const val = value >> 0;
             if (val < 1 || val > 72) {
-              modal.showText('Invalid value. Expected a number between 1 and 72');
+              modal.showText('Invalid chat font size. Expected a number between 1 and 72.');
               settings.chat.font.size.set(16);
             } else {
               self.elements.body.css('font-size', `${val}px`);
@@ -4750,12 +4750,12 @@ window.App = (function() {
 
         settings.chat.truncate.max.listen(function(value) {
           if (isNaN(value)) {
-            modal.showText('Invalid value. Expected a number greater than 50.');
+            modal.showText('Invalid maximum chat messages. Expected a number greater than 50.');
             settings.chat.truncate.max.set(50);
           } else {
             const val = value >> 0;
             if (val < 50) {
-              modal.showText('Invalid value. Expected a number greater than 50.');
+              modal.showText('Invalid maximum chat messages. Expected a number greater than 50.');
               settings.chat.truncate.max.set(50);
             }
           }
