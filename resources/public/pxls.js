@@ -2049,7 +2049,7 @@ window.App = (function() {
       const self = {
         name: name,
         elements: {
-          overlay: crel('canvas', { id: name, class: 'pixelate noselect' })
+          overlay: crel('canvas', { id: name, class: 'pixelate noselect overlay transparent' })
         },
         ctx: null,
         width: null,
@@ -2102,7 +2102,7 @@ window.App = (function() {
         setOpacity: function(opacity) {
           $(self.elements.overlay).css('opacity', opacity);
         },
-        setShown: function(value = self.isShown, fadeTime = 200) {
+        setShown: function(value = self.isShown) {
           self.isShown = value === true;
 
           if (!self.lazyInitStarted) {
@@ -2114,11 +2114,7 @@ window.App = (function() {
             return;
           }
 
-          if (self.isShown) {
-            $(self.elements.overlay).fadeIn(fadeTime);
-          } else {
-            $(self.elements.overlay).fadeOut(fadeTime);
-          }
+          $(self.elements.overlay).toggleClass('transparent', !self.isShown);
         },
         remove: function() {
           self.elements.overlay.remove();
@@ -2132,7 +2128,6 @@ window.App = (function() {
         }
       };
 
-      $(self.elements.overlay).hide();
       $('#board-mover').prepend(self.elements.overlay);
 
       return {
@@ -2715,13 +2710,8 @@ window.App = (function() {
         grid: $('#grid')
       },
       init: function() {
-        self.elements.grid.hide();
         settings.board.grid.enable.listen(function(value) {
-          if (value) {
-            self.elements.grid.fadeIn({ duration: 100 });
-          } else {
-            self.elements.grid.fadeOut({ duration: 100 });
-          }
+          self.elements.grid.toggleClass('transparent', !value);
         });
         let GKeyPressed = false;
         // `e` is a key event.
