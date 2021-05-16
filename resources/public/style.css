@@ -1034,6 +1034,16 @@ body:not(.show-placeable-bubble) #placeableInfoBubble {
     display: inline-block;
 }
 
+.overlay {
+    transition: opacity 200ms;
+}
+
+.overlay.transparent {
+    /* NOTE ([  ]): Since overlays set opacity using the style property directly,
+                    the opacity for invisible overlays needs to be !important. */
+    opacity: 0 !important;
+}
+
 /*//////////////////////////*\
 | Button Bar
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
