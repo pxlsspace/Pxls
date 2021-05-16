@@ -2262,14 +2262,30 @@ window.App = (function() {
           }
         });
 
+        let HKeyPressed = false;
+        // `e` is a key event.
+        // True if h key is the focus of the event.
+        const testForH = (e) => e.key === 'h' || e.key === 'H' || e.which === 72;
+
         $(window).keydown(function(e) {
           if (['INPUT', 'TEXTAREA'].includes(e.target.nodeName)) {
             // prevent inputs from triggering shortcuts
             return;
           }
 
-          if (e.key === 'h' || e.key === 'H' || e.which === 72) { // h key
+          if (testForH(e)) {
+            if (HKeyPressed) {
+              return;
+            }
+            HKeyPressed = true;
+
             settings.board.heatmap.enable.toggle();
+          }
+        });
+
+        $(window).keyup(function(e) {
+          if (testForH(e)) {
+            HKeyPressed = false;
           }
         });
 
@@ -2315,14 +2331,30 @@ window.App = (function() {
           }
         });
 
+        let XKeyPressed = false;
+        // `e` is a key event.
+        // True if x key is the focus of the event.
+        const testForX = (e) => e.key === 'x' || e.key === 'X' || e.which === 88;
+
         $(window).keydown(function(e) {
           if (['INPUT', 'TEXTAREA'].includes(e.target.nodeName)) {
             // prevent inputs from triggering shortcuts
             return;
           }
 
-          if (e.key === 'x' || e.key === 'X' || e.which === 88) { // x key
+          if (testForX(e)) {
+            if (XKeyPressed) {
+              return;
+            }
+            XKeyPressed = true;
+
             settings.board.virginmap.enable.toggle();
+          }
+        });
+
+        $(window).keyup(function(e) {
+          if (testForX(e)) {
+            XKeyPressed = false;
           }
         });
       }
