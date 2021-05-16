@@ -2723,14 +2723,30 @@ window.App = (function() {
             self.elements.grid.fadeOut({ duration: 100 });
           }
         });
-        $(document.body).on('keydown', function(evt) {
-          if (['INPUT', 'TEXTAREA'].includes(evt.target.nodeName)) {
+        let GKeyPressed = false;
+        // `e` is a key event.
+        // True if g key is the focus of the event.
+        const testForG = (e) => e.key === 'g' || e.key === 'G' || e.which === 71;
+
+        $(window).keydown(function(e) {
+          if (['INPUT', 'TEXTAREA'].includes(e.target.nodeName)) {
             // prevent inputs from triggering shortcuts
             return;
           }
 
-          if (evt.key === 'g' || evt.key === 'G' || evt.keyCode === 71) {
+          if (testForG(e)) {
+            if (GKeyPressed) {
+              return;
+            }
+            GKeyPressed = true;
+
             settings.board.grid.enable.toggle();
+          }
+        });
+
+        $(window).keyup(function(e) {
+          if (testForG(e)) {
+            GKeyPressed = false;
           }
         });
       },
