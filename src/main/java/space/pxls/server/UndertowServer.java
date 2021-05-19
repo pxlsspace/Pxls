@@ -95,7 +95,7 @@ public class UndertowServer {
                 .addExactPath("/index.html", webHandler::index)
                 .addExactPath("/factions", new AllowedMethodsHandler(webHandler::getRequestingUserFactions, Methods.GET))
                 .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/")).setCacheTime(10))
-                .addPrefixPath("/emoji", Handlers.resource(new FileResourceManager(new File(App.getStorageDir().resolve("emoji").toString()))).setCacheTime(10));
+                .addPrefixPath("/emoji", Handlers.resource(new FileResourceManager(new File(App.getStorageDir().resolve("emoji").toString()))).setCacheTime(604800));
         RoutingHandler routingHandler = Handlers.routing()
             .get("/profile", webHandler::profileView)
             .get("/profile/{who}", webHandler::profileView)
