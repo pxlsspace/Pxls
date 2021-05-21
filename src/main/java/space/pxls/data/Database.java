@@ -104,7 +104,6 @@ public class Database {
                     "uid INT NOT NULL REFERENCES users(id)," +
                     "service VARCHAR(16) NOT NULL," +
                     "service_uid VARCHAR(64) NOT NULL);" +
-                    "CREATE UNIQUE INDEX IF NOT EXISTS _user_logins_uid_method_pair ON user_logins(uid, service);" +
                     "CREATE UNIQUE INDEX IF NOT EXISTS _user_logins_method_sid_pair ON user_logins(service, service_uid);")
                     .execute();
             // sessions
