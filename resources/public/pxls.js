@@ -5868,8 +5868,7 @@ window.App = (function() {
               crel('option', 'Rule 3: Spam'),
               crel('option', 'Rule 1: Chat civility'),
               crel('option', 'Rule 2: Hate Speech'),
-              crel('option', 'Rule 5/6: NSFW'),
-              crel('option', 'Rule 4: Copy/pastas'),
+              crel('option', 'Rule 5: NSFW'),
               crel('option', 'Custom')
             );
 
