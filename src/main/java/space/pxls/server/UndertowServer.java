@@ -99,10 +99,10 @@ public class UndertowServer {
         RoutingHandler routingHandler = Handlers.routing()
             .get("/profile", webHandler::profileView)
             .get("/profile/{who}", webHandler::profileView)
-            .get("/factions/{fid}", new JsonReader(webHandler::manageFactions))
-            .post("/factions", new JsonReader(webHandler::manageFactions))
-            .put("/factions/{fid}", new JsonReader(webHandler::manageFactions))
-            .delete("/factions/{fid}", new JsonReader(webHandler::manageFactions))
+            .get("/factions/{fid}", new JsonReader(new RateLimitingHandler(webHandler::manageFactions, "http:manageFactions", (int) App.getConfig().getDuration("server.limits.manageFactions.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.manageFactions.count"), App.getConfig().getBoolean("server.limits.manageFactions.global"))))
+            .post("/factions", new JsonReader(new RateLimitingHandler(webHandler::manageFactions, "http:manageFactions", (int) App.getConfig().getDuration("server.limits.manageFactions.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.manageFactions.count"), App.getConfig().getBoolean("server.limits.manageFactions.global"))))
+            .put("/factions/{fid}", new JsonReader(new RateLimitingHandler(webHandler::manageFactions, "http:manageFactions", (int) App.getConfig().getDuration("server.limits.manageFactions.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.manageFactions.count"), App.getConfig().getBoolean("server.limits.manageFactions.global"))))
+            .delete("/factions/{fid}", new JsonReader(new RateLimitingHandler(webHandler::manageFactions, "http:manageFactions", (int) App.getConfig().getDuration("server.limits.manageFactions.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.manageFactions.count"), App.getConfig().getBoolean("server.limits.manageFactions.global"))))
             .setFallbackHandler(pathHandler);
         //EncodingHandler encoder = new EncodingHandler(mainHandler, new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50, Predicates.parse("max-content-size(1024)")));
         server = Undertow.builder()

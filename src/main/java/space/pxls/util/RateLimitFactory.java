@@ -49,10 +49,18 @@ public class RateLimitFactory {
     public static class BucketConfig {
         public int resetSeconds;
         public int maxRequests;
+        public boolean global;
 
         public BucketConfig(int resetSeconds, int maxRequests) {
             this.resetSeconds = resetSeconds;
             this.maxRequests = maxRequests;
+            this.global = false;
+        }
+
+        public BucketConfig(int resetSeconds, int maxRequests, boolean global) {
+            this.resetSeconds = resetSeconds;
+            this.maxRequests = maxRequests;
+            this.global = global;
         }
 
         @Override
