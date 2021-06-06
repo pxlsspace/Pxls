@@ -120,7 +120,7 @@ Commands are entered directly into the running instance (stdin):
 - `ban <user> <reason>` - Bans the user for 24 hours, with the specified reason (if any).
 - `permaban <user> <reason>` - Permanently bans the user, with the specified reason (if any).
 - `shadowban <user> <reason>` - Shadowbans the user (hiding newly-placed pixels to all but themself), with the specified reason (if any).
-- `unban <user>` - Unbans the user.
+- `unban <user> <true/false>` - Unbans the user and reverts their pixels if true.
 - `nuke <x1> <y1> <x2> <y2> <color>` - Replaces all pixels from (`x1`, `y1`) to (`x2`, `y2`) with the color (by index).
 - `replace <x1> <y1> <x2> <y2> <from> <to>` - Replaces all pixels in the rectangle delimited by (`x1`, `y1`) to (`x2`, `y2`) from the color `from` to the color `to`
 - `cons [authed]` - Lists the total (or authed) connection count.

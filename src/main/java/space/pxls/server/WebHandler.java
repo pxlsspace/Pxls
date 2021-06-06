@@ -727,7 +727,7 @@ public class WebHandler {
                 if (data.contains("reason")) {
                     reason = data.getFirst("reason").getValue();
                 }
-                unbanTarget.unban(user_perform, reason);
+                unbanTarget.unban(user_perform, reason, true);
                 if (doLog(exchange)) {
                     App.getDatabase().insertAdminLog(user_perform.getId(), String.format("unban %s with reason %s", unbanTarget.getName(), reason.isEmpty() ? "(no reason provided)" : reason));
                 }

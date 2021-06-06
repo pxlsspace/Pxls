@@ -397,15 +397,23 @@ public class App {
                 }
             } else if (token[0].equalsIgnoreCase("unban")) {
                 if (token.length < 2) {
-                    System.out.println("Usage: unban <username> [reason]");
+                    System.out.println("Usage: unban <username> [true/false] [reason]");
                     return;
                 }
-                var rest = Arrays.copyOfRange(token, 2, token.length);
+                String[] rest = Arrays.copyOfRange(token, 2, token.length);
+                var shouldRevert = true;
+                if (token.length >= 3) {
+                    if ("true".equalsIgnoreCase(token[2]) || "false".equalsIgnoreCase(token[2])) {
+                        shouldRevert = Boolean.parseBoolean(token[2]);
+                        rest = Arrays.copyOfRange(token, 3, token.length);
+                    }
+                }
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
                     String reason = String.join(" ", rest);
                     if (reason.equals("")) reason = "Unbanned via console; no reason given";
-                    user.unban(null, reason);
+                    System.out.println(reason);
+                    user.unban(null, reason, shouldRevert);
                     database.insertServerAdminLog("unban " + user.getName());
                     System.out.println("Unbanned " + user.getName() + ".");
                 } else {

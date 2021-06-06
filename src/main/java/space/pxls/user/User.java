@@ -508,11 +508,13 @@ public class User {
         }
     }
 
-    public void unban(User whoUnbanned, String unbanReason) {
+    public void unban(User whoUnbanned, String unbanReason, boolean shouldRevert) {
         setBanExpiryTime(null);
         shadowBanned = false;
         App.getDatabase().updateUserShadowBanned(this, false);
-        App.undoRollback(this);
+        if (shouldRevert) {
+            App.undoRollback(this);
+        }
         long now = System.currentTimeMillis();
         App.getDatabase().insertBanLog(whoUnbanned == null ? 0 : whoUnbanned.getId(), this.getId(), now, null, "unban", unbanReason);
     }
