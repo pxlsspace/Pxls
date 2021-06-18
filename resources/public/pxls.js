@@ -19,157 +19,23 @@ if (window.App !== undefined) {
   instaban = true;
 }
 window.App = (function() {
-  // first we define the global helperfunctions and figure out what kind of settings our browser needs to use
-  const storageFactory = function(storageType, prefix, exdays) {
-    const getCookie = function(cookieName) {
-      let i; let x; let y; const ARRcookies = document.cookie.split(';');
-      for (i = 0; i < ARRcookies.length; i++) {
-        x = ARRcookies[i].substr(0, ARRcookies[i].indexOf('='));
-        y = ARRcookies[i].substr(ARRcookies[i].indexOf('=') + 1);
-        x = x.replace(/^\s+|\s+$/g, '');
-        if (x === cookieName) {
-          return unescape(y);
-        }
-      }
-    };
-    const setCookie = function(cookieName, value, exdays) {
-      const exdate = new Date();
-      let cookieValue = escape(value);
-      exdate.setDate(exdate.getDate() + exdays);
-      cookieValue += ((exdays == null) ? '' : '; expires=' + exdate.toUTCString());
-      document.cookie = cookieName + '=' + cookieValue;
-    };
-    const _get = function(name, haveSupport) {
-      let s;
-      if (haveSupport) {
-        s = storageType.getItem(name);
-      } else {
-        s = getCookie(prefix + name);
-      }
-      if (s === undefined) {
-        s = null;
-      }
-      return s;
-    };
-    return {
-      haveSupport: null,
-      support: function() {
-        if (this.haveSupport == null) {
-          try {
-            storageType.setItem('test', '1');
-            this.haveSupport = storageType.getItem('test') === '1';
-            storageType.removeItem('test');
-          } catch (e) {
-            this.haveSupport = false;
-          }
-        }
-        return this.haveSupport;
-      },
-      get: function(name) {
-        const s = _get(name, this.support());
-        try {
-          return JSON.parse(s);
-        } catch (e) {
-          return null;
-        }
-      },
-      has: function(name) {
-        return _get(name, this.support()) !== null;
-      },
-      set: function(name, value) {
-        value = JSON.stringify(value);
-        if (this.support()) {
-          storageType.setItem(name, value);
-        } else {
-          setCookie(prefix + name, value, exdays);
-        }
-      },
-      remove: function(name) {
-        if (this.support()) {
-          storageType.removeItem(name);
-        } else {
-          setCookie(prefix + name, '', -1);
-        }
-      }
-    };
-  };
-  const binaryAjax = async function(url) {
-    const response = await fetch(url);
-    const data = new Uint8Array(await response.arrayBuffer());
-    return data;
-  };
-  const createImageData = function(w, h) {
-    try {
-      return new ImageData(w, h);
-    } catch (e) {
-      const imgCanv = document.createElement('canvas');
-      imgCanv.width = w;
-      imgCanv.height = h;
-      return imgCanv.getContext('2d').getImageData(0, 0, w, h);
-    }
-  };
-  const intToHex = (i) => `#${('000000' + (i >>> 0).toString(16)).slice(-6)}`;
-  const hexToRGB = function(hex) {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result ? {
-      r: parseInt(result[1], 16),
-      g: parseInt(result[2], 16),
-      b: parseInt(result[3], 16)
-    } : null;
-  };
-  const analytics = function() {
-    if (window.ga) {
-      window.ga.apply(this, arguments);
-    }
-  };
-  const nua = navigator.userAgent;
-  let haveImageRendering = (function() {
-    const checkImageRendering = function(prefix, crisp, pixelated, optimizeContrast) {
-      const d = document.createElement('div');
-      if (crisp) {
-        d.style.imageRendering = prefix + 'crisp-edges';
-        if (d.style.imageRendering === prefix + 'crisp-edges') {
-          return true;
-        }
-      }
-      if (pixelated) {
-        d.style.imageRendering = prefix + 'pixelated';
-        if (d.style.imageRendering === prefix + 'pixelated') {
-          return true;
-        }
-      }
-      if (optimizeContrast) {
-        d.style.imageRendering = prefix + 'optimize-contrast';
-        if (d.style.imageRendering === prefix + 'optimize-contrast') {
-          return true;
-        }
-      }
-      return false;
-    };
-    return checkImageRendering('', true, true, false) || checkImageRendering('-o-', true, false, false) || checkImageRendering('-moz-', true, false, false) || checkImageRendering('-webkit-', true, false, true);
-  })();
-  let haveZoomRendering = false;
-  const webkitBased = nua.match(/AppleWebKit/i);
-  const iOSSafari = (nua.match(/(iPod|iPhone|iPad)/i) && webkitBased);
-  const desktopSafari = (nua.match(/safari/i) && !nua.match(/chrome/i));
-  const msEdge = nua.indexOf('Edge') > -1;
-  const possiblyMobile = window.innerWidth < 768 && nua.includes('Mobile');
-  if (iOSSafari) {
-    const iOS = parseFloat(
-      ('' + (/CPU.*OS ([0-9_]{1,5})|(CPU like).*AppleWebKit.*Mobile/i.exec(navigator.userAgent) || [0, ''])[1])
-        .replace('undefined', '3_2').replace('_', '.').replace('_', '')
-    ) || false;
-    haveImageRendering = false;
-    if (iOS >= 11) {
-      haveZoomRendering = true;
-    }
-  } else if (desktopSafari) {
-    haveImageRendering = false;
-    haveZoomRendering = true;
-  }
-  if (msEdge) {
-    haveImageRendering = false;
-  }
+  const {
+    storageFactory,
+    binaryAjax,
+    createImageData,
+    intToHex,
+    hexToRGB,
+    analytics,
+    flags
+  } = require('./include/helpers.js');
+
+  const {
+    haveZoomRendering,
+    webkitBased,
+    possiblyMobile,
+    haveImageRendering
+  } = flags;
+
   const TH = (function() { // place typeahead in its own pseudo namespace
     /**
      *
