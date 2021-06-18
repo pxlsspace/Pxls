@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "dependencies": {
+    "@babel/core": "^7.14.6",
+    "@babel/preset-env": "^7.14.5",
+    "babelify": "^10.0.0",
+    "browserify": "^17.0.0",
     "eslint": "^7.15.0",
     "eslint-config-semistandard": "^15.0.0",
     "eslint-config-standard": "^14.1.0",
@@ -11,11 +15,13 @@
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
     "gulp": "^4.0.2",
+    "gulp-buffer": "^0.0.2",
     "gulp-clean-css": "^4.2.0",
     "gulp-eslint": "git://github.com/pxlsspace/gulp-eslint.git",
     "gulp-if": "^3.0.0",
     "gulp-minify": "git://github.com/pxlsspace/gulp-minify.git",
     "gulp-sourcemaps": "^2.6.5",
+    "gulp-tap": "^2.0.0",
     "merge-stream": "^2.0.0"
   }
 }
