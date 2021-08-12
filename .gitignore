@@ -28,3 +28,4 @@ extras/reset/checklist.py
 node/
 node_modules/
 .factorypath
+*~
