@@ -186,7 +186,10 @@
             target: '_blank'
           }, data.username)],
           ['Profile', crel('a', { href: `/profile/${data.username}`, target: '_blank' }, data.username)],
-          ['Login', data.login],
+          ['Logins', data.logins
+            ? data.logins.map(({ serviceID, serviceUserID }) => `${serviceID}:${serviceUserID}`).join(', ')
+            : null
+          ],
           ['Roles', data.roles.map(role => role.name).join(', ')],
           ['Pixels', data.pixelCount],
           ['All Time Pixels', data.pixelCountAllTime],
@@ -208,10 +211,14 @@
         }
         self.elements.check.empty().append(
           $('<div>').addClass('content').append(
-            $.map(items, function (o) {
+            $.map(items, function ([name, value]) {
+              if (value == null) {
+                return null;
+              }
+
               return $('<div>').append(
-                $('<b>').text(o[0] + ': '),
-                typeof o[1] === 'string' ? $('<span>').text(o[1]) : o[1]
+                $('<b>').text(name + ': '),
+                typeof value === 'string' ? $('<span>').text(value) : value
               );
             }),
             (admin.user.hasPermission('user.alert') ? $('<div>').append(sendAlert(data.username)) : ''),
@@ -436,21 +443,29 @@
             : null
         });
         App.lookup.registerHook({
-          id: 'login',
-          name: 'Login',
+          id: 'logins',
+          name: 'Logins',
           sensitive: true,
           get: data => {
-            const addMonoClass = localStorage.getItem('monospace_lookup') === 'true' ? ' useMono' : '';
-            return $('<div class="monoVal' + addMonoClass + '">').text(data.login);
+            if (data.logins == null) {
+              return null;
+            }
+
+            const elems = $('<div>');
+            for (let i = 0; i < data.logins.length; i++) {
+              const login = data.logins[i];
+              elems.append($('<span>').text(`${login.serviceID}:${login.serviceUserID}`));
+              if (i !== data.logins.length - 1) {
+                elems.append(', ');
+              }
+            }
+            return elems;
           }
         }, {
           id: 'user_agent',
           name: 'User Agent',
           sensitive: true,
-          get: data => {
-            const addMonoClass = localStorage.getItem('monospace_lookup') === 'true' ? ' useMono' : '';
-            return $('<div class="monoVal' + addMonoClass + '">').text(data.userAgent);
-          }
+          get: data => $('<div>').text(data.userAgent)
         }, {
           id: 'alert',
           name: 'Send Alert',

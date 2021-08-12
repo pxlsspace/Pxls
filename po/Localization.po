@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-02-10T16:50:37.653Z\n"
+"POT-Creation-Date: 2021-08-12T13:23:05.243Z\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -85,8 +85,8 @@ msgstr "Info"
 
 #: resources/public/pebble_templates/index.html:168:66
 #: resources/public/pebble_templates/index.html:206:66
-#: resources/public/pebble_templates/index.html:717:66
-#: resources/public/pebble_templates/index.html:730:66
+#: resources/public/pebble_templates/index.html:733:66
+#: resources/public/pebble_templates/index.html:746:66
 msgid "Close Panel"
 msgstr "Close Panel"
 
@@ -130,7 +130,7 @@ msgstr "general"
 
 #. General settings
 #: resources/public/pebble_templates/index.html:222:28
-#: resources/public/pebble_templates/index.html:620:28
+#: resources/public/pebble_templates/index.html:636:28
 msgid "General"
 msgstr "General"
 
@@ -286,7 +286,7 @@ msgid "templates;guides"
 msgstr "templates;guides"
 
 #: resources/public/pebble_templates/index.html:244:28
-#: resources/public/pebble_templates/index.html:563:24
+#: resources/public/pebble_templates/index.html:579:24
 msgid "Template"
 msgstr "Template"
 
@@ -416,124 +416,124 @@ msgid "Enable palette stacking"
 msgstr "Enable palette stacking"
 
 #: resources/public/pebble_templates/index.html:331:44
-msgid "enable monospace;disable monospace"
-msgstr "enable monospace;disable monospace"
-
-#: resources/public/pebble_templates/index.html:334:57
-msgid "Toggle monospace font for lookups"
-msgstr "Toggle monospace font for lookups"
-
-#: resources/public/pebble_templates/index.html:337:44
 msgid "floating bubble location"
 msgstr "floating bubble location"
 
-#: resources/public/pebble_templates/index.html:339:57
+#: resources/public/pebble_templates/index.html:333:57
 msgid "Bubble position:"
 msgstr "Bubble position:"
 
-#: resources/public/pebble_templates/index.html:341:61
+#: resources/public/pebble_templates/index.html:335:61
 msgid "Top left"
 msgstr "Top left"
 
-#: resources/public/pebble_templates/index.html:342:62
+#: resources/public/pebble_templates/index.html:336:62
 msgid "Top right"
 msgstr "Top right"
 
-#: resources/public/pebble_templates/index.html:343:73
+#: resources/public/pebble_templates/index.html:337:73
 msgid "Bottom left"
 msgstr "Bottom left"
 
-#: resources/public/pebble_templates/index.html:344:65
+#: resources/public/pebble_templates/index.html:338:65
 msgid "Bottom right"
 msgstr "Bottom right"
 
-#: resources/public/pebble_templates/index.html:348:44
+#: resources/public/pebble_templates/index.html:342:44
 msgid "broken;offset workaround"
 msgstr "broken;offset workaround"
 
-#: resources/public/pebble_templates/index.html:351:57
+#: resources/public/pebble_templates/index.html:345:57
 msgid "Attempt to fix canvas displacement bug in Chrome 78+"
 msgstr "Attempt to fix canvas displacement bug in Chrome 78+"
 
-#: resources/public/pebble_templates/index.html:357:36
+#: resources/public/pebble_templates/index.html:351:36
 msgid "chat;message;ping sound"
 msgstr "chat;message;ping sound"
 
-#: resources/public/pebble_templates/index.html:359:24
+#: resources/public/pebble_templates/index.html:353:24
 msgid "Chat Settings"
 msgstr "Chat Settings"
 
-#: resources/public/pebble_templates/index.html:362:44
+#: resources/public/pebble_templates/index.html:356:44
 msgid "username;color;colour"
 msgstr "username;color;colour"
 
-#: resources/public/pebble_templates/index.html:365:57
+#: resources/public/pebble_templates/index.html:359:57
 msgid "Username Color:"
 msgstr "Username Color:"
 
-#: resources/public/pebble_templates/index.html:371:44
+#: resources/public/pebble_templates/index.html:365:44
 msgid "chat message;chat ui"
 msgstr "chat message;chat ui"
 
-#: resources/public/pebble_templates/index.html:372:28
+#: resources/public/pebble_templates/index.html:366:28
 msgid "Interface"
 msgstr "Interface"
 
-#: resources/public/pebble_templates/index.html:373:44
+#: resources/public/pebble_templates/index.html:367:44
 msgid "chat size;chat font"
 msgstr "chat size;chat font"
 
-#: resources/public/pebble_templates/index.html:375:57
+#: resources/public/pebble_templates/index.html:369:57
 msgid "Font Size:"
 msgstr "Font Size:"
 
-#: resources/public/pebble_templates/index.html:379:44
+#: resources/public/pebble_templates/index.html:373:44
 msgid "time;timestamps"
 msgstr "time;timestamps"
 
-#: resources/public/pebble_templates/index.html:382:57
+#: resources/public/pebble_templates/index.html:376:57
 msgid "24 Hour Timestamps"
 msgstr "24 Hour Timestamps"
 
-#: resources/public/pebble_templates/index.html:385:44
+#: resources/public/pebble_templates/index.html:379:44
 msgid "badges;pixel count;pixels placed"
 msgstr "badges;pixel count;pixels placed"
 
-#: resources/public/pebble_templates/index.html:388:57
+#: resources/public/pebble_templates/index.html:382:57
 msgid "Show pixel-placed badges"
 msgstr "Show pixel-placed badges"
 
-#: resources/public/pebble_templates/index.html:391:44
+#: resources/public/pebble_templates/index.html:385:44
 msgid "badges;factions"
 msgstr "badges;factions"
 
-#: resources/public/pebble_templates/index.html:394:57
+#: resources/public/pebble_templates/index.html:388:57
 msgid "Show faction tags"
 msgstr "Show faction tags"
 
-#: resources/public/pebble_templates/index.html:397:44
+#: resources/public/pebble_templates/index.html:391:44
 msgid "template urls;template links;template name"
 msgstr "template urls;template links;template name"
 
-#: resources/public/pebble_templates/index.html:400:57
+#: resources/public/pebble_templates/index.html:394:57
 msgid "Replace template titles with URLs in chat where applicable"
 msgstr "Replace template titles with URLs in chat where applicable"
 
-#: resources/public/pebble_templates/index.html:403:44
+#: resources/public/pebble_templates/index.html:397:44
 msgid "chat orientation;chat position"
 msgstr "chat orientation;chat position"
 
-#: resources/public/pebble_templates/index.html:406:57
+#: resources/public/pebble_templates/index.html:400:57
 msgid "Enable horizontal chat"
 msgstr "Enable horizontal chat"
 
-#: resources/public/pebble_templates/index.html:409:44
+#: resources/public/pebble_templates/index.html:403:44
 msgid "banner;animation"
 msgstr "banner;animation"
 
-#: resources/public/pebble_templates/index.html:412:57
+#: resources/public/pebble_templates/index.html:406:57
 msgid "Enable the rotating banner under chat"
 msgstr "Enable the rotating banner under chat"
+
+#: resources/public/pebble_templates/index.html:409:44
+msgid "max;messages;truncate"
+msgstr "max;messages;truncate"
+
+#: resources/public/pebble_templates/index.html:411:57
+msgid "Maximum amount of chat messages:"
+msgstr "Maximum amount of chat messages:"
 
 #: resources/public/pebble_templates/index.html:415:44
 msgid "link;url;behaviour"
@@ -684,268 +684,302 @@ msgid "Zoom sensitivity:"
 msgstr "Zoom sensitivity:"
 
 #: resources/public/pebble_templates/index.html:512:44
-msgid "zooming limit;scrolling limit;mousewheel;zooming maximum"
-msgstr "zooming limit;scrolling limit;mousewheel;zooming maximum"
+#, fuzzy
+msgid "zooming limit;scrolling limit;mousewheel;zooming minimum;zooming maximum"
+msgstr "zooming limit;scrolling limit;mousewheel;zooming minimum;zooming maximum"
 
-#: resources/public/pebble_templates/index.html:515:57
-msgid "Limit zoom to 50x"
-msgstr "Limit zoom to 50x"
+#: resources/public/pebble_templates/index.html:514:57
+msgid "Minimum scale:"
+msgstr "Minimum scale:"
 
-#: resources/public/pebble_templates/index.html:518:44
+#: resources/public/pebble_templates/index.html:518:57
+msgid "Maximum scale:"
+msgstr "Maximum scale:"
+
+#: resources/public/pebble_templates/index.html:522:44
 msgid "rounding;zooming;scrolling;mousewheel;integer;decimal"
 msgstr "rounding;zooming;scrolling;mousewheel;integer;decimal"
 
-#: resources/public/pebble_templates/index.html:521:57
+#: resources/public/pebble_templates/index.html:525:57
 msgid "Round zoom values to nearest whole number"
 msgstr "Round zoom values to nearest whole number"
 
-#: resources/public/pebble_templates/index.html:525:44
+#: resources/public/pebble_templates/index.html:529:44
 msgid "controls;miscellaneous"
 msgstr "controls;miscellaneous"
 
-#: resources/public/pebble_templates/index.html:530:57
+#: resources/public/pebble_templates/index.html:534:57
 msgid "Lock the canvas (disallow canvas drag/zoom with mouse/fingers)"
 msgstr "Lock the canvas (disallow canvas drag/zoom with mouse/fingers)"
 
-#: resources/public/pebble_templates/index.html:533:44
+#: resources/public/pebble_templates/index.html:537:44
 msgid "MMB picker;mouse picker;selection;palette picker"
 msgstr "MMB picker;mouse picker;selection;palette picker"
 
-#: resources/public/pebble_templates/index.html:536:57
+#: resources/public/pebble_templates/index.html:540:57
 msgid "Enable middle mouse button selecting color from board"
 msgstr "Enable middle mouse button selecting color from board"
 
-#: resources/public/pebble_templates/index.html:542:36
+#: resources/public/pebble_templates/index.html:543:44
+msgid "right click action"
+msgstr "right click action"
+
+#: resources/public/pebble_templates/index.html:545:57
+msgid "Right-click action:"
+msgstr "Right-click action:"
+
+#: resources/public/pebble_templates/index.html:547:60
+msgid "Nothing"
+msgstr "Nothing"
+
+#: resources/public/pebble_templates/index.html:548:58
+msgid "Clear color"
+msgstr "Clear color"
+
+#: resources/public/pebble_templates/index.html:549:57
+msgid "Copy color"
+msgstr "Copy color"
+
+#: resources/public/pebble_templates/index.html:550:59
+#, fuzzy
+msgid "Lookup"
+msgstr "lookups"
+
+#: resources/public/pebble_templates/index.html:551:64
+msgid "Clear color + Lookup"
+msgstr "Clear color + Lookup"
+
+#: resources/public/pebble_templates/index.html:558:36
 msgid "snapshots;screenshot;download;picture;canvas"
 msgstr "snapshots;screenshot;download;picture;canvas"
 
-#: resources/public/pebble_templates/index.html:544:24
+#: resources/public/pebble_templates/index.html:560:24
 msgid "Snapshot Settings"
 msgstr "Snapshot Settings"
 
-#: resources/public/pebble_templates/index.html:547:44
+#: resources/public/pebble_templates/index.html:563:44
 msgid "screenshot;snapshot;download;board;canvas"
 msgstr "screenshot;snapshot;download;board;canvas"
 
-#: resources/public/pebble_templates/index.html:548:44
+#: resources/public/pebble_templates/index.html:564:44
 msgid "take screenshot;image;download format;picture;canvas;board"
 msgstr "take screenshot;image;download format;picture;canvas;board"
 
-#: resources/public/pebble_templates/index.html:550:57
+#: resources/public/pebble_templates/index.html:566:57
 msgid "Snapshot image format:"
 msgstr "Snapshot image format:"
 
-#: resources/public/pebble_templates/index.html:552:71
+#: resources/public/pebble_templates/index.html:568:71
 msgid "PNG"
 msgstr "PNG"
 
-#: resources/public/pebble_templates/index.html:553:63
+#: resources/public/pebble_templates/index.html:569:63
 msgid "JPEG"
 msgstr "JPEG"
 
-#: resources/public/pebble_templates/index.html:554:63
+#: resources/public/pebble_templates/index.html:570:63
 msgid "WEBP (Chrome only)"
 msgstr "WEBP (Chrome only)"
 
-#: resources/public/pebble_templates/index.html:561:36
+#: resources/public/pebble_templates/index.html:577:36
 msgid "templates;overlays;guides"
 msgstr "templates;overlays;guides"
 
-#: resources/public/pebble_templates/index.html:566:44
+#: resources/public/pebble_templates/index.html:582:44
 msgid "templates;overlays;image;pixel art"
 msgstr "templates;overlays;image;pixel art"
 
-#: resources/public/pebble_templates/index.html:567:44
+#: resources/public/pebble_templates/index.html:583:44
 msgid "template enabled;template disabled;show template;hide template;template shown;template hidden"
 msgstr "template enabled;template disabled;show template;hide template;template shown;template hidden"
 
-#: resources/public/pebble_templates/index.html:570:57
+#: resources/public/pebble_templates/index.html:586:57
 msgid "Use template"
 msgstr "Use template"
 
-#: resources/public/pebble_templates/index.html:573:27
+#: resources/public/pebble_templates/index.html:589:27
 msgid "Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around"
 msgstr "Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around"
 
-#: resources/public/pebble_templates/index.html:574:44
+#: resources/public/pebble_templates/index.html:590:44
 msgid "template title;template name;tab name;tab title;title="
 msgstr "template title;template name;tab name;tab title;title="
 
-#: resources/public/pebble_templates/index.html:576:57
+#: resources/public/pebble_templates/index.html:592:57
 msgid "Title:"
 msgstr "Title:"
 
-#: resources/public/pebble_templates/index.html:580:44
+#: resources/public/pebble_templates/index.html:596:44
 msgid "template location;template source;template="
 msgstr "template location;template source;template="
 
-#: resources/public/pebble_templates/index.html:582:57
+#: resources/public/pebble_templates/index.html:598:57
 msgid "URL:"
 msgstr "URL:"
 
-#: resources/public/pebble_templates/index.html:587:44
+#: resources/public/pebble_templates/index.html:603:44
 msgid "template position;template x;template y;template location; template vertical; template horizontal;ox=;oy="
 msgstr "template position;template x;template y;template location; template vertical; template horizontal;ox=;oy="
 
-#: resources/public/pebble_templates/index.html:589:57
+#: resources/public/pebble_templates/index.html:605:57
 msgid "Horizontal position:"
 msgstr "Horizontal position:"
 
-#: resources/public/pebble_templates/index.html:593:57
+#: resources/public/pebble_templates/index.html:609:57
 msgid "Vertical position:"
 msgstr "Vertical position:"
 
-#: resources/public/pebble_templates/index.html:597:44
+#: resources/public/pebble_templates/index.html:613:44
 msgid "template transparency;template opacity;oo="
 msgstr "template transparency;template opacity;oo="
 
-#: resources/public/pebble_templates/index.html:599:57
+#: resources/public/pebble_templates/index.html:615:57
 msgid "Opacity:"
 msgstr "Opacity:"
 
-#: resources/public/pebble_templates/index.html:604:44
+#: resources/public/pebble_templates/index.html:620:44
 msgid "template width;tw="
 msgstr "template width;tw="
 
-#: resources/public/pebble_templates/index.html:606:57
+#: resources/public/pebble_templates/index.html:622:57
 msgid "Width:"
 msgstr "Width:"
 
-#: resources/public/pebble_templates/index.html:609:82
-#: resources/public/pebble_templates/index.html:644:79
+#: resources/public/pebble_templates/index.html:625:82
+#: resources/public/pebble_templates/index.html:660:79
 msgid "Reset"
 msgstr "Reset"
 
-#: resources/public/pebble_templates/index.html:614:36
+#: resources/public/pebble_templates/index.html:630:36
 msgid "sound;notification;alert;notify;ping"
 msgstr "sound;notification;alert;notify;ping"
 
-#: resources/public/pebble_templates/index.html:616:24
+#: resources/public/pebble_templates/index.html:632:24
 msgid "Sound and Notification Settings"
 msgstr "Sound and Notification Settings"
 
-#: resources/public/pebble_templates/index.html:621:44
+#: resources/public/pebble_templates/index.html:637:44
 msgid "audio;mute;noise;volume"
 msgstr "audio;mute;noise;volume"
 
-#: resources/public/pebble_templates/index.html:624:57
+#: resources/public/pebble_templates/index.html:640:57
 msgid "Enable sound"
 msgstr "Enable sound"
 
-#: resources/public/pebble_templates/index.html:627:44
+#: resources/public/pebble_templates/index.html:643:44
 msgid "notifs;notify;pixel notification"
 msgstr "notifs;notify;pixel notification"
 
-#: resources/public/pebble_templates/index.html:630:57
+#: resources/public/pebble_templates/index.html:646:57
 msgid "Enable pixel available notification"
 msgstr "Enable pixel available notification"
 
-#: resources/public/pebble_templates/index.html:634:44
+#: resources/public/pebble_templates/index.html:650:44
 msgid "notification;pixel ready;alert"
 msgstr "notification;pixel ready;alert"
 
-#: resources/public/pebble_templates/index.html:635:28
+#: resources/public/pebble_templates/index.html:651:28
 msgid "Pixel Ready Notification"
 msgstr "Pixel Ready Notification"
 
-#: resources/public/pebble_templates/index.html:636:44
+#: resources/public/pebble_templates/index.html:652:44
 msgid "alert source;notify url;notify source;notification url;notification source"
 msgstr "alert source;notify url;notify source;notification url;notification source"
 
-#: resources/public/pebble_templates/index.html:638:57
+#: resources/public/pebble_templates/index.html:654:57
 msgid "Alert URL:"
 msgstr "Alert URL:"
 
-#: resources/public/pebble_templates/index.html:642:85
+#: resources/public/pebble_templates/index.html:658:85
 msgid "Update"
 msgstr "Update"
 
-#: resources/public/pebble_templates/index.html:643:83
+#: resources/public/pebble_templates/index.html:659:83
 msgid "Test"
 msgstr "Test"
 
-#: resources/public/pebble_templates/index.html:647:44
+#: resources/public/pebble_templates/index.html:663:44
 msgid "sound level;audio level;mute audio;mute sound"
 msgstr "sound level;audio level;mute audio;mute sound"
 
-#: resources/public/pebble_templates/index.html:649:57
+#: resources/public/pebble_templates/index.html:665:57
 msgid "Volume:"
 msgstr "Volume:"
 
-#: resources/public/pebble_templates/index.html:654:44
+#: resources/public/pebble_templates/index.html:670:44
 msgid "alert forewarning;alert delay; notification delay; notification forewarning"
 msgstr "alert forewarning;alert delay; notification delay; notification forewarning"
 
-#: resources/public/pebble_templates/index.html:656:57
+#: resources/public/pebble_templates/index.html:672:57
 msgid "Delay (seconds):"
 msgstr "Delay (seconds):"
 
-#: resources/public/pebble_templates/index.html:661:44
+#: resources/public/pebble_templates/index.html:677:44
 msgid "chat mentions;chat pings;chat sound"
 msgstr "chat mentions;chat pings;chat sound"
 
-#: resources/public/pebble_templates/index.html:662:28
+#: resources/public/pebble_templates/index.html:678:28
 msgid "Chat Pings"
 msgstr "Chat Pings"
 
-#: resources/public/pebble_templates/index.html:666:57
+#: resources/public/pebble_templates/index.html:682:57
 msgid "Enable pings"
 msgstr "Enable pings"
 
-#: resources/public/pebble_templates/index.html:669:44
+#: resources/public/pebble_templates/index.html:685:44
 msgid "mention sound"
 msgstr "mention sound"
 
-#: resources/public/pebble_templates/index.html:671:57
+#: resources/public/pebble_templates/index.html:687:57
 msgid "Play sound on ping:"
 msgstr "Play sound on ping:"
 
-#: resources/public/pebble_templates/index.html:673:56
+#: resources/public/pebble_templates/index.html:689:56
 msgid "Off"
 msgstr "Off"
 
-#: resources/public/pebble_templates/index.html:674:61
+#: resources/public/pebble_templates/index.html:690:61
 msgid "Only when necessary"
 msgstr "Only when necessary"
 
-#: resources/public/pebble_templates/index.html:675:59
+#: resources/public/pebble_templates/index.html:691:59
 msgid "Always"
 msgstr "Always"
 
-#: resources/public/pebble_templates/index.html:679:44
+#: resources/public/pebble_templates/index.html:695:44
 msgid "mention sound volume"
 msgstr "mention sound volume"
 
-#: resources/public/pebble_templates/index.html:681:57
+#: resources/public/pebble_templates/index.html:697:57
 msgid "Ping sound volume:"
 msgstr "Ping sound volume:"
 
-#: resources/public/pebble_templates/index.html:689:36
+#: resources/public/pebble_templates/index.html:705:36
 msgid "personal account"
 msgstr "personal account"
 
-#: resources/public/pebble_templates/index.html:691:24
+#: resources/public/pebble_templates/index.html:707:24
 msgid "Account Settings"
 msgstr "Account Settings"
 
-#: resources/public/pebble_templates/index.html:697:57
+#: resources/public/pebble_templates/index.html:713:57
 msgid "Public Discord name:"
 msgstr "Public Discord name:"
 
-#: resources/public/pebble_templates/index.html:701:83
+#: resources/public/pebble_templates/index.html:717:83
 msgid "Set"
 msgstr "Set"
 
-#: resources/public/pebble_templates/index.html:702:86
+#: resources/public/pebble_templates/index.html:718:86
 msgid "Remove"
 msgstr "Remove"
 
 #. FAQ panel
-#: resources/public/pebble_templates/index.html:715:65
+#: resources/public/pebble_templates/index.html:731:65
 msgid "Help"
 msgstr "Help"
 
-#: resources/public/pebble_templates/index.html:728:54
+#: resources/public/pebble_templates/index.html:744:54
 msgid "Notifications"
 msgstr "Notifications"
 
@@ -1234,7 +1268,7 @@ msgstr "Donate"
 msgid "Donations are not accepted at this time, but this panel will be updated when they're open again!"
 msgstr "Donations are not accepted at this time, but this panel will be updated when they're open again!"
 
-#. eg "Alice's profile". Double singlequote is a java thing - needed if a replacement contains a singlequote.
+#. eg "Alice's profile". Double singlequote is a java thing - needed if a replacement (such as this) contains a singlequote.
 #: resources/public/pebble_templates/profile.html:31:66
 #: resources/public/pebble_templates/profile.html:50:131
 msgid "{0}''s Profile"

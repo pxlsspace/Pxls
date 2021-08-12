@@ -648,6 +648,10 @@ public class WebHandler {
         }
     }
 
+    public AuthService getAuthServiceByID(String id) {
+        return services.get(id);
+    }
+
     private String getBanReason(HttpServerExchange exchange) {
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         FormData.FormValue reason = data.getFirst("reason");
@@ -736,7 +740,7 @@ public class WebHandler {
                 if (data.contains("reason")) {
                     reason = data.getFirst("reason").getValue();
                 }
-                unbanTarget.unban(user_perform, reason);
+                unbanTarget.unban(user_perform, reason, true);
                 if (doLog(exchange)) {
                     App.getDatabase().insertAdminLog(user_perform.getId(), String.format("unban %s with reason %s", unbanTarget.getName(), reason.isEmpty() ? "(no reason provided)" : reason));
                 }
@@ -1536,16 +1540,16 @@ public class WebHandler {
             if (user != null) {
                 exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
                 exchange.getResponseSender().send(App.getGson().toJson(
-                    new ServerUserInfo(
+                    new ExtendedUserInfo(
                         user.getName(),
-                        user.getLogin(),
                         user.getAllRoles(),
+                        user.getLogins(),
                         user.getPixelCount(),
                         user.getAllTimePixelCount(),
                         user.isBanned(),
                         user.getBanExpiryTime(),
                         user.getBanReason(),
-                        user.getLogin().split(":")[0],
+                        user.loginsWithIP() ? "ip" : "service",
                         user.getPlaceOverrides(),
                         !user.canChat(),
                         App.getDatabase().getChatBanReason(user.getId()),
@@ -1709,12 +1713,11 @@ public class WebHandler {
             }
 
             if (identifier != null) {
-                String login = id + ":" + identifier;
-                User user = App.getUserManager().getByLogin(login);
+                User user = App.getUserManager().getByLogin(id, identifier);
                 // If there is no user with that identifier, we make a signup token and tell the client to sign up with that token
                 if (user == null) {
                     if (service.isRegistrationEnabled()) {
-                        String signUpToken = App.getUserManager().generateUserCreationToken(login);
+                        String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin(id, identifier));
                         if (redirect) {
                             redirect(exchange, String.format("/auth_done.html?token=%s&signup=true", encodedURIComponent(signUpToken)));
                         } else {
@@ -1860,6 +1863,11 @@ public class WebHandler {
     public void lookup(HttpServerExchange exchange) {
         User user = exchange.getAttachment(AuthReader.USER);
 
+        if (user.isBanned()) {
+            send(StatusCodes.FORBIDDEN, exchange, "");
+            return;
+        }
+
         Deque<String> xq = exchange.getQueryParameters().get("x");
         Deque<String> yq = exchange.getQueryParameters().get("y");
 
@@ -1888,9 +1896,9 @@ public class WebHandler {
 
         Lookup lookup;
         if (user != null && user.hasPermission("board.check")) {
-            lookup = ExtendedLookup.fromDB(App.getDatabase().getFullPixelAt(x, y).orElse(null));
+            lookup = ExtendedLookup.fromDB(x, y);
         } else {
-            lookup = Lookup.fromDB(App.getDatabase().getPixelAt(x, y).orElse(null));
+            lookup = Lookup.fromDB(x, y);
             if (lookup != null && App.getSnipMode()) {
                 lookup = lookup.asSnipRedacted();
             }

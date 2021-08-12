@@ -59,14 +59,13 @@ public class PacketHandler {
         if (user != null) {
             server.send(channel, new ServerUserInfo(
                     user.getName(),
-                    user.getLogin(),
                     user.getAllRoles(),
                     user.getPixelCount(),
                     user.getAllTimePixelCount(),
                     user.isBanned(),
                     user.getBanExpiryTime(),
                     user.getBanReason(),
-                    user.getLogin().split(":")[0],
+                    user.loginsWithIP() ? "ip" : "service",
                     user.getPlaceOverrides(),
                     user.isChatbanned(),
                     App.getDatabase().getChatBanReason(user.getId()),
@@ -113,7 +112,7 @@ public class PacketHandler {
         if (obj instanceof ClientShadowBanMe) handleShadowBanMe(channel, user, ((ClientShadowBanMe) obj));
         if (obj instanceof ClientBanMe) handleBanMe(channel, user, ((ClientBanMe) obj));
         if (App.isChatEnabled()) {
-            if (obj instanceof ClientChatHistory && user.hasPermission("chat.history")) handleChatHistory(channel, user, ((ClientChatHistory) obj));
+            if (obj instanceof ClientChatHistory && user.hasPermission("chat.history") && !user.isBanned()) handleChatHistory(channel, user, ((ClientChatHistory) obj));
             if (obj instanceof ClientChatbanState) handleChatbanState(channel, user, ((ClientChatbanState) obj));
             if (obj instanceof ClientChatMessage && user.hasPermission("chat.send")) handleChatMessage(channel, user, ((ClientChatMessage) obj));
             if (obj instanceof ClientChatLookup && user.hasPermission("chat.lookup")) handleChatLookup(channel, user, ((ClientChatLookup) obj));

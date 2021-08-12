@@ -110,6 +110,9 @@ Commands are entered directly into the running instance (stdin):
 
 - `reload` - Reloads the main configuration, applying _most_ changes immediately. Also reloads the user and faction cache.
 - `save` - Saves the map.
+- `logins <username> [{service ID}:{service user ID} ...]` - Gets or sets the user's login method(s).
+- `addlogins <username> <{service ID}:{service user ID} ...>` - Adds login method(s) to the user.
+- `removelogins <username> <service ID ...>` - Removes login method(s) from the user.
 - `roles <username> [role ID ...]` - Gets or sets the user's role(s).
 - `addroles <username> <role ID ...>` - Adds role(s) to the user.
 - `removeroles <username> <role ID ...>` - Removes role(s) from the user.
@@ -117,7 +120,7 @@ Commands are entered directly into the running instance (stdin):
 - `ban <user> <reason>` - Bans the user for 24 hours, with the specified reason (if any).
 - `permaban <user> <reason>` - Permanently bans the user, with the specified reason (if any).
 - `shadowban <user> <reason>` - Shadowbans the user (hiding newly-placed pixels to all but themself), with the specified reason (if any).
-- `unban <user>` - Unbans the user.
+- `unban <user> [true/false] [reason]` - Unbans the user with the specified reason and reverts their pixels if true.
 - `nuke <x1> <y1> <x2> <y2> <color>` - Replaces all pixels from (`x1`, `y1`) to (`x2`, `y2`) with the color (by index).
 - `replace <x1> <y1> <x2> <y2> <from> <to>` - Replaces all pixels in the rectangle delimited by (`x1`, `y1`) to (`x2`, `y2`) from the color `from` to the color `to`
 - `cons [authed]` - Lists the total (or authed) connection count.

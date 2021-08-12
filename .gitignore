@@ -27,3 +27,4 @@ extras/reset/checklist.py
 /.vs/VSWorkspaceState.json
 node/
 node_modules/
+.factorypath

@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class UserManager {
     private Map<String, User> usersByToken = new ConcurrentHashMap<>();
-    private Map<String, String> userSignupTokens = new ConcurrentHashMap<>();
+    private Map<String, UserLogin> userSignupTokens = new ConcurrentHashMap<>();
 
     private Map<Integer, User> userCache = new ConcurrentHashMap<>();
 
@@ -52,19 +52,23 @@ public class UserManager {
         return u;
     }
 
-    public User getByLogin(String login) {
-        return getByDB(App.getDatabase().getUserByLogin(login));
+    public User getByLogin(String service, String sid) {
+        return getByDB(App.getDatabase().getUserByLogin(service, sid));
     }
 
     public User getByID(int uid) {
         return getByDB(App.getDatabase().getUserByID(uid));
     }
 
+    public User getSnipByIP(String ip) {
+        return getByDB(App.getDatabase().getSnipUserByIP(ip));
+    }
+
     private User getByDB(Optional<DBUser> optionalUser) {
         if (!optionalUser.isPresent()) return null;
         DBUser user = optionalUser.get();
         List<Role> roles = App.getDatabase().getUserRoles(user.id);
-        return userCache.computeIfAbsent(user.id, (k) -> new User(user.id, user.stacked, user.username, user.login, user.signup_time, user.cooldownExpiry, roles, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.shadowBanned, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked));
+        return userCache.computeIfAbsent(user.id, (k) -> new User(user.id, user.stacked, user.username, user.signup_time, user.cooldownExpiry, roles, user.loginWithIP, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.shadowBanned, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked));
     }
 
     public String logIn(User user, String ip) {
@@ -75,7 +79,7 @@ public class UserManager {
         return token;
     }
 
-    public String generateUserCreationToken(String login) {
+    public String generateUserCreationToken(UserLogin login) {
         String token = Util.generateRandomToken();
         userSignupTokens.put(token, login);
         return token;
@@ -86,13 +90,13 @@ public class UserManager {
     }
 
     public User signUp(String name, String token, String ip) {
-        String login = userSignupTokens.get(token);
+        UserLogin login = userSignupTokens.get(token);
         if (login == null) return null;
 
         if (!App.getDatabase().getUserByName(name).isPresent()) {
-            Optional<DBUser> user = App.getDatabase().createUser(name, login, ip);
+            DBUser user = App.getDatabase().createUser(name, login, ip);
             userSignupTokens.remove(token);
-            return getByDB(user);
+            return getByDB(Optional.of(user));
         }
         return null;
     }

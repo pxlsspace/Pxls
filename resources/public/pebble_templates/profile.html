@@ -75,7 +75,7 @@
                                 <tbody>
                                     <tr>
                                         <th class="text-right pr-3">{{i18n('Localization', 'Registration Date') | raw}}</th>
-                                        <td class="text-left">{{profile_of.signupTime | date("LLL d, y, hh:mm:s a (z)")}}</td>
+                                        <td class="text-left">{{profile_of.signupTime | date("LLL d, y, hh:mm:ss a (z)")}}</td>
                                     </tr>
                                     {% if not snip_mode %}
                                     <tr>
@@ -102,13 +102,13 @@
                                     {% if profile_of.isBanned() %}
                                     <tr>
                                         <th class="text-right pr-3">{{i18n('Localization', 'Canvas Ban Expiry') | raw}}</th>
-                                        <td class="text-left">{% if profile_of.isPermaBanned() %}{{i18n('Localization', 'Never') | raw}}{% else %}{{profile_of.getBanExpiryTime() | date("LLL d, y, hh:mm:s a (z)")}}{% endif %}</td>
+                                        <td class="text-left">{% if profile_of.isPermaBanned() %}{{i18n('Localization', 'Never') | raw}}{% else %}{{profile_of.getBanExpiryTime() | date("LLL d, y, hh:mm:ss a (z)")}}{% endif %}</td>
                                     </tr>
                                     {% endif %}
                                     {% if profile_of.isChatbanned() %}
                                     <tr>
                                         <th class="text-right pr-3">{{i18n('Localization', 'Chat Ban Expiry') | raw}}</th>
-                                        <td class="text-left">{% if profile_of.isPermaChatbanned() %}{{i18n('Localization', 'Never') | raw}}{% else %}{{profile_of.getChatBanExpiryTime() | date("LLL d, y, hh:mm:s a (z)")}}{% endif %}</td>
+                                        <td class="text-left">{% if profile_of.isPermaChatbanned() %}{{i18n('Localization', 'Never') | raw}}{% else %}{{profile_of.getChatBanExpiryTime() | date("LLL d, y, hh:mm:ss a (z)")}}{% endif %}</td>
                                     </tr>
                                     {% endif %}
                                 </tbody>
@@ -149,7 +149,7 @@
                                             <div class="card-body p-0 body-collapse-target collapse">
                                                 <div class="p-3">
                                                     {# eg "Reported Bob on Jan 1, 1970, 00:00:00 AM (UTC) #}
-                                                    <h6>{{i18n('Localization', 'Reported {0} on {1}', [reportedName, (report.time*1000)|date("LLL d, y, hh:mm:s a (z)")]) | raw}}</h6>
+                                                    <h6>{{i18n('Localization', 'Reported {0} on {1}', [reportedName, (report.time*1000)|date("LLL d, y, hh:mm:ss a (z)")]) | raw}}</h6>
                                                     <p>{{report.message}}</p>
                                                 </div>
                                             </div>
@@ -182,7 +182,7 @@
                                             </div>
                                             <div class="card-body p-0 body-collapse-target collapse">
                                                 <div class="p-3">
-                                                    <h6>{{i18n('Localization', 'Reported {0} on {1}', [reportedName, (report.time*1000)|date("LLL d, y, hh:mm:s a (z)")]) | raw}}</h6>
+                                                    <h6>{{i18n('Localization', 'Reported {0} on {1}', [reportedName, (report.time*1000)|date("LLL d, y, hh:mm:ss a (z)")]) | raw}}</h6>
                                                     <p>{{report.report_message}}</p>
                                                 </div>
                                             </div>

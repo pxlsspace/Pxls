@@ -57,7 +57,7 @@
 
 <main>
     <div id="board-container" style="touch-action: none">
-        <div id="grid"></div>
+        <div id="grid" class="overlay transparent"></div>
         <div id="board-zoomer">
             <div id="board-mover">
                 <canvas id="board" class="pixelate noselect" width="100" height="100"></canvas>
@@ -328,12 +328,6 @@
                             <span class="label-text">{{i18n('Localization', 'Enable palette stacking') | raw}}</span>
                         </label>
                     </div>
-                    <div data-keywords="{{i18n('Localization', 'enable monospace;disable monospace') | raw}}">
-                        <label class="input-group">
-                            <input id="setting-lookup-monospace-enable" type="checkbox"/>
-                            <span class="label-text">{{i18n('Localization', 'Toggle monospace font for lookups') | raw}}</span>
-                        </label>
-                    </div>
                     <div data-keywords="{{i18n('Localization', 'floating bubble location') | raw}}">
                         <label class="input-group">
                             <span class="label-text">{{i18n('Localization', 'Bubble position:') | raw}}</span>
@@ -412,9 +406,15 @@
                             <span class="label-text">{{i18n('Localization', 'Enable the rotating banner under chat') | raw}}</span>
                         </label>
                     </div>
+                    <div data-keywords="{{i18n('Localization', 'max;messages;truncate') | raw}}">
+                        <label class="input-group">
+                            <span class="label-text">{{i18n('Localization', 'Maximum amount of chat messages:') | raw}}</span>
+                            <input id="setting-chat-truncate-max" class="small-input" type="number" min="50">
+                        </label>
+                    </div>
                     <div data-keywords="{{i18n('Localization', 'link;url;behaviour') | raw}}">
                         <label class="input-group">
-                            <span class="label-text">{{i18n("Localization", "Default internal link action click:" ) | raw}}</span>
+                            <span class="label-text">{{i18n("Localization", "Default internal link action click:") | raw}}</span>
                             <select id="setting-chat-links-internal-behavior"></select>
                         </label>
                     </div>
@@ -509,10 +509,14 @@
                             <input id="setting-board-zoom-sensitivity" type="range" min="1.01" max="3" step="0.01"/>
                         </label>
                     </div>
-                    <div data-keywords="{{i18n('Localization', 'zooming limit;scrolling limit;mousewheel;zooming maximum') | raw}}">
+                    <div data-keywords="{{i18n('Localization', 'zooming limit;scrolling limit;mousewheel;zooming minimum;zooming maximum') | raw}}">
                         <label class="input-group">
-                            <input id="setting-board-zoom-limit-enable" type="checkbox"/>
-                            <span class="label-text">{{i18n('Localization', 'Limit zoom to 50x') | raw}}</span>
+                            <span class="label-text">{{i18n('Localization', 'Minimum scale:') | raw}}</span>
+                            <input type="number" placeholder="0.5" step="any" class="template-coords small-input" id="setting-board-zoom-limit-minimum" autocomplete="off">
+                        </label>
+                        <label class="input-group">
+                            <span class="label-text">{{i18n('Localization', 'Maximum scale:') | raw}}</span>
+                            <input type="number" placeholder="50" step="any" class="template-coords small-input" id="setting-board-zoom-limit-maximum" autocomplete="off">
                         </label>
                     </div>
                     <div data-keywords="{{i18n('Localization', 'rounding;zooming;scrolling;mousewheel;integer;decimal') | raw}}">
@@ -534,6 +538,18 @@
                         <label class="input-group">
                             <input id="setting-place-picker-enable" type="checkbox">
                             <span class="label-text">{{i18n('Localization', 'Enable middle mouse button selecting color from board') | raw}}</span>
+                        </label>
+                    </div>
+                    <div data-keywords="{{i18n('Localization', 'right click action') | raw}}">
+                        <label class="input-group">
+                            <span class="label-text">{{i18n('Localization', 'Right-click action:') | raw}}</span>
+                            <select id="setting-ui-right-click-action">
+                                <option value="nothing">{{i18n('Localization', 'Nothing') | raw}}</option>
+                                <option value="clear">{{i18n('Localization', 'Clear color') | raw}}</option>
+                                <option value="copy">{{i18n('Localization', 'Copy color') | raw}}</option>
+                                <option value="lookup">{{i18n('Localization', 'Lookup') | raw}}</option>
+                                <option value="clearlookup">{{i18n('Localization', 'Clear color + Lookup') | raw}}</option>
+                            </select>
                         </label>
                     </div>
                 </section>
@@ -608,7 +624,7 @@
                         </label>
                         <button class="text-button" id="template-width-reset">{{i18n('Localization', 'Reset') | raw}}</button>
                     </div>
-                </div>
+                </section>
             </section>
         </article>
         <article data-keywords="{{i18n('Localization', 'sound;notification;alert;notify;ping') | raw}}">

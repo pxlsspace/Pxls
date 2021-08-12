@@ -91,6 +91,8 @@ roleID {
 | `user.namechange.force` | `/admin/forceNameChange` | Force prompt for users to change their name | staff |
 | `user.online` | `/users` | List online user count | guest |
 | `user.permaban` | `/admin/permaban` | Permanently ban users | staff |
+| `user.profile` | `/profile` | Access own profile | user |
+| `user.profile.other` | `/profile/{who}` | Access other profiles | user |
 | `user.ratelimits.bypass` | | Bypass rate limits | staff |
 | `user.shadowban` | `/admin/shadowban` | Shadow-ban users | staff |
 | `user.unban` | `/admin/unban` | Unban users | staff |
@@ -99,8 +101,12 @@ roleID {
 
 | Node | Endpoint | Purpose | Default Role |
 | --- | --- | --- | --- |
-| `faction.delete` | `/admin/faction/delete` | Delete other factions | staff |
-| `faction.edit` | `/admin/faction/edit` | Edit other factions | staff |
+| `faction.create` | `/factions` | Create faction | user |
+| `faction.data` | `/factions/{fid}` | Access faction data | user |
+| `faction.delete` | `/factions/{fid}` | Delete own faction | user |
+| `faction.delete.other` | `/admin/faction/delete` | Delete other factions | staff |
+| `faction.edit` | `/factions/{fid}` | Edit own faction | user |
+| `faction.edit.other` | `/admin/faction/edit` | Edit other factions | staff |
 | `faction.setblocked` | `/admin/setFactionBlocked` | Set block status on factions | staff |
 
 ### Notification

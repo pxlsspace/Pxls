@@ -178,6 +178,92 @@ public class App {
                 } catch (Exception x) {
                     x.printStackTrace();
                 }
+            } else if (token[0].equalsIgnoreCase("logins") || token[0].equalsIgnoreCase("login")) {
+                if (token.length < 2) {
+                    System.out.println("Usage: logins <username> [{service ID}:{service user ID} ...]");
+                    return;
+                }
+                User user = userManager.getByName(token[1]);
+                if (user == null) {
+                    System.out.println("Cannot find user " + token[1]);
+                    return;
+                }
+                if (token.length < 3) {
+                    var logins = user.getLogins();
+                    if (logins.isEmpty()) {
+                        System.out.println("User " + user.getName() + " has no logins");
+                    } else {
+                        String prettyLogins = logins.stream()
+                            .map(UserLogin::toString)
+                            .collect(Collectors.joining(", "));
+                        System.out.println("User " + user.getName() + " has logins " + prettyLogins);
+                    }
+                    return;
+                }
+                var rest = Arrays.copyOfRange(token, 2, token.length);
+                List<UserLogin> logins = new ArrayList<>();
+                if (!rest[0].equals("-")) {
+                    try {
+                        logins = Arrays.stream(rest)
+                            .distinct()
+                            .map(UserLogin::fromString)
+                            .collect(Collectors.toList());
+                    } catch (IllegalArgumentException ex) {
+                        System.out.println(ex.toString());
+                        return;
+                    }
+                }
+                database.setUserLogins(user.getId(), logins);
+                String prettyLogins = logins.stream()
+                    .map(UserLogin::toString)
+                    .collect(Collectors.joining(", "));
+                String logMessage = "Set " + user.getName() + "'s login methods to " + prettyLogins;
+                if (logins.isEmpty()) {
+                    logMessage = "Removed " + user.getName() + "'s login methods";
+                }
+                database.insertServerAdminLog(logMessage);
+                System.out.println(logMessage);
+            } else if (token[0].equalsIgnoreCase("addlogins") || token[0].equalsIgnoreCase("addlogin")) {
+                if (token.length < 3) {
+                    System.out.println("Usage: addlogins <username> [{service ID}:{service user ID} ...]");
+                    return;
+                }
+                User user = userManager.getByName(token[1]);
+                if (user == null) {
+                    System.out.println("Cannot find user " + token[1]);
+                    return;
+                }
+                var rest = Arrays.copyOfRange(token, 2, token.length);
+                List<UserLogin> addedLogins;
+                try {
+                    addedLogins = Arrays.stream(rest)
+                        .distinct()
+                        .map(UserLogin::fromString)
+                        .collect(Collectors.toList());
+                } catch (IllegalArgumentException ex) {
+                    System.out.println(ex);
+                    return;
+                }
+                String prettyLogins = addedLogins.stream().map(UserLogin::toString).collect(Collectors.joining(", "));
+                database.bulkAddUserLogins(user.getId(), addedLogins);
+                String message = "Added login methods \"" + prettyLogins + "\" to " + user.getName();
+                database.insertServerAdminLog(message);
+                System.out.println(message);
+            } else if (token[0].equalsIgnoreCase("removelogins") || token[0].equalsIgnoreCase("removelogin")) {
+                if (token.length < 3) {
+                    System.out.println("Usage: removelogins <username> [service ID ...]");
+                    return;
+                }
+                User user = userManager.getByName(token[1]);
+                if (user == null) {
+                    System.out.println("Cannot find user " + token[1]);
+                    return;
+                }
+                var rest = Arrays.copyOfRange(token, 2, token.length);
+                database.bulkRemoveUserLoginServices(user.getId(), List.of(rest));
+                String message = "Removed login methods \"" + String.join(", ", rest) + "\" from " + user.getName();
+                database.insertServerAdminLog(message);
+                System.out.println(message);
             } else if (token[0].equalsIgnoreCase("roles") || token[0].equalsIgnoreCase("role")) {
                 if (token.length < 2) {
                     System.out.println("Usage: roles <username> [role ID ...]");
@@ -311,15 +397,23 @@ public class App {
                 }
             } else if (token[0].equalsIgnoreCase("unban")) {
                 if (token.length < 2) {
-                    System.out.println("Usage: unban <username> [reason]");
+                    System.out.println("Usage: unban <username> [true/false] [reason]");
                     return;
                 }
-                var rest = Arrays.copyOfRange(token, 2, token.length);
+                String[] rest = Arrays.copyOfRange(token, 2, token.length);
+                var shouldRevert = true;
+                if (token.length >= 3) {
+                    if ("true".equalsIgnoreCase(token[2]) || "false".equalsIgnoreCase(token[2])) {
+                        shouldRevert = Boolean.parseBoolean(token[2]);
+                        rest = Arrays.copyOfRange(token, 3, token.length);
+                    }
+                }
                 User user = userManager.getByName(token[1]);
                 if (user != null) {
                     String reason = String.join(" ", rest);
                     if (reason.equals("")) reason = "Unbanned via console; no reason given";
-                    user.unban(null, reason);
+                    System.out.println(reason);
+                    user.unban(null, reason, shouldRevert);
                     database.insertServerAdminLog("unban " + user.getName());
                     System.out.println("Unbanned " + user.getName() + ".");
                 } else {
@@ -956,7 +1050,7 @@ public class App {
         board[x + y * width] = (byte) color;
         heatmap[x + y * width] = (byte) 0xFF;
         virginmap[x + y * width] = (byte) 0x00;
-        pixelLogger.log(Level.INFO, String.format("%s\t%d\t%d\t%d\t%s\t%s", userName, x, y, color, ip, action));
+        pixelLogger.log(Level.INFO, String.format("%s\t%d\t%d\t%d\t%s", userName, x, y, color, action));
         if (updateDatabase) {
             database.placePixel(x, y, color, user, mod_action);
             if (!mod_action) {
