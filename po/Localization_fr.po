@@ -684,7 +684,6 @@ msgid "Zoom sensitivity:"
 msgstr "Sensibilité du zoom :"
 
 #: resources/public/pebble_templates/index.html:512:44
-#, fuzzy
 msgid "zooming limit;scrolling limit;mousewheel;zooming minimum;zooming maximum"
 msgstr "limites du zoom;limites du scroll;roulette de souris;molette de souris;maximum du zoom"
 
@@ -741,9 +740,8 @@ msgid "Copy color"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html:550:59
-#, fuzzy
 msgid "Lookup"
-msgstr "inspections"
+msgstr "Inspecter"
 
 #: resources/public/pebble_templates/index.html:551:64
 msgid "Clear color + Lookup"
