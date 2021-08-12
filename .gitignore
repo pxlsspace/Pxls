@@ -16,7 +16,7 @@ placemap.dat
 pxls.conf
 roles.conf
 palette.conf
-index_cache.html
+index*_cache.html
 TODO
 *-canvas-*/
 __pycache__
@@ -28,3 +28,4 @@ extras/reset/checklist.py
 node/
 node_modules/
 .factorypath
+*~
