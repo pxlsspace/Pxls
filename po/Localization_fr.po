@@ -529,11 +529,11 @@ msgstr "Animer le bandeau sous le chat"
 
 #: resources/public/pebble_templates/index.html:409:44
 msgid "max;messages;truncate"
-msgstr ""
+msgstr "max;messages;tronquer;troncature" 
 
 #: resources/public/pebble_templates/index.html:411:57
 msgid "Maximum amount of chat messages:"
-msgstr ""
+msgstr "Maximum de messages visibles dans le chat" 
 
 #: resources/public/pebble_templates/index.html:415:44
 msgid "link;url;behaviour"
@@ -685,15 +685,15 @@ msgstr "Sensibilité du zoom :"
 
 #: resources/public/pebble_templates/index.html:512:44
 msgid "zooming limit;scrolling limit;mousewheel;zooming minimum;zooming maximum"
-msgstr "limites du zoom;limites du scroll;roulette de souris;molette de souris;maximum du zoom"
+msgstr "limites du zoom;limites du scroll;roulette de souris;molette de souris;minimum du zoom;maximum du zoom"
 
 #: resources/public/pebble_templates/index.html:514:57
 msgid "Minimum scale:"
-msgstr ""
+msgstr "Échelle minimale :" 
 
 #: resources/public/pebble_templates/index.html:518:57
 msgid "Maximum scale:"
-msgstr ""
+msgstr "Échelle maximale :" 
 
 #: resources/public/pebble_templates/index.html:522:44
 msgid "rounding;zooming;scrolling;mousewheel;integer;decimal"
@@ -721,31 +721,31 @@ msgstr "Activer l'échantillonnage de couleur sur le canvas avec le clic du mili
 
 #: resources/public/pebble_templates/index.html:543:44
 msgid "right click action"
-msgstr ""
+msgstr "raccourci clic droit" 
 
 #: resources/public/pebble_templates/index.html:545:57
 msgid "Right-click action:"
-msgstr ""
+msgstr "Action du clic droit :" 
 
 #: resources/public/pebble_templates/index.html:547:60
 msgid "Nothing"
-msgstr ""
+msgstr "Rien" 
 
 #: resources/public/pebble_templates/index.html:548:58
 msgid "Clear color"
-msgstr ""
+msgstr "Retirer la couleur" 
 
 #: resources/public/pebble_templates/index.html:549:57
 msgid "Copy color"
-msgstr ""
+msgstr "Copier la couleur" 
 
 #: resources/public/pebble_templates/index.html:550:59
 msgid "Lookup"
-msgstr "Inspecter"
+msgstr "inspection du pixel"
 
 #: resources/public/pebble_templates/index.html:551:64
 msgid "Clear color + Lookup"
-msgstr ""
+msgstr "Retirer la couleur + inspection du pixel" 
 
 #: resources/public/pebble_templates/index.html:558:36
 msgid "snapshots;screenshot;download;picture;canvas"
