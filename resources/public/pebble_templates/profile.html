@@ -137,7 +137,7 @@
                                             <div class="card-header">
                                                 <button class="btn btn-sm mr-2 btn-info" data-action="collapse"><i class="fas fa-chevron-down"></i></button>
                                                 <span class="{% if report.closed %}text-success{% else %}text-warning{% endif %}">
-                                                    ({% if report.closed %}
+                                                    {% if report.closed %}
                                                     {# eg "Report on Bob (closed) #}
                                                     {{i18n('Localization', 'Report on {0} (closed)', reportedName) | raw}}
                                                     {% else %}
