@@ -603,24 +603,24 @@
                     <div data-keywords="{{i18n('Localization', 'template position;template x;template y;template location; template vertical; template horizontal;ox=;oy=') | raw}}">
                         <label class="input-group">
                             <span class="label-text">{{i18n('Localization', 'Horizontal position:') | raw}}</span>
-                            <input type="number" min="0" class="template-coords small-input" id="template-coords-x">
+                            <input type="number" min="0" class="template-coords small-input" id="template-coords-x" autocomplete="off">
                         </label>
                         <label class="input-group">
                             <span class="label-text">{{i18n('Localization', 'Vertical position:') | raw}}</span>
-                            <input type="number" min="0" class="template-coords small-input" id="template-coords-y">
+                            <input type="number" min="0" class="template-coords small-input" id="template-coords-y" autocomplete="off">
                         </label>
                     </div>
                     <div data-keywords="{{i18n('Localization', 'template transparency;template opacity;oo=') | raw}}">
                         <label class="input-group">
                             <span class="label-text">{{i18n('Localization', 'Opacity:') | raw}}</span>
-                            <input type="range" id="template-opacity" min="0" max="1" step="0.01" value="0.5">
+                            <input type="range" id="template-opacity" min="0" max="1" step="0.01" value="0.5" autocomplete="off">
                             <span class="range-text-value" id="template-opacity-percentage">50%</span>
                         </label>
                     </div>
                     <div data-keywords="{{i18n('Localization', 'template width;tw=') | raw}}">
                         <label class="input-group">
                             <span class="label-text">{{i18n('Localization', 'Width:') | raw}}</span>
-                            <input type="number" id="template-width" class="small-input" min="0">
+                            <input type="number" id="template-width" class="small-input" min="0" autocomplete="off">
                         </label>
                         <button class="text-button" id="template-width-reset">{{i18n('Localization', 'Reset') | raw}}</button>
                     </div>
