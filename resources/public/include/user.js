@@ -70,7 +70,7 @@ const user = (function() {
       self.elements.loginOverlay.find('a').click(function(evt) {
         evt.preventDefault();
 
-        const cancelButton = crel('button', { class: 'float-right text-button' }, 'Cancel');
+        const cancelButton = crel('button', { class: 'float-right text-button' }, __('Cancel'));
         cancelButton.addEventListener('click', function() {
           self.elements.prompt.fadeOut(200);
         });
@@ -78,7 +78,7 @@ const user = (function() {
         self.elements.prompt[0].innerHTML = '';
         crel(self.elements.prompt[0],
           crel('div', { class: 'content' },
-            crel('h1', 'Sign in with...'),
+            crel('h1', __('Sign in with...')),
             crel('ul',
               Object.values(data.authServices).map(service => {
                 const anchor = crel('a', { href: `/signin/${service.id}?redirect=1` }, service.name);
@@ -91,7 +91,7 @@ const user = (function() {
                 });
                 const toRet = crel('li', anchor);
                 if (!service.registrationEnabled) {
-                  crel(toRet, crel('span', { style: 'font-style: italic; font-size: .75em; font-weight: bold; color: red; margin-left: .5em' }, 'New Accounts Disabled'));
+                  crel(toRet, crel('span', { style: 'font-style: italic; font-size: .75em; font-weight: bold; color: red; margin-left: .5em' }, __('New Accounts Disabled')));
                 }
                 return toRet;
               })
@@ -164,18 +164,18 @@ const user = (function() {
         evt.preventDefault();
 
         modal.show(modal.buildDom(
-          crel('h2', { class: 'modal-title' }, 'Sign Out'),
+          crel('h2', { class: 'modal-title' }, __('Sign Out')),
           crel('div',
-            crel('p', 'Are you sure you want to sign out?'),
+            crel('p', __('Are you sure you want to sign out?')),
             crel('div', { class: 'buttons' },
               crel('button', {
                 class: 'dangerous-button text-button',
                 onclick: () => self.doSignOut().then(() => modal.closeAll())
-              }, 'Yes'),
+              }, __('Yes')),
               crel('button', {
                 class: 'text-button',
                 onclick: () => modal.closeAll()
-              }, 'No')
+              }, __('No'))
             )
           )
         ));
@@ -191,7 +191,7 @@ const user = (function() {
       });
       socket.on('session_limit', function(data) {
         socket.close();
-        modal.showText('Too many sessions open, try closing some tabs.');
+        modal.showText(__('Too many sessions open, try closing some tabs.'));
       });
       socket.on('userinfo', function(data) {
         let isBanned = false;
@@ -214,7 +214,7 @@ const user = (function() {
         self.elements.userInfo.find('span#username').html(crel('a', {
           href: `/profile/${data.username}`,
           target: '_blank',
-          title: 'My Profile'
+          title: __('My Profile')
         }, data.username).outerHTML);
         if (data.method === 'ip') {
           self.elements.userInfo.hide();
@@ -224,10 +224,11 @@ const user = (function() {
 
         if (data.banExpiry === 0) {
           isBanned = true;
-          crel(banelem, crel('p', 'You are permanently banned.'));
+          crel(banelem, crel('p', __('You are permanently banned.')));
         } else if (data.banned === true) {
           isBanned = true;
-          crel(banelem, crel('p', `You are temporarily banned and will not be allowed to place until ${new Date(data.banExpiry).toLocaleString()}`));
+          const timestamp = new Date(data.banExpiry).toLocaleString();
+          crel(banelem, crel('p', __(`You are temporarily banned and will not be allowed to place until ${timestamp}`)));
         } else if (self.isStaff()) {
           if (window.deInitAdmin) {
             window.deInitAdmin();
@@ -245,14 +246,14 @@ const user = (function() {
           window.deInitAdmin();
         }
         if (isBanned) {
-          self.elements.userMessage.empty().show().text('You can contact us using one of the links in the info menu.').fadeIn(200);
+          self.elements.userMessage.empty().show().text(__('You can contact us using one of the links in the info menu.')).fadeIn(200);
           crel(banelem,
-            crel('p', 'If you think this was an error, please contact us using one of the links in the info tab.'),
-            crel('p', 'Ban reason:'),
+            crel('p', __('If you think this was an error, please contact us using one of the links in the info tab.')),
+            crel('p', __('Ban reason:')),
             crel('p', data.banReason)
           );
           modal.show(modal.buildDom(
-            crel('h2', 'Banned'),
+            crel('h2', __('Banned')),
             banelem
           ), { escapeClose: false, clickClose: false });
           if (window.deInitAdmin) {
@@ -305,7 +306,7 @@ const user = (function() {
         self.hideRenameRequest();
         modal.closeAll();
       }).fail(function(xhrObj) {
-        let resp = 'An unknown error occurred. Please contact staff on discord';
+        let resp = __('An unknown error occurred. Please contact staff on discord');
         if (xhrObj.responseJSON) {
           resp = xhrObj.responseJSON.details || resp;
         } else if (xhrObj.responseText) {
@@ -322,9 +323,9 @@ const user = (function() {
     },
     _handleRenameClick: function(event) {
       const renamePopup = crel('form', { onsubmit: self._handleRenameSubmit },
-        crel('p', 'Staff have required you to change your username, this usually means your name breaks one of our rules.'),
-        crel('p', 'If you disagree, please contact us on Discord (link in the info panel).'),
-        crel('label', 'New Username: ',
+        crel('p', __('Staff have required you to change your username, this usually means your name breaks one of our rules.')),
+        crel('p', __('If you disagree, please contact us on Discord (link in the info panel).')),
+        crel('label', __('New Username:') + ' ',
           crel('input', {
             type: 'text',
             class: 'rename-input',
@@ -337,23 +338,22 @@ const user = (function() {
           class: 'rename-error'
         }, ''),
         crel('div', { style: 'text-align: right' },
-          crel('button', { class: 'text-button', onclick: () => modal.closeAll() }, 'Not now'),
-          crel('button', { class: 'rename-submit text-button', type: 'submit' }, 'Change')
+          crel('button', { class: 'text-button', onclick: () => modal.closeAll() }, __('Not now')),
+          crel('button', { class: 'rename-submit text-button', type: 'submit' }, __('Change'))
         )
       );
       modal.show(modal.buildDom(
-        crel('h2', { class: 'modal-title' }, 'Rename Requested'),
+        crel('h2', { class: 'modal-title' }, __('Rename Requested')),
         renamePopup
       ));
     },
     showRenameRequest: () => {
       self.elements.userMessage.empty().show().append(
-        crel('span', 'You must change your username. Click ',
+        crel('span', __('You must change your username.') + ' ',
           crel('span', {
             style: 'cursor: pointer; text-decoration: underline;',
             onclick: self._handleRenameClick
-          }, 'here'),
-          document.createTextNode(' to continue.')
+          }, __('Click here to continue.'))
         )
       ).fadeIn(200);
     },

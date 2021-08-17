@@ -90,7 +90,7 @@ module.exports.template = (function() {
         self.elements.template.toggleClass('pixelate', query.get('scale') > self.getWidthRatio());
       }).on('error', () => {
         self.elements.imageErrorWarning.show();
-        self.elements.imageErrorWarning.text('There was an error getting the image');
+        self.elements.imageErrorWarning.text(__('There was an error getting the image'));
         self.elements.template.remove();
       });
       if (board.update(true)) {

@@ -106,7 +106,8 @@ const uiHelper = (function() {
         ), { closeExisting: false });
       });
       socket.on('received_report', (data) => {
-        new SLIDEIN.Slidein(`A new ${data.report_type.toLowerCase()} report has been received.`, 'info-circle').show().closeAfter(3000);
+        const type = data.report_type.toLowerCase();
+        new SLIDEIN.Slidein(__(`A new ${type} report has been received.`), 'info-circle').show().closeAfter(3000);
       });
 
       settings.ui.palette.numbers.enable.listen(function(value) {
@@ -449,14 +450,14 @@ const uiHelper = (function() {
           discordName: name
         },
         success: function() {
-          modal.showText('Discord name updated successfully');
+          modal.showText(__('Discord name updated successfully'));
         },
         error: function(data) {
           const err = data.responseJSON && data.responseJSON.details ? data.responseJSON.details : data.responseText;
           if (data.status === 200) { // seems to be caused when response body isn't json? just show whatever we can and trust server sent good enough details.
             modal.showText(err);
           } else {
-            modal.showText('Couldn\'t change discord name: ' + err);
+            modal.showText(__('Couldn\'t change discord name: ') + err);
           }
         }
       });
@@ -466,7 +467,7 @@ const uiHelper = (function() {
         if (!url) url = 'notify.wav';
         timer.audioElem.src = url;
       } catch (e) {
-        modal.showText('Failed to update audio src, using default sound.');
+        modal.showText(__('Failed to update audio src, using default sound.'));
         timer.audioElem.src = 'notify.wav';
       }
     },
