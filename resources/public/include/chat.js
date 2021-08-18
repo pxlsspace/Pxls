@@ -75,19 +75,20 @@ const chat = (function() {
     TEMPLATE_ACTIONS: {
       ASK: {
         id: 'ask',
-        pretty: 'Ask'
+        // translator: template link action
+        pretty: __('Ask')
       },
       NEW_TAB: {
         id: 'new tab',
-        pretty: 'Open in a new tab'
+        pretty: __('Open in a new tab')
       },
       CURRENT_TAB: {
         id: 'current tab',
-        pretty: 'Open in current tab (replacing template)'
+        pretty: __('Open in current tab (replacing template)')
       },
       JUMP_ONLY: {
         id: 'jump only',
-        pretty: 'Jump to coordinates without replacing template'
+        pretty: __('Jump to coordinates without replacing template')
       }
     },
     init: () => {

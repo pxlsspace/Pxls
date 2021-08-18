@@ -43,42 +43,50 @@ const uiHelper = (function() {
     },
     themes: [
       {
-        name: 'Dark',
+        // translator: theme name
+        name: __('Dark'),
         location: '/themes/dark.css',
         color: '#1A1A1A'
       },
       {
-        name: 'Darker',
+        // translator: theme name
+        name: __('Darker'),
         location: '/themes/darker.css',
         color: '#000'
       },
       {
-        name: 'Blue',
+        // translator: theme name
+        name: __('Blue'),
         location: '/themes/blue.css',
         color: '#0000FF'
       },
       {
-        name: 'Purple',
+        // translator: theme name
+        name: __('Purple'),
         location: '/themes/purple.css',
         color: '#5a2f71'
       },
       {
-        name: 'Green',
+        // translator: theme name
+        name: __('Green'),
         location: '/themes/green.css',
         color: '#005f00'
       },
       {
-        name: 'Matte',
+        // translator: theme name
+        name: __('Matte'),
         location: '/themes/matte.css',
         color: '#468079'
       },
       {
-        name: 'Terminal',
+        // translator: theme name
+        name: __('Terminal'),
         location: '/themes/terminal.css',
         color: '#94e044'
       },
       {
-        name: 'Red',
+        // translator: theme name
+        name: __('Red'),
         location: '/themes/red.css',
         color: '#cf0000'
       }
