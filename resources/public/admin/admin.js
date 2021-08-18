@@ -172,7 +172,7 @@
         let expiracyStr = hoursStr + ':' + minuteStr + ':' + secsStr;
         let chatbannedStr = '';
         if (data.shadowBanned) {
-          // Shadow banned
+          // translator: Context: ban type
           bannedStr = __('shadow');
           expiracyStr = __('never');
         } else if (data.banExpiry === 0) {
@@ -309,7 +309,7 @@
         const toPost = {};
         toPost[type] = arg;
         $.post('/admin/check', toPost, self.callback).fail(function () {
-          // Admin check. Example: type = 'username', arg = 'pxlsuser94'
+          // translator: Admin check. Example: type = 'username', arg = 'pxlsuser94'
           admin.modal.showText(__(`${type} ${arg} not found.`));
         });
       },

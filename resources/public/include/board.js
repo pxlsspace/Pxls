@@ -796,7 +796,7 @@ const board = (function() {
       const format = settings.board.snapshot.format.get();
 
       a.href = self.elements.board[0].toDataURL(format, 1);
-      // Snapshot save name
+      // translator: Snapshot save name
       a.download = (new Date()).toISOString().replace(/^(\d+-\d+-\d+)T(\d+):(\d+):(\d).*$/, `${__('pxls canvas')} $1 $2.$3.$4.${format.split('/')[1]}`);
       document.body.appendChild(a);
       a.click();
