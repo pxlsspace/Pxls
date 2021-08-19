@@ -314,8 +314,8 @@ msgid "<kbd>V</kbd> to toggle visibility"
 msgstr "<kbd>V</kbd> pour activer/désactiver la visibilité d'un modèle"
 
 #: resources/public/pebble_templates/index.html:252:24
-msgid "Note: These values are based on QWERTY keyboards.\\nFor other layouts, use the keys corresponding to the same position on a QWERTY keyboard."
-msgstr "Note : Ces touches sont basées sur les claviers QWERTY. \\nPour d'autres claviers, utilise les touches correspondantes aux positions sur un clavier QWERTY."
+msgid "Note: These values are based on QWERTY keyboards. For other layouts, use the keys corresponding to the same position on a QWERTY keyboard."
+msgstr "Note : Ces touches sont basées sur les claviers QWERTY. Pour d'autres claviers, utilise les touches correspondantes aux positions sur un clavier QWERTY."
 
 #: resources/public/pebble_templates/index.html:256:36
 msgid "ui;interface"
@@ -531,11 +531,11 @@ msgstr "Animer le bandeau sous le chat"
 
 #: resources/public/pebble_templates/index.html:409:44
 msgid "max;messages;truncate"
-msgstr "max;messages;tronquer;troncature"
+msgstr "max;messages;tronquer;troncature" 
 
 #: resources/public/pebble_templates/index.html:411:57
 msgid "Maximum amount of chat messages:"
-msgstr "Maximum de messages visibles dans le chat"
+msgstr "Maximum de messages visibles dans le chat" 
 
 #: resources/public/pebble_templates/index.html:415:44
 msgid "link;url;behaviour"
@@ -691,11 +691,11 @@ msgstr "limites du zoom;limites du scroll;roulette de souris;molette de souris;m
 
 #: resources/public/pebble_templates/index.html:514:57
 msgid "Minimum scale:"
-msgstr "Échelle minimale :"
+msgstr "Échelle minimale :" 
 
 #: resources/public/pebble_templates/index.html:518:57
 msgid "Maximum scale:"
-msgstr "Échelle maximale :"
+msgstr "Échelle maximale :" 
 
 #: resources/public/pebble_templates/index.html:522:44
 msgid "rounding;zooming;scrolling;mousewheel;integer;decimal"
@@ -723,23 +723,23 @@ msgstr "Activer l'échantillonnage de couleur sur le canvas avec le clic du mili
 
 #: resources/public/pebble_templates/index.html:543:44
 msgid "right click action"
-msgstr "raccourci clic droit"
+msgstr "raccourci clic droit" 
 
 #: resources/public/pebble_templates/index.html:545:57
 msgid "Right-click action:"
-msgstr "Action du clic droit :"
+msgstr "Action du clic droit :" 
 
 #: resources/public/pebble_templates/index.html:547:60
 msgid "Nothing"
-msgstr "Rien"
+msgstr "Rien" 
 
 #: resources/public/pebble_templates/index.html:548:58
 msgid "Clear color"
-msgstr "Retirer la couleur"
+msgstr "Retirer la couleur" 
 
 #: resources/public/pebble_templates/index.html:549:57
 msgid "Copy color"
-msgstr "Copier la couleur"
+msgstr "Copier la couleur" 
 
 #: resources/public/pebble_templates/index.html:550:59
 msgid "Lookup"
@@ -747,7 +747,7 @@ msgstr "inspection du pixel"
 
 #: resources/public/pebble_templates/index.html:551:64
 msgid "Clear color + Lookup"
-msgstr "Retirer la couleur + inspection du pixel"
+msgstr "Retirer la couleur + inspection du pixel" 
 
 #: resources/public/pebble_templates/index.html:558:36
 msgid "snapshots;screenshot;download;picture;canvas"

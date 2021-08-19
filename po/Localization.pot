@@ -314,7 +314,7 @@ msgid "<kbd>V</kbd> to toggle visibility"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html:252:24
-msgid "Note: These values are based on QWERTY keyboards.\\nFor other layouts, use the keys corresponding to the same position on a QWERTY keyboard."
+msgid "Note: These values are based on QWERTY keyboards. For other layouts, use the keys corresponding to the same position on a QWERTY keyboard."
 msgstr ""
 
 #: resources/public/pebble_templates/index.html:256:36
