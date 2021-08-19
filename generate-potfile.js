@@ -2,53 +2,7 @@ const fs = require('fs');
 const PO = require('pofile');
 const esprima = require('esprima');
 
-const {
-  AssignmentExpression,
-  AssignmentPattern,
-  FunctionExpression,
-  ExpressionStatement,
-  BlockStatement,
-  CallExpression,
-  IfStatement,
-  BinaryExpression,
-  StaticMemberExpression,
-  ComputedMemberExpression,
-  Identifier,
-  ForInStatement,
-  MemberExpression,
-  ClassDeclaration,
-  ClassBody,
-  VariableDeclaration,
-  VariableDeclarator,
-  ThisExpression,
-  ArrowFunctionExpression,
-  LogicalExpression,
-  ReturnStatement,
-  ObjectExpression,
-  Property,
-  SpreadElement,
-  Literal,
-  ArrayExpression,
-  ForStatement,
-  UpdateExpression,
-  NewExpression,
-  UnaryExpression,
-  FunctionDeclaration,
-  TemplateLiteral,
-  ConditionalExpression,
-  SwitchStatement,
-  SwitchCase,
-  TryStatement,
-  CatchClause,
-  RestElement,
-  ObjectPattern,
-  BreakStatement,
-  ForOfStatement,
-  AwaitExpression,
-  WhileStatement,
-  ThrowStatement,
-  ContinueStatement
-} = esprima.Syntax;
+const { findTranslationCalls } = require('./localization-util');
 
 const PEBBLE_FILES = [
   'resources/public/pebble_templates/index.html',
@@ -215,158 +169,7 @@ const JS_FILES = [
   'resources/public/admin/admin.js'
 ];
 
-const GETTEXT_FUNCTION_NAME = '__';
 const JS_POFILE = 'Localization';
-
-function isGettextCall(callExpression) {
-  return callExpression.callee.type === Identifier &&
-    callExpression.callee.name === GETTEXT_FUNCTION_NAME;
-}
-
-const translatableStrings = [];
-
-function addTranslatableStringsFromExpression(expression) {
-  if (expression === null) {
-    return;
-  }
-
-  switch (expression.type) {
-    case ExpressionStatement:
-      addTranslatableStringsFromExpression(expression.expression);
-      break;
-    case VariableDeclaration:
-      for (const declaration of expression.declarations) {
-        addTranslatableStringsFromExpression(declaration);
-      }
-      break;
-    case VariableDeclarator:
-      addTranslatableStringsFromExpression(expression.init);
-      break;
-    case AssignmentPattern:
-    case AssignmentExpression:
-      addTranslatableStringsFromExpression(expression.right);
-      break;
-    case ArrowFunctionExpression:
-    case FunctionDeclaration:
-    case FunctionExpression:
-      for (const parameter of expression.params) {
-        addTranslatableStringsFromExpression(parameter);
-      }
-      addTranslatableStringsFromExpression(expression.body);
-      break;
-    case ClassBody:
-    case BlockStatement:
-      for (const nestedExpression of expression.body) {
-        addTranslatableStringsFromExpression(nestedExpression);
-      }
-      break;
-    case NewExpression:
-      addTranslatableStringsFromExpression(expression.callee);
-      for (const argument of expression.arguments) {
-        addTranslatableStringsFromExpression(argument);
-      }
-      break;
-    case CallExpression:
-      if (isGettextCall(expression)) {
-        if (expression.arguments.length !== 1) {
-          throw new Error(`Invalid call to gettext: expected exactly one argument: ${expression}`);
-        }
-
-        const [argument] = expression.arguments;
-        translatableStrings.push(argument.range);
-      } else {
-        addTranslatableStringsFromExpression(expression.callee);
-        for (const argument of expression.arguments) {
-          addTranslatableStringsFromExpression(argument);
-        }
-      }
-      break;
-    case WhileStatement:
-      addTranslatableStringsFromExpression(expression.test);
-      addTranslatableStringsFromExpression(expression.body);
-      break;
-    case ConditionalExpression:
-    case IfStatement:
-      addTranslatableStringsFromExpression(expression.test);
-      addTranslatableStringsFromExpression(expression.consequent);
-      addTranslatableStringsFromExpression(expression.alternate);
-      break;
-    case ForStatement:
-      addTranslatableStringsFromExpression(expression.init);
-      addTranslatableStringsFromExpression(expression.test);
-      addTranslatableStringsFromExpression(expression.update);
-      addTranslatableStringsFromExpression(expression.body);
-      break;
-    case ForOfStatement:
-    case ForInStatement:
-      addTranslatableStringsFromExpression(expression.right);
-      addTranslatableStringsFromExpression(expression.body);
-      break;
-    case SwitchStatement:
-      addTranslatableStringsFromExpression(expression.discriminant);
-      for (const switchcase of expression.cases) {
-        addTranslatableStringsFromExpression(switchcase);
-      }
-      break;
-    case SwitchCase:
-      for (const nestedExpression of expression.consequent) {
-        addTranslatableStringsFromExpression(nestedExpression);
-      }
-      break;
-    case ClassDeclaration:
-      addTranslatableStringsFromExpression(expression.body);
-      break;
-    case LogicalExpression:
-    case BinaryExpression:
-      addTranslatableStringsFromExpression(expression.left);
-      addTranslatableStringsFromExpression(expression.right);
-      break;
-    case ObjectPattern:
-    case ObjectExpression:
-      for (const property of expression.properties) {
-        addTranslatableStringsFromExpression(property);
-      }
-      break;
-    case Property:
-      addTranslatableStringsFromExpression(expression.value);
-      break;
-    case ThrowStatement:
-    case ReturnStatement:
-    case AwaitExpression:
-    case RestElement:
-    case SpreadElement:
-      addTranslatableStringsFromExpression(expression.argument);
-      break;
-    case ArrayExpression:
-      for (const element of expression.elements) {
-        addTranslatableStringsFromExpression(element);
-      }
-      break;
-    case TryStatement:
-    case CatchClause:
-      addTranslatableStringsFromExpression(expression.block);
-      break;
-    case TemplateLiteral:
-      for (const nestedExpression of expression.expressions) {
-        addTranslatableStringsFromExpression(nestedExpression);
-      }
-      break;
-    case ThisExpression:
-    case MemberExpression:
-    case ComputedMemberExpression:
-    case StaticMemberExpression:
-    case Identifier:
-    case Literal:
-    case UpdateExpression:
-    case UnaryExpression:
-    case BreakStatement:
-    case ContinueStatement:
-      break;
-    default:
-      console.debug(`Unknown expression type: ${expression.type}`);
-      console.debug(expression);
-  }
-}
 
 if (!poFiles.has(JS_POFILE)) {
   createPoFile(JS_POFILE);
@@ -381,9 +184,10 @@ for (const path of JS_FILES) {
   const file = fs.readFileSync(path).toString();
   const script = esprima.parseScript(file, { range: true, comment: true });
 
-  for (const expression of script.body) {
-    addTranslatableStringsFromExpression(expression);
-  }
+  const translatableStrings = script.body
+    .map(findTranslationCalls)
+    .flat()
+    .map(e => e.arguments[0].range);
 
   for (const [start, end] of translatableStrings) {
     const relevantComments = script.comments.filter(comment => {
