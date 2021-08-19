@@ -425,7 +425,7 @@ const chat = (function() {
             self._handleChatbanVisualState(self._canChat());
           } else {
             self._handleChatbanVisualState(false);
-            self.elements.rate_limit_counter.text('You must be logged in to chat');
+            self.elements.rate_limit_counter.text(__('You must be logged in to chat'));
           }
         }
       });
@@ -943,7 +943,7 @@ const chat = (function() {
         self.elements.input.prop('disabled', true);
         self.elements.rate_limit_overlay.show();
         if (!isChatBanned) {
-          self.elements.rate_limit_counter.text('You must be logged in to chat.');
+          self.elements.rate_limit_counter.text(__('You must be logged in to chat.'));
         }
         self.elements.emoji_button.hide();
       }

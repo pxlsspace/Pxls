@@ -2,7 +2,7 @@ const fs = require('fs');
 const PO = require('pofile');
 const esprima = require('esprima');
 
-const { findTranslationCalls } = require('./localization-util');
+const { findTranslationCalls, contract, shave } = require('./localization-util');
 
 const PEBBLE_FILES = [
   'resources/public/pebble_templates/index.html',
@@ -18,9 +18,6 @@ const PEBBLE_CODE_MATCH = /{([%])((?!\1}).)*\1}|{{((?!}}).)*}}/g;
 const I18N_MATCH = /i18n\s*[(]/g;
 // a string matching regex, handles escapes and escaped escapes.
 const STRING_MATCH = /(["'])((\\{2})*|(.*?[^\\](\\{2})*))\1/g;
-
-const contract = (s, size) => s.slice(size, -size);
-const shave = (s, size) => contract(s, size).trim();
 
 const poFiles = new Map();
 

@@ -233,7 +233,15 @@ const user = (function() {
           if (window.deInitAdmin) {
             window.deInitAdmin();
           }
-          $.getScript('admin/admin.js').done(function() {
+
+          let scriptName = 'admin';
+
+          const langcode = document.documentElement.lang;
+          if (langcode !== 'en') {
+            scriptName += '_' + langcode;
+          }
+
+          $.getScript(`admin/${scriptName}.js`).done(function() {
             window.initAdmin({
               socket: socket,
               user: user,

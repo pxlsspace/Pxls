@@ -45,6 +45,7 @@ const {
   AwaitExpression,
   WhileStatement,
   ThrowStatement,
+  SequenceExpression,
   ContinueStatement
 } = esprima.Syntax;
 
@@ -156,6 +157,7 @@ function findTranslationCalls(expression) {
     case CatchClause:
       return findTranslationCalls(expression.block);
     case TemplateLiteral:
+    case SequenceExpression:
       return expression.expressions
         .map(findTranslationCalls)
         .flat();
@@ -178,3 +180,5 @@ function findTranslationCalls(expression) {
 }
 
 module.exports.findTranslationCalls = findTranslationCalls;
+module.exports.contract = (s, size) => s.slice(size, -size);
+module.exports.shave = (s, size) => module.exports.contract(s, size).trim();
