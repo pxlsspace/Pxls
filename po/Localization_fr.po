@@ -987,7 +987,7 @@ msgstr "FAQ"
 
 #: resources/public/pebble_templates/faq.html:7:20
 msgid "Why is the cooldown as long as it is?"
-msgstr "Pourquoi est-ce que le temps à attendre entre chaque pixel est aussi long ?"
+msgstr "Pourquoi est-ce que le temps à attendre entre chaque pixel est aussi long ?"
 
 #: resources/public/pebble_templates/faq.html:8:20
 msgid "The time it takes to get a pixel is dynamic, and changes based on how many people are online. The cooldown time is longer when more users are online."
@@ -995,7 +995,7 @@ msgstr "Le temps que ça prend pour charger un pixel change en fonction du nombr
 
 #: resources/public/pebble_templates/faq.html:9:20
 msgid "Why does it say 0/6 pixels?"
-msgstr "Pourquoi est-ce que ça dit que j'ai 0/6 pixels ?"
+msgstr "Pourquoi est-ce que ça dit que j'ai 0/6 pixels ?"
 
 #: resources/public/pebble_templates/faq.html:10:20
 msgid "This means that you are waiting for your next pixel. When you place a pixel, there is a cooldown for when you can place the next one. Over time, you can gain up to 6 \"stacked\" pixels to place at once."
@@ -1003,7 +1003,7 @@ msgstr "Ça veut dire que tu es en train d'attendre que ton prochain pixel soit 
 
 #: resources/public/pebble_templates/faq.html:11:20
 msgid "Why does it take so long to \"stack\" pixels?"
-msgstr "Pourquoi est-ce que ça prend autant de temps pour \"stacker\" des pixels ?"
+msgstr "Pourquoi est-ce que ça prend autant de temps pour \"stacker\" des pixels ?"
 
 #: resources/public/pebble_templates/faq.html:12:20
 msgid "This is by design. It is better to place a pixel as soon as you get one. Pixel \"stacking\" is meant to give you a bump if you go AFK for a bit. It takes around 40 minutes to get a full 6/6 pixels, but it only takes around 3 minutes to place 6 pixels if you place them as soon as possible."
@@ -1011,7 +1011,7 @@ msgstr "Simple design. C'est mieux de placer un pixel dès que tu en as l'opport
 
 #: resources/public/pebble_templates/faq.html:13:20
 msgid "How do I appeal a ban?"
-msgstr "Comment puis-je faire appel à un bannissement ?"
+msgstr "Comment puis-je faire appel à un bannissement ?"
 
 #: resources/public/pebble_templates/faq.html:14:20
 msgid "Contact us on <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord</a> or send an appeal to our <a href=\"https://pxls.space/appeal\" target=\"_blank\">Google form</a> after reading the rules in the site's info panel."
@@ -1019,7 +1019,7 @@ msgstr "Contacte-nous à <a href=\"https://pxls.space/discord\" target=\"_blank\
 
 #: resources/public/pebble_templates/faq.html:15:20
 msgid "How do I make a template?"
-msgstr "Comment créer un modèle ?"
+msgstr "Comment créer un modèle ?"
 
 #: resources/public/pebble_templates/faq.html:16:20
 msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use the 3rd party tool <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into PxlsFiddle."
@@ -1027,7 +1027,7 @@ msgstr "Un modèle est un lien d'image qui est posté dans la boîte de texte de
 
 #: resources/public/pebble_templates/faq.html:17:20
 msgid "How do I move a template?"
-msgstr "Comment est-ce que je déplace mon modèle ?"
+msgstr "Comment est-ce que je déplace mon modèle ?"
 
 #: resources/public/pebble_templates/faq.html:18:20
 msgid "Hold <kbd>CTRL</kbd> (or <kbd>OPTION</kbd> on macOS) and click and drag to move it around. On mobile, you can tap and hold where you want to move the template and click \"Move Template Here\" in the pop-up."
@@ -1035,7 +1035,7 @@ msgstr "Maintiens <kbd>CTRL</kbd> (ou <kbd>OPTION</kbd> sur macOS) et déplace l
 
 #: resources/public/pebble_templates/faq.html:19:20
 msgid "Does the canvas reset? When?"
-msgstr "Est-ce que le canvas se réinitialise ? Quand ?"
+msgstr "Est-ce que le canvas se réinitialise ? Quand ?"
 
 #: resources/public/pebble_templates/faq.html:20:20
 msgid "Yes. The canvas resets when it is completely full. A reset date is not usually decided until the canvas is full, but the average canvas life-span is around 1 month. Updates are posted in our <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord server</a> when a reset date is set."
@@ -1043,7 +1043,7 @@ msgstr "Oui. Le canvas se réinitialise quand il est complètement rempli. Une d
 
 #: resources/public/pebble_templates/faq.html:21:20
 msgid "Where can I see the past canvases?"
-msgstr "Où puis-je voir les anciens canvas ?"
+msgstr "Où puis-je voir les anciens canvas ?"
 
 #: resources/public/pebble_templates/faq.html:22:20
 msgid "The past canvases are featured on our <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord server</a>, or the 3rd party website <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a>, which records timelapses and a lot of useful information on each canvas."
@@ -1051,7 +1051,7 @@ msgstr "Les anciens canvas sont situés dans notre <a href=\"https://pxls.space/
 
 #: resources/public/pebble_templates/faq.html:23:20
 msgid "How do I see who placed a pixel?"
-msgstr "Comment puis-je voir qui a placé un pixel ?"
+msgstr "Comment puis-je voir qui a placé un pixel ?"
 
 #: resources/public/pebble_templates/faq.html:24:20
 msgid "By shift-clicking (or tap and hold on mobile) a pixel, you can see who placed a pixel, how many pixels they have placed, and when they placed it."
@@ -1059,7 +1059,7 @@ msgstr "En shift-cliquant (ou en maintenant son doigt sur mobile) sur un pixel, 
 
 #: resources/public/pebble_templates/faq.html:25:20
 msgid "How do I report someone?"
-msgstr "Comment est-ce que je signale quelqu'un ?"
+msgstr "Comment est-ce que je signale quelqu'un ?"
 
 #: resources/public/pebble_templates/faq.html:26:20
 msgid "Shift-click (or tap and hold on mobile) on a pixel, and click the Report button."
@@ -1067,7 +1067,7 @@ msgstr "Shift-click (ou en maintenant son doigt sur mobile) sur un pixel, et app
 
 #: resources/public/pebble_templates/faq.html:27:20
 msgid "How do I change the color of my name in the chat?"
-msgstr "Comment est-ce que je change la couleur de mon nom dans le chat ?"
+msgstr "Comment est-ce que je change la couleur de mon nom dans le chat ?"
 
 #: resources/public/pebble_templates/faq.html:28:20
 msgid "There is a \"Username Color\" option near the bottom of the settings panel."
@@ -1075,7 +1075,7 @@ msgstr "Il y a une option \"Couleur du nom d'utilisateur\" près du bas des opti
 
 #: resources/public/pebble_templates/faq.html:29:20
 msgid "What is a \"virginmap\"?"
-msgstr "Qu'est-ce que la \"virginmap\" ?"
+msgstr "Qu'est-ce que la \"virginmap\" ?"
 
 #: resources/public/pebble_templates/faq.html:30:20
 msgid "The virginmap shows which pixels have not yet been placed on (or “virgin” pixels)."
@@ -1083,7 +1083,7 @@ msgstr "La virginmap montre quels pixels n'ont pas encore été touchés (les pi
 
 #: resources/public/pebble_templates/faq.html:31:20
 msgid "How do I report bugs?"
-msgstr "Comment puis-je signaler un bug ?"
+msgstr "Comment puis-je signaler un bug ?"
 
 #: resources/public/pebble_templates/faq.html:32:20
 msgid "Submit bugs to the #dev-and-bugs channel in the <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord server</a>. If you have found an exploit, please message one of the staff members privately (through DMs)."
@@ -1091,7 +1091,7 @@ msgstr "Publie ton problème dans le salon #devs-and-bugs dans notre <a href=\"h
 
 #: resources/public/pebble_templates/faq.html:33:20
 msgid "How do I get more info or contact staff?"
-msgstr "Comment puis-je avoir plus d'informations ou contacter le staff ?"
+msgstr "Comment puis-je avoir plus d'informations ou contacter le staff ?"
 
 #: resources/public/pebble_templates/faq.html:34:20
 msgid "Check the info panel (the icon on the top left) for more details and links, or join our <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord server</a>, where a staff member will gladly respond."
