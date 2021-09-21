@@ -252,6 +252,8 @@ const uiHelper = (function() {
     },
     _initStack: function() {
       socket.on('pixels', function(data) {
+        timer.cooldown = (new Date()).getTime();
+        timer.update();
         self.updateAvailable(data.count, data.cause);
       });
     },
