@@ -46,7 +46,7 @@ function lint() {
 }
 
 function srcJS () {
-  return src([...SOURCE_FILES, '!resources/public/include/**/*.js'], { read: false })
+  return src([...SOURCE_FILES, '!resources/public/include/**/*.js', '!resources/public/profile/**/*.js'], { read: false })
     .pipe(tap(file => {
       file.contents = browserify(file.path, { debug: isDevEnvironment })
         .bundle();
