@@ -450,7 +450,7 @@ public class PacketHandler {
             if (message.trim().length() == 0) return;
             if (user.isRenameRequested(false)) return;
             int remaining = RateLimitFactory.getTimeRemaining(DBChatMessage.class, String.valueOf(user.getId()));
-            if (remaining > 0) {
+            if (!user.hasPermission("chat.cooldown.ignore") && remaining > 0) {
                 server.send(user, new ServerChatCooldown(remaining, message));
                 return;
             }
