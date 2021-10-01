@@ -22,8 +22,9 @@ public class CanvasInfo {
     public List<String> chatBannerText;
     public Boolean snipMode;
     public List<Object> customEmoji;
+    public String chatRatelimitMessage;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, List<Object> customEmoji) {
+    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, List<Object> customEmoji, String chatRatelimitMessage) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
@@ -39,6 +40,7 @@ public class CanvasInfo {
         this.chatBannerText = chatBannerText;
         this.snipMode = snipMode;
         this.customEmoji = customEmoji;
+        this.chatRatelimitMessage = chatRatelimitMessage;
     }
 
     public String getCanvasCode() {
@@ -99,5 +101,9 @@ public class CanvasInfo {
 
     public List<Object> getCustomEmoji() {
         return customEmoji;
+    }
+
+    public String getChatRatelimitMessage() {
+        return chatRatelimitMessage;
     }
 }
