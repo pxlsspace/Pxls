@@ -81,6 +81,11 @@ const uiHelper = (function() {
         name: 'Red',
         location: '/themes/red.css',
         color: '#cf0000'
+      },
+      {
+        name: 'Synthwave',
+        location: '/themes/synthwave.css',
+        color: '#1d192c'
       }
     ],
     specialChatColorClasses: ['rainbow', ['donator', 'donator--green'], ['donator', 'donator--gray']],
