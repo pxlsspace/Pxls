@@ -16,6 +16,7 @@ const uiHelper = (function() {
     tabId: null,
     _workerIsTabFocused: false,
     _available: -1,
+    pixelsAvailable: -1,
     maxStacked: -1,
     _alertUpdateTimer: false,
     initTitle: '',
@@ -479,6 +480,8 @@ const uiHelper = (function() {
     },
     setPlaceableText(placeable) {
       self.elements.stackCount.text(`${placeable}/${self.maxStacked}`);
+      self.pixelsAvailable = placeable;
+      document.title = uiHelper.getTitle();
     },
     setDiscordName(name) {
       self.elements.txtDiscordName.val(name);
@@ -622,7 +625,15 @@ const uiHelper = (function() {
       return self.initTitle;
     },
     getTitle: (prepend) => {
-      if (typeof prepend !== 'string') prepend = '';
+      if (typeof prepend !== 'string') {
+        if (self.pixelsAvailable > 0) {
+          prepend = `[${self.pixelsAvailable}/${self.maxStacked}]`;
+        } else if (self.pixelsAvailable === 0) {
+          prepend = `[${timer.getCurrentTimer()}]`;
+        } else {
+          prepend = '';
+        }
+      }
       const tplOpts = template.getOptions();
       let append = self.initTitle;
 
