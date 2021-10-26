@@ -22,6 +22,11 @@
     "gulp-minify": "git://github.com/pxlsspace/gulp-minify.git",
     "gulp-sourcemaps": "^2.6.5",
     "gulp-tap": "^2.0.0",
-    "merge-stream": "^2.0.0"
+    "merge-stream": "^2.0.0",
+    "pofile": "^1.1.0"
+  },
+  "devDependencies": {
+    "gulp-rename": "^2.0.0",
+    "through2": "^2.0.5"
   }
 }
