@@ -406,6 +406,10 @@ dt {
     background-image: linear-gradient(45deg, hsl(0, 0%, 42.5%) 0, hsl(0, 0%, 63.5%) 50%, hsl(0, 0%, 42.5%) 100%);
 }
 
+.donator.donator--synthwave{
+    background-image: linear-gradient(90deg, #ff00ff, #af94fc,#0ff ,#7544ff, #ff00ff);
+}
+
 .error {
     color: var(--error-color);
     font-weight: 700;

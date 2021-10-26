@@ -24,8 +24,9 @@ public class CanvasInfo {
     public List<Object> customEmoji;
     public String corsBase;
     public String corsParam;
+    public String chatRatelimitMessage;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, List<Object> customEmoji, String corsBase, String corsParam) {
+    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, List<Object> customEmoji, String corsBase, String corsParam, String chatRatelimitMessage) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
@@ -43,6 +44,7 @@ public class CanvasInfo {
         this.customEmoji = customEmoji;
         this.corsBase = corsBase;
         this.corsParam = corsParam;
+        this.chatRatelimitMessage = chatRatelimitMessage;
     }
 
     public String getCanvasCode() {
@@ -108,7 +110,12 @@ public class CanvasInfo {
     public String getCorsBase() {
         return corsBase;
     }
+    
     public String getCorsParam() {
         return corsParam;
+    }
+
+    public String getChatRatelimitMessage() {
+        return chatRatelimitMessage;
     }
 }

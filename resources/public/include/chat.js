@@ -14,6 +14,7 @@ const { intToHex } = require('./helpers');
 
 const chat = (function() {
   const self = {
+    ratelimitMessage: 'Please wait ',
     seenHistory: false,
     stickToBottom: true,
     repositionTimer: false,
@@ -75,19 +76,20 @@ const chat = (function() {
     TEMPLATE_ACTIONS: {
       ASK: {
         id: 'ask',
-        pretty: 'Ask'
+        // translator: template link action
+        pretty: __('Ask')
       },
       NEW_TAB: {
         id: 'new tab',
-        pretty: 'Open in a new tab'
+        pretty: __('Open in a new tab')
       },
       CURRENT_TAB: {
         id: 'current tab',
-        pretty: 'Open in current tab (replacing template)'
+        pretty: __('Open in current tab (replacing template)')
       },
       JUMP_ONLY: {
         id: 'jump only',
-        pretty: 'Jump to coordinates without replacing template'
+        pretty: __('Jump to coordinates without replacing template')
       }
     },
     init: () => {
@@ -185,26 +187,34 @@ const chat = (function() {
         }
       });
       socket.on('message_cooldown', e => {
-        self.timeout.ends = (new Date() >> 0) + ((e.diff >> 0) * 1e3) + 1e3; // add 1 second so that we're 1-based instead of 0-based
+        self.timeout.ends = Date.now() + ((e.diff >> 0) * 1e3) + 1e3; // add 1 second so that we're 1-based instead of 0-based
         if (uiHelper.tabHasFocus()) {
           self.elements.input.val(e.message);
         }
-        if ((new Date() >> 0) > self.timeout.ends) {
+        if (Date.now() > self.timeout.ends) {
           self.elements.rate_limit_overlay.fadeOut();
         } else {
           self.elements.rate_limit_overlay.fadeIn();
         }
         if (self.timeout.timer > 0) clearInterval(self.timeout.timer);
-        self.timeout.timer = setInterval(() => {
-          const delta = (self.timeout.ends - (new Date() >> 0)) / 1e3 >> 0;
-          self.elements.rate_limit_counter.text(`${delta}s`);
+
+        const showCooldown = () => {
+          const delta = (self.timeout.ends - Date.now()) / 1e3 >> 0;
+
+          const ratelimitReset = moment(self.timeout.ends);
+          const formatted = ratelimitReset.toNow(true);
+
+          self.elements.rate_limit_counter.text(self.ratelimitMessage + formatted);
           if (delta <= 0) {
             self.elements.rate_limit_overlay.fadeOut();
             self.elements.rate_limit_counter.text('');
             clearInterval(self.timeout.timer);
             self.timeout.timer = 0;
           }
-        }, 100);
+        };
+
+        self.timeout.timer = setInterval(showCooldown, 1000);
+        showCooldown();
       });
       socket.on('chat_lookup', e => {
         if (e.target && Array.isArray(e.history) && Array.isArray(e.chatbans)) {
@@ -424,7 +434,7 @@ const chat = (function() {
             self._handleChatbanVisualState(self._canChat());
           } else {
             self._handleChatbanVisualState(false);
-            self.elements.rate_limit_counter.text('You must be logged in to chat');
+            self.elements.rate_limit_counter.text(__('You must be logged in to chat.'));
           }
         }
       });
@@ -632,6 +642,7 @@ const chat = (function() {
     },
     webinit(data) {
       self.setCharLimit(data.chatCharacterLimit);
+      self.ratelimitMessage = data.chatRatelimitMessage;
       self.canvasBanRespected = data.chatRespectsCanvasBan;
       self._populateUsernameColor();
       self.elements.username_color_select.value = user.getChatNameColor();
@@ -942,7 +953,7 @@ const chat = (function() {
         self.elements.input.prop('disabled', true);
         self.elements.rate_limit_overlay.show();
         if (!isChatBanned) {
-          self.elements.rate_limit_counter.text('You must be logged in to chat.');
+          self.elements.rate_limit_counter.text(__('You must be logged in to chat.'));
         }
         self.elements.emoji_button.hide();
       }
@@ -998,6 +1009,7 @@ const chat = (function() {
         hasPermForColor('rainbow') ? crel('option', { value: -1, class: 'rainbow' }, '*. Rainbow') : null,
         hasAllDonatorColors || hasPermForColor('donator.green') ? crel('option', { value: -2, class: 'donator donator--green' }, '*. Donator Green') : null,
         hasAllDonatorColors || hasPermForColor('donator.gray') ? crel('option', { value: -3, class: 'donator donator--gray' }, '*. Donator Gray') : null,
+        hasAllDonatorColors || hasPermForColor('donator.synthwave') ? crel('option', { value: -4, class: 'donator donator--synthwave' }, '*. Donator Synthwave') : null,
         place.palette.map(({ name, value: hex }, i) => crel('option', {
           value: i,
           'data-idx': i,
@@ -1245,7 +1257,8 @@ const chat = (function() {
     },
     _markMessagePurged: (elem, purge) => {
       elem.classList.add('purged');
-      elem.setAttribute('title', `Purged by ${purge.initiator} with reason: ${purge.reason || 'none provided'}`);
+      const reason = purge.reason || __('none provided');
+      elem.setAttribute('title', __(`Purged by ${purge.initiator} with reason: ${reason}`));
       elem.dataset.purgedBy = purge.initiator;
     },
     _markMessageShadowBanned: (elem) => {
@@ -1255,12 +1268,15 @@ const chat = (function() {
     _makeCoordinatesElement: (raw, x, y, scale, template, title) => {
       let text = `(${x}, ${y}${scale != null ? `, ${scale}x` : ''})`;
       if (template != null && template.length >= 11) { // we have a template, should probably make that known
-        const tmplName = decodeURIComponent(
+        let tmplName = decodeURIComponent(
           settings.chat.links.templates.preferurls.get() !== true && title && title.trim()
             ? title
             : template
         );
-        text += ` (template: ${(tmplName > 25) ? `${tmplName.substr(0, 22)}...` : tmplName})`;
+        if (tmplName.length > 25) {
+          tmplName = `${tmplName.substr(0, 22)}...`;
+        }
+        text += ` (${__('template:')} ${tmplName})`;
       }
 
       function handleClick(e) {
@@ -1312,13 +1328,13 @@ const chat = (function() {
         case self.TEMPLATE_ACTIONS.NEW_TAB.id: {
           if (!window.open(linkElem.dataset.raw, '_blank')) { // what popup blocker still blocks _blank redirects? idk but i'm sure they exist.
             modal.show(modal.buildDom(
-              crel('h2', { class: 'modal-title' }, 'Open Failed'),
+              crel('h2', { class: 'modal-title' }, __('Open Failed')),
               crel('div',
-                crel('h3', 'Failed to automatically open in a new tab'),
+                crel('h3', __('Failed to automatically open in a new tab')),
                 crel('a', {
                   href: linkElem.dataset.raw,
                   target: '_blank'
-                }, 'Click here to open in a new tab instead')
+                }, __('Click here to open in a new tab instead'))
               )
             ));
           }
@@ -1332,9 +1348,9 @@ const chat = (function() {
         // const buttons = crel('div', { style: 'text-align: right; display: block; width: 100%;' });
 
         modal.show(modal.buildDom(
-          crel('h2', { class: 'modal-title' }, 'Open Template'),
+          crel('h2', { class: 'modal-title' }, __('Open Template')),
           crel(bodyWrapper,
-            crel('h3', { class: 'text-orange' }, 'This link will overwrite your current template. What would you like to do?'),
+            crel('h3', { class: 'text-orange' }, __('This link will overwrite your current template. What would you like to do?')),
             Object.values(self.TEMPLATE_ACTIONS).map(action => action.id === self.TEMPLATE_ACTIONS.ASK.id ? null
               : crel('label', { style: 'display: block; margin: 3px 3px 3px 1rem; margin-left: 1rem;' },
                 crel('input', {
@@ -1345,11 +1361,11 @@ const chat = (function() {
                 action.pretty
               )
             ),
-            crel('span', { class: 'text-muted' }, 'Note: You can set a default action in the settings menu which bypasses this popup completely.')
+            crel('span', { class: 'text-muted' }, __('Note: You can set a default action in the settings menu which bypasses this popup completely.'))
           ),
           [
-            ['Cancel', () => resolve(false)],
-            ['OK', () => resolve(bodyWrapper.querySelector('input[type=radio]:checked').dataset.actionId)]
+            [__('Cancel'), () => resolve(false)],
+            [__('OK'), () => resolve(bodyWrapper.querySelector('input[type=radio]:checked').dataset.actionId)]
           ].map(x =>
             crel('button', {
               class: 'text-button',
@@ -1436,16 +1452,16 @@ const chat = (function() {
         const actionsList = crel('ul', { class: 'actions-list' });
 
         const actions = [
-          { label: 'Report', action: 'report', class: 'dangerous-button' },
-          { label: 'Mention', action: 'mention' },
-          { label: 'Ignore', action: 'ignore' },
-          (!board.snipMode || App.user.hasPermission('user.receivestaffbroadcasts')) && { label: 'Profile', action: 'profile' },
-          { label: 'Chat (un)ban', action: 'chatban', staffaction: true },
+          { label: __('Report'), action: 'report', class: 'dangerous-button' },
+          { label: __('Mention'), action: 'mention' },
+          { label: __('Ignore'), action: 'ignore' },
+          (!board.snipMode || App.user.hasPermission('user.receivestaffbroadcasts')) && { label: __('Profile'), action: 'profile' },
+          { label: __('Chat (un)ban'), action: 'chatban', staffaction: true },
           // TODO(netux): Fix infraestructure and allow to purge during snip mode
-          !board.snipMode && { label: 'Purge User', action: 'purge', staffaction: true },
-          { label: 'Delete', action: 'delete', staffaction: true },
-          { label: 'Mod Lookup', action: 'lookup-mod', staffaction: true },
-          { label: 'Chat Lookup', action: 'lookup-chat', staffaction: true }
+          !board.snipMode && { label: __('Purge User'), action: 'purge', staffaction: true },
+          { label: __('Delete'), action: 'delete', staffaction: true },
+          { label: __('Mod Lookup'), action: 'lookup-mod', staffaction: true },
+          { label: __('Chat Lookup'), action: 'lookup-chat', staffaction: true }
         ];
 
         crel(leftPanel, crel('p', { class: 'popup-timestamp-header text-muted' }, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(settings.chat.timestamps['24h'].get() === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
@@ -1515,20 +1531,27 @@ const chat = (function() {
           const reportButton = crel('button', {
             class: 'text-button dangerous-button',
             type: 'submit'
-          }, 'Report');
+          }, __('Report'));
           const textArea = crel('textarea', {
-            placeholder: 'Enter a reason for your report',
+            placeholder: __('Enter a reason for your report'),
             style: 'width: 100%; border: 1px solid #999;',
             onkeydown: e => e.stopPropagation()
           });
 
+          // NOTE ([  ]): these names are bad — they are functionally the same
+          // as the ones used above but contain different content.
+          // Also, the code is awful but getting a clean translation string is
+          // more important than having clean code for what I'm doing right now.
+          const reportTarget = crel('span', crel('span', { style: 'font-weight: bold' }, reportingTarget)).innerHTML;
+          const reportMessage = crel('span', crel('span', { title: reportingMessage }, reportingMessage.substr(0, 60) + (reportingMessage.length > 60 ? '...' : ''))).innerHTML;
+
           const chatReport =
               crel('form', { class: 'report chat-report', 'data-chat-id': this.dataset.id },
-                crel('p', { style: 'font-size: 1rem !important;' },
-                  'You are reporting a chat message from ',
-                  crel('span', { style: 'font-weight: bold' }, reportingTarget),
-                  crel('span', { title: reportingMessage }, ` with the content "${reportingMessage.substr(0, 60)}${reportingMessage.length > 60 ? '...' : ''}"`)
-                ),
+                // NOTE ([  ]): Using $ here instead of crel because the content
+                // contains HTML as a string (reportTarget and reportMessage).
+                $('<p>').style('font-size', '1rem !important;').html(
+                  __(`You are reporting a chat message from ${reportTarget} with the content:`) + reportMessage
+                )[0],
                 textArea,
                 crel('div', { style: 'text-align: right' },
                   crel('button', {
@@ -1539,7 +1562,7 @@ const chat = (function() {
                       modal.closeAll();
                       chatReport.remove();
                     }
-                  }, 'Cancel'),
+                  }, __('Cancel')),
                   reportButton
                 )
               );
@@ -1552,14 +1575,14 @@ const chat = (function() {
               report_message: textArea.value
             }, function() {
               chatReport.remove();
-              modal.showText('Sent report!');
+              modal.showText(__('Sent report!'));
             }).fail(function() {
-              modal.showText('Error sending report.');
+              modal.showText(__('Error sending report.'));
               reportButton.disabled = false;
             });
           };
           modal.show(modal.buildDom(
-            crel('h2', { class: 'modal-title' }, 'Report User'),
+            crel('h2', { class: 'modal-title' }, __('Report User')),
             chatReport
           ));
           break;
@@ -1573,9 +1596,9 @@ const chat = (function() {
         case 'ignore': {
           if (reportingTarget) {
             if (chat.addIgnore(reportingTarget)) {
-              modal.showText('User ignored. You can unignore from chat settings.');
+              modal.showText(__('User ignored. You can unignore from chat settings.'));
             } else {
-              modal.showText('Failed to ignore user. Either they\'re already ignored, or an error occurred. If the problem persists, contact a developer.');
+              modal.showText(__('Failed to ignore user. Either they\'re already ignored, or an error occurred. If the problem persists, contact a developer.'));
             }
           } else console.warn('no reportingTarget');
           break;
@@ -1603,7 +1626,7 @@ const chat = (function() {
               )
             );
 
-          const banLengths = [['Unban', -3], ['Permanent', -1], ['Temporary', -2]];
+          const banLengths = [[__('Unban'), -3], [__('Permanent'), -1], [__('Temporary'), -2]];
           const _selBanLength = crel('select', { name: 'selBanLength' },
             banLengths.map(lenPart =>
               crel('option', { value: lenPart[1] }, lenPart[0])
@@ -1630,11 +1653,11 @@ const chat = (function() {
           });
 
           const _selBanReason = crel('select',
-            crel('option', 'Rule 3: Spam'),
-            crel('option', 'Rule 1: Chat civility'),
-            crel('option', 'Rule 2: Hate Speech'),
-            crel('option', 'Rule 5: NSFW'),
-            crel('option', 'Custom')
+            crel('option', __('Rule 3: Spam')),
+            crel('option', __('Rule 1: Chat civility')),
+            crel('option', __('Rule 2: Hate Speech')),
+            crel('option', __('Rule 5: NSFW')),
+            crel('option', __('Custom'))
           );
 
           const _additionalReasonInfoWrap = crel('div', { style: 'margin-top: .5rem;' });
@@ -1660,36 +1683,36 @@ const chat = (function() {
               chatbanContainer.remove();
               modal.closeAll();
             }
-          }, 'Cancel');
+          }, __('Cancel'));
           const _btnOK = crel('button', { class: 'text-button dangerous-button', type: 'submit' }, 'Ban');
 
           const chatbanContainer = crel('form', {
             class: 'chatmod-container',
             'data-chat-id': this.dataset.id
           },
-          crel('h5', mode ? 'Banning:' : 'Message:'),
+          crel('h5', mode ? __('Banning:') : __('Message:')),
           messageTable,
-          crel('h5', 'Ban Length'),
+          crel('h5', __('Ban Length')),
           _selBanLength,
           crel(_customLenWrap,
             _txtCustomLength,
             _selCustomLength
           ),
           crel(_reasonWrap,
-            crel('h5', 'Reason'),
+            crel('h5', __('Reason')),
             _selBanReason,
             crel(_additionalReasonInfoWrap, _txtAdditionalReason)
           ),
           crel(_purgeWrap,
-            crel('h5', 'Purge Messages'),
+            crel('h5', __('Purge Messages')),
             board.snipMode
               ? crel('span', { class: 'text-orange extra-warning' },
                 crel('i', { class: 'fas fa-exclamation-triangle' }),
-                ' Purging all messages is disabled during snip mode'
+                ' ' + __('Purging all messages is disabled during snip mode')
               )
               : [
-                crel('label', { style: 'display: inline;' }, _rbPurgeYes, 'Yes'),
-                crel('label', { style: 'display: inline;' }, _rbPurgeNo, 'No')
+                crel('label', { style: 'display: inline;' }, _rbPurgeYes, __('Yes')),
+                crel('label', { style: 'display: inline;' }, _rbPurgeNo, __('No'))
               ]
           ),
           crel('div', { class: 'buttons' },
@@ -1707,13 +1730,13 @@ const chat = (function() {
             const isUnban = _selBanLength.value === '-3';
             _reasonWrap.style.display = isUnban ? 'none' : 'block';
             _purgeWrap.style.display = isUnban ? 'none' : 'block';
-            _btnOK.innerHTML = isUnban ? 'Unban' : 'Ban';
+            _btnOK.innerHTML = isUnban ? __('Unban') : __('Ban');
           });
           _selCustomLength.selectedIndex = 1; // minutes
 
           const updateAdditionalTextarea = () => {
-            const isCustom = _selBanReason.value === 'Custom';
-            _txtAdditionalReason.placeholder = isCustom ? 'Custom reason' : 'Additional information (if applicable)';
+            const isCustom = _selBanReason.value === __('Custom');
+            _txtAdditionalReason.placeholder = isCustom ? __('Custom reason') : __('Additional information (if applicable)');
             _txtAdditionalReason.required = isCustom;
           };
 
@@ -1727,18 +1750,18 @@ const chat = (function() {
             e.preventDefault();
             const postData = {
               type: 'temp',
-              reason: 'none provided',
+              reason: __('none provided'),
               // TODO(netux): Fix infraestructure and allow to purge during snip mode
               removalAmount: !board.snipMode ? (_rbPurgeYes.checked ? -1 : 0) : 0, // message purges are based on username, so if we purge when everyone in chat is -snip-, we aren't gonna have a good time
               banLength: 0
             };
 
-            if (_selBanReason.value === 'Custom') {
+            if (_selBanReason.value === __('Custom')) {
               postData.reason = _txtAdditionalReason.value;
             } else {
               postData.reason = _selBanReason.value;
               if (_txtAdditionalReason.value) {
-                postData.reason += `. Additional information: ${_txtAdditionalReason.value}`;
+                postData.reason += `. ${__('Additional information:')} ${_txtAdditionalReason.value}`;
               }
             }
 
@@ -1758,13 +1781,13 @@ const chat = (function() {
             if (mode) { postData.cmid = this.dataset.id; } else { postData.who = reportingTarget; }
 
             $.post('/admin/chatban', postData, () => {
-              modal.showText('Chatban initiated');
+              modal.showText(__('Chatban initiated'));
             }).fail(() => {
-              modal.showText('Error occurred while chatbanning');
+              modal.showText(__('Error occurred while chatbanning'));
             });
           };
           modal.show(modal.buildDom(
-            crel('h2', { class: 'modal-title' }, 'Chatban'),
+            crel('h2', { class: 'modal-title' }, __('Chatban')),
             crel('div', { style: 'padding-left: 1em' },
               chatbanContainer
             )
@@ -1784,7 +1807,7 @@ const chat = (function() {
           }, () => {
             modal.closeAll();
           }).fail(() => {
-            modal.showText('Failed to delete');
+            modal.showText(__('Failed to delete'));
           });
 
           if (e.shiftKey === true) {
@@ -1795,19 +1818,19 @@ const chat = (function() {
           const deleteWrapper = crel('div', { class: 'chatmod-container' },
             crel('table',
               crel('tr',
-                crel('th', 'ID: '),
+                crel('th', __('ID: ')),
                 crel('td', this.dataset.id)
               ),
               crel('tr',
-                crel('th', 'User: '),
+                crel('th', __('User: ')),
                 crel('td', reportingTarget)
               ),
               crel('tr',
-                crel('th', 'Message: '),
+                crel('th', __('Message: ')),
                 crel('td', { title: reportingMessage }, `${reportingMessage.substr(0, 120)}${reportingMessage.length > 120 ? '...' : ''}`)
               ),
               crel('tr',
-                crel('th', 'Reason: '),
+                crel('th', __('Reason: ')),
                 crel('td', _txtReason)
               )
             ),
@@ -1819,12 +1842,12 @@ const chat = (function() {
                   deleteWrapper.remove();
                   modal.closeAll();
                 }
-              }, 'Cancel'),
+              }, __('Cancel')),
               btndelete
             )
           );
           modal.show(modal.buildDom(
-            crel('h2', { class: 'modal-title' }, 'Delete Message'),
+            crel('h2', { class: 'modal-title' }, __('Delete Message')),
             deleteWrapper
           ));
           break;
@@ -1832,31 +1855,31 @@ const chat = (function() {
         case 'purge': {
           const txtPurgeReason = crel('input', { type: 'text', onkeydown: e => e.stopPropagation() });
 
-          const btnPurge = crel('button', { class: 'text-button dangerous-button', type: 'submit' }, 'Purge');
+          const btnPurge = crel('button', { class: 'text-button dangerous-button', type: 'submit' }, __('Purge'));
 
           const messageTable = mode
             ? crel('table',
               crel('tr',
-                crel('th', 'ID: '),
+                crel('th', __('ID: ')),
                 crel('td', this.dataset.id)
               ),
               crel('tr',
-                crel('th', 'Message: '),
+                crel('th', __('Message: ')),
                 crel('td', { title: reportingMessage }, `${reportingMessage.substr(0, 120)}${reportingMessage.length > 120 ? '...' : ''}`)
               )
             )
             : crel('table', { class: 'chatmod-table' },
               crel('tr',
-                crel('th', 'User: '),
+                crel('th', __('User: ')),
                 crel('td', reportingTarget)
               )
             );
 
           const purgeWrapper = crel('form', { class: 'chatmod-container' },
-            crel('h5', 'Selected Message'),
+            crel('h5', __('Selected Message')),
             messageTable,
             crel('div',
-              crel('h5', 'Purge Reason'),
+              crel('h5', __('Purge Reason')),
               txtPurgeReason
             ),
             crel('div', { class: 'buttons' },
@@ -1867,7 +1890,7 @@ const chat = (function() {
                   purgeWrapper.remove();
                   modal.closeAll();
                 }
-              }, 'Cancel'),
+              }, __('Cancel')),
               btnPurge
             )
           );
@@ -1879,13 +1902,13 @@ const chat = (function() {
               reason: txtPurgeReason.value
             }, function() {
               purgeWrapper.remove();
-              modal.showText('User purged');
+              modal.showText(__('User purged'));
             }).fail(function() {
-              modal.showText('Error sending purge.');
+              modal.showText(__('Error sending purge.'));
             });
           };
           modal.show(modal.buildDom(
-            crel('h2', { class: 'modal-title' }, 'Purge User'),
+            crel('h2', { class: 'modal-title' }, __('Purge User')),
             crel('div', { style: 'padding-left: 1em' }, purgeWrapper)
           ));
           break;
@@ -1900,7 +1923,7 @@ const chat = (function() {
         }
         case 'lookup-chat': {
           socket.send({
-            type: 'ChatLookup',
+            type: __('ChatLookup'),
             arg: board.snipMode ? this.dataset.id : reportingTarget,
             mode: board.snipMode ? 'cmid' : 'username'
           });
@@ -1910,10 +1933,10 @@ const chat = (function() {
           const rbStateOn = crel('input', { type: 'radio', name: 'rbState' });
           const rbStateOff = crel('input', { type: 'radio', name: 'rbState' });
 
-          const stateOn = crel('label', { style: 'display: inline-block' }, rbStateOn, ' On');
-          const stateOff = crel('label', { style: 'display: inline-block' }, rbStateOff, ' Off');
+          const stateOn = crel('label', { style: 'display: inline-block' }, rbStateOn, ' ' + __('On'));
+          const stateOff = crel('label', { style: 'display: inline-block' }, rbStateOff, ' ' + __('Off'));
 
-          const btnSetState = crel('button', { class: 'text-button', type: 'submit' }, 'Set');
+          const btnSetState = crel('button', { class: 'text-button', type: 'submit' }, __('Set'));
 
           const renameError = crel('p', {
             style: 'display: none; color: #f00; font-weight: bold; font-size: .9rem',
@@ -1923,8 +1946,8 @@ const chat = (function() {
           rbStateOff.checked = true;
 
           const renameWrapper = crel('form', { class: 'chatmod-container' },
-            crel('h3', 'Toggle Rename Request'),
-            crel('p', 'Select one of the options below to set the current rename request state.'),
+            crel('h3', __('Toggle Rename Request')),
+            crel('p', __('Select one of the options below to set the current rename request state.')),
             crel('div', stateOn, stateOff),
             renameError,
             crel('div', { class: 'buttons' },
@@ -1935,7 +1958,7 @@ const chat = (function() {
                   renameWrapper.remove();
                   modal.closeAll();
                 }
-              }, 'Cancel'),
+              }, __('Cancel')),
               btnSetState
             )
           );
@@ -1947,9 +1970,9 @@ const chat = (function() {
               flagState: rbStateOn.checked === true
             }, function() {
               renameWrapper.remove();
-              modal.showText('Rename request updated');
+              modal.showText(__('Rename request updated'));
             }).fail(function(xhrObj) {
-              let resp = 'An unknown error occurred. Please contact a developer';
+              let resp = __('An unknown error occurred. Please contact a developer');
               if (xhrObj.responseJSON) {
                 resp = xhrObj.responseJSON.details || resp;
               } else if (xhrObj.responseText) {
@@ -1975,9 +1998,9 @@ const chat = (function() {
             required: 'true',
             onkeydown: e => e.stopPropagation()
           });
-          const newNameWrapper = crel('label', 'New Name: ', newNameInput);
+          const newNameWrapper = crel('label', __('New Name: '), newNameInput);
 
-          const btnSetState = crel('button', { class: 'text-button', type: 'submit' }, 'Set');
+          const btnSetState = crel('button', { class: 'text-button', type: 'submit' }, __('Set'));
 
           const renameError = crel('p', {
             style: 'display: none; color: #f00; font-weight: bold; font-size: .9rem',
@@ -1985,7 +2008,7 @@ const chat = (function() {
           }, '');
 
           const renameWrapper = crel('form', { class: 'chatmod-container' },
-            crel('p', 'Enter the new name for the user below. Please note that if you\'re trying to change the caps, you\'ll have to rename to something else first.'),
+            crel('p', __('Enter the new name for the user below. Please note that if you\'re trying to change the caps, you\'ll have to rename to something else first.')),
             newNameWrapper,
             renameError,
             crel('div', { class: 'buttons' },
@@ -1995,7 +2018,7 @@ const chat = (function() {
                 onclick: () => {
                   modal.closeAll();
                 }
-              }, 'Cancel'),
+              }, __('Cancel')),
               btnSetState
             )
           );
@@ -2006,9 +2029,9 @@ const chat = (function() {
               user: reportingTarget,
               newName: newNameInput.value.trim()
             }, function() {
-              modal.showText('User renamed');
+              modal.showText(__('User renamed'));
             }).fail(function(xhrObj) {
-              let resp = 'An unknown error occurred. Please contact a developer';
+              let resp = __('An unknown error occurred. Please contact a developer');
               if (xhrObj.responseJSON) {
                 resp = xhrObj.responseJSON.details || resp;
               } else if (xhrObj.responseText) {
@@ -2023,7 +2046,7 @@ const chat = (function() {
             });
           };
           modal.show(modal.buildDom(
-            crel('h2', { class: 'modal-title' }, 'Force Rename'),
+            crel('h2', { class: 'modal-title' }, __('Force Rename')),
             renameWrapper
           ));
           break;
@@ -2031,13 +2054,13 @@ const chat = (function() {
         case 'profile': {
           if (!window.open(`/profile/${reportingTarget}`, '_blank')) {
             modal.show(modal.buildDom(
-              crel('h2', { class: 'modal-title' }, 'Open Failed'),
+              crel('h2', { class: 'modal-title' }, __('Open Failed')),
               crel('div',
-                crel('h3', 'Failed to automatically open in a new tab'),
+                crel('h3', __('Failed to automatically open in a new tab')),
                 crel('a', {
                   href: `/profile/${reportingTarget}`,
                   target: '_blank'
-                }, 'Click here to open in a new tab instead')
+                }, __('Click here to open in a new tab instead'))
               )
             ));
           }
@@ -2062,7 +2085,7 @@ const chat = (function() {
       const canChat = self._canChat();
       self._handleChatbanVisualState(canChat);
       if (!canChat) {
-        if (self.elements.rate_limit_counter.text().trim().length === 0) { self.elements.rate_limit_counter.text('You cannot use chat while canvas banned.'); }
+        if (self.elements.rate_limit_counter.text().trim().length === 0) { self.elements.rate_limit_counter.text(__('You cannot use chat while canvas banned.')); }
       }
     }
   };

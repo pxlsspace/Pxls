@@ -422,7 +422,7 @@ module.exports.template = (function() {
       }).on('error', () => {
         self.loading = false;
         self.elements.imageErrorWarning.show();
-        self.elements.imageErrorWarning.text('There was an error getting the image');
+        self.elements.imageErrorWarning.text(__('There was an error getting the image'));
         self._update({ use: false });
       });
 

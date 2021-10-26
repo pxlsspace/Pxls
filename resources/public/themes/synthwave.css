@@ -1,0 +1,652 @@
+html {
+    --general-text-color: #d8f2ff;
+    --general-background: #1d192c;
+
+    --kbd-background: #0000;
+    --kbd-border-color: #8f95ff;
+    --kbd-text-color: #8f95ff;
+
+    --button-background: transparent;
+    --button-border-color: #fc79ec;
+    --button-text-color: #fc79ec;
+    --button-text-color-disabled: var(--button-text-color);
+    --button-border-color-disabled: var(--button-border-color);
+    --button-background-disabled: var(--button-background);
+    --button-text-color-hover: #000;
+    --button-border-color-hover: transparent;
+    --button-background-hover: #fc79ec;
+    --dangerous-button-text-color: #f06;
+    --dangerous-button-background: transparent;
+    --dangerous-button-border-color: #f06;
+    --dangerous-button-text-color-hover: #000;
+    --dangerous-button-background-hover: #f06;
+    --dangerous-button-border-color-hover: transparent;
+
+    --floating-panel-text-color: inherit;
+    --floating-panel-border-color: #ffccf9;
+    --floating-panel-background:linear-gradient(to bottom, #000000eb, #1f0f4ceb);
+
+    --bubble-background: linear-gradient(to bottom, #000000d1, #1f0f4cd1);
+    --bubble-text-color: inherit;
+    --bubble-border-color: #ffccf9;
+
+    --palette-item-border-color: #000;
+    --palette-background: linear-gradient(to left, #5c0058d1, #2c1c57cc);
+    --palette-overlay-background: #1d192cd9;
+    --palette-overlay-text-color: var(--general-text-color);
+    --palette-deselect-button-color: #f06;
+    --palette-number-text-color: inherit;
+    --palette-number-background-color: #434e5d;
+
+    --cursor-text-color: inherit;
+    --cursor-text-background-color: #1f0f4cf0;
+
+    --selection-background-color: #4923cc;
+    --selection-color: #e8cfff;
+
+    --undo-text-color: #fff;
+    --undo-background: var(--palette-background);
+    --undo-border-color: transparent;
+
+    --input-text-color: inherit;
+    --input-background: #000;
+    --input-border-color: #514384;
+    --input-placeholder-text-color: var(--text-muted-color);
+
+    --text-blue-color: #0ff;
+    --text-red-color: #f06;
+    --text-muted-color: #836cdb;
+    --text-yellow-color: #ffd319;
+    --text-orange-color: #8f95ff;
+    --copypulse-color: #009d9d;
+    --notification-color: #ad2059;
+    --notification-border-color: #ff4992;
+
+    --ping-highlight-color: #6036ff;
+    --ping-flash-color: #8ef7d1;
+    --ping-counter-color: var(--text-yellow-color);
+    --notification-expiry-color: #a30041;
+
+    --panel-background: linear-gradient(90deg, #2a0161 20%, #180027 100%);
+    --panel-shadow: #120230a3;
+    --panel-text-color: var(--general-text-color);
+    --panel-border-color: #95ffff;
+    --panel-header-text-color: inherit;
+    --panel-header-background: #00000069;
+    --panel-footer-text-color: var(--text-muted-color);
+    --panel-footer-background: var(--panel-header-background);
+    --panel-close-button-color: #f06;
+    --panel-close-button-color-hover: #ff94bf;
+    --panel-close-button-color-active: var(--panel-close-button-color);
+    --panel-article-background: #1d192c7a;
+    --panel-article-text-color: inherit;
+    --panel-article-border-color: var(--panel-border-color);
+    --panel-article-header-text-color: inherit;
+    --panel-article-header-background: var(--panel-header-background);
+    --panel-article-footer-text-color: var(--panel-footer-text-color);
+    --panel-article-footer-background: var(--panel-footer-background);
+    --panel-trigger-outline-color: #ffccf9;
+    --panel-trigger-color: #1f0f4c;
+    --panel-trigger-color-hover: #6234a4;
+    --panel-trigger-color-active: #6234a4;
+
+    --chat-separator-color: #514384;
+    --chat-odd-background: #9500ff17;
+    --chat-abbr-underline-color: transparent;
+    --chat-user-text-shadow-color: transparent;
+    --chat-mention-text-color: #0ff;
+    --chat-server-action-text-color: var(--text-muted-color);
+    --chat-purged-text-color: #d8f2ffbf;
+    --chat-shadowbanned-text-color:#f06;
+
+    --chat-badge-background: transparent;
+    --chat-badge-text-color: #fddcff;
+
+    --chat-tobottom-text-color: #934de9;
+    --chat-tobottom-background: #28004fe6;
+    --chat-tobottom-text-color-hover: #af79f2;
+    --chat-tobottom-background-hover: #40007feb;
+    --chat-typeahead-menu-background: #07000b;
+    --chat-typeahead-item-text-color: inherit;
+    --chat-typeahead-item-background: #231b41;
+    --chat-typeahead-item-background-hover: #2b1383;
+    --chat-typeahead-item-background-active: #4824cf;
+
+    --emoji-picker-border-color: var(--input-border-color);
+    --emoji-picker-shadow-color: #0009;
+    --emoji-picker-background: linear-gradient(to bottom,#000000, #1f0f4c);
+    --emoji-picker-preview-name-text-color: inherit;
+    --emoji-picker-tab-icon-color: inherit;
+    --emoji-picker-tab-icon-color-selected: #0ff;
+    --emoji-picker-section-text-color: var(--general-text-color);
+    --emoji-picker-emoji-color: var(--general-text-color);
+    --emoji-picker-emoji-background: transparent;
+    --emoji-picker-emoji-background-hover: rgba(120, 0, 255, .62);
+    --emoji-picker-search-input-border-color: var(--input-border-color);
+    --emoji-picker-search-input-background: var(--input-background);
+    --emoji-picker-search-input-text-color: var(--input-text-color);
+    --emoji-picker-search-input-placeholder-text-color: var(--input-placeholder-text-color);
+    --emoji-picker-search-icon-color: var(--text-muted-color);
+    --emoji-picker-search-no-results-color: var(--text-muted-color);
+    --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
+    --emoji-picker-variant-popup-background: #1f0f4c;
+    --emoji-picker-variant-close-button-color: var(--text-red-color);
+
+    --scrollbar-color: #5c4aa0;
+    --scrollbar-color-hover: #725fbd;
+    --scrollbar-color-active:#c3a9ff;
+    --scrollbar-background: transparent;
+
+    --range-background: #004d6b;
+    --range-progress-color: var(--text-blue-color);
+    --range-thumb-color: var(--text-blue-color);
+
+    --checkbox-checked-background: var(--button-border-color);
+    --checkbox-background: var(--input-background);
+    --checkbox-checkmark-color: #2a0161;
+    --checkbox-border-color: var(--input-border-color);
+
+    --icon-badge-color-default: inherit;
+    --icon-badge-color-owner: #727aff;
+    --icon-badge-color-administrator: #00dead;
+    --icon-badge-color-moderator: #f06;
+    --icon-badge-color-trialmod: #f6a;
+    --icon-badge-color-developer: #58a0ff;
+    --icon-badge-color-contributor: #58a0ff;
+    --icon-badge-color-donator: #55ebff;
+}
+
+:active,
+:hover,
+:focus {
+    outline: 0;
+    outline-offset: 0;
+}
+
+:focus {
+    outline-style: none;
+    outline-width: 0 !important;
+    outline-color: unset !important;
+}
+
+a, a:visited, .link, .link:visited {
+    color: inherit;
+    text-shadow: 0 0 2px #001716, 0 0 3px #03edf975, 0 0 5px #03edf975;
+}
+
+a:hover, .link:hover {
+    color: var(--text-blue-color);
+    text-shadow: 0 0 2px #001716, 0 0 3px #03edf975, 0 0 5px #03edf975, 0 0 8px #03edf975;
+}
+
+button:active:enabled:not(.palette-color), a:active{
+    filter: brightness(1.3);
+    transition: none;
+}
+
+a, button {
+    transition: all 0.2s;
+}
+
+#reticule {
+    border: 2px solid var(--cursor-text-background-color);
+}
+
+#loading {
+    background-color: var(--general-background);
+    color: var(--general-text-color);
+    text-shadow: 0 0 2px #001716, 0 0 3px #03edf9, 0 0 5px #03edf9, 0 0 8px #03edf9, 0 0 10px #03edf9;
+}
+
+#reconnecting {
+    background-color: #1f0f4c;
+    opacity: 90%;
+    color: var(--text-red-color);
+    text-shadow: 0 0 3px #000, 0 0 3px currentColor, 0 0 5px currentColor, 0 0 10px currentColor;
+}
+
+/* palette */
+.palette-number {
+    border: 1px solid var(--palette-item-border-color);
+}
+
+.palette-color {
+    border: 2px solid var(--palette-item-border-color);
+}
+
+.palette-color.active {
+    box-shadow: 0 0 10px #f5f;
+}
+
+.palette-color.deselect-button {
+    text-shadow: 0 0 3px #000, 0 0 5px var(--text-red-color), 0 0 10px  var(--text-red-color), 0 0 15px  var(--text-red-color) !important;
+}
+
+.no-border{
+    box-shadow: unset !important;
+}
+
+.chat-ratelimit-overlay {
+    color: var(--text-red-color);
+    font-size: 1.2rem;
+}
+
+input:disabled, input[type="checkbox"]:disabled+span {
+    opacity: .50;
+    cursor: not-allowed !important;
+}
+
+.chat-settings-wrapper input[type="number"] {
+    border: 1px solid var(--input-border-color);
+}
+
+/* scrollbar */
+::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+    background: var(--scrollbar-background) !important;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--scrollbar-color) !important;
+    width: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--scrollbar-color-hover) !important;
+}
+
+::-webkit-scrollbar-thumb:active {
+    background: var(--scrollbar-color-active) !important;
+}
+
+* {
+    scrollbar-color: var(--scrollbar-color) var(--scrollbar-background) !important;
+    scrollbar-width: thin !important;
+}
+
+/* range */
+input[type=range] {
+    margin: auto;
+    outline: 0;
+    height: 6px;
+    background-color: var(--range-background);
+    background-image: linear-gradient(to left, var(--range-progress-color), var(--range-progress-color));
+    background-repeat: no-repeat;
+    border-radius: 10px;
+    cursor: pointer;
+    -webkit-appearance: none;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+    box-shadow: none;
+    border: 0;
+    background: transparent;
+    -webkit-appearance: none;
+}
+
+input[type=range]::-moz-range-track {
+    box-shadow: none;
+    border: 0;
+    background: transparent;
+}
+
+input[type=range]::-moz-focus-outer {
+    border: 0;
+}
+
+input[type=range]::-webkit-slider-thumb {
+    width: 14px;
+    height: 14px;
+    border: 0;
+    border-radius: 100%;
+    background: var(--range-thumb-color);
+    box-shadow: 0 0 6px var(--range-thumb-color);
+    -webkit-appearance: none;
+}
+
+input[type=range]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border: 0;
+    border-radius: 100%;
+    background: var(--range-thumb-color);
+    box-shadow: 0 0 6px var(--range-thumb-color);
+}
+
+/* checkbox */
+input[type="checkbox"] {
+    display: none;
+}
+
+input[type="checkbox"]+span {
+    position: relative;
+    padding-left: 20px;
+    cursor: pointer;
+}
+
+input[type="checkbox"]+span:last-child {
+    margin-bottom: 0;
+}
+
+input[type="checkbox"]+span:before {
+    content: '';
+    display: block;
+    width: 12px;
+    height: 12px;
+    position: absolute;
+    left: 0;
+    top: 2px;
+    background-color: var(--checkbox-background);
+    border: 1px solid var(--checkbox-border-color);
+    transition: all 0.4s;
+}
+
+input[type="checkbox"]:hover:enabled+span:before {
+    cursor: pointer;
+    filter: brightness(1.5);
+}
+
+input[type="checkbox"]:checked+span:before {
+    box-shadow: 0 0 10px var(--checkbox-checked-background);
+    background: var(--checkbox-checked-background);
+    border: 1px solid var(--checkbox-checked-background);
+    border-radius: 2px;
+}
+
+input[type="checkbox"]+span:after {
+    content: "";
+    position: absolute;
+    display: none;
+}
+
+input[type="checkbox"]:checked+span:after {
+    display: block;
+}
+
+input[type="checkbox"]+span:after {
+    left: 4px;
+    top: 3px;
+    width: 3px;
+    height: 7px;
+    border: solid var(--checkbox-checkmark-color);
+    border-width: 0 3px 3px 0;
+    -webkit-transform: rotate(40deg);
+    -ms-transform: rotate(40deg);
+    transform: rotate(40deg);
+}
+
+/* number input */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+input[type='number'] {
+    background: var(--input-background);
+    border: 1px solid var(--input-border-color);
+    height: 25px;
+}
+
+@keyframes -scrolled-flash {
+    from {
+        background: #fff0;
+    }
+    to {
+        background: #00d0ffad;
+    }
+}
+
+::selection {
+    background-color: var(--selection-background-color);
+    color: var(--selection-color);
+}
+
+.admin input {
+    background: var(--general-background);
+    border: 1px solid var(--input-border-color);
+    color: var(--general-text-color);
+}
+
+/* info bubble */
+#ui .bubble {
+    border-radius: unset;
+    box-shadow: 0 0 0 1px var(--bubble-border-color),  0 0 10px #9600ff;
+    text-shadow: 0 0 2px #001716, 0 0 3px #03edf975, 0 0 5px #03edf975, 0 0 8px #03edf975;
+}
+
+#logout-icon {
+    color: var(--panel-close-button-color);
+    text-shadow: 0 0 2px #000, 0 0 3px currentColor, 0 0 5px currentColor;
+    transition: all 0.2s;
+}
+
+#logout-icon:hover {
+    color: var(--panel-close-button-color-hover);
+    text-shadow: 0 0 2px #000, 0 0 5px var(--panel-close-button-color), 0 0 10px var(--panel-close-button-color);
+}
+
+#cooldown {
+    color: var(--text-blue-color);
+}
+
+/* panel */
+.panel-header {
+    box-shadow: 0 5px 10px -5px #0ff;
+}
+
+.panel-header, .panel-header button {
+    text-shadow: 0 0 2px #001716, 0 0 5px #03edf9ed, 0 0 10px #03edf9cf, 0 0 15px #03edf9cf;
+}
+
+.panel-header button:hover {
+    color:#fff;
+    text-shadow: 0 0 2px #00908a, 0 0 5px #03edf9, 0 0 10px #03edf9, 0 0 15px #03edf9cf;
+}
+
+.panel-closer {
+    text-shadow: 0 0 2px #000, 0 0 5px currentColor, 0 0 10px currentColor !important;
+}
+
+.panel-closer:hover {
+    color: var(--panel-close-button-color-hover) !important;
+    text-shadow: 0 0 4px var(--panel-close-button-color), 0 0 10px var(--panel-close-button-color), 0 0 15px var(--panel-close-button-color) !important;
+}
+
+.panel {
+    box-shadow: 0 0 10px 5px var(--panel-shadow);
+}
+
+/* chat stuff */
+.text-badge,header .text-badge {
+    box-shadow: 0 0 2px #fddcff, 0 0 5px #ff1fc7f5, 0 0 0 1px #fddcff;
+    text-shadow: 0 0 2px #001716, 0 0 5px #f903d4f5, 0 0 8px #f903bbf5, 0 0 10px #f103f9f0;
+    background: var(--chat-badge-background);
+}
+
+.chat-line .content .mention {
+    text-shadow: 0 0 2px #001716, 0 0 5px #03edf975, 0 0 8px #03edf975, 0 0 10px #03edf975;
+}
+
+ul.chat-body .chat-line[data-id].has-ping {
+    background: linear-gradient(90deg, var(--ping-highlight-color), #220052);
+}
+
+.chat-line.purged {
+    filter: brightness(0.8);
+}
+
+#emojiPanelTrigger {
+    color: var(--text-yellow-color);
+    text-shadow: 0 0 2px #000, 0 0 5px currentColor, 0 0 10px currentColor !important;
+}
+
+#emojiPanelTrigger:hover {
+    color: #ffffc1;
+    text-shadow: 0 0 2px #161700, 0 0 5px var(--text-yellow-color), 0 0 10px var(--text-yellow-color), 0 0 15px var(--text-yellow-color) !important;
+}
+
+.emoji-picker__search::placeholder {
+    color: var(--emoji-picker-search-input-placeholder-text-color);
+}
+
+#jump-to-bottom {
+    border-radius: unset;
+    box-shadow: inset 0 0 0 2px currentColor;
+}
+
+ul.chat-body li.chat-line {
+    padding: 5px 0; /* add padding for the badge glow */
+}
+
+/* colored chat icon badges */
+[title="Owner"] {
+    color: var(--icon-badge-color-owner);
+    text-shadow: 0 0 2px #000, 0 0 3px var(--icon-badge-color-owner), 0 0 6px var(--icon-badge-color-owner);
+}
+
+[title="Administrator"] {
+    color: var(--icon-badge-color-administrator);
+    text-shadow: 0 0 2px #000, 0 0 3px var(--icon-badge-color-administrator), 0 0 6px var(--icon-badge-color-administrator);
+}
+
+[title="Moderator"] {
+    color: var(--icon-badge-color-moderator);
+    text-shadow: 0 0 2px #000, 0 0 3px var(--icon-badge-color-moderator), 0 0 6px var(--icon-badge-color-moderator);
+}
+
+[title="Trial Moderator"] {
+    color: var(--icon-badge-color-trialmod);
+    text-shadow: 0 0 2px #000, 0 0 3px var(--icon-badge-color-trialmod), 0 0 6px var(--icon-badge-color-trialmod);
+}
+
+[title="Developer"] {
+    color: var(--icon-badge-color-developer);
+    text-shadow: 0 0 2px #000, 0 0 3px var(--icon-badge-color-developer), 0 0 6px var(--icon-badge-color-developer);
+}
+
+[title="Contributor"] {
+    color: var(--icon-badge-color-contributor);
+    text-shadow: 0 0 2px #000, 0 0 3px var(--icon-badge-color-contributor), 0 0 6px var(--icon-badge-color-contributor);
+}
+
+[title="Donator"] {
+    color: var(--icon-badge-color-donator);
+    text-shadow: 0 0 2px #000, 0 0 3px var(--icon-badge-color-donator), 0 0 6px var(--icon-badge-color-donator);
+}
+
+.flair.icon-badge {
+    color: var(--icon-badge-color-default);
+    text-shadow: 0 0 2px #000, 0 0 3px currentColor, 0 0 6px currentColor;
+}
+
+/* chat color selector */
+#selChatUsernameColor {
+    color: #eee;
+}
+
+/* shadow under names*/
+li.chat-line .user, .flair.faction-tag {
+    text-shadow: 0 0 3px #150025, 0 0 3px #ffffffb5;
+}
+
+/* buttons */
+button.text-button,
+.button-bar>button:last-child,
+.button-bar>button:first-child {
+    text-shadow: 0 0 1px #000, 0 0 5px var(--button-text-color);
+    box-shadow: inset 0 0 3px 0 var(--button-border-color), 0 0 5px 0 var(--button-border-color);
+    border-radius: unset;
+}
+
+button.text-button:hover:enabled {
+    text-shadow: 0 0 1px var(--button-text-color), 0 0 5px var(--button-text-color);
+    box-shadow: inset 0 0 5px 0 var(--button-background-hover), 0 0 10px 0 var(--button-background-hover);
+}
+
+button.dangerous-button {
+    text-shadow: 0 0 1px #000, 0 0 8px var(--dangerous-button-text-color);
+    box-shadow: inset 0 0 3px 0 var(--dangerous-button-border-color), 0 0 5px 0 var(--dangerous-button-border-color);
+}
+
+button.dangerous-button:hover:enabled {
+    text-shadow: 0 0 0.125em var(--dangerous-button-text-color), 0 0 0.45em var(--dangerous-button-text-color);
+    box-shadow: inset 0 0 5px 0 var(--dangerous-button-background-hover), 0 0 10px 0 var(--dangerous-button-background-hover);
+}
+
+/* floating panel */
+.floating-panel {
+    border-radius: unset;
+    box-shadow: 0 0 15px #9600ff;
+    border-color: #ffccf9;
+    text-shadow: 0 0 2px #001716, 0 0 3px #03edf975, 0 0 5px #03edf975, 0 0 8px #03edf975;
+}
+
+/* top panel triggers */
+.panel-trigger {
+    color: var(--panel-trigger-color);
+    opacity: 0.93;
+    text-shadow:
+        1px 1px 0 var(--panel-trigger-outline-color),
+        -1px 1px 0 var(--panel-trigger-outline-color),
+        1px -1px 0 var(--panel-trigger-outline-color),
+        -1px -1px 0 var(--panel-trigger-outline-color),
+        0 1px 0 var(--panel-trigger-outline-color),
+        0 -1px 0 var(--panel-trigger-outline-color),
+        -1px 0 0 var(--panel-trigger-outline-color),
+        1px 0 0 var(--panel-trigger-outline-color),
+        0 0 2px #000, 0 0 3px #d044ff91, 0 0 5px #d044ff91, 0 0 8px #ff64ed;
+}
+
+.panel-trigger:hover {
+    color: var(--panel-trigger-color-hover);
+}
+
+.panel-trigger:active {
+    color: var(--panel-trigger-color-active);
+}
+
+.panel-trigger .has-notification, i.far.has-notification, i.fas.has-notification {
+    transition: all 0.8s;
+    text-shadow:
+        1px 1px 0 var(--notification-border-color),
+        -1px 1px 0 var(--notification-border-color),
+        1px -1px 0 var(--notification-border-color),
+        -1px -1px 0 var(--notification-border-color),
+        0 1px 0 var(--notification-border-color),
+        0 -1px 0 var(--notification-border-color),
+        -1px 0 0 var(--notification-border-color),
+        1px 0 0 var(--notification-border-color),
+        0 0 2px #001716, 0 0 5px currentcolor, 0 0 8px currentcolor;
+}
+
+.panel-trigger .has-notification:hover, i.far.has-notification:hover, i.fas.has-notification:hover {
+    filter: brightness(1.2);
+}
+
+.panel-trigger .ping-counter {
+    text-shadow: 0 0 2px #000, 0 0 3px currentColor, 0 0 5px currentColor;
+}
+
+/* articles */
+.panel-body article:not(.naked)>header {
+    border-bottom-color: #95ffff;
+    box-shadow: 0 6px 5px -5px #0ff;
+    text-shadow: 0 0 2px #001716, 0 0 5px #03edf9ed, 0 0 8px #03edf9cf, 0 0 10px #03edf9cf;
+    border-bottom: 1px solid ;
+    padding: 4px 0 4px 0; /* add padding for the glow */
+}
+
+.panel-body article:not(.naked) {
+    box-shadow: 0 0 7px #00c6ff;
+    border-color: #95ffff;
+    border: 1px solid;
+}
+
+.text-red {
+    text-shadow: 0 0 3px #000, 0 0 5px var(--text-red-color), 0 0 10px  var(--text-red-color), 0 0 15px  var(--text-red-color) !important;
+}

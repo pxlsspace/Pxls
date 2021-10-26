@@ -21,6 +21,7 @@
     // Pxls-specific
     "App": "writable",
     "SLIDEIN": "readonly",
-    "interact": "readonly"
+    "interact": "readonly",
+    "__": "writable"
   }
 }

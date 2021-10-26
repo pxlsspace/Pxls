@@ -18,6 +18,7 @@ let instaban = false;
 if (window.App !== undefined) {
   instaban = true;
 }
+window.__ = (translatableString) => translatableString;
 window.App = (function() {
   const { ls, ss } = require('./include/storage');
 
@@ -130,7 +131,7 @@ window.App = (function() {
       template.queueUpdate(t);
     },
     alert: function(s) {
-      modal.showText(s, { title: 'Alert', modalOpts: { closeExisting: false } });
+      modal.showText(s, { title: __('Alert'), modalOpts: { closeExisting: false } });
     },
     doPlace: function() {
       ban.me('call to doPlace()');

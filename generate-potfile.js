@@ -1,7 +1,10 @@
 const fs = require('fs');
 const PO = require('pofile');
+const esprima = require('esprima');
 
-const FILES = [
+const { findTranslationCalls, contract, shave } = require('./localization-util');
+
+const PEBBLE_FILES = [
   'resources/public/pebble_templates/index.html',
   'resources/public/pebble_templates/faq.html',
   'resources/public/pebble_templates/info.html',
@@ -16,9 +19,6 @@ const I18N_MATCH = /i18n\s*[(]/g;
 // a string matching regex, handles escapes and escaped escapes.
 const STRING_MATCH = /(["'])((\\{2})*|(.*?[^\\](\\{2})*))\1/g;
 
-const contract = (s, size) => s.slice(size, -size);
-const shave = (s, size) => contract(s, size).trim();
-
 const poFiles = new Map();
 
 let stringCount = 0;
@@ -28,7 +28,20 @@ const globalOffsetToLocal = (text, offset) => offset - text.slice(0, offset).las
 
 const itemsByIdByPofile = new Map();
 
-for (const path of FILES) {
+function createPoFile(name) {
+  const poFile = new PO();
+  poFile.headers['Project-Id-Version'] = 'Pxls';
+  poFile.headers['POT-Creation-Date'] = (new Date()).toISOString();
+  // "Better written as…" no it's not - look at the context.
+  /* eslint-disable-next-line dot-notation */
+  poFile.headers['Language'] = '';
+  poFile.headers['Content-Type'] = 'text/plain; charset=UTF-8';
+
+  itemsByIdByPofile.set(name, new Map());
+  poFiles.set(name, poFile);
+}
+
+for (const path of PEBBLE_FILES) {
   const file = fs.readFileSync(path).toString();
 
   const commentsByLine = new Map();
@@ -92,16 +105,7 @@ for (const path of FILES) {
       const [poFileName, id] = params;
 
       if (!poFiles.has(poFileName)) {
-        const poFile = new PO();
-        poFiles.set(poFileName, poFile);
-        poFile.headers['Project-Id-Version'] = 'Pxls';
-        poFile.headers['POT-Creation-Date'] = (new Date()).toISOString();
-        // "Better written as…" no it's not - look at the context.
-        /* eslint-disable-next-line dot-notation */
-        poFile.headers['Language'] = '';
-        poFile.headers['Content-Type'] = 'text/plain; charset=UTF-8';
-
-        itemsByIdByPofile.set(poFileName, new Map());
+        createPoFile(poFileName);
       }
 
       const poFile = poFiles.get(poFileName);
@@ -131,10 +135,114 @@ for (const path of FILES) {
   }
 }
 
+// TODO: maybe just use ttag instead?
+
+const JS_FILES = [
+  'resources/public/pxls.js',
+  'resources/public/include/ban.js',
+  'resources/public/include/board.js',
+  'resources/public/include/chat.js',
+  'resources/public/include/chromeOffsetWorkaround.js',
+  'resources/public/include/coords.js',
+  'resources/public/include/grid.js',
+  'resources/public/include/helpers.js',
+  'resources/public/include/lookup.js',
+  'resources/public/include/modal.js',
+  'resources/public/include/nativeNotifications.js',
+  'resources/public/include/notifications.js',
+  'resources/public/include/overlays.js',
+  'resources/public/include/panels.js',
+  'resources/public/include/place.js',
+  'resources/public/include/query.js',
+  'resources/public/include/serviceworkers.js',
+  'resources/public/include/settings.js',
+  'resources/public/include/socket.js',
+  'resources/public/include/storage.js',
+  'resources/public/include/template.js',
+  'resources/public/include/timer.js',
+  'resources/public/include/typeahead.js',
+  'resources/public/include/uiHelper.js',
+  'resources/public/include/user.js',
+  'resources/public/admin/admin.js'
+];
+
+const JS_POFILE = 'Localization';
+
+if (!poFiles.has(JS_POFILE)) {
+  createPoFile(JS_POFILE);
+}
+
+const jsPoFile = poFiles.get(JS_POFILE);
+const jsItemsById = itemsByIdByPofile.get(JS_POFILE);
+
+const TRANSLATOR_COMMENT_REGEX = /^\s*translator:\s?(.*)$/i;
+
+for (const path of JS_FILES) {
+  const file = fs.readFileSync(path).toString();
+  const script = esprima.parseScript(file, { range: true, comment: true });
+
+  const translatableStrings = script.body
+    .map(findTranslationCalls)
+    .flat()
+    .map(e => e.arguments[0].range);
+
+  for (const [start, end] of translatableStrings) {
+    const relevantComments = script.comments.filter(comment => {
+      const [commentStart, commentEnd] = comment.range;
+
+      if (!TRANSLATOR_COMMENT_REGEX.test(comment.value)) {
+        return false;
+      }
+
+      if (commentEnd < start) {
+        // before string
+
+        const newlineCount = Array.from(file
+          .substring(commentEnd, start)
+          .matchAll('\n')).length;
+
+        return newlineCount < 2;
+      } else {
+        // after string
+
+        const hasNewline = file
+          .substring(end, commentStart)
+          .indexOf('\n') !== -1;
+
+        return !hasNewline;
+      }
+    }).map(comment => TRANSLATOR_COMMENT_REGEX.exec(comment.value)[1]);
+
+    const id = contract(file.substring(start, end), 1);
+    const callLine = offsetToLine(file, start);
+    const callLocalOffset = globalOffsetToLocal(file, start);
+
+    if (!jsItemsById.has(id)) {
+      stringCount++;
+      const item = new PO.Item();
+      jsItemsById.set(id, item);
+      jsPoFile.items.push(item);
+    }
+
+    const item = jsItemsById.get(id);
+
+    item.msgid = id;
+    item.references.push(`${path}:${callLine + 1}:${callLocalOffset + 1}`);
+
+    for (const comment of relevantComments) {
+      item.extractedComments.push(comment);
+    }
+  }
+
+  // clear the strings array
+  // because none of this code is well-structured
+  translatableStrings.splice(0);
+}
+
 for (const [name, poFile] of poFiles.entries()) {
   poFile.save(`po/${name}.pot`, e => e ? console.error : null);
 }
 
-console.info(`Parsed ${FILES.length} files.`);
+console.info(`Parsed ${PEBBLE_FILES.length + JS_FILES.length} files.`);
 console.info(`${stringCount} strings found.`);
 console.info(`Output ${poFiles.size} files.`);
