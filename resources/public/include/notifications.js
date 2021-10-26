@@ -51,14 +51,16 @@ module.exports.notifications = (function() {
       }
     },
     makeDomForNotification(notification) {
+      const expiry = notification.expiry ? moment.unix(notification.expiry).format('MMM DD YYYY') : null;
+
       return crel('article', { class: 'notification', 'data-notification-id': notification.id },
         crel('header', { class: 'notification-title' }, crel('h2', notification.title)),
         crel('div', { class: 'notification-body' }, chat.processMessage(notification.content)),
         crel('footer', { class: 'notification-footer' },
-          notification.who ? document.createTextNode(`Posted by ${notification.who}`) : null,
+          notification.who ? document.createTextNode(__(`Posted by ${notification.who}`)) : null,
           notification.expiry !== 0 ? crel('span', { class: 'notification-expiry float-left' },
             crel('i', { class: 'far fa-clock fa-is-left' }),
-            crel('span', { title: moment.unix(notification.expiry).format('MMMM DD, YYYY, hh:mm:ss A') }, `Expires ${moment.unix(notification.expiry).format('MMM DD YYYY')}`)
+            crel('span', { title: moment.unix(notification.expiry).format('MMMM DD, YYYY, hh:mm:ss A') }, __(`Expires ${expiry}`))
           ) : null
         )
       );
