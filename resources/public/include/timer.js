@@ -17,6 +17,7 @@ module.exports.timer = (function() {
     runningTimer: false,
     audio: new Audio('notify.wav'),
     title: '',
+    currentTimer: '',
     cooledDown: function() {
       return self.cooldown < (new Date()).getTime();
     },
@@ -55,10 +56,11 @@ module.exports.timer = (function() {
         const secsStr = secs < 10 ? '0' + secs : secs;
         const minutes = Math.floor(delta / 60);
         const minuteStr = minutes < 10 ? '0' + minutes : minutes;
-        self.elements.timer_countdown.text(`${minuteStr}:${secsStr}`);
-        self.elements.timer_chat.text(`(${minuteStr}:${secsStr})`);
+        self.currentTimer = `${minuteStr}:${secsStr}`;
+        self.elements.timer_countdown.text(`${self.currentTimer}`);
+        self.elements.timer_chat.text(`(${self.currentTimer})`);
 
-        document.title = uiHelper.getTitle(`[${minuteStr}:${secsStr}]`);
+        document.title = uiHelper.getTitle();
 
         if (self.runningTimer && !die) {
           return;
@@ -71,6 +73,7 @@ module.exports.timer = (function() {
       }
 
       self.runningTimer = false;
+      self.currentTimer = '';
 
       document.title = uiHelper.getTitle();
       self.elements.timer_container.hide();
@@ -123,12 +126,16 @@ module.exports.timer = (function() {
       if (uiHelper.tabHasFocus() && settings.audio.enable.get()) {
         self.audio.play();
       }
+    },
+    getCurrentTimer: function() {
+      return self.currentTimer;
     }
   };
   return {
     init: self.init,
     cooledDown: self.cooledDown,
     playAudio: self.playAudio,
+    getCurrentTimer: self.getCurrentTimer,
     audioElem: self.audio
   };
 })();
