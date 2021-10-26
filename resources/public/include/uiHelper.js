@@ -82,9 +82,14 @@ const uiHelper = (function() {
         name: 'Red',
         location: '/themes/red.css',
         color: '#cf0000'
+      },
+      {
+        name: 'Synthwave',
+        location: '/themes/synthwave.css',
+        color: '#1d192c'
       }
     ],
-    specialChatColorClasses: ['rainbow', ['donator', 'donator--green'], ['donator', 'donator--gray']],
+    specialChatColorClasses: ['rainbow', ['donator', 'donator--green'], ['donator', 'donator--gray'], ['donator', 'donator--synthwave']],
     init: function() {
       timer = require('./timer').timer;
       place = require('./place').place;
