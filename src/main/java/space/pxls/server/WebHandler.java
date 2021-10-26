@@ -1805,7 +1805,8 @@ public class WebHandler {
             App.getConfig().getBoolean("chat.canvasBanRespected"),
             App.getConfig().getStringList("chat.bannerText"),
             App.getSnipMode(),
-            App.getConfig().getList("chat.customEmoji").unwrapped()
+            App.getConfig().getList("chat.customEmoji").unwrapped(),
+            App.getConfig().getString("chat.ratelimitMessage")
         )));
     }
 

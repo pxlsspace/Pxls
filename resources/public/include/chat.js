@@ -14,6 +14,7 @@ const { intToHex } = require('./helpers');
 
 const chat = (function() {
   const self = {
+    ratelimitMessage: 'Please wait ',
     seenHistory: false,
     stickToBottom: true,
     repositionTimer: false,
@@ -185,26 +186,34 @@ const chat = (function() {
         }
       });
       socket.on('message_cooldown', e => {
-        self.timeout.ends = (new Date() >> 0) + ((e.diff >> 0) * 1e3) + 1e3; // add 1 second so that we're 1-based instead of 0-based
+        self.timeout.ends = Date.now() + ((e.diff >> 0) * 1e3) + 1e3; // add 1 second so that we're 1-based instead of 0-based
         if (uiHelper.tabHasFocus()) {
           self.elements.input.val(e.message);
         }
-        if ((new Date() >> 0) > self.timeout.ends) {
+        if (Date.now() > self.timeout.ends) {
           self.elements.rate_limit_overlay.fadeOut();
         } else {
           self.elements.rate_limit_overlay.fadeIn();
         }
         if (self.timeout.timer > 0) clearInterval(self.timeout.timer);
-        self.timeout.timer = setInterval(() => {
-          const delta = (self.timeout.ends - (new Date() >> 0)) / 1e3 >> 0;
-          self.elements.rate_limit_counter.text(`${delta}s`);
+
+        const showCooldown = () => {
+          const delta = (self.timeout.ends - Date.now()) / 1e3 >> 0;
+
+          const ratelimitReset = moment(self.timeout.ends);
+          const formatted = ratelimitReset.toNow(true);
+
+          self.elements.rate_limit_counter.text(self.ratelimitMessage + formatted);
           if (delta <= 0) {
             self.elements.rate_limit_overlay.fadeOut();
             self.elements.rate_limit_counter.text('');
             clearInterval(self.timeout.timer);
             self.timeout.timer = 0;
           }
-        }, 100);
+        };
+
+        self.timeout.timer = setInterval(showCooldown, 1000);
+        showCooldown();
       });
       socket.on('chat_lookup', e => {
         if (e.target && Array.isArray(e.history) && Array.isArray(e.chatbans)) {
@@ -632,6 +641,7 @@ const chat = (function() {
     },
     webinit(data) {
       self.setCharLimit(data.chatCharacterLimit);
+      self.ratelimitMessage = data.chatRatelimitMessage;
       self.canvasBanRespected = data.chatRespectsCanvasBan;
       self._populateUsernameColor();
       self.elements.username_color_select.value = user.getChatNameColor();
