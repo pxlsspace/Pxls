@@ -1549,7 +1549,7 @@ const chat = (function() {
               crel('form', { class: 'report chat-report', 'data-chat-id': this.dataset.id },
                 // NOTE ([  ]): Using $ here instead of crel because the content
                 // contains HTML as a string (reportTarget and reportMessage).
-                $('<p>').style('font-size', '1rem !important;').html(
+                $('<p>').css('font-size', '1rem !important;').html(
                   __(`You are reporting a chat message from ${reportTarget} with the content:`) + reportMessage
                 )[0],
                 textArea,
