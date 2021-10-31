@@ -85,7 +85,7 @@ module.exports.template = (function() {
     cors: function(location) {
       try {
         const url = new URL(location);
-        if (self.corsProxy.safeHosts.some(h => url.hostname.endsWith(h))) {
+        if (url.protocol === 'data:' || self.corsProxy.safeHosts.some(h => url.hostname.endsWith(h))) {
           return url.href;
         } else {
           if (self.corsProxy.param) {
