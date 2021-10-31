@@ -11,7 +11,7 @@ module.exports.template = (function() {
       visibles: null, // set to a collection of template and sourceImage in init
       template: $('<canvas>'),
       sourceImage: $('<img>').attr({ crossOrigin: '' }),
-      styleImage: $('<img>'),
+      styleImage: $('<img>').attr({ crossOrigin: '' }),
       useCheckbox: $('#template-use'),
       titleInput: $('#template-title'),
       urlInput: $('#template-url'),
@@ -143,13 +143,6 @@ module.exports.template = (function() {
       }
 
       self.elements.conversionModeSelect.val(self.options.convertMode);
-      const styles = Array.from(self.elements.styleSelect.children('option')).map(o => o.value);
-      const style = self.elements.styleImage.attr('src');
-
-      if (!styles.includes(style)) {
-        self.elements.customStyleInput.val(style);
-      }
-      self.elements.styleSelect.val(style);
     },
     normalizeTemplateObj(objectToNormalize, direction) {
       // direction: true = url_to_template_obj, else = template_obj_to_url
@@ -239,7 +232,9 @@ module.exports.template = (function() {
         });
       }
 
-      self.elements.styleImage.attr({ src: self.options.style });
+      self.elements.styleImage.attr({
+        src: self.cors(self.options.style)
+      });
 
       self.applyOptions();
 
