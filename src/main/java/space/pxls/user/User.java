@@ -698,8 +698,7 @@ public class User {
         } else if (this.hasDonatorChatNameColor("gray", 3)) {
             toReturn.add("donator");
             toReturn.add("donator--gray");
-        }
-        else if (this.hasDonatorChatNameColor("synthwave", 4)) {
+        } else if (this.hasDonatorChatNameColor("synthwave", 4)) {
             toReturn.add("donator");
             toReturn.add("donator--synthwave");
         }
