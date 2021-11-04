@@ -50,6 +50,6 @@ public class Util {
         return locales.get(0);
     }
 
-    public static List<Locale> SUPPORTED_LOCALES = List.of(Locale.forLanguageTag("en-US"), Locale.forLanguageTag("fr-FR")), Locale.forLanguageTag("ru-RU");
+    public static List<Locale> SUPPORTED_LOCALES = List.of(Locale.forLanguageTag("en-US"), Locale.forLanguageTag("fr-FR")), Locale.forLanguageTag("ru-RU"));
     public static Locale FALLBACK_LOCALE = SUPPORTED_LOCALES.get(0);
 }
