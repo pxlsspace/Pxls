@@ -2194,6 +2194,3 @@ msgstr "Envoyer une alerte"
 #: resources/public/admin/admin.js:480:21
 msgid "Mod Actions"
 msgstr "Actions modérateur"
-
-#~ msgid "Note: These values are based on QWERTY keyboards. For other layouts, use the keys corresponding to the same position on a QWERTY keyboard."
-#~ msgstr "Note : Ces touches sont basées sur les claviers QWERTY. Pour d'autres claviers, utilise les touches correspondantes aux positions sur un clavier QWERTY."
