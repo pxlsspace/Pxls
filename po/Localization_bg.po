@@ -1,0 +1,2196 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Pxls\n"
+"POT-Creation-Date: 2021-08-19T06:22:24.977Z\n"
+"Language: \n"
+"Content-Type: text/plain; charset=UTF-8\n"
+
+#. Site description
+#: resources/public/pebble_templates/index.html:8:42
+msgid "Place pixels with people to create art"
+msgstr "Поставяйте пиксели, за да творите!"
+
+#: resources/public/pebble_templates/index.html:56:27
+msgid "Lost connection to server, reconnecting..."
+msgstr "Връзката със сървъра е прекъсната, извършва се повторно..."
+
+#: resources/public/pebble_templates/index.html:71:76
+msgid "Loading Heatmap (press <kbd>H</kbd> to cancel)"
+msgstr "Зарежда се картата с активността (натиснете <kbd>H</kbd> за отказ"
+
+#: resources/public/pebble_templates/index.html:72:78
+msgid "Loading Virginmap (press <kbd>X</kbd> to cancel)"
+msgstr "Зарежда се картата с поставени пиксели (натиснете <kbd>X</kbd> за отказ)"
+
+#: resources/public/pebble_templates/index.html:80:67
+msgid "Logout"
+msgstr "Изход"
+
+#. Canvas pixel count
+#: resources/public/pebble_templates/index.html:86:38
+msgid "Canvas:"
+msgstr "На платното:"
+
+#. Canvas pixel count
+#. All time pixel count
+#: resources/public/pebble_templates/index.html:86:118
+#: resources/public/pebble_templates/index.html:88:120
+#: resources/public/pebble_templates/index.html:100:51
+#: resources/public/pebble_templates/index.html:126:123
+msgid "N/A"
+msgstr "N/A"
+
+#. All time pixel count
+#: resources/public/pebble_templates/index.html:88:38
+msgid "All Time:"
+msgstr "Всички:"
+
+#: resources/public/pebble_templates/index.html:93:48
+msgid "Loading online user count&hellip;"
+msgstr "Зареждане на броя онрайн потребители&hellip"
+
+#: resources/public/pebble_templates/index.html:101:30
+#: resources/public/include/lookup.js:276:21
+#: resources/public/admin/admin.js:196:16
+msgid "Pixels"
+msgstr "Пиксели"
+
+#: resources/public/pebble_templates/index.html:112:54
+msgid "Undo"
+msgstr "Отказ"
+
+#: resources/public/pebble_templates/index.html:114:20
+msgid "You are not signed in.&nbsp;<a href=\"#\">Sign in with...</a>"
+msgstr "Не сте влезли.&nbsp;<a href=\"#\">Влезте с...</a>"
+
+#: resources/public/pebble_templates/index.html:124:28
+msgid "Loading..."
+msgstr "Зареждане..."
+
+#: resources/public/pebble_templates/index.html:132:14
+#: resources/public/pebble_templates/index.html:142:67
+msgid "Sign up"
+msgstr "Регистрирайте се"
+
+#: resources/public/pebble_templates/index.html:133:14
+msgid "Pick a username"
+msgstr "Изберете своето име"
+
+#: resources/public/pebble_templates/index.html:136:43
+msgid "Username:"
+msgstr "Име:"
+
+#: resources/public/pebble_templates/index.html:154:65
+#: resources/public/pebble_templates/profile.html:56:96
+msgid "Info"
+msgstr "Информация"
+
+#: resources/public/pebble_templates/index.html:168:66
+#: resources/public/pebble_templates/index.html:206:66
+#: resources/public/pebble_templates/index.html:733:66
+#: resources/public/pebble_templates/index.html:746:66
+msgid "Close Panel"
+msgstr "Затворете панела"
+
+#: resources/public/pebble_templates/index.html:170:61
+msgid "Chat"
+msgstr "Чат"
+
+#: resources/public/pebble_templates/index.html:172:45
+msgid "Pings"
+msgstr "Споменавания"
+
+#: resources/public/pebble_templates/index.html:173:45
+#: resources/public/pebble_templates/index.html:209:58
+msgid "Settings"
+msgstr "Настройки"
+
+#: resources/public/pebble_templates/index.html:186:30
+msgid "Jump To Bottom"
+msgstr "Слезте до дъното"
+
+#. Open emoji picker
+#: resources/public/pebble_templates/index.html:194:49
+msgid "Emoji"
+msgstr "Емотикони"
+
+#: resources/public/pebble_templates/index.html:214:73
+msgid "Search"
+msgstr "Търсете"
+
+#: resources/public/pebble_templates/index.html:215:56
+msgid "keybinds;keys;keyboard;hotkeys"
+msgstr "клавишни комбинации;клавиши;клавиатура;топли клавиши"
+
+#: resources/public/pebble_templates/index.html:217:24
+msgid "Keybinds"
+msgstr "Клавишни комбинации"
+
+#: resources/public/pebble_templates/index.html:220:44
+msgid "general"
+msgstr "главни"
+
+#. General settings
+#: resources/public/pebble_templates/index.html:222:28
+#: resources/public/pebble_templates/index.html:636:28
+msgid "General"
+msgstr "Главни"
+
+#: resources/public/pebble_templates/index.html:223:42
+msgid "move;moving;panning;drag"
+msgstr "преместване;движение"
+
+#: resources/public/pebble_templates/index.html:223:102
+msgid "Mouse/arrows/wasd to pan"
+msgstr "Мишка/стрелки/WASD за придвижване"
+
+#: resources/public/pebble_templates/index.html:224:42
+msgid "mousewheel;zooming"
+msgstr "мишка"
+
+#: resources/public/pebble_templates/index.html:224:96
+msgid "Scroll/pinch to zoom"
+msgstr "Среден бутон/увеличаване с пръсти за увеличаване"
+
+#: resources/public/pebble_templates/index.html:225:42
+msgid "scroll;zooming"
+msgstr "мишка;увеличаване;мащаб"
+
+#: resources/public/pebble_templates/index.html:225:92
+msgid "<kbd>+</kbd>/<kbd>-</kbd> or <kbd>Q</kbd>/<kbd>E</kbd> to zoom"
+msgstr "<kbd>+</kbd>/<kbd>-</kbd> или <kbd>Q</kbd>/<kbd>E</kbd> за увеличаване"
+
+#: resources/public/pebble_templates/index.html:226:42
+msgid "lookups"
+msgstr "проверки"
+
+#: resources/public/pebble_templates/index.html:226:85
+msgid "<kbd>Shift</kbd> + Click/Hold touch to lookup pixel"
+msgstr "<kbd>Shift</kbd> + ляв бутон/продължително натискате за информация за пиксел"
+
+#: resources/public/pebble_templates/index.html:227:42
+#: resources/public/pebble_templates/index.html:489:44
+msgid "overlays;alignment;grid hidden;grid shown;hide grid;show grid"
+msgstr "решетка;мрежа"
+
+#: resources/public/pebble_templates/index.html:227:139
+msgid "<kbd>G</kbd> to toggle grid"
+msgstr "<kbd>G</kbd> за показване на решетката"
+
+#: resources/public/pebble_templates/index.html:228:42
+msgid "close;information shown;information hidden;info shown;info hidden;hide information;show information"
+msgstr "информация;инфо;скрий"
+
+#: resources/public/pebble_templates/index.html:228:177
+msgid "<kbd>I</kbd> to open info"
+msgstr "<kbd>I</kbd> за показване на информационния панел"
+
+#: resources/public/pebble_templates/index.html:229:42
+msgid "close;settings hidden;settings shown;hide settings;show settings"
+msgstr "затвори;настройки"
+
+#: resources/public/pebble_templates/index.html:229:142
+msgid "<kbd>T</kbd> to open settings"
+msgstr "<kbd>T</kbd> за отваряне на настройките"
+
+#: resources/public/pebble_templates/index.html:230:42
+msgid "close;chat hidden;chat shown;hide chat;show chat"
+msgstr "затвори;чат"
+
+#: resources/public/pebble_templates/index.html:230:126
+msgid "<kbd>B</kbd> to open chat"
+msgstr "<kbd>B</kbd> за отваряне на чата"
+
+#: resources/public/pebble_templates/index.html:231:42
+msgid "canvas locked;move;moving;zoom;zooming"
+msgstr "увеличаване;заключване"
+
+#: resources/public/pebble_templates/index.html:231:116
+msgid "<kbd>L</kbd> to toggle locking panning of the canvas"
+msgstr "<kbd>L</kbd> за заключване на платното"
+
+#: resources/public/pebble_templates/index.html:232:42
+msgid "take screenshot;image;download;picture;canvas"
+msgstr "снимка;скрийншот"
+
+#: resources/public/pebble_templates/index.html:232:123
+msgid "<kbd>P</kbd> to take a snapshot"
+msgstr "<kbd>P</kbd> за снимане на екрана"
+
+#: resources/public/pebble_templates/index.html:233:42
+#: resources/public/pebble_templates/index.html:443:44
+msgid "overlays;user activity;pixels placed pixels;heatmap hidden;heatmap shown;hide heatmap;show heatmap"
+msgstr "активност;карта"
+
+#: resources/public/pebble_templates/index.html:233:176
+msgid "<kbd>H</kbd> to toggle heatmap"
+msgstr "<kbd>H</kbd> за показване на карта с активността"
+
+#: resources/public/pebble_templates/index.html:234:42
+#: resources/public/pebble_templates/index.html:463:44
+msgid "overlays;user activity;pixels unplaced pixels;virginmap hidden;virginmap shown;hide virginmap;show virginmap"
+msgstr "карта;активност"
+
+#: resources/public/pebble_templates/index.html:234:186
+msgid "<kbd>X</kbd> to toggle virginmap"
+msgstr "<kbd>X</kbd> за карта с поставени пиксели"
+
+#: resources/public/pebble_templates/index.html:235:42
+msgid "overlays;user activity;pixels placed pixels;wipe;clean;"
+msgstr "чистене;изчистване"
+
+#: resources/public/pebble_templates/index.html:235:133
+msgid "<kbd>O</kbd> to clear heatmap"
+msgstr "<kbd>O</kbd> за изчистване на картата с активността"
+
+#: resources/public/pebble_templates/index.html:236:42
+msgid "overlays;user activity;pixels unplaced pixels;wipe;clean;"
+msgstr "чистене;изчистване"
+
+#: resources/public/pebble_templates/index.html:236:135
+msgid "<kbd>U</kbd> to clear virginmap"
+msgstr "<kbd>U</kbd> за изчистване на картата с поставените пиксели"
+
+#: resources/public/pebble_templates/index.html:237:42
+msgid "next color;previous color"
+msgstr "следващ цвят;цвят;предишен цвят"
+
+#: resources/public/pebble_templates/index.html:237:103
+msgid "<kbd>J</kbd>/<kbd>K</kbd> to cycle through palette colors"
+msgstr "<kbd>J</kbd>/<kbd>K</kbd> за избор на цвят от палитрата"
+
+#: resources/public/pebble_templates/index.html:238:42
+msgid "current coordinates;coords"
+msgstr "координати"
+
+#: resources/public/pebble_templates/index.html:238:104
+msgid "<kbd>C</kbd> to copy link of moused-over coordinates"
+msgstr "<kbd>C</kbd> за копиране на координатите под курсора"
+
+#: resources/public/pebble_templates/index.html:239:42
+msgid "cancel selection"
+msgstr "отказ"
+
+#: resources/public/pebble_templates/index.html:239:94
+msgid "<kbd>ESC</kbd> to deselect current pixel"
+msgstr "<kbd>ESC</kbd> за премахване на най-скорошния пиксел"
+
+#: resources/public/pebble_templates/index.html:240:42
+msgid "recenter;jump;center on template;guides;focus"
+msgstr "централизиране;центриране"
+
+#: resources/public/pebble_templates/index.html:240:123
+msgid "<kbd>R</kbd> to center the board on the current template"
+msgstr "kbd>R</kbd> за центриране върху сегашния шаблон"
+
+#: resources/public/pebble_templates/index.html:243:44
+msgid "templates;guides"
+msgstr "шаблони;шаблон"
+
+#: resources/public/pebble_templates/index.html:244:28
+#: resources/public/pebble_templates/index.html:579:24
+msgid "Template"
+msgstr "Шаблон"
+
+#: resources/public/pebble_templates/index.html:245:42
+#: resources/public/pebble_templates/index.html:246:42
+msgid "transparency"
+msgstr "Прозрачност"
+
+#: resources/public/pebble_templates/index.html:245:90
+msgid "<kbd>Page Up</kbd> to increase opacity"
+msgstr "<kbd>Page Up</kbd> за намаляване на прозрачността"
+
+#: resources/public/pebble_templates/index.html:246:90
+msgid "<kbd>Page Down</kbd> to decrease opacity"
+msgstr "<kbd>Page Down</kbd> за увеличаване на прозрачността"
+
+#: resources/public/pebble_templates/index.html:247:42
+msgid "hidden;shown;hide;show"
+msgstr "скрит;скрита;премахнат;премахната"
+
+#: resources/public/pebble_templates/index.html:247:100
+msgid "<kbd>V</kbd> to toggle visibility"
+msgstr "<kbd>V</kbd> за скриване на шаблона"
+
+#: resources/public/pebble_templates/index.html:252:24
+msgid "Note: These values are based on QWERTY keyboards. For other layouts, use the keys corresponding to the same position on a QWERTY keyboard."
+msgstr "ВАЖНО: Тези клавиши са предназначени за латински клавиатури с подредба QWERTY. За други подредби, използвайте съответсващите клавиши. "
+
+#: resources/public/pebble_templates/index.html:256:36
+msgid "ui;interface"
+msgstr "ui;interface;външен вид;интерфейс"
+
+#: resources/public/pebble_templates/index.html:258:24
+msgid "UI Settings"
+msgstr "Настройки за външния вид"
+
+#: resources/public/pebble_templates/index.html:262:44
+msgid "themes;look;stylesheets;visuals"
+msgstr "themes;look;stylesheets;visuals;теми;режими;изгледи"
+
+#: resources/public/pebble_templates/index.html:264:57
+msgid "Theme:"
+msgstr "Изглед:"
+
+#: resources/public/pebble_templates/index.html:266:64
+msgid "Default"
+msgstr "Оригинална"
+
+#: resources/public/pebble_templates/index.html:270:44
+msgid "hide reticule;hide reticle;reticule shown reticle shown;reticule hidden;reticle hidden"
+msgstr "скриване на мерника;ретикула;мерник"
+
+#: resources/public/pebble_templates/index.html:273:57
+msgid "Show reticule"
+msgstr "Показване на ретикулата"
+
+#: resources/public/pebble_templates/index.html:276:44
+msgid "hide cursor;cursor shown;cursor hidden"
+msgstr "курсор;скриване на курсора;скрит курсор"
+
+#: resources/public/pebble_templates/index.html:279:57
+msgid "Show cursor"
+msgstr "Показване на курсора"
+
+#: resources/public/pebble_templates/index.html:282:44
+msgid "darkness filter"
+msgstr "тъмнота;яркост"
+
+#: resources/public/pebble_templates/index.html:285:57
+msgid "Enable color brightness"
+msgstr "Позволяване на променянето на цветовете"
+
+#: resources/public/pebble_templates/index.html:288:76
+msgid "Warning: Known to cause fuzziness in Chrome on some Mac/Linux installs"
+msgstr "Внимание: Може да доведе до замъгляване при потребителите на Chrome или на операционните системи Mac/Linux"
+
+#: resources/public/pebble_templates/index.html:291:57
+msgid "Color brightness:"
+msgstr "Яркост на цветовете"
+
+#: resources/public/pebble_templates/index.html:295:44
+msgid "keep current selected;keep curent color;place"
+msgstr "нулиране;запазване"
+
+#: resources/public/pebble_templates/index.html:298:57
+msgid "Deselect color after placing"
+msgstr "Нулиране на цвят след поставяне"
+
+#: resources/public/pebble_templates/index.html:301:44
+msgid "mousewheel;palette scrolling"
+msgstr "палитра"
+
+#: resources/public/pebble_templates/index.html:304:57
+msgid "Enable scrolling on the palette to switch colors"
+msgstr "Позволяване на извъртане на цветовете от палитнрата със средния бутон на мишката "
+
+#: resources/public/pebble_templates/index.html:306:68
+msgid "reverse scrolling;mousewheel;palette scrolling;enable scrolling on the palette to switch colors"
+msgstr "обръщане;посока;извъртане"
+
+#: resources/public/pebble_templates/index.html:309:61
+msgid "Invert scroll direction"
+msgstr "Обърната посока"
+
+#: resources/public/pebble_templates/index.html:313:44
+msgid "indexed colors;palette indicies"
+msgstr "палитра"
+
+#: resources/public/pebble_templates/index.html:316:57
+msgid "Add numbers to palette entries"
+msgstr "Добавяне на цифри към цветовете в палитрата"
+
+#: resources/public/pebble_templates/index.html:319:44
+msgid "scrollbar;palette scrolling"
+msgstr "палитра"
+
+#: resources/public/pebble_templates/index.html:322:57
+msgid "Enable thin scrollbar"
+msgstr "Включване на тънка лента"
+
+#: resources/public/pebble_templates/index.html:325:44
+msgid "scrollbar;palette scrolling;palette stack"
+msgstr "лента;палитра;палитра"
+
+#: resources/public/pebble_templates/index.html:328:57
+msgid "Enable palette stacking"
+msgstr "Подреждане на цветовете вертикално"
+
+#: resources/public/pebble_templates/index.html:331:44
+msgid "floating bubble location"
+msgstr "позиция;място"
+
+#: resources/public/pebble_templates/index.html:333:57
+msgid "Bubble position:"
+msgstr "Позиция на панела с информация"
+
+#: resources/public/pebble_templates/index.html:335:61
+msgid "Top left"
+msgstr "Горе вляво"
+
+#: resources/public/pebble_templates/index.html:336:62
+msgid "Top right"
+msgstr "Горе вдясно"
+
+#: resources/public/pebble_templates/index.html:337:73
+msgid "Bottom left"
+msgstr "Долу вляво"
+
+#: resources/public/pebble_templates/index.html:338:65
+msgid "Bottom right"
+msgstr "Долу вдясно"
+
+#: resources/public/pebble_templates/index.html:342:44
+msgid "broken;offset workaround"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html:345:57
+msgid "Attempt to fix canvas displacement bug in Chrome 78+"
+msgstr "Поправяне на проблема с несъответствието при Chrome 78+"
+
+#: resources/public/pebble_templates/index.html:351:36
+msgid "chat;message;ping sound"
+msgstr "чат"
+
+#: resources/public/pebble_templates/index.html:353:24
+msgid "Chat Settings"
+msgstr "Настройки за чата"
+
+#: resources/public/pebble_templates/index.html:356:44
+msgid "username;color;colour"
+msgstr "цвят"
+
+#: resources/public/pebble_templates/index.html:359:57
+msgid "Username Color:"
+msgstr "Цвят на името"
+
+#: resources/public/pebble_templates/index.html:365:44
+msgid "chat message;chat ui"
+msgstr "чат"
+
+#: resources/public/pebble_templates/index.html:366:28
+msgid "Interface"
+msgstr "Интерфейс"
+
+#: resources/public/pebble_templates/index.html:367:44
+msgid "chat size;chat font"
+msgstr "размер;шрифт"
+
+#: resources/public/pebble_templates/index.html:369:57
+msgid "Font Size:"
+msgstr "Размер на шрифта"
+
+#: resources/public/pebble_templates/index.html:373:44
+msgid "time;timestamps"
+msgstr "време"
+
+#: resources/public/pebble_templates/index.html:376:57
+msgid "24 Hour Timestamps"
+msgstr "24-часово време"
+
+#: resources/public/pebble_templates/index.html:379:44
+msgid "badges;pixel count;pixels placed"
+msgstr "пиксели"
+
+#: resources/public/pebble_templates/index.html:382:57
+msgid "Show pixel-placed badges"
+msgstr "Показване на табелки за количеството на поставените пиксели"
+
+#: resources/public/pebble_templates/index.html:385:44
+msgid "badges;factions"
+msgstr "фракция;фракции;група;групи;клан;кланове"
+
+#: resources/public/pebble_templates/index.html:388:57
+msgid "Show faction tags"
+msgstr "Показване на таговете на фракциите"
+
+#: resources/public/pebble_templates/index.html:391:44
+msgid "template urls;template links;template name"
+msgstr "шаблон"
+
+#: resources/public/pebble_templates/index.html:394:57
+msgid "Replace template titles with URLs in chat where applicable"
+msgstr "Заменяне на заглавия на шаблони с пълния URL адрес"
+
+#: resources/public/pebble_templates/index.html:397:44
+msgid "chat orientation;chat position"
+msgstr "позиция;чат"
+
+#: resources/public/pebble_templates/index.html:400:57
+msgid "Enable horizontal chat"
+msgstr "Хоризонтален режим"
+
+#: resources/public/pebble_templates/index.html:403:44
+msgid "banner;animation"
+msgstr "текст;чат"
+
+#: resources/public/pebble_templates/index.html:406:57
+msgid "Enable the rotating banner under chat"
+msgstr "Включване на променящия се текст под чата"
+
+#: resources/public/pebble_templates/index.html:409:44
+msgid "max;messages;truncate"
+msgstr "максимум;чат;съобщения"
+
+#: resources/public/pebble_templates/index.html:411:57
+msgid "Maximum amount of chat messages:"
+msgstr "Максимален брой показани съобщения"
+
+#: resources/public/pebble_templates/index.html:415:44
+msgid "link;url;behaviour"
+msgstr "линк"
+
+#: resources/public/pebble_templates/index.html:417:57
+msgid "Default internal link action click:"
+msgstr "Зададено действие при отваряне на лиск с шаблон"
+
+#: resources/public/pebble_templates/index.html:422:44
+msgid "ignored;ignores;unignore;blocked;blocking;unblock"
+msgstr "игнориран;блок;блокиран;блокване;блокиране"
+
+#: resources/public/pebble_templates/index.html:423:28
+msgid "Ignores"
+msgstr "Игнорирани потребители"
+
+#: resources/public/pebble_templates/index.html:424:44
+msgid "unignore;unblock"
+msgstr "отблокиране;игнориране"
+
+#: resources/public/pebble_templates/index.html:429:85
+msgid "Unignore"
+msgstr "Деигнориране на потребителя"
+
+#: resources/public/pebble_templates/index.html:436:36
+msgid "overlays;virginmap;heatmap;grid"
+msgstr "пласт"
+
+#: resources/public/pebble_templates/index.html:438:24
+msgid "Overlay Settings"
+msgstr "Настройки за наслагване на пластове"
+
+#: resources/public/pebble_templates/index.html:441:44
+msgid "heatmap;heatmap opacity;clear heatmap"
+msgstr "активност"
+
+#: resources/public/pebble_templates/index.html:442:28
+msgid "Heatmap"
+msgstr "Карта с активността"
+
+#: resources/public/pebble_templates/index.html:446:57
+msgid "Turn on heatmap"
+msgstr "Включване на картата с активността"
+
+#: resources/public/pebble_templates/index.html:448:70
+msgid "(toggle with <kbd>H</kbd>)"
+msgstr "(включ./изкл. с <kbd>H</kbd>)"
+
+#: resources/public/pebble_templates/index.html:450:44
+msgid "overlays;activity;pixels placed pixels;wipe;clean"
+msgstr "слой"
+
+#: resources/public/pebble_templates/index.html:451:71
+msgid "Clear heatmap"
+msgstr "Изчистване на картата с активността"
+
+#: resources/public/pebble_templates/index.html:452:51
+msgid "(hotkey: <kbd>O</kbd>)"
+msgstr "(топъл клавиш: <kbd>O</kbd>)"
+
+#: resources/public/pebble_templates/index.html:454:44
+msgid "overlays;user activity;pixels placed pixels;transparency"
+msgstr "слой"
+
+#: resources/public/pebble_templates/index.html:456:57
+msgid "Heatmap background opacity:"
+msgstr "Прозрачност на картата с активността:"
+
+#: resources/public/pebble_templates/index.html:461:44
+msgid "virginmap;virginmap opacity;clear virginmap"
+msgstr "прозрачност"
+
+#: resources/public/pebble_templates/index.html:462:28
+msgid "Virginmap"
+msgstr "Карта с поставените пиксели"
+
+#: resources/public/pebble_templates/index.html:466:57
+msgid "Turn on virginmap"
+msgstr "Включване на картата с поставени пиксели"
+
+#: resources/public/pebble_templates/index.html:468:72
+msgid "(toggle with <kbd>X</kbd>)"
+msgstr "(включ./изкл. с <kbd>X</kbd>)"
+
+#: resources/public/pebble_templates/index.html:470:44
+msgid "overlays;user activity;pixels unplaced pixels;transparency"
+msgstr "наслагване"
+
+#: resources/public/pebble_templates/index.html:472:57
+msgid "Virginmap background opacity:"
+msgstr "Прозрачност на картата с поставени пиксели"
+
+#: resources/public/pebble_templates/index.html:476:44
+msgid "overlays;activity;pixels unplaced pixels;wipe;clean"
+msgstr "наслагване"
+
+#: resources/public/pebble_templates/index.html:477:71
+msgid "Clear virginmap"
+msgstr "Изчистване на картата с поставени пиксели"
+
+#: resources/public/pebble_templates/index.html:478:51
+msgid "(hotkey: <kbd>U</kbd>)"
+msgstr "(топъл клавиш: <kbd>U</kbd>)"
+
+#: resources/public/pebble_templates/index.html:483:57
+msgid "Layer template underneath heatmap"
+msgstr "Поставяне на шаблона под картата с активността"
+
+#: resources/public/pebble_templates/index.html:487:44
+msgid "grid;toggle grid"
+msgstr "решетка;мрежа"
+
+#: resources/public/pebble_templates/index.html:488:28
+msgid "Grid"
+msgstr "Решетка"
+
+#: resources/public/pebble_templates/index.html:492:57
+msgid "Turn on grid"
+msgstr "Включване на решетката"
+
+#: resources/public/pebble_templates/index.html:494:67
+msgid "(toggle with <kbd>G</kbd>)"
+msgstr "(включ./изкл. с <kbd>G</kbd>)"
+
+#: resources/public/pebble_templates/index.html:499:36
+msgid "controls;zooming;panning;movement"
+msgstr "контрол"
+
+#: resources/public/pebble_templates/index.html:501:24
+msgid "Control Settings"
+msgstr "Настройки за контрол"
+
+#: resources/public/pebble_templates/index.html:504:44
+msgid "zooming;scrolling;scale;scaling"
+msgstr "увеличаване;мащаб"
+
+#: resources/public/pebble_templates/index.html:505:28
+msgid "Zooming"
+msgstr "Увеличаване"
+
+#: resources/public/pebble_templates/index.html:506:44
+msgid "scrolling sensitivity;zooming sensitivity;mousewheel sensitivity"
+msgstr "точност;увеличаване;мащаб"
+
+#: resources/public/pebble_templates/index.html:508:57
+msgid "Zoom sensitivity:"
+msgstr "Точност на увеличението"
+
+#: resources/public/pebble_templates/index.html:512:44
+msgid "zooming limit;scrolling limit;mousewheel;zooming minimum;zooming maximum"
+msgstr "увеличаване;мащаб"
+
+#: resources/public/pebble_templates/index.html:514:57
+msgid "Minimum scale:"
+msgstr "Най-ниска стойност:"
+
+#: resources/public/pebble_templates/index.html:518:57
+msgid "Maximum scale:"
+msgstr "Най-висока стойност:"
+
+#: resources/public/pebble_templates/index.html:522:44
+msgid "rounding;zooming;scrolling;mousewheel;integer;decimal"
+msgstr "увеличаване;мащаб"
+
+#: resources/public/pebble_templates/index.html:525:57
+msgid "Round zoom values to nearest whole number"
+msgstr "Приближаване на стойностите на мащаба до най-близкото цяло число"
+
+#: resources/public/pebble_templates/index.html:529:44
+msgid "controls;miscellaneous"
+msgstr "контроли;настройки"
+
+#: resources/public/pebble_templates/index.html:534:57
+msgid "Lock the canvas (disallow canvas drag/zoom with mouse/fingers)"
+msgstr "Закотвяне на платното в определена позиция"
+
+#: resources/public/pebble_templates/index.html:537:44
+msgid "MMB picker;mouse picker;selection;palette picker"
+msgstr "мишка"
+
+#: resources/public/pebble_templates/index.html:540:57
+msgid "Enable middle mouse button selecting color from board"
+msgstr "Позволяване на средния бутон на мишката да избира цвят от платното"
+
+#: resources/public/pebble_templates/index.html:543:44
+msgid "right click action"
+msgstr "десен клавиш"
+
+#: resources/public/pebble_templates/index.html:545:57
+msgid "Right-click action:"
+msgstr "Функция на десния бутон на мишката"
+
+#: resources/public/pebble_templates/index.html:547:60
+msgid "Nothing"
+msgstr "Никаква"
+
+#: resources/public/pebble_templates/index.html:548:58
+msgid "Clear color"
+msgstr "Нулиране на цвета"
+
+#: resources/public/pebble_templates/index.html:549:57
+msgid "Copy color"
+msgstr "Копиране на цвета"
+
+#: resources/public/pebble_templates/index.html:550:59
+msgid "Lookup"
+msgstr "Преглед на пиксел"
+
+#: resources/public/pebble_templates/index.html:551:64
+msgid "Clear color + Lookup"
+msgstr "Нулиране на цвета + преглед на пиксела"
+
+#: resources/public/pebble_templates/index.html:558:36
+msgid "snapshots;screenshot;download;picture;canvas"
+msgstr "снимка;скрииншот"
+
+#: resources/public/pebble_templates/index.html:560:24
+msgid "Snapshot Settings"
+msgstr "Настройки за екранна снимка"
+
+#: resources/public/pebble_templates/index.html:563:44
+msgid "screenshot;snapshot;download;board;canvas"
+msgstr "снимка;скрииншот"
+
+#: resources/public/pebble_templates/index.html:564:44
+msgid "take screenshot;image;download format;picture;canvas;board"
+msgstr "снимка;скрииншот"
+
+#: resources/public/pebble_templates/index.html:566:57
+msgid "Snapshot image format:"
+msgstr "Формат на изтеглената екранна снимка"
+
+#: resources/public/pebble_templates/index.html:568:71
+msgid "PNG"
+msgstr "PNG"
+
+#: resources/public/pebble_templates/index.html:569:63
+msgid "JPEG"
+msgstr "JPEG"
+
+#: resources/public/pebble_templates/index.html:570:63
+msgid "WEBP (Chrome only)"
+msgstr "WEBP (само за Chrome)"
+
+#: resources/public/pebble_templates/index.html:577:36
+msgid "templates;overlays;guides"
+msgstr "шаблон;гид"
+
+#: resources/public/pebble_templates/index.html:582:44
+msgid "templates;overlays;image;pixel art"
+msgstr "шаблон;гидшаблон;гид"
+
+#: resources/public/pebble_templates/index.html:583:44
+msgid "template enabled;template disabled;show template;hide template;template shown;template hidden"
+msgstr "шаблон"
+
+#: resources/public/pebble_templates/index.html:586:57
+msgid "Use template"
+msgstr "Използване на шаблон"
+
+#: resources/public/pebble_templates/index.html:589:27
+msgid "Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around"
+msgstr "Задръжте <kbd>Ctrl</kbd> (или <kbd>Option</kbd> на mac), за да преместите шаблона"
+
+#: resources/public/pebble_templates/index.html:590:44
+msgid "template title;template name;tab name;tab title;title="
+msgstr "заглавие;шаблон"
+
+#: resources/public/pebble_templates/index.html:592:57
+msgid "Title:"
+msgstr "Заглавие"
+
+#: resources/public/pebble_templates/index.html:596:44
+msgid "template location;template source;template="
+msgstr "шаблон;гид;положение"
+
+#: resources/public/pebble_templates/index.html:598:57
+msgid "URL:"
+msgstr "URL:"
+
+#: resources/public/pebble_templates/index.html:603:44
+msgid "template position;template x;template y;template location; template vertical; template horizontal;ox=;oy="
+msgstr ""
+
+#: resources/public/pebble_templates/index.html:605:57
+msgid "Horizontal position:"
+msgstr "Хоризонтална позиция"
+
+#: resources/public/pebble_templates/index.html:609:57
+msgid "Vertical position:"
+msgstr "Вертикална позиция"
+
+#: resources/public/pebble_templates/index.html:613:44
+msgid "template transparency;template opacity;oo="
+msgstr "прозрачност;яркост;тъмнота"
+
+#: resources/public/pebble_templates/index.html:615:57
+msgid "Opacity:"
+msgstr "Прозрачност"
+
+#: resources/public/pebble_templates/index.html:620:44
+msgid "template width;tw="
+msgstr "широчина"
+
+#: resources/public/pebble_templates/index.html:622:57
+msgid "Width:"
+msgstr "Широчина"
+
+#: resources/public/pebble_templates/index.html:625:82
+#: resources/public/pebble_templates/index.html:660:79
+msgid "Reset"
+msgstr "Нулиране"
+
+#: resources/public/pebble_templates/index.html:630:36
+msgid "sound;notification;alert;notify;ping"
+msgstr "звук;известия"
+
+#: resources/public/pebble_templates/index.html:632:24
+msgid "Sound and Notification Settings"
+msgstr "Звук и Известия"
+
+#: resources/public/pebble_templates/index.html:637:44
+msgid "audio;mute;noise;volume"
+msgstr "звук;известия"
+
+#: resources/public/pebble_templates/index.html:640:57
+msgid "Enable sound"
+msgstr "Включване на звука"
+
+#: resources/public/pebble_templates/index.html:643:44
+msgid "notifs;notify;pixel notification"
+msgstr "звук;известия"
+
+#: resources/public/pebble_templates/index.html:646:57
+msgid "Enable pixel available notification"
+msgstr "Включване на известия за готови пиксели"
+
+#: resources/public/pebble_templates/index.html:650:44
+msgid "notification;pixel ready;alert"
+msgstr "звук;известия"
+
+#: resources/public/pebble_templates/index.html:651:28
+msgid "Pixel Ready Notification"
+msgstr "Известие за готов пиксел"
+
+#: resources/public/pebble_templates/index.html:652:44
+msgid "alert source;notify url;notify source;notification url;notification source"
+msgstr "звук;известия;адрес;файл;източник"
+
+#: resources/public/pebble_templates/index.html:654:57
+msgid "Alert URL:"
+msgstr "URL на звука"
+
+#: resources/public/pebble_templates/index.html:658:85
+msgid "Update"
+msgstr "Потвърдете"
+
+#: resources/public/pebble_templates/index.html:659:83
+msgid "Test"
+msgstr "Тествайте"
+
+#: resources/public/pebble_templates/index.html:663:44
+msgid "sound level;audio level;mute audio;mute sound"
+msgstr "звук;известия;сила"
+
+#: resources/public/pebble_templates/index.html:665:57
+msgid "Volume:"
+msgstr "Звук"
+
+#: resources/public/pebble_templates/index.html:670:44
+msgid "alert forewarning;alert delay; notification delay; notification forewarning"
+msgstr "звук;известия;предупреждение"
+
+#: resources/public/pebble_templates/index.html:672:57
+msgid "Delay (seconds):"
+msgstr "Закъснение (в секунди)"
+
+#: resources/public/pebble_templates/index.html:677:44
+msgid "chat mentions;chat pings;chat sound"
+msgstr "споменаване;тагване;пингване"
+
+#: resources/public/pebble_templates/index.html:678:28
+msgid "Chat Pings"
+msgstr "Споменаване в чата"
+
+#: resources/public/pebble_templates/index.html:682:57
+msgid "Enable pings"
+msgstr "Позволяване на известията за споменаване"
+
+#: resources/public/pebble_templates/index.html:685:44
+msgid "mention sound"
+msgstr "звук;известие"
+
+#: resources/public/pebble_templates/index.html:687:57
+msgid "Play sound on ping:"
+msgstr "Звук при споменаване:"
+
+#: resources/public/pebble_templates/index.html:689:56
+#: resources/public/include/chat.js:1926:100
+msgid "Off"
+msgstr "Изключен"
+
+#: resources/public/pebble_templates/index.html:690:61
+msgid "Only when necessary"
+msgstr "Само, когато е необходимо"
+
+#: resources/public/pebble_templates/index.html:691:59
+msgid "Always"
+msgstr "Включен"
+
+#: resources/public/pebble_templates/index.html:695:44
+msgid "mention sound volume"
+msgstr "звук;известия;сила"
+
+#: resources/public/pebble_templates/index.html:697:57
+msgid "Ping sound volume:"
+msgstr "Сила на известие за споменаване в чата:"
+
+#: resources/public/pebble_templates/index.html:705:36
+msgid "personal account"
+msgstr "акаунт;профил;таг"
+
+#: resources/public/pebble_templates/index.html:707:24
+msgid "Account Settings"
+msgstr "Настройки за профила"
+
+#: resources/public/pebble_templates/index.html:713:57
+msgid "Public Discord name:"
+msgstr "Показан дискорд таг:"
+
+#: resources/public/pebble_templates/index.html:717:83
+#: resources/public/include/chat.js:1928:92
+#: resources/public/include/chat.js:1992:92
+msgid "Set"
+msgstr "Потвърди"
+
+#: resources/public/pebble_templates/index.html:718:86
+msgid "Remove"
+msgstr "Премахни"
+
+#. FAQ panel
+#: resources/public/pebble_templates/index.html:731:65
+msgid "Help"
+msgstr "Помощ"
+
+#: resources/public/pebble_templates/index.html:744:54
+msgid "Notifications"
+msgstr "Съобщения"
+
+#: resources/public/pebble_templates/faq.html:3:16
+msgid "FAQ"
+msgstr "Често задавани въпроси"
+
+#: resources/public/pebble_templates/faq.html:7:20
+msgid "Why is the cooldown as long as it is?"
+msgstr "Колко трябва да чакам, за да поставя пиксел?"
+
+#: resources/public/pebble_templates/faq.html:8:20
+msgid "The time it takes to get a pixel is dynamic, and changes based on how many people are online. The cooldown time is longer when more users are online."
+msgstr "Времето за изчакване се определя от броя на потребителите, които са онлайн в момента. Колкото повече потребители, толкова по-дълго изчакване."
+
+#: resources/public/pebble_templates/faq.html:9:20
+msgid "Why does it say 0/6 pixels?"
+msgstr "Защо пише 0/6 пиксела?"
+
+#: resources/public/pebble_templates/faq.html:10:20
+msgid "This means that you are waiting for your next pixel. When you place a pixel, there is a cooldown for when you can place the next one. Over time, you can gain up to 6 \"stacked\" pixels to place at once."
+msgstr "Това означава, че в момента изчаквате следващия си пиксел. Когато поставите пиксел, трябва да изчакате, за да поставите следващия. Може да натрупате до 6 \"натрупани\" пиксела в рамките на около 30-40м., които да поставите накуп."
+
+#: resources/public/pebble_templates/faq.html:11:20
+msgid "Why does it take so long to \"stack\" pixels?"
+msgstr "Защо отнема толкова дълго да се \"натрупат\" пиксели?"
+
+#: resources/public/pebble_templates/faq.html:12:20
+msgid "This is by design. It is better to place a pixel as soon as you get one. Pixel \"stacking\" is meant to give you a bump if you go AFK for a bit. It takes around 40 minutes to get a full 6/6 pixels, but it only takes around 3 minutes to place 6 pixels if you place them as soon as possible."
+msgstr "Защото така е проектиран сайта. Натрупването е предназначено да подпомогне играчите, които са излезли офлайн за някакъв период от време. За натрупване на 6 пиксела трябва да се изчакат 30-40 минути, докато поставянето им веднага, след като таймера изтече би отнело под 3."
+
+#: resources/public/pebble_templates/faq.html:13:20
+msgid "How do I appeal a ban?"
+msgstr "Как да ми бъде премахнат бана?"
+
+#: resources/public/pebble_templates/faq.html:14:20
+msgid "Contact us on <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord</a> or send an appeal to our <a href=\"https://pxls.space/appeal\" target=\"_blank\">Google form</a> after reading the rules in the site's info panel."
+msgstr "Контактувайте с нас на <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord</a> или пратете извинение (на английски) на <a href=\"https://pxls.space/appeal\" target=\"_blank\">Google form</a> след прочитане на правилата."
+
+#: resources/public/pebble_templates/faq.html:15:20
+msgid "How do I make a template?"
+msgstr "Как да направя шаблон?"
+
+#: resources/public/pebble_templates/faq.html:16:20
+msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use the 3rd party tool <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into PxlsFiddle."
+msgstr "Можете просто да поставите адреса на вашето изображение в настройките за шаблон, но повечето от нашите потребители използват сайта <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a>."
+
+#: resources/public/pebble_templates/faq.html:17:20
+msgid "How do I move a template?"
+msgstr "Как да преместя шаблона си?"
+
+#: resources/public/pebble_templates/faq.html:18:20
+msgid "Hold <kbd>CTRL</kbd> (or <kbd>OPTION</kbd> on macOS) and click and drag to move it around. On mobile, you can tap and hold where you want to move the template and click \"Move Template Here\" in the pop-up."
+msgstr "Задръжте <kbd>CTRL</kbd> (или <kbd>OPTION</kbd> на macOS) и го премествайте с мишката си. На мобилно устройство, задръжте мястото, където искате да се намира горния ляв ъгъл на шаблона Ви и натиснете \"Премести шаблона тук\"."
+
+#: resources/public/pebble_templates/faq.html:19:20
+msgid "Does the canvas reset? When?"
+msgstr "Платното изчиства ли се? Кога?"
+
+#: resources/public/pebble_templates/faq.html:20:20
+msgid "Yes. The canvas resets when it is completely full. A reset date is not usually decided until the canvas is full, but the average canvas life-span is around 1 month. Updates are posted in our <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord server</a> when a reset date is set."
+msgstr "Да, платното се заменя с ново, когато вече няма достатъчно място, на което да се рисува. Няма определена продължителност, но датата и часът на промяната се обявяват няколко дена по-рано."
+
+#: resources/public/pebble_templates/faq.html:21:20
+msgid "Where can I see the past canvases?"
+msgstr "Къде мога да разгледам предишните платна?"
+
+#: resources/public/pebble_templates/faq.html:22:20
+msgid "The past canvases are featured on our <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord server</a>, or the 3rd party website <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a>, which records timelapses and a lot of useful information on each canvas."
+msgstr "Последните кадри от предишните платна са включени на <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord server</a>, а за пълен запис, посетете <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a>."
+
+#: resources/public/pebble_templates/faq.html:23:20
+msgid "How do I see who placed a pixel?"
+msgstr "Как да видя кой е поставил пиксел?"
+
+#: resources/public/pebble_templates/faq.html:24:20
+msgid "By shift-clicking (or tap and hold on mobile) a pixel, you can see who placed a pixel, how many pixels they have placed, and when they placed it."
+msgstr "Чрез натискане на Shift + кликване (или задържане на мобилно устройство) може да разберете кой и кога е поставил пиксел и колко пиксела има той."
+
+#: resources/public/pebble_templates/faq.html:25:20
+msgid "How do I report someone?"
+msgstr "Как да докладвам за нарушение на правилата?"
+
+#: resources/public/pebble_templates/faq.html:26:20
+msgid "Shift-click (or tap and hold on mobile) on a pixel, and click the Report button."
+msgstr "Кликнете и натиснете Shift (или задръжете на мобилно устройство) на дадения пиксел, и натиснете бутона Докладвай."
+
+#: resources/public/pebble_templates/faq.html:27:20
+msgid "How do I change the color of my name in the chat?"
+msgstr "Как да сменя цвета на името си?"
+
+#: resources/public/pebble_templates/faq.html:28:20
+msgid "There is a \"Username Color\" option near the bottom of the settings panel."
+msgstr "Отидете в настройките за чата."
+
+#: resources/public/pebble_templates/faq.html:29:20
+msgid "What is a \"virginmap\"?"
+msgstr "Какво е \"карта с поставени пиксели\"?"
+
+#: resources/public/pebble_templates/faq.html:30:20
+msgid "The virginmap shows which pixels have not yet been placed on (or “virgin” pixels)."
+msgstr "Тази карта Ви показва кои пиксели от началото на платното са все още недокоснати."
+
+#: resources/public/pebble_templates/faq.html:31:20
+msgid "How do I report bugs?"
+msgstr "Как да докладвам за проблем?"
+
+#: resources/public/pebble_templates/faq.html:32:20
+msgid "Submit bugs to the #dev-and-bugs channel in the <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord server</a>. If you have found an exploit, please message one of the staff members privately (through DMs)."
+msgstr "Посетете канала #dev-and-bugs в <a href=\"https://pxls.space/discord\" target=\"_blank\">дискорд сървъра</a>."
+
+#: resources/public/pebble_templates/faq.html:33:20
+msgid "How do I get more info or contact staff?"
+msgstr "Как да се свържа с екипа администратори/да получа повече информация?"
+
+#: resources/public/pebble_templates/faq.html:34:20
+msgid "Check the info panel (the icon on the top left) for more details and links, or join our <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord server</a>, where a staff member will gladly respond."
+msgstr "Цъкнете информационния панел (иконката горе вляво) или посетете нашия <a href=\"https://pxls.space/discord\" target=\"_blank\">дискорд сървър</a>."
+
+#: resources/public/pebble_templates/info.html:3:10
+msgid "Welcome!"
+msgstr "Добре дошли!"
+
+#: resources/public/pebble_templates/info.html:6:9
+msgid "Welcome to pxls.space! Pxls is a multiplayer online collaborative canvas that allows you to create anything you can imagine, one pixel at a time. Join hundreds of other players in the Pxls community and create amazing works of art together as a team, or solo."
+msgstr "Добре дошли в pxls.space! Pxls.space е онлайн платно за множество играчи, на което можете да нарисувате каквото си пожелаете. Присъединете се към стотици други играчи и създайте каквото пожелаете, в екип или соло."
+
+#: resources/public/pebble_templates/info.html:7:9
+msgid "The best place to reach staff and fellow community is in the discord!"
+msgstr "Най-доброто място за комуникация и  консултиране с модераторите и администраторите е дискорд сървъра ни."
+
+#: resources/public/pebble_templates/info.html:8:9
+msgid "Check out our social media pages, and please take the time to read the rules below. Have fun creating (or changing) art!"
+msgstr "Молим Ви да отделите малко внимание на правилата, които следват. Приятно прекарване!"
+
+#: resources/public/pebble_templates/info.html:13:27
+msgid "Canvas Rules"
+msgstr "Правила, отнасящи се до платното"
+
+#: resources/public/pebble_templates/info.html:16:9
+msgid "We pride ourselves on trying to keep an open canvas for all free from outside interference on our end, and especially censorship. However, for the good of the community and on accounts of our own beliefs, please acknowledge and obey the following guidelines:"
+msgstr "Нашата цел е платното да е свободно от цензура, но за благото на обществото има някои правила:"
+
+#: resources/public/pebble_templates/info.html:18:11
+msgid "No hateful imagery or derogatory speech. This includes but is not limited to words such as <i>faggot</i>, <i>nigger</i>, etc; as well as the Swastika, Hammer and Sickle, and any symbols of terrorism."
+msgstr "Без пречупени кръстове и изписването на силно обидни думи, като <i>педал</i>, <i>педераст</i> и английските <i>faggot</i>, <i>nigger</i> и <i>retard</i>. "
+
+#: resources/public/pebble_templates/info.html:19:11
+msgid "No NSFW or NSFL content."
+msgstr "Без нецензурни изображения."
+
+#: resources/public/pebble_templates/info.html:21:13
+msgid "No nudity or otherwise sexually explicit content"
+msgstr "Без голота или силно еротични изображения"
+
+#: resources/public/pebble_templates/info.html:23:15
+msgid "No female-presenting nipples/bare breasts, genitalia, sexual fluids"
+msgstr "Без напълно оголени женски гърди, женски и мъжки полови органи и сексуални течности"
+
+#: resources/public/pebble_templates/info.html:26:13
+msgid "No sexual imagery/erotica"
+msgstr "Без сексуални илюстрации"
+
+#: resources/public/pebble_templates/info.html:27:13
+msgid "No excessive blood or otherwise obscene/shocking content"
+msgstr "Без силно окървавени тела и друго шокиращо съдържание"
+
+#: resources/public/pebble_templates/info.html:30:11
+msgid "No more than <b>one</b> account per user, no exceptions. Multiple account users will be banned from creating art on the canvas."
+msgstr "Без повече от <b>един</b> акаунт на всеки потребител. Нарушителите ще бъдат отстранени."
+
+#: resources/public/pebble_templates/info.html:31:11
+msgid "No auto-placement tools of any kind, you must place the pixels manually."
+msgstr "Без ботове/автокликъри. Всеки пиксел трябва да бъде поставен на ръка."
+
+#: resources/public/pebble_templates/info.html:32:11
+msgid "Do not abuse site functionality, such as reports or lookups. (e.g. automated reporting/lookups, etc.)"
+msgstr "Без преупотреба на функциите на сайта (автоматично преглеждане на пиксели/докладване)"
+
+#: resources/public/pebble_templates/info.html:33:11
+msgid "Any automated aggregation of data from user lookups is not allowed, and will result in a ban."
+msgstr "Всяко автоматизирано събиране на данни чрез преглеждане на пиксели ще бъде наказано."
+
+#: resources/public/pebble_templates/info.html:34:11
+#: resources/public/pebble_templates/info.html:62:11
+msgid "Staff have final say in any rule disputes"
+msgstr "Екипът от модератори и администратори има последната дума в спорове за правилата"
+
+#: resources/public/pebble_templates/info.html:35:12
+#: resources/public/pebble_templates/info.html:64:13
+msgid "If you feel a moderator has acted inappropriately, please report it to an administrator."
+msgstr "Ако смятате, че даден модератор е пристъпил неправилно или непристойно, контактувайте администратор."
+
+#: resources/public/pebble_templates/info.html:38:9
+msgid "If you believe you have been falsely banned you may contact a moderator or administrator."
+msgstr "Ако смятате, че даден модератор се е отнесъл неправилно спрямо вас, контактувайте другите членове на екипа."
+
+#: resources/public/pebble_templates/info.html:43:27
+msgid "Chat Rules"
+msgstr "Правила, отнасящи се до чата"
+
+#: resources/public/pebble_templates/info.html:47:11
+msgid "Keep chat civil. No harassment or homophobic/transphobic/disablist language."
+msgstr "Дръжте се цивилизовано, без хомофобски и расистки изказвания."
+
+#: resources/public/pebble_templates/info.html:48:11
+msgid "No hate speech. This includes emoji/symbols/ASCII art."
+msgstr "Без силни обиди като посочените в Правило 1, отнасящо се за платното. Това включва и емотикони/ASCII."
+
+#: resources/public/pebble_templates/info.html:50:13
+msgid "Normal swearing/etc is allowed"
+msgstr "Обикновенните псувни са позволени"
+
+#: resources/public/pebble_templates/info.html:53:11
+msgid "No spamming"
+msgstr "Без спамене."
+
+#: resources/public/pebble_templates/info.html:55:13
+msgid "This includes excessive ASCII art/emojis/symbols/whitespace"
+msgstr "Това включва прекомерно използване на емотикони/странни символи и ASCII"
+
+#: resources/public/pebble_templates/info.html:58:11
+msgid "No \"copy pasta\"s"
+msgstr "Без \"копипасти\""
+
+#: resources/public/pebble_templates/info.html:59:11
+msgid "No links to sites that actively break the canvas or chat rules (e.g. porn sites)"
+msgstr "Без нецензурно съдържание - прекалено еротично държане, линкове към порнографско съдържание и т.н."
+
+#: resources/public/pebble_templates/info.html:60:11
+msgid "No symbology which break the canvas or chat rules (e.g. NSFW ASCII art)"
+msgstr "Без нецензорни символи в чата."
+
+#: resources/public/pebble_templates/info.html:61:16
+msgid "No personal information"
+msgstr "Без твърде лична информация (адрес, пълно име( място на учене/работа и т.н.)"
+
+#: resources/public/pebble_templates/info.html:72:10
+msgid "Links"
+msgstr "Линкове"
+
+#: resources/public/pebble_templates/info.html:76:64
+msgid "Discord (main hub)"
+msgstr "Дискорд (главно място за общуване)"
+
+#: resources/public/pebble_templates/info.html:77:68
+msgid "Subreddit"
+msgstr "Редит"
+
+#: resources/public/pebble_templates/info.html:78:68
+msgid "Twitter"
+msgstr "Туитър"
+
+#: resources/public/pebble_templates/info.html:79:66
+msgid "GitHub"
+msgstr "ГитХъб"
+
+#. link to piskelapp.com
+#: resources/public/pebble_templates/info.html:81:71
+msgid "Single-player mode"
+msgstr "Pxls за един играч"
+
+#: resources/public/pebble_templates/info.html:84:62
+msgid "Statistics"
+msgstr "Статистики"
+
+#: resources/public/pebble_templates/info.html:85:64
+msgid "Profile (user info, factions, etc.)"
+msgstr "Профил (информация и фракции)"
+
+#. link to pxlsfiddle.com
+#: resources/public/pebble_templates/info.html:87:68
+msgid "Template generator, archives, timelapses, and other utilities"
+msgstr "Генератор на шаблони, архиви и др."
+
+#. link to pxlsfiddle.com
+#: resources/public/pebble_templates/info.html:87:165
+msgid "PxlsFiddle (templates, archives, etc.)"
+msgstr "PxlsFiddle (шаблони, архиви и др.)"
+
+#: resources/public/pebble_templates/info.html:93:10
+msgid "Donate"
+msgstr "Дари"
+
+#: resources/public/pebble_templates/info.html:96:9
+msgid "Donations are not accepted at this time, but this panel will be updated when they're open again!"
+msgstr "Даренията не се приемат в момента, но този панел ще бъде променен, когато отново има възможност за тях!"
+
+#. eg "Alice's profile". Double singlequote is a java thing - needed if a replacement (such as this) contains a singlequote.
+#: resources/public/pebble_templates/profile.html:31:66
+#: resources/public/pebble_templates/profile.html:50:131
+msgid "{0}''s Profile"
+msgstr "Профил на {0}"
+
+#: resources/public/pebble_templates/profile.html:41:84
+#: resources/public/pebble_templates/40x.html:28:84
+#: resources/public/pebble_templates/40x.html:45:100
+#: resources/public/pebble_templates/40x.html:62:100
+msgid "My Profile"
+msgstr "Моят профил"
+
+#: resources/public/pebble_templates/profile.html:42:85
+#: resources/public/pebble_templates/40x.html:29:85
+msgid "My Factions"
+msgstr "Моите фракции"
+
+#: resources/public/pebble_templates/profile.html:60:93
+#: resources/public/pebble_templates/profile.html:126:56
+msgid "Reports"
+msgstr "Докладвания"
+
+#: resources/public/pebble_templates/profile.html:63:94
+msgid "Factions"
+msgstr "Фракции"
+
+#: resources/public/pebble_templates/profile.html:71:68
+msgid "You must be logged in to view your profile."
+msgstr "Трябва да сте влезли в своя профил, за да го разгледате."
+
+#: resources/public/pebble_templates/profile.html:77:72
+msgid "Registration Date"
+msgstr "Дата на регистриране"
+
+#: resources/public/pebble_templates/profile.html:82:72
+#: resources/public/include/lookup.js:280:21
+msgid "Alltime Pixels"
+msgstr "Пиксели"
+
+#: resources/public/pebble_templates/profile.html:86:72
+msgid "Current Canvas Pixels"
+msgstr "Пиксели на сегашното платно"
+
+#: resources/public/pebble_templates/profile.html:91:72
+msgid "Discord Tag"
+msgstr "Дискорд таг"
+
+#: resources/public/pebble_templates/profile.html:95:72
+#: resources/public/include/lookup.js:235:21
+msgid "Faction"
+msgstr "Фракции"
+
+#: resources/public/pebble_templates/profile.html:96:259
+msgid "None"
+msgstr "Няма"
+
+#: resources/public/pebble_templates/profile.html:99:72
+#: resources/public/admin/admin.js:195:16
+msgid "Roles"
+msgstr "Роли"
+
+#: resources/public/pebble_templates/profile.html:104:72
+msgid "Canvas Ban Expiry"
+msgstr "Дата на свършване на наказанието (платно)"
+
+#: resources/public/pebble_templates/profile.html:105:101
+#: resources/public/pebble_templates/profile.html:111:105
+msgid "Never"
+msgstr "Никога"
+
+#: resources/public/pebble_templates/profile.html:110:72
+msgid "Chat Ban Expiry"
+msgstr "Дата на свършване на наказанието (чат)"
+
+#: resources/public/pebble_templates/profile.html:117:36
+msgid "View rankings and other stats <a href=\"/stats\">here</a>."
+msgstr "Разгледайте позициите и други статистики <a href=\"/stats\">тук</a>."
+
+#: resources/public/pebble_templates/profile.html:124:68
+msgid "You must be logged in to view your reports."
+msgstr "Трябва да сте влезли в профила си, за да разгледате своите доклади."
+
+#: resources/public/pebble_templates/profile.html:130:64
+msgid "Canvas Reports ({0}/{1} open)"
+msgstr "Докладвания за платното ({0}/{1} отворени)"
+
+#. eg "Report on Bob (closed)
+#: resources/public/pebble_templates/profile.html:142:56
+#: resources/public/pebble_templates/profile.html:177:56
+msgid "Report on {0} (closed)"
+msgstr "Докладване над {0} (прегледано)"
+
+#. eg "Report on Bob (open)
+#: resources/public/pebble_templates/profile.html:145:56
+#: resources/public/pebble_templates/profile.html:179:56
+msgid "Report on {0} (open)"
+msgstr "Докладване над {0} (непрегледано)"
+
+#. eg "Reported Bob on Jan 1, 1970, 00:00:00 AM (UTC)
+#: resources/public/pebble_templates/profile.html:152:60
+#: resources/public/pebble_templates/profile.html:185:60
+msgid "Reported {0} on {1}"
+msgstr "Докладвал за {0} на {1}"
+
+#: resources/public/pebble_templates/profile.html:158:47
+msgid "There are no canvas reports to show."
+msgstr "Няма доклади, отнасящи се за платното."
+
+#: resources/public/pebble_templates/profile.html:166:64
+msgid "Chat Reports ({0}/{1} open)"
+msgstr "Докладвания за чата ({0}/{1} отворени"
+
+#: resources/public/pebble_templates/profile.html:191:47
+msgid "There are no chat reports to show."
+msgstr "Няма доклади, отнасящи се за чата."
+
+#: resources/public/pebble_templates/profile.html:200:68
+msgid "You must be logged in to manage your factions."
+msgstr "Трябва да сте влезли в профила си, за да работите с Вашите фракции."
+
+#: resources/public/pebble_templates/profile.html:205:36
+msgid "You are faction restricted and cannot create new factions. If you believe this is an error, please contact a moderator."
+msgstr "Вие имате забрана за създаване на нови фракции. Ако смятате, че това е грешка, контактувайте с администратор."
+
+#: resources/public/pebble_templates/profile.html:207:36
+msgid "You are canvas banned and cannot create new factions. If you believe this is an error, please contact a moderator."
+msgstr "Вие имате наказание, отнасящо се за платното и нямате право да създадете нови фракции. Ако смятате, че това е грешка, контактувайте с администратор."
+
+#: resources/public/pebble_templates/profile.html:212:76
+msgid "You must have at least {0} all-time pixels to create a faction."
+msgstr "Трябва да имате поне {0} пиксела, за да създадете фракция."
+
+#: resources/public/pebble_templates/profile.html:215:300
+msgid "Create"
+msgstr "Създайте"
+
+#: resources/public/pebble_templates/profile.html:216:191
+msgid "Join"
+msgstr "Присъединете се"
+
+#: resources/public/pebble_templates/profile.html:225:118
+msgid "This is your currently displayed faction."
+msgstr "Това е фракцията, показана на Вашия профил."
+
+#. eg "Pixelers (members: 100, ID: 1)"
+#: resources/public/pebble_templates/profile.html:228:44
+msgid "{0} (members: {1}, ID: {2}"
+msgstr "{0} (членове: {1}, ID: {2}"
+
+#: resources/public/pebble_templates/profile.html:231:69
+msgid "Owner: {0}"
+msgstr "Собственик: {0}"
+
+#. makes the faction no longer the one displayed for the current user
+#: resources/public/pebble_templates/profile.html:236:175
+msgid "Remove Displayed"
+msgstr "Премахнете от профила"
+
+#. makes the faction the one displayed for the current user
+#: resources/public/pebble_templates/profile.html:239:172
+msgid "Set Displayed"
+msgstr "Покажете на профила"
+
+#: resources/public/pebble_templates/profile.html:242:235
+msgid "Members"
+msgstr "Членове"
+
+#: resources/public/pebble_templates/profile.html:243:169
+msgid "Edit"
+msgstr "Редактирайте"
+
+#: resources/public/pebble_templates/profile.html:244:168
+#: resources/public/include/chat.js:1451:24
+msgid "Delete"
+msgstr "Изтрийте"
+
+#: resources/public/pebble_templates/profile.html:246:174
+msgid "Leave"
+msgstr "Излезте"
+
+#: resources/public/pebble_templates/profile.html:253:68
+msgid "You are not in any factions yet!"
+msgstr "Вие не сте членове на нито една фракция."
+
+#: resources/public/pebble_templates/profile.html:269:52
+msgid "Members of {0} ([{1}])"
+msgstr "Mчленове на {0} ([{1}])"
+
+#: resources/public/pebble_templates/profile.html:270:97
+#: resources/public/pebble_templates/profile.html:329:97
+#: resources/public/pebble_templates/profile.html:342:97
+#: resources/public/pebble_templates/profile.html:366:97
+msgid "Close"
+msgstr "Затворете"
+
+#: resources/public/pebble_templates/profile.html:278:60
+msgid "Faction Members"
+msgstr "Членове на фракцията"
+
+#: resources/public/pebble_templates/profile.html:292:128
+msgid "Transfer Ownership"
+msgstr "Прехвърлете собственост"
+
+#. bans a user from the faction
+#: resources/public/pebble_templates/profile.html:294:122
+#: resources/public/include/chat.js:1722:60
+msgid "Ban"
+msgstr "Премахни от фракцията"
+
+#: resources/public/pebble_templates/profile.html:300:79
+#: resources/public/pebble_templates/profile.html:322:79
+msgid "Nothing to see here!"
+msgstr "Тук няма нищо!"
+
+#: resources/public/pebble_templates/profile.html:308:60
+msgid "Faction Bans"
+msgstr "Премахнати от фракцията"
+
+#: resources/public/pebble_templates/profile.html:318:125
+#: resources/public/include/chat.js:1618:36
+#: resources/public/include/chat.js:1722:46
+#: resources/public/admin/admin.js:317:88
+#: resources/public/admin/admin.js:344:52
+msgid "Unban"
+msgstr "Отмени наказанието"
+
+#: resources/public/pebble_templates/profile.html:341:52
+msgid "Find A Faction"
+msgstr "Намерете фракция"
+
+#: resources/public/pebble_templates/profile.html:351:99
+msgid "Search:"
+msgstr "Търсете:"
+
+#: resources/public/pebble_templates/profile.html:361:66
+msgid "Enter a search term to get started."
+msgstr "Напишете нещо."
+
+#: resources/public/pebble_templates/profile.html:363:116
+msgid "Load More"
+msgstr "Вижте още"
+
+#. HTTP status code name
+#: resources/public/pebble_templates/40x.html:39:24
+msgid "Not Found"
+msgstr "Не е намерено"
+
+#: resources/public/pebble_templates/40x.html:41:23
+msgid "The content you requested could not be found at this URL. If you believe this is an error, please contact a developer."
+msgstr "Съдържанието, което искате да намерите на този URL не е намерено. Ако смятате, че това е грешка, моля, контактувайте с администратор."
+
+#. links to the homepage (the app itself)
+#: resources/public/pebble_templates/40x.html:44:99
+#: resources/public/pebble_templates/40x.html:53:99
+#: resources/public/pebble_templates/40x.html:61:99
+msgid "Back to Pxls"
+msgstr "Връщане в Pxls"
+
+#. HTTP status code name
+#: resources/public/pebble_templates/40x.html:49:24
+msgid "Not Authenticated"
+msgstr "Достъпът не е разрешен"
+
+#: resources/public/pebble_templates/40x.html:51:23
+msgid "You must be logged in to access this data. Please go back to pxls and go through the authentication process."
+msgstr "Трябва да сте влезли във Вашия профил, за да проверите това съдържание."
+
+#. HTTP status code name
+#: resources/public/pebble_templates/40x.html:57:24
+msgid "Not Allowed"
+msgstr "Не е разрешено"
+
+#: resources/public/pebble_templates/40x.html:59:23
+msgid "The action you attempted to perform is not allowed or resulted in an error. Please ensure you have access to the endpoint and try again later."
+msgstr "Действието, което се опитвате да извършите не Ви е позволено. Моля, уверете се, че имате достъп и опитайте отново."
+
+#: resources/public/pxls.js:134:38
+msgid "Alert"
+msgstr "Внимание"
+
+#. Snapshot save name
+#: resources/public/include/board.js:800:100
+msgid "pxls canvas"
+msgstr ""
+
+#. template link action
+#: resources/public/include/chat.js:79:21
+msgid "Ask"
+msgstr "Попитай"
+
+#: resources/public/include/chat.js:83:21
+msgid "Open in a new tab"
+msgstr "Отвори в друг раздел"
+
+#: resources/public/include/chat.js:87:21
+msgid "Open in current tab (replacing template)"
+msgstr "Отвори в сегашния раздел, заменяйки сегашния шаблон"
+
+#: resources/public/include/chat.js:91:21
+msgid "Jump to coordinates without replacing template"
+msgstr "Посети координатите без смяна на шаблона"
+
+#: resources/public/include/chat.js:1249:42
+#: resources/public/include/chat.js:1742:27
+msgid "none provided"
+msgstr ""
+
+#: resources/public/include/chat.js:1250:38
+msgid "Purged by ${purge.initiator} with reason: ${reason}"
+msgstr "Изчистено от ${purge.initiator} с причина: ${reason}"
+
+#: resources/public/include/chat.js:1268:26
+msgid "template:"
+msgstr "шаблон:"
+
+#: resources/public/include/chat.js:1320:56
+#: resources/public/include/chat.js:2046:56
+msgid "Open Failed"
+msgstr "Отварянето се провали"
+
+#: resources/public/include/chat.js:1322:32
+#: resources/public/include/chat.js:2048:32
+msgid "Failed to automatically open in a new tab"
+msgstr "Опитът за отваряне в нов раздел се провали"
+
+#: resources/public/include/chat.js:1326:24
+#: resources/public/include/chat.js:2052:24
+msgid "Click here to open in a new tab instead"
+msgstr "Цъкнете тук, за да отворите в друг раздел"
+
+#: resources/public/include/chat.js:1340:52
+msgid "Open Template"
+msgstr "Отвори шаблон"
+
+#: resources/public/include/chat.js:1342:54
+msgid "This link will overwrite your current template. What would you like to do?"
+msgstr "Този линк ще премахне сегашния ви шаблон. Какво желаете да направите?"
+
+#: resources/public/include/chat.js:1353:55
+msgid "Note: You can set a default action in the settings menu which bypasses this popup completely."
+msgstr "Нота: Можете да зададете настройки, които да премахнат това съобщение в настройките."
+
+#: resources/public/include/chat.js:1444:24
+#: resources/public/include/chat.js:1523:18
+#: resources/public/include/lookup.js:18:90
+msgid "Report"
+msgstr "Докладвай"
+
+#: resources/public/include/chat.js:1445:24
+msgid "Mention"
+msgstr "Спомени"
+
+#: resources/public/include/chat.js:1446:24
+msgid "Ignore"
+msgstr "Игнорирай"
+
+#: resources/public/include/chat.js:1447:102
+#: resources/public/admin/admin.js:190:16
+msgid "Profile"
+msgstr "Профил"
+
+#: resources/public/include/chat.js:1448:24
+msgid "Chat (un)ban"
+msgstr ""
+
+#: resources/public/include/chat.js:1450:43
+#: resources/public/include/chat.js:1900:54
+msgid "Purge User"
+msgstr ""
+
+#: resources/public/include/chat.js:1452:24
+msgid "Mod Lookup"
+msgstr ""
+
+#: resources/public/include/chat.js:1453:24
+msgid "Chat Lookup"
+msgstr ""
+
+#: resources/public/include/chat.js:1525:30
+msgid "Enter a reason for your report"
+msgstr "Въведете причина за Вашия доклад (на английски)"
+
+#: resources/public/include/chat.js:1554:26
+#: resources/public/include/chat.js:1675:18
+#: resources/public/include/chat.js:1834:22
+#: resources/public/include/chat.js:1882:22
+#: resources/public/include/chat.js:1950:22
+#: resources/public/include/chat.js:2010:22
+#: resources/public/include/lookup.js:64:91
+#: resources/public/include/user.js:73:87
+#: resources/public/admin/admin.js:331:20
+msgid "Cancel"
+msgstr "Отказ"
+
+#: resources/public/include/chat.js:1569:34
+#: resources/public/include/lookup.js:45:30
+msgid "Error sending report."
+msgstr "Грешка при изпращането на докладване."
+
+#: resources/public/include/chat.js:1574:54
+msgid "Report User"
+msgstr "Дакладвай за потребителя"
+
+#: resources/public/include/chat.js:1588:34
+msgid "User ignored. You can unignore from chat settings."
+msgstr "Потребителят игнориран. Можете да промените решението си в настройките."
+
+#: resources/public/include/chat.js:1590:34
+msgid "Failed to ignore user. Either they\\'re already ignored, or an error occurred. If the problem persists, contact a developer."
+msgstr "Грешка при игнорирането на потребителя. Ако този проблем се повтаря, контактирайте администраторите."
+
+#: resources/public/include/chat.js:1618:55
+msgid "Permanent"
+msgstr ""
+
+#: resources/public/include/chat.js:1618:78
+msgid "Temporary"
+msgstr ""
+
+#: resources/public/include/chat.js:1645:32
+msgid "Rule 3: Spam"
+msgstr ""
+
+#: resources/public/include/chat.js:1646:32
+msgid "Rule 1: Chat civility"
+msgstr ""
+
+#: resources/public/include/chat.js:1647:32
+msgid "Rule 2: Hate Speech"
+msgstr ""
+
+#: resources/public/include/chat.js:1648:32
+msgid "Rule 5: NSFW"
+msgstr ""
+
+#: resources/public/include/chat.js:1649:32
+#: resources/public/include/chat.js:1727:58
+#: resources/public/include/chat.js:1748:45
+msgid "Custom"
+msgstr ""
+
+#: resources/public/include/chat.js:1682:33
+msgid "Banning:"
+msgstr ""
+
+#: resources/public/include/chat.js:1682:50
+msgid "Message:"
+msgstr ""
+
+#: resources/public/include/chat.js:1684:26
+msgid "Ban Length"
+msgstr ""
+
+#: resources/public/include/chat.js:1691:28
+msgid "Reason"
+msgstr ""
+
+#: resources/public/include/chat.js:1696:28
+msgid "Purge Messages"
+msgstr ""
+
+#: resources/public/include/chat.js:1700:27
+msgid "Purging all messages is disabled during snip mode"
+msgstr ""
+
+#: resources/public/include/chat.js:1703:79
+#: resources/public/include/user.js:174:22
+#: resources/public/admin/admin.js:182:41
+#: resources/public/admin/admin.js:184:94
+msgid "Yes"
+msgstr ""
+
+#: resources/public/include/chat.js:1704:78
+#: resources/public/include/user.js:178:22
+#: resources/public/admin/admin.js:182:53
+#: resources/public/admin/admin.js:184:106
+msgid "No"
+msgstr ""
+
+#: resources/public/include/chat.js:1728:63
+msgid "Custom reason"
+msgstr ""
+
+#: resources/public/include/chat.js:1728:85
+#: resources/public/include/lookup.js:59:30
+msgid "Additional information (if applicable)"
+msgstr ""
+
+#: resources/public/include/chat.js:1753:45
+msgid "Additional information:"
+msgstr ""
+
+#: resources/public/include/chat.js:1775:34
+msgid "Error occurred while chatbanning"
+msgstr ""
+
+#: resources/public/include/chat.js:1779:54
+msgid "Chatban"
+msgstr ""
+
+#: resources/public/include/chat.js:1799:32
+msgid "Failed to delete"
+msgstr ""
+
+#: resources/public/include/chat.js:1810:32
+#: resources/public/include/chat.js:1852:32
+msgid "ID: "
+msgstr ""
+
+#: resources/public/include/chat.js:1814:32
+#: resources/public/include/chat.js:1862:32
+msgid "User: "
+msgstr ""
+
+#: resources/public/include/chat.js:1818:32
+#: resources/public/include/chat.js:1856:32
+msgid "Message: "
+msgstr ""
+
+#: resources/public/include/chat.js:1822:32
+msgid "Reason: "
+msgstr ""
+
+#: resources/public/include/chat.js:1839:54
+msgid "Delete Message"
+msgstr ""
+
+#: resources/public/include/chat.js:1847:106
+msgid "Purge"
+msgstr ""
+
+#: resources/public/include/chat.js:1868:28
+msgid "Selected Message"
+msgstr ""
+
+#: resources/public/include/chat.js:1871:30
+msgid "Purge Reason"
+msgstr ""
+
+#: resources/public/include/chat.js:1896:34
+msgid "Error sending purge."
+msgstr ""
+
+#: resources/public/include/chat.js:1915:23
+msgid "ChatLookup"
+msgstr ""
+
+#: resources/public/include/chat.js:1925:98
+msgid "On"
+msgstr ""
+
+#: resources/public/include/chat.js:1938:28
+msgid "Toggle Rename Request"
+msgstr ""
+
+#: resources/public/include/chat.js:1939:27
+msgid "Select one of the options below to set the current rename request state."
+msgstr ""
+
+#: resources/public/include/chat.js:1964:30
+#: resources/public/include/chat.js:2023:30
+msgid "An unknown error occurred. Please contact a developer"
+msgstr ""
+
+#: resources/public/include/chat.js:1990:52
+msgid "New Name: "
+msgstr ""
+
+#: resources/public/include/chat.js:2000:27
+msgid "Enter the new name for the user below. Please note that if you\\'re trying to change the caps, you\\'ll have to rename to something else first."
+msgstr ""
+
+#: resources/public/include/chat.js:2038:54
+msgid "Force Rename"
+msgstr ""
+
+#: resources/public/include/chat.js:2077:118
+msgid "You cannot use chat while canvas banned."
+msgstr "Не можете да използвате чата, докато имате наказание за платното."
+
+#: resources/public/include/lookup.js:21:32
+msgid "Sending..."
+msgstr ""
+
+#: resources/public/include/lookup.js:28:32
+msgid "You must specify the details."
+msgstr ""
+
+#: resources/public/include/lookup.js:33:27
+msgid "additional information:"
+msgstr ""
+
+#: resources/public/include/lookup.js:49:50
+msgid "Report Pixel"
+msgstr "Докладвай пиксел"
+
+#: resources/public/include/lookup.js:52:32
+msgid "Rule #1: Hateful/derogatory speech or symbols"
+msgstr "Правило 1: Силно обидно съдържание"
+
+#: resources/public/include/lookup.js:53:32
+msgid "Rule #2: Nudity, genitalia, or non-PG-13 content"
+msgstr "Правило 2: Голота/насилие"
+
+#: resources/public/include/lookup.js:54:32
+msgid "Rule #3: Multi-account"
+msgstr "Правило 3: Втори профил"
+
+#: resources/public/include/lookup.js:55:32
+msgid "Rule #4: Botting"
+msgstr "Правило 4: Автоматизирано поставяне"
+
+#: resources/public/include/lookup.js:56:52
+msgid "Other (specify below)"
+msgstr "Друго (пишете на английски)"
+
+#: resources/public/include/lookup.js:168:62
+msgid "Hide sensitive information"
+msgstr ""
+
+#: resources/public/include/lookup.js:207:120
+msgid "An error occurred, either you aren't logged in or you may be attempting to look up users too fast. Please try again in 60 seconds"
+msgstr "Случи се грешка, или не сте свързани, или се опитвате да получите информация твърде бързо. Опитайте отново след 60 сек."
+
+#: resources/public/include/lookup.js:218:21
+msgid "Coords"
+msgstr "Координати"
+
+#: resources/public/include/lookup.js:223:21
+#: resources/public/admin/admin.js:186:16
+msgid "Username"
+msgstr "Име"
+
+#: resources/public/include/lookup.js:229:28
+msgid "View Profile"
+msgstr "Виж профил"
+
+#: resources/public/include/lookup.js:239:21
+msgid "Origin"
+msgstr "Произход"
+
+#: resources/public/include/lookup.js:243:28
+msgid "Part of a nuke"
+msgstr "Част от масово изтриване"
+
+#: resources/public/include/lookup.js:245:28
+msgid "Placed by a staff member using placement overrides"
+msgstr "Поставен от член на екипа, използвал обособени функции"
+
+#: resources/public/include/lookup.js:252:21
+msgid "Time"
+msgstr "Време"
+
+#: resources/public/include/lookup.js:263:36
+msgid "just now"
+msgstr "току-що"
+
+#: resources/public/include/lookup.js:271:36
+msgid "${hoursStr}:${minuteStr}:${secsStr} ago"
+msgstr "$преди {hoursStr}:${minuteStr}:${secsStr}"
+
+#: resources/public/include/lookup.js:284:21
+msgid "Discord"
+msgstr "Дискорд"
+
+#: resources/public/include/notifications.js:60:58
+msgid "Posted by ${notification.who}"
+msgstr "Изпратено от ${notification.who}"
+
+#: resources/public/include/notifications.js:63:111
+msgid "Expires ${expiry}"
+msgstr "Свършва да действа на ${expiry}"
+
+#: resources/public/include/template.js:93:50
+msgid "There was an error getting the image"
+msgstr "Настъпи проблем при получаване на изображението"
+
+#: resources/public/include/timer.js:41:53
+msgid "Your next pixel will be available in ${delay} seconds!"
+msgstr "Следващият Ви пиксел ще е наличен след ${delay} секунди."
+
+#: resources/public/include/timer.js:84:61
+msgid "Your next pixel has been available for ${alertDelay} seconds!"
+msgstr "Следващият Ви пиксел е наличен от ${alertDelay} секунди."
+
+#: resources/public/include/timer.js:98:59
+msgid "Your next pixel is available!"
+msgstr "Следващият Ви пиксел е наличен."
+
+#. theme name
+#: resources/public/include/uiHelper.js:47:19
+msgid "Dark"
+msgstr "Тъмна"
+
+#. theme name
+#: resources/public/include/uiHelper.js:53:19
+msgid "Darker"
+msgstr "По-тъмна"
+
+#. theme name
+#: resources/public/include/uiHelper.js:59:19
+msgid "Blue"
+msgstr "Синя"
+
+#. theme name
+#: resources/public/include/uiHelper.js:65:19
+msgid "Purple"
+msgstr "Лилава"
+
+#. theme name
+#: resources/public/include/uiHelper.js:71:19
+msgid "Green"
+msgstr "Зелена"
+
+#. theme name
+#: resources/public/include/uiHelper.js:77:19
+msgid "Matte"
+msgstr "Матирана"
+
+#. theme name
+#: resources/public/include/uiHelper.js:83:19
+msgid "Terminal"
+msgstr "Терминал"
+
+#. theme name
+#: resources/public/include/uiHelper.js:89:19
+msgid "Red"
+msgstr "Червена"
+
+#: resources/public/include/uiHelper.js:461:30
+msgid "Discord name updated successfully"
+msgstr "Вашият дискорд таг бе редактиран успешно"
+
+#: resources/public/include/uiHelper.js:468:32
+msgid "Couldn\\'t change discord name: "
+msgstr "Не можахме да редактираме името Ви:"
+
+#: resources/public/include/user.js:81:28
+msgid "Sign in with..."
+msgstr "Влезте с/ъс..."
+
+#: resources/public/include/user.js:94:149
+msgid "New Accounts Disabled"
+msgstr "Новите профили не са използваеми"
+
+#: resources/public/include/user.js:167:52
+msgid "Sign Out"
+msgstr "Изход"
+
+#: resources/public/include/user.js:169:27
+msgid "Are you sure you want to sign out?"
+msgstr "Сигурни ли сте, че искате да излезете?"
+
+#: resources/public/include/user.js:194:28
+msgid "Too many sessions open, try closing some tabs."
+msgstr "Твърде много раздели, отворени наведнъж, затворете някои от тях."
+
+#: resources/public/include/user.js:227:39
+msgid "You are permanently banned."
+msgstr "Вие сте наказани за неопределен срок."
+
+#: resources/public/include/user.js:231:39
+msgid "You are temporarily banned and will not be allowed to place until ${timestamp}"
+msgstr "Вие сте наказани до ${timestamp} и дотогава нямате право да поставяте пиксели."
+
+#: resources/public/include/user.js:251:27
+msgid "If you think this was an error, please contact us using one of the links in the info tab."
+msgstr "Ако мислите, че това е грешка, контактувайте с нас."
+
+#: resources/public/include/user.js:252:27
+msgid "Ban reason:"
+msgstr "Причина за наказанието:"
+
+#: resources/public/include/user.js:256:28
+#: resources/public/admin/admin.js:200:16
+msgid "Banned"
+msgstr "Наказан"
+
+#: resources/public/include/user.js:326:23
+msgid "Staff have required you to change your username, this usually means your name breaks one of our rules."
+msgstr "Екипът ни е решил, че името Ви се нуждае от промяна."
+
+#: resources/public/include/user.js:327:23
+msgid "If you disagree, please contact us on Discord (link in the info panel)."
+msgstr "Ако сте несъгласни, контактувайте с нас."
+
+#: resources/public/include/user.js:328:27
+msgid "New Username:"
+msgstr "Ново име:"
+
+#: resources/public/include/user.js:341:89
+msgid "Not now"
+msgstr "Не сега"
+
+#: resources/public/include/user.js:342:86
+msgid "Change"
+msgstr "Промени"
+
+#: resources/public/include/user.js:346:50
+#: resources/public/admin/admin.js:198:16
+msgid "Rename Requested"
+msgstr "Промяната е изпратена за одобрение"
+
+#: resources/public/admin/admin.js:98:38
+msgid "Something went wrong! Perhaps insufficient permissions?"
+msgstr ""
+
+#: resources/public/admin/admin.js:103:45
+msgid "Shadowban user"
+msgstr ""
+
+#: resources/public/admin/admin.js:103:67
+msgid "Shadowbanned user"
+msgstr ""
+
+#: resources/public/admin/admin.js:106:45
+msgid "Permaban user"
+msgstr ""
+
+#: resources/public/admin/admin.js:106:66
+msgid "Permabanned user"
+msgstr ""
+
+#: resources/public/admin/admin.js:109:45
+msgid "Ban user"
+msgstr ""
+
+#: resources/public/admin/admin.js:109:61
+msgid "Banned user"
+msgstr ""
+
+#: resources/public/admin/admin.js:123:36
+msgid "Unbanned user ${username}"
+msgstr ""
+
+#. Context: ban type
+#: resources/public/admin/admin.js:176:27
+msgid "shadow"
+msgstr ""
+
+#: resources/public/admin/admin.js:177:29
+#: resources/public/admin/admin.js:180:29
+msgid "never"
+msgstr ""
+
+#: resources/public/admin/admin.js:179:27
+msgid "permanent"
+msgstr ""
+
+#: resources/public/admin/admin.js:184:51
+msgid "Yes (permanent)"
+msgstr ""
+
+#: resources/public/admin/admin.js:191:16
+#: resources/public/admin/admin.js:451:21
+msgid "Logins"
+msgstr ""
+
+#: resources/public/admin/admin.js:197:16
+msgid "All Time Pixels"
+msgstr ""
+
+#: resources/public/admin/admin.js:199:16
+msgid "Discord Name"
+msgstr ""
+
+#: resources/public/admin/admin.js:201:16
+msgid "Chatbanned"
+msgstr ""
+
+#: resources/public/admin/admin.js:204:27
+msgid "Ban Reason"
+msgstr ""
+
+#: resources/public/admin/admin.js:205:27
+msgid "Ban Expiracy"
+msgstr ""
+
+#: resources/public/admin/admin.js:208:27
+msgid "Chatban Reason"
+msgstr ""
+
+#: resources/public/admin/admin.js:208:102
+msgid "(canvas ban)"
+msgstr ""
+
+#: resources/public/admin/admin.js:210:97
+msgid "when canvas ban ends"
+msgstr ""
+
+#: resources/public/admin/admin.js:211:29
+msgid "Chatban Expires"
+msgstr ""
+
+#. Admin check. Example: type = 'username', arg = 'pxlsuser94'
+#: resources/public/admin/admin.js:313:36
+msgid "${type} ${arg} not found."
+msgstr ""
+
+#: resources/public/admin/admin.js:319:50
+msgid "Unban Reason:"
+msgstr ""
+
+#: resources/public/admin/admin.js:324:25
+msgid "Unbanning ${username}"
+msgstr ""
+
+#: resources/public/admin/admin.js:446:20
+msgid "profile"
+msgstr ""
+
+#: resources/public/admin/admin.js:470:21
+msgid "User Agent"
+msgstr ""
+
+#: resources/public/admin/admin.js:475:21
+msgid "Send Alert"
+msgstr ""
+
+#: resources/public/admin/admin.js:480:21
+msgid "Mod Actions"
+msgstr ""
