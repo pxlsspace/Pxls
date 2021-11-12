@@ -45,6 +45,12 @@ public class WebHandler {
         addServiceIfAvailable("discord", new DiscordAuthService("discord"));
         addServiceIfAvailable("vk", new VKAuthService("vk"));
         addServiceIfAvailable("tumblr", new TumblrAuthService("tumblr"));
+        try {
+            addServiceIfAvailable("oidc", new OpenIDAuthService("oidc"));
+        } catch(Exception e) {
+            System.err.println("Failed to init oidc login service:");
+            System.err.println(e.toString());
+        }
 
         engine = new PebbleEngine.Builder().build();
     }
@@ -689,6 +695,7 @@ public class WebHandler {
         Calendar futureCalendar = Calendar.getInstance();
         futureCalendar.add(Calendar.DATE, days);
         String hostname = App.getConfig().getString("host");
+        // FIXME ([  ]): I think there only needs to be one of these and the domain can be excluded.
         exchange.setResponseCookie(
             new CookieImpl("pxls-token", loginToken)
                 .setHttpOnly(true)
@@ -2018,7 +2025,7 @@ public class WebHandler {
         exchange.getResponseSender().send("");
     }
 
-    private String encodedURIComponent(String toEncode) {
+    public static String encodedURIComponent(String toEncode) {
         //https://stackoverflow.com/a/611117
         String result = "";
         try {
