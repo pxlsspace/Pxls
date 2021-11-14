@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-08-12T13:23:05.243Z\n"
+"POT-Creation-Date: 2021-11-14T06:07:40.539Z\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -50,6 +50,8 @@ msgid "Loading online user count&hellip;"
 msgstr "Loading online user count&hellip;"
 
 #: resources/public/pebble_templates/index.html:101:30
+#: resources/public/include/lookup.js:276:21
+#: resources/public/admin/admin.js:196:16
 msgid "Pixels"
 msgstr "Pixels"
 
@@ -59,7 +61,7 @@ msgstr "Undo"
 
 #: resources/public/pebble_templates/index.html:114:20
 msgid "You are not signed in.&nbsp;<a href=\"#\">Sign in with...</a>"
-msgstr "You are not signed in.&nbsp;<a href=\"#\">Sign in with...</a>"
+msgstr ""
 
 #: resources/public/pebble_templates/index.html:124:28
 msgid "Loading..."
@@ -933,6 +935,7 @@ msgid "Play sound on ping:"
 msgstr "Play sound on ping:"
 
 #: resources/public/pebble_templates/index.html:689:56
+#: resources/public/include/chat.js:1937:100
 msgid "Off"
 msgstr "Off"
 
@@ -965,6 +968,8 @@ msgid "Public Discord name:"
 msgstr "Public Discord name:"
 
 #: resources/public/pebble_templates/index.html:717:83
+#: resources/public/include/chat.js:1939:92
+#: resources/public/include/chat.js:2003:92
 msgid "Set"
 msgstr "Set"
 
@@ -1254,7 +1259,7 @@ msgid "Template generator, archives, timelapses, and other utilities"
 msgstr "Template generator, archives, timelapses, and other utilities"
 
 #. link to pxlsfiddle.com
-#: resources/public/pebble_templates/info.html:87:159
+#: resources/public/pebble_templates/info.html:87:165
 msgid "PxlsFiddle (templates, archives, etc.)"
 msgstr "PxlsFiddle (templates, archives, etc.)"
 
@@ -1302,6 +1307,7 @@ msgid "Registration Date"
 msgstr "Registration Date"
 
 #: resources/public/pebble_templates/profile.html:82:72
+#: resources/public/include/lookup.js:280:21
 msgid "Alltime Pixels"
 msgstr "Alltime Pixels"
 
@@ -1314,6 +1320,7 @@ msgid "Discord Tag"
 msgstr "Discord Tag"
 
 #: resources/public/pebble_templates/profile.html:95:72
+#: resources/public/include/lookup.js:235:21
 msgid "Faction"
 msgstr "Faction"
 
@@ -1322,6 +1329,7 @@ msgid "None"
 msgstr "None"
 
 #: resources/public/pebble_templates/profile.html:99:72
+#: resources/public/admin/admin.js:195:16
 msgid "Roles"
 msgstr "Roles"
 
@@ -1436,6 +1444,7 @@ msgid "Edit"
 msgstr "Edit"
 
 #: resources/public/pebble_templates/profile.html:244:168
+#: resources/public/include/chat.js:1462:24
 msgid "Delete"
 msgstr "Delete"
 
@@ -1468,6 +1477,7 @@ msgstr "Transfer Ownership"
 
 #. bans a user from the faction
 #: resources/public/pebble_templates/profile.html:294:122
+#: resources/public/include/chat.js:1733:60
 msgid "Ban"
 msgstr "Ban"
 
@@ -1481,6 +1491,10 @@ msgid "Faction Bans"
 msgstr "Faction Bans"
 
 #: resources/public/pebble_templates/profile.html:318:125
+#: resources/public/include/chat.js:1629:36
+#: resources/public/include/chat.js:1733:46
+#: resources/public/admin/admin.js:317:88
+#: resources/public/admin/admin.js:344:52
 msgid "Unban"
 msgstr "Unban"
 
@@ -1533,3 +1547,654 @@ msgstr "Not Allowed"
 #: resources/public/pebble_templates/40x.html:59:23
 msgid "The action you attempted to perform is not allowed or resulted in an error. Please ensure you have access to the endpoint and try again later."
 msgstr "The action you attempted to perform is not allowed or resulted in an error. Please ensure you have access to the endpoint and try again later."
+
+#: resources/public/pxls.js:134:38
+msgid "Alert"
+msgstr "Alert"
+
+#. Snapshot save name
+#: resources/public/include/board.js:798:100
+msgid "pxls canvas"
+msgstr "pxls canvas"
+
+#. template link action
+#: resources/public/include/chat.js:80:21
+msgid "Ask"
+msgstr "Ask"
+
+#: resources/public/include/chat.js:84:21
+msgid "Open in a new tab"
+msgstr "Open in a new tab"
+
+#: resources/public/include/chat.js:88:21
+msgid "Open in current tab (replacing template)"
+msgstr "Open in current tab (replacing template)"
+
+#: resources/public/include/chat.js:92:21
+msgid "Jump to coordinates without replacing template"
+msgstr "Jump to coordinates without replacing template"
+
+#: resources/public/include/chat.js:437:55
+msgid "You must be logged in to chat"
+msgstr "You must be logged in to chat"
+
+#: resources/public/include/chat.js:956:53
+msgid "You must be logged in to chat."
+msgstr "You must be logged in to chat."
+
+#: resources/public/include/chat.js:1260:42
+#: resources/public/include/chat.js:1753:27
+msgid "none provided"
+msgstr "none provided"
+
+#: resources/public/include/chat.js:1261:38
+msgid "Purged by ${purge.initiator} with reason: ${reason}"
+msgstr "Purged by ${purge.initiator} with reason: ${reason}"
+
+#: resources/public/include/chat.js:1279:26
+msgid "template:"
+msgstr "template:"
+
+#: resources/public/include/chat.js:1331:56
+#: resources/public/include/chat.js:2057:56
+msgid "Open Failed"
+msgstr "Open Failed"
+
+#: resources/public/include/chat.js:1333:32
+#: resources/public/include/chat.js:2059:32
+msgid "Failed to automatically open in a new tab"
+msgstr "Failed to automatically open in a new tab"
+
+#: resources/public/include/chat.js:1337:24
+#: resources/public/include/chat.js:2063:24
+msgid "Click here to open in a new tab instead"
+msgstr "Click here to open in a new tab instead"
+
+#: resources/public/include/chat.js:1351:52
+msgid "Open Template"
+msgstr "Open Template"
+
+#: resources/public/include/chat.js:1353:54
+msgid "This link will overwrite your current template. What would you like to do?"
+msgstr "This link will overwrite your current template. What would you like to do?"
+
+#: resources/public/include/chat.js:1364:55
+msgid "Note: You can set a default action in the settings menu which bypasses this popup completely."
+msgstr "Note: You can set a default action in the settings menu which bypasses this popup completely."
+
+#: resources/public/include/chat.js:1455:24
+#: resources/public/include/chat.js:1534:18
+#: resources/public/include/lookup.js:18:90
+msgid "Report"
+msgstr "Report"
+
+#: resources/public/include/chat.js:1456:24
+msgid "Mention"
+msgstr "Mention"
+
+#: resources/public/include/chat.js:1457:24
+msgid "Ignore"
+msgstr "Ignore"
+
+#: resources/public/include/chat.js:1458:102
+#: resources/public/admin/admin.js:190:16
+msgid "Profile"
+msgstr "Profile"
+
+#: resources/public/include/chat.js:1459:24
+msgid "Chat (un)ban"
+msgstr "Chat (un)ban"
+
+#: resources/public/include/chat.js:1461:43
+#: resources/public/include/chat.js:1911:54
+msgid "Purge User"
+msgstr "Purge User"
+
+#: resources/public/include/chat.js:1463:24
+msgid "Mod Lookup"
+msgstr "Mod Lookup"
+
+#: resources/public/include/chat.js:1464:24
+msgid "Chat Lookup"
+msgstr "Chat Lookup"
+
+#: resources/public/include/chat.js:1536:30
+msgid "Enter a reason for your report"
+msgstr "Enter a reason for your report"
+
+#: resources/public/include/chat.js:1565:26
+#: resources/public/include/chat.js:1686:18
+#: resources/public/include/chat.js:1845:22
+#: resources/public/include/chat.js:1893:22
+#: resources/public/include/chat.js:1961:22
+#: resources/public/include/chat.js:2021:22
+#: resources/public/include/lookup.js:64:91
+#: resources/public/include/user.js:73:87
+#: resources/public/admin/admin.js:331:20
+msgid "Cancel"
+msgstr "Cancel"
+
+#: resources/public/include/chat.js:1580:34
+#: resources/public/include/lookup.js:45:30
+msgid "Error sending report."
+msgstr "Error sending report."
+
+#: resources/public/include/chat.js:1585:54
+msgid "Report User"
+msgstr "Report User"
+
+#: resources/public/include/chat.js:1599:34
+msgid "User ignored. You can unignore from chat settings."
+msgstr "User ignored. You can unignore from chat settings."
+
+#: resources/public/include/chat.js:1601:34
+msgid "Failed to ignore user. Either they\\'re already ignored, or an error occurred. If the problem persists, contact a developer."
+msgstr "Failed to ignore user. Either they\\'re already ignored, or an error occurred. If the problem persists, contact a developer."
+
+#: resources/public/include/chat.js:1629:55
+msgid "Permanent"
+msgstr "Permanent"
+
+#: resources/public/include/chat.js:1629:78
+msgid "Temporary"
+msgstr "Temporary"
+
+#: resources/public/include/chat.js:1656:32
+msgid "Rule 3: Spam"
+msgstr "Rule 3: Spam"
+
+#: resources/public/include/chat.js:1657:32
+msgid "Rule 1: Chat civility"
+msgstr "Rule 1: Chat civility"
+
+#: resources/public/include/chat.js:1658:32
+msgid "Rule 2: Hate Speech"
+msgstr "Rule 2: Hate Speech"
+
+#: resources/public/include/chat.js:1659:32
+msgid "Rule 5: NSFW"
+msgstr "Rule 5: NSFW"
+
+#: resources/public/include/chat.js:1660:32
+#: resources/public/include/chat.js:1738:58
+#: resources/public/include/chat.js:1759:45
+msgid "Custom"
+msgstr "Custom"
+
+#: resources/public/include/chat.js:1693:33
+msgid "Banning:"
+msgstr "Banning:"
+
+#: resources/public/include/chat.js:1693:50
+msgid "Message:"
+msgstr "Message:"
+
+#: resources/public/include/chat.js:1695:26
+msgid "Ban Length"
+msgstr "Ban Length"
+
+#: resources/public/include/chat.js:1702:28
+msgid "Reason"
+msgstr "Reason"
+
+#: resources/public/include/chat.js:1707:28
+msgid "Purge Messages"
+msgstr "Purge Messages"
+
+#: resources/public/include/chat.js:1711:27
+msgid "Purging all messages is disabled during snip mode"
+msgstr "Purging all messages is disabled during snip mode"
+
+#: resources/public/include/chat.js:1714:79
+#: resources/public/include/user.js:174:22
+#: resources/public/admin/admin.js:182:41
+#: resources/public/admin/admin.js:184:94
+msgid "Yes"
+msgstr "Yes"
+
+#: resources/public/include/chat.js:1715:78
+#: resources/public/include/user.js:178:22
+#: resources/public/admin/admin.js:182:53
+#: resources/public/admin/admin.js:184:106
+msgid "No"
+msgstr "No"
+
+#: resources/public/include/chat.js:1739:63
+msgid "Custom reason"
+msgstr "Custom reason"
+
+#: resources/public/include/chat.js:1739:85
+#: resources/public/include/lookup.js:59:30
+msgid "Additional information (if applicable)"
+msgstr "Additional information (if applicable)"
+
+#: resources/public/include/chat.js:1764:45
+msgid "Additional information:"
+msgstr "Additional information:"
+
+#: resources/public/include/chat.js:1786:34
+msgid "Error occurred while chatbanning"
+msgstr "Error occurred while chatbanning"
+
+#: resources/public/include/chat.js:1790:54
+msgid "Chatban"
+msgstr "Chatban"
+
+#: resources/public/include/chat.js:1810:32
+msgid "Failed to delete"
+msgstr "Failed to delete"
+
+#: resources/public/include/chat.js:1821:32
+#: resources/public/include/chat.js:1863:32
+msgid "ID: "
+msgstr "ID: "
+
+#: resources/public/include/chat.js:1825:32
+#: resources/public/include/chat.js:1873:32
+msgid "User: "
+msgstr "User: "
+
+#: resources/public/include/chat.js:1829:32
+#: resources/public/include/chat.js:1867:32
+msgid "Message: "
+msgstr "Message: "
+
+#: resources/public/include/chat.js:1833:32
+msgid "Reason: "
+msgstr "Reason: "
+
+#: resources/public/include/chat.js:1850:54
+msgid "Delete Message"
+msgstr "Delete Message"
+
+#: resources/public/include/chat.js:1858:106
+msgid "Purge"
+msgstr "Purge"
+
+#: resources/public/include/chat.js:1879:28
+msgid "Selected Message"
+msgstr "Selected Message"
+
+#: resources/public/include/chat.js:1882:30
+msgid "Purge Reason"
+msgstr "Purge Reason"
+
+#: resources/public/include/chat.js:1907:34
+msgid "Error sending purge."
+msgstr "Error sending purge."
+
+#: resources/public/include/chat.js:1926:23
+msgid "ChatLookup"
+msgstr "ChatLookup"
+
+#: resources/public/include/chat.js:1936:98
+msgid "On"
+msgstr "On"
+
+#: resources/public/include/chat.js:1949:28
+msgid "Toggle Rename Request"
+msgstr "Toggle Rename Request"
+
+#: resources/public/include/chat.js:1950:27
+msgid "Select one of the options below to set the current rename request state."
+msgstr "Select one of the options below to set the current rename request state."
+
+#: resources/public/include/chat.js:1975:30
+#: resources/public/include/chat.js:2034:30
+msgid "An unknown error occurred. Please contact a developer"
+msgstr "An unknown error occurred. Please contact a developer"
+
+#: resources/public/include/chat.js:2001:52
+msgid "New Name: "
+msgstr "New Name: "
+
+#: resources/public/include/chat.js:2011:27
+msgid "Enter the new name for the user below. Please note that if you\\'re trying to change the caps, you\\'ll have to rename to something else first."
+msgstr "Enter the new name for the user below. Please note that if you\\'re trying to change the caps, you\\'ll have to rename to something else first."
+
+#: resources/public/include/chat.js:2049:54
+msgid "Force Rename"
+msgstr "Force Rename"
+
+#: resources/public/include/chat.js:2088:118
+msgid "You cannot use chat while canvas banned."
+msgstr "You cannot use chat while canvas banned."
+
+#: resources/public/include/lookup.js:21:32
+msgid "Sending..."
+msgstr "Sending..."
+
+#: resources/public/include/lookup.js:28:32
+msgid "You must specify the details."
+msgstr "You must specify the details."
+
+#: resources/public/include/lookup.js:33:27
+msgid "additional information:"
+msgstr "additional information:"
+
+#: resources/public/include/lookup.js:49:50
+msgid "Report Pixel"
+msgstr "Report Pixel"
+
+#: resources/public/include/lookup.js:52:32
+msgid "Rule #1: Hateful/derogatory speech or symbols"
+msgstr "Rule #1: Hateful/derogatory speech or symbols"
+
+#: resources/public/include/lookup.js:53:32
+msgid "Rule #2: Nudity, genitalia, or non-PG-13 content"
+msgstr "Rule #2: Nudity, genitalia, or non-PG-13 content"
+
+#: resources/public/include/lookup.js:54:32
+msgid "Rule #3: Multi-account"
+msgstr "Rule #3: Multi-account"
+
+#: resources/public/include/lookup.js:55:32
+msgid "Rule #4: Botting"
+msgstr "Rule #4: Botting"
+
+#: resources/public/include/lookup.js:56:52
+msgid "Other (specify below)"
+msgstr "Other (specify below)"
+
+#: resources/public/include/lookup.js:168:62
+msgid "Hide sensitive information"
+msgstr "Hide sensitive information"
+
+#: resources/public/include/lookup.js:207:120
+msgid "An error occurred, either you aren't logged in or you may be attempting to look up users too fast. Please try again in 60 seconds"
+msgstr "An error occurred, either you aren't logged in or you may be attempting to look up users too fast. Please try again in 60 seconds"
+
+#: resources/public/include/lookup.js:218:21
+msgid "Coords"
+msgstr "Coords"
+
+#: resources/public/include/lookup.js:223:21
+#: resources/public/admin/admin.js:186:16
+msgid "Username"
+msgstr "Username"
+
+#: resources/public/include/lookup.js:229:28
+msgid "View Profile"
+msgstr "View Profile"
+
+#: resources/public/include/lookup.js:239:21
+msgid "Origin"
+msgstr "Origin"
+
+#: resources/public/include/lookup.js:243:28
+msgid "Part of a nuke"
+msgstr "Part of a nuke"
+
+#: resources/public/include/lookup.js:245:28
+msgid "Placed by a staff member using placement overrides"
+msgstr "Placed by a staff member using placement overrides"
+
+#: resources/public/include/lookup.js:252:21
+msgid "Time"
+msgstr "Time"
+
+#: resources/public/include/lookup.js:263:36
+msgid "just now"
+msgstr "just now"
+
+#: resources/public/include/lookup.js:271:36
+msgid "${hoursStr}:${minuteStr}:${secsStr} ago"
+msgstr "${hoursStr}:${minuteStr}:${secsStr} ago"
+
+#: resources/public/include/lookup.js:284:21
+msgid "Discord"
+msgstr "Discord"
+
+#: resources/public/include/notifications.js:60:58
+msgid "Posted by ${notification.who}"
+msgstr "Posted by ${notification.who}"
+
+#: resources/public/include/notifications.js:63:111
+msgid "Expires ${expiry}"
+msgstr "Expires ${expiry}"
+
+#: resources/public/include/template.js:93:50
+msgid "There was an error getting the image"
+msgstr "There was an error getting the image"
+
+#: resources/public/include/timer.js:42:53
+msgid "Your next pixel will be available in ${delay} seconds!"
+msgstr "Your next pixel will be available in ${delay} seconds!"
+
+#: resources/public/include/timer.js:87:61
+msgid "Your next pixel has been available for ${alertDelay} seconds!"
+msgstr "Your next pixel has been available for ${alertDelay} seconds!"
+
+#: resources/public/include/timer.js:101:59
+msgid "Your next pixel is available!"
+msgstr "Your next pixel is available!"
+
+#. theme name
+#: resources/public/include/uiHelper.js:48:19
+msgid "Dark"
+msgstr "Dark"
+
+#. theme name
+#: resources/public/include/uiHelper.js:54:19
+msgid "Darker"
+msgstr "Darker"
+
+#. theme name
+#: resources/public/include/uiHelper.js:60:19
+msgid "Blue"
+msgstr "Blue"
+
+#. theme name
+#: resources/public/include/uiHelper.js:66:19
+msgid "Purple"
+msgstr "Purple"
+
+#. theme name
+#: resources/public/include/uiHelper.js:72:19
+msgid "Green"
+msgstr "Green"
+
+#. theme name
+#: resources/public/include/uiHelper.js:78:19
+msgid "Matte"
+msgstr "Matte"
+
+#. theme name
+#: resources/public/include/uiHelper.js:84:19
+msgid "Terminal"
+msgstr "Terminal"
+
+#. theme name
+#: resources/public/include/uiHelper.js:90:19
+msgid "Red"
+msgstr "Red"
+
+#: resources/public/include/uiHelper.js:467:30
+msgid "Discord name updated successfully"
+msgstr "Discord name updated successfully"
+
+#: resources/public/include/uiHelper.js:474:32
+msgid "Couldn\\'t change discord name: "
+msgstr "Couldn\\'t change discord name: "
+
+#: resources/public/include/user.js:81:28
+msgid "Sign in with..."
+msgstr "Sign in with..."
+
+#: resources/public/include/user.js:94:149
+msgid "New Accounts Disabled"
+msgstr "New Accounts Disabled"
+
+#: resources/public/include/user.js:167:52
+msgid "Sign Out"
+msgstr "Sign Out"
+
+#: resources/public/include/user.js:169:27
+msgid "Are you sure you want to sign out?"
+msgstr "Are you sure you want to sign out?"
+
+#: resources/public/include/user.js:223:39
+msgid "You are permanently banned."
+msgstr "You are permanently banned."
+
+#: resources/public/include/user.js:227:39
+msgid "You are temporarily banned and will not be allowed to place until ${timestamp}"
+msgstr "You are temporarily banned and will not be allowed to place until ${timestamp}"
+
+#: resources/public/include/user.js:255:27
+msgid "If you think this was an error, please contact us using one of the links in the info tab."
+msgstr "If you think this was an error, please contact us using one of the links in the info tab."
+
+#: resources/public/include/user.js:256:27
+msgid "Ban reason:"
+msgstr "Ban reason:"
+
+#: resources/public/include/user.js:260:28
+#: resources/public/admin/admin.js:200:16
+msgid "Banned"
+msgstr "Banned"
+
+#: resources/public/include/user.js:330:23
+msgid "Staff have required you to change your username, this usually means your name breaks one of our rules."
+msgstr "Staff have required you to change your username, this usually means your name breaks one of our rules."
+
+#: resources/public/include/user.js:331:23
+msgid "If you disagree, please contact us on Discord (link in the info panel)."
+msgstr "If you disagree, please contact us on Discord (link in the info panel)."
+
+#: resources/public/include/user.js:332:27
+msgid "New Username:"
+msgstr "New Username:"
+
+#: resources/public/include/user.js:345:89
+msgid "Not now"
+msgstr "Not now"
+
+#: resources/public/include/user.js:346:86
+msgid "Change"
+msgstr "Change"
+
+#: resources/public/include/user.js:350:50
+#: resources/public/admin/admin.js:198:16
+msgid "Rename Requested"
+msgstr "Rename Requested"
+
+#: resources/public/admin/admin.js:98:38
+msgid "Something went wrong! Perhaps insufficient permissions?"
+msgstr "Something went wrong! Perhaps insufficient permissions?"
+
+#: resources/public/admin/admin.js:103:45
+msgid "Shadowban user"
+msgstr "Shadowban user"
+
+#: resources/public/admin/admin.js:103:67
+msgid "Shadowbanned user"
+msgstr "Shadowbanned user"
+
+#: resources/public/admin/admin.js:106:45
+msgid "Permaban user"
+msgstr "Permaban user"
+
+#: resources/public/admin/admin.js:106:66
+msgid "Permabanned user"
+msgstr "Permabanned user"
+
+#: resources/public/admin/admin.js:109:45
+msgid "Ban user"
+msgstr "Ban user"
+
+#: resources/public/admin/admin.js:109:61
+msgid "Banned user"
+msgstr "Banned user"
+
+#: resources/public/admin/admin.js:123:36
+msgid "Unbanned user ${username}"
+msgstr "Unbanned user ${username}"
+
+#. Context: ban type
+#: resources/public/admin/admin.js:176:27
+msgid "shadow"
+msgstr "shadow"
+
+#: resources/public/admin/admin.js:177:29
+#: resources/public/admin/admin.js:180:29
+msgid "never"
+msgstr "never"
+
+#: resources/public/admin/admin.js:179:27
+msgid "permanent"
+msgstr "permanent"
+
+#: resources/public/admin/admin.js:184:51
+msgid "Yes (permanent)"
+msgstr "Yes (permanent)"
+
+#: resources/public/admin/admin.js:191:16
+#: resources/public/admin/admin.js:451:21
+msgid "Logins"
+msgstr "Logins"
+
+#: resources/public/admin/admin.js:197:16
+msgid "All Time Pixels"
+msgstr "All Time Pixels"
+
+#: resources/public/admin/admin.js:199:16
+msgid "Discord Name"
+msgstr "Discord Name"
+
+#: resources/public/admin/admin.js:201:16
+msgid "Chatbanned"
+msgstr "Chatbanned"
+
+#: resources/public/admin/admin.js:204:27
+msgid "Ban Reason"
+msgstr "Ban Reason"
+
+#: resources/public/admin/admin.js:205:27
+msgid "Ban Expiracy"
+msgstr "Ban Expiracy"
+
+#: resources/public/admin/admin.js:208:27
+msgid "Chatban Reason"
+msgstr "Chatban Reason"
+
+#: resources/public/admin/admin.js:208:102
+msgid "(canvas ban)"
+msgstr "(canvas ban)"
+
+#: resources/public/admin/admin.js:210:97
+msgid "when canvas ban ends"
+msgstr "when canvas ban ends"
+
+#: resources/public/admin/admin.js:211:29
+msgid "Chatban Expires"
+msgstr "Chatban Expires"
+
+#. Admin check. Example: type = 'username', arg = 'pxlsuser94'
+#: resources/public/admin/admin.js:313:36
+msgid "${type} ${arg} not found."
+msgstr "${type} ${arg} not found."
+
+#: resources/public/admin/admin.js:319:50
+msgid "Unban Reason:"
+msgstr "Unban Reason:"
+
+#: resources/public/admin/admin.js:324:25
+msgid "Unbanning ${username}"
+msgstr "Unbanning ${username}"
+
+#: resources/public/admin/admin.js:446:20
+msgid "profile"
+msgstr "profile"
+
+#: resources/public/admin/admin.js:470:21
+msgid "User Agent"
+msgstr "User Agent"
+
+#: resources/public/admin/admin.js:475:21
+msgid "Send Alert"
+msgstr "Send Alert"
+
+#: resources/public/admin/admin.js:480:21
+msgid "Mod Actions"
+msgstr "Mod Actions"

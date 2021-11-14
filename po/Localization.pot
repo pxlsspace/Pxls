@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-08-19T06:22:24.977Z\n"
+"POT-Creation-Date: 2021-11-14T06:10:04.976Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -935,7 +935,7 @@ msgid "Play sound on ping:"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html:689:56
-#: resources/public/include/chat.js:1926:100
+#: resources/public/include/chat.js:1937:100
 msgid "Off"
 msgstr ""
 
@@ -968,8 +968,8 @@ msgid "Public Discord name:"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html:717:83
-#: resources/public/include/chat.js:1928:92
-#: resources/public/include/chat.js:1992:92
+#: resources/public/include/chat.js:1939:92
+#: resources/public/include/chat.js:2003:92
 msgid "Set"
 msgstr ""
 
@@ -1444,7 +1444,7 @@ msgid "Edit"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html:244:168
-#: resources/public/include/chat.js:1451:24
+#: resources/public/include/chat.js:1462:24
 msgid "Delete"
 msgstr ""
 
@@ -1477,7 +1477,7 @@ msgstr ""
 
 #. bans a user from the faction
 #: resources/public/pebble_templates/profile.html:294:122
-#: resources/public/include/chat.js:1722:60
+#: resources/public/include/chat.js:1733:60
 msgid "Ban"
 msgstr ""
 
@@ -1491,8 +1491,8 @@ msgid "Faction Bans"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html:318:125
-#: resources/public/include/chat.js:1618:36
-#: resources/public/include/chat.js:1722:46
+#: resources/public/include/chat.js:1629:36
+#: resources/public/include/chat.js:1733:46
 #: resources/public/admin/admin.js:317:88
 #: resources/public/admin/admin.js:344:52
 msgid "Unban"
@@ -1553,302 +1553,310 @@ msgid "Alert"
 msgstr ""
 
 #. Snapshot save name
-#: resources/public/include/board.js:800:100
+#: resources/public/include/board.js:798:100
 msgid "pxls canvas"
 msgstr ""
 
 #. template link action
-#: resources/public/include/chat.js:79:21
+#: resources/public/include/chat.js:80:21
 msgid "Ask"
 msgstr ""
 
-#: resources/public/include/chat.js:83:21
+#: resources/public/include/chat.js:84:21
 msgid "Open in a new tab"
 msgstr ""
 
-#: resources/public/include/chat.js:87:21
+#: resources/public/include/chat.js:88:21
 msgid "Open in current tab (replacing template)"
 msgstr ""
 
-#: resources/public/include/chat.js:91:21
+#: resources/public/include/chat.js:92:21
 msgid "Jump to coordinates without replacing template"
 msgstr ""
 
-#: resources/public/include/chat.js:1249:42
-#: resources/public/include/chat.js:1742:27
+#: resources/public/include/chat.js:437:55
+msgid "You must be logged in to chat"
+msgstr ""
+
+#: resources/public/include/chat.js:956:53
+msgid "You must be logged in to chat."
+msgstr ""
+
+#: resources/public/include/chat.js:1260:42
+#: resources/public/include/chat.js:1753:27
 msgid "none provided"
 msgstr ""
 
-#: resources/public/include/chat.js:1250:38
+#: resources/public/include/chat.js:1261:38
 msgid "Purged by ${purge.initiator} with reason: ${reason}"
 msgstr ""
 
-#: resources/public/include/chat.js:1268:26
+#: resources/public/include/chat.js:1279:26
 msgid "template:"
 msgstr ""
 
-#: resources/public/include/chat.js:1320:56
-#: resources/public/include/chat.js:2046:56
+#: resources/public/include/chat.js:1331:56
+#: resources/public/include/chat.js:2057:56
 msgid "Open Failed"
 msgstr ""
 
-#: resources/public/include/chat.js:1322:32
-#: resources/public/include/chat.js:2048:32
+#: resources/public/include/chat.js:1333:32
+#: resources/public/include/chat.js:2059:32
 msgid "Failed to automatically open in a new tab"
 msgstr ""
 
-#: resources/public/include/chat.js:1326:24
-#: resources/public/include/chat.js:2052:24
+#: resources/public/include/chat.js:1337:24
+#: resources/public/include/chat.js:2063:24
 msgid "Click here to open in a new tab instead"
 msgstr ""
 
-#: resources/public/include/chat.js:1340:52
+#: resources/public/include/chat.js:1351:52
 msgid "Open Template"
 msgstr ""
 
-#: resources/public/include/chat.js:1342:54
+#: resources/public/include/chat.js:1353:54
 msgid "This link will overwrite your current template. What would you like to do?"
 msgstr ""
 
-#: resources/public/include/chat.js:1353:55
+#: resources/public/include/chat.js:1364:55
 msgid "Note: You can set a default action in the settings menu which bypasses this popup completely."
 msgstr ""
 
-#: resources/public/include/chat.js:1444:24
-#: resources/public/include/chat.js:1523:18
+#: resources/public/include/chat.js:1455:24
+#: resources/public/include/chat.js:1534:18
 #: resources/public/include/lookup.js:18:90
 msgid "Report"
 msgstr ""
 
-#: resources/public/include/chat.js:1445:24
+#: resources/public/include/chat.js:1456:24
 msgid "Mention"
 msgstr ""
 
-#: resources/public/include/chat.js:1446:24
+#: resources/public/include/chat.js:1457:24
 msgid "Ignore"
 msgstr ""
 
-#: resources/public/include/chat.js:1447:102
+#: resources/public/include/chat.js:1458:102
 #: resources/public/admin/admin.js:190:16
 msgid "Profile"
 msgstr ""
 
-#: resources/public/include/chat.js:1448:24
+#: resources/public/include/chat.js:1459:24
 msgid "Chat (un)ban"
 msgstr ""
 
-#: resources/public/include/chat.js:1450:43
-#: resources/public/include/chat.js:1900:54
+#: resources/public/include/chat.js:1461:43
+#: resources/public/include/chat.js:1911:54
 msgid "Purge User"
 msgstr ""
 
-#: resources/public/include/chat.js:1452:24
+#: resources/public/include/chat.js:1463:24
 msgid "Mod Lookup"
 msgstr ""
 
-#: resources/public/include/chat.js:1453:24
+#: resources/public/include/chat.js:1464:24
 msgid "Chat Lookup"
 msgstr ""
 
-#: resources/public/include/chat.js:1525:30
+#: resources/public/include/chat.js:1536:30
 msgid "Enter a reason for your report"
 msgstr ""
 
-#: resources/public/include/chat.js:1554:26
-#: resources/public/include/chat.js:1675:18
-#: resources/public/include/chat.js:1834:22
-#: resources/public/include/chat.js:1882:22
-#: resources/public/include/chat.js:1950:22
-#: resources/public/include/chat.js:2010:22
+#: resources/public/include/chat.js:1565:26
+#: resources/public/include/chat.js:1686:18
+#: resources/public/include/chat.js:1845:22
+#: resources/public/include/chat.js:1893:22
+#: resources/public/include/chat.js:1961:22
+#: resources/public/include/chat.js:2021:22
 #: resources/public/include/lookup.js:64:91
 #: resources/public/include/user.js:73:87
 #: resources/public/admin/admin.js:331:20
 msgid "Cancel"
 msgstr ""
 
-#: resources/public/include/chat.js:1569:34
+#: resources/public/include/chat.js:1580:34
 #: resources/public/include/lookup.js:45:30
 msgid "Error sending report."
 msgstr ""
 
-#: resources/public/include/chat.js:1574:54
+#: resources/public/include/chat.js:1585:54
 msgid "Report User"
 msgstr ""
 
-#: resources/public/include/chat.js:1588:34
+#: resources/public/include/chat.js:1599:34
 msgid "User ignored. You can unignore from chat settings."
 msgstr ""
 
-#: resources/public/include/chat.js:1590:34
+#: resources/public/include/chat.js:1601:34
 msgid "Failed to ignore user. Either they\\'re already ignored, or an error occurred. If the problem persists, contact a developer."
 msgstr ""
 
-#: resources/public/include/chat.js:1618:55
+#: resources/public/include/chat.js:1629:55
 msgid "Permanent"
 msgstr ""
 
-#: resources/public/include/chat.js:1618:78
+#: resources/public/include/chat.js:1629:78
 msgid "Temporary"
 msgstr ""
 
-#: resources/public/include/chat.js:1645:32
+#: resources/public/include/chat.js:1656:32
 msgid "Rule 3: Spam"
 msgstr ""
 
-#: resources/public/include/chat.js:1646:32
+#: resources/public/include/chat.js:1657:32
 msgid "Rule 1: Chat civility"
 msgstr ""
 
-#: resources/public/include/chat.js:1647:32
+#: resources/public/include/chat.js:1658:32
 msgid "Rule 2: Hate Speech"
 msgstr ""
 
-#: resources/public/include/chat.js:1648:32
+#: resources/public/include/chat.js:1659:32
 msgid "Rule 5: NSFW"
 msgstr ""
 
-#: resources/public/include/chat.js:1649:32
-#: resources/public/include/chat.js:1727:58
-#: resources/public/include/chat.js:1748:45
+#: resources/public/include/chat.js:1660:32
+#: resources/public/include/chat.js:1738:58
+#: resources/public/include/chat.js:1759:45
 msgid "Custom"
 msgstr ""
 
-#: resources/public/include/chat.js:1682:33
+#: resources/public/include/chat.js:1693:33
 msgid "Banning:"
 msgstr ""
 
-#: resources/public/include/chat.js:1682:50
+#: resources/public/include/chat.js:1693:50
 msgid "Message:"
 msgstr ""
 
-#: resources/public/include/chat.js:1684:26
+#: resources/public/include/chat.js:1695:26
 msgid "Ban Length"
 msgstr ""
 
-#: resources/public/include/chat.js:1691:28
+#: resources/public/include/chat.js:1702:28
 msgid "Reason"
 msgstr ""
 
-#: resources/public/include/chat.js:1696:28
+#: resources/public/include/chat.js:1707:28
 msgid "Purge Messages"
 msgstr ""
 
-#: resources/public/include/chat.js:1700:27
+#: resources/public/include/chat.js:1711:27
 msgid "Purging all messages is disabled during snip mode"
 msgstr ""
 
-#: resources/public/include/chat.js:1703:79
+#: resources/public/include/chat.js:1714:79
 #: resources/public/include/user.js:174:22
 #: resources/public/admin/admin.js:182:41
 #: resources/public/admin/admin.js:184:94
 msgid "Yes"
 msgstr ""
 
-#: resources/public/include/chat.js:1704:78
+#: resources/public/include/chat.js:1715:78
 #: resources/public/include/user.js:178:22
 #: resources/public/admin/admin.js:182:53
 #: resources/public/admin/admin.js:184:106
 msgid "No"
 msgstr ""
 
-#: resources/public/include/chat.js:1728:63
+#: resources/public/include/chat.js:1739:63
 msgid "Custom reason"
 msgstr ""
 
-#: resources/public/include/chat.js:1728:85
+#: resources/public/include/chat.js:1739:85
 #: resources/public/include/lookup.js:59:30
 msgid "Additional information (if applicable)"
 msgstr ""
 
-#: resources/public/include/chat.js:1753:45
+#: resources/public/include/chat.js:1764:45
 msgid "Additional information:"
 msgstr ""
 
-#: resources/public/include/chat.js:1775:34
+#: resources/public/include/chat.js:1786:34
 msgid "Error occurred while chatbanning"
 msgstr ""
 
-#: resources/public/include/chat.js:1779:54
+#: resources/public/include/chat.js:1790:54
 msgid "Chatban"
 msgstr ""
 
-#: resources/public/include/chat.js:1799:32
+#: resources/public/include/chat.js:1810:32
 msgid "Failed to delete"
 msgstr ""
 
-#: resources/public/include/chat.js:1810:32
-#: resources/public/include/chat.js:1852:32
+#: resources/public/include/chat.js:1821:32
+#: resources/public/include/chat.js:1863:32
 msgid "ID: "
 msgstr ""
 
-#: resources/public/include/chat.js:1814:32
-#: resources/public/include/chat.js:1862:32
+#: resources/public/include/chat.js:1825:32
+#: resources/public/include/chat.js:1873:32
 msgid "User: "
 msgstr ""
 
-#: resources/public/include/chat.js:1818:32
-#: resources/public/include/chat.js:1856:32
+#: resources/public/include/chat.js:1829:32
+#: resources/public/include/chat.js:1867:32
 msgid "Message: "
 msgstr ""
 
-#: resources/public/include/chat.js:1822:32
+#: resources/public/include/chat.js:1833:32
 msgid "Reason: "
 msgstr ""
 
-#: resources/public/include/chat.js:1839:54
+#: resources/public/include/chat.js:1850:54
 msgid "Delete Message"
 msgstr ""
 
-#: resources/public/include/chat.js:1847:106
+#: resources/public/include/chat.js:1858:106
 msgid "Purge"
 msgstr ""
 
-#: resources/public/include/chat.js:1868:28
+#: resources/public/include/chat.js:1879:28
 msgid "Selected Message"
 msgstr ""
 
-#: resources/public/include/chat.js:1871:30
+#: resources/public/include/chat.js:1882:30
 msgid "Purge Reason"
 msgstr ""
 
-#: resources/public/include/chat.js:1896:34
+#: resources/public/include/chat.js:1907:34
 msgid "Error sending purge."
 msgstr ""
 
-#: resources/public/include/chat.js:1915:23
+#: resources/public/include/chat.js:1926:23
 msgid "ChatLookup"
 msgstr ""
 
-#: resources/public/include/chat.js:1925:98
+#: resources/public/include/chat.js:1936:98
 msgid "On"
 msgstr ""
 
-#: resources/public/include/chat.js:1938:28
+#: resources/public/include/chat.js:1949:28
 msgid "Toggle Rename Request"
 msgstr ""
 
-#: resources/public/include/chat.js:1939:27
+#: resources/public/include/chat.js:1950:27
 msgid "Select one of the options below to set the current rename request state."
 msgstr ""
 
-#: resources/public/include/chat.js:1964:30
-#: resources/public/include/chat.js:2023:30
+#: resources/public/include/chat.js:1975:30
+#: resources/public/include/chat.js:2034:30
 msgid "An unknown error occurred. Please contact a developer"
 msgstr ""
 
-#: resources/public/include/chat.js:1990:52
+#: resources/public/include/chat.js:2001:52
 msgid "New Name: "
 msgstr ""
 
-#: resources/public/include/chat.js:2000:27
+#: resources/public/include/chat.js:2011:27
 msgid "Enter the new name for the user below. Please note that if you\\'re trying to change the caps, you\\'ll have to rename to something else first."
 msgstr ""
 
-#: resources/public/include/chat.js:2038:54
+#: resources/public/include/chat.js:2049:54
 msgid "Force Rename"
 msgstr ""
 
-#: resources/public/include/chat.js:2077:118
+#: resources/public/include/chat.js:2088:118
 msgid "You cannot use chat while canvas banned."
 msgstr ""
 
@@ -1949,63 +1957,63 @@ msgstr ""
 msgid "There was an error getting the image"
 msgstr ""
 
-#: resources/public/include/timer.js:41:53
+#: resources/public/include/timer.js:42:53
 msgid "Your next pixel will be available in ${delay} seconds!"
 msgstr ""
 
-#: resources/public/include/timer.js:84:61
+#: resources/public/include/timer.js:87:61
 msgid "Your next pixel has been available for ${alertDelay} seconds!"
 msgstr ""
 
-#: resources/public/include/timer.js:98:59
+#: resources/public/include/timer.js:101:59
 msgid "Your next pixel is available!"
 msgstr ""
 
 #. theme name
-#: resources/public/include/uiHelper.js:47:19
+#: resources/public/include/uiHelper.js:48:19
 msgid "Dark"
 msgstr ""
 
 #. theme name
-#: resources/public/include/uiHelper.js:53:19
+#: resources/public/include/uiHelper.js:54:19
 msgid "Darker"
 msgstr ""
 
 #. theme name
-#: resources/public/include/uiHelper.js:59:19
+#: resources/public/include/uiHelper.js:60:19
 msgid "Blue"
 msgstr ""
 
 #. theme name
-#: resources/public/include/uiHelper.js:65:19
+#: resources/public/include/uiHelper.js:66:19
 msgid "Purple"
 msgstr ""
 
 #. theme name
-#: resources/public/include/uiHelper.js:71:19
+#: resources/public/include/uiHelper.js:72:19
 msgid "Green"
 msgstr ""
 
 #. theme name
-#: resources/public/include/uiHelper.js:77:19
+#: resources/public/include/uiHelper.js:78:19
 msgid "Matte"
 msgstr ""
 
 #. theme name
-#: resources/public/include/uiHelper.js:83:19
+#: resources/public/include/uiHelper.js:84:19
 msgid "Terminal"
 msgstr ""
 
 #. theme name
-#: resources/public/include/uiHelper.js:89:19
+#: resources/public/include/uiHelper.js:90:19
 msgid "Red"
 msgstr ""
 
-#: resources/public/include/uiHelper.js:461:30
+#: resources/public/include/uiHelper.js:467:30
 msgid "Discord name updated successfully"
 msgstr ""
 
-#: resources/public/include/uiHelper.js:468:32
+#: resources/public/include/uiHelper.js:474:32
 msgid "Couldn\\'t change discord name: "
 msgstr ""
 
@@ -2025,52 +2033,48 @@ msgstr ""
 msgid "Are you sure you want to sign out?"
 msgstr ""
 
-#: resources/public/include/user.js:194:28
-msgid "Too many sessions open, try closing some tabs."
-msgstr ""
-
-#: resources/public/include/user.js:227:39
+#: resources/public/include/user.js:223:39
 msgid "You are permanently banned."
 msgstr ""
 
-#: resources/public/include/user.js:231:39
+#: resources/public/include/user.js:227:39
 msgid "You are temporarily banned and will not be allowed to place until ${timestamp}"
 msgstr ""
 
-#: resources/public/include/user.js:251:27
+#: resources/public/include/user.js:255:27
 msgid "If you think this was an error, please contact us using one of the links in the info tab."
 msgstr ""
 
-#: resources/public/include/user.js:252:27
+#: resources/public/include/user.js:256:27
 msgid "Ban reason:"
 msgstr ""
 
-#: resources/public/include/user.js:256:28
+#: resources/public/include/user.js:260:28
 #: resources/public/admin/admin.js:200:16
 msgid "Banned"
 msgstr ""
 
-#: resources/public/include/user.js:326:23
+#: resources/public/include/user.js:330:23
 msgid "Staff have required you to change your username, this usually means your name breaks one of our rules."
 msgstr ""
 
-#: resources/public/include/user.js:327:23
+#: resources/public/include/user.js:331:23
 msgid "If you disagree, please contact us on Discord (link in the info panel)."
 msgstr ""
 
-#: resources/public/include/user.js:328:27
+#: resources/public/include/user.js:332:27
 msgid "New Username:"
 msgstr ""
 
-#: resources/public/include/user.js:341:89
+#: resources/public/include/user.js:345:89
 msgid "Not now"
 msgstr ""
 
-#: resources/public/include/user.js:342:86
+#: resources/public/include/user.js:346:86
 msgid "Change"
 msgstr ""
 
-#: resources/public/include/user.js:346:50
+#: resources/public/include/user.js:350:50
 #: resources/public/admin/admin.js:198:16
 msgid "Rename Requested"
 msgstr ""
