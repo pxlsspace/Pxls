@@ -851,10 +851,11 @@ public class App {
         TextFilter.getInstance().reload();
 
         if (server != null) {
-            server.getWebHandler().reloadServicesEnabledState();
+            server.getWebHandler().reloadLoginService();
         }
 
         try {
+            // FIXME: broken since localization split the cache
             Files.deleteIfExists(getStorageDir().resolve("index_cache.html"));
         } catch (IOException e) {
             // do nothing
@@ -1028,11 +1029,11 @@ public class App {
     }
 
     public static boolean getSnipMode() {
-        return getConfig().getBoolean("oauth.snipMode");
+        return getConfig().getBoolean("auth.snipMode");
     }
 
     public static boolean getRegistrationEnabled() {
-        return getConfig().getBoolean("oauth.enableRegistration");
+        return getConfig().getBoolean("auth.enableRegistration");
     }
 
     public static boolean isChatEnabled() {

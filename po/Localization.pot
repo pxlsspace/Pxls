@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-11-14T06:10:04.976Z\n"
+"POT-Creation-Date: 2021-11-14T06:12:10.556Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -60,7 +60,7 @@ msgid "Undo"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html:114:20
-msgid "You are not signed in.&nbsp;<a href=\"#\">Sign in with...</a>"
+msgid "You are not signed in.&nbsp;<a href=\"/signin?redirect\" target=\"_blank\">Sign in</a>"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html:124:28
@@ -1669,7 +1669,6 @@ msgstr ""
 #: resources/public/include/chat.js:1961:22
 #: resources/public/include/chat.js:2021:22
 #: resources/public/include/lookup.js:64:91
-#: resources/public/include/user.js:73:87
 #: resources/public/admin/admin.js:331:20
 msgid "Cancel"
 msgstr ""
@@ -1746,14 +1745,14 @@ msgid "Purging all messages is disabled during snip mode"
 msgstr ""
 
 #: resources/public/include/chat.js:1714:79
-#: resources/public/include/user.js:174:22
+#: resources/public/include/user.js:138:22
 #: resources/public/admin/admin.js:182:41
 #: resources/public/admin/admin.js:184:94
 msgid "Yes"
 msgstr ""
 
 #: resources/public/include/chat.js:1715:78
-#: resources/public/include/user.js:178:22
+#: resources/public/include/user.js:142:22
 #: resources/public/admin/admin.js:182:53
 #: resources/public/admin/admin.js:184:106
 msgid "No"
@@ -2017,64 +2016,56 @@ msgstr ""
 msgid "Couldn\\'t change discord name: "
 msgstr ""
 
-#: resources/public/include/user.js:81:28
-msgid "Sign in with..."
-msgstr ""
-
-#: resources/public/include/user.js:94:149
-msgid "New Accounts Disabled"
-msgstr ""
-
-#: resources/public/include/user.js:167:52
+#: resources/public/include/user.js:131:52
 msgid "Sign Out"
 msgstr ""
 
-#: resources/public/include/user.js:169:27
+#: resources/public/include/user.js:133:27
 msgid "Are you sure you want to sign out?"
 msgstr ""
 
-#: resources/public/include/user.js:223:39
+#: resources/public/include/user.js:187:39
 msgid "You are permanently banned."
 msgstr ""
 
-#: resources/public/include/user.js:227:39
+#: resources/public/include/user.js:191:39
 msgid "You are temporarily banned and will not be allowed to place until ${timestamp}"
 msgstr ""
 
-#: resources/public/include/user.js:255:27
+#: resources/public/include/user.js:219:27
 msgid "If you think this was an error, please contact us using one of the links in the info tab."
 msgstr ""
 
-#: resources/public/include/user.js:256:27
+#: resources/public/include/user.js:220:27
 msgid "Ban reason:"
 msgstr ""
 
-#: resources/public/include/user.js:260:28
+#: resources/public/include/user.js:224:28
 #: resources/public/admin/admin.js:200:16
 msgid "Banned"
 msgstr ""
 
-#: resources/public/include/user.js:330:23
+#: resources/public/include/user.js:294:23
 msgid "Staff have required you to change your username, this usually means your name breaks one of our rules."
 msgstr ""
 
-#: resources/public/include/user.js:331:23
+#: resources/public/include/user.js:295:23
 msgid "If you disagree, please contact us on Discord (link in the info panel)."
 msgstr ""
 
-#: resources/public/include/user.js:332:27
+#: resources/public/include/user.js:296:27
 msgid "New Username:"
 msgstr ""
 
-#: resources/public/include/user.js:345:89
+#: resources/public/include/user.js:309:89
 msgid "Not now"
 msgstr ""
 
-#: resources/public/include/user.js:346:86
+#: resources/public/include/user.js:310:86
 msgid "Change"
 msgstr ""
 
-#: resources/public/include/user.js:350:50
+#: resources/public/include/user.js:314:50
 #: resources/public/admin/admin.js:198:16
 msgid "Rename Requested"
 msgstr ""

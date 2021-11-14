@@ -691,7 +691,7 @@ public class Database {
             DBUser user = handle.createQuery("INSERT INTO users (username, login_with_ip, signup_ip, last_ip, chat_name_color) VALUES (:username, :login_with_ip, :ip::INET, :ip::INET, :chat_name_color) RETURNING *")
                 .bind("username", name)
                 .bind("ip", ip)
-                .bind("login_with_ip", App.getConfig().getBoolean("oauth.useIp"))
+                .bind("login_with_ip", App.getConfig().getBoolean("auth.useIp"))
                 .bind("chat_name_color", App.getConfig().getInt("chat.defaultColorIndex"))
                 .map(new DBUser.Mapper())
                 .findFirst()

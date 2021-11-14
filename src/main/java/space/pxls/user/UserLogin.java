@@ -22,7 +22,7 @@ public class UserLogin {
 	}
 
 	public AuthService getService() {
-		return App.getServer().getWebHandler().getAuthServiceByID(serviceID);
+		return App.getServer().getWebHandler().getLoginService();
 	}
 
 	public String toString() {

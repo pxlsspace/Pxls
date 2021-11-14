@@ -1,7 +1,5 @@
 package space.pxls.auth;
 
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
 import com.mashape.unirest.http.Unirest;
 import com.mashape.unirest.http.exceptions.UnirestException;
 import org.json.JSONObject;
@@ -9,7 +7,6 @@ import space.pxls.App;
 import space.pxls.server.WebHandler;
 
 import java.net.*;
-import java.util.concurrent.TimeUnit;
 
 public class OpenIDAuthService extends AuthService {
     private final URL issuer;
@@ -23,15 +20,9 @@ public class OpenIDAuthService extends AuthService {
             URISyntaxException,
             UnirestException
     {
-        super(
-            id,
-            App.getConfig().getBoolean("oauth.oidc.enabled"),
-            App.getConfig().getBoolean("oauth.oidc.registrationEnabled")
-        );
-
         // TODO: there's almost certainly a library that can do all of this
         // discovery automatically and in a better way (support of algos, etc.)
-        issuer = new URL(App.getConfig().getString("oauth.oidc.issuer") + "/");
+        issuer = new URL(App.getConfig().getString("auth.issuer") + "/");
 
         URI configUrl = issuer.toURI()
                 .resolve(".well-known/openid-configuration");
@@ -49,10 +40,10 @@ public class OpenIDAuthService extends AuthService {
     }
 
     public String getRedirectUrl(String state) {
-        String scopes = App.getConfig().getString("oauth.oidc.scopes");
+        String scopes = App.getConfig().getString("auth.scopes");
 
         return authEndpoint.resolve(
-            "?client_id=" + App.getConfig().getString("oauth.oidc.key") +
+            "?client_id=" + App.getConfig().getString("auth.client") +
             "&response_type=code" +
             "&redirect_uri=" + WebHandler.encodedURIComponent(getCallbackUrl()) +
             (scopes.isEmpty() ? "" : ("&scope=" + scopes)) +
@@ -66,7 +57,7 @@ public class OpenIDAuthService extends AuthService {
                 .field("grant_type", "authorization_code")
                 .field("code", code)
                 .field("redirect_uri", getCallbackUrl())
-                .basicAuth(App.getConfig().getString("oauth.oidc.key"), App.getConfig().getString("oauth.oidc.secret"))
+                .basicAuth(App.getConfig().getString("auth.client"), App.getConfig().getString("auth.secret"))
                 .asJson()
                 .getBody()
                 .getObject();
@@ -91,15 +82,5 @@ public class OpenIDAuthService extends AuthService {
             // "sub" is short of "subject" in case you were curious
             return me.getString("sub");
         }
-    }
-
-    public String getName() {
-        return App.getConfig().getString("oauth.oidc.name");
-    }
-
-    @Override
-    public void reloadEnabledState() {
-        this.enabled = App.getConfig().getBoolean("oauth.oidc.enabled");
-        this.registrationEnabled = App.getConfig().getBoolean("oauth.oidc.registrationEnabled");
     }
 }

@@ -27,30 +27,19 @@ import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class WebHandler {
     private PebbleEngine engine;
-    private Map<String, AuthService> services = new ConcurrentHashMap<>();
+    private AuthService loginService;
     public static final String TEMPLATE_PROFILE = "public/pebble_templates/profile.html";
     public static final String TEMPLATE_40X = "public/pebble_templates/40x.html";
     public static final String TEMPLATE_INDEX = "public/pebble_templates/index.html";
 
     public WebHandler() {
-        addServiceIfAvailable("reddit", new RedditAuthService("reddit"));
-        addServiceIfAvailable("google", new GoogleAuthService("google"));
-        addServiceIfAvailable("discord", new DiscordAuthService("discord"));
-        addServiceIfAvailable("vk", new VKAuthService("vk"));
-        addServiceIfAvailable("tumblr", new TumblrAuthService("tumblr"));
-        try {
-            addServiceIfAvailable("oidc", new OpenIDAuthService("oidc"));
-        } catch(Exception e) {
-            System.err.println("Failed to init oidc login service:");
-            System.err.println(e.toString());
-        }
+        initLogins();
 
         engine = new PebbleEngine.Builder().build();
     }
@@ -67,6 +56,15 @@ public class WebHandler {
             return s;
         } catch (IOException e) {
             return "";
+        }
+    }
+
+    private void initLogins() {
+        try {
+            loginService = new OpenIDAuthService("oidc");
+        } catch(Exception e) {
+            System.err.println("Failed to init oidc login service:");
+            System.err.println(e.toString());
         }
     }
 
@@ -648,14 +646,8 @@ public class WebHandler {
         sendObj(responseChanged.size() > 0 ? StatusCodes.OK : StatusCodes.BAD_REQUEST, exchange, response);
     }
 
-    private void addServiceIfAvailable(String key, AuthService service) {
-        if (service.use()) {
-            services.put(key, service);
-        }
-    }
-
-    public AuthService getAuthServiceByID(String id) {
-        return services.get(id);
+    public AuthService getLoginService() {
+        return loginService;
     }
 
     private String getBanReason(HttpServerExchange exchange) {
@@ -1640,11 +1632,7 @@ public class WebHandler {
             return;
         }
 
-        String id = exchange.getRelativePath().substring(1);
-
-        AuthService service = services.get(id);
-        if (service != null && service.use()) {
-
+        if (loginService != null) {
             // Verify the given OAuth state, to make sure people don't double-send requests
             Deque<String> stateQ = exchange.getQueryParameters().get("state");
 
@@ -1690,7 +1678,7 @@ public class WebHandler {
                 return;
             }
 
-            if (!service.verifyState(state)) {
+            if (!loginService.verifyState(state)) {
                 respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_state", "Invalid state token"));
                 return;
             }
@@ -1707,7 +1695,7 @@ public class WebHandler {
             }
 
             // Get a more persistent user token
-            String token = service.getToken(code);
+            String token = loginService.getToken(code);
             if (token == null) {
                 respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("bad_code", "OAuth code invalid"));
                 return;
@@ -1716,25 +1704,21 @@ public class WebHandler {
             // And get an account identifier from that
             String identifier;
             try {
-                identifier = service.getIdentifier(token);
+                identifier = loginService.getIdentifier(token);
             } catch (AuthService.InvalidAccountException e) {
                 respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("invalid_account", e.getMessage()));
                 return;
             }
 
             if (identifier != null) {
-                User user = App.getUserManager().getByLogin(id, identifier);
+                User user = App.getUserManager().getByLogin("oidc", identifier);
                 // If there is no user with that identifier, we make a signup token and tell the client to sign up with that token
                 if (user == null) {
-                    if (service.isRegistrationEnabled()) {
-                        String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin(id, identifier));
-                        if (redirect) {
-                            redirect(exchange, String.format("/auth_done.html?token=%s&signup=true", encodedURIComponent(signUpToken)));
-                        } else {
-                            respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
-                        }
+                    String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin("oidc", identifier));
+                    if (redirect) {
+                        redirect(exchange, String.format("/auth_done.html?token=%s&signup=true", encodedURIComponent(signUpToken)));
                     } else {
-                        respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("invalid_service_operation", "Registration is currently disabled for this service. Please try one of the other ones."));
+                        respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
                     }
                 } else {
                     // We need the IP for logging/db purposes
@@ -1748,10 +1732,17 @@ public class WebHandler {
                     }
                 }
             } else {
-                respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_service", "No auth service named " + id));
+                // NOTE ([  ]): this condition occurs when the gateway response
+                // *was* valid, but indicated an error. 502 is probably not the
+                // right code for that but I can't think of a better one.
+                respond(exchange, StatusCodes.BAD_GATEWAY, new space.pxls.server.packets.http.Error("bad_service", "Login is currently unavailable"));
             }
         } else {
-            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_service", "No auth service named " + id));
+            // NOTE ([  ]): this is a bit of a white lie since we didn't really
+            // ask the gateway anything, but for this branch to execute we must
+            // have asked at some point and the gateway was bad then.
+            // Consider calling reloadLoginService() prior.
+            respond(exchange, StatusCodes.BAD_GATEWAY, new Error("no_service", "Login is currently unavailable"));
         }
     }
 
@@ -1769,12 +1760,10 @@ public class WebHandler {
     }
 
     public void signIn(HttpServerExchange exchange) {
-        String id = exchange.getRelativePath().substring(1);
         boolean redirect = exchange.getQueryParameters().get("redirect") != null;
 
-        AuthService service = services.get(id);
-        if (service != null) {
-            String state = service.generateState();
+        if (loginService != null) {
+            String state = loginService.generateState();
             if (redirect) {
                 exchange.setResponseCookie(
                     new CookieImpl("pxls-auth-redirect", "1")
@@ -1782,18 +1771,17 @@ public class WebHandler {
                         .setSecure(exchange.isSecure())
                         .setPath("/")
                 );
-                redirect(exchange, service.getRedirectUrl(state + "|redirect"));
+                redirect(exchange, loginService.getRedirectUrl(state + "|redirect"));
             } else {
-                respond(exchange, StatusCodes.OK, new SignInResponse(service.getRedirectUrl(state + "|json")));
+                respond(exchange, StatusCodes.OK, new SignInResponse(loginService.getRedirectUrl(state + "|json")));
             }
         } else {
-            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_service", "No auth method named " + id));
+            // NOTE ([  ]): See the note on `auth()`'s similar condition
+            respond(exchange, StatusCodes.BAD_GATEWAY, new Error("no_service", "Login is currently unavailable"));
         }
     }
 
     public void info(HttpServerExchange exchange) {
-        User user = exchange.getAttachment(AuthReader.USER);
-
         exchange.getResponseHeaders()
                 .add(HttpString.tryFromString("Content-Type"), "application/json")
                 .add(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
@@ -1805,7 +1793,6 @@ public class WebHandler {
             App.getConfig().getString("captcha.key"),
             (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS),
             (int) App.getConfig().getInt("stacking.maxStacked"),
-            services,
             App.getRegistrationEnabled(),
             App.isChatEnabled(),
             Math.min(App.getConfig().getInt("chat.characterLimit"), 2048),
@@ -2046,9 +2033,7 @@ public class WebHandler {
         return !username.isEmpty() && username.matches("[a-zA-Z0-9_\\-]+");
     }
 
-    public void reloadServicesEnabledState() {
-        for (Map.Entry<String, AuthService> entry : services.entrySet()) {
-            entry.getValue().reloadEnabledState();
-        }
+    public void reloadLoginService() {
+        initLogins();
     }
 }

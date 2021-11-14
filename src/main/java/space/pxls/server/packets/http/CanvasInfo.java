@@ -1,10 +1,8 @@
 package space.pxls.server.packets.http;
 
-import space.pxls.auth.AuthService;
 import space.pxls.palette.Color;
 
 import java.util.List;
-import java.util.Map;
 
 public class CanvasInfo {
     public String canvasCode;
@@ -14,7 +12,6 @@ public class CanvasInfo {
     public String captchaKey;
     public Integer heatmapCooldown;
     public Integer maxStacked;
-    public Map<String, AuthService> authServices;
     public Boolean registrationEnabled;
     public Boolean chatEnabled;
     public Boolean chatRespectsCanvasBan;
@@ -24,7 +21,23 @@ public class CanvasInfo {
     public List<Object> customEmoji;
     public String chatRatelimitMessage;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, List<Object> customEmoji, String chatRatelimitMessage) {
+    public CanvasInfo(
+        String canvasCode,
+        Integer width,
+        Integer height,
+        List<Color> palette,
+        String captchaKey,
+        Integer heatmapCooldown,
+        Integer maxStacked,
+        Boolean registrationEnabled,
+        Boolean chatEnabled,
+        Integer chatCharacterLimit,
+        boolean chatRespectsCanvasBan,
+        List<String> chatBannerText,
+        boolean snipMode,
+        List<Object> customEmoji,
+        String chatRatelimitMessage
+    ) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
@@ -32,7 +45,6 @@ public class CanvasInfo {
         this.captchaKey = captchaKey;
         this.heatmapCooldown = heatmapCooldown;
         this.maxStacked = maxStacked;
-        this.authServices = authServices;
         this.registrationEnabled = registrationEnabled;
         this.chatEnabled = chatEnabled;
         this.chatCharacterLimit = chatCharacterLimit;
@@ -69,10 +81,6 @@ public class CanvasInfo {
 
     public Integer getMaxStacked() {
         return maxStacked;
-    }
-
-    public Map<String, AuthService> getAuthServices() {
-        return authServices;
     }
 
     public Boolean getRegistrationEnabled() {

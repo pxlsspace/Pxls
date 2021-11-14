@@ -66,42 +66,6 @@ const user = (function() {
     isLoggedIn: function() {
       return self.loggedIn;
     },
-    webinit: function(data) {
-      self.elements.loginOverlay.find('a').click(function(evt) {
-        evt.preventDefault();
-
-        const cancelButton = crel('button', { class: 'float-right text-button' }, __('Cancel'));
-        cancelButton.addEventListener('click', function() {
-          self.elements.prompt.fadeOut(200);
-        });
-
-        self.elements.prompt[0].innerHTML = '';
-        crel(self.elements.prompt[0],
-          crel('div', { class: 'content' },
-            crel('h1', __('Sign in with...')),
-            crel('ul',
-              Object.values(data.authServices).map(service => {
-                const anchor = crel('a', { href: `/signin/${service.id}?redirect=1` }, service.name);
-                anchor.addEventListener('click', function(e) {
-                  if (window.open(this.href, '_blank')) {
-                    e.preventDefault();
-                    return;
-                  }
-                  ls.set('auth_same_window', true);
-                });
-                const toRet = crel('li', anchor);
-                if (!service.registrationEnabled) {
-                  crel(toRet, crel('span', { style: 'font-style: italic; font-size: .75em; font-weight: bold; color: red; margin-left: .5em' }, __('New Accounts Disabled')));
-                }
-                return toRet;
-              })
-            )
-          ),
-          cancelButton
-        );
-        self.elements.prompt.fadeIn(200);
-      });
-    },
     wsinit: function() {
       if (ls.get('auth_proceed')) {
         // we need to authenticate...

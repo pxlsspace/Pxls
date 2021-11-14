@@ -58,29 +58,43 @@ The relevant config options are `database.url`, `database.user`, and `database.p
       pass: "hunter2"
     }
 
-## Configuring OAuth
+## Configuring User Login
+Pxls authenticates users with an identity server.
+You have several choices available for this, such as:
+- [Keycloak](https://www.keycloak.org/)
+- [auth0](https://auth0.com/)
+- [okta](https://www.okta.com/)
 
-OAuth keys must be set in the config file (see above). Right now, five services are supported - [Reddit][redditapps], [Google][googleconsole], [Discord][discordapps], [VK][vkapps], and [Tumblr][tumblrapps].
+Once you have such an identity server configured and running as desired, you can configure Pxls to use this in the `auth` section of the config.
 
-The config node `oauth.callbackBase` must be set to your app's URL (including protocol and port), followed by `/auth` (for example, `http://pxls.space/auth`).
-On the OAuth setup page for the various services, you need to set the redirect URL to `oauth.callbackBase` followed by the service name. Reddit, for example, would be `http://pxls.space/auth/reddit`, and likewise for Google.
+The config node `auth.callbackBase` must be set to your app's URL (including protocol and port), followed by `/auth` (for example, `http://pxls.space/auth`).
 
-An example OAuth section could look like this:
+The `auth.issuer` node should be a url pointing to your identity server.
+You can check if you are using the correct url by adding `/.well-known/openid-configuration` to the path.
+For example, for an issuer of `https://pxls.space/auth/realms/pxls` you would expect `https://pxls.space/auth/realms/pxls/.well-known/openid-configuration` to return a JSON document with various configuration details.
 
-    oauth {
-        callbackBase: "http://example.com/auth"
-        reddit {
-            key: "AsPxXweEomQjUD"
-            secret: "tYJlz_xbH-qjxw8xvKVj0qLXRCw"
-        }
-        google {
-            key: "pxls-"
-            secret: "AIzaSzAS9wxgdXw6G3Q2lGMlyxG03F3hmXEMnce"
-        }
-        discord {
-            key: "112233445566778899"
-            secret: "yo4DkHFDy0k1euPyxMef6m243qRgX00z"
-        }
+OAuth client information is specified by the `auth.client` and `auth.secret` config nodes.
+You will have to generate this information in your identity server.
+You may choose to use a public client without a secret.
+In this case, the secret node can be left blank.
+
+Finally, the `auth.scopes` node dictates what information Pxls will request access too about your users from your identity server.
+This depends on your identity server configuration and may need to be set to `identity` or similar.
+In most cases, no scopes need to be provided and this can be blank.
+
+An example auth section could look like this:
+
+    auth {
+        useIp: false
+        snipMode: false
+        callbackBase: "https://pxls.space/auth"
+
+        enableRegistration: true
+
+        issuer: "https://pxls.space/auth/realms/pxls",
+        client: "pxls",
+        secret: "533ba06e-66e8-4a17-b60c-37481f83beee",
+        scopes: ""
     }
 
 ## Configuring host
