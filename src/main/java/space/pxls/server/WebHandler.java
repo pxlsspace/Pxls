@@ -3,20 +3,22 @@ package space.pxls.server;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mashape.unirest.http.exceptions.UnirestException;
 import com.mitchellbosecke.pebble.PebbleEngine;
-import com.mitchellbosecke.pebble.loader.ClasspathLoader;
+
+import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.Cookie;
-import io.undertow.server.handlers.CookieImpl;
-import io.undertow.server.handlers.CookieSameSiteMode;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
 import io.undertow.util.*;
+
+import org.pac4j.core.config.Config;
+import org.pac4j.core.exception.http.HttpAction;
+import org.pac4j.oidc.client.OidcClient;
+import org.pac4j.undertow.context.UndertowWebContext;
+import org.pac4j.undertow.http.UndertowHttpActionAdapter;
+
 import space.pxls.App;
-import space.pxls.auth.*;
 import space.pxls.data.*;
-import space.pxls.server.packets.http.Error;
 import space.pxls.server.packets.http.*;
 import space.pxls.server.packets.socket.*;
 import space.pxls.user.*;
@@ -33,14 +35,11 @@ import java.util.stream.Collectors;
 
 public class WebHandler {
     private PebbleEngine engine;
-    private AuthService loginService;
     public static final String TEMPLATE_PROFILE = "public/pebble_templates/profile.html";
     public static final String TEMPLATE_40X = "public/pebble_templates/40x.html";
     public static final String TEMPLATE_INDEX = "public/pebble_templates/index.html";
 
     public WebHandler() {
-        initLogins();
-
         engine = new PebbleEngine.Builder().build();
     }
 
@@ -56,15 +55,6 @@ public class WebHandler {
             return s;
         } catch (IOException e) {
             return "";
-        }
-    }
-
-    private void initLogins() {
-        try {
-            loginService = new OpenIDAuthService("oidc");
-        } catch(Exception e) {
-            System.err.println("Failed to init oidc login service:");
-            System.err.println(e.toString());
         }
     }
 
@@ -646,10 +636,6 @@ public class WebHandler {
         sendObj(responseChanged.size() > 0 ? StatusCodes.OK : StatusCodes.BAD_REQUEST, exchange, response);
     }
 
-    public AuthService getLoginService() {
-        return loginService;
-    }
-
     private String getBanReason(HttpServerExchange exchange) {
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         FormData.FormValue reason = data.getFirst("reason");
@@ -673,39 +659,6 @@ public class WebHandler {
     private boolean doLog(HttpServerExchange exchange) {
         FormData.FormValue nolog = exchange.getAttachment(FormDataParser.FORM_DATA).getFirst("nolog");
         return nolog == null;
-    }
-
-    private void setAuthCookie(HttpServerExchange exchange, String loginToken, int days) {
-        Calendar pastCalendar = Calendar.getInstance();
-        pastCalendar.add(Calendar.DATE, -1);
-        exchange.setResponseCookie(
-            new CookieImpl("pxls-token", "")
-                .setPath("/")
-                .setExpires(pastCalendar.getTime())
-        );
-
-        Calendar futureCalendar = Calendar.getInstance();
-        futureCalendar.add(Calendar.DATE, days);
-        String hostname = App.getConfig().getString("host");
-        // FIXME ([  ]): I think there only needs to be one of these and the domain can be excluded.
-        exchange.setResponseCookie(
-            new CookieImpl("pxls-token", loginToken)
-                .setHttpOnly(true)
-                .setSameSiteMode((exchange.isSecure() ? CookieSameSiteMode.NONE : CookieSameSiteMode.LAX).toString())
-                .setSecure(exchange.isSecure())
-                .setPath("/")
-                .setDomain("." + hostname)
-                .setExpires(futureCalendar.getTime())
-        );
-        exchange.setResponseCookie(
-            new CookieImpl("pxls-token", loginToken)
-                .setHttpOnly(true)
-                .setSameSiteMode((exchange.isSecure() ? CookieSameSiteMode.NONE : CookieSameSiteMode.LAX).toString())
-                .setSecure(exchange.isSecure())
-                .setPath("/")
-                .setDomain(hostname)
-                .setExpires(futureCalendar.getTime())
-        );
     }
 
     public void ban(HttpServerExchange exchange) {
@@ -1567,218 +1520,20 @@ public class WebHandler {
         }
     }
 
-    public void signUp(HttpServerExchange exchange) {
-        if (!App.getRegistrationEnabled()) {
-            respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("registration_disabled", "Registration has been disabled"));
-            return;
-        }
-        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-        FormData.FormValue nameVal = data.getFirst("username");
-        FormData.FormValue tokenVal = data.getFirst("token");
-        if (nameVal == null || tokenVal == null) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_params", "Missing parameters"));
-            return;
-        }
-
-        String name = nameVal.getValue();
-        String token = tokenVal.getValue();
-        if (token.isEmpty()) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_token", "Missing signup token"));
-            return;
-        } else if (name.isEmpty()) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_username", "Username may not be empty"));
-            return;
-        } else if (!name.matches("[a-zA-Z0-9_\\-]+")) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_username", "Username contains invalid characters"));
-            return;
-        } else if (!App.getUserManager().isValidSignupToken(token)) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_token", "Invalid signup token"));
-            return;
-        }
-
-        String ip = exchange.getAttachment(IPReader.IP);
-        User user = App.getUserManager().signUp(name, token, ip);
-
-        if (user == null) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_username", "Username taken, try another?"));
-            return;
-        }
-
-        // Do additional checks below:
-        List<String> reports = new ArrayList<String>();
-
-        // NOTE: Dupe IP checks are done on auth, not just signup.
-
-        // check username for filter hits
-        if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(name)) {
-            reports.add(String.format("Username filter hit on \"%s\"", name));
-        }
-
-        for (String reportMessage : reports) {
-            Integer rid = App.getDatabase().insertServerReport(user.getId(), reportMessage);
-            if (rid != null) {
-                App.getServer().broadcastToStaff(new ServerReceivedReport(rid, ServerReceivedReport.REPORT_TYPE_CANVAS));
-            }
-        }
-
-        String loginToken = App.getUserManager().logIn(user, ip);
-        setAuthCookie(exchange, loginToken, 24);
-        respond(exchange, StatusCodes.OK, new SignUpResponse(loginToken));
-    }
-
-    public void auth(HttpServerExchange exchange) throws UnirestException {
-        if (exchange.isInIoThread()) {
-            exchange.dispatch(this::auth);
-            return;
-        }
-
-        if (loginService != null) {
-            // Verify the given OAuth state, to make sure people don't double-send requests
-            Deque<String> stateQ = exchange.getQueryParameters().get("state");
-
-            String state_ = "";
-            if (stateQ != null) {
-                state_ = stateQ.element();
-            }
-            String[] stateArray = state_.split("\\|");
-            String state = stateArray[0];
-            boolean redirect = false;
-            if (stateArray.length > 1) {
-                redirect = stateArray[1].equals("redirect");
-            } else {
-                // check for cookie...
-                Cookie redirectCookie = exchange.getRequestCookies().get("pxls-auth-redirect");
-                redirect = redirectCookie != null;
-            }
-            // let's just delete the redirect cookie
-            Calendar pastCalendar = Calendar.getInstance();
-            pastCalendar.add(Calendar.DATE, -1);
-            exchange.setResponseCookie(
-                new CookieImpl("pxls-auth-redirect", "")
-                    .setPath("/")
-                    .setExpires(pastCalendar.getTime())
-            );
-
-            if (!redirect && exchange.getQueryParameters().get("json") == null) {
-                exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
-                exchange.getResponseSender().send("<!DOCTYPE html><html><head><title>Pxls Login</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0\"/></head><body><a style=\"font-size:2em;font-weight:bold;\" href=\"" + exchange.getRequestURI() + "?" + exchange.getQueryString() + "\">Finish Login</a><br>Hold down long on that link and select to open with pxls app.</body>");
-
-                return;
-            }
-
-            // Check for errors reported by server
-            if (exchange.getQueryParameters().containsKey("error")) {
-                String error = exchange.getQueryParameters().get("error").element();
-                if (error.equals("access_denied")) error = "Authentication denied by user";
-                if (redirect) {
-                    redirect(exchange, "/auth_done.html?nologin=1");
-                } else {
-                    respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("oauth_error", error));
-                }
-                return;
-            }
-
-            if (!loginService.verifyState(state)) {
-                respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_state", "Invalid state token"));
-                return;
-            }
-
-            // Get the one-time authorization code from the request
-            String code = extractOAuthCode(exchange);
-            if (code == null) {
-                if (redirect) {
-                    redirect(exchange, "/auth_done.html?nologin=1");
-                } else {
-                    respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_code", "No OAuth code specified"));
-                }
-                return;
-            }
-
-            // Get a more persistent user token
-            String token = loginService.getToken(code);
-            if (token == null) {
-                respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("bad_code", "OAuth code invalid"));
-                return;
-            }
-
-            // And get an account identifier from that
-            String identifier;
+    public HttpHandler signInHandler(Config config) {
+        return exchange -> {
+            final UndertowWebContext context = new UndertowWebContext(exchange, config.getSessionStore());
+            final OidcClient client = config.getClients()
+                    .findClient(OidcClient.class)
+                    .get();
+            HttpAction action;
             try {
-                identifier = loginService.getIdentifier(token);
-            } catch (AuthService.InvalidAccountException e) {
-                respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("invalid_account", e.getMessage()));
-                return;
+                action = (HttpAction) client.getRedirectionAction(context).get();
+            } catch (final HttpAction e) {
+                action = e;
             }
-
-            if (identifier != null) {
-                User user = App.getUserManager().getByLogin("oidc", identifier);
-                // If there is no user with that identifier, we make a signup token and tell the client to sign up with that token
-                if (user == null) {
-                    String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin("oidc", identifier));
-                    if (redirect) {
-                        redirect(exchange, String.format("/auth_done.html?token=%s&signup=true", encodedURIComponent(signUpToken)));
-                    } else {
-                        respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
-                    }
-                } else {
-                    // We need the IP for logging/db purposes
-                    String ip = exchange.getAttachment(IPReader.IP);
-                    String loginToken = App.getUserManager().logIn(user, ip);
-                    setAuthCookie(exchange, loginToken, 24);
-                    if (redirect) {
-                        redirect(exchange, String.format("/auth_done.html?token=%s&signup=false", encodedURIComponent(loginToken)));
-                    } else {
-                        respond(exchange, StatusCodes.OK, new AuthResponse(loginToken, false));
-                    }
-                }
-            } else {
-                // NOTE ([  ]): this condition occurs when the gateway response
-                // *was* valid, but indicated an error. 502 is probably not the
-                // right code for that but I can't think of a better one.
-                respond(exchange, StatusCodes.BAD_GATEWAY, new space.pxls.server.packets.http.Error("bad_service", "Login is currently unavailable"));
-            }
-        } else {
-            // NOTE ([  ]): this is a bit of a white lie since we didn't really
-            // ask the gateway anything, but for this branch to execute we must
-            // have asked at some point and the gateway was bad then.
-            // Consider calling reloadLoginService() prior.
-            respond(exchange, StatusCodes.BAD_GATEWAY, new Error("no_service", "Login is currently unavailable"));
-        }
-    }
-
-    private String extractOAuthCode(HttpServerExchange exchange) {
-        // Most implementations just add a "code" parameter
-        Deque<String> code = exchange.getQueryParameters().get("code");
-        if (code != null && !code.isEmpty()) return code.element();
-
-        // OAuth 1 still uses these parameters
-        Deque<String> oauthToken = exchange.getQueryParameters().get("oauth_token");
-        Deque<String> oauthVerifier = exchange.getQueryParameters().get("oauth_verifier");
-
-        if (oauthToken == null || oauthVerifier == null || oauthToken.isEmpty() || oauthVerifier.isEmpty()) return null;
-        return oauthToken.element() + "|" + oauthVerifier.element();
-    }
-
-    public void signIn(HttpServerExchange exchange) {
-        boolean redirect = exchange.getQueryParameters().get("redirect") != null;
-
-        if (loginService != null) {
-            String state = loginService.generateState();
-            if (redirect) {
-                exchange.setResponseCookie(
-                    new CookieImpl("pxls-auth-redirect", "1")
-                        .setSameSiteMode((exchange.isSecure() ? CookieSameSiteMode.NONE : CookieSameSiteMode.LAX).toString())
-                        .setSecure(exchange.isSecure())
-                        .setPath("/")
-                );
-                redirect(exchange, loginService.getRedirectUrl(state + "|redirect"));
-            } else {
-                respond(exchange, StatusCodes.OK, new SignInResponse(loginService.getRedirectUrl(state + "|json")));
-            }
-        } else {
-            // NOTE ([  ]): See the note on `auth()`'s similar condition
-            respond(exchange, StatusCodes.BAD_GATEWAY, new Error("no_service", "Login is currently unavailable"));
-        }
+            UndertowHttpActionAdapter.INSTANCE.adapt(action, context);
+        };
     }
 
     public void info(HttpServerExchange exchange) {
@@ -1808,12 +1563,6 @@ public class WebHandler {
         exchange.getResponseHeaders()
                 .put(Headers.CONTENT_TYPE, "application/binary")
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
-
-        // let's also update the cookie, if present. This place will get called frequent enough
-        Cookie tokenCookie = exchange.getRequestCookies().get("pxls-token");
-        if (tokenCookie != null) {
-            setAuthCookie(exchange, tokenCookie.getValue(), 24);
-        }
 
         exchange.getResponseSender().send(ByteBuffer.wrap(App.getBoardData()));
     }
@@ -1845,17 +1594,6 @@ public class WebHandler {
                 .put(Headers.CONTENT_TYPE, "application/binary")
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
         exchange.getResponseSender().send(ByteBuffer.wrap(App.getPlacemapData()));
-    }
-
-    public void logout(HttpServerExchange exchange) {
-        Cookie tokenCookie = exchange.getRequestCookies().get("pxls-token");
-
-        if (tokenCookie != null) {
-            App.getUserManager().logOut(tokenCookie.getValue());
-        }
-
-        setAuthCookie(exchange, "", -1);
-        respond(exchange, StatusCodes.OK, new EmptyResponse());
     }
 
     public void lookup(HttpServerExchange exchange) {
@@ -2034,6 +1772,6 @@ public class WebHandler {
     }
 
     public void reloadLoginService() {
-        initLogins();
+        // TODO ([  ]): reload the handler's config info
     }
 }

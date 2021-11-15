@@ -67,7 +67,7 @@ You have several choices available for this, such as:
 
 Once you have such an identity server configured and running as desired, you can configure Pxls to use this in the `auth` section of the config.
 
-The config node `auth.callbackBase` must be set to your app's URL (including protocol and port), followed by `/auth` (for example, `http://pxls.space/auth`).
+The config node `auth.callback` must be set to your app's URL (including protocol and port), followed by `/callback` (for example, `http://pxls.space/callback`).
 
 The `auth.issuer` node should be a url pointing to your identity server.
 You can check if you are using the correct url by adding `/.well-known/openid-configuration` to the path.
@@ -96,9 +96,6 @@ An example auth section could look like this:
         secret: "533ba06e-66e8-4a17-b60c-37481f83beee",
         scopes: ""
     }
-
-## Configuring host
-You must update the `host` option in your `pxls.conf` otherwise session cookies will not set, making auth impossible. `host` should be your domain (or IP if testing locally) without port.
 
 ## Configuring CAPTCHA
 

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-11-14T06:12:10.556Z\n"
+"POT-Creation-Date: 2021-11-15T15:01:44.467Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -60,7 +60,7 @@ msgid "Undo"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html:114:20
-msgid "You are not signed in.&nbsp;<a href=\"/signin?redirect\" target=\"_blank\">Sign in</a>"
+msgid "You are not signed in.&nbsp;<a href=\"/signin?redirect\">Sign in</a>"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html:124:28

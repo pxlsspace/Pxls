@@ -3,7 +3,7 @@ package space.pxls.server;
 import com.google.gson.JsonObject;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
-import io.undertow.server.RoutingHandler;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.AllowedMethodsHandler;
 import io.undertow.server.handlers.form.EagerFormParsingHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
@@ -15,7 +15,15 @@ import io.undertow.websockets.core.BufferedTextMessage;
 import io.undertow.websockets.core.WebSocketChannel;
 import io.undertow.websockets.core.WebSockets;
 import io.undertow.websockets.spi.WebSocketHttpExchange;
+import io.undertow.server.session.*;
+
+import org.pac4j.undertow.handler.CallbackHandler;
+import org.pac4j.undertow.handler.LogoutHandler;
+import org.pac4j.undertow.handler.SecurityHandler;
+import org.pac4j.core.config.Config;
+
 import space.pxls.App;
+import space.pxls.auth.OpenIDConfig;
 import space.pxls.server.packets.chat.*;
 import space.pxls.server.packets.socket.*;
 import space.pxls.tasks.UserAuthedTask;
@@ -52,6 +60,8 @@ public class UndertowServer {
     }
 
     public void start() {
+        final Config config = new OpenIDConfig().build();
+
         var pathHandler = new PxlsPathHandler()
                 .addPermGatedExactPath("/ws", "board.socket", Handlers.websocket(this::webSocketHandler))
                 .addPermGatedPrefixPath("/ws", "board.socket", Handlers.websocket(this::webSocketHandler))
@@ -61,10 +71,20 @@ public class UndertowServer {
                 .addPermGatedPrefixPath("/virginmap", "board.data", webHandler::virginmap)
                 .addPermGatedPrefixPath("/placemap", "board.data", webHandler::placemap)
                 .addPermGatedPrefixPath("/initialboarddata", "board.data", webHandler::initialdata)
-                .addPermGatedPrefixPath("/auth", "user.auth", new RateLimitingHandler(webHandler::auth, "http:auth", (int) App.getConfig().getDuration("server.limits.auth.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.auth.count")))
-                .addPermGatedPrefixPath("/signin", "user.auth", webHandler::signIn)
-                .addPermGatedPrefixPath("/signup", "user.auth", new RateLimitingHandler(webHandler::signUp, "http:signUp", (int) App.getConfig().getDuration("server.limits.signup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.signup.count")))
-                .addPermGatedPrefixPath("/logout", "user.auth", webHandler::logout)
+                // NOTE ([  ]): This endpoint was /auth which was a perfectly fine
+                // endpoint in my eyes. Apparently, The gods think differently.
+                // Don't use /auth — it's absolutely cursed. One callback will
+                // go through, and then you'll not be able to check session state
+                // from that endpoint again for an indeterminate time (yes even
+                // across restarts).
+                // This could be some obscure bug caused by pac4j or some other 
+                // quirk in pxls code, so it might go away at some point, but I've
+                // lost a day in debugging this and I still feel like I'm not much
+                // closer to working out what the hell is going on — I've only
+                // found out how much more impossible of a bug it seems.
+                .addPermGatedPrefixPath("/callback", "user.auth", new RateLimitingHandler(CallbackHandler.build(config), "http:auth", (int) App.getConfig().getDuration("server.limits.auth.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.auth.count")))
+                .addPermGatedPrefixPath("/signin", "user.auth", webHandler.signInHandler(config))
+                .addPermGatedPrefixPath("/logout", "user.auth", new LogoutHandler(config))
                 .addPermGatedPrefixPath("/lookup", "board.lookup", new RateLimitingHandler(webHandler::lookup, "http:lookup", (int) App.getConfig().getDuration("server.limits.lookup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.lookup.count")))
                 .addPermGatedPrefixPath("/report", "board.report", webHandler::report)
                 .addPermGatedPrefixPath("/reportChat", "chat.report", webHandler::chatReport)
@@ -105,11 +125,40 @@ public class UndertowServer {
             .deletePermGated("/factions/{fid}", "faction.delete", new JsonReader(new RateLimitingHandler(webHandler::manageFactions, "http:manageFactions", (int) App.getConfig().getDuration("server.limits.manageFactions.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.manageFactions.count"), App.getConfig().getBoolean("server.limits.manageFactions.global"))))
             .setFallbackHandler(pathHandler);
         //EncodingHandler encoder = new EncodingHandler(mainHandler, new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50, Predicates.parse("max-content-size(1024)")));
+
+        HttpHandler defaultHandler = SecurityHandler.build(
+            new IPReader(new AuthReader(new EagerFormParsingHandler().setNext(routingHandler))),
+            config,
+            "OidcClient,IpClient,AnonymousClient"
+        );
+            
+        HttpHandler callbackHandler = new IPReader(new EagerFormParsingHandler().setNext(routingHandler));
+
+
         server = Undertow.builder()
                 .addHttpListener(port, "0.0.0.0")
                 .setIoThreads(32)
                 .setWorkerThreads(128)
-                .setHandler(new IPReader(new AuthReader(new EagerFormParsingHandler().setNext(routingHandler)))).build();
+                .setHandler(new SessionAttachmentHandler(
+                    exchange -> {
+                        // NOTE ([  ]): I'll admit, this is a bit of a hack,
+                        // but I really don't want to specify the authreader and
+                        // security handlers for every endpoint individually
+                        // *except* for the callback.
+                        // (Fundamentally, I don't see a reason why the security
+                        // handler couldn't work on the callback endpoint, but
+                        // it has some parameter collision which results in
+                        // endless self-redirects)
+                        if (exchange.getRequestPath().startsWith("/callback")) {
+                            callbackHandler.handleRequest(exchange);
+                        } else {
+                            defaultHandler.handleRequest(exchange);
+                        }
+                    },
+                    new InMemorySessionManager("pxls"),
+                    new SessionCookieConfig()
+                ))
+                .build();
         server.start();
     }
 

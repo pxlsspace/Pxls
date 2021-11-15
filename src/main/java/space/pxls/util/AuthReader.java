@@ -1,19 +1,20 @@
 package space.pxls.util;
 
+import io.undertow.security.api.SecurityContext;
+import io.undertow.security.idm.Account;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.Cookie;
 import io.undertow.util.AttachmentKey;
 import space.pxls.App;
 import space.pxls.user.User;
-import space.pxls.user.UserLogin;
 
-import java.util.concurrent.ConcurrentHashMap;
+import org.pac4j.core.profile.CommonProfile;
+import org.pac4j.http.profile.IpProfile;
+import org.pac4j.oidc.profile.OidcProfile;
+import org.pac4j.undertow.account.Pac4jAccount;
 
 public class AuthReader implements HttpHandler {
     public static AttachmentKey<User> USER = AttachmentKey.create(User.class);
-
-    private static ConcurrentHashMap<String, String> loginCache = new ConcurrentHashMap<>();
 
     private HttpHandler next;
 
@@ -23,33 +24,24 @@ public class AuthReader implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        if (!App.getConfig().getBoolean("auth.useIp")) {
-            Cookie header = exchange.getRequestCookies().get("pxls-token");
-            if (header != null) {
-                User user = App.getUserManager().getByToken(header.getValue());
-                if (user != null) {
-                    exchange.putAttachment(USER, user);
-                }
-            }
-        } else {
-            String ip = exchange.getAttachment(IPReader.IP);
+        SecurityContext securityContext = exchange.getSecurityContext();
+        if (securityContext != null) {
+            Account account = securityContext.getAuthenticatedAccount();
+            if (account instanceof Pac4jAccount) {
+                for(CommonProfile profile : ((Pac4jAccount) account).getProfiles()) {
+                    User user = null;
 
-            final User[] user = new User[1];
-            if (loginCache.containsKey(ip)) {
-                user[0] = App.getUserManager().getByToken(loginCache.get(ip));
-            } else {
-                loginCache.compute(ip, (key, old) -> {
-                    user[0] = App.getUserManager().getSnipByIP(ip);
-
-                    if (user[0] == null) {
-                        String signupToken = App.getUserManager().generateUserCreationToken(new UserLogin("ip", ip));
-                        user[0] = App.getUserManager().signUp(MD5.compute(ip), signupToken, ip);
+                    if (profile instanceof OidcProfile) {
+                        user = App.getUserManager().getByLogin("oidc", profile.getId());
+                    } else if (profile instanceof IpProfile) {
+                        user = App.getUserManager().getSnipByIP(profile.getId());
                     }
 
-                    return App.getUserManager().logIn(user[0], ip);
-                });
+                    if (user != null) {
+                        exchange.putAttachment(USER, user);
+                    }
+                }
             }
-            exchange.putAttachment(USER, user[0]);
         }
 
         next.handleRequest(exchange);

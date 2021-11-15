@@ -1,7 +1,5 @@
 package space.pxls.user;
 
-import space.pxls.App;
-import space.pxls.auth.AuthService;
 import space.pxls.data.DBUserLogin;
 
 public class UserLogin {
@@ -19,10 +17,6 @@ public class UserLogin {
 
 	public String getServiceUserID() {
 		return serviceUserID;
-	}
-
-	public AuthService getService() {
-		return App.getServer().getWebHandler().getLoginService();
 	}
 
 	public String toString() {
