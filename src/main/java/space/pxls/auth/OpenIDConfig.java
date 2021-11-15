@@ -3,12 +3,17 @@ package space.pxls.auth;
 import org.pac4j.core.config.*;
 import org.pac4j.core.client.*;
 import org.pac4j.core.client.direct.AnonymousClient;
+import org.pac4j.http.client.direct.HeaderClient;
 import org.pac4j.http.client.direct.IpClient;
 import org.pac4j.http.credentials.authenticator.IpRegexpAuthenticator;
 import org.pac4j.oidc.client.*;
 import org.pac4j.oidc.config.*;
+import org.pac4j.oidc.credentials.authenticator.UserInfoOidcAuthenticator;
 
 import java.net.*;
+import java.util.ArrayList;
+import java.util.List;
+
 import space.pxls.App;
 
 public class OpenIDConfig implements ConfigFactory {
@@ -28,9 +33,9 @@ public class OpenIDConfig implements ConfigFactory {
 			final String scopes = App.getConfig().getString("auth.scopes");
 			oidcConfiguration.setScope(scopes.isEmpty() ? "openid" : scopes);
 			final OidcClient<OidcConfiguration> oidcClient = new OidcClient<>(oidcConfiguration);
-			//oidcClient.setAuthorizationGenerator((context, profile) -> {
-			//	profile.addRole("ROLE_ADMIN"); return profile;
-			//});
+
+			final UserInfoOidcAuthenticator headerAuthenticator = new UserInfoOidcAuthenticator(oidcConfiguration);
+			final HeaderClient bearerClient = new HeaderClient("Authorization", "Bearer", headerAuthenticator);
 
 			final AnonymousClient anonymousClient = new AnonymousClient();
 
@@ -38,15 +43,21 @@ public class OpenIDConfig implements ConfigFactory {
 
 			System.out.println(ipClient.getName());
 
-			final Clients clients = new Clients(
-				callbackUri.toString(),
-				App.getConfig().getBoolean("auth.useIp") ? ipClient : oidcClient,
-				anonymousClient
-			);
+			final List<Client<?>> clients = new ArrayList<>();
 
-			final Config config = new Config(clients);
-			//config.addAuthorizer("admin", new RequireAnyRoleAuthorizer("ROLE_ADMIN"));
-			//config.addAuthorizer("custom", new CustomAuthorizer());
+			if (App.getConfig().getBoolean("auth.useIp")) {
+				clients.add(ipClient);
+			} else {
+				clients.add(bearerClient);
+				clients.add(oidcClient);
+			}
+
+			clients.add(anonymousClient);
+
+			final Config config = new Config(new Clients(
+				callbackUri.toString(),
+				clients.toArray(new Client<?>[clients.size()])
+			));
 
 			return config;
 		} catch(Exception e) {

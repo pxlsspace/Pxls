@@ -129,7 +129,11 @@ public class UndertowServer {
         HttpHandler defaultHandler = SecurityHandler.build(
             new IPReader(new AuthReader(new EagerFormParsingHandler().setNext(routingHandler))),
             config,
-            "OidcClient,IpClient,AnonymousClient"
+            // FIXME ([  ]): I'm not sure how the ordering of this works, but I
+            // presume it's start to end. I mention this because ideally
+            // HeaderClient should be more important than OidcClient, but 
+            // OidcClient no longer works when HeaderClient comes first.
+            "OidcClient,HeaderClient,IpClient,AnonymousClient"
         );
             
         HttpHandler callbackHandler = new IPReader(new EagerFormParsingHandler().setNext(routingHandler));
@@ -141,7 +145,7 @@ public class UndertowServer {
                 .setWorkerThreads(128)
                 .setHandler(new SessionAttachmentHandler(
                     exchange -> {
-                        // NOTE ([  ]): I'll admit, this is a bit of a hack,
+                        // FIXME ([  ]): I'll admit, this is a bit of a hack,
                         // but I really don't want to specify the authreader and
                         // security handlers for every endpoint individually
                         // *except* for the callback.

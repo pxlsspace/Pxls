@@ -32,11 +32,15 @@ public class AuthReader implements HttpHandler {
                     User user = null;
 
                     if (profile instanceof OidcProfile) {
-                        user = App.getUserManager().getByLogin("oidc", profile.getId());
+                        // NOTE ([  ]): getSubject and getId work for indirect
+                        // clients, but not for the Header direct client for some
+                        // reason. May be a bug in pac4j.
+                        final String subject = (String) ((OidcProfile) profile).getAttribute("sub");
+                        user = App.getUserManager().getByLogin("oidc", subject);
                     } else if (profile instanceof IpProfile) {
                         user = App.getUserManager().getSnipByIP(profile.getId());
                     }
-
+                    
                     if (user != null) {
                         exchange.putAttachment(USER, user);
                     }
