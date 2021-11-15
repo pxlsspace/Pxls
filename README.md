@@ -78,10 +78,6 @@ You will have to generate this information in your identity server.
 You may choose to use a public client without a secret.
 In this case, the secret node can be left blank.
 
-Finally, the `auth.scopes` node dictates what information Pxls will request access too about your users from your identity server.
-This depends on your identity server configuration and may need to be set to `identity` or similar.
-In most cases, no scopes need to be provided and this can be blank.
-
 An example auth section could look like this:
 
     auth {
@@ -91,10 +87,9 @@ An example auth section could look like this:
 
         enableRegistration: true
 
-        issuer: "https://pxls.space/auth/realms/pxls",
-        client: "pxls",
-        secret: "533ba06e-66e8-4a17-b60c-37481f83beee",
-        scopes: ""
+        issuer: "https://pxls.space/auth/realms/pxls"
+        client: "pxls"
+        secret: "533ba06e-66e8-4a17-b60c-37481f83beee"
     }
 
 ## Configuring CAPTCHA
