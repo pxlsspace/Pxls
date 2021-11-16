@@ -2,6 +2,7 @@ package space.pxls.user;
 
 import space.pxls.App;
 import space.pxls.data.DBUser;
+import space.pxls.util.MD5;
 import space.pxls.util.Util;
 
 import java.util.List;
@@ -9,10 +10,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.pac4j.oidc.profile.OidcProfile;
+
 public class UserManager {
     private Map<String, User> usersByToken = new ConcurrentHashMap<>();
-    private Map<String, UserLogin> userSignupTokens = new ConcurrentHashMap<>();
-
     private Map<Integer, User> userCache = new ConcurrentHashMap<>();
 
     public UserManager() {
@@ -52,8 +53,8 @@ public class UserManager {
         return u;
     }
 
-    public User getByLogin(String service, String sid) {
-        return getByDB(App.getDatabase().getUserByLogin(service, sid));
+    public User getByLogin(String login) {
+        return getByDB(App.getDatabase().getUserByLogin(login));
     }
 
     public User getByID(int uid) {
@@ -68,7 +69,27 @@ public class UserManager {
         if (!optionalUser.isPresent()) return null;
         DBUser user = optionalUser.get();
         List<Role> roles = App.getDatabase().getUserRoles(user.id);
-        return userCache.computeIfAbsent(user.id, (k) -> new User(user.id, user.stacked, user.username, user.signup_time, user.cooldownExpiry, roles, user.loginWithIP, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.shadowBanned, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked));
+        return userCache.computeIfAbsent(user.id, (k) -> new User(
+            user.id,
+            user.stacked,
+            user.username,
+            user.login,
+            user.signup_time,
+            user.cooldownExpiry,
+            roles,
+            user.loginWithIP,
+            user.pixelCount,
+            user.pixelCountAllTime,
+            user.banExpiry,
+            user.shadowBanned,
+            user.isPermaChatbanned,
+            user.chatbanExpiry,
+            user.chatbanReason,
+            user.chatNameColor,
+            user.displayedFaction,
+            user.discordName,
+            user.factionBlocked
+        ));
     }
 
     public String logIn(User user, String ip) {
@@ -79,26 +100,17 @@ public class UserManager {
         return token;
     }
 
-    public String generateUserCreationToken(UserLogin login) {
-        String token = Util.generateRandomToken();
-        userSignupTokens.put(token, login);
-        return token;
+    public User signUp(OidcProfile profile, String ip) {
+        final String username = (String) profile.getAttribute("preferred_username");
+        final String subject = (String) profile.getAttribute("sub");
+        DBUser user = App.getDatabase().createUser(username, subject, ip);
+        return getByDB(Optional.of(user));
     }
 
-    public boolean isValidSignupToken(String token) {
-        return userSignupTokens.containsKey(token);
-    }
-
-    public User signUp(String name, String token, String ip) {
-        UserLogin login = userSignupTokens.get(token);
-        if (login == null) return null;
-
-        if (!App.getDatabase().getUserByName(name).isPresent()) {
-            DBUser user = App.getDatabase().createUser(name, login, ip);
-            userSignupTokens.remove(token);
-            return getByDB(Optional.of(user));
-        }
-        return null;
+    public User signUpByIp(String ip) {
+        final String iphash = MD5.compute(ip);
+        DBUser user = App.getDatabase().createUser(iphash, iphash, ip);
+        return getByDB(Optional.of(user));
     }
 
     public User getByName(String name) {

@@ -1523,7 +1523,7 @@ public class WebHandler {
     public HttpHandler signInHandler(Config config) {
         return exchange -> {
             final UndertowWebContext context = new UndertowWebContext(exchange, config.getSessionStore());
-            final OidcClient client = config.getClients()
+            final OidcClient<?> client = config.getClients()
                     .findClient(OidcClient.class)
                     .get();
             HttpAction action;

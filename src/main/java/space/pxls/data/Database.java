@@ -5,20 +5,16 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
 import space.pxls.App;
-import space.pxls.server.packets.chat.Badge;
 import space.pxls.server.packets.chat.ChatMessage;
 import space.pxls.server.packets.chat.ServerChatLookup;
 import space.pxls.user.Chatban;
 import space.pxls.user.Faction;
 import space.pxls.user.Role;
 import space.pxls.user.User;
-import space.pxls.user.UserLogin;
 
 import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -27,7 +23,7 @@ import static java.lang.Math.toIntExact;
 
 public class Database {
     private final Jdbi jdbi;
-    private static final String SQL_USER_BY_NAME = "SELECT id, stacked, username, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color, displayed_faction, faction_restricted FROM users WHERE username = :username";
+    private static final String SQL_USER_BY_NAME = "SELECT id, stacked, username, sub, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color, displayed_faction, faction_restricted FROM users WHERE username = :username";
 
     public Database() {
         try {
@@ -70,6 +66,7 @@ public class Database {
             // users
             handle.createUpdate("CREATE TABLE IF NOT EXISTS users (" +
                     "id SERIAL NOT NULL PRIMARY KEY," +
+                    "sub VARCHAR(64) UNIQUE NOT NULL," +
                     "username VARCHAR(32) UNIQUE NOT NULL," +
                     "signup_time TIMESTAMP NOT NULL DEFAULT NOW()," +
                     "cooldown_expiry TIMESTAMP," +
@@ -98,13 +95,6 @@ public class Database {
                     "id INTEGER REFERENCES users," +
                     "role VARCHAR(512)," +
                     "PRIMARY KEY (id, role))")
-                    .execute();
-            // user logins
-            handle.createUpdate("CREATE TABLE IF NOT EXISTS user_logins (" +
-                    "uid INT NOT NULL REFERENCES users(id)," +
-                    "service VARCHAR(16) NOT NULL," +
-                    "service_uid VARCHAR(64) NOT NULL);" +
-                    "CREATE UNIQUE INDEX IF NOT EXISTS _user_logins_method_sid_pair ON user_logins(service, service_uid);")
                     .execute();
             // sessions
             handle.createUpdate("CREATE TABLE IF NOT EXISTS sessions ("+
@@ -306,7 +296,7 @@ public class Database {
     public Optional<DBPixelPlacementFull> getFullPixelAt(int x, int y) {
         Optional<DBPixelPlacementFull> pp;
         try {
-            pp = jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.secondary_id, p.time, p.mod_action, p.undo_action, u.id as u_id, u.username, u.login_with_ip, u.ban_expiry, u.is_shadow_banned, u.pixel_count, u.pixel_count_alltime, u.ban_reason, u.user_agent, u.discord_name, f.name as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.x = :x AND p.y = :y AND p.most_recent ORDER BY p.time DESC LIMIT 1")
+            pp = jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.secondary_id, p.time, p.mod_action, p.undo_action, u.id as u_id, u.username, u.sub, u.login_with_ip, u.ban_expiry, u.is_shadow_banned, u.pixel_count, u.pixel_count_alltime, u.ban_reason, u.user_agent, u.discord_name, f.name as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.x = :x AND p.y = :y AND p.most_recent ORDER BY p.time DESC LIMIT 1")
                     .bind("x", x)
                     .bind("y", y)
                     .map(new DBPixelPlacementFull.Mapper())
@@ -347,12 +337,12 @@ public class Database {
         Optional<DBPixelPlacementFull> pp;
         try {
             if (handle == null)
-                pp = jdbi.withHandle(handle2 -> handle2.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.undo_action, u.id as u_id, u.username, u.login_with_ip, u.ban_expiry, u.is_shadow_banned, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.discord_name, f.name as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.id = :id")
+                pp = jdbi.withHandle(handle2 -> handle2.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.undo_action, u.id as u_id, u.username, u.sub, u.login_with_ip, u.ban_expiry, u.is_shadow_banned, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.discord_name, f.name as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.id = :id")
                         .bind("id", id)
                         .map(new DBPixelPlacementFull.Mapper())
                         .findFirst());
             else
-                pp = handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.undo_action, u.id as u_id, u.username, u.login_with_ip, u.ban_expiry, u.is_shadow_banned, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.discord_name, f.name as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.id = :id")
+                pp = handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.undo_action, u.id as u_id, u.username, u.sub, u.login_with_ip, u.ban_expiry, u.is_shadow_banned, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.discord_name, f.name as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.id = :id")
                         .bind("id", id)
                         .map(new DBPixelPlacementFull.Mapper())
                         .findFirst();
@@ -412,7 +402,7 @@ public class Database {
                 .mapToMap()
                 .map(entry -> {
                     int from = toIntExact((long) entry.get("secondary_id"));
-                    return handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.undo_action, u.id as u_id, u.username, u.login_with_ip, u.ban_expiry, u.is_shadow_banned, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.discord_name FROM pixels p LEFT JOIN users u on p.who = u.id WHERE p.id = :id")
+                    return handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.undo_action, u.id as u_id, u.username, u.sub, u.login_with_ip, u.ban_expiry, u.is_shadow_banned, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.discord_name FROM pixels p LEFT JOIN users u on p.who = u.id WHERE p.id = :id")
                             .bind("id", from)
                             .map(new DBPixelPlacementFull.Mapper())
                             .first();
@@ -560,7 +550,7 @@ public class Database {
      * @return The latest undo pixel.
      */
     public DBPixelPlacementFull getUserUndoPixel(User who) {
-        return jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.rollback_action, p.undone, p.undo_action, p.most_recent, u.id as u_id, u.stacked, u.username, u.signup_time, u.cooldown_expiry, u.ban_expiry, u.is_shadow_banned, u.login_with_ip, u.signup_ip, u.last_ip, u.last_ip_alert, u.perma_chat_banned, u.chat_ban_expiry, u.chat_ban_reason, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.discord_name, u.chat_name_color FROM pixels p LEFT JOIN users u ON p.who = u.id WHERE p.who = :who AND NOT p.rollback_action ORDER BY p.id DESC LIMIT 1")
+        return jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.rollback_action, p.undone, p.undo_action, p.most_recent, u.id as u_id, u.stacked, u.username, u.sub, u.signup_time, u.cooldown_expiry, u.ban_expiry, u.is_shadow_banned, u.login_with_ip, u.signup_ip, u.last_ip, u.last_ip_alert, u.perma_chat_banned, u.chat_ban_expiry, u.chat_ban_reason, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.discord_name, u.chat_name_color FROM pixels p LEFT JOIN users u ON p.who = u.id WHERE p.who = :who AND NOT p.rollback_action ORDER BY p.id DESC LIMIT 1")
                 .bind("who", who.getId())
                 .map(new DBPixelPlacementFull.Mapper())
                 .first());
@@ -622,10 +612,9 @@ public class Database {
      * @param serviceUserID The user's ID on the login service.
      * @return The user.
      */
-    public Optional<DBUser> getUserByLogin(String service, String serviceUserID) {
-        return jdbi.withHandle(handle -> handle.select("SELECT * FROM users WHERE id = (SELECT uid FROM user_logins WHERE service = :service AND service_uid = :service_uid)")
-                .bind("service", service)
-                .bind("service_uid", serviceUserID)
+    public Optional<DBUser> getUserByLogin(String login) {
+        return jdbi.withHandle(handle -> handle.select("SELECT * FROM users WHERE sub = :subject")
+                .bind("subject", login)
                 .map(new DBUser.Mapper())
                 .findFirst());
     }
@@ -660,7 +649,7 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> getUserByID(int who) {
-        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color, displayed_faction, faction_restricted FROM users WHERE id = :who")
+        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, sub, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color, displayed_faction, faction_restricted FROM users WHERE id = :who")
                 .bind("who", who)
                 .map(new DBUser.Mapper())
                 .findFirst());
@@ -672,7 +661,7 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> getUserByToken(String token) {
-        return jdbi.withHandle(handle -> handle.select("SELECT u.id, u.stacked, u.username, u.signup_time, u.cooldown_expiry, u.ban_expiry, u.is_shadow_banned, u.login_with_ip, u.signup_ip, u.last_ip, u.last_ip_alert, u.perma_chat_banned, u.chat_ban_expiry, u.chat_ban_reason, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.discord_name, u.chat_name_color, u.displayed_faction, u.faction_restricted FROM users u INNER JOIN sessions s ON u.id = s.who WHERE s.token = :token")
+        return jdbi.withHandle(handle -> handle.select("SELECT u.id, u.stacked, u.username, u.sub, u.signup_time, u.cooldown_expiry, u.ban_expiry, u.is_shadow_banned, u.login_with_ip, u.signup_ip, u.last_ip, u.last_ip_alert, u.perma_chat_banned, u.chat_ban_expiry, u.chat_ban_reason, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.discord_name, u.chat_name_color, u.displayed_faction, u.faction_restricted FROM users u INNER JOIN sessions s ON u.id = s.who WHERE s.token = :token")
                 .bind("token", token)
                 .map(new DBUser.Mapper())
                 .findFirst());
@@ -685,143 +674,19 @@ public class Database {
      * @param ip The IP address.
      * @return The user.
      */
-    public DBUser createUser(String name, UserLogin login, String ip) {
+    public DBUser createUser(String name, String login, String ip) {
         // TODO(netux): use jdbi.inTransaction
         return jdbi.withHandle(handle -> {
-            DBUser user = handle.createQuery("INSERT INTO users (username, login_with_ip, signup_ip, last_ip, chat_name_color) VALUES (:username, :login_with_ip, :ip::INET, :ip::INET, :chat_name_color) RETURNING *")
+            DBUser user = handle.createQuery("INSERT INTO users (username, sub, login_with_ip, signup_ip, last_ip, chat_name_color) VALUES (:username, :subject, :login_with_ip, :ip::INET, :ip::INET, :chat_name_color) RETURNING *")
                 .bind("username", name)
+                .bind("subject", login)
                 .bind("ip", ip)
                 .bind("login_with_ip", App.getConfig().getBoolean("auth.useIp"))
                 .bind("chat_name_color", App.getConfig().getInt("chat.defaultColorIndex"))
                 .map(new DBUser.Mapper())
                 .findFirst()
                 .orElse(null);
-            if (user != null) {
-                addUserLogin(handle, user.id, login);
-            }
             return user;
-        });
-    }
-
-    /**
-     * Gets a list of all user logins
-     * @param who The user's ID.
-     */
-    public List<DBUserLogin> getUserLogins(int who) {
-        return jdbi.withHandle(handle -> handle.select("SELECT service, service_uid FROM user_logins WHERE uid = :uid")
-                .bind("uid", who)
-                .map(new DBUserLogin.Mapper())
-                .list());
-    }
-
-    /**
-     * Gets the user login for a service
-     * @param who The user's ID.
-     * @param service The service the login belongs to.
-     */
-    public Optional<DBUserLogin> getUserLoginForService(int who, String service) {
-        return jdbi.withHandle(handle -> handle.select("SELECT service, service_uid FROM user_logins WHERE uid = :uid AND service = :service")
-                .bind("uid", who)
-                .bind("service", who)
-                .map(new DBUserLogin.Mapper())
-                .findFirst());
-    }
-
-    private int bulkAddUserLogins(Handle handle, int userID, List<UserLogin> logins) {
-        var batch = handle.prepareBatch("INSERT INTO user_logins (uid, service, service_uid) VALUES (:uid, :service, :service_uid)");
-        for (UserLogin login : logins) {
-            batch.bind("uid", userID)
-                .bind("service", login.getServiceID())
-                .bind("service_uid", login.getServiceUserID())
-                .add();
-        }
-        return Arrays.stream(batch.execute()).reduce(0, (left, right) -> left + right);
-    }
-
-    /**
-     * Adds a list of login methods to the user.
-     * @param userID The user's ID.
-     * @param login The new {@link UserLogin}s.
-     * @return The amount of logins added.
-     */
-    public int bulkAddUserLogins(int userID, List<UserLogin> logins) {
-        return jdbi.withHandle(handle -> bulkAddUserLogins(handle, userID, logins));
-    }
-
-    private boolean addUserLogin(Handle handle, int userID, UserLogin login) {
-        return bulkAddUserLogins(handle, userID, List.of(login)) != 0;
-    }
-
-    /**
-     * Add a single login method to the user.
-     * @param userID The user's ID.
-     * @param login The new {@link UserLogin}.
-     * @return Whenever or not the login method was added.
-     */
-    public boolean addUserLogin(int userID, UserLogin login) {
-        return jdbi.withHandle(handle -> addUserLogin(handle, userID, login));
-    }
-
-    private int bulkRemoveUserLoginServices(Handle handle, int userID, List<String> loginServiceIDs) {
-        var batch = handle.prepareBatch("DELETE FROM user_logins WHERE uid = :uid AND service = :service");
-        for (String serviceID : loginServiceIDs) {
-            batch.bind("uid", userID)
-                .bind("service", serviceID)
-                .add();
-        }
-        return Arrays.stream(batch.execute())
-            .reduce(0, (left, right) -> left + right);
-    }
-
-    /**
-     * Removes a list of login methods of the user.
-     * @param userID The user's ID.
-     * @param loginServiceIDs The services to remove the login of.
-     * @return The amount of logins removed.
-     */
-    public int bulkRemoveUserLoginServices(int userID, List<String> loginServiceIDs) {
-        return jdbi.withHandle(handle -> bulkRemoveUserLoginServices(handle, userID, loginServiceIDs));
-    }
-
-    private boolean removeUserLoginService(Handle handle, int userID, String loginServiceID) {
-        return bulkRemoveUserLoginServices(handle, userID, List.of(loginServiceID)) != 0;
-    }
-
-    /**
-     * Removes a single login method of the user.
-     * @param userID The user's ID.
-     * @param loginServiceIDs The services to remove the login of.
-     * @return Whenever or not the user had the login method.
-     */
-    public boolean removeUserLoginService(int userID, String loginServiceID) {
-        return jdbi.withHandle(handle -> removeUserLoginService(handle, userID, loginServiceID));
-    }
-
-    private Integer removeAllUserLogins(Handle handle, int userID) {
-        return handle.createUpdate("DELETE FROM user_logins WHERE uid = :uid")
-                    .bind("uid", userID)
-                    .execute();
-    }
-
-    /**
-     * Removes all of the user's login methods.
-     * @param userID The user's ID.
-     */
-    public Integer removeAllUserLogins(int userID) {
-        return jdbi.withHandle(handle -> removeAllUserLogins(handle, userID));
-    }
-
-    /**
-     * Updates the user's login methods.
-     *
-     * @param userID The user's ID.
-     * @param logins The new {@link UserLogin}s.
-     * @return The amount of logins the user has after the action.
-     */
-    public Integer setUserLogins(int userID, List<UserLogin> logins) {
-        return jdbi.inTransaction(handle -> {
-            removeAllUserLogins(handle, userID);
-            return bulkAddUserLogins(handle, userID, logins);
         });
     }
 

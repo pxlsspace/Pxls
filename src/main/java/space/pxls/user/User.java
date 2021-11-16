@@ -23,6 +23,7 @@ public class User {
     private int stacked;
     private int chatNameColor;
     private String name;
+    private String login;
     private String useragent;
     private List<Role> roles;
     private int pixelCount;
@@ -54,10 +55,31 @@ public class User {
 
     private Set<WebSocketChannel> connections = new HashSet<>();
 
-    public User(int id, int stacked, String name, Timestamp signup, long cooldownExpiry, List<Role> roles, boolean loginWithIP, int pixelCount, int pixelCountAllTime, Long banExpiryTime, boolean shadowBanned, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor, Integer displayedFaction, String discordName, Boolean factionBlocked) {
+    public User(
+        int id,
+        int stacked,
+        String name,
+        String login,
+        Timestamp signup,
+        long cooldownExpiry,
+        List<Role> roles,
+        boolean loginWithIP,
+        int pixelCount,
+        int pixelCountAllTime,
+        Long banExpiryTime,
+        boolean shadowBanned,
+        boolean isPermaChatbanned,
+        long chatbanExpiryTime,
+        String chatbanReason,
+        int chatNameColor,
+        Integer displayedFaction,
+        String discordName,
+        Boolean factionBlocked
+    ) {
         this.id = id;
         this.stacked = stacked;
         this.name = name;
+        this.login = login;
         this.signup_time = signup;
         this.cooldownExpiry = cooldownExpiry;
         this.roles = roles;
@@ -84,6 +106,7 @@ public class User {
             this.id = user.id;
             this.stacked = user.stacked;
             this.name = user.username;
+            this.login = user.login;
             this.signup_time = user.signup_time;
             this.cooldownExpiry = user.cooldownExpiry;
             this.roles = roles;
@@ -228,10 +251,9 @@ public class User {
                 .anyMatch(role -> role.hasPermission(node));
     }
 
-    public List<UserLogin> getLogins() {
-        return App.getDatabase().getUserLogins(id).stream()
-            .map((dbLogin) -> UserLogin.fromDB(dbLogin))
-            .collect(Collectors.toList());
+    // TODO ([  ]): fetch from ID server
+    public List<String> getLogins() {
+        return List.of(login);
     }
 
     public boolean loginsWithIP() {
@@ -830,6 +852,25 @@ public class User {
 
     public static User fromDBUser(DBUser user) {
         List<Role> roles = App.getDatabase().getUserRoles(user.id);
-        return new User(user.id, user.stacked, user.username, user.signup_time, user.cooldownExpiry, roles, user.loginWithIP, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.shadowBanned, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked);
+        return new User(
+            user.id,
+            user.stacked,
+            user.username,
+            user.login,
+            user.signup_time,
+            user.cooldownExpiry, roles,
+            user.loginWithIP,
+            user.pixelCount,
+            user.pixelCountAllTime,
+            user.banExpiry,
+            user.shadowBanned,
+            user.isPermaChatbanned,
+            user.chatbanExpiry,
+            user.chatbanReason,
+            user.chatNameColor,
+            user.displayedFaction,
+            user.discordName,
+            user.factionBlocked
+        );
     }
 }
