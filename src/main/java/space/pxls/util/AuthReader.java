@@ -5,7 +5,9 @@ import io.undertow.security.idm.Account;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.AttachmentKey;
+import io.undertow.websockets.core.WebSockets;
 import space.pxls.App;
+import space.pxls.server.packets.socket.ServerRenameSuccess;
 import space.pxls.user.User;
 
 import org.pac4j.core.profile.CommonProfile;
@@ -42,6 +44,15 @@ public class AuthReader implements HttpHandler {
                                 (OidcProfile) profile,
                                 exchange.getAttachment(IPReader.IP)
                             );
+                        } else {
+                            final String username = (String) profile.getAttribute("preferred_username");
+                            if(user.getName() != username) {
+                                user.updateUsername(username);
+                                final String renamePacket = App.getGson().toJson(new ServerRenameSuccess(username));
+                                user.getConnections().forEach(connection -> {
+                                    WebSockets.sendText(renamePacket, connection, null);
+                                });
+                            }
                         }
                     } else if (profile instanceof IpProfile) {
                         user = App.getUserManager().getSnipByIP(profile.getId());

@@ -37,7 +37,6 @@ public class User {
     private AtomicBoolean placingLock = new AtomicBoolean(false);
     private AtomicBoolean undoLock = new AtomicBoolean(false);
     private boolean isPermaChatbanned = false;
-    private boolean isRenameRequested = false;
     private boolean isIdled = false;
     private String discordName;
     private String chatbanReason;
@@ -113,7 +112,6 @@ public class User {
             this.banExpiryTime = user.banExpiry;
             this.isPermaChatbanned = user.isPermaChatbanned;
             this.chatbanExpiryTime = user.chatbanExpiry;
-            this.isRenameRequested = user.isRenameRequested;
             this.discordName = user.discordName;
             this.chatbanReason = user.chatbanReason;
             this.chatNameColor = user.chatNameColor;
@@ -131,8 +129,6 @@ public class User {
     }
 
     public boolean canPlace() {
-        if (isRenameRequested) return false;
-
         if (!hasPermission("board.place")) return false;
         if (placementOverrides.hasIgnoreCooldown()) return true;
         return cooldownExpiry < System.currentTimeMillis();
@@ -652,33 +648,10 @@ public class User {
         return (canPlace ? 1 : 0) + this.stacked;
     }
 
-    public void setRenameRequested(boolean isRequested) {
-        this.isRenameRequested = isRequested;
-        App.getDatabase().setRenameRequested(id, isRequested);
-        App.getServer().send(this, new ServerRename(isRequested));
-    }
-
-    public boolean isRenameRequested(boolean reloadFromDatabase) {
-        if (reloadFromDatabase) this.isRenameRequested = App.getDatabase().isRenameRequested(id);
-        return isRenameRequested;
-    }
-
-    public boolean updateUsername(String newName) {
-        return updateUsername(newName, false);
-    }
-
-    public boolean updateUsername(String newName, boolean ignoreRequestedStatus) {
-        if (!ignoreRequestedStatus && !isRenameRequested) return false;
-        if (App.getDatabase().getUserByName(newName).isPresent()) return false;
-        try {
-            App.getDatabase().updateUsername(id, newName);
-            App.getDatabase().insertAdminLog(id, String.format("User %s (%d) has just changed their name to %s", name, id, newName));
-            App.getUserManager().reload();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
+    public void updateUsername(String newName) {
+        App.getDatabase().updateUsername(id, newName);
+        App.getDatabase().insertAdminLog(id, String.format("User %s (%d) has just changed their name to %s", name, id, newName));
+        this.name = newName;
     }
 
     public String getDiscordName() {

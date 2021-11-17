@@ -73,29 +73,6 @@ const user = (function() {
         self.signin();
       }
     },
-    doSignup: function() {
-      if (!self.pendingSignupToken) return;
-
-      $.post({
-        type: 'POST',
-        url: '/signup',
-        data: {
-          token: self.pendingSignupToken,
-          username: self.elements.signup.find('input').val()
-        },
-        success: function() {
-          self.elements.signup.find('#error').text('');
-          self.elements.signup.find('input').val('');
-          self.elements.signup.fadeOut(200);
-          socket.reconnectSocket();
-          self.pendingSignupToken = null;
-        },
-        error: function(data) {
-          self.elements.signup.find('#error').text(data.responseJSON.message);
-        }
-      });
-      // self.pendingSignupToken = null;
-    },
     doSignOut: function() {
       return fetch('/logout').then(() => {
         self.elements.userInfo.fadeOut(200);

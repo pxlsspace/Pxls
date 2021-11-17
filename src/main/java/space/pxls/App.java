@@ -579,40 +579,6 @@ public class App {
                 System.out.println("Working... (may cause some lag)");
                 userManager.reload();
                 System.out.println("Done.");
-            } else if (token[0].equalsIgnoreCase("flagRename")) {
-                //flagRename USERNAME [1|0]
-                if (token.length >= 2) {
-                    boolean flagState = token.length < 3 || (token[2].equalsIgnoreCase("1") || token[2].equalsIgnoreCase("true") || token[2].equalsIgnoreCase("yes") || token[2].equalsIgnoreCase("y"));
-                    User toFlag = userManager.getByName(token[1]);
-                    if (toFlag != null) {
-                        System.out.printf("Flagging %s as %s%n", toFlag.getName(), flagState);
-                        toFlag.setRenameRequested(flagState);
-                        App.getDatabase().insertServerAdminLog(String.format("%s %s (%d) for name change", flagState ? "Flagged" : "Unflagged", toFlag.getName(), toFlag.getId()));
-                    } else {
-                        System.out.println("User doesn't exist");
-                    }
-                } else {
-                    System.out.println("flagRename USERNAME [1|0]");
-                }
-            } else if (token[0].equalsIgnoreCase("setName") || token[0].equalsIgnoreCase("updateUsername")) {
-                //setName USERNAME NEW_USERNAME
-                if (token.length >= 3) {
-                    User toRename = userManager.getByName(token[1]);
-                    if (toRename != null) {
-                        toRename.setRenameRequested(false);
-                        if (toRename.updateUsername(token[2], true)) {
-                            App.getServer().send(toRename, new ServerRenameSuccess(toRename.getName()));
-                            App.getDatabase().insertServerAdminLog(String.format("Changed %s's name to %s (uid: %d)", token[1], token[2], toRename.getId()));
-                            System.out.println("Name updated");
-                        } else {
-                            System.out.println("Failed to update name (function returned false. name taken or an error occurred)");
-                        }
-                    } else {
-                        System.out.println("User doesn't exist");
-                    }
-                } else {
-                    System.out.printf("%s USERNAME NEW_USERNAME%n", token[0]);
-                }
             } else if (token[0].equalsIgnoreCase("idleCheck")) {
                 try {
                     checkUserTimeout();

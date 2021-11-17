@@ -71,7 +71,6 @@ public class PacketHandler {
                     App.getDatabase().getChatBanReason(user.getId()),
                     user.isPermaChatbanned(),
                     user.getChatbanExpiryTime(),
-                    user.isRenameRequested(true),
                     user.getDiscordName(),
                     user.getChatNameColor()
             ));
@@ -448,7 +447,6 @@ public class PacketHandler {
         } else {
             if (!user.canChat()) return;
             if (message.trim().length() == 0) return;
-            if (user.isRenameRequested(false)) return;
             int remaining = RateLimitFactory.getTimeRemaining(DBChatMessage.class, String.valueOf(user.getId()));
             if (!user.hasPermission("chat.cooldown.ignore") && remaining > 0) {
                 server.send(user, new ServerChatCooldown(remaining, message));

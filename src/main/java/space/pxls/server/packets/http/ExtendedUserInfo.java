@@ -23,7 +23,7 @@ public class ExtendedUserInfo extends UserInfo {
         Boolean chatBanned,
         String chatbanReason,
         Boolean chatbanIsPerma,
-        Long chatbanExpiry, Boolean renameRequested,
+        Long chatbanExpiry,
         String discordName,
         Number chatNameColor
     ) {
@@ -41,7 +41,6 @@ public class ExtendedUserInfo extends UserInfo {
             chatbanReason,
             chatbanIsPerma,
             chatbanExpiry,
-            renameRequested,
             discordName,
             chatNameColor
         );

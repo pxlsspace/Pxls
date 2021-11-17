@@ -1086,121 +1086,6 @@ public class WebHandler {
         }
     }
 
-    public void forceNameChange(HttpServerExchange exchange) { //this is the admin endpoint which targets another user.
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-        User user = exchange.getAttachment(AuthReader.USER);
-        if (user == null) {
-            sendBadRequest(exchange, "No authenticated users found");
-            return;
-        }
-
-        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-        String userName = null;
-        String newName = null;
-        try {
-            userName = data.getFirst("user").getValue();
-            newName = data.getFirst("newName").getValue();
-        } catch (Exception npe) {
-            sendBadRequest(exchange, "Missing either 'user' or 'newName' fields");
-            return;
-        }
-
-        if (!validateUsername(userName)) {
-            sendBadRequest(exchange, "Username failed validation");
-            return;
-        }
-
-        User toUpdate = App.getUserManager().getByName(userName);
-        if (toUpdate == null) {
-            sendBadRequest(exchange, "Invalid user provided");
-            return;
-        }
-
-        String oldName = toUpdate.getName();
-        if (toUpdate.updateUsername(newName, true)) {
-            App.getDatabase().insertAdminLog(user.getId(), String.format("Changed %s's name to %s (uid: %d)", oldName, newName, toUpdate.getId()));
-            toUpdate.setRenameRequested(false);
-            App.getServer().send(toUpdate, new ServerRenameSuccess(toUpdate.getName()));
-            exchange.setStatusCode(200);
-            exchange.getResponseSender().send("{}");
-            exchange.endExchange();
-        } else {
-            sendBadRequest(exchange, "Failed to update username. Possible reasons for this include the new username is already taken, the user being updated was not flagged for rename, or an internal error occurred.");
-        }
-    }
-
-    public void execNameChange(HttpServerExchange exchange) { //this is the endpoint for normal users
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-        User user = exchange.getAttachment(AuthReader.USER);
-        if (user == null) {
-            sendBadRequest(exchange, "No authenticated users found");
-            return;
-        }
-        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-        String newName = null;
-        try {
-            newName = data.getFirst("newName").getValue();
-        } catch (Exception npe) {
-            sendBadRequest(exchange, "Missing either 'user' or 'newName' fields");
-            return;
-        }
-
-        if (!validateUsername(newName)) {
-            sendBadRequest(exchange, "Username failed validation");
-            return;
-        }
-
-        String oldName = user.getName();
-        if (user.updateUsername(newName)) {
-            App.getDatabase().insertServerReport(user.getId(), String.format("User %s just changed their name to %s.", oldName, user.getName()));
-            user.setRenameRequested(false);
-            App.getServer().send(user, new ServerRenameSuccess(user.getName()));
-            exchange.setStatusCode(200);
-            exchange.getResponseSender().send("{}");
-            exchange.endExchange();
-        } else {
-            sendBadRequest(exchange, "Failed to update username. Possible reasons for this include the new username is already taken, the user being updated was not flagged for rename, or an internal error occurred.");
-        }
-    }
-
-    public void flagNameChange(HttpServerExchange exchange) {
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-        User user = exchange.getAttachment(AuthReader.USER);
-        if (user == null) {
-            sendBadRequest(exchange, "No authenticated user could be found");
-            return;
-        }
-
-        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-        String userName = null;
-        boolean isRequested = true;
-        try {
-            userName = data.getFirst("user").getValue();
-        } catch (Exception npe) {
-            npe.printStackTrace();
-            sendBadRequest(exchange, "Missing 'user' field");
-            return;
-        }
-        try {
-            isRequested = data.getFirst("flagState").getValue().equalsIgnoreCase("true");
-        } catch (Exception e) {
-            //ignored
-        }
-
-        User toFlag = App.getUserManager().getByName(userName);
-        if (toFlag == null) {
-            sendBadRequest(exchange, "Invalid user provided");
-            return;
-        }
-
-        toFlag.setRenameRequested(isRequested);
-        App.getDatabase().insertAdminLog(user.getId(), String.format("%s %s (%d) for name change", isRequested ? "Flagged" : "Unflagged", toFlag.getName(), toFlag.getId()));
-
-        exchange.setStatusCode(200);
-        exchange.getResponseSender().send("{}");
-        exchange.endExchange();
-    }
-
     public void discordNameChange(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
         User user = exchange.getAttachment(AuthReader.USER);
@@ -1510,7 +1395,6 @@ public class WebHandler {
                         App.getDatabase().getChatBanReason(user.getId()),
                         user.isPermaChatbanned(),
                         user.getChatbanExpiryTime(),
-                        user.isRenameRequested(true),
                         user.getDiscordName(),
                         user.getChatNameColor()
                     )));

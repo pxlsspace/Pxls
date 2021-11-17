@@ -31,6 +31,7 @@ public class OpenIDConfig implements ConfigFactory {
 			oidcConfiguration.setSecret(App.getConfig().getString("auth.secret"));
 			oidcConfiguration.setDiscoveryURI(discoveryUri.toString());
 			oidcConfiguration.setScope("openid profile");
+			oidcConfiguration.setExpireSessionWithToken(true);
 			final OidcClient<OidcConfiguration> oidcClient = new OidcClient<>(oidcConfiguration);
 
 			final UserInfoOidcAuthenticator headerAuthenticator = new UserInfoOidcAuthenticator(oidcConfiguration);
@@ -39,8 +40,6 @@ public class OpenIDConfig implements ConfigFactory {
 			final AnonymousClient anonymousClient = new AnonymousClient();
 
 			final IpClient ipClient = new IpClient(new IpRegexpAuthenticator(".*"));
-
-			System.out.println(ipClient.getName());
 
 			final List<Client<?>> clients = new ArrayList<>();
 
