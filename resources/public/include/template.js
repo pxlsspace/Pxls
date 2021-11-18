@@ -1,3 +1,4 @@
+const { settings } = require('./settings');
 let board;
 let query;
 let uiHelper;
@@ -22,7 +23,6 @@ module.exports.template = (function() {
       widthResetBtn: $('#template-width-reset'),
       styleSelect: $('#template-style-mode'),
       styleOptionCustom: $('#template-style-mode-custom'),
-      customStyleInput: $('#template-custom-style-url'),
       conversionModeSelect: $('#template-conversion-mode-select'),
       opacityInput: $('#template-opacity'),
       opacityPercentage: $('#template-opacity-percentage')
@@ -312,8 +312,28 @@ module.exports.template = (function() {
       self.elements.widthInput.on('change input', (e) => self._update({ width: parseFloat(e.target.value) }, false));
       self.elements.widthResetBtn.on('click', (e) => self._update({ width: -1 }));
 
-      self.elements.styleSelect.on('change input', (e) => self._update({ style: e.target.value }));
-      self.elements.customStyleInput.on('change input', (e) => self.elements.styleOptionCustom.attr({ value: e.target.value }));
+      settings.board.template.style.source.listen((style) => {
+        // NOTE ([  ]): this is basically a hack. Order of operations is
+        // pretty messed up around here and if options are updated before the
+        // url has loaded then pxls will just trash the url template.
+        // Also, attempting to load the style before the proxy data exists
+        // should never work anyway, so it's a good guard point to wait for.
+        if (self.corsProxy.base === undefined) {
+          self.options.style = style;
+        } else {
+          self._update({ style });
+        }
+      });
+      settings.board.template.style.customsource.listen((value) => {
+        self.elements.styleOptionCustom.attr({ value });
+        // NOTE ([  ]): If this is the first call, the select may not have
+        // the correct value selected if it was custom. Since the custom value
+        // is now there — as per the above call — refreshing the value prompts
+        // the correct selection.
+        settings.board.template.style.source.set(settings.board.template.style.source.get());
+        // Make sure settings knows that "Custom…" has a new value.
+        self.elements.styleSelect.trigger('change');
+      });
 
       self.elements.conversionModeSelect.on('change input', (e) => self._update({ convertMode: e.target.value }));
 
