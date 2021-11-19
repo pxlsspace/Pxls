@@ -1806,6 +1806,8 @@ public class WebHandler {
             App.getConfig().getStringList("chat.bannerText"),
             App.getSnipMode(),
             App.getConfig().getList("chat.customEmoji").unwrapped(),
+            App.getConfig().getString("cors.proxyBase"),
+            App.getConfig().getString("cors.proxyParam"),
             App.getConfig().getString("chat.ratelimitMessage")
         )));
     }

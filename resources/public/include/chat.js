@@ -434,7 +434,7 @@ const chat = (function() {
             self._handleChatbanVisualState(self._canChat());
           } else {
             self._handleChatbanVisualState(false);
-            self.elements.rate_limit_counter.text(__('You must be logged in to chat'));
+            self.elements.rate_limit_counter.text(__('You must be logged in to chat.'));
           }
         }
       });

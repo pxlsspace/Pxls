@@ -397,7 +397,17 @@ module.exports.settings = (function() {
         }
       },
       template: {
-        beneathoverlays: setting('board.template.beneathoverlays', SettingType.TOGGLE, false, $('#setting-board-template-beneathoverlays'))
+        beneathoverlays: setting('board.template.beneathoverlays', SettingType.TOGGLE, false, $('#setting-board-template-beneathoverlays')),
+        style: {
+          // NOTE ([  ]): This is a bit ugly, since both of these are essentially
+          // the URL of the style. The issue is that I can't think of a good way
+          // to have defaults and also allow custom input without this duplication.
+          // `source` is the canonical source of the template value in theory,
+          // so a simplified system can just drop the other setting rather than
+          // converting it.
+          source: setting('board.template.style.source', SettingType.SELECT, null, $('#template-style-mode')),
+          customsource: setting('board.template.style.customsource', SettingType.TEXT, '', $('#template-custom-style-url'))
+        }
       },
       snapshot: {
         format: setting('board.snapshot.format', SettingType.SELECT, 'image/png', $('#setting-board-snapshot-format'))
