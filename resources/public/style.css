@@ -410,6 +410,13 @@ dt {
     background-image: linear-gradient(90deg, #ff00ff, #af94fc,#0ff ,#7544ff, #ff00ff);
 }
 
+.donator.donator--mines{
+    background-image: linear-gradient(90deg, #ffff00, #fcc200, #b87333 ,#8b4513, #ffba00, #fff600);
+}
+.donator.donator--eggplant{
+    background-image: linear-gradient(45deg, #8e4585, #702963, #8b4789, #5e8c31, #507d2a);
+}
+
 .error {
     color: var(--error-color);
     font-weight: 700;
