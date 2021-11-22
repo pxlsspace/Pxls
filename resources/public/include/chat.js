@@ -1012,6 +1012,7 @@ const chat = (function() {
         hasAllDonatorColors || hasPermForColor('donator.synthwave') ? crel('option', { value: -4, class: 'donator donator--synthwave' }, '*. Donator Synthwave') : null,
         hasAllDonatorColors || hasPermForColor('donator.mines') ? crel('option', { value: -5, class: 'donator donator--mines' }, '*. Donator Mines') : null,
         hasAllDonatorColors || hasPermForColor('donator.eggplant') ? crel('option', { value: -6, class: 'donator donator--eggplant' }, '*. Donator Eggplant') : null,
+        hasAllDonatorColors || hasPermForColor('donator.banana') ? crel('option', { value: -7, class: 'donator donator--banana' }, '*. Donator Banana') : null,
         place.palette.map(({ name, value: hex }, i) => crel('option', {
           value: i,
           'data-idx': i,
