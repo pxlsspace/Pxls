@@ -97,7 +97,7 @@ const uiHelper = (function() {
         color: '#1d192c'
       }
     ],
-    specialChatColorClasses: ['rainbow', ['donator', 'donator--green'], ['donator', 'donator--gray'], ['donator', 'donator--synthwave']],
+    specialChatColorClasses: ['rainbow', ['donator', 'donator--green'], ['donator', 'donator--gray'], ['donator', 'donator--synthwave'], ['donator', 'donator--mines'], ['donator', 'donator--eggplant']],
     init: function() {
       timer = require('./timer').timer;
       place = require('./place').place;
