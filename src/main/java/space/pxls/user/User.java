@@ -698,10 +698,15 @@ public class User {
         } else if (this.hasDonatorChatNameColor("gray", 3)) {
             toReturn.add("donator");
             toReturn.add("donator--gray");
-        }
-        else if (this.hasDonatorChatNameColor("synthwave", 4)) {
+        } else if (this.hasDonatorChatNameColor("synthwave", 4)) {
             toReturn.add("donator");
             toReturn.add("donator--synthwave");
+        } else if (this.hasDonatorChatNameColor("mines", 5)) {
+            toReturn.add("donator");
+            toReturn.add("donator--mines");
+        } else if (this.hasDonatorChatNameColor("eggplant", 6)) {
+            toReturn.add("donator");
+            toReturn.add("donator--eggplant");
         }
         return toReturn.size() != 0 ? toReturn : null;
     }
