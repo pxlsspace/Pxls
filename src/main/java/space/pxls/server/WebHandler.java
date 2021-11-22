@@ -1103,7 +1103,7 @@ public class WebHandler {
 
         try {
             int t = Integer.parseInt(nameColor.getValue());
-            if (t >= -4 && t < App.getPalette().getColors().size()) {
+            if (t >= -6 && t < App.getPalette().getColors().size()) {
                 var hasAllDonatorColors = user.hasPermission("chat.usercolor.donator") || user.hasPermission("chat.usercolor.donator.*");
                 if (t == -1 && !user.hasPermission("chat.usercolor.rainbow")) {
                     sendBadRequest(exchange, "Color reserved for staff members");
@@ -1115,6 +1115,12 @@ public class WebHandler {
                     sendBadRequest(exchange, "Color reserved for donators");
                     return;
                 } else if (t == -4 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.synthwave"))) {
+                    sendBadRequest(exchange, "Color reserved for donators");
+                    return;
+                } else if (t == -5 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.mines"))) {
+                    sendBadRequest(exchange, "Color reserved for donators");
+                    return;
+                } else if (t == -6 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.eggplant"))) {
                     sendBadRequest(exchange, "Color reserved for donators");
                     return;
                 }
