@@ -707,6 +707,9 @@ public class User {
         } else if (this.hasDonatorChatNameColor("eggplant", 6)) {
             toReturn.add("donator");
             toReturn.add("donator--eggplant");
+        } else if (this.hasDonatorChatNameColor("banana", 7)) {
+            toReturn.add("donator");
+            toReturn.add("donator--banana");
         }
         return toReturn.size() != 0 ? toReturn : null;
     }
