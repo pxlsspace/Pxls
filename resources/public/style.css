@@ -416,6 +416,9 @@ dt {
 .donator.donator--eggplant{
     background-image: linear-gradient(45deg, #8e4585, #702963, #8b4789, #5e8c31, #507d2a);
 }
+.donator.donator--banana{
+    background-image: linear-gradient(45deg, #ffff99, #fdf3a7, #ffff31, #ffe135, #654321, #ffe135, #ffff31, #fdf3a7, #ffff99);
+}
 
 .error {
     color: var(--error-color);
