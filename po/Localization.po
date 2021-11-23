@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-10-26T23:00:04.351Z\n"
+"POT-Creation-Date: 2021-11-23T12:16:07.934Z\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -51,7 +51,7 @@ msgstr "Loading online user count&hellip;"
 
 #: resources/public/pebble_templates/index.html:101:30
 #: resources/public/include/lookup.js:276:21
-#: resources/public/admin/admin.js:196:16
+#: resources/public/admin/admin.js:199:16
 msgid "Pixels"
 msgstr "Pixels"
 
@@ -1381,7 +1381,7 @@ msgid "None"
 msgstr "None"
 
 #: resources/public/pebble_templates/profile.html:99:72
-#: resources/public/admin/admin.js:195:16
+#: resources/public/admin/admin.js:198:16
 msgid "Roles"
 msgstr "Roles"
 
@@ -1545,8 +1545,8 @@ msgstr "Faction Bans"
 #: resources/public/pebble_templates/profile.html:318:125
 #: resources/public/include/chat.js:1629:36
 #: resources/public/include/chat.js:1733:46
-#: resources/public/admin/admin.js:317:88
-#: resources/public/admin/admin.js:344:52
+#: resources/public/admin/admin.js:320:88
+#: resources/public/admin/admin.js:347:52
 msgid "Unban"
 msgstr "Unban"
 
@@ -1686,7 +1686,7 @@ msgid "Ignore"
 msgstr "Ignore"
 
 #: resources/public/include/chat.js:1458:102
-#: resources/public/admin/admin.js:190:16
+#: resources/public/admin/admin.js:193:16
 msgid "Profile"
 msgstr "Profile"
 
@@ -1719,7 +1719,7 @@ msgstr "Enter a reason for your report"
 #: resources/public/include/chat.js:2021:22
 #: resources/public/include/lookup.js:64:91
 #: resources/public/include/user.js:73:87
-#: resources/public/admin/admin.js:331:20
+#: resources/public/admin/admin.js:334:20
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -1796,15 +1796,15 @@ msgstr "Purging all messages is disabled during snip mode"
 
 #: resources/public/include/chat.js:1714:79
 #: resources/public/include/user.js:174:22
-#: resources/public/admin/admin.js:182:41
-#: resources/public/admin/admin.js:184:94
+#: resources/public/admin/admin.js:185:41
+#: resources/public/admin/admin.js:187:94
 msgid "Yes"
 msgstr "Yes"
 
 #: resources/public/include/chat.js:1715:78
 #: resources/public/include/user.js:178:22
-#: resources/public/admin/admin.js:182:53
-#: resources/public/admin/admin.js:184:106
+#: resources/public/admin/admin.js:185:53
+#: resources/public/admin/admin.js:187:106
 msgid "No"
 msgstr "No"
 
@@ -1958,7 +1958,7 @@ msgid "Coords"
 msgstr "Coords"
 
 #: resources/public/include/lookup.js:223:21
-#: resources/public/admin/admin.js:186:16
+#: resources/public/admin/admin.js:189:16
 msgid "Username"
 msgstr "Username"
 
@@ -2002,7 +2002,7 @@ msgstr "Posted by ${notification.who}"
 msgid "Expires ${expiry}"
 msgstr "Expires ${expiry}"
 
-#: resources/public/include/template.js:425:50
+#: resources/public/include/template.js:440:50
 msgid "There was an error getting the image"
 msgstr "There was an error getting the image"
 
@@ -2099,7 +2099,7 @@ msgid "Ban reason:"
 msgstr "Ban reason:"
 
 #: resources/public/include/user.js:260:28
-#: resources/public/admin/admin.js:200:16
+#: resources/public/admin/admin.js:203:16
 msgid "Banned"
 msgstr "Banned"
 
@@ -2124,126 +2124,126 @@ msgid "Change"
 msgstr "Change"
 
 #: resources/public/include/user.js:350:50
-#: resources/public/admin/admin.js:198:16
+#: resources/public/admin/admin.js:201:16
 msgid "Rename Requested"
 msgstr "Rename Requested"
 
-#: resources/public/admin/admin.js:98:38
+#: resources/public/admin/admin.js:101:38
 msgid "Something went wrong! Perhaps insufficient permissions?"
 msgstr "Something went wrong! Perhaps insufficient permissions?"
 
-#: resources/public/admin/admin.js:103:45
+#: resources/public/admin/admin.js:106:45
 msgid "Shadowban user"
 msgstr "Shadowban user"
 
-#: resources/public/admin/admin.js:103:67
+#: resources/public/admin/admin.js:106:67
 msgid "Shadowbanned user"
 msgstr "Shadowbanned user"
 
-#: resources/public/admin/admin.js:106:45
+#: resources/public/admin/admin.js:109:45
 msgid "Permaban user"
 msgstr "Permaban user"
 
-#: resources/public/admin/admin.js:106:66
+#: resources/public/admin/admin.js:109:66
 msgid "Permabanned user"
 msgstr "Permabanned user"
 
-#: resources/public/admin/admin.js:109:45
+#: resources/public/admin/admin.js:112:45
 msgid "Ban user"
 msgstr "Ban user"
 
-#: resources/public/admin/admin.js:109:61
+#: resources/public/admin/admin.js:112:61
 msgid "Banned user"
 msgstr "Banned user"
 
-#: resources/public/admin/admin.js:123:36
+#: resources/public/admin/admin.js:126:36
 msgid "Unbanned user ${username}"
 msgstr "Unbanned user ${username}"
 
 #. Context: ban type
-#: resources/public/admin/admin.js:176:27
+#: resources/public/admin/admin.js:179:27
 msgid "shadow"
 msgstr "shadow"
 
-#: resources/public/admin/admin.js:177:29
 #: resources/public/admin/admin.js:180:29
+#: resources/public/admin/admin.js:183:29
 msgid "never"
 msgstr "never"
 
-#: resources/public/admin/admin.js:179:27
+#: resources/public/admin/admin.js:182:27
 msgid "permanent"
 msgstr "permanent"
 
-#: resources/public/admin/admin.js:184:51
+#: resources/public/admin/admin.js:187:51
 msgid "Yes (permanent)"
 msgstr "Yes (permanent)"
 
-#: resources/public/admin/admin.js:191:16
-#: resources/public/admin/admin.js:451:21
+#: resources/public/admin/admin.js:194:16
+#: resources/public/admin/admin.js:454:21
 msgid "Logins"
 msgstr "Logins"
 
-#: resources/public/admin/admin.js:197:16
+#: resources/public/admin/admin.js:200:16
 msgid "All Time Pixels"
 msgstr "All Time Pixels"
 
-#: resources/public/admin/admin.js:199:16
+#: resources/public/admin/admin.js:202:16
 msgid "Discord Name"
 msgstr "Discord Name"
 
-#: resources/public/admin/admin.js:201:16
+#: resources/public/admin/admin.js:204:16
 msgid "Chatbanned"
 msgstr "Chatbanned"
 
-#: resources/public/admin/admin.js:204:27
+#: resources/public/admin/admin.js:207:27
 msgid "Ban Reason"
 msgstr "Ban Reason"
 
-#: resources/public/admin/admin.js:205:27
+#: resources/public/admin/admin.js:208:27
 msgid "Ban Expiracy"
 msgstr "Ban Expiracy"
 
-#: resources/public/admin/admin.js:208:27
+#: resources/public/admin/admin.js:211:27
 msgid "Chatban Reason"
 msgstr "Chatban Reason"
 
-#: resources/public/admin/admin.js:208:102
+#: resources/public/admin/admin.js:211:102
 msgid "(canvas ban)"
 msgstr "(canvas ban)"
 
-#: resources/public/admin/admin.js:210:97
+#: resources/public/admin/admin.js:213:97
 msgid "when canvas ban ends"
 msgstr "when canvas ban ends"
 
-#: resources/public/admin/admin.js:211:29
+#: resources/public/admin/admin.js:214:29
 msgid "Chatban Expires"
 msgstr "Chatban Expires"
 
 #. Admin check. Example: type = 'username', arg = 'pxlsuser94'
-#: resources/public/admin/admin.js:313:36
+#: resources/public/admin/admin.js:316:36
 msgid "${type} ${arg} not found."
 msgstr "${type} ${arg} not found."
 
-#: resources/public/admin/admin.js:319:50
+#: resources/public/admin/admin.js:322:50
 msgid "Unban Reason:"
 msgstr "Unban Reason:"
 
-#: resources/public/admin/admin.js:324:25
+#: resources/public/admin/admin.js:327:25
 msgid "Unbanning ${username}"
 msgstr "Unbanning ${username}"
 
-#: resources/public/admin/admin.js:446:20
+#: resources/public/admin/admin.js:449:20
 msgid "profile"
 msgstr "profile"
 
-#: resources/public/admin/admin.js:470:21
+#: resources/public/admin/admin.js:473:21
 msgid "User Agent"
 msgstr "User Agent"
 
-#: resources/public/admin/admin.js:475:21
+#: resources/public/admin/admin.js:478:21
 msgid "Send Alert"
 msgstr "Send Alert"
 
-#: resources/public/admin/admin.js:480:21
+#: resources/public/admin/admin.js:483:21
 msgid "Mod Actions"
 msgstr "Mod Actions"
