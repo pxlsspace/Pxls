@@ -19,6 +19,8 @@ public class CanvasInfo {
     public List<String> chatBannerText;
     public Boolean snipMode;
     public List<Object> customEmoji;
+    public String corsBase;
+    public String corsParam;
     public String chatRatelimitMessage;
 
     public CanvasInfo(
@@ -36,6 +38,8 @@ public class CanvasInfo {
         List<String> chatBannerText,
         boolean snipMode,
         List<Object> customEmoji,
+        String corsBase,
+        String corsParam,
         String chatRatelimitMessage
     ) {
         this.canvasCode = canvasCode;
@@ -52,6 +56,8 @@ public class CanvasInfo {
         this.chatBannerText = chatBannerText;
         this.snipMode = snipMode;
         this.customEmoji = customEmoji;
+        this.corsBase = corsBase;
+        this.corsParam = corsParam;
         this.chatRatelimitMessage = chatRatelimitMessage;
     }
 
@@ -109,6 +115,14 @@ public class CanvasInfo {
 
     public List<Object> getCustomEmoji() {
         return customEmoji;
+    }
+
+    public String getCorsBase() {
+        return corsBase;
+    }
+    
+    public String getCorsParam() {
+        return corsParam;
     }
 
     public String getChatRatelimitMessage() {

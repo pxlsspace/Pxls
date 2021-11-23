@@ -31,7 +31,6 @@
       deinit: function () {},
       prompt: function (s, time, fn) {
         const timeInput = $('<input>').attr('type', 'number').attr('step', 'any').addClass('admin-bannumber').val(time);
-        const timeInputHTML = $('<span>').append(timeInput).html();
         self.elements.prompt.empty().append(
           $('<p>').addClass('text').css({
             fontWeight: 800,
@@ -53,8 +52,12 @@
           }).keydown(function (evt) {
             evt.stopPropagation();
           }),
-          $('<div>').addClass('text').html(
-            __(`Revert pixels of the last ${timeInputHTML} hours`)
+          $('<div>').addClass('text').append(
+            // "Revert pixels of the last *n* hours", part before 'n'
+            __('Revert pixels of the last '),
+            timeInput,
+            // "Revert pixels of the last *n* hours", part after 'n'
+            __(' hours')
           ),
           $('<div>').addClass('buttons').append(
             genButton('Cancel').click(function () {

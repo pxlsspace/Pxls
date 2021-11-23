@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-11-15T15:01:44.467Z\n"
+"POT-Creation-Date: 2021-11-23T21:06:04.978Z\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -51,7 +51,7 @@ msgstr "Loading online user count&hellip;"
 
 #: resources/public/pebble_templates/index.html:101:30
 #: resources/public/include/lookup.js:276:21
-#: resources/public/admin/admin.js:196:16
+#: resources/public/admin/admin.js:199:16
 msgid "Pixels"
 msgstr "Pixels"
 
@@ -87,8 +87,8 @@ msgstr "Info"
 
 #: resources/public/pebble_templates/index.html:168:66
 #: resources/public/pebble_templates/index.html:206:66
-#: resources/public/pebble_templates/index.html:733:66
-#: resources/public/pebble_templates/index.html:746:66
+#: resources/public/pebble_templates/index.html:761:66
+#: resources/public/pebble_templates/index.html:774:66
 msgid "Close Panel"
 msgstr "Close Panel"
 
@@ -132,7 +132,7 @@ msgstr "general"
 
 #. General settings
 #: resources/public/pebble_templates/index.html:222:28
-#: resources/public/pebble_templates/index.html:636:28
+#: resources/public/pebble_templates/index.html:664:28
 msgid "General"
 msgstr "General"
 
@@ -810,8 +810,8 @@ msgid "Title:"
 msgstr "Title:"
 
 #: resources/public/pebble_templates/index.html:596:44
-msgid "template location;template source;template="
-msgstr "template location;template source;template="
+msgid "template location source;template source URL;template URL;template="
+msgstr "template location source;template source URL;template URL;template="
 
 #: resources/public/pebble_templates/index.html:598:57
 msgid "URL:"
@@ -830,159 +830,211 @@ msgid "Vertical position:"
 msgstr "Vertical position:"
 
 #: resources/public/pebble_templates/index.html:613:44
-msgid "template transparency;template opacity;oo="
-msgstr "template transparency;template opacity;oo="
-
-#: resources/public/pebble_templates/index.html:615:57
-msgid "Opacity:"
-msgstr "Opacity:"
-
-#: resources/public/pebble_templates/index.html:620:44
 msgid "template width;tw="
 msgstr "template width;tw="
 
-#: resources/public/pebble_templates/index.html:622:57
+#: resources/public/pebble_templates/index.html:615:57
 msgid "Width:"
 msgstr "Width:"
 
-#: resources/public/pebble_templates/index.html:625:82
-#: resources/public/pebble_templates/index.html:660:79
+#: resources/public/pebble_templates/index.html:618:82
+#: resources/public/pebble_templates/index.html:688:79
 msgid "Reset"
 msgstr "Reset"
 
-#: resources/public/pebble_templates/index.html:630:36
+#: resources/public/pebble_templates/index.html:620:44
+msgid "template style;custom template"
+msgstr "template style;custom template"
+
+#: resources/public/pebble_templates/index.html:622:57
+msgid "Style:"
+msgstr "Style:"
+
+#: resources/public/pebble_templates/index.html:624:53
+msgid "Use Source Style"
+msgstr "Use Source Style"
+
+#: resources/public/pebble_templates/index.html:625:239
+msgid "Dotted (Small, 1:2)"
+msgstr "Dotted (Small, 1:2)"
+
+#: resources/public/pebble_templates/index.html:626:271
+msgid "Dotted (Big, 2:2)"
+msgstr "Dotted (Big, 2:2)"
+
+#: resources/public/pebble_templates/index.html:627:1803
+msgid "Numbers"
+msgstr "Numbers"
+
+#: resources/public/pebble_templates/index.html:628:85
+msgid "Custom…"
+msgstr "Custom…"
+
+#: resources/public/pebble_templates/index.html:632:44
+msgid "template style source;template style URL;custom style URL;custom template"
+msgstr "template style source;template style URL;custom style URL;custom template"
+
+#: resources/public/pebble_templates/index.html:634:57
+msgid "Custom style URL:"
+msgstr "Custom style URL:"
+
+#: resources/public/pebble_templates/index.html:639:44
+msgid "template conversion;template palette conversion;convert to palette"
+msgstr "template conversion;template palette conversion;convert to palette"
+
+#: resources/public/pebble_templates/index.html:641:57
+msgid "Color Conversion Mode:"
+msgstr "Color Conversion Mode:"
+
+#: resources/public/pebble_templates/index.html:643:64
+msgid "Unconverted"
+msgstr "Unconverted"
+
+#: resources/public/pebble_templates/index.html:644:66
+msgid "Nearest Custom"
+msgstr "Nearest Custom"
+
+#: resources/public/pebble_templates/index.html:648:44
+msgid "template transparency;template opacity;oo="
+msgstr "template transparency;template opacity;oo="
+
+#: resources/public/pebble_templates/index.html:650:57
+msgid "Opacity:"
+msgstr "Opacity:"
+
+#: resources/public/pebble_templates/index.html:658:36
 msgid "sound;notification;alert;notify;ping"
 msgstr "sound;notification;alert;notify;ping"
 
-#: resources/public/pebble_templates/index.html:632:24
+#: resources/public/pebble_templates/index.html:660:24
 msgid "Sound and Notification Settings"
 msgstr "Sound and Notification Settings"
 
-#: resources/public/pebble_templates/index.html:637:44
+#: resources/public/pebble_templates/index.html:665:44
 msgid "audio;mute;noise;volume"
 msgstr "audio;mute;noise;volume"
 
-#: resources/public/pebble_templates/index.html:640:57
+#: resources/public/pebble_templates/index.html:668:57
 msgid "Enable sound"
 msgstr "Enable sound"
 
-#: resources/public/pebble_templates/index.html:643:44
+#: resources/public/pebble_templates/index.html:671:44
 msgid "notifs;notify;pixel notification"
 msgstr "notifs;notify;pixel notification"
 
-#: resources/public/pebble_templates/index.html:646:57
+#: resources/public/pebble_templates/index.html:674:57
 msgid "Enable pixel available notification"
 msgstr "Enable pixel available notification"
 
-#: resources/public/pebble_templates/index.html:650:44
+#: resources/public/pebble_templates/index.html:678:44
 msgid "notification;pixel ready;alert"
 msgstr "notification;pixel ready;alert"
 
-#: resources/public/pebble_templates/index.html:651:28
+#: resources/public/pebble_templates/index.html:679:28
 msgid "Pixel Ready Notification"
 msgstr "Pixel Ready Notification"
 
-#: resources/public/pebble_templates/index.html:652:44
+#: resources/public/pebble_templates/index.html:680:44
 msgid "alert source;notify url;notify source;notification url;notification source"
 msgstr "alert source;notify url;notify source;notification url;notification source"
 
-#: resources/public/pebble_templates/index.html:654:57
+#: resources/public/pebble_templates/index.html:682:57
 msgid "Alert URL:"
 msgstr "Alert URL:"
 
-#: resources/public/pebble_templates/index.html:658:85
+#: resources/public/pebble_templates/index.html:686:85
 msgid "Update"
 msgstr "Update"
 
-#: resources/public/pebble_templates/index.html:659:83
+#: resources/public/pebble_templates/index.html:687:83
 msgid "Test"
 msgstr "Test"
 
-#: resources/public/pebble_templates/index.html:663:44
+#: resources/public/pebble_templates/index.html:691:44
 msgid "sound level;audio level;mute audio;mute sound"
 msgstr "sound level;audio level;mute audio;mute sound"
 
-#: resources/public/pebble_templates/index.html:665:57
+#: resources/public/pebble_templates/index.html:693:57
 msgid "Volume:"
 msgstr "Volume:"
 
-#: resources/public/pebble_templates/index.html:670:44
+#: resources/public/pebble_templates/index.html:698:44
 msgid "alert forewarning;alert delay; notification delay; notification forewarning"
 msgstr "alert forewarning;alert delay; notification delay; notification forewarning"
 
-#: resources/public/pebble_templates/index.html:672:57
+#: resources/public/pebble_templates/index.html:700:57
 msgid "Delay (seconds):"
 msgstr "Delay (seconds):"
 
-#: resources/public/pebble_templates/index.html:677:44
+#: resources/public/pebble_templates/index.html:705:44
 msgid "chat mentions;chat pings;chat sound"
 msgstr "chat mentions;chat pings;chat sound"
 
-#: resources/public/pebble_templates/index.html:678:28
+#: resources/public/pebble_templates/index.html:706:28
 msgid "Chat Pings"
 msgstr "Chat Pings"
 
-#: resources/public/pebble_templates/index.html:682:57
+#: resources/public/pebble_templates/index.html:710:57
 msgid "Enable pings"
 msgstr "Enable pings"
 
-#: resources/public/pebble_templates/index.html:685:44
+#: resources/public/pebble_templates/index.html:713:44
 msgid "mention sound"
 msgstr "mention sound"
 
-#: resources/public/pebble_templates/index.html:687:57
+#: resources/public/pebble_templates/index.html:715:57
 msgid "Play sound on ping:"
 msgstr "Play sound on ping:"
 
-#: resources/public/pebble_templates/index.html:689:56
+#: resources/public/pebble_templates/index.html:717:56
 #: resources/public/include/chat.js:1937:100
 msgid "Off"
 msgstr "Off"
 
-#: resources/public/pebble_templates/index.html:690:61
+#: resources/public/pebble_templates/index.html:718:61
 msgid "Only when necessary"
 msgstr "Only when necessary"
 
-#: resources/public/pebble_templates/index.html:691:59
+#: resources/public/pebble_templates/index.html:719:59
 msgid "Always"
 msgstr "Always"
 
-#: resources/public/pebble_templates/index.html:695:44
+#: resources/public/pebble_templates/index.html:723:44
 msgid "mention sound volume"
 msgstr "mention sound volume"
 
-#: resources/public/pebble_templates/index.html:697:57
+#: resources/public/pebble_templates/index.html:725:57
 msgid "Ping sound volume:"
 msgstr "Ping sound volume:"
 
-#: resources/public/pebble_templates/index.html:705:36
+#: resources/public/pebble_templates/index.html:733:36
 msgid "personal account"
 msgstr "personal account"
 
-#: resources/public/pebble_templates/index.html:707:24
+#: resources/public/pebble_templates/index.html:735:24
 msgid "Account Settings"
 msgstr "Account Settings"
 
-#: resources/public/pebble_templates/index.html:713:57
+#: resources/public/pebble_templates/index.html:741:57
 msgid "Public Discord name:"
 msgstr "Public Discord name:"
 
-#: resources/public/pebble_templates/index.html:717:83
+#: resources/public/pebble_templates/index.html:745:83
 #: resources/public/include/chat.js:1939:92
 #: resources/public/include/chat.js:2003:92
 msgid "Set"
 msgstr "Set"
 
-#: resources/public/pebble_templates/index.html:718:86
+#: resources/public/pebble_templates/index.html:746:86
 msgid "Remove"
 msgstr "Remove"
 
 #. FAQ panel
-#: resources/public/pebble_templates/index.html:731:65
+#: resources/public/pebble_templates/index.html:759:65
 msgid "Help"
 msgstr "Help"
 
-#: resources/public/pebble_templates/index.html:744:54
+#: resources/public/pebble_templates/index.html:772:54
 msgid "Notifications"
 msgstr "Notifications"
 
@@ -1329,7 +1381,7 @@ msgid "None"
 msgstr "None"
 
 #: resources/public/pebble_templates/profile.html:99:72
-#: resources/public/admin/admin.js:195:16
+#: resources/public/admin/admin.js:198:16
 msgid "Roles"
 msgstr "Roles"
 
@@ -1493,8 +1545,8 @@ msgstr "Faction Bans"
 #: resources/public/pebble_templates/profile.html:318:125
 #: resources/public/include/chat.js:1629:36
 #: resources/public/include/chat.js:1733:46
-#: resources/public/admin/admin.js:317:88
-#: resources/public/admin/admin.js:344:52
+#: resources/public/admin/admin.js:320:88
+#: resources/public/admin/admin.js:347:52
 msgid "Unban"
 msgstr "Unban"
 
@@ -1553,7 +1605,7 @@ msgid "Alert"
 msgstr "Alert"
 
 #. Snapshot save name
-#: resources/public/include/board.js:798:100
+#: resources/public/include/board.js:804:100
 msgid "pxls canvas"
 msgstr "pxls canvas"
 
@@ -1575,9 +1627,6 @@ msgid "Jump to coordinates without replacing template"
 msgstr "Jump to coordinates without replacing template"
 
 #: resources/public/include/chat.js:437:55
-msgid "You must be logged in to chat"
-msgstr "You must be logged in to chat"
-
 #: resources/public/include/chat.js:956:53
 msgid "You must be logged in to chat."
 msgstr "You must be logged in to chat."
@@ -1637,7 +1686,7 @@ msgid "Ignore"
 msgstr "Ignore"
 
 #: resources/public/include/chat.js:1458:102
-#: resources/public/admin/admin.js:190:16
+#: resources/public/admin/admin.js:193:16
 msgid "Profile"
 msgstr "Profile"
 
@@ -1669,7 +1718,7 @@ msgstr "Enter a reason for your report"
 #: resources/public/include/chat.js:1961:22
 #: resources/public/include/chat.js:2021:22
 #: resources/public/include/lookup.js:64:91
-#: resources/public/admin/admin.js:331:20
+#: resources/public/admin/admin.js:334:20
 msgid "Cancel"
 msgstr "Cancel"
 
@@ -1745,16 +1794,16 @@ msgid "Purging all messages is disabled during snip mode"
 msgstr "Purging all messages is disabled during snip mode"
 
 #: resources/public/include/chat.js:1714:79
-#: resources/public/include/user.js:138:22
-#: resources/public/admin/admin.js:182:41
-#: resources/public/admin/admin.js:184:94
+#: resources/public/include/user.js:115:22
+#: resources/public/admin/admin.js:185:41
+#: resources/public/admin/admin.js:187:94
 msgid "Yes"
 msgstr "Yes"
 
 #: resources/public/include/chat.js:1715:78
-#: resources/public/include/user.js:142:22
-#: resources/public/admin/admin.js:182:53
-#: resources/public/admin/admin.js:184:106
+#: resources/public/include/user.js:119:22
+#: resources/public/admin/admin.js:185:53
+#: resources/public/admin/admin.js:187:106
 msgid "No"
 msgstr "No"
 
@@ -1908,7 +1957,7 @@ msgid "Coords"
 msgstr "Coords"
 
 #: resources/public/include/lookup.js:223:21
-#: resources/public/admin/admin.js:186:16
+#: resources/public/admin/admin.js:189:16
 msgid "Username"
 msgstr "Username"
 
@@ -1952,7 +2001,7 @@ msgstr "Posted by ${notification.who}"
 msgid "Expires ${expiry}"
 msgstr "Expires ${expiry}"
 
-#: resources/public/include/template.js:93:50
+#: resources/public/include/template.js:440:50
 msgid "There was an error getting the image"
 msgstr "There was an error getting the image"
 
@@ -2016,176 +2065,179 @@ msgstr "Discord name updated successfully"
 msgid "Couldn\\'t change discord name: "
 msgstr "Couldn\\'t change discord name: "
 
-#: resources/public/include/user.js:131:52
+#: resources/public/include/user.js:108:52
 msgid "Sign Out"
 msgstr "Sign Out"
 
-#: resources/public/include/user.js:133:27
+#: resources/public/include/user.js:110:27
 msgid "Are you sure you want to sign out?"
 msgstr "Are you sure you want to sign out?"
 
-#: resources/public/include/user.js:187:39
+#: resources/public/include/user.js:164:39
 msgid "You are permanently banned."
 msgstr "You are permanently banned."
 
-#: resources/public/include/user.js:191:39
+#: resources/public/include/user.js:168:39
 msgid "You are temporarily banned and will not be allowed to place until ${timestamp}"
 msgstr "You are temporarily banned and will not be allowed to place until ${timestamp}"
 
-#: resources/public/include/user.js:219:27
+#: resources/public/include/user.js:196:27
 msgid "If you think this was an error, please contact us using one of the links in the info tab."
 msgstr "If you think this was an error, please contact us using one of the links in the info tab."
 
-#: resources/public/include/user.js:220:27
+#: resources/public/include/user.js:197:27
 msgid "Ban reason:"
 msgstr "Ban reason:"
 
-#: resources/public/include/user.js:224:28
-#: resources/public/admin/admin.js:200:16
+#: resources/public/include/user.js:201:28
+#: resources/public/admin/admin.js:203:16
 msgid "Banned"
 msgstr "Banned"
 
-#: resources/public/include/user.js:294:23
+#: resources/public/include/user.js:271:23
 msgid "Staff have required you to change your username, this usually means your name breaks one of our rules."
 msgstr "Staff have required you to change your username, this usually means your name breaks one of our rules."
 
-#: resources/public/include/user.js:295:23
+#: resources/public/include/user.js:272:23
 msgid "If you disagree, please contact us on Discord (link in the info panel)."
 msgstr "If you disagree, please contact us on Discord (link in the info panel)."
 
-#: resources/public/include/user.js:296:27
+#: resources/public/include/user.js:273:27
 msgid "New Username:"
 msgstr "New Username:"
 
-#: resources/public/include/user.js:309:89
+#: resources/public/include/user.js:286:89
 msgid "Not now"
 msgstr "Not now"
 
-#: resources/public/include/user.js:310:86
+#: resources/public/include/user.js:287:86
 msgid "Change"
 msgstr "Change"
 
-#: resources/public/include/user.js:314:50
-#: resources/public/admin/admin.js:198:16
+#: resources/public/include/user.js:291:50
+#: resources/public/admin/admin.js:201:16
 msgid "Rename Requested"
 msgstr "Rename Requested"
 
-#: resources/public/admin/admin.js:98:38
+#: resources/public/admin/admin.js:101:38
 msgid "Something went wrong! Perhaps insufficient permissions?"
 msgstr "Something went wrong! Perhaps insufficient permissions?"
 
-#: resources/public/admin/admin.js:103:45
+#: resources/public/admin/admin.js:106:45
 msgid "Shadowban user"
 msgstr "Shadowban user"
 
-#: resources/public/admin/admin.js:103:67
+#: resources/public/admin/admin.js:106:67
 msgid "Shadowbanned user"
 msgstr "Shadowbanned user"
 
-#: resources/public/admin/admin.js:106:45
+#: resources/public/admin/admin.js:109:45
 msgid "Permaban user"
 msgstr "Permaban user"
 
-#: resources/public/admin/admin.js:106:66
+#: resources/public/admin/admin.js:109:66
 msgid "Permabanned user"
 msgstr "Permabanned user"
 
-#: resources/public/admin/admin.js:109:45
+#: resources/public/admin/admin.js:112:45
 msgid "Ban user"
 msgstr "Ban user"
 
-#: resources/public/admin/admin.js:109:61
+#: resources/public/admin/admin.js:112:61
 msgid "Banned user"
 msgstr "Banned user"
 
-#: resources/public/admin/admin.js:123:36
+#: resources/public/admin/admin.js:126:36
 msgid "Unbanned user ${username}"
 msgstr "Unbanned user ${username}"
 
 #. Context: ban type
-#: resources/public/admin/admin.js:176:27
+#: resources/public/admin/admin.js:179:27
 msgid "shadow"
 msgstr "shadow"
 
-#: resources/public/admin/admin.js:177:29
 #: resources/public/admin/admin.js:180:29
+#: resources/public/admin/admin.js:183:29
 msgid "never"
 msgstr "never"
 
-#: resources/public/admin/admin.js:179:27
+#: resources/public/admin/admin.js:182:27
 msgid "permanent"
 msgstr "permanent"
 
-#: resources/public/admin/admin.js:184:51
+#: resources/public/admin/admin.js:187:51
 msgid "Yes (permanent)"
 msgstr "Yes (permanent)"
 
-#: resources/public/admin/admin.js:191:16
-#: resources/public/admin/admin.js:451:21
+#: resources/public/admin/admin.js:194:16
+#: resources/public/admin/admin.js:454:21
 msgid "Logins"
 msgstr "Logins"
 
-#: resources/public/admin/admin.js:197:16
+#: resources/public/admin/admin.js:200:16
 msgid "All Time Pixels"
 msgstr "All Time Pixels"
 
-#: resources/public/admin/admin.js:199:16
+#: resources/public/admin/admin.js:202:16
 msgid "Discord Name"
 msgstr "Discord Name"
 
-#: resources/public/admin/admin.js:201:16
+#: resources/public/admin/admin.js:204:16
 msgid "Chatbanned"
 msgstr "Chatbanned"
 
-#: resources/public/admin/admin.js:204:27
+#: resources/public/admin/admin.js:207:27
 msgid "Ban Reason"
 msgstr "Ban Reason"
 
-#: resources/public/admin/admin.js:205:27
+#: resources/public/admin/admin.js:208:27
 msgid "Ban Expiracy"
 msgstr "Ban Expiracy"
 
-#: resources/public/admin/admin.js:208:27
+#: resources/public/admin/admin.js:211:27
 msgid "Chatban Reason"
 msgstr "Chatban Reason"
 
-#: resources/public/admin/admin.js:208:102
+#: resources/public/admin/admin.js:211:102
 msgid "(canvas ban)"
 msgstr "(canvas ban)"
 
-#: resources/public/admin/admin.js:210:97
+#: resources/public/admin/admin.js:213:97
 msgid "when canvas ban ends"
 msgstr "when canvas ban ends"
 
-#: resources/public/admin/admin.js:211:29
+#: resources/public/admin/admin.js:214:29
 msgid "Chatban Expires"
 msgstr "Chatban Expires"
 
 #. Admin check. Example: type = 'username', arg = 'pxlsuser94'
-#: resources/public/admin/admin.js:313:36
+#: resources/public/admin/admin.js:316:36
 msgid "${type} ${arg} not found."
 msgstr "${type} ${arg} not found."
 
-#: resources/public/admin/admin.js:319:50
+#: resources/public/admin/admin.js:322:50
 msgid "Unban Reason:"
 msgstr "Unban Reason:"
 
-#: resources/public/admin/admin.js:324:25
+#: resources/public/admin/admin.js:327:25
 msgid "Unbanning ${username}"
 msgstr "Unbanning ${username}"
 
-#: resources/public/admin/admin.js:446:20
+#: resources/public/admin/admin.js:449:20
 msgid "profile"
 msgstr "profile"
 
-#: resources/public/admin/admin.js:470:21
+#: resources/public/admin/admin.js:473:21
 msgid "User Agent"
 msgstr "User Agent"
 
-#: resources/public/admin/admin.js:475:21
+#: resources/public/admin/admin.js:478:21
 msgid "Send Alert"
 msgstr "Send Alert"
 
-#: resources/public/admin/admin.js:480:21
+#: resources/public/admin/admin.js:483:21
 msgid "Mod Actions"
 msgstr "Mod Actions"
+
+#~ msgid "You must be logged in to chat"
+#~ msgstr "You must be logged in to chat"

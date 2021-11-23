@@ -164,8 +164,7 @@ const board = (function() {
           case 'R': {
             const tempOpts = template.getOptions();
             if (tempOpts.use) {
-              const tempElem = $('#board-template');
-              self.centerOn(tempOpts.x + (tempElem.width() / 2), tempOpts.y + (tempElem.height() / 2));
+              self.centerOn(tempOpts.x + (template.getDisplayWidth() / 2), tempOpts.y + (template.getDisplayHeight() / 2));
             } else if (place.lastPixel) {
               self.centerOn(place.lastPixel.x, place.lastPixel.y);
             }
@@ -392,6 +391,7 @@ const board = (function() {
       query = require('./query').query;
 
       $(window).on('pxls:queryUpdated', (evt, propName, oldValue, newValue) => {
+        const nullish = newValue == null;
         switch (propName.toLowerCase()) {
           case 'x':
           case 'y':
@@ -404,16 +404,16 @@ const board = (function() {
             template.queueUpdate({ template: newValue, use: newValue !== null });
             break;
           case 'ox':
-            template.queueUpdate({ ox: newValue == null ? null : newValue >> 0 });
+            template.queueUpdate({ ox: nullish ? null : newValue >> 0 });
             break;
           case 'oy':
-            template.queueUpdate({ oy: newValue == null ? null : newValue >> 0 });
+            template.queueUpdate({ oy: nullish ? null : newValue >> 0 });
             break;
           case 'tw':
-            template.queueUpdate({ tw: newValue == null ? null : newValue >> 0 });
+            template.queueUpdate({ tw: nullish ? null : newValue >> 0 });
             break;
           case 'title':
-            template.queueUpdate({ title: newValue == null ? '' : newValue });
+            template.queueUpdate({ title: nullish ? '' : newValue });
             break;
           case 'oo': {
             let parsed = parseFloat(newValue);
@@ -421,6 +421,9 @@ const board = (function() {
             template.queueUpdate({ oo: parsed == null ? null : parsed });
             break;
           }
+          case 'convert':
+            template.queueUpdate({ convert: newValue });
+            break;
         }
       });
       $('#ui').hide();
@@ -453,6 +456,7 @@ const board = (function() {
         self.width = data.width;
         self.height = data.height;
         place.setPalette(data.palette);
+        template.webinit(data);
         uiHelper.setMax(data.maxStacked);
         chat.webinit(data);
         uiHelper.initBanner(data.chatBannerText);
@@ -493,7 +497,9 @@ const board = (function() {
             opacity: parseFloat(query.get('oo')),
             width: parseFloat(query.get('tw')),
             title: query.get('title'),
-            url: url
+            url: url,
+            direct: query.get('direct'),
+            convertMode: query.get('convert')
           });
         }
         let spin = parseFloat(query.get('spin'));
