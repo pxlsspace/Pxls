@@ -854,10 +854,12 @@ public class App {
             server.getWebHandler().reloadServicesEnabledState();
         }
 
-        try {
-            Files.deleteIfExists(getStorageDir().resolve("index_cache.html"));
-        } catch (IOException e) {
-            // do nothing
+        for (Locale locale : Util.SUPPORTED_LOCALES) {
+            try {
+                Files.deleteIfExists(getStorageDir().resolve("index_" + locale.toLanguageTag() + "_cache.html"));
+            } catch (IOException e) {
+                // do nothing
+            }
         }
     }
     private static void loadRoles() {
