@@ -232,9 +232,11 @@ module.exports.template = (function() {
         });
       }
 
-      self.elements.styleImage.attr({
-        src: self.cors(self.options.style)
-      });
+      if (self.elements.styleImage.prop('src') !== self.options.style) {
+        self.elements.styleImage.attr({
+          src: self.cors(self.options.style)
+        });
+      }
 
       self.applyOptions();
 
