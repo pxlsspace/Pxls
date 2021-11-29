@@ -87,7 +87,7 @@ module.exports.overlays = (function() {
       }
     };
 
-    $('#board-mover').prepend(self.elements.overlay);
+    $('#board').before(self.elements.overlay);
 
     return {
       get name() {
