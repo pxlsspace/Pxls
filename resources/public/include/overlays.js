@@ -162,6 +162,7 @@ module.exports.overlays = (function() {
       }
 
       // heatmap stuff
+      const heatbackground = self.add('heatbackground', () => createOverlayImageData('/heatmap', '/placemap', 0xFF000000));
       const heatmap = self.add('heatmap', () => createOverlayImageData('/heatmap', '/placemap', 0x005C5CCD), (width, height, isReload) => {
         // Ran when lazy init finshes
         if (isReload) {
@@ -197,8 +198,6 @@ module.exports.overlays = (function() {
           }
         });
       });
-
-      const heatbackground = self.add('heatbackground', () => createOverlayImageData('/heatmap', '/placemap', 0xFF000000));
 
       settings.board.heatmap.opacity.listen(function(value) {
         heatbackground.setOpacity(value);
@@ -244,6 +243,7 @@ module.exports.overlays = (function() {
       });
 
       // virginmap stuff
+      const virginbackground = self.add('virginbackground', () => createOverlayImageData('/virginmap', '/placemap', 0x0000FF00, 0x00));
       const virginmap = self.add('virginmap', () => createOverlayImageData('/virginmap', '/placemap', 0x00000000, 0xff), (width, height, isReload) => {
         if (isReload) {
           return;
@@ -265,8 +265,6 @@ module.exports.overlays = (function() {
           }
         });
       });
-
-      const virginbackground = self.add('virginbackground', () => createOverlayImageData('/virginmap', '/placemap', 0x0000FF00, 0x00));
 
       settings.board.virginmap.opacity.listen(function(value) {
         virginbackground.setOpacity(value);
