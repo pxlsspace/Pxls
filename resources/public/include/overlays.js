@@ -161,6 +161,47 @@ module.exports.overlays = (function() {
         return imageData;
       }
 
+      // virginmap stuff
+      const virginbackground = self.add('virginbackground', () => createOverlayImageData('/virginmap', '/placemap', 0x0000FF00, 0x00));
+      const virginmap = self.add('virginmap', () => createOverlayImageData('/virginmap', '/placemap', 0x00000000, 0xff), (width, height, isReload) => {
+        if (isReload) {
+          return;
+        }
+        socket.on('pixel', (data) => {
+          $.map(data.pixels, (px) => {
+            virginmap.setPixel(px.x, px.y, '#000000');
+          });
+        });
+
+        $(window).keydown(function(evt) {
+          if (['INPUT', 'TEXTAREA'].includes(evt.target.nodeName)) {
+            // prevent inputs from triggering shortcuts
+            return;
+          }
+
+          if (evt.key === 'u' || evt.key === 'U' || evt.which === 117 || evt.which === 85) { // U key
+            virginmap.clear();
+          }
+        });
+      });
+
+      settings.board.virginmap.opacity.listen(function(value) {
+        virginbackground.setOpacity(value);
+      });
+      $('#vmapClear').click(function() {
+        virginmap.clear();
+      });
+
+      settings.board.virginmap.enable.listen(function(value) {
+        if (value) {
+          virginmap.show();
+          virginbackground.show();
+        } else {
+          virginmap.hide();
+          virginbackground.hide();
+        }
+      });
+
       // heatmap stuff
       const heatbackground = self.add('heatbackground', () => createOverlayImageData('/heatmap', '/placemap', 0xFF000000));
       const heatmap = self.add('heatmap', () => createOverlayImageData('/heatmap', '/placemap', 0x005C5CCD), (width, height, isReload) => {
@@ -239,47 +280,6 @@ module.exports.overlays = (function() {
       $(window).keyup(function(e) {
         if (testForH(e)) {
           HKeyPressed = false;
-        }
-      });
-
-      // virginmap stuff
-      const virginbackground = self.add('virginbackground', () => createOverlayImageData('/virginmap', '/placemap', 0x0000FF00, 0x00));
-      const virginmap = self.add('virginmap', () => createOverlayImageData('/virginmap', '/placemap', 0x00000000, 0xff), (width, height, isReload) => {
-        if (isReload) {
-          return;
-        }
-        socket.on('pixel', (data) => {
-          $.map(data.pixels, (px) => {
-            virginmap.setPixel(px.x, px.y, '#000000');
-          });
-        });
-
-        $(window).keydown(function(evt) {
-          if (['INPUT', 'TEXTAREA'].includes(evt.target.nodeName)) {
-            // prevent inputs from triggering shortcuts
-            return;
-          }
-
-          if (evt.key === 'u' || evt.key === 'U' || evt.which === 117 || evt.which === 85) { // U key
-            virginmap.clear();
-          }
-        });
-      });
-
-      settings.board.virginmap.opacity.listen(function(value) {
-        virginbackground.setOpacity(value);
-      });
-      $('#vmapClear').click(function() {
-        virginmap.clear();
-      });
-
-      settings.board.virginmap.enable.listen(function(value) {
-        if (value) {
-          virginmap.show();
-          virginbackground.show();
-        } else {
-          virginmap.hide();
-          virginbackground.hide();
         }
       });
 
