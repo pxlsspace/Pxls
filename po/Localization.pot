@@ -1,2245 +1,2245 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-11-23T21:32:45.968Z\n"
+"POT-Creation-Date: 2021-12-03T07:36:36.932Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
 #. Site description
-#: resources/public/pebble_templates/index.html:8:42
+#: resources/public/pebble_templates/index.html
 msgid "Place pixels with people to create art"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:56:27
+#: resources/public/pebble_templates/index.html
 msgid "Lost connection to server, reconnecting..."
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:71:76
+#: resources/public/pebble_templates/index.html
 msgid "Loading Heatmap (press <kbd>H</kbd> to cancel)"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:72:78
+#: resources/public/pebble_templates/index.html
 msgid "Loading Virginmap (press <kbd>X</kbd> to cancel)"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:80:67
+#: resources/public/pebble_templates/index.html
 msgid "Logout"
 msgstr ""
 
 #. Canvas pixel count
-#: resources/public/pebble_templates/index.html:86:38
+#: resources/public/pebble_templates/index.html
 msgid "Canvas:"
 msgstr ""
 
 #. Canvas pixel count
 #. All time pixel count
-#: resources/public/pebble_templates/index.html:86:118
-#: resources/public/pebble_templates/index.html:88:120
-#: resources/public/pebble_templates/index.html:100:51
-#: resources/public/pebble_templates/index.html:126:123
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
 msgid "N/A"
 msgstr ""
 
 #. All time pixel count
-#: resources/public/pebble_templates/index.html:88:38
+#: resources/public/pebble_templates/index.html
 msgid "All Time:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:93:48
+#: resources/public/pebble_templates/index.html
 msgid "Loading online user count&hellip;"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:101:30
-#: resources/public/include/lookup.js:276:21
-#: resources/public/admin/admin.js:199:16
+#: resources/public/pebble_templates/index.html
+#: resources/public/include/lookup.js
+#: resources/public/admin/admin.js
 msgid "Pixels"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:112:54
+#: resources/public/pebble_templates/index.html
 msgid "Undo"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:114:20
+#: resources/public/pebble_templates/index.html
 msgid "You are not signed in.&nbsp;<a href=\"#\">Sign in with...</a>"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:124:28
+#: resources/public/pebble_templates/index.html
 msgid "Loading..."
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:132:14
-#: resources/public/pebble_templates/index.html:142:67
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
 msgid "Sign up"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:133:14
+#: resources/public/pebble_templates/index.html
 msgid "Pick a username"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:136:43
+#: resources/public/pebble_templates/index.html
 msgid "Username:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:154:65
-#: resources/public/pebble_templates/profile.html:56:96
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/profile.html
 msgid "Info"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:168:66
-#: resources/public/pebble_templates/index.html:206:66
-#: resources/public/pebble_templates/index.html:761:66
-#: resources/public/pebble_templates/index.html:774:66
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
 msgid "Close Panel"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:170:61
+#: resources/public/pebble_templates/index.html
 msgid "Chat"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:172:45
+#: resources/public/pebble_templates/index.html
 msgid "Pings"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:173:45
-#: resources/public/pebble_templates/index.html:209:58
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
 msgid "Settings"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:186:30
+#: resources/public/pebble_templates/index.html
 msgid "Jump To Bottom"
 msgstr ""
 
 #. Open emoji picker
-#: resources/public/pebble_templates/index.html:194:49
+#: resources/public/pebble_templates/index.html
 msgid "Emoji"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:214:73
+#: resources/public/pebble_templates/index.html
 msgid "Search"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:215:56
+#: resources/public/pebble_templates/index.html
 msgid "keybinds;keys;keyboard;hotkeys"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:217:24
+#: resources/public/pebble_templates/index.html
 msgid "Keybinds"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:220:44
+#: resources/public/pebble_templates/index.html
 msgid "general"
 msgstr ""
 
 #. General settings
-#: resources/public/pebble_templates/index.html:222:28
-#: resources/public/pebble_templates/index.html:664:28
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
 msgid "General"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:223:42
+#: resources/public/pebble_templates/index.html
 msgid "move;moving;panning;drag"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:223:102
+#: resources/public/pebble_templates/index.html
 msgid "Mouse/arrows/wasd to pan"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:224:42
+#: resources/public/pebble_templates/index.html
 msgid "mousewheel;zooming"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:224:96
+#: resources/public/pebble_templates/index.html
 msgid "Scroll/pinch to zoom"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:225:42
+#: resources/public/pebble_templates/index.html
 msgid "scroll;zooming"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:225:92
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>+</kbd>/<kbd>-</kbd> or <kbd>Q</kbd>/<kbd>E</kbd> to zoom"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:226:42
+#: resources/public/pebble_templates/index.html
 msgid "lookups"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:226:85
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>Shift</kbd> + Click/Hold touch to lookup pixel"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:227:42
-#: resources/public/pebble_templates/index.html:489:44
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
 msgid "overlays;alignment;grid hidden;grid shown;hide grid;show grid"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:227:139
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>G</kbd> to toggle grid"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:228:42
+#: resources/public/pebble_templates/index.html
 msgid "close;information shown;information hidden;info shown;info hidden;hide information;show information"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:228:177
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>I</kbd> to open info"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:229:42
+#: resources/public/pebble_templates/index.html
 msgid "close;settings hidden;settings shown;hide settings;show settings"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:229:142
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>T</kbd> to open settings"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:230:42
+#: resources/public/pebble_templates/index.html
 msgid "close;chat hidden;chat shown;hide chat;show chat"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:230:126
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>B</kbd> to open chat"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:231:42
+#: resources/public/pebble_templates/index.html
 msgid "canvas locked;move;moving;zoom;zooming"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:231:116
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>L</kbd> to toggle locking panning of the canvas"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:232:42
+#: resources/public/pebble_templates/index.html
 msgid "take screenshot;image;download;picture;canvas"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:232:123
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>P</kbd> to take a snapshot"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:233:42
-#: resources/public/pebble_templates/index.html:443:44
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
 msgid "overlays;user activity;pixels placed pixels;heatmap hidden;heatmap shown;hide heatmap;show heatmap"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:233:176
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>H</kbd> to toggle heatmap"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:234:42
-#: resources/public/pebble_templates/index.html:463:44
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
 msgid "overlays;user activity;pixels unplaced pixels;virginmap hidden;virginmap shown;hide virginmap;show virginmap"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:234:186
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>X</kbd> to toggle virginmap"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:235:42
+#: resources/public/pebble_templates/index.html
 msgid "overlays;user activity;pixels placed pixels;wipe;clean;"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:235:133
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>O</kbd> to clear heatmap"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:236:42
+#: resources/public/pebble_templates/index.html
 msgid "overlays;user activity;pixels unplaced pixels;wipe;clean;"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:236:135
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>U</kbd> to clear virginmap"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:237:42
+#: resources/public/pebble_templates/index.html
 msgid "next color;previous color"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:237:103
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>J</kbd>/<kbd>K</kbd> to cycle through palette colors"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:238:42
+#: resources/public/pebble_templates/index.html
 msgid "current coordinates;coords"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:238:104
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>C</kbd> to copy link of moused-over coordinates"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:239:42
+#: resources/public/pebble_templates/index.html
 msgid "cancel selection"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:239:94
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>ESC</kbd> to deselect current pixel"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:240:42
+#: resources/public/pebble_templates/index.html
 msgid "recenter;jump;center on template;guides;focus"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:240:123
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>R</kbd> to center the board on the current template"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:243:44
+#: resources/public/pebble_templates/index.html
 msgid "templates;guides"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:244:28
-#: resources/public/pebble_templates/index.html:579:24
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
 msgid "Template"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:245:42
-#: resources/public/pebble_templates/index.html:246:42
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
 msgid "transparency"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:245:90
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>Page Up</kbd> to increase opacity"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:246:90
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>Page Down</kbd> to decrease opacity"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:247:42
+#: resources/public/pebble_templates/index.html
 msgid "hidden;shown;hide;show"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:247:100
+#: resources/public/pebble_templates/index.html
 msgid "<kbd>V</kbd> to toggle visibility"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:252:24
+#: resources/public/pebble_templates/index.html
 msgid "Note: These values are based on QWERTY keyboards. For other layouts, use the keys corresponding to the same position on a QWERTY keyboard."
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:256:36
+#: resources/public/pebble_templates/index.html
 msgid "ui;interface"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:258:24
+#: resources/public/pebble_templates/index.html
 msgid "UI Settings"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:262:44
+#: resources/public/pebble_templates/index.html
 msgid "themes;look;stylesheets;visuals"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:264:57
+#: resources/public/pebble_templates/index.html
 msgid "Theme:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:266:64
+#: resources/public/pebble_templates/index.html
 msgid "Default"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:270:44
+#: resources/public/pebble_templates/index.html
 msgid "hide reticule;hide reticle;reticule shown reticle shown;reticule hidden;reticle hidden"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:273:57
+#: resources/public/pebble_templates/index.html
 msgid "Show reticule"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:276:44
+#: resources/public/pebble_templates/index.html
 msgid "hide cursor;cursor shown;cursor hidden"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:279:57
+#: resources/public/pebble_templates/index.html
 msgid "Show cursor"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:282:44
+#: resources/public/pebble_templates/index.html
 msgid "darkness filter"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:285:57
+#: resources/public/pebble_templates/index.html
 msgid "Enable color brightness"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:288:76
+#: resources/public/pebble_templates/index.html
 msgid "Warning: Known to cause fuzziness in Chrome on some Mac/Linux installs"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:291:57
+#: resources/public/pebble_templates/index.html
 msgid "Color brightness:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:295:44
+#: resources/public/pebble_templates/index.html
 msgid "keep current selected;keep curent color;place"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:298:57
+#: resources/public/pebble_templates/index.html
 msgid "Deselect color after placing"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:301:44
+#: resources/public/pebble_templates/index.html
 msgid "mousewheel;palette scrolling"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:304:57
+#: resources/public/pebble_templates/index.html
 msgid "Enable scrolling on the palette to switch colors"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:306:68
+#: resources/public/pebble_templates/index.html
 msgid "reverse scrolling;mousewheel;palette scrolling;enable scrolling on the palette to switch colors"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:309:61
+#: resources/public/pebble_templates/index.html
 msgid "Invert scroll direction"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:313:44
+#: resources/public/pebble_templates/index.html
 msgid "indexed colors;palette indicies"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:316:57
+#: resources/public/pebble_templates/index.html
 msgid "Add numbers to palette entries"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:319:44
+#: resources/public/pebble_templates/index.html
 msgid "scrollbar;palette scrolling"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:322:57
+#: resources/public/pebble_templates/index.html
 msgid "Enable thin scrollbar"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:325:44
+#: resources/public/pebble_templates/index.html
 msgid "scrollbar;palette scrolling;palette stack"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:328:57
+#: resources/public/pebble_templates/index.html
 msgid "Enable palette stacking"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:331:44
+#: resources/public/pebble_templates/index.html
 msgid "floating bubble location"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:333:57
+#: resources/public/pebble_templates/index.html
 msgid "Bubble position:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:335:61
+#: resources/public/pebble_templates/index.html
 msgid "Top left"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:336:62
+#: resources/public/pebble_templates/index.html
 msgid "Top right"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:337:73
+#: resources/public/pebble_templates/index.html
 msgid "Bottom left"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:338:65
+#: resources/public/pebble_templates/index.html
 msgid "Bottom right"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:342:44
+#: resources/public/pebble_templates/index.html
 msgid "broken;offset workaround"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:345:57
+#: resources/public/pebble_templates/index.html
 msgid "Attempt to fix canvas displacement bug in Chrome 78+"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:351:36
+#: resources/public/pebble_templates/index.html
 msgid "chat;message;ping sound"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:353:24
+#: resources/public/pebble_templates/index.html
 msgid "Chat Settings"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:356:44
+#: resources/public/pebble_templates/index.html
 msgid "username;color;colour"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:359:57
+#: resources/public/pebble_templates/index.html
 msgid "Username Color:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:365:44
+#: resources/public/pebble_templates/index.html
 msgid "chat message;chat ui"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:366:28
+#: resources/public/pebble_templates/index.html
 msgid "Interface"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:367:44
+#: resources/public/pebble_templates/index.html
 msgid "chat size;chat font"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:369:57
+#: resources/public/pebble_templates/index.html
 msgid "Font Size:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:373:44
+#: resources/public/pebble_templates/index.html
 msgid "time;timestamps"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:376:57
+#: resources/public/pebble_templates/index.html
 msgid "24 Hour Timestamps"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:379:44
+#: resources/public/pebble_templates/index.html
 msgid "badges;pixel count;pixels placed"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:382:57
+#: resources/public/pebble_templates/index.html
 msgid "Show pixel-placed badges"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:385:44
+#: resources/public/pebble_templates/index.html
 msgid "badges;factions"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:388:57
+#: resources/public/pebble_templates/index.html
 msgid "Show faction tags"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:391:44
+#: resources/public/pebble_templates/index.html
 msgid "template urls;template links;template name"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:394:57
+#: resources/public/pebble_templates/index.html
 msgid "Replace template titles with URLs in chat where applicable"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:397:44
+#: resources/public/pebble_templates/index.html
 msgid "chat orientation;chat position"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:400:57
+#: resources/public/pebble_templates/index.html
 msgid "Enable horizontal chat"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:403:44
+#: resources/public/pebble_templates/index.html
 msgid "banner;animation"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:406:57
+#: resources/public/pebble_templates/index.html
 msgid "Enable the rotating banner under chat"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:409:44
+#: resources/public/pebble_templates/index.html
 msgid "max;messages;truncate"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:411:57
+#: resources/public/pebble_templates/index.html
 msgid "Maximum amount of chat messages:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:415:44
+#: resources/public/pebble_templates/index.html
 msgid "link;url;behaviour"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:417:57
+#: resources/public/pebble_templates/index.html
 msgid "Default internal link action click:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:422:44
+#: resources/public/pebble_templates/index.html
 msgid "ignored;ignores;unignore;blocked;blocking;unblock"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:423:28
+#: resources/public/pebble_templates/index.html
 msgid "Ignores"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:424:44
+#: resources/public/pebble_templates/index.html
 msgid "unignore;unblock"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:429:85
+#: resources/public/pebble_templates/index.html
 msgid "Unignore"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:436:36
+#: resources/public/pebble_templates/index.html
 msgid "overlays;virginmap;heatmap;grid"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:438:24
+#: resources/public/pebble_templates/index.html
 msgid "Overlay Settings"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:441:44
+#: resources/public/pebble_templates/index.html
 msgid "heatmap;heatmap opacity;clear heatmap"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:442:28
+#: resources/public/pebble_templates/index.html
 msgid "Heatmap"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:446:57
+#: resources/public/pebble_templates/index.html
 msgid "Turn on heatmap"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:448:70
+#: resources/public/pebble_templates/index.html
 msgid "(toggle with <kbd>H</kbd>)"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:450:44
+#: resources/public/pebble_templates/index.html
 msgid "overlays;activity;pixels placed pixels;wipe;clean"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:451:71
+#: resources/public/pebble_templates/index.html
 msgid "Clear heatmap"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:452:51
+#: resources/public/pebble_templates/index.html
 msgid "(hotkey: <kbd>O</kbd>)"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:454:44
+#: resources/public/pebble_templates/index.html
 msgid "overlays;user activity;pixels placed pixels;transparency"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:456:57
+#: resources/public/pebble_templates/index.html
 msgid "Heatmap background opacity:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:461:44
+#: resources/public/pebble_templates/index.html
 msgid "virginmap;virginmap opacity;clear virginmap"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:462:28
+#: resources/public/pebble_templates/index.html
 msgid "Virginmap"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:466:57
+#: resources/public/pebble_templates/index.html
 msgid "Turn on virginmap"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:468:72
+#: resources/public/pebble_templates/index.html
 msgid "(toggle with <kbd>X</kbd>)"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:470:44
+#: resources/public/pebble_templates/index.html
 msgid "overlays;user activity;pixels unplaced pixels;transparency"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:472:57
+#: resources/public/pebble_templates/index.html
 msgid "Virginmap background opacity:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:476:44
+#: resources/public/pebble_templates/index.html
 msgid "overlays;activity;pixels unplaced pixels;wipe;clean"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:477:71
+#: resources/public/pebble_templates/index.html
 msgid "Clear virginmap"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:478:51
+#: resources/public/pebble_templates/index.html
 msgid "(hotkey: <kbd>U</kbd>)"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:483:57
+#: resources/public/pebble_templates/index.html
 msgid "Layer template underneath heatmap"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:487:44
+#: resources/public/pebble_templates/index.html
 msgid "grid;toggle grid"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:488:28
+#: resources/public/pebble_templates/index.html
 msgid "Grid"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:492:57
+#: resources/public/pebble_templates/index.html
 msgid "Turn on grid"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:494:67
+#: resources/public/pebble_templates/index.html
 msgid "(toggle with <kbd>G</kbd>)"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:499:36
+#: resources/public/pebble_templates/index.html
 msgid "controls;zooming;panning;movement"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:501:24
+#: resources/public/pebble_templates/index.html
 msgid "Control Settings"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:504:44
+#: resources/public/pebble_templates/index.html
 msgid "zooming;scrolling;scale;scaling"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:505:28
+#: resources/public/pebble_templates/index.html
 msgid "Zooming"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:506:44
+#: resources/public/pebble_templates/index.html
 msgid "scrolling sensitivity;zooming sensitivity;mousewheel sensitivity"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:508:57
+#: resources/public/pebble_templates/index.html
 msgid "Zoom sensitivity:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:512:44
+#: resources/public/pebble_templates/index.html
 msgid "zooming limit;scrolling limit;mousewheel;zooming minimum;zooming maximum"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:514:57
+#: resources/public/pebble_templates/index.html
 msgid "Minimum scale:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:518:57
+#: resources/public/pebble_templates/index.html
 msgid "Maximum scale:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:522:44
+#: resources/public/pebble_templates/index.html
 msgid "rounding;zooming;scrolling;mousewheel;integer;decimal"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:525:57
+#: resources/public/pebble_templates/index.html
 msgid "Round zoom values to nearest whole number"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:529:44
+#: resources/public/pebble_templates/index.html
 msgid "controls;miscellaneous"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:534:57
+#: resources/public/pebble_templates/index.html
 msgid "Lock the canvas (disallow canvas drag/zoom with mouse/fingers)"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:537:44
+#: resources/public/pebble_templates/index.html
 msgid "MMB picker;mouse picker;selection;palette picker"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:540:57
+#: resources/public/pebble_templates/index.html
 msgid "Enable middle mouse button selecting color from board"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:543:44
+#: resources/public/pebble_templates/index.html
 msgid "right click action"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:545:57
+#: resources/public/pebble_templates/index.html
 msgid "Right-click action:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:547:60
+#: resources/public/pebble_templates/index.html
 msgid "Nothing"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:548:58
+#: resources/public/pebble_templates/index.html
 msgid "Clear color"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:549:57
+#: resources/public/pebble_templates/index.html
 msgid "Copy color"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:550:59
+#: resources/public/pebble_templates/index.html
 msgid "Lookup"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:551:64
+#: resources/public/pebble_templates/index.html
 msgid "Clear color + Lookup"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:558:36
+#: resources/public/pebble_templates/index.html
 msgid "snapshots;screenshot;download;picture;canvas"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:560:24
+#: resources/public/pebble_templates/index.html
 msgid "Snapshot Settings"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:563:44
+#: resources/public/pebble_templates/index.html
 msgid "screenshot;snapshot;download;board;canvas"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:564:44
+#: resources/public/pebble_templates/index.html
 msgid "take screenshot;image;download format;picture;canvas;board"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:566:57
+#: resources/public/pebble_templates/index.html
 msgid "Snapshot image format:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:568:71
+#: resources/public/pebble_templates/index.html
 msgid "PNG"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:569:63
+#: resources/public/pebble_templates/index.html
 msgid "JPEG"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:570:63
+#: resources/public/pebble_templates/index.html
 msgid "WEBP (Chrome only)"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:577:36
+#: resources/public/pebble_templates/index.html
 msgid "templates;overlays;guides"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:582:44
+#: resources/public/pebble_templates/index.html
 msgid "templates;overlays;image;pixel art"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:583:44
+#: resources/public/pebble_templates/index.html
 msgid "template enabled;template disabled;show template;hide template;template shown;template hidden"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:586:57
+#: resources/public/pebble_templates/index.html
 msgid "Use template"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:589:27
+#: resources/public/pebble_templates/index.html
 msgid "Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:590:44
+#: resources/public/pebble_templates/index.html
 msgid "template title;template name;tab name;tab title;title="
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:592:57
+#: resources/public/pebble_templates/index.html
 msgid "Title:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:596:44
+#: resources/public/pebble_templates/index.html
 msgid "template location source;template source URL;template URL;template="
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:598:57
+#: resources/public/pebble_templates/index.html
 msgid "URL:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:603:44
+#: resources/public/pebble_templates/index.html
 msgid "template position;template x;template y;template location; template vertical; template horizontal;ox=;oy="
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:605:57
+#: resources/public/pebble_templates/index.html
 msgid "Horizontal position:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:609:57
+#: resources/public/pebble_templates/index.html
 msgid "Vertical position:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:613:44
+#: resources/public/pebble_templates/index.html
 msgid "template width;tw="
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:615:57
+#: resources/public/pebble_templates/index.html
 msgid "Width:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:618:82
-#: resources/public/pebble_templates/index.html:688:79
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
 msgid "Reset"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:620:44
+#: resources/public/pebble_templates/index.html
 msgid "template style;custom template"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:622:57
+#: resources/public/pebble_templates/index.html
 msgid "Style:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:624:53
+#: resources/public/pebble_templates/index.html
 msgid "Use Source Style"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:625:239
+#: resources/public/pebble_templates/index.html
 msgid "Dotted (Small, 1:2)"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:626:271
+#: resources/public/pebble_templates/index.html
 msgid "Dotted (Big, 2:2)"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:627:1803
+#: resources/public/pebble_templates/index.html
 msgid "Numbers"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:628:85
+#: resources/public/pebble_templates/index.html
 msgid "Custom…"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:632:44
+#: resources/public/pebble_templates/index.html
 msgid "template style source;template style URL;custom style URL;custom template"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:634:57
+#: resources/public/pebble_templates/index.html
 msgid "Custom style URL:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:639:44
+#: resources/public/pebble_templates/index.html
 msgid "template conversion;template palette conversion;convert to palette"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:641:57
+#: resources/public/pebble_templates/index.html
 msgid "Color Conversion Mode:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:643:64
+#: resources/public/pebble_templates/index.html
 msgid "Unconverted"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:644:66
+#: resources/public/pebble_templates/index.html
 msgid "Nearest Custom"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:648:44
+#: resources/public/pebble_templates/index.html
 msgid "template transparency;template opacity;oo="
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:650:57
+#: resources/public/pebble_templates/index.html
 msgid "Opacity:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:658:36
+#: resources/public/pebble_templates/index.html
 msgid "sound;notification;alert;notify;ping"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:660:24
+#: resources/public/pebble_templates/index.html
 msgid "Sound and Notification Settings"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:665:44
+#: resources/public/pebble_templates/index.html
 msgid "audio;mute;noise;volume"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:668:57
+#: resources/public/pebble_templates/index.html
 msgid "Enable sound"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:671:44
+#: resources/public/pebble_templates/index.html
 msgid "notifs;notify;pixel notification"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:674:57
+#: resources/public/pebble_templates/index.html
 msgid "Enable pixel available notification"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:678:44
+#: resources/public/pebble_templates/index.html
 msgid "notification;pixel ready;alert"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:679:28
+#: resources/public/pebble_templates/index.html
 msgid "Pixel Ready Notification"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:680:44
+#: resources/public/pebble_templates/index.html
 msgid "alert source;notify url;notify source;notification url;notification source"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:682:57
+#: resources/public/pebble_templates/index.html
 msgid "Alert URL:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:686:85
+#: resources/public/pebble_templates/index.html
 msgid "Update"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:687:83
+#: resources/public/pebble_templates/index.html
 msgid "Test"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:691:44
+#: resources/public/pebble_templates/index.html
 msgid "sound level;audio level;mute audio;mute sound"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:693:57
+#: resources/public/pebble_templates/index.html
 msgid "Volume:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:698:44
+#: resources/public/pebble_templates/index.html
 msgid "alert forewarning;alert delay; notification delay; notification forewarning"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:700:57
+#: resources/public/pebble_templates/index.html
 msgid "Delay (seconds):"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:705:44
+#: resources/public/pebble_templates/index.html
 msgid "chat mentions;chat pings;chat sound"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:706:28
+#: resources/public/pebble_templates/index.html
 msgid "Chat Pings"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:710:57
+#: resources/public/pebble_templates/index.html
 msgid "Enable pings"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:713:44
+#: resources/public/pebble_templates/index.html
 msgid "mention sound"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:715:57
+#: resources/public/pebble_templates/index.html
 msgid "Play sound on ping:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:717:56
-#: resources/public/include/chat.js:1937:100
+#: resources/public/pebble_templates/index.html
+#: resources/public/include/chat.js
 msgid "Off"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:718:61
+#: resources/public/pebble_templates/index.html
 msgid "Only when necessary"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:719:59
+#: resources/public/pebble_templates/index.html
 msgid "Always"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:723:44
+#: resources/public/pebble_templates/index.html
 msgid "mention sound volume"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:725:57
+#: resources/public/pebble_templates/index.html
 msgid "Ping sound volume:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:733:36
+#: resources/public/pebble_templates/index.html
 msgid "personal account"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:735:24
+#: resources/public/pebble_templates/index.html
 msgid "Account Settings"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:741:57
+#: resources/public/pebble_templates/index.html
 msgid "Public Discord name:"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:745:83
-#: resources/public/include/chat.js:1939:92
-#: resources/public/include/chat.js:2003:92
+#: resources/public/pebble_templates/index.html
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
 msgid "Set"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:746:86
+#: resources/public/pebble_templates/index.html
 msgid "Remove"
 msgstr ""
 
 #. FAQ panel
-#: resources/public/pebble_templates/index.html:759:65
+#: resources/public/pebble_templates/index.html
 msgid "Help"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html:772:54
+#: resources/public/pebble_templates/index.html
 msgid "Notifications"
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:3:16
+#: resources/public/pebble_templates/faq.html
 msgid "FAQ"
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:7:20
+#: resources/public/pebble_templates/faq.html
 msgid "Why is the cooldown as long as it is?"
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:8:20
+#: resources/public/pebble_templates/faq.html
 msgid "The time it takes to get a pixel is dynamic, and changes based on how many people are online. The cooldown time is longer when more users are online."
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:9:20
+#: resources/public/pebble_templates/faq.html
 msgid "Why does it say 0/6 pixels?"
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:10:20
+#: resources/public/pebble_templates/faq.html
 msgid "This means that you are waiting for your next pixel. When you place a pixel, there is a cooldown for when you can place the next one. Over time, you can gain up to 6 \"stacked\" pixels to place at once."
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:11:20
+#: resources/public/pebble_templates/faq.html
 msgid "Why does it take so long to \"stack\" pixels?"
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:12:20
+#: resources/public/pebble_templates/faq.html
 msgid "This is by design. It is better to place a pixel as soon as you get one. Pixel \"stacking\" is meant to give you a bump if you go AFK for a bit. It takes around 40 minutes to get a full 6/6 pixels, but it only takes around 3 minutes to place 6 pixels if you place them as soon as possible."
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:13:20
+#: resources/public/pebble_templates/faq.html
 msgid "How do I appeal a ban?"
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:14:20
+#: resources/public/pebble_templates/faq.html
 msgid "Contact us on <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord</a> or send an appeal to our <a href=\"https://pxls.space/appeal\" target=\"_blank\">Google form</a> after reading the rules in the site's info panel."
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:15:20
+#: resources/public/pebble_templates/faq.html
 msgid "How do I make a template?"
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:16:20
+#: resources/public/pebble_templates/faq.html
 msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use the 3rd party tool <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into PxlsFiddle."
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:17:20
+#: resources/public/pebble_templates/faq.html
 msgid "How do I move a template?"
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:18:20
+#: resources/public/pebble_templates/faq.html
 msgid "Hold <kbd>CTRL</kbd> (or <kbd>OPTION</kbd> on macOS) and click and drag to move it around. On mobile, you can tap and hold where you want to move the template and click \"Move Template Here\" in the pop-up."
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:19:20
+#: resources/public/pebble_templates/faq.html
 msgid "Does the canvas reset? When?"
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:20:20
+#: resources/public/pebble_templates/faq.html
 msgid "Yes. The canvas resets when it is completely full. A reset date is not usually decided until the canvas is full, but the average canvas life-span is around 1 month. Updates are posted in our <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord server</a> when a reset date is set."
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:21:20
+#: resources/public/pebble_templates/faq.html
 msgid "Where can I see the past canvases?"
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:22:20
+#: resources/public/pebble_templates/faq.html
 msgid "The past canvases are featured on our <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord server</a>, or the 3rd party website <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a>, which records timelapses and a lot of useful information on each canvas."
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:23:20
+#: resources/public/pebble_templates/faq.html
 msgid "How do I see who placed a pixel?"
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:24:20
+#: resources/public/pebble_templates/faq.html
 msgid "By shift-clicking (or tap and hold on mobile) a pixel, you can see who placed a pixel, how many pixels they have placed, and when they placed it."
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:25:20
+#: resources/public/pebble_templates/faq.html
 msgid "How do I report someone?"
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:26:20
+#: resources/public/pebble_templates/faq.html
 msgid "Shift-click (or tap and hold on mobile) on a pixel, and click the Report button."
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:27:20
+#: resources/public/pebble_templates/faq.html
 msgid "How do I change the color of my name in the chat?"
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:28:20
+#: resources/public/pebble_templates/faq.html
 msgid "There is a \"Username Color\" option near the bottom of the settings panel."
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:29:20
+#: resources/public/pebble_templates/faq.html
 msgid "What is a \"virginmap\"?"
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:30:20
+#: resources/public/pebble_templates/faq.html
 msgid "The virginmap shows which pixels have not yet been placed on (or “virgin” pixels)."
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:31:20
+#: resources/public/pebble_templates/faq.html
 msgid "How do I report bugs?"
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:32:20
+#: resources/public/pebble_templates/faq.html
 msgid "Submit bugs to the #dev-and-bugs channel in the <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord server</a>. If you have found an exploit, please message one of the staff members privately (through DMs)."
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:33:20
+#: resources/public/pebble_templates/faq.html
 msgid "How do I get more info or contact staff?"
 msgstr ""
 
-#: resources/public/pebble_templates/faq.html:34:20
+#: resources/public/pebble_templates/faq.html
 msgid "Check the info panel (the icon on the top left) for more details and links, or join our <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord server</a>, where a staff member will gladly respond."
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:3:10
+#: resources/public/pebble_templates/info.html
 msgid "Welcome!"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:6:9
+#: resources/public/pebble_templates/info.html
 msgid "Welcome to pxls.space! Pxls is a multiplayer online collaborative canvas that allows you to create anything you can imagine, one pixel at a time. Join hundreds of other players in the Pxls community and create amazing works of art together as a team, or solo."
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:7:9
+#: resources/public/pebble_templates/info.html
 msgid "The best place to reach staff and fellow community is in the discord!"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:8:9
+#: resources/public/pebble_templates/info.html
 msgid "Check out our social media pages, and please take the time to read the rules below. Have fun creating (or changing) art!"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:13:27
+#: resources/public/pebble_templates/info.html
 msgid "Canvas Rules"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:16:9
+#: resources/public/pebble_templates/info.html
 msgid "We pride ourselves on trying to keep an open canvas for all free from outside interference on our end, and especially censorship. However, for the good of the community and on accounts of our own beliefs, please acknowledge and obey the following guidelines:"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:18:11
+#: resources/public/pebble_templates/info.html
 msgid "No hateful imagery or derogatory speech. This includes but is not limited to words such as <i>faggot</i>, <i>nigger</i>, etc; as well as the Swastika, Hammer and Sickle, and any symbols of terrorism."
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:19:11
+#: resources/public/pebble_templates/info.html
 msgid "No NSFW or NSFL content."
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:21:13
+#: resources/public/pebble_templates/info.html
 msgid "No nudity or otherwise sexually explicit content"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:23:15
+#: resources/public/pebble_templates/info.html
 msgid "No female-presenting nipples/bare breasts, genitalia, sexual fluids"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:26:13
+#: resources/public/pebble_templates/info.html
 msgid "No sexual imagery/erotica"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:27:13
+#: resources/public/pebble_templates/info.html
 msgid "No excessive blood or otherwise obscene/shocking content"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:30:11
+#: resources/public/pebble_templates/info.html
 msgid "No more than <b>one</b> account per user, no exceptions. Multiple account users will be banned from creating art on the canvas."
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:31:11
+#: resources/public/pebble_templates/info.html
 msgid "No auto-placement tools of any kind, you must place the pixels manually."
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:32:11
+#: resources/public/pebble_templates/info.html
 msgid "Do not abuse site functionality, such as reports or lookups. (e.g. automated reporting/lookups, etc.)"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:33:11
+#: resources/public/pebble_templates/info.html
 msgid "Any automated aggregation of data from user lookups is not allowed, and will result in a ban."
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:34:11
-#: resources/public/pebble_templates/info.html:62:11
+#: resources/public/pebble_templates/info.html
+#: resources/public/pebble_templates/info.html
 msgid "Staff have final say in any rule disputes"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:35:12
-#: resources/public/pebble_templates/info.html:64:13
+#: resources/public/pebble_templates/info.html
+#: resources/public/pebble_templates/info.html
 msgid "If you feel a moderator has acted inappropriately, please report it to an administrator."
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:38:9
+#: resources/public/pebble_templates/info.html
 msgid "If you believe you have been falsely banned you may contact a moderator or administrator."
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:43:27
+#: resources/public/pebble_templates/info.html
 msgid "Chat Rules"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:47:11
+#: resources/public/pebble_templates/info.html
 msgid "Keep chat civil. No harassment or homophobic/transphobic/disablist language."
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:48:11
+#: resources/public/pebble_templates/info.html
 msgid "No hate speech. This includes emoji/symbols/ASCII art."
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:50:13
+#: resources/public/pebble_templates/info.html
 msgid "Normal swearing/etc is allowed"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:53:11
+#: resources/public/pebble_templates/info.html
 msgid "No spamming"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:55:13
+#: resources/public/pebble_templates/info.html
 msgid "This includes excessive ASCII art/emojis/symbols/whitespace"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:58:11
+#: resources/public/pebble_templates/info.html
 msgid "No \"copy pasta\"s"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:59:11
+#: resources/public/pebble_templates/info.html
 msgid "No links to sites that actively break the canvas or chat rules (e.g. porn sites)"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:60:11
+#: resources/public/pebble_templates/info.html
 msgid "No symbology which break the canvas or chat rules (e.g. NSFW ASCII art)"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:61:16
+#: resources/public/pebble_templates/info.html
 msgid "No personal information"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:72:10
+#: resources/public/pebble_templates/info.html
 msgid "Links"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:76:64
+#: resources/public/pebble_templates/info.html
 msgid "Discord (main hub)"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:77:68
+#: resources/public/pebble_templates/info.html
 msgid "Subreddit"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:78:68
+#: resources/public/pebble_templates/info.html
 msgid "Twitter"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:79:66
+#: resources/public/pebble_templates/info.html
 msgid "GitHub"
 msgstr ""
 
 #. link to piskelapp.com
-#: resources/public/pebble_templates/info.html:81:71
+#: resources/public/pebble_templates/info.html
 msgid "Single-player mode"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:84:62
+#: resources/public/pebble_templates/info.html
 msgid "Statistics"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:85:64
+#: resources/public/pebble_templates/info.html
 msgid "Profile (user info, factions, etc.)"
 msgstr ""
 
 #. link to pxlsfiddle.com
-#: resources/public/pebble_templates/info.html:87:68
+#: resources/public/pebble_templates/info.html
 msgid "Template generator, archives, timelapses, and other utilities"
 msgstr ""
 
 #. link to pxlsfiddle.com
-#: resources/public/pebble_templates/info.html:87:165
+#: resources/public/pebble_templates/info.html
 msgid "PxlsFiddle (templates, archives, etc.)"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:93:10
+#: resources/public/pebble_templates/info.html
 msgid "Donate"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html:96:9
+#: resources/public/pebble_templates/info.html
 msgid "Donations are not accepted at this time, but this panel will be updated when they're open again!"
 msgstr ""
 
 #. eg "Alice's profile". Double singlequote is a java thing - needed if a replacement (such as this) contains a singlequote.
-#: resources/public/pebble_templates/profile.html:31:66
-#: resources/public/pebble_templates/profile.html:50:131
+#: resources/public/pebble_templates/profile.html
+#: resources/public/pebble_templates/profile.html
 msgid "{0}''s Profile"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:41:84
-#: resources/public/pebble_templates/40x.html:28:84
-#: resources/public/pebble_templates/40x.html:45:100
-#: resources/public/pebble_templates/40x.html:62:100
+#: resources/public/pebble_templates/profile.html
+#: resources/public/pebble_templates/40x.html
+#: resources/public/pebble_templates/40x.html
+#: resources/public/pebble_templates/40x.html
 msgid "My Profile"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:42:85
-#: resources/public/pebble_templates/40x.html:29:85
+#: resources/public/pebble_templates/profile.html
+#: resources/public/pebble_templates/40x.html
 msgid "My Factions"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:60:93
-#: resources/public/pebble_templates/profile.html:126:56
+#: resources/public/pebble_templates/profile.html
+#: resources/public/pebble_templates/profile.html
 msgid "Reports"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:63:94
+#: resources/public/pebble_templates/profile.html
 msgid "Factions"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:71:68
+#: resources/public/pebble_templates/profile.html
 msgid "You must be logged in to view your profile."
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:77:72
+#: resources/public/pebble_templates/profile.html
 msgid "Registration Date"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:82:72
-#: resources/public/include/lookup.js:280:21
+#: resources/public/pebble_templates/profile.html
+#: resources/public/include/lookup.js
 msgid "Alltime Pixels"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:86:72
+#: resources/public/pebble_templates/profile.html
 msgid "Current Canvas Pixels"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:91:72
+#: resources/public/pebble_templates/profile.html
 msgid "Discord Tag"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:95:72
-#: resources/public/include/lookup.js:235:21
+#: resources/public/pebble_templates/profile.html
+#: resources/public/include/lookup.js
 msgid "Faction"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:96:259
+#: resources/public/pebble_templates/profile.html
 msgid "None"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:99:72
-#: resources/public/admin/admin.js:198:16
+#: resources/public/pebble_templates/profile.html
+#: resources/public/admin/admin.js
 msgid "Roles"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:104:72
+#: resources/public/pebble_templates/profile.html
 msgid "Canvas Ban Expiry"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:105:101
-#: resources/public/pebble_templates/profile.html:111:105
+#: resources/public/pebble_templates/profile.html
+#: resources/public/pebble_templates/profile.html
 msgid "Never"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:110:72
+#: resources/public/pebble_templates/profile.html
 msgid "Chat Ban Expiry"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:117:36
+#: resources/public/pebble_templates/profile.html
 msgid "View rankings and other stats <a href=\"/stats\">here</a>."
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:124:68
+#: resources/public/pebble_templates/profile.html
 msgid "You must be logged in to view your reports."
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:130:64
+#: resources/public/pebble_templates/profile.html
 msgid "Canvas Reports ({0}/{1} open)"
 msgstr ""
 
 #. eg "Report on Bob (closed)
-#: resources/public/pebble_templates/profile.html:142:56
-#: resources/public/pebble_templates/profile.html:177:56
+#: resources/public/pebble_templates/profile.html
+#: resources/public/pebble_templates/profile.html
 msgid "Report on {0} (closed)"
 msgstr ""
 
 #. eg "Report on Bob (open)
-#: resources/public/pebble_templates/profile.html:145:56
-#: resources/public/pebble_templates/profile.html:179:56
+#: resources/public/pebble_templates/profile.html
+#: resources/public/pebble_templates/profile.html
 msgid "Report on {0} (open)"
 msgstr ""
 
 #. eg "Reported Bob on Jan 1, 1970, 00:00:00 AM (UTC)
-#: resources/public/pebble_templates/profile.html:152:60
-#: resources/public/pebble_templates/profile.html:185:60
+#: resources/public/pebble_templates/profile.html
+#: resources/public/pebble_templates/profile.html
 msgid "Reported {0} on {1}"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:158:47
+#: resources/public/pebble_templates/profile.html
 msgid "There are no canvas reports to show."
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:166:64
+#: resources/public/pebble_templates/profile.html
 msgid "Chat Reports ({0}/{1} open)"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:191:47
+#: resources/public/pebble_templates/profile.html
 msgid "There are no chat reports to show."
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:200:68
+#: resources/public/pebble_templates/profile.html
 msgid "You must be logged in to manage your factions."
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:205:36
+#: resources/public/pebble_templates/profile.html
 msgid "You are faction restricted and cannot create new factions. If you believe this is an error, please contact a moderator."
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:207:36
+#: resources/public/pebble_templates/profile.html
 msgid "You are canvas banned and cannot create new factions. If you believe this is an error, please contact a moderator."
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:212:76
+#: resources/public/pebble_templates/profile.html
 msgid "You must have at least {0} all-time pixels to create a faction."
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:215:300
+#: resources/public/pebble_templates/profile.html
 msgid "Create"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:216:191
+#: resources/public/pebble_templates/profile.html
 msgid "Join"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:225:118
+#: resources/public/pebble_templates/profile.html
 msgid "This is your currently displayed faction."
 msgstr ""
 
 #. eg "Pixelers (members: 100, ID: 1)"
-#: resources/public/pebble_templates/profile.html:228:44
+#: resources/public/pebble_templates/profile.html
 msgid "{0} (members: {1}, ID: {2}"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:231:69
+#: resources/public/pebble_templates/profile.html
 msgid "Owner: {0}"
 msgstr ""
 
 #. makes the faction no longer the one displayed for the current user
-#: resources/public/pebble_templates/profile.html:236:175
+#: resources/public/pebble_templates/profile.html
 msgid "Remove Displayed"
 msgstr ""
 
 #. makes the faction the one displayed for the current user
-#: resources/public/pebble_templates/profile.html:239:172
+#: resources/public/pebble_templates/profile.html
 msgid "Set Displayed"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:242:235
+#: resources/public/pebble_templates/profile.html
 msgid "Members"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:243:169
+#: resources/public/pebble_templates/profile.html
 msgid "Edit"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:244:168
-#: resources/public/include/chat.js:1462:24
+#: resources/public/pebble_templates/profile.html
+#: resources/public/include/chat.js
 msgid "Delete"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:246:174
+#: resources/public/pebble_templates/profile.html
 msgid "Leave"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:253:68
+#: resources/public/pebble_templates/profile.html
 msgid "You are not in any factions yet!"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:269:52
+#: resources/public/pebble_templates/profile.html
 msgid "Members of {0} ([{1}])"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:270:97
-#: resources/public/pebble_templates/profile.html:329:97
-#: resources/public/pebble_templates/profile.html:342:97
-#: resources/public/pebble_templates/profile.html:366:97
+#: resources/public/pebble_templates/profile.html
+#: resources/public/pebble_templates/profile.html
+#: resources/public/pebble_templates/profile.html
+#: resources/public/pebble_templates/profile.html
 msgid "Close"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:278:60
+#: resources/public/pebble_templates/profile.html
 msgid "Faction Members"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:292:128
+#: resources/public/pebble_templates/profile.html
 msgid "Transfer Ownership"
 msgstr ""
 
 #. bans a user from the faction
-#: resources/public/pebble_templates/profile.html:294:122
-#: resources/public/include/chat.js:1733:60
+#: resources/public/pebble_templates/profile.html
+#: resources/public/include/chat.js
 msgid "Ban"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:300:79
-#: resources/public/pebble_templates/profile.html:322:79
+#: resources/public/pebble_templates/profile.html
+#: resources/public/pebble_templates/profile.html
 msgid "Nothing to see here!"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:308:60
+#: resources/public/pebble_templates/profile.html
 msgid "Faction Bans"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:318:125
-#: resources/public/include/chat.js:1629:36
-#: resources/public/include/chat.js:1733:46
-#: resources/public/admin/admin.js:320:88
-#: resources/public/admin/admin.js:347:52
+#: resources/public/pebble_templates/profile.html
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
+#: resources/public/admin/admin.js
+#: resources/public/admin/admin.js
 msgid "Unban"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:341:52
+#: resources/public/pebble_templates/profile.html
 msgid "Find A Faction"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:351:99
+#: resources/public/pebble_templates/profile.html
 msgid "Search:"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:361:66
+#: resources/public/pebble_templates/profile.html
 msgid "Enter a search term to get started."
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html:363:116
+#: resources/public/pebble_templates/profile.html
 msgid "Load More"
 msgstr ""
 
 #. HTTP status code name
-#: resources/public/pebble_templates/40x.html:39:24
+#: resources/public/pebble_templates/40x.html
 msgid "Not Found"
 msgstr ""
 
-#: resources/public/pebble_templates/40x.html:41:23
+#: resources/public/pebble_templates/40x.html
 msgid "The content you requested could not be found at this URL. If you believe this is an error, please contact a developer."
 msgstr ""
 
 #. links to the homepage (the app itself)
-#: resources/public/pebble_templates/40x.html:44:99
-#: resources/public/pebble_templates/40x.html:53:99
-#: resources/public/pebble_templates/40x.html:61:99
+#: resources/public/pebble_templates/40x.html
+#: resources/public/pebble_templates/40x.html
+#: resources/public/pebble_templates/40x.html
 msgid "Back to Pxls"
 msgstr ""
 
 #. HTTP status code name
-#: resources/public/pebble_templates/40x.html:49:24
+#: resources/public/pebble_templates/40x.html
 msgid "Not Authenticated"
 msgstr ""
 
-#: resources/public/pebble_templates/40x.html:51:23
+#: resources/public/pebble_templates/40x.html
 msgid "You must be logged in to access this data. Please go back to pxls and go through the authentication process."
 msgstr ""
 
 #. HTTP status code name
-#: resources/public/pebble_templates/40x.html:57:24
+#: resources/public/pebble_templates/40x.html
 msgid "Not Allowed"
 msgstr ""
 
-#: resources/public/pebble_templates/40x.html:59:23
+#: resources/public/pebble_templates/40x.html
 msgid "The action you attempted to perform is not allowed or resulted in an error. Please ensure you have access to the endpoint and try again later."
 msgstr ""
 
-#: resources/public/pxls.js:134:38
+#: resources/public/pxls.js
 msgid "Alert"
 msgstr ""
 
 #. Snapshot save name
-#: resources/public/include/board.js:806:100
+#: resources/public/include/board.js
 msgid "pxls canvas"
 msgstr ""
 
 #. template link action
-#: resources/public/include/chat.js:80:21
+#: resources/public/include/chat.js
 msgid "Ask"
 msgstr ""
 
-#: resources/public/include/chat.js:84:21
+#: resources/public/include/chat.js
 msgid "Open in a new tab"
 msgstr ""
 
-#: resources/public/include/chat.js:88:21
+#: resources/public/include/chat.js
 msgid "Open in current tab (replacing template)"
 msgstr ""
 
-#: resources/public/include/chat.js:92:21
+#: resources/public/include/chat.js
 msgid "Jump to coordinates without replacing template"
 msgstr ""
 
-#: resources/public/include/chat.js:437:55
-#: resources/public/include/chat.js:956:53
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
 msgid "You must be logged in to chat."
 msgstr ""
 
-#: resources/public/include/chat.js:1260:42
-#: resources/public/include/chat.js:1753:27
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
 msgid "none provided"
 msgstr ""
 
-#: resources/public/include/chat.js:1261:38
+#: resources/public/include/chat.js
 msgid "Purged by ${purge.initiator} with reason: ${reason}"
 msgstr ""
 
-#: resources/public/include/chat.js:1279:26
+#: resources/public/include/chat.js
 msgid "template:"
 msgstr ""
 
-#: resources/public/include/chat.js:1331:56
-#: resources/public/include/chat.js:2057:56
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
 msgid "Open Failed"
 msgstr ""
 
-#: resources/public/include/chat.js:1333:32
-#: resources/public/include/chat.js:2059:32
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
 msgid "Failed to automatically open in a new tab"
 msgstr ""
 
-#: resources/public/include/chat.js:1337:24
-#: resources/public/include/chat.js:2063:24
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
 msgid "Click here to open in a new tab instead"
 msgstr ""
 
-#: resources/public/include/chat.js:1351:52
+#: resources/public/include/chat.js
 msgid "Open Template"
 msgstr ""
 
-#: resources/public/include/chat.js:1353:54
+#: resources/public/include/chat.js
 msgid "This link will overwrite your current template. What would you like to do?"
 msgstr ""
 
-#: resources/public/include/chat.js:1364:55
+#: resources/public/include/chat.js
 msgid "Note: You can set a default action in the settings menu which bypasses this popup completely."
 msgstr ""
 
-#: resources/public/include/chat.js:1455:24
-#: resources/public/include/chat.js:1534:18
-#: resources/public/include/lookup.js:18:90
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
+#: resources/public/include/lookup.js
 msgid "Report"
 msgstr ""
 
-#: resources/public/include/chat.js:1456:24
+#: resources/public/include/chat.js
 msgid "Mention"
 msgstr ""
 
-#: resources/public/include/chat.js:1457:24
+#: resources/public/include/chat.js
 msgid "Ignore"
 msgstr ""
 
-#: resources/public/include/chat.js:1458:102
-#: resources/public/admin/admin.js:193:16
+#: resources/public/include/chat.js
+#: resources/public/admin/admin.js
 msgid "Profile"
 msgstr ""
 
-#: resources/public/include/chat.js:1459:24
+#: resources/public/include/chat.js
 msgid "Chat (un)ban"
 msgstr ""
 
-#: resources/public/include/chat.js:1461:43
-#: resources/public/include/chat.js:1911:54
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
 msgid "Purge User"
 msgstr ""
 
-#: resources/public/include/chat.js:1463:24
+#: resources/public/include/chat.js
 msgid "Mod Lookup"
 msgstr ""
 
-#: resources/public/include/chat.js:1464:24
+#: resources/public/include/chat.js
 msgid "Chat Lookup"
 msgstr ""
 
-#: resources/public/include/chat.js:1536:30
+#: resources/public/include/chat.js
 msgid "Enter a reason for your report"
 msgstr ""
 
-#: resources/public/include/chat.js:1565:26
-#: resources/public/include/chat.js:1686:18
-#: resources/public/include/chat.js:1845:22
-#: resources/public/include/chat.js:1893:22
-#: resources/public/include/chat.js:1961:22
-#: resources/public/include/chat.js:2021:22
-#: resources/public/include/lookup.js:64:91
-#: resources/public/include/user.js:73:87
-#: resources/public/admin/admin.js:334:20
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
+#: resources/public/include/lookup.js
+#: resources/public/include/user.js
+#: resources/public/admin/admin.js
 msgid "Cancel"
 msgstr ""
 
-#: resources/public/include/chat.js:1580:34
-#: resources/public/include/lookup.js:45:30
+#: resources/public/include/chat.js
+#: resources/public/include/lookup.js
 msgid "Error sending report."
 msgstr ""
 
-#: resources/public/include/chat.js:1585:54
+#: resources/public/include/chat.js
 msgid "Report User"
 msgstr ""
 
-#: resources/public/include/chat.js:1599:34
+#: resources/public/include/chat.js
 msgid "User ignored. You can unignore from chat settings."
 msgstr ""
 
-#: resources/public/include/chat.js:1601:34
+#: resources/public/include/chat.js
 msgid "Failed to ignore user. Either they\\'re already ignored, or an error occurred. If the problem persists, contact a developer."
 msgstr ""
 
-#: resources/public/include/chat.js:1629:55
+#: resources/public/include/chat.js
 msgid "Permanent"
 msgstr ""
 
-#: resources/public/include/chat.js:1629:78
+#: resources/public/include/chat.js
 msgid "Temporary"
 msgstr ""
 
-#: resources/public/include/chat.js:1656:32
+#: resources/public/include/chat.js
 msgid "Rule 3: Spam"
 msgstr ""
 
-#: resources/public/include/chat.js:1657:32
+#: resources/public/include/chat.js
 msgid "Rule 1: Chat civility"
 msgstr ""
 
-#: resources/public/include/chat.js:1658:32
+#: resources/public/include/chat.js
 msgid "Rule 2: Hate Speech"
 msgstr ""
 
-#: resources/public/include/chat.js:1659:32
+#: resources/public/include/chat.js
 msgid "Rule 5: NSFW"
 msgstr ""
 
-#: resources/public/include/chat.js:1660:32
-#: resources/public/include/chat.js:1738:58
-#: resources/public/include/chat.js:1759:45
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
 msgid "Custom"
 msgstr ""
 
-#: resources/public/include/chat.js:1693:33
+#: resources/public/include/chat.js
 msgid "Banning:"
 msgstr ""
 
-#: resources/public/include/chat.js:1693:50
+#: resources/public/include/chat.js
 msgid "Message:"
 msgstr ""
 
-#: resources/public/include/chat.js:1695:26
+#: resources/public/include/chat.js
 msgid "Ban Length"
 msgstr ""
 
-#: resources/public/include/chat.js:1702:28
+#: resources/public/include/chat.js
 msgid "Reason"
 msgstr ""
 
-#: resources/public/include/chat.js:1707:28
+#: resources/public/include/chat.js
 msgid "Purge Messages"
 msgstr ""
 
-#: resources/public/include/chat.js:1711:27
+#: resources/public/include/chat.js
 msgid "Purging all messages is disabled during snip mode"
 msgstr ""
 
-#: resources/public/include/chat.js:1714:79
-#: resources/public/include/user.js:174:22
-#: resources/public/admin/admin.js:185:41
-#: resources/public/admin/admin.js:187:94
+#: resources/public/include/chat.js
+#: resources/public/include/user.js
+#: resources/public/admin/admin.js
+#: resources/public/admin/admin.js
 msgid "Yes"
 msgstr ""
 
-#: resources/public/include/chat.js:1715:78
-#: resources/public/include/user.js:178:22
-#: resources/public/admin/admin.js:185:53
-#: resources/public/admin/admin.js:187:106
+#: resources/public/include/chat.js
+#: resources/public/include/user.js
+#: resources/public/admin/admin.js
+#: resources/public/admin/admin.js
 msgid "No"
 msgstr ""
 
-#: resources/public/include/chat.js:1739:63
+#: resources/public/include/chat.js
 msgid "Custom reason"
 msgstr ""
 
-#: resources/public/include/chat.js:1739:85
-#: resources/public/include/lookup.js:59:30
+#: resources/public/include/chat.js
+#: resources/public/include/lookup.js
 msgid "Additional information (if applicable)"
 msgstr ""
 
-#: resources/public/include/chat.js:1764:45
+#: resources/public/include/chat.js
 msgid "Additional information:"
 msgstr ""
 
-#: resources/public/include/chat.js:1786:34
+#: resources/public/include/chat.js
 msgid "Error occurred while chatbanning"
 msgstr ""
 
-#: resources/public/include/chat.js:1790:54
+#: resources/public/include/chat.js
 msgid "Chatban"
 msgstr ""
 
-#: resources/public/include/chat.js:1810:32
+#: resources/public/include/chat.js
 msgid "Failed to delete"
 msgstr ""
 
-#: resources/public/include/chat.js:1821:32
-#: resources/public/include/chat.js:1863:32
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
 msgid "ID: "
 msgstr ""
 
-#: resources/public/include/chat.js:1825:32
-#: resources/public/include/chat.js:1873:32
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
 msgid "User: "
 msgstr ""
 
-#: resources/public/include/chat.js:1829:32
-#: resources/public/include/chat.js:1867:32
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
 msgid "Message: "
 msgstr ""
 
-#: resources/public/include/chat.js:1833:32
+#: resources/public/include/chat.js
 msgid "Reason: "
 msgstr ""
 
-#: resources/public/include/chat.js:1850:54
+#: resources/public/include/chat.js
 msgid "Delete Message"
 msgstr ""
 
-#: resources/public/include/chat.js:1858:106
+#: resources/public/include/chat.js
 msgid "Purge"
 msgstr ""
 
-#: resources/public/include/chat.js:1879:28
+#: resources/public/include/chat.js
 msgid "Selected Message"
 msgstr ""
 
-#: resources/public/include/chat.js:1882:30
+#: resources/public/include/chat.js
 msgid "Purge Reason"
 msgstr ""
 
-#: resources/public/include/chat.js:1907:34
+#: resources/public/include/chat.js
 msgid "Error sending purge."
 msgstr ""
 
-#: resources/public/include/chat.js:1936:98
+#: resources/public/include/chat.js
 msgid "On"
 msgstr ""
 
-#: resources/public/include/chat.js:1949:28
+#: resources/public/include/chat.js
 msgid "Toggle Rename Request"
 msgstr ""
 
-#: resources/public/include/chat.js:1950:27
+#: resources/public/include/chat.js
 msgid "Select one of the options below to set the current rename request state."
 msgstr ""
 
-#: resources/public/include/chat.js:1975:30
-#: resources/public/include/chat.js:2034:30
+#: resources/public/include/chat.js
+#: resources/public/include/chat.js
 msgid "An unknown error occurred. Please contact a developer"
 msgstr ""
 
-#: resources/public/include/chat.js:2001:52
+#: resources/public/include/chat.js
 msgid "New Name: "
 msgstr ""
 
-#: resources/public/include/chat.js:2011:27
+#: resources/public/include/chat.js
 msgid "Enter the new name for the user below. Please note that if you\\'re trying to change the caps, you\\'ll have to rename to something else first."
 msgstr ""
 
-#: resources/public/include/chat.js:2049:54
+#: resources/public/include/chat.js
 msgid "Force Rename"
 msgstr ""
 
-#: resources/public/include/chat.js:2088:118
+#: resources/public/include/chat.js
 msgid "You cannot use chat while canvas banned."
 msgstr ""
 
-#: resources/public/include/lookup.js:21:32
+#: resources/public/include/lookup.js
 msgid "Sending..."
 msgstr ""
 
-#: resources/public/include/lookup.js:28:32
+#: resources/public/include/lookup.js
 msgid "You must specify the details."
 msgstr ""
 
-#: resources/public/include/lookup.js:33:27
+#: resources/public/include/lookup.js
 msgid "additional information:"
 msgstr ""
 
-#: resources/public/include/lookup.js:49:50
+#: resources/public/include/lookup.js
 msgid "Report Pixel"
 msgstr ""
 
-#: resources/public/include/lookup.js:52:32
+#: resources/public/include/lookup.js
 msgid "Rule #1: Hateful/derogatory speech or symbols"
 msgstr ""
 
-#: resources/public/include/lookup.js:53:32
+#: resources/public/include/lookup.js
 msgid "Rule #2: Nudity, genitalia, or non-PG-13 content"
 msgstr ""
 
-#: resources/public/include/lookup.js:54:32
+#: resources/public/include/lookup.js
 msgid "Rule #3: Multi-account"
 msgstr ""
 
-#: resources/public/include/lookup.js:55:32
+#: resources/public/include/lookup.js
 msgid "Rule #4: Botting"
 msgstr ""
 
-#: resources/public/include/lookup.js:56:52
+#: resources/public/include/lookup.js
 msgid "Other (specify below)"
 msgstr ""
 
-#: resources/public/include/lookup.js:168:62
+#: resources/public/include/lookup.js
 msgid "Hide sensitive information"
 msgstr ""
 
-#: resources/public/include/lookup.js:207:120
+#: resources/public/include/lookup.js
 msgid "An error occurred, either you aren't logged in or you may be attempting to look up users too fast. Please try again in 60 seconds"
 msgstr ""
 
-#: resources/public/include/lookup.js:218:21
+#: resources/public/include/lookup.js
 msgid "Coords"
 msgstr ""
 
-#: resources/public/include/lookup.js:223:21
-#: resources/public/admin/admin.js:189:16
+#: resources/public/include/lookup.js
+#: resources/public/admin/admin.js
 msgid "Username"
 msgstr ""
 
-#: resources/public/include/lookup.js:229:28
+#: resources/public/include/lookup.js
 msgid "View Profile"
 msgstr ""
 
-#: resources/public/include/lookup.js:239:21
+#: resources/public/include/lookup.js
 msgid "Origin"
 msgstr ""
 
-#: resources/public/include/lookup.js:243:28
+#: resources/public/include/lookup.js
 msgid "Part of a nuke"
 msgstr ""
 
-#: resources/public/include/lookup.js:245:28
+#: resources/public/include/lookup.js
 msgid "Placed by a staff member using placement overrides"
 msgstr ""
 
-#: resources/public/include/lookup.js:252:21
+#: resources/public/include/lookup.js
 msgid "Time"
 msgstr ""
 
-#: resources/public/include/lookup.js:263:36
+#: resources/public/include/lookup.js
 msgid "just now"
 msgstr ""
 
-#: resources/public/include/lookup.js:271:36
+#: resources/public/include/lookup.js
 msgid "${hoursStr}:${minuteStr}:${secsStr} ago"
 msgstr ""
 
-#: resources/public/include/lookup.js:284:21
+#: resources/public/include/lookup.js
 msgid "Discord"
 msgstr ""
 
-#: resources/public/include/notifications.js:60:58
+#: resources/public/include/notifications.js
 msgid "Posted by ${notification.who}"
 msgstr ""
 
-#: resources/public/include/notifications.js:63:111
+#: resources/public/include/notifications.js
 msgid "Expires ${expiry}"
 msgstr ""
 
-#: resources/public/include/template.js:440:50
+#: resources/public/include/template.js
 msgid "There was an error getting the image"
 msgstr ""
 
-#: resources/public/include/timer.js:42:53
+#: resources/public/include/timer.js
 msgid "Your next pixel will be available in ${delay} seconds!"
 msgstr ""
 
-#: resources/public/include/timer.js:87:61
+#: resources/public/include/timer.js
 msgid "Your next pixel has been available for ${alertDelay} seconds!"
 msgstr ""
 
-#: resources/public/include/timer.js:101:59
+#: resources/public/include/timer.js
 msgid "Your next pixel is available!"
 msgstr ""
 
 #. theme name
-#: resources/public/include/uiHelper.js:48:19
+#: resources/public/include/uiHelper.js
 msgid "Dark"
 msgstr ""
 
 #. theme name
-#: resources/public/include/uiHelper.js:54:19
+#: resources/public/include/uiHelper.js
 msgid "Darker"
 msgstr ""
 
 #. theme name
-#: resources/public/include/uiHelper.js:60:19
+#: resources/public/include/uiHelper.js
 msgid "Blue"
 msgstr ""
 
 #. theme name
-#: resources/public/include/uiHelper.js:66:19
+#: resources/public/include/uiHelper.js
 msgid "Purple"
 msgstr ""
 
 #. theme name
-#: resources/public/include/uiHelper.js:72:19
+#: resources/public/include/uiHelper.js
 msgid "Green"
 msgstr ""
 
 #. theme name
-#: resources/public/include/uiHelper.js:78:19
+#: resources/public/include/uiHelper.js
 msgid "Matte"
 msgstr ""
 
 #. theme name
-#: resources/public/include/uiHelper.js:84:19
+#: resources/public/include/uiHelper.js
 msgid "Terminal"
 msgstr ""
 
 #. theme name
-#: resources/public/include/uiHelper.js:90:19
+#: resources/public/include/uiHelper.js
 msgid "Red"
 msgstr ""
 
-#: resources/public/include/uiHelper.js:467:30
+#: resources/public/include/uiHelper.js
 msgid "Discord name updated successfully"
 msgstr ""
 
-#: resources/public/include/uiHelper.js:474:32
+#: resources/public/include/uiHelper.js
 msgid "Couldn\\'t change discord name: "
 msgstr ""
 
-#: resources/public/include/user.js:81:28
+#: resources/public/include/user.js
 msgid "Sign in with..."
 msgstr ""
 
-#: resources/public/include/user.js:94:149
+#: resources/public/include/user.js
 msgid "New Accounts Disabled"
 msgstr ""
 
-#: resources/public/include/user.js:167:52
+#: resources/public/include/user.js
 msgid "Sign Out"
 msgstr ""
 
-#: resources/public/include/user.js:169:27
+#: resources/public/include/user.js
 msgid "Are you sure you want to sign out?"
 msgstr ""
 
-#: resources/public/include/user.js:223:39
+#: resources/public/include/user.js
 msgid "You are permanently banned."
 msgstr ""
 
-#: resources/public/include/user.js:227:39
+#: resources/public/include/user.js
 msgid "You are temporarily banned and will not be allowed to place until ${timestamp}"
 msgstr ""
 
-#: resources/public/include/user.js:255:27
+#: resources/public/include/user.js
 msgid "If you think this was an error, please contact us using one of the links in the info tab."
 msgstr ""
 
-#: resources/public/include/user.js:256:27
+#: resources/public/include/user.js
 msgid "Ban reason:"
 msgstr ""
 
-#: resources/public/include/user.js:260:28
-#: resources/public/admin/admin.js:203:16
+#: resources/public/include/user.js
+#: resources/public/admin/admin.js
 msgid "Banned"
 msgstr ""
 
-#: resources/public/include/user.js:330:23
+#: resources/public/include/user.js
 msgid "Staff have required you to change your username, this usually means your name breaks one of our rules."
 msgstr ""
 
-#: resources/public/include/user.js:331:23
+#: resources/public/include/user.js
 msgid "If you disagree, please contact us on Discord (link in the info panel)."
 msgstr ""
 
-#: resources/public/include/user.js:332:27
+#: resources/public/include/user.js
 msgid "New Username:"
 msgstr ""
 
-#: resources/public/include/user.js:345:89
+#: resources/public/include/user.js
 msgid "Not now"
 msgstr ""
 
-#: resources/public/include/user.js:346:86
+#: resources/public/include/user.js
 msgid "Change"
 msgstr ""
 
-#: resources/public/include/user.js:350:50
-#: resources/public/admin/admin.js:201:16
+#: resources/public/include/user.js
+#: resources/public/admin/admin.js
 msgid "Rename Requested"
 msgstr ""
 
-#: resources/public/admin/admin.js:101:38
+#: resources/public/admin/admin.js
 msgid "Something went wrong! Perhaps insufficient permissions?"
 msgstr ""
 
-#: resources/public/admin/admin.js:106:45
+#: resources/public/admin/admin.js
 msgid "Shadowban user"
 msgstr ""
 
-#: resources/public/admin/admin.js:106:67
+#: resources/public/admin/admin.js
 msgid "Shadowbanned user"
 msgstr ""
 
-#: resources/public/admin/admin.js:109:45
+#: resources/public/admin/admin.js
 msgid "Permaban user"
 msgstr ""
 
-#: resources/public/admin/admin.js:109:66
+#: resources/public/admin/admin.js
 msgid "Permabanned user"
 msgstr ""
 
-#: resources/public/admin/admin.js:112:45
+#: resources/public/admin/admin.js
 msgid "Ban user"
 msgstr ""
 
-#: resources/public/admin/admin.js:112:61
+#: resources/public/admin/admin.js
 msgid "Banned user"
 msgstr ""
 
-#: resources/public/admin/admin.js:126:36
+#: resources/public/admin/admin.js
 msgid "Unbanned user ${username}"
 msgstr ""
 
 #. Context: ban type
-#: resources/public/admin/admin.js:179:27
+#: resources/public/admin/admin.js
 msgid "shadow"
 msgstr ""
 
-#: resources/public/admin/admin.js:180:29
-#: resources/public/admin/admin.js:183:29
+#: resources/public/admin/admin.js
+#: resources/public/admin/admin.js
 msgid "never"
 msgstr ""
 
-#: resources/public/admin/admin.js:182:27
+#: resources/public/admin/admin.js
 msgid "permanent"
 msgstr ""
 
-#: resources/public/admin/admin.js:187:51
+#: resources/public/admin/admin.js
 msgid "Yes (permanent)"
 msgstr ""
 
-#: resources/public/admin/admin.js:194:16
-#: resources/public/admin/admin.js:454:21
+#: resources/public/admin/admin.js
+#: resources/public/admin/admin.js
 msgid "Logins"
 msgstr ""
 
-#: resources/public/admin/admin.js:200:16
+#: resources/public/admin/admin.js
 msgid "All Time Pixels"
 msgstr ""
 
-#: resources/public/admin/admin.js:202:16
+#: resources/public/admin/admin.js
 msgid "Discord Name"
 msgstr ""
 
-#: resources/public/admin/admin.js:204:16
+#: resources/public/admin/admin.js
 msgid "Chatbanned"
 msgstr ""
 
-#: resources/public/admin/admin.js:207:27
+#: resources/public/admin/admin.js
 msgid "Ban Reason"
 msgstr ""
 
-#: resources/public/admin/admin.js:208:27
+#: resources/public/admin/admin.js
 msgid "Ban Expiracy"
 msgstr ""
 
-#: resources/public/admin/admin.js:211:27
+#: resources/public/admin/admin.js
 msgid "Chatban Reason"
 msgstr ""
 
-#: resources/public/admin/admin.js:211:102
+#: resources/public/admin/admin.js
 msgid "(canvas ban)"
 msgstr ""
 
-#: resources/public/admin/admin.js:213:97
+#: resources/public/admin/admin.js
 msgid "when canvas ban ends"
 msgstr ""
 
-#: resources/public/admin/admin.js:214:29
+#: resources/public/admin/admin.js
 msgid "Chatban Expires"
 msgstr ""
 
 #. Admin check. Example: type = 'username', arg = 'pxlsuser94'
-#: resources/public/admin/admin.js:316:36
+#: resources/public/admin/admin.js
 msgid "${type} ${arg} not found."
 msgstr ""
 
-#: resources/public/admin/admin.js:322:50
+#: resources/public/admin/admin.js
 msgid "Unban Reason:"
 msgstr ""
 
-#: resources/public/admin/admin.js:327:25
+#: resources/public/admin/admin.js
 msgid "Unbanning ${username}"
 msgstr ""
 
-#: resources/public/admin/admin.js:449:20
+#: resources/public/admin/admin.js
 msgid "profile"
 msgstr ""
 
-#: resources/public/admin/admin.js:473:21
+#: resources/public/admin/admin.js
 msgid "User Agent"
 msgstr ""
 
-#: resources/public/admin/admin.js:478:21
+#: resources/public/admin/admin.js
 msgid "Send Alert"
 msgstr ""
 
-#: resources/public/admin/admin.js:483:21
+#: resources/public/admin/admin.js
 msgid "Mod Actions"
 msgstr ""
