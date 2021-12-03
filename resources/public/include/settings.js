@@ -398,6 +398,7 @@ module.exports.settings = (function() {
       },
       template: {
         beneathoverlays: setting('board.template.beneathoverlays', SettingType.TOGGLE, false, $('#setting-board-template-beneathoverlays')),
+        opacity: setting('board.template.opacity', SettingType.RANGE, 1.0, $('#template-opacity')),
         style: {
           // NOTE ([  ]): This is a bit ugly, since both of these are essentially
           // the URL of the style. The issue is that I can't think of a good way
