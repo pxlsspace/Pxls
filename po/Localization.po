@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-11-23T21:32:45.968Z\n"
+"POT-Creation-Date: 2021-12-04T20:36:32.725Z\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -81,7 +81,7 @@ msgid "Username:"
 msgstr "Username:"
 
 #: resources/public/pebble_templates/index.html:154:65
-#: resources/public/pebble_templates/profile.html:56:96
+#: resources/public/pebble_templates/profile.html:57:96
 msgid "Info"
 msgstr "Info"
 
@@ -1325,7 +1325,7 @@ msgstr "Donations are not accepted at this time, but this panel will be updated 
 
 #. eg "Alice's profile". Double singlequote is a java thing - needed if a replacement (such as this) contains a singlequote.
 #: resources/public/pebble_templates/profile.html:31:66
-#: resources/public/pebble_templates/profile.html:50:131
+#: resources/public/pebble_templates/profile.html:51:131
 msgid "{0}''s Profile"
 msgstr "{0}''s Profile"
 
@@ -1341,208 +1341,244 @@ msgstr "My Profile"
 msgid "My Factions"
 msgstr "My Factions"
 
-#: resources/public/pebble_templates/profile.html:60:93
-#: resources/public/pebble_templates/profile.html:126:56
+#: resources/public/pebble_templates/profile.html:43:81
+msgid "My Data"
+msgstr "My Data"
+
+#: resources/public/pebble_templates/profile.html:61:93
+#: resources/public/pebble_templates/profile.html:130:56
 msgid "Reports"
 msgstr "Reports"
 
-#: resources/public/pebble_templates/profile.html:63:94
+#: resources/public/pebble_templates/profile.html:64:94
 msgid "Factions"
 msgstr "Factions"
 
-#: resources/public/pebble_templates/profile.html:71:68
+#: resources/public/pebble_templates/profile.html:67:94
+msgid "Data"
+msgstr "Data"
+
+#: resources/public/pebble_templates/profile.html:75:68
 msgid "You must be logged in to view your profile."
 msgstr "You must be logged in to view your profile."
 
-#: resources/public/pebble_templates/profile.html:77:72
+#: resources/public/pebble_templates/profile.html:81:72
 msgid "Registration Date"
 msgstr "Registration Date"
 
-#: resources/public/pebble_templates/profile.html:82:72
+#: resources/public/pebble_templates/profile.html:86:72
 #: resources/public/include/lookup.js:280:21
 msgid "Alltime Pixels"
 msgstr "Alltime Pixels"
 
-#: resources/public/pebble_templates/profile.html:86:72
+#: resources/public/pebble_templates/profile.html:90:72
 msgid "Current Canvas Pixels"
 msgstr "Current Canvas Pixels"
 
-#: resources/public/pebble_templates/profile.html:91:72
+#: resources/public/pebble_templates/profile.html:95:72
 msgid "Discord Tag"
 msgstr "Discord Tag"
 
-#: resources/public/pebble_templates/profile.html:95:72
+#: resources/public/pebble_templates/profile.html:99:72
 #: resources/public/include/lookup.js:235:21
 msgid "Faction"
 msgstr "Faction"
 
-#: resources/public/pebble_templates/profile.html:96:259
+#: resources/public/pebble_templates/profile.html:100:259
 msgid "None"
 msgstr "None"
 
-#: resources/public/pebble_templates/profile.html:99:72
+#: resources/public/pebble_templates/profile.html:103:72
 #: resources/public/admin/admin.js:198:16
 msgid "Roles"
 msgstr "Roles"
 
-#: resources/public/pebble_templates/profile.html:104:72
+#: resources/public/pebble_templates/profile.html:108:72
 msgid "Canvas Ban Expiry"
 msgstr "Canvas Ban Expiry"
 
-#: resources/public/pebble_templates/profile.html:105:101
-#: resources/public/pebble_templates/profile.html:111:105
+#: resources/public/pebble_templates/profile.html:109:101
+#: resources/public/pebble_templates/profile.html:115:105
 msgid "Never"
 msgstr "Never"
 
-#: resources/public/pebble_templates/profile.html:110:72
+#: resources/public/pebble_templates/profile.html:114:72
 msgid "Chat Ban Expiry"
 msgstr "Chat Ban Expiry"
 
-#: resources/public/pebble_templates/profile.html:117:36
+#: resources/public/pebble_templates/profile.html:121:36
 msgid "View rankings and other stats <a href=\"/stats\">here</a>."
 msgstr "View rankings and other stats <a href=\"/stats\">here</a>."
 
-#: resources/public/pebble_templates/profile.html:124:68
+#: resources/public/pebble_templates/profile.html:128:68
 msgid "You must be logged in to view your reports."
 msgstr "You must be logged in to view your reports."
 
-#: resources/public/pebble_templates/profile.html:130:64
+#: resources/public/pebble_templates/profile.html:134:64
 msgid "Canvas Reports ({0}/{1} open)"
 msgstr "Canvas Reports ({0}/{1} open)"
 
 #. eg "Report on Bob (closed)
-#: resources/public/pebble_templates/profile.html:142:56
-#: resources/public/pebble_templates/profile.html:177:56
+#: resources/public/pebble_templates/profile.html:146:56
+#: resources/public/pebble_templates/profile.html:181:56
 msgid "Report on {0} (closed)"
 msgstr "Report on {0} (closed)"
 
 #. eg "Report on Bob (open)
-#: resources/public/pebble_templates/profile.html:145:56
-#: resources/public/pebble_templates/profile.html:179:56
+#: resources/public/pebble_templates/profile.html:149:56
+#: resources/public/pebble_templates/profile.html:183:56
 msgid "Report on {0} (open)"
 msgstr "Report on {0} (open)"
 
 #. eg "Reported Bob on Jan 1, 1970, 00:00:00 AM (UTC)
-#: resources/public/pebble_templates/profile.html:152:60
-#: resources/public/pebble_templates/profile.html:185:60
+#: resources/public/pebble_templates/profile.html:156:60
+#: resources/public/pebble_templates/profile.html:189:60
 msgid "Reported {0} on {1}"
 msgstr "Reported {0} on {1}"
 
-#: resources/public/pebble_templates/profile.html:158:47
+#: resources/public/pebble_templates/profile.html:162:47
 msgid "There are no canvas reports to show."
 msgstr "There are no canvas reports to show."
 
-#: resources/public/pebble_templates/profile.html:166:64
+#: resources/public/pebble_templates/profile.html:170:64
 msgid "Chat Reports ({0}/{1} open)"
 msgstr "Chat Reports ({0}/{1} open)"
 
-#: resources/public/pebble_templates/profile.html:191:47
+#: resources/public/pebble_templates/profile.html:195:47
 msgid "There are no chat reports to show."
 msgstr "There are no chat reports to show."
 
-#: resources/public/pebble_templates/profile.html:200:68
+#: resources/public/pebble_templates/profile.html:204:68
 msgid "You must be logged in to manage your factions."
 msgstr "You must be logged in to manage your factions."
 
-#: resources/public/pebble_templates/profile.html:205:36
+#: resources/public/pebble_templates/profile.html:209:36
 msgid "You are faction restricted and cannot create new factions. If you believe this is an error, please contact a moderator."
 msgstr "You are faction restricted and cannot create new factions. If you believe this is an error, please contact a moderator."
 
-#: resources/public/pebble_templates/profile.html:207:36
+#: resources/public/pebble_templates/profile.html:211:36
 msgid "You are canvas banned and cannot create new factions. If you believe this is an error, please contact a moderator."
 msgstr "You are canvas banned and cannot create new factions. If you believe this is an error, please contact a moderator."
 
-#: resources/public/pebble_templates/profile.html:212:76
+#: resources/public/pebble_templates/profile.html:216:76
 msgid "You must have at least {0} all-time pixels to create a faction."
 msgstr "You must have at least {0} all-time pixels to create a faction."
 
-#: resources/public/pebble_templates/profile.html:215:300
+#: resources/public/pebble_templates/profile.html:219:300
 msgid "Create"
 msgstr "Create"
 
-#: resources/public/pebble_templates/profile.html:216:191
+#: resources/public/pebble_templates/profile.html:220:191
 msgid "Join"
 msgstr "Join"
 
-#: resources/public/pebble_templates/profile.html:225:118
+#: resources/public/pebble_templates/profile.html:229:118
 msgid "This is your currently displayed faction."
 msgstr "This is your currently displayed faction."
 
 #. eg "Pixelers (members: 100, ID: 1)"
-#: resources/public/pebble_templates/profile.html:228:44
+#: resources/public/pebble_templates/profile.html:232:44
 msgid "{0} (members: {1}, ID: {2}"
 msgstr "{0} (members: {1}, ID: {2}"
 
-#: resources/public/pebble_templates/profile.html:231:69
+#: resources/public/pebble_templates/profile.html:235:69
 msgid "Owner: {0}"
 msgstr "Owner: {0}"
 
 #. makes the faction no longer the one displayed for the current user
-#: resources/public/pebble_templates/profile.html:236:175
+#: resources/public/pebble_templates/profile.html:240:175
 msgid "Remove Displayed"
 msgstr "Remove Displayed"
 
 #. makes the faction the one displayed for the current user
-#: resources/public/pebble_templates/profile.html:239:172
+#: resources/public/pebble_templates/profile.html:243:172
 msgid "Set Displayed"
 msgstr "Set Displayed"
 
-#: resources/public/pebble_templates/profile.html:242:235
+#: resources/public/pebble_templates/profile.html:246:235
 msgid "Members"
 msgstr "Members"
 
-#: resources/public/pebble_templates/profile.html:243:169
+#: resources/public/pebble_templates/profile.html:247:169
 msgid "Edit"
 msgstr "Edit"
 
-#: resources/public/pebble_templates/profile.html:244:168
+#: resources/public/pebble_templates/profile.html:248:168
 #: resources/public/include/chat.js:1462:24
 msgid "Delete"
 msgstr "Delete"
 
-#: resources/public/pebble_templates/profile.html:246:174
+#: resources/public/pebble_templates/profile.html:250:174
 msgid "Leave"
 msgstr "Leave"
 
-#: resources/public/pebble_templates/profile.html:253:68
+#: resources/public/pebble_templates/profile.html:257:68
 msgid "You are not in any factions yet!"
 msgstr "You are not in any factions yet!"
 
-#: resources/public/pebble_templates/profile.html:269:52
+#: resources/public/pebble_templates/profile.html:263:68
+msgid "You must be logged in to view your data."
+msgstr "You must be logged in to view your data."
+
+#: resources/public/pebble_templates/profile.html:265:36
+msgid "Log Keys"
+msgstr "Log Keys"
+
+#: resources/public/pebble_templates/profile.html:266:70
+msgid "Log keys can be used by those who have them to tell which pixels you placed on previous canvases."
+msgstr "Log keys can be used by those who have them to tell which pixels you placed on previous canvases."
+
+#: resources/public/pebble_templates/profile.html:271:68
+msgid "Canvas Code"
+msgstr "Canvas Code"
+
+#: resources/public/pebble_templates/profile.html:272:68
+msgid "Log Key"
+msgstr "Log Key"
+
+#: resources/public/pebble_templates/profile.html:285:68
+msgid "You have no log keys yet!"
+msgstr "You have no log keys yet!"
+
+#: resources/public/pebble_templates/profile.html:286:68
+msgid "Log keys should show up here after a canvas you have placed on ends."
+msgstr "Log keys should show up here after a canvas you have placed on ends."
+
+#: resources/public/pebble_templates/profile.html:302:52
 msgid "Members of {0} ([{1}])"
 msgstr "Members of {0} ([{1}])"
 
-#: resources/public/pebble_templates/profile.html:270:97
-#: resources/public/pebble_templates/profile.html:329:97
-#: resources/public/pebble_templates/profile.html:342:97
-#: resources/public/pebble_templates/profile.html:366:97
+#: resources/public/pebble_templates/profile.html:303:97
+#: resources/public/pebble_templates/profile.html:362:97
+#: resources/public/pebble_templates/profile.html:375:97
+#: resources/public/pebble_templates/profile.html:399:97
 msgid "Close"
 msgstr "Close"
 
-#: resources/public/pebble_templates/profile.html:278:60
+#: resources/public/pebble_templates/profile.html:311:60
 msgid "Faction Members"
 msgstr "Faction Members"
 
-#: resources/public/pebble_templates/profile.html:292:128
+#: resources/public/pebble_templates/profile.html:325:128
 msgid "Transfer Ownership"
 msgstr "Transfer Ownership"
 
 #. bans a user from the faction
-#: resources/public/pebble_templates/profile.html:294:122
+#: resources/public/pebble_templates/profile.html:327:122
 #: resources/public/include/chat.js:1733:60
 msgid "Ban"
 msgstr "Ban"
 
-#: resources/public/pebble_templates/profile.html:300:79
-#: resources/public/pebble_templates/profile.html:322:79
+#: resources/public/pebble_templates/profile.html:333:79
+#: resources/public/pebble_templates/profile.html:355:79
 msgid "Nothing to see here!"
 msgstr "Nothing to see here!"
 
-#: resources/public/pebble_templates/profile.html:308:60
+#: resources/public/pebble_templates/profile.html:341:60
 msgid "Faction Bans"
 msgstr "Faction Bans"
 
-#: resources/public/pebble_templates/profile.html:318:125
+#: resources/public/pebble_templates/profile.html:351:125
 #: resources/public/include/chat.js:1629:36
 #: resources/public/include/chat.js:1733:46
 #: resources/public/admin/admin.js:320:88
@@ -1550,19 +1586,19 @@ msgstr "Faction Bans"
 msgid "Unban"
 msgstr "Unban"
 
-#: resources/public/pebble_templates/profile.html:341:52
+#: resources/public/pebble_templates/profile.html:374:52
 msgid "Find A Faction"
 msgstr "Find A Faction"
 
-#: resources/public/pebble_templates/profile.html:351:99
+#: resources/public/pebble_templates/profile.html:384:99
 msgid "Search:"
 msgstr "Search:"
 
-#: resources/public/pebble_templates/profile.html:361:66
+#: resources/public/pebble_templates/profile.html:394:66
 msgid "Enter a search term to get started."
 msgstr "Enter a search term to get started."
 
-#: resources/public/pebble_templates/profile.html:363:116
+#: resources/public/pebble_templates/profile.html:396:116
 msgid "Load More"
 msgstr "Load More"
 
@@ -1998,7 +2034,7 @@ msgstr "Posted by ${notification.who}"
 msgid "Expires ${expiry}"
 msgstr "Expires ${expiry}"
 
-#: resources/public/include/template.js:440:50
+#: resources/public/include/template.js:442:50
 msgid "There was an error getting the image"
 msgstr "There was an error getting the image"
 
