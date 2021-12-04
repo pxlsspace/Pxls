@@ -41,9 +41,8 @@ if __name__ == '__main__':
 				for line in file.readlines():
 					(user, key) = line.split(',')
 					cur.execute('''
-						INSERT INTO user_keys (uid, key, canvas_code)
-						SELECT id, %s, %s FROM users WHERE username = %s 
-					''', (key.strip(), args.canvas, user.strip()))
+						INSERT INTO user_keys (uid, key, canvas_code) VALUES(%s, %s, %s)
+					''', (int(user.strip()), key.strip(), args.canvas))
 				if not args.dry_run:
 					conn.commit()
 			except KeyboardInterrupt:
