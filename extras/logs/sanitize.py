@@ -56,11 +56,11 @@ if __name__ == '__main__':
 				split_line = line.split('\t')
 				out_line = None
 
-				if len(split_line) != 7:
-					print(f'Line {i + 1} doesn\'t have exactly 7 fields. Manual review needed.')
+				if len(split_line) != 6:
+					print(f'Line {i + 1} doesn\'t have exactly 6 fields. Manual review needed.')
 					out_line = line
 				else:
-					(date, username, x, y, color_index, ip, action_type) = split_line
+					(date, username, x, y, color_index, action_type) = split_line
 
 					if args.snip_mode:
 						username = '-snip-'
