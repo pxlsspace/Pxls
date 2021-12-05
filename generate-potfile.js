@@ -122,7 +122,10 @@ for (const path of PEBBLE_FILES) {
       const item = itemsById.get(id);
 
       item.msgid = id;
-      item.references.push(`${path}:${callLine + 1}:${callLocalOffset + 1}`);
+      // NOTE ([  ]): linenumber and position are cool to have, but they cause
+      // too much noise in localization updates.
+      // item.references.push(`${path}:${callLine + 1}:${callLocalOffset + 1}`);
+      item.references.push(path);
 
       if (commentsByLine.has(callLine - 1)) {
         item.extractedComments.push(...commentsByLine.get(callLine - 1));
@@ -227,7 +230,9 @@ for (const path of JS_FILES) {
     const item = jsItemsById.get(id);
 
     item.msgid = id;
-    item.references.push(`${path}:${callLine + 1}:${callLocalOffset + 1}`);
+    // see note on html reference extraction.
+    // item.references.push(`${path}:${callLine + 1}:${callLocalOffset + 1}`);
+    item.references.push(path);
 
     for (const comment of relevantComments) {
       item.extractedComments.push(comment);
