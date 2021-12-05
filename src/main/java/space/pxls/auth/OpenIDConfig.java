@@ -30,7 +30,7 @@ public class OpenIDConfig implements ConfigFactory {
 			oidcConfiguration.setClientId(App.getConfig().getString("auth.client"));
 			oidcConfiguration.setSecret(App.getConfig().getString("auth.secret"));
 			oidcConfiguration.setDiscoveryURI(discoveryUri.toString());
-			oidcConfiguration.setScope("openid profile");
+			oidcConfiguration.setScope("openid profile connected_accounts");
 			oidcConfiguration.setExpireSessionWithToken(true);
 			final OidcClient<OidcConfiguration> oidcClient = new OidcClient<>(oidcConfiguration);
 

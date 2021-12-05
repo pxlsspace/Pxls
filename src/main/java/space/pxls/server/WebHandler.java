@@ -1086,57 +1086,6 @@ public class WebHandler {
         }
     }
 
-    public void discordNameChange(HttpServerExchange exchange) {
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-        User user = exchange.getAttachment(AuthReader.USER);
-        if (user == null) {
-            sendBadRequest(exchange, "No authenticated user could be found");
-            return;
-        }
-
-        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-        String discordName = null;
-        try {
-            discordName = data.getFirst("discordName").getValue();
-            if (discordName.equalsIgnoreCase("")) {
-                discordName = null;
-            }
-        } catch (Exception npe) {
-            npe.printStackTrace();
-            sendBadRequest(exchange, "Missing 'discordName' field");
-            return;
-        }
-        boolean isDeleteRequest = discordName == null;
-
-        if (isDeleteRequest && user.getDiscordName() == null) {
-            send(StatusCodes.CONFLICT, exchange, "Discord name is already unset.");
-            return;
-        }
-
-        if (!isDeleteRequest && user.getDiscordName() != null && user.getDiscordName().equals(discordName)) {
-            send(StatusCodes.CONFLICT, exchange, "Discord name is already set to the requested name.");
-            return;
-        }
-
-        if (discordName != null && !discordName.matches("^.{2,32}#\\d{4}$")) {
-            sendBadRequest(exchange, "name isn't in the format '{name}#{discriminator}'");
-            return;
-        }
-
-        if (discordName == null) { //user is deleting name, bypass ratelimit check
-            user.setDiscordName(null);
-            send(StatusCodes.OK, exchange, "Name removed");
-        } else {
-            int remaining = RateLimitFactory.getTimeRemaining("http:discordName", exchange.getAttachment(IPReader.IP));
-            if (remaining == 0) {
-                user.setDiscordName(discordName);
-                send(StatusCodes.OK, exchange, "Name updated");
-            } else {
-                send(StatusCodes.TOO_MANY_REQUESTS, exchange, "Hit max attempts. Try again in " + remaining + "s");
-            }
-        }
-    }
-
     public void setFactionBlocked(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
         User user = exchange.getAttachment(AuthReader.USER);

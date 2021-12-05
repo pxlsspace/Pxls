@@ -91,7 +91,6 @@ public class UndertowServer {
                 .addPermGatedPrefixPath("/whoami", "user.auth", webHandler::whoami)
                 .addPermGatedPrefixPath("/users", "user.online", webHandler::users)
                 .addPermGatedPrefixPath("/chat/setColor", "user.chatColorChange", new RateLimitingHandler(webHandler::chatColorChange, "http:chatColorChange", (int) App.getConfig().getDuration("server.limits.chatColorChange.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.chatColorChange.count")))
-                .addPermGatedPrefixPath("/setDiscordName", "user.discordNameChange", new RateLimitingHandler(webHandler::discordNameChange, "http:discordName", (int) App.getConfig().getDuration("server.limits.discordNameChange.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.discordNameChange.count")))
                 .addPermGatedPrefixPath("/admin", "user.admin", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/")).setCacheTime(10))
                 .addPermGatedPrefixPath("/admin/ban", "user.ban", webHandler::ban)
                 .addPermGatedPrefixPath("/admin/unban", "user.unban", webHandler::unban)

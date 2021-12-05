@@ -5,7 +5,7 @@
         <meta name="viewport"
               content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
         <meta http-equiv="X-UA-Compatible" content="ie=edge">
-        <title>{{profile_of.name | default("Anonymous")}} - Pxls</title>
+        <title>{{profile_of.name | default(i18n('Localization', "Anonymous"))}} - Pxls</title>
         <link rel="stylesheet" href="/profile/css/theme-purple.min.css">
         <link rel="stylesheet" href="/fontawesome-all.min.css">
         <link rel="stylesheet" href="/profile/css/views/index.css">
@@ -27,8 +27,9 @@
                     <a href="/" class="nav-link">Pxls</a>
                 </li>
                 <li class="nav-item active">
+                    {% set defaultUsername = i18n('Localization', "Anonymous") %}
                     {# eg "Alice's profile". Double singlequote is a java thing - needed if a replacement (such as this) contains a singlequote. #}
-                    <a href="{{route_root}}" class="nav-link">{{i18n('Localization', '{0}\'\'s Profile', profile_of.name | default("Anonymous")) | raw}}</a>
+                    <a href="{{route_root}}" class="nav-link">{{i18n('Localization', '{0}\'\'s Profile', profile_of.name | default(defaultUsername)) | raw}}</a>
                 </li>
             </ul>
             {% if requesting_user is not null %}
@@ -47,7 +48,7 @@
         </nav>
         <main role="main" class="mb-3">
             <div class="container">
-                <h1>{% if profile_of.displayedFaction | default(0) > 0 %}[{{profile_of.fetchDisplayedFaction.tag}}] {% endif %}{{i18n('Localization', '{0}\'\'s Profile', profile_of.name | default("Anonymous")) | raw}}</h1>
+                <h1>{% if profile_of.displayedFaction | default(0) > 0 %}[{{profile_of.fetchDisplayedFaction.tag}}] {% endif %}{{i18n('Localization', '{0}\'\'s Profile', profile_of.name | default(i18n('Localization', "Anonymous"))) | raw}}</h1>
                 <hr>
                 <div class="row">
                     <div class="col-md-3">
@@ -89,7 +90,7 @@
                                     {% endif %}
                                     <tr>
                                         <th class="text-right pr-3">{{i18n('Localization', 'Discord Tag') | raw}}</th>
-                                        <td class="text-left">{{profile_of.discordName | default("Not Set")}}</td>
+                                        <td class="text-left">{{profile_of.discordName | default(i18n('Localization', "Not Connected"))}}</td>
                                     </tr>
                                     <tr>
                                         <th class="text-right pr-3">{{i18n('Localization', 'Faction') | raw}}</th>
@@ -97,7 +98,7 @@
                                     </tr>
                                     <tr>
                                         <th class="text-right pr-3">{{i18n('Localization', 'Roles') | raw}}</th>
-                                        <td class="text-left">{{profile_of.getRolesString() | default("None")}}</td>
+                                        <td class="text-left">{{profile_of.getRolesString() | default(i18n('Localization', "None"))}}</td>
                                     </tr>
                                     {% if profile_of.isBanned() %}
                                     <tr>

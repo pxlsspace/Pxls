@@ -39,7 +39,6 @@ const uiHelper = (function() {
       btnForceAudioUpdate: $('#btnForceAudioUpdate'),
       themeSelect: $('#setting-ui-theme-index'),
       themeColorMeta: $('meta[name="theme-color"]'),
-      txtDiscordName: $('#txtDiscordName'),
       bottomBanner: $('#bottom-banner')
     },
     themes: [
@@ -106,7 +105,6 @@ const uiHelper = (function() {
       self._initThemes();
       self._initStack();
       self._initAudio();
-      self._initAccount();
       self._initMultiTabDetection();
       self.prettifyRange('input[type=range]');
 
@@ -299,21 +297,6 @@ const uiHelper = (function() {
         settings.audio.alert.src.reset();
       });
     },
-    _initAccount: function() {
-      self.elements.txtDiscordName.keydown(function(evt) {
-        if (evt.key === 'Enter' || evt.which === 13) {
-          self.handleDiscordNameSet();
-        }
-        evt.stopPropagation();
-      });
-      $('#btnDiscordNameSet').click(() => {
-        self.handleDiscordNameSet();
-      });
-      $('#btnDiscordNameRemove').click(() => {
-        self.setDiscordName('');
-        self.handleDiscordNameSet();
-      });
-    },
     initBanner(textList) {
       self.banner.enabled = settings.ui.chat.banner.enable.get() !== false;
 
@@ -453,29 +436,6 @@ const uiHelper = (function() {
         self._bannerIntervalTick();
       }
     },
-    handleDiscordNameSet() {
-      const name = self.elements.txtDiscordName.val();
-
-      // TODO confirm with user
-      $.post({
-        type: 'POST',
-        url: '/setDiscordName',
-        data: {
-          discordName: name
-        },
-        success: function() {
-          modal.showText(__('Discord name updated successfully'));
-        },
-        error: function(data) {
-          const err = data.responseJSON && data.responseJSON.details ? data.responseJSON.details : data.responseText;
-          if (data.status === 200) { // seems to be caused when response body isn't json? just show whatever we can and trust server sent good enough details.
-            modal.showText(err);
-          } else {
-            modal.showText(__('Couldn\'t change discord name: ') + err);
-          }
-        }
-      });
-    },
     updateAudio: function(url) {
       try {
         if (!url) url = 'notify.wav';
@@ -496,9 +456,6 @@ const uiHelper = (function() {
       self.elements.stackCount.text(`${placeable}/${self.maxStacked}`);
       self.pixelsAvailable = placeable;
       document.title = uiHelper.getTitle();
-    },
-    setDiscordName(name) {
-      self.elements.txtDiscordName.val(name);
     },
     adjustColorBrightness(level) {
       $([
@@ -631,7 +588,6 @@ const uiHelper = (function() {
     getAvailable: self.getAvailable,
     setPlaceableText: self.setPlaceableText,
     setMax: self.setMax,
-    setDiscordName: self.setDiscordName,
     updateAudio: self.updateAudio,
     styleElemWithChatNameColor: self.styleElemWithChatNameColor,
     setBannerEnabled: self.setBannerEnabled,

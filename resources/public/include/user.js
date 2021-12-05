@@ -3,7 +3,6 @@ const { socket } = require('./socket');
 const { modal } = require('./modal');
 const { place } = require('./place');
 const { chat } = require('./chat');
-const { uiHelper } = require('./uiHelper');
 const { lookup } = require('./lookup');
 const { ban } = require('./ban');
 
@@ -146,7 +145,6 @@ const user = (function() {
         self.roles = data.roles;
         $(window).trigger('pxls:user:loginState', [true]);
         self.renameRequested = data.renameRequested;
-        uiHelper.setDiscordName(data.discordName || null);
         self.elements.loginOverlay.fadeOut(200);
         self.elements.userInfo.find('span#username').html(crel('a', {
           href: `/profile/${data.username}`,
