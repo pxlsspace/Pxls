@@ -679,8 +679,7 @@ public class Database {
 
     /**
      * Gets a user by their login.
-     * @param method The user's login method.
-     * @param serviceUserID The user's ID on the login service.
+     * @param login The user's sub identifier
      * @return The user.
      */
     public Optional<DBUser> getUserByLogin(String login) {
