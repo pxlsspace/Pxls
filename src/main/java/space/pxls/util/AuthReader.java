@@ -51,7 +51,7 @@ public class AuthReader implements HttpHandler {
     public AuthReader(HttpHandler next) {
         this.next = next;
 
-        new Timer().schedule(new SessionTimer(this), 1 * MINUTE, 1 * MINUTE);
+        new Timer().schedule(new SessionTimer(this), 30 * MINUTE, 30 * MINUTE);
     }
 
     public void expireSessions() {
