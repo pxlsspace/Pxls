@@ -1523,7 +1523,7 @@ public class WebHandler {
             exchange.endExchange();
             return;
         }
-        DBPixelPlacementFull pxl = App.getDatabase().getPixelByID(null, id);
+        DBPixelPlacementFull pxl = App.getDatabase().getPixelByID(id);
         if (pxl.x != x || pxl.y != y) {
             exchange.setStatusCode(StatusCodes.BAD_REQUEST);
             exchange.endExchange();

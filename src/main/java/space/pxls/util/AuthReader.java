@@ -13,7 +13,9 @@ import space.pxls.auth.Provider;
 import space.pxls.server.packets.socket.ServerRenameSuccess;
 import space.pxls.user.User;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.pac4j.core.profile.CommonProfile;
 import org.pac4j.http.profile.IpProfile;
@@ -66,20 +68,21 @@ public class AuthReader implements HttpHandler {
                         if (maybe_accounts instanceof JSONArray) {
                             final JSONArray accounts = (JSONArray) maybe_accounts;
 
-                            for (Object maybe_provider : accounts) {
-                                if (maybe_provider instanceof JSONObject) {
-                                    final Optional<Provider> optional_provider = Provider.fromJSON((JSONObject) maybe_provider);
-                                    
-                                    if (optional_provider.isPresent()) {
-                                        final Provider provider = optional_provider.orElseThrow();
-                                        if (provider.identityProvider.equalsIgnoreCase("discord")) {
-                                            if (!user.getDiscordName().equals(provider.userName)) {
-                                                user.setDiscordName(provider.userName);
-                                            }
-                                        }
+                            final List<Provider> links = accounts.stream()
+                                .map(o -> {
+                                    Optional<Provider> provider;
+                                    if (o instanceof JSONObject) {
+                                        provider = Provider.fromJSON((JSONObject) o);
+                                    } else {
+                                        provider = Optional.empty();
                                     }
-                                }
-                            }   
+                                    return provider;
+                                })
+                                .filter(Optional::isPresent)
+                                .map(Optional::get)
+                                .collect(Collectors.toList());
+                                
+                            user.setLinks(links);
                         }
                     } else if (profile instanceof IpProfile) {
                         user = App.getUserManager().getSnipByIP(profile.getId());

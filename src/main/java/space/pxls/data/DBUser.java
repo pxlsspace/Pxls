@@ -23,7 +23,6 @@ public class DBUser {
     public boolean shadowBanned;
     public long chatbanExpiry;
     public boolean isRenameRequested;
-    public String discordName;
     public String chatbanReason;
     public Integer displayedFaction;
     public Boolean factionBlocked;
@@ -45,7 +44,6 @@ public class DBUser {
         boolean isPermaChatbanned,
         long chatbanExpiry,
         boolean isRenameRequested,
-        String discordName,
         String chatbanReason,
         int chatNameColor,
         Integer displayedFaction,
@@ -65,7 +63,6 @@ public class DBUser {
         this.isPermaChatbanned = isPermaChatbanned;
         this.chatbanExpiry = chatbanExpiry;
         this.isRenameRequested = isRenameRequested;
-        this.discordName = discordName;
         this.chatbanReason = chatbanReason;
         this.chatNameColor = chatNameColor;
         this.displayedFaction = displayedFaction;
@@ -99,7 +96,6 @@ public class DBUser {
                 r.getBoolean("perma_chat_banned"),
                 chatban == null ? 0 : chatban.getTime(),
                 r.getBoolean("is_rename_requested"),
-                r.getString("discord_name"),
                 r.getString("chat_ban_reason"),
                 r.getInt("chat_name_color"),
                 df,

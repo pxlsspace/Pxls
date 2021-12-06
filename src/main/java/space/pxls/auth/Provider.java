@@ -1,6 +1,11 @@
 package space.pxls.auth;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Optional;
+
+import org.jdbi.v3.core.mapper.RowMapper;
+import org.jdbi.v3.core.statement.StatementContext;
 
 import net.minidev.json.JSONObject;
 
@@ -38,4 +43,15 @@ public class Provider {
 			",identityProvider=" + identityProvider +
 			"}";
 	}
+
+	public static class Mapper implements RowMapper<Provider> {
+        @Override
+        public Provider map(ResultSet r, StatementContext ctx) throws SQLException {
+			return new Provider(
+				r.getString("user_name"),
+				r.getString("user_id"),
+				r.getString("identity_provider")
+			);
+        }
+    }
 }

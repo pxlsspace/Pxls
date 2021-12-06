@@ -20,7 +20,19 @@ public class DBPixelPlacement {
     public final String discordName;
     public final String faction;
 
-    public DBPixelPlacement(int id, int x, int y, int color, long time, String username, boolean modAction, int pixelCount, int pixelCountAlltime, String discordName, String faction) {
+    public DBPixelPlacement(
+        int id,
+        int x,
+        int y,
+        int color,
+        long time,
+        String username,
+        boolean modAction,
+        int pixelCount,
+        int pixelCountAlltime,
+        String discordName,
+        String faction
+    ) {
         this.id = id;
         this.x = x;
         this.y = y;

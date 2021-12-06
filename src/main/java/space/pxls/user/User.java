@@ -2,6 +2,7 @@ package space.pxls.user;
 
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
+import space.pxls.auth.Provider;
 import space.pxls.data.DBUser;
 import space.pxls.data.DBUserPixelCounts;
 import space.pxls.server.packets.chat.Badge;
@@ -38,7 +39,6 @@ public class User {
     private AtomicBoolean undoLock = new AtomicBoolean(false);
     private boolean isPermaChatbanned = false;
     private boolean isIdled = false;
-    private String discordName;
     private String chatbanReason;
     private long cooldownExpiry;
     private long lastPixelTime = 0;
@@ -72,7 +72,6 @@ public class User {
         String chatbanReason,
         int chatNameColor,
         Integer displayedFaction,
-        String discordName,
         Boolean factionBlocked
     ) {
         this.id = id;
@@ -92,7 +91,6 @@ public class User {
         this.chatbanReason = chatbanReason;
         this.chatNameColor = chatNameColor;
         this.displayedFaction = displayedFaction;
-        this.discordName = discordName;
         this.factionBlocked = factionBlocked;
 
         this.placementOverrides = new PlacementOverrides(false, false, false);
@@ -112,7 +110,6 @@ public class User {
             this.banExpiryTime = user.banExpiry;
             this.isPermaChatbanned = user.isPermaChatbanned;
             this.chatbanExpiryTime = user.chatbanExpiry;
-            this.discordName = user.discordName;
             this.chatbanReason = user.chatbanReason;
             this.chatNameColor = user.chatNameColor;
             this.displayedFaction = user.displayedFaction;
@@ -655,12 +652,20 @@ public class User {
     }
 
     public String getDiscordName() {
-        return discordName;
+        return getLinks()
+            .stream()
+            .filter(p -> p.identityProvider.equalsIgnoreCase("discord"))
+            .findAny()
+            .map(p -> p.userName)
+            .orElse(null);
     }
 
-    public void setDiscordName(String discordName) {
-        this.discordName = discordName;
-        App.getDatabase().setDiscordName(id, discordName);
+    public List<Provider> getLinks() {
+        return App.getDatabase().getUserLinks(id);
+    }
+
+    public void setLinks(List<Provider> links) {
+        App.getDatabase().setUserLinks(id, links);
     }
 
     public boolean canUseDonatorCharNameColors() {
@@ -842,7 +847,6 @@ public class User {
             user.chatbanReason,
             user.chatNameColor,
             user.displayedFaction,
-            user.discordName,
             user.factionBlocked
         );
     }

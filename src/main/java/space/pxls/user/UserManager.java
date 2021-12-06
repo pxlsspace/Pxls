@@ -87,7 +87,6 @@ public class UserManager {
             user.chatbanReason,
             user.chatNameColor,
             user.displayedFaction,
-            user.discordName,
             user.factionBlocked
         ));
     }

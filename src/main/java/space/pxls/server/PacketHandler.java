@@ -206,7 +206,7 @@ public class PacketHandler {
                     sendAvailablePixels(user, "undo");
                 }
                 user.setCooldown(0);
-                DBPixelPlacementFull lastPixel = App.getDatabase().getPixelByID(null, thisPixel.secondaryId);
+                DBPixelPlacementFull lastPixel = App.getDatabase().getPixelByID(thisPixel.secondaryId);
                 if (lastPixel != null) {
                     App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
                     App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, ip, false, "user undo");

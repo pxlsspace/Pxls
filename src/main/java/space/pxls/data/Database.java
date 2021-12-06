@@ -5,6 +5,7 @@ import com.zaxxer.hikari.HikariDataSource;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
 import space.pxls.App;
+import space.pxls.auth.Provider;
 import space.pxls.server.packets.chat.ChatMessage;
 import space.pxls.server.packets.chat.ServerChatLookup;
 import space.pxls.user.Chatban;
@@ -23,7 +24,7 @@ import static java.lang.Math.toIntExact;
 
 public class Database {
     private final Jdbi jdbi;
-    private static final String SQL_USER_BY_NAME = "SELECT id, stacked, username, sub, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color, displayed_faction, faction_restricted FROM users WHERE username = :username";
+    private static final String SQL_USER_BY_NAME = "SELECT id, stacked, username, sub, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, chat_name_color, displayed_faction, faction_restricted FROM users WHERE username = :username";
 
     public Database() {
         try {
@@ -85,10 +86,17 @@ public class Database {
                     "user_agent VARCHAR(512) NOT NULL DEFAULT ''," +
                     "stacked INT DEFAULT 0," +
                     "is_rename_requested BOOL NOT NULL DEFAULT false," +
-                    "discord_name VARCHAR(37)," +
                     "chat_name_color INT NOT NULL," +
                     "displayed_faction INT," +
                     "faction_restricted BOOLEAN NOT NULL DEFAULT false)")
+                    .execute();
+            // connected user accounts
+            handle.createUpdate("CREATE TABLE IF NOT EXISTS user_links (" +
+                    "uid INT NOT NULL REFERENCES users(id)," +
+                    "user_name VARCHAR(64)," +
+                    "user_id VARCHAR(64)," +
+                    "identity_provider VARCHAR(64));" + 
+                    "CREATE UNIQUE INDEX IF NOT EXISTS _user_links_user_uid_service_triplet ON user_links (uid, user_id, identity_provider)")
                     .execute();
             // roles
             handle.createUpdate("CREATE TABLE IF NOT EXISTS roles (" +
@@ -296,11 +304,39 @@ public class Database {
     public Optional<DBPixelPlacementFull> getFullPixelAt(int x, int y) {
         Optional<DBPixelPlacementFull> pp;
         try {
-            pp = jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.secondary_id, p.time, p.mod_action, p.undo_action, u.id as u_id, u.username, u.sub, u.login_with_ip, u.ban_expiry, u.is_shadow_banned, u.pixel_count, u.pixel_count_alltime, u.ban_reason, u.user_agent, u.discord_name, f.name as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.x = :x AND p.y = :y AND p.most_recent ORDER BY p.time DESC LIMIT 1")
-                    .bind("x", x)
-                    .bind("y", y)
-                    .map(new DBPixelPlacementFull.Mapper())
-                    .findFirst());
+            pp = jdbi.withHandle(handle -> handle.select("SELECT " +
+                    // pixel fields
+                    "p.id as p_id, " +
+                    "p.x, " +
+                    "p.y, " +
+                    "p.color, " +
+                    "p.secondary_id, " +
+                    "p.time, " +
+                    "p.mod_action, " +
+                    "p.undo_action, " +
+                    // user fields
+                    "u.id as u_id, " +
+                    "u.username, " +
+                    "u.sub, " +
+                    "u.login_with_ip, " +
+                    "u.ban_expiry, " +
+                    "u.is_shadow_banned, " +
+                    "u.pixel_count, " +
+                    "u.pixel_count_alltime, " +
+                    "u.ban_reason, " +
+                    "u.user_agent, " +
+                    "f.name as \"faction\", " +
+                    "l.user_name as \"discord_name\" " +
+                    "FROM pixels p " +
+                    "LEFT JOIN users u ON p.who = u.id " +
+                    "LEFT JOIN faction f ON f.id = u.displayed_faction " +
+                    "LEFT JOIN user_links l ON l.uid = u.id AND l.identity_provider ILIKE 'discord' " +
+                    "WHERE p.x = :x AND p.y = :y AND p.most_recent " +
+                    "ORDER BY p.time DESC LIMIT 1")
+                .bind("x", x)
+                .bind("y", y)
+                .map(new DBPixelPlacementFull.Mapper())
+                .findFirst());
         } catch (NullPointerException e) {
             return Optional.empty();
         }
@@ -316,11 +352,34 @@ public class Database {
     public Optional<DBPixelPlacement> getPixelAt(int x, int y) {
         Optional<DBPixelPlacement> pp;
         try {
-            pp = jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.time, p.mod_action, u.id as u_id, u.username, u.ban_expiry, u.is_shadow_banned, u.pixel_count, u.pixel_count_alltime, u.login_with_ip, u.discord_name, f.name as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.x = :x AND p.y = :y AND p.most_recent ORDER BY p.time DESC LIMIT 1")
-                    .bind("x", x)
-                    .bind("y", y)
-                    .map(new DBPixelPlacement.Mapper())
-                    .findFirst());
+            pp = jdbi.withHandle(handle -> handle.select("SELECT " +
+                    // pixel fields
+                    "p.id as p_id, " +
+                    "p.x, " +
+                    "p.y, " +
+                    "p.color, " +
+                    "p.time, " +
+                    "p.mod_action, " +
+                    // user fields
+                    "u.id as u_id, " +
+                    "u.username, " +
+                    "u.ban_expiry, " +
+                    "u.is_shadow_banned, " +
+                    "u.pixel_count, " +
+                    "u.pixel_count_alltime, " +
+                    "u.login_with_ip, " +
+                    "f.name as \"faction\", " +
+                    "l.user_name as \"discord_name\" " +
+                    "FROM pixels p " +
+                    "LEFT JOIN users u ON p.who = u.id " +
+                    "LEFT JOIN faction f ON f.id = u.displayed_faction " +
+                    "LEFT JOIN user_links l ON l.uid = u.id AND l.identity_provider ILIKE 'discord' " +
+                    "WHERE p.x = :x AND p.y = :y AND p.most_recent " +
+                    "ORDER BY p.time DESC LIMIT 1")
+                .bind("x", x)
+                .bind("y", y)
+                .map(new DBPixelPlacement.Mapper())
+                .findFirst());
         } catch (NullPointerException e) {
             return Optional.empty();
         }
@@ -328,32 +387,53 @@ public class Database {
     }
 
     /**
-     * Gets a pixel by its ID, using the specified handle (or a new one if null).
+     * Gets a pixel by its ID
+     * @param id The ID.
+     * @return The pixel.
+     */
+    public DBPixelPlacementFull getPixelByID(int id) { 
+        return jdbi.withHandle(handle -> getPixelByID(handle, id));
+    }
+
+    /**
+     * Gets a pixel by its ID, using the specified handle
      * @param handle The handle.
      * @param id The ID.
      * @return The pixel.
      */
-    public DBPixelPlacementFull getPixelByID(Handle handle, int id) {
-        Optional<DBPixelPlacementFull> pp;
-        try {
-            if (handle == null)
-                pp = jdbi.withHandle(handle2 -> handle2.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.undo_action, u.id as u_id, u.username, u.sub, u.login_with_ip, u.ban_expiry, u.is_shadow_banned, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.discord_name, f.name as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.id = :id")
-                        .bind("id", id)
-                        .map(new DBPixelPlacementFull.Mapper())
-                        .findFirst());
-            else
-                pp = handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.undo_action, u.id as u_id, u.username, u.sub, u.login_with_ip, u.ban_expiry, u.is_shadow_banned, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.discord_name, f.name as \"faction\" FROM pixels p LEFT JOIN users u ON p.who = u.id LEFT OUTER JOIN faction f ON f.id = u.displayed_faction WHERE p.id = :id")
-                        .bind("id", id)
-                        .map(new DBPixelPlacementFull.Mapper())
-                        .findFirst();
-        } catch (NullPointerException e) {
-            return null;
-        }
-        if (!pp.isPresent()) return null;
-        if (pp.get().userId == 0) {
-            return null;
-        }
-        return pp.get();
+    private DBPixelPlacementFull getPixelByID(Handle handle, int id) {
+        return handle.select("SELECT " +
+                // pixel fields
+                "p.id as p_id, " +
+                "p.x, " +
+                "p.y, " +
+                "p.color, " +
+                "p.who, " +
+                "p.secondary_id, " +
+                "p.time, " +
+                "p.mod_action, " +
+                "p.undo_action, " +
+                // user fields
+                "u.id as u_id, " +
+                "u.username, " +
+                "u.sub, " +
+                "u.login_with_ip, " +
+                "u.ban_expiry, " +
+                "u.is_shadow_banned, " +
+                "u.ban_reason, " +
+                "u.user_agent, " +
+                "u.pixel_count, " +
+                "u.pixel_count_alltime, " +
+                "f.name as \"faction\" FROM pixels p, " +
+                "l.user_name as \"discord_name\" " +
+                "LEFT JOIN users u ON p.who = u.id " +
+                "LEFT JOIN faction f ON f.id = u.displayed_faction " +
+                "LEFT JOIN user_links l ON l.uid = u.id AND l.identity_provider ILIKE 'discord' " +
+                "WHERE p.id = :id")
+            .bind("id", id)
+            .map(new DBPixelPlacementFull.Mapper())
+            .findFirst()
+            .orElse(null);
     }
 
     // returns ids of all pixels that should be rolled back and the DBPixelPlacement for all pixels to rollback to
@@ -402,7 +482,7 @@ public class Database {
                 .mapToMap()
                 .map(entry -> {
                     int from = toIntExact((long) entry.get("secondary_id"));
-                    return handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.undo_action, u.id as u_id, u.username, u.sub, u.login_with_ip, u.ban_expiry, u.is_shadow_banned, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.discord_name FROM pixels p LEFT JOIN users u on p.who = u.id WHERE p.id = :id")
+                    return handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.undo_action, u.id as u_id, u.username, u.sub, u.login_with_ip, u.ban_expiry, u.is_shadow_banned, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime FROM pixels p LEFT JOIN users u on p.who = u.id WHERE p.id = :id")
                             .bind("id", from)
                             .map(new DBPixelPlacementFull.Mapper())
                             .first();
@@ -550,7 +630,7 @@ public class Database {
      * @return The latest undo pixel.
      */
     public DBPixelPlacementFull getUserUndoPixel(User who) {
-        return jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.rollback_action, p.undone, p.undo_action, p.most_recent, u.id as u_id, u.stacked, u.username, u.sub, u.signup_time, u.cooldown_expiry, u.ban_expiry, u.is_shadow_banned, u.login_with_ip, u.signup_ip, u.last_ip, u.last_ip_alert, u.perma_chat_banned, u.chat_ban_expiry, u.chat_ban_reason, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.discord_name, u.chat_name_color FROM pixels p LEFT JOIN users u ON p.who = u.id WHERE p.who = :who AND NOT p.rollback_action ORDER BY p.id DESC LIMIT 1")
+        return jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.rollback_action, p.undone, p.undo_action, p.most_recent, u.id as u_id, u.stacked, u.username, u.sub, u.signup_time, u.cooldown_expiry, u.ban_expiry, u.is_shadow_banned, u.login_with_ip, u.signup_ip, u.last_ip, u.last_ip_alert, u.perma_chat_banned, u.chat_ban_expiry, u.chat_ban_reason, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.chat_name_color FROM pixels p LEFT JOIN users u ON p.who = u.id WHERE p.who = :who AND NOT p.rollback_action ORDER BY p.id DESC LIMIT 1")
                 .bind("who", who.getId())
                 .map(new DBPixelPlacementFull.Mapper())
                 .first());
@@ -649,7 +729,7 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> getUserByID(int who) {
-        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, sub, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color, displayed_faction, faction_restricted FROM users WHERE id = :who")
+        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, sub, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, chat_name_color, displayed_faction, faction_restricted FROM users WHERE id = :who")
                 .bind("who", who)
                 .map(new DBUser.Mapper())
                 .findFirst());
@@ -661,7 +741,7 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> getUserByToken(String token) {
-        return jdbi.withHandle(handle -> handle.select("SELECT u.id, u.stacked, u.username, u.sub, u.signup_time, u.cooldown_expiry, u.ban_expiry, u.is_shadow_banned, u.login_with_ip, u.signup_ip, u.last_ip, u.last_ip_alert, u.perma_chat_banned, u.chat_ban_expiry, u.chat_ban_reason, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.discord_name, u.chat_name_color, u.displayed_faction, u.faction_restricted FROM users u INNER JOIN sessions s ON u.id = s.who WHERE s.token = :token")
+        return jdbi.withHandle(handle -> handle.select("SELECT u.id, u.stacked, u.username, u.sub, u.signup_time, u.cooldown_expiry, u.ban_expiry, u.is_shadow_banned, u.login_with_ip, u.signup_ip, u.last_ip, u.last_ip_alert, u.perma_chat_banned, u.chat_ban_expiry, u.chat_ban_reason, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.chat_name_color, u.displayed_faction, u.faction_restricted FROM users u INNER JOIN sessions s ON u.id = s.who WHERE s.token = :token")
                 .bind("token", token)
                 .map(new DBUser.Mapper())
                 .findFirst());
@@ -873,15 +953,41 @@ public class Database {
     }
 
     /**
-     * Sets the public Discord username of the {@link User}.
+     * Gets the linked accounts for the {@link User}.
      * @param who The {@link User}'s ID.
-     * @param discordName The new discord username.
      */
-    public void setDiscordName(int who, String discordName) {
-        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET discord_name = :name WHERE id = :who")
+    public List<Provider> getUserLinks(int who) {
+        return jdbi.withHandle(handle -> 
+            handle.select("SELECT uid, user_name, user_id, identity_provider FROM user_links WHERE uid = :who")
                 .bind("who", who)
-                .bind("name", discordName)
-                .execute());
+                .map(new Provider.Mapper())
+                .list()
+        );
+    }
+
+    /**
+     * Sets the linked accounts for the {@link User}.
+     * @param who The {@link User}'s ID.
+     * @param links The account links the user has.
+     * @throws Exception
+     */
+    public void setUserLinks(int who, List<Provider> links) {
+        jdbi.useTransaction(handle -> {
+            handle.createUpdate("DELETE FROM user_links WHERE uid = :who")
+                .bind("who", who)
+                .execute();
+
+            for (Provider link : links) {
+                handle.createUpdate("INSERT INTO user_links(uid, user_name, user_id, identity_provider) " +
+                "VALUES(:who, :user_name, :user_id, :identity_provider) " +
+                "ON CONFLICT (uid, user_id, identity_provider) DO UPDATE SET user_name = :user_name")
+                    .bind("who", who)
+                    .bind("user_name", link.userName)
+                    .bind("user_id", link.userId)
+                    .bind("identity_provider", link.identityProvider)
+                    .execute();
+            }
+        });
     }
 
     /**
