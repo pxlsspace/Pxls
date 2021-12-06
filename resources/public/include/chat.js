@@ -1923,7 +1923,7 @@ const chat = (function() {
         }
         case 'lookup-chat': {
           socket.send({
-            type: __('ChatLookup'),
+            type: 'ChatLookup',
             arg: board.snipMode ? this.dataset.id : reportingTarget,
             mode: board.snipMode ? 'cmid' : 'username'
           });
