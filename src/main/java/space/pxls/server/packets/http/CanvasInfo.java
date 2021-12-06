@@ -12,7 +12,6 @@ public class CanvasInfo {
     public String captchaKey;
     public Integer heatmapCooldown;
     public Integer maxStacked;
-    public Boolean registrationEnabled;
     public Boolean chatEnabled;
     public Boolean chatRespectsCanvasBan;
     public Integer chatCharacterLimit;
@@ -31,7 +30,6 @@ public class CanvasInfo {
         String captchaKey,
         Integer heatmapCooldown,
         Integer maxStacked,
-        Boolean registrationEnabled,
         Boolean chatEnabled,
         Integer chatCharacterLimit,
         boolean chatRespectsCanvasBan,
@@ -49,7 +47,6 @@ public class CanvasInfo {
         this.captchaKey = captchaKey;
         this.heatmapCooldown = heatmapCooldown;
         this.maxStacked = maxStacked;
-        this.registrationEnabled = registrationEnabled;
         this.chatEnabled = chatEnabled;
         this.chatCharacterLimit = chatCharacterLimit;
         this.chatRespectsCanvasBan = chatRespectsCanvasBan;
@@ -87,10 +84,6 @@ public class CanvasInfo {
 
     public Integer getMaxStacked() {
         return maxStacked;
-    }
-
-    public Boolean getRegistrationEnabled() {
-        return registrationEnabled;
     }
 
     public Boolean getChatEnabled() {

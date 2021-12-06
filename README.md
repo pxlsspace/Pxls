@@ -83,10 +83,8 @@ An example auth section could look like this:
     auth {
         useIp: false
         snipMode: false
-        callbackBase: "https://pxls.space/auth"
 
-        enableRegistration: true
-
+        callback: "https://pxls.space/callback"
         issuer: "https://pxls.space/auth/realms/pxls"
         client: "pxls"
         secret: "533ba06e-66e8-4a17-b60c-37481f83beee"

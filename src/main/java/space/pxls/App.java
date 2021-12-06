@@ -910,10 +910,6 @@ public class App {
         return getConfig().getBoolean("auth.snipMode");
     }
 
-    public static boolean getRegistrationEnabled() {
-        return getConfig().getBoolean("auth.enableRegistration");
-    }
-
     public static boolean isChatEnabled() {
         return getConfig().getBoolean("chat.enabled");
     }
