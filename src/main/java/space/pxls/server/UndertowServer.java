@@ -20,6 +20,7 @@ import io.undertow.server.session.*;
 import org.pac4j.undertow.handler.CallbackHandler;
 import org.pac4j.undertow.handler.LogoutHandler;
 import org.pac4j.undertow.handler.SecurityHandler;
+import org.pac4j.core.authorization.authorizer.DefaultAuthorizers;
 import org.pac4j.core.config.Config;
 
 import space.pxls.App;
@@ -128,7 +129,10 @@ public class UndertowServer {
             // presume it's start to end. I mention this because ideally
             // HeaderClient should be more important than OidcClient, but 
             // OidcClient no longer works when HeaderClient comes first.
-            "OidcClient,HeaderClient,IpClient,AnonymousClient"
+            "OidcClient,HeaderClient,IpClient,AnonymousClient",
+            // The default (null / "") includes a CSRF check for post requests
+            // that pxls just doesn't have.
+            DefaultAuthorizers.NONE
         );
             
         HttpHandler callbackHandler = new IPReader(new EagerFormParsingHandler().setNext(routingHandler));
