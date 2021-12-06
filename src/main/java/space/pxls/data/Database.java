@@ -94,7 +94,7 @@ public class Database {
                     "uid INT NOT NULL REFERENCES users(id)," +
                     "user_name VARCHAR(64)," +
                     "user_id VARCHAR(64)," +
-                    "identity_provider VARCHAR(64));" + 
+                    "identity_provider VARCHAR(64) NOT NULL);" + 
                     "CREATE UNIQUE INDEX IF NOT EXISTS _user_links_user_uid_service_triplet ON user_links (uid, user_id, identity_provider)")
                     .execute();
             // roles
