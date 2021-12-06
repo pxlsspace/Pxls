@@ -1,6 +1,14 @@
 'use strict';
 (function () {
   let admin = null;
+  const userLogins = data => crel('dl',
+    data.logins.map(
+      ({ userName, userId, identityProvider }) => [
+        crel('dt', identityProvider),
+        crel('dd', userId)
+      ]
+    )
+  );
   const genButton = function(s) {
     return $('<button>').css({
       position: 'initial',
@@ -192,7 +200,7 @@
           }, data.username)],
           [__('Profile'), crel('a', { href: `/profile/${data.username}`, target: '_blank' }, data.username)],
           [__('Logins'), data.logins
-            ? data.logins.map(({ serviceID, serviceUserID }) => `${serviceID}:${serviceUserID}`).join(', ')
+            ? userLogins(data)
             : null
           ],
           [__('Roles'), data.roles.map(role => role.name).join(', ')],
@@ -441,15 +449,7 @@
               return null;
             }
 
-            const elems = $('<div>');
-            for (let i = 0; i < data.logins.length; i++) {
-              const login = data.logins[i];
-              elems.append($('<span>').text(`${login.serviceID}:${login.serviceUserID}`));
-              if (i !== data.logins.length - 1) {
-                elems.append(', ');
-              }
-            }
-            return elems;
+            return userLogins(data);
           }
         }, {
           id: 'user_agent',

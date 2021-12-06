@@ -2,17 +2,18 @@ package space.pxls.server.packets.http;
 
 import space.pxls.user.PlacementOverrides;
 import space.pxls.user.Role;
+import space.pxls.auth.Provider;
 import space.pxls.server.packets.UserInfo;
 
 import java.util.List;
 
 public class ExtendedUserInfo extends UserInfo {
-    public List<String> logins;
+    public List<Provider> logins;
 
     public ExtendedUserInfo(
         String username,
         List<Role> roles,
-        List<String> logins,
+        List<Provider> logins,
         int pixelCount,
         int pixelCountAllTime,
         Boolean banned,
@@ -48,7 +49,7 @@ public class ExtendedUserInfo extends UserInfo {
         this.logins = logins;
     }
 
-    List<String> getLogins() {
+    List<Provider> getLogins() {
         return logins;
     }
 }

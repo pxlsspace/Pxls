@@ -3,6 +3,9 @@ package space.pxls.data;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 
+import space.pxls.App;
+import space.pxls.auth.Provider;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
@@ -16,7 +19,7 @@ public class DBPixelPlacementFull extends DBPixelPlacement {
     public final boolean banned;
     public final boolean undoAction;
     public final String userAgent;
-    public final List<String> logins;
+    public final List<Provider> logins;
 
     public DBPixelPlacementFull(
         int id,
@@ -27,7 +30,7 @@ public class DBPixelPlacementFull extends DBPixelPlacement {
         long time,
         int userId,
         String username,
-        String subject,
+        List<Provider> logins,
         long ban_expiry, int
         pixelCount,
         int pixelCountAlltime,
@@ -59,7 +62,7 @@ public class DBPixelPlacementFull extends DBPixelPlacement {
         this.banned = banned;
         this.undoAction = undoAction;
         this.userAgent = userAgent;
-        this.logins = List.of(subject);
+        this.logins = logins;
     }
 
     public static class Mapper implements RowMapper<DBPixelPlacementFull> {
@@ -72,6 +75,9 @@ public class DBPixelPlacementFull extends DBPixelPlacement {
                 faction = r.getString("faction");
             } catch (Exception ignored) {}
 
+            final List<Provider> logins = App.getDatabase().getUserLinks(r.getInt("u_id"));
+            logins.add(new Provider(r.getString("username"), r.getString("sub"), "pxls"));
+
             return new DBPixelPlacementFull(
                     r.getInt("p_id"),
                     r.getInt("x"),
@@ -81,7 +87,7 @@ public class DBPixelPlacementFull extends DBPixelPlacement {
                     time == null ? 0 : time.getTime(),
                     r.getInt("u_id"),
                     r.getString("username"),
-                    r.getString("sub"),
+                    logins,
                     ban_expiry == null ? 0 : ban_expiry.getTime(),
                     r.getInt("pixel_count"),
                     r.getInt("pixel_count_alltime"),

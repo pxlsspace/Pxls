@@ -3,9 +3,10 @@ package space.pxls.server.packets.http;
 import java.util.List;
 
 import space.pxls.App;
+import space.pxls.auth.Provider;
 
 public class ExtendedLookup extends Lookup {
-    public final List<String> logins;
+    public final List<Provider> logins;
     public final String userAgent;
 
     public ExtendedLookup(
@@ -19,7 +20,7 @@ public class ExtendedLookup extends Lookup {
         String username,
         String discordName,
         String faction,
-        List<String> logins,
+        List<Provider> logins,
         String userAgent
     ) {
         super(

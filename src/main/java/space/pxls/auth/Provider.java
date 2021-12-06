@@ -14,7 +14,7 @@ public class Provider {
 	public final String userId;	
 	public final String identityProvider;
 
-	private Provider(String userName, String userId, String identityProvider) {
+	public Provider(String userName, String userId, String identityProvider) {
 		this.userName = userName;
 		this.userId = userId;
 		this.identityProvider = identityProvider;
@@ -34,14 +34,6 @@ public class Provider {
 		} else {
 			return Optional.empty();
 		}
-	}
-
-	@Override
-	public String toString() {
-		return "Provider {userName=" + userName +
-			",userId=" + userId +
-			",identityProvider=" + identityProvider +
-			"}";
 	}
 
 	public static class Mapper implements RowMapper<Provider> {

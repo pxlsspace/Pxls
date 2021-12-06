@@ -513,6 +513,23 @@ body .message {
     margin-top: 5px;
 }
 
+.floating-panel dl {
+    margin: 0;
+}
+
+.floating-panel dt {
+    font-weight: normal;
+    font-size: small;
+    text-decoration: underline;
+    margin: 0;
+    margin-top: 0.5em;
+}
+
+.floating-panel dd {
+    font-family: monospace;
+    margin: 0;
+}
+
 #lookup {
     position: fixed;
     top: 50px;

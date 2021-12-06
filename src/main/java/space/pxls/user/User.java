@@ -243,9 +243,10 @@ public class User {
                 .anyMatch(role -> role.hasPermission(node));
     }
 
-    // TODO ([  ]): fetch from ID server
-    public List<String> getLogins() {
-        return List.of(login);
+    public List<Provider> getLogins() {
+        List<Provider> logins = getLinks();
+        logins.add(new Provider(name, login, "pxls"));
+        return logins;
     }
 
     public boolean loginsWithIP() {
