@@ -29,30 +29,6 @@ public class UserManager {
         }
     }
 
-    private void addUserToken(String token, User user) {
-        usersByToken.put(token, user);
-        App.getDatabase().createSession(user.getId(), token);
-    }
-
-    private void removeUserToken(String token) {
-        usersByToken.remove(token);
-        App.getDatabase().destroySession(token);
-    }
-
-    public User getByToken(String token) {
-        User u = usersByToken.get(token);
-        App.getDatabase().updateSession(token);
-        if (u != null) {
-            return u;
-        }
-        u = getByDB(App.getDatabase().getUserByToken(token));
-        if (u == null) {
-            return null;
-        }
-        usersByToken.put(token, u); // insert it in the hashmap for quicker access
-        return u;
-    }
-
     public User getByLogin(String login) {
         return getByDB(App.getDatabase().getUserByLogin(login));
     }
@@ -91,14 +67,6 @@ public class UserManager {
         ));
     }
 
-    public String logIn(User user, String ip) {
-        Integer uid = user.getId();
-        String token = uid.toString()+"|"+ Util.generateRandomToken();
-        addUserToken(token, user);
-        App.getDatabase().updateUserIP(user, ip);
-        return token;
-    }
-
     public User signUp(OidcProfile profile, String ip) {
         final String username = (String) profile.getAttribute("preferred_username");
         final String subject = (String) profile.getAttribute("sub");
@@ -114,10 +82,6 @@ public class UserManager {
 
     public User getByName(String name) {
         return getByDB(App.getDatabase().getUserByName(name));
-    }
-
-    public void logOut(String value) {
-        removeUserToken(value);
     }
 
     public Map<String, User> getAllUsersByToken() {

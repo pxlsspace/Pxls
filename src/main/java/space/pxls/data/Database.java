@@ -104,14 +104,6 @@ public class Database {
                     "role VARCHAR(512)," +
                     "PRIMARY KEY (id, role))")
                     .execute();
-            // sessions
-            handle.createUpdate("CREATE TABLE IF NOT EXISTS sessions ("+
-                    "id SERIAL NOT NULL PRIMARY KEY,"+
-                    "who INT NOT NULL,"+
-                    "token VARCHAR(60) NOT NULL,"+
-                    "time TIMESTAMP DEFAULT CURRENT_TIMESTAMP);" +
-                    "CREATE INDEX IF NOT EXISTS token ON sessions (token)")
-                    .execute();
             // lookups
             handle.createUpdate("CREATE TABLE IF NOT EXISTS lookups (" +
                     "id SERIAL NOT NULL PRIMARY KEY," +
@@ -736,18 +728,6 @@ public class Database {
     }
 
     /**
-     * Gets a user by their token.
-     * @param token The user's token.
-     * @return The user.
-     */
-    public Optional<DBUser> getUserByToken(String token) {
-        return jdbi.withHandle(handle -> handle.select("SELECT u.id, u.stacked, u.username, u.sub, u.signup_time, u.cooldown_expiry, u.ban_expiry, u.is_shadow_banned, u.login_with_ip, u.signup_ip, u.last_ip, u.last_ip_alert, u.perma_chat_banned, u.chat_ban_expiry, u.chat_ban_reason, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.chat_name_color, u.displayed_faction, u.faction_restricted FROM users u INNER JOIN sessions s ON u.id = s.who WHERE s.token = :token")
-                .bind("token", token)
-                .map(new DBUser.Mapper())
-                .findFirst());
-    }
-
-    /**
      * Creates a new user entry.
      * @param name The username.
      * @param login The login method.
@@ -768,37 +748,6 @@ public class Database {
                 .orElse(null);
             return user;
         });
-    }
-
-    /**
-     * @param who The user's ID.
-     * @param token The user's token.
-     */
-    public void createSession(int who, String token) {
-        jdbi.useHandle(handle -> handle.createUpdate("INSERT INTO sessions (who, token) VALUES (:who, :token)")
-                .bind("who", who)
-                .bind("token", token)
-                .execute());
-    }
-
-    /**
-     * Destroys the user's session.
-     * @param token The user's token.
-     */
-    public void destroySession(String token) {
-        jdbi.useHandle(handle -> handle.createUpdate("DELETE FROM sessions WHERE token = :token")
-                .bind("token", token)
-                .execute());
-    }
-
-    /**
-     * Resets the user's session timeout.
-     * @param token The user's token.
-     */
-    public void updateSession(String token) {
-        jdbi.useHandle(handle -> handle.createUpdate("UPDATE sessions SET time = CURRENT_TIMESTAMP WHERE token = :token")
-                .bind("token", token)
-                .execute());
     }
 
     /**
@@ -1038,14 +987,6 @@ public class Database {
                 .bind("who", who)
                 .mapTo(Integer.class)
                 .first());
-    }
-
-    /**
-     * Invalidates sessions older than 24 days.
-     */
-    public void clearOldSessions() {
-        jdbi.useHandle(handle -> handle.createUpdate("DELETE FROM sessions WHERE (time + '24 DAYS'::INTERVAL) < NOW()")
-                .execute());
     }
 
     /**
