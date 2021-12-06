@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-12-06T15:28:45.176Z\n"
+"POT-Creation-Date: 2021-12-06T19:12:50.407Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -987,7 +987,6 @@ msgid "Play sound on ping:"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/include/chat.js
 msgid "Off"
 msgstr ""
 
@@ -1704,8 +1703,6 @@ msgstr ""
 #: resources/public/include/chat.js
 #: resources/public/include/chat.js
 #: resources/public/include/chat.js
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
 #: resources/public/include/lookup.js
 #: resources/public/admin/admin.js
 msgid "Cancel"
@@ -1858,40 +1855,6 @@ msgstr ""
 
 #: resources/public/include/chat.js
 msgid "Error sending purge."
-msgstr ""
-
-#: resources/public/include/chat.js
-msgid "On"
-msgstr ""
-
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
-msgid "Set"
-msgstr ""
-
-#: resources/public/include/chat.js
-msgid "Toggle Rename Request"
-msgstr ""
-
-#: resources/public/include/chat.js
-msgid "Select one of the options below to set the current rename request state."
-msgstr ""
-
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
-msgid "An unknown error occurred. Please contact a developer"
-msgstr ""
-
-#: resources/public/include/chat.js
-msgid "New Name: "
-msgstr ""
-
-#: resources/public/include/chat.js
-msgid "Enter the new name for the user below. Please note that if you\\'re trying to change the caps, you\\'ll have to rename to something else first."
-msgstr ""
-
-#: resources/public/include/chat.js
-msgid "Force Rename"
 msgstr ""
 
 #: resources/public/include/chat.js
@@ -2074,31 +2037,6 @@ msgstr ""
 #: resources/public/include/user.js
 #: resources/public/admin/admin.js
 msgid "Banned"
-msgstr ""
-
-#: resources/public/include/user.js
-msgid "Staff have required you to change your username, this usually means your name breaks one of our rules."
-msgstr ""
-
-#: resources/public/include/user.js
-msgid "If you disagree, please contact us on Discord (link in the info panel)."
-msgstr ""
-
-#: resources/public/include/user.js
-msgid "New Username:"
-msgstr ""
-
-#: resources/public/include/user.js
-msgid "Not now"
-msgstr ""
-
-#: resources/public/include/user.js
-msgid "Change"
-msgstr ""
-
-#: resources/public/include/user.js
-#: resources/public/admin/admin.js
-msgid "Rename Requested"
 msgstr ""
 
 #: resources/public/admin/admin.js

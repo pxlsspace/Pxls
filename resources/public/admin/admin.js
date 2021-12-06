@@ -198,7 +198,6 @@
           [__('Roles'), data.roles.map(role => role.name).join(', ')],
           [__('Pixels'), data.pixelCount],
           [__('All Time Pixels'), data.pixelCountAllTime],
-          [__('Rename Requested'), data.renameRequested ? 'Yes' : 'No'],
           [__('Discord Name'), data.discordName || '(not set)'],
           [__('Banned'), bannedStr],
           [__('Chatbanned'), chatbannedStr]
@@ -270,22 +269,6 @@
                 onclick: admin.chat._handleActionClick
               }, 'Chat lookup')
             ),
-            (admin.user.hasPermission('user.namechange.flag') ? crel('div',
-              crel('button', {
-                class: 'text-button',
-                'data-action': 'request-rename',
-                'data-target': data.username,
-                style: 'position: initial; right: auto; left: auto; bottom: auto;',
-                onclick: admin.chat._handleActionClick
-              }, 'Request Rename'),
-              (admin.user.hasPermission('user.namechange.force') ? crel('button', {
-                class: 'text-button',
-                'data-action': 'force-rename',
-                'data-target': data.username,
-                style: 'position: initial; right: auto; left: auto; bottom: auto;',
-                onclick: admin.chat._handleActionClick
-              }, 'Force Rename') : '')
-            ) : ''),
             $('<div>').append(
               $('<b>').text(__('Custom ban length: ')), '<br>',
               $('<input>').attr('type', 'number').attr('step', 'any').addClass('admin-bannumber').val(24),

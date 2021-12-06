@@ -141,7 +141,6 @@ Commands are entered directly into the running instance (stdin):
 - `chatpurge <user> [amount] [reason]` - Purges up to `amount` chat messages from the user
 - `cf <query>` - Runs a chat filter against `query`
 - `reloadusers` - Reloads the user manager (laggy)
-- `flagrename <user> [0|1]` - Sets the user's Rename Requested flag
 - `setname <user> <name>` - (alias: updateusername) Changes the user's name
 - `idlecheck` - Runs an user timeout check
 - `senduserdata` - Broadcasts the non-idle user count in chat

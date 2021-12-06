@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-12-06T15:28:45.176Z\n"
+"POT-Creation-Date: 2021-12-06T19:12:50.407Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -971,7 +971,6 @@ msgid "Play sound on ping:"
 msgstr "Émettre un son quand on est mentionné :"
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/include/chat.js
 msgid "Off"
 msgstr "Jamais"
 
@@ -1797,38 +1796,6 @@ msgid "Error sending purge."
 msgstr "Erreur lors de l'envoi de la purge"
 
 #: resources/public/include/chat.js
-msgid "On"
-msgstr "Activé"
-
-#: resources/public/include/chat.js
-msgid "Set"
-msgstr "Définir"
-
-#: resources/public/include/chat.js
-msgid "Toggle Rename Request"
-msgstr "Activer/Désactiver la demande de renommage"
-
-#: resources/public/include/chat.js
-msgid "Select one of the options below to set the current rename request state."
-msgstr "Sélectionner une des options ci-dessous pour définir le statut actuel de la demande de renommage"
-
-#: resources/public/include/chat.js
-msgid "An unknown error occurred. Please contact a developer"
-msgstr "Une erreur inconnue s'est produite. Merci de contacter un développeur."
-
-#: resources/public/include/chat.js
-msgid "New Name: "
-msgstr "Nouveau Nom :"
-
-#: resources/public/include/chat.js
-msgid "Enter the new name for the user below. Please note that if you\\'re trying to change the caps, you\\'ll have to rename to something else first."
-msgstr "Entre un nouveau nom pour l'utilisateur ci-dessous. Merci de prendre en compte que si tu essaies de changer la capitalization, il te faudra d'abord renommer en quelque chose d'autre."
-
-#: resources/public/include/chat.js
-msgid "Force Rename"
-msgstr "Forcer le renommage"
-
-#: resources/public/include/chat.js
 msgid "You cannot use chat while canvas banned."
 msgstr "Tu ne peux pas utiliser le chat si tu es banni sur le canvas."
 
@@ -2007,30 +1974,6 @@ msgstr "Raison du bannissement :"
 #: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Banned"
 msgstr "Banni"
-
-#: resources/public/include/user.js
-msgid "Staff have required you to change your username, this usually means your name breaks one of our rules."
-msgstr "Le staff te demande de changer de nom d'utilisateur, ceci signifie généralement que ton nom enfreint une de nos règles."
-
-#: resources/public/include/user.js
-msgid "If you disagree, please contact us on Discord (link in the info panel)."
-msgstr "Si tu n'es pas d'accord, merci de nous contacter sur Discord (lien dans la barre d'informations)."
-
-#: resources/public/include/user.js
-msgid "New Username:"
-msgstr "Nouveau nom d'utilisateur :"
-
-#: resources/public/include/user.js
-msgid "Not now"
-msgstr "Pas maintenant"
-
-#: resources/public/include/user.js
-msgid "Change"
-msgstr "Changer"
-
-#: resources/public/include/user.js resources/public/admin/admin.js
-msgid "Rename Requested"
-msgstr "Renommage demandé"
 
 #: resources/public/admin/admin.js
 msgid "Something went wrong! Perhaps insufficient permissions?"

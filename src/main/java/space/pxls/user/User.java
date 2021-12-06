@@ -9,7 +9,6 @@ import space.pxls.server.packets.chat.Badge;
 import space.pxls.server.packets.chat.ServerChatUserUpdateBuilder;
 import space.pxls.server.packets.socket.ClientUndo;
 import space.pxls.server.packets.chat.ServerChatBan;
-import space.pxls.server.packets.socket.ServerRename;
 import space.pxls.util.RateLimitFactory;
 
 import java.sql.Timestamp;

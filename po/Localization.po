@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-12-06T15:28:45.176Z\n"
+"POT-Creation-Date: 2021-12-06T19:12:50.407Z\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -971,7 +971,6 @@ msgid "Play sound on ping:"
 msgstr "Play sound on ping:"
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/include/chat.js
 msgid "Off"
 msgstr "Off"
 
@@ -1797,38 +1796,6 @@ msgid "Error sending purge."
 msgstr "Error sending purge."
 
 #: resources/public/include/chat.js
-msgid "On"
-msgstr "On"
-
-#: resources/public/include/chat.js
-msgid "Set"
-msgstr "Set"
-
-#: resources/public/include/chat.js
-msgid "Toggle Rename Request"
-msgstr "Toggle Rename Request"
-
-#: resources/public/include/chat.js
-msgid "Select one of the options below to set the current rename request state."
-msgstr "Select one of the options below to set the current rename request state."
-
-#: resources/public/include/chat.js
-msgid "An unknown error occurred. Please contact a developer"
-msgstr "An unknown error occurred. Please contact a developer"
-
-#: resources/public/include/chat.js
-msgid "New Name: "
-msgstr "New Name: "
-
-#: resources/public/include/chat.js
-msgid "Enter the new name for the user below. Please note that if you\\'re trying to change the caps, you\\'ll have to rename to something else first."
-msgstr "Enter the new name for the user below. Please note that if you\\'re trying to change the caps, you\\'ll have to rename to something else first."
-
-#: resources/public/include/chat.js
-msgid "Force Rename"
-msgstr "Force Rename"
-
-#: resources/public/include/chat.js
 msgid "You cannot use chat while canvas banned."
 msgstr "You cannot use chat while canvas banned."
 
@@ -2007,30 +1974,6 @@ msgstr "Ban reason:"
 #: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Banned"
 msgstr "Banned"
-
-#: resources/public/include/user.js
-msgid "Staff have required you to change your username, this usually means your name breaks one of our rules."
-msgstr "Staff have required you to change your username, this usually means your name breaks one of our rules."
-
-#: resources/public/include/user.js
-msgid "If you disagree, please contact us on Discord (link in the info panel)."
-msgstr "If you disagree, please contact us on Discord (link in the info panel)."
-
-#: resources/public/include/user.js
-msgid "New Username:"
-msgstr "New Username:"
-
-#: resources/public/include/user.js
-msgid "Not now"
-msgstr "Not now"
-
-#: resources/public/include/user.js
-msgid "Change"
-msgstr "Change"
-
-#: resources/public/include/user.js resources/public/admin/admin.js
-msgid "Rename Requested"
-msgstr "Rename Requested"
 
 #: resources/public/admin/admin.js
 msgid "Something went wrong! Perhaps insufficient permissions?"
