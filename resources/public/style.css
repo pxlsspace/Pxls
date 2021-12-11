@@ -1246,7 +1246,10 @@ aside.panel.horizontal.right {
     word-wrap: break-word;
 }
 
-.panel-header, .panel-footer {
+.panel-header {
+    display: flex;
+    justify-content: center;
+    white-space: nowrap;
     height: 2.5rem;
     line-height: 2.5rem;
 }
@@ -1261,10 +1264,35 @@ aside.panel.horizontal.right {
     font-size: 2rem;
 }
 
-.panel-footer {
-    color: var(--panel-footer-text-color);
-    border-top: 1px solid var(--panel-border-color);
-    background: var(--panel-footer-background);
+.panel-header h1,
+.panel-header h2,
+.panel-header h3,
+.panel-header h4,
+.panel-header h5,
+.panel-header h6 {
+    flex-shrink: 1;
+    flex-grow: 0;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.panel-header h1 > .fas,
+.panel-header h2 > .fas,
+.panel-header h3 > .fas,
+.panel-header h4 > .fas,
+.panel-header h5 > .fas,
+.panel-header h6 > .fas {
+    flex-shrink: 1;
+    overflow: hidden;
+}
+
+.panel-title {
+    flex-shrink: 999999999;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .panel-trigger {
@@ -1342,7 +1370,12 @@ aside.panel.horizontal.right {
     margin: .5rem 0;
 }
 
-.panel-body article > header h1, .panel-body article > header h2, .panel-body article > header h3, .panel-body article > header h4, .panel-body article > header h5, .panel-body article > header h6 {
+.panel-body article > header h1,
+.panel-body article > header h2,
+.panel-body article > header h3,
+.panel-body article > header h4,
+.panel-body article > header h5,
+.panel-body article > header h6 {
     font-size: x-large;
     text-align: center;
     width:  100%;
@@ -1986,6 +2019,10 @@ body .emoji-picker {
 
 .mobile-only {
     display: none;
+}
+
+#txtMobileChatCooldown {
+    margin-left: 0.25em;
 }
 
 @media (max-width: 1500px) {
