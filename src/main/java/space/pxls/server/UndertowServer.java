@@ -3,7 +3,6 @@ package space.pxls.server;
 import com.google.gson.JsonObject;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
-import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.AllowedMethodsHandler;
 import io.undertow.server.handlers.form.EagerFormParsingHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
@@ -15,6 +14,7 @@ import io.undertow.websockets.core.BufferedTextMessage;
 import io.undertow.websockets.core.WebSocketChannel;
 import io.undertow.websockets.core.WebSockets;
 import io.undertow.websockets.spi.WebSocketHttpExchange;
+import java.util.concurrent.ConcurrentMap;
 import space.pxls.App;
 import space.pxls.server.packets.chat.*;
 import space.pxls.server.packets.socket.*;
@@ -33,15 +33,15 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class UndertowServer {
-    private int port;
-    private PacketHandler socketHandler;
-    private WebHandler webHandler;
-    private ConcurrentHashMap<Integer, User> authedUsers = new ConcurrentHashMap<Integer, User>();
+    private final int port;
+    private final PacketHandler socketHandler;
+    private final WebHandler webHandler;
+    private final ConcurrentHashMap<Integer, User> authedUsers = new ConcurrentHashMap<>();
 
-    private Set<PxlsWebSocketConnection> connections;
+    private final Set<PxlsWebSocketConnection> connections;
     private Undertow server;
 
-    private ExecutorService userTaskExecutor = Executors.newFixedThreadPool(4);
+    private final ExecutorService userTaskExecutor = Executors.newFixedThreadPool(4);
 
     public UndertowServer(int port) {
         this.port = port;
@@ -96,15 +96,21 @@ public class UndertowServer {
                 .addExactPath("/factions", new AllowedMethodsHandler(webHandler::getRequestingUserFactions, Methods.GET))
                 .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/")).setCacheTime(10))
                 .addPrefixPath("/emoji", Handlers.resource(new FileResourceManager(new File(App.getStorageDir().resolve("emoji").toString()))).setCacheTime(604800));
+
+        int managedFactionsTimeSecondsLimit = (int) App.getConfig().getDuration("server.limits.manageFactions.time", TimeUnit.SECONDS);
         PxlsRoutingHandler routingHandler = PxlsHandlers.routing()
             .getPermGated("/profile", "user.profile", webHandler::profileView)
             .getPermGated("/profile/{who}", "user.profile.other", webHandler::profileView)
-            .getPermGated("/factions/{fid}", "faction.data", new JsonReader(new RateLimitingHandler(webHandler::manageFactions, "http:manageFactions", (int) App.getConfig().getDuration("server.limits.manageFactions.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.manageFactions.count"), App.getConfig().getBoolean("server.limits.manageFactions.global"))))
-            .postPermGated("/factions", "faction.create", new JsonReader(new RateLimitingHandler(webHandler::manageFactions, "http:manageFactions", (int) App.getConfig().getDuration("server.limits.manageFactions.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.manageFactions.count"), App.getConfig().getBoolean("server.limits.manageFactions.global"))))
-            .putPermGated("/factions/{fid}", "faction.edit", new JsonReader(new RateLimitingHandler(webHandler::manageFactions, "http:manageFactions", (int) App.getConfig().getDuration("server.limits.manageFactions.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.manageFactions.count"), App.getConfig().getBoolean("server.limits.manageFactions.global"))))
-            .deletePermGated("/factions/{fid}", "faction.delete", new JsonReader(new RateLimitingHandler(webHandler::manageFactions, "http:manageFactions", (int) App.getConfig().getDuration("server.limits.manageFactions.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.manageFactions.count"), App.getConfig().getBoolean("server.limits.manageFactions.global"))))
+            .getPermGated("/factions/{fid}", "faction.data", new JsonReader(new RateLimitingHandler(webHandler::manageFactions, "http:manageFactions",
+                managedFactionsTimeSecondsLimit, App.getConfig().getInt("server.limits.manageFactions.count"), App.getConfig().getBoolean("server.limits.manageFactions.global"))))
+            .postPermGated("/factions", "faction.create", new JsonReader(new RateLimitingHandler(webHandler::manageFactions, "http:manageFactions",
+                managedFactionsTimeSecondsLimit, App.getConfig().getInt("server.limits.manageFactions.count"), App.getConfig().getBoolean("server.limits.manageFactions.global"))))
+            .putPermGated("/factions/{fid}", "faction.edit", new JsonReader(new RateLimitingHandler(webHandler::manageFactions, "http:manageFactions",
+                managedFactionsTimeSecondsLimit, App.getConfig().getInt("server.limits.manageFactions.count"), App.getConfig().getBoolean("server.limits.manageFactions.global"))))
+            .deletePermGated("/factions/{fid}", "faction.delete", new JsonReader(new RateLimitingHandler(webHandler::manageFactions, "http:manageFactions",
+                managedFactionsTimeSecondsLimit, App.getConfig().getInt("server.limits.manageFactions.count"), App.getConfig().getBoolean("server.limits.manageFactions.global"))))
             .setFallbackHandler(pathHandler);
-        //EncodingHandler encoder = new EncodingHandler(mainHandler, new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50, Predicates.parse("max-content-size(1024)")));
+
         server = Undertow.builder()
                 .addHttpListener(port, "0.0.0.0")
                 .setIoThreads(32)
@@ -180,7 +186,7 @@ public class UndertowServer {
                 user.getConnections().remove(channel);
             }
 
-            socketHandler.disconnect(channel, user);
+            socketHandler.disconnect(user);
         });
         channel.resumeReceives();
     }
@@ -208,7 +214,7 @@ public class UndertowServer {
         broadcastToUserPredicate(obj, user -> !user.isShadowBanned());
     }
 
-    private Predicate<User> userCanReceiveStaffBroadcasts = user -> user.hasPermission("user.receivestaffbroadcasts");
+    private final Predicate<User> userCanReceiveStaffBroadcasts = user -> user.hasPermission("user.receivestaffbroadcasts");
 
     public void broadcastToStaff(Object obj) {
         broadcastToUserPredicate(obj, userCanReceiveStaffBroadcasts);
@@ -285,7 +291,7 @@ public class UndertowServer {
         authedUsers.remove(user.getId());
     }
 
-    public ConcurrentHashMap<Integer, User> getAuthedUsers() {
+    public ConcurrentMap<Integer, User> getAuthedUsers() {
         return this.authedUsers;
     }
 

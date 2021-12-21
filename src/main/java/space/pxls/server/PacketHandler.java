@@ -107,18 +107,18 @@ public class PacketHandler {
     public void accept(WebSocketChannel channel, User user, Object obj, String ip) {
         if (user == null) return;
         if (obj instanceof ClientPlace && user.hasPermission("board.place")) handlePlace(channel, user, ((ClientPlace) obj), ip);
-        if (obj instanceof ClientUndo && user.hasPermission("board.undo")) handleUndo(channel, user, ((ClientUndo) obj), ip);
+        if (obj instanceof ClientUndo && user.hasPermission("board.undo")) handleUndo(user, ((ClientUndo) obj), ip);
         if (obj instanceof ClientCaptcha) handleCaptcha(channel, user, ((ClientCaptcha) obj));
-        if (obj instanceof ClientShadowBanMe) handleShadowBanMe(channel, user, ((ClientShadowBanMe) obj));
-        if (obj instanceof ClientBanMe) handleBanMe(channel, user, ((ClientBanMe) obj));
+        if (obj instanceof ClientShadowBanMe) handleShadowBanMe(user, ((ClientShadowBanMe) obj));
+        if (obj instanceof ClientBanMe) handleBanMe(user, ((ClientBanMe) obj));
         if (App.isChatEnabled()) {
-            if (obj instanceof ClientChatHistory && user.hasPermission("chat.history") && !user.isBanned()) handleChatHistory(channel, user, ((ClientChatHistory) obj));
-            if (obj instanceof ClientChatbanState) handleChatbanState(channel, user, ((ClientChatbanState) obj));
+            if (obj instanceof ClientChatHistory && user.hasPermission("chat.history") && !user.isBanned()) handleChatHistory(channel, user);
+            if (obj instanceof ClientChatbanState) handleChatbanState(channel, user);
             if (obj instanceof ClientChatMessage && user.hasPermission("chat.send")) handleChatMessage(channel, user, ((ClientChatMessage) obj));
-            if (obj instanceof ClientChatLookup && user.hasPermission("chat.lookup")) handleChatLookup(channel, user, ((ClientChatLookup) obj));
+            if (obj instanceof ClientChatLookup && user.hasPermission("chat.lookup")) handleChatLookup(channel, ((ClientChatLookup) obj));
         }
-        if (obj instanceof ClientAdminPlacementOverrides && user.hasPermission("user.admin")) handlePlacementOverrides(channel, user, ((ClientAdminPlacementOverrides) obj));
-        if (obj instanceof ClientAdminMessage && user.hasPermission("user.alert")) handleAdminMessage(channel, user, ((ClientAdminMessage) obj));
+        if (obj instanceof ClientAdminPlacementOverrides && user.hasPermission("user.admin")) handlePlacementOverrides(user, ((ClientAdminPlacementOverrides) obj));
+        if (obj instanceof ClientAdminMessage && user.hasPermission("user.alert")) handleAdminMessage(user, ((ClientAdminMessage) obj));
     }
 
     private void handleAdminMessage(User user, ClientAdminMessage obj) {
@@ -233,7 +233,7 @@ public class PacketHandler {
 
     private void handlePlace(WebSocketChannel channel, User user, ClientPlace cp, String ip) {
         if (!cp.getType().equals("pixel")) {
-            handlePlaceMaybe(channel, user, cp, ip);
+            handlePlaceMaybe(user, cp, ip);
         }
         if (cp.getX() < 0 || cp.getX() >= App.getWidth() || cp.getY() < 0 || cp.getY() >= App.getHeight()) return;
         if (user.isBanned()) return;
