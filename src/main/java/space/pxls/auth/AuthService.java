@@ -1,6 +1,7 @@
 package space.pxls.auth;
 
 import com.mashape.unirest.http.exceptions.UnirestException;
+import java.nio.charset.StandardCharsets;
 import space.pxls.App;
 
 import java.util.Map;
@@ -13,20 +14,18 @@ import java.net.URLDecoder;
 import org.apache.commons.codec.binary.Base64;
 import space.pxls.util.Util;
 
-import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
 import java.security.InvalidKeyException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AuthService {
-    private String id;
-    private String name = getName();
-    private transient Set<String> validStates = ConcurrentHashMap.newKeySet();
+    private final String id;
+    private final transient Set<String> validStates = ConcurrentHashMap.newKeySet();
     protected transient boolean enabled;
     protected boolean registrationEnabled;
 
-    public AuthService(String id, boolean enabled, boolean registrationEnabled) {
+    protected AuthService(String id, boolean enabled, boolean registrationEnabled) {
         this.id = id;
         this.enabled = enabled;
         this.registrationEnabled = registrationEnabled;
@@ -40,17 +39,17 @@ public abstract class AuthService {
 
     public abstract void reloadEnabledState();
 
-    protected static Map<String, String> parseQuery(String s) {
-        Map<String, String> query_pairs = new LinkedHashMap<String, String>();
-        try {
-            String query = s;
-            String[] pairs = query.split("&");
-            for (String pair : pairs) {
-                int idx = pair.indexOf("=");
-                query_pairs.put(URLDecoder.decode(pair.substring(0, idx), "UTF-8"), URLDecoder.decode(pair.substring(idx + 1), "UTF-8"));
-            }
-        } catch (UnsupportedEncodingException e) {}
-        return query_pairs;
+    protected static Map<String, String> parseQuery(String query) {
+        Map<String, String> queryPairs = new LinkedHashMap<>();
+        String[] pairs = query.split("&");
+        for (String pair : pairs) {
+            int idx = pair.indexOf("=");
+            queryPairs.put(
+                URLDecoder.decode(pair.substring(0, idx), StandardCharsets.UTF_8),
+                URLDecoder.decode(pair.substring(idx + 1), StandardCharsets.UTF_8)
+            );
+        }
+        return queryPairs;
     }
 
     private String getOauthSignature(String url, String params, String secret, String method) {
@@ -61,36 +60,34 @@ public abstract class AuthService {
             // secret key.
             String privKey = App.getConfig().getString("oauth."+id+".secret") + "&" + secret;
 
-            SecretKey key = new SecretKeySpec(privKey.getBytes("UTF-8"), "HmacSHA1");
+            SecretKey key = new SecretKeySpec(privKey.getBytes(StandardCharsets.UTF_8), "HmacSHA1");
 
             Mac mac = Mac.getInstance("HmacSHA1");
             mac.init(key);
 
             // encode it, base64 it, change it to string and return.
             return new String(new Base64().encode(mac.doFinal(base.getBytes(
-                "UTF-8"))), "UTF-8").trim();
-        } catch (UnsupportedEncodingException | NoSuchAlgorithmException | InvalidKeyException e) {
+                StandardCharsets.UTF_8))), StandardCharsets.UTF_8).trim();
+        } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             return "";
         }
     }
 
-    protected String getOauthRequest(String url, String _params, String callback, String method, String key) {
-        try {
-            String params = "oauth_callback=" + URLEncoder.encode(callback, "UTF-8") +
-                "&oauth_consumer_key=" + URLEncoder.encode(App.getConfig().getString("oauth."+id+".key"), "UTF-8") +
-                "&oauth_nonce=" + String.valueOf(Math.random() * 100000000) +
-                "&oauth_signature_method=HMAC-SHA1" +
-                "&oauth_timestamp=" + String.valueOf(System.currentTimeMillis() / 1000);
-            if (!_params.isEmpty()) {
-                params += "&" + _params;
-            }
-            params += "&oauth_version=1.0";
-            String signature = getOauthSignature(URLEncoder.encode(url, "UTF-8"), URLEncoder.encode(params, "UTF-8"), key, method);
-            params += "&oauth_signature=" + URLEncoder.encode(signature, "UTF-8");
-            return params;
-        } catch (UnsupportedEncodingException e) {
-            return "";
+    protected String getOauthRequest(String url, String params, String callback, String method, String key) {
+        String returnValue = "oauth_callback=" + URLEncoder.encode(callback, StandardCharsets.UTF_8) +
+            "&oauth_consumer_key=" + URLEncoder.encode(App.getConfig().getString("oauth."+id+".key"),
+            StandardCharsets.UTF_8) +
+            "&oauth_nonce=" + Math.random() * 100000000 +
+            "&oauth_signature_method=HMAC-SHA1" +
+            "&oauth_timestamp=" + System.currentTimeMillis() / 1000;
+        if (!params.isEmpty()) {
+            returnValue += "&" + params;
         }
+        returnValue += "&oauth_version=1.0";
+        String signature = getOauthSignature(URLEncoder.encode(url, StandardCharsets.UTF_8), URLEncoder.encode(params,
+            StandardCharsets.UTF_8), key, method);
+        returnValue += "&oauth_signature=" + URLEncoder.encode(signature, StandardCharsets.UTF_8);
+        return returnValue;
     }
 
     protected String getOauthRequestToken(String url) {
@@ -98,13 +95,9 @@ public abstract class AuthService {
     }
 
     protected String getOauthAccessToken(String url, String token, String verifier, String secret) {
-        try {
-            String params = "oauth_token=" + URLEncoder.encode(token, "UTF-8") +
-                "&oauth_verifier=" + URLEncoder.encode(verifier, "UTF-8");
-            return getOauthRequest(url, params, "oob", "POST", secret);
-        } catch (UnsupportedEncodingException e) {
-            return "";
-        }
+        String params = "oauth_token=" + URLEncoder.encode(token, StandardCharsets.UTF_8) +
+            "&oauth_verifier=" + URLEncoder.encode(verifier, StandardCharsets.UTF_8);
+        return getOauthRequest(url, params, "oob", "POST", secret);
     }
 
     public boolean verifyState(String state) {

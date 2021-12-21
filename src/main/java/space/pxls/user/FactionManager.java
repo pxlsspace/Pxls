@@ -11,7 +11,7 @@ import space.pxls.server.packets.http.UserFaction;
 import java.util.Optional;
 
 public class FactionManager {
-    private static FactionManager _instance;
+    private static FactionManager instance;
     private final CacheAccess<Integer, Faction> cachedFactions;
 
     private FactionManager() {
@@ -19,8 +19,8 @@ public class FactionManager {
     }
 
     public static FactionManager getInstance() {
-        if (_instance == null) _instance = new FactionManager();
-        return _instance;
+        if (instance == null) instance = new FactionManager();
+        return instance;
     }
 
     /**
@@ -131,10 +131,7 @@ public class FactionManager {
         User u = App.getUserManager().getByID(uid);
 
         if (f != null && u != null) {
-            boolean wasDisplayed = false;
-            if (u.getDisplayedFaction() != null && u.getDisplayedFaction() == fid) {
-                wasDisplayed = true;
-            }
+            boolean wasDisplayed = u.getDisplayedFaction() != null && u.getDisplayedFaction() == fid;
 
             App.getDatabase().addFactionBanForUID(uid, fid);
             f.invalidate();

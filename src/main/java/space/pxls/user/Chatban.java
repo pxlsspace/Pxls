@@ -25,7 +25,7 @@ public class Chatban {
      * @param target      The {@link User} who is being banned
      * @param initiator   The {@link User} who is doing the ban (or NULL for console)
      * @param reason      The reason for the ban
-     * @param purge       Whether or not to purge messages from chat
+     * @param purge       Whether to purge messages from chat
      * @param purgeAmount The amount of messages to purge.
      * @return A {@link Chatban} object denoting this user should be permanently banned
      */

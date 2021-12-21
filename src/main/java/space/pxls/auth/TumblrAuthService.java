@@ -15,13 +15,15 @@ public class TumblrAuthService extends AuthService {
         super(id, App.getConfig().getBoolean("oauth.tumblr.enabled"), App.getConfig().getBoolean("oauth.tumblr.registrationEnabled"));
     }
 
-    private transient Map<String, String> tokens = new ConcurrentHashMap<String, String>();
+    private final transient Map<String, String> tokens = new ConcurrentHashMap<>();
 
     // OAuth1 doesn't have states.... (stuff is instead handled by oauth_token's)
+    @Override
     public String generateState() {
         return "";
     }
 
+    @Override
     public boolean verifyState(String state) {
         return true;
     }

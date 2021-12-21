@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
 
 public class PacketHandler {
-    private UndertowServer server;
+    private final UndertowServer server;
     private int numAllCons = 0;
 
     public int getCooldown() {
@@ -95,8 +95,8 @@ public class PacketHandler {
         updateUserData();
     }
 
-    public void disconnect(WebSocketChannel channel, User user) {
-        if (user != null && user.getConnections().size() == 0) {
+    public void disconnect(User user) {
+        if (user != null && user.getConnections().isEmpty()) {
             server.removeAuthedUser(user);
         }
         numAllCons--;
@@ -121,7 +121,7 @@ public class PacketHandler {
         if (obj instanceof ClientAdminMessage && user.hasPermission("user.alert")) handleAdminMessage(channel, user, ((ClientAdminMessage) obj));
     }
 
-    private void handleAdminMessage(WebSocketChannel channel, User user, ClientAdminMessage obj) {
+    private void handleAdminMessage(User user, ClientAdminMessage obj) {
         User u = App.getUserManager().getByName(obj.getUsername());
         if (u != null) {
             ServerAlert msg = new ServerAlert(user.getName(), escapeHtml4(obj.getMessage()));
@@ -132,7 +132,7 @@ public class PacketHandler {
         }
     }
 
-    private void handleChatLookup(WebSocketChannel channel, User user, ClientChatLookup obj) {
+    private void handleChatLookup(WebSocketChannel channel, ClientChatLookup obj) {
         ServerChatLookup scl;
         String username = obj.getArg();
         if (obj.getMode().equalsIgnoreCase("cmid")) {
@@ -154,20 +154,20 @@ public class PacketHandler {
         server.send(channel, scl == null ? new ServerError("User doesn't exist") : scl);
     }
 
-    private void handleShadowBanMe(WebSocketChannel channel, User user, ClientShadowBanMe obj) {
+    private void handleShadowBanMe(User user, ClientShadowBanMe obj) {
         if (!user.isBanned() && !user.isShadowBanned()) {
             App.getDatabase().insertAdminLog(user.getId(), String.format("shadowban %s with reason: self-shadowban via script; %s", user.getName(), obj.getReason()));
             user.shadowBan(String.format("auto-ban via script; %s", obj.getReason()), 999*24*3600, user);
         }
     }
 
-    private void handleBanMe(WebSocketChannel channel, User user, ClientBanMe obj) {
+    private void handleBanMe(User user, ClientBanMe obj) {
         String app = obj.getReason();
         App.getDatabase().insertAdminLog(user.getId(), String.format("permaban %s with reason: auto-ban via script; %s", user.getName(), app));
         user.ban(0, String.format("auto-ban via script; %s", app), 0, user);
     }
 
-    private void handlePlacementOverrides(WebSocketChannel channel, User user, ClientAdminPlacementOverrides obj) {
+    private void handlePlacementOverrides(User user, ClientAdminPlacementOverrides obj) {
         if (obj.hasIgnoreCooldown() != null) {
             user.maybeSetIgnoreCooldown(obj.hasIgnoreCooldown());
         }
@@ -184,7 +184,7 @@ public class PacketHandler {
         }
     }
 
-    private void handleUndo(WebSocketChannel channel, User user, ClientUndo cu, String ip){
+    private void handleUndo(User user, ClientUndo cu, String ip){
         boolean _canUndo = user.canUndo(true);
         if (!_canUndo || user.undoWindowPassed()) {
             return;
@@ -199,7 +199,7 @@ public class PacketHandler {
             try {
                 DBPixelPlacementFull thisPixel = App.getDatabase().getUserUndoPixel(user);
                 Optional<DBPixelPlacementFull> recentPixel = App.getDatabase().getFullPixelAt(thisPixel.x, thisPixel.y);
-                if (!recentPixel.isPresent()) return;
+                if (recentPixel.isEmpty()) return;
                 if (thisPixel.id != recentPixel.get().id) return;
 
                 if (user.lastPlaceWasStack()) {
@@ -258,35 +258,30 @@ public class PacketHandler {
                         boolean isInsidePlacemap = false;
                         if (App.getHavePlacemap()) {
                             int placemapType = App.getPlacemap(cp.getX(), cp.getY());
-                            switch (placemapType) {
-                                case 0:
-                                    // Allow normal placement
-                                    isInsidePlacemap = c != cp.getColor();
-                                    break;
-                                case 2:
-                                    // Allow tendril placement
-                                    int top = App.getPixel(cp.getX(), cp.getY() + 1);
-                                    int left = App.getPixel(cp.getX() - 1, cp.getY());
-                                    int right = App.getPixel(cp.getX() + 1, cp.getY());
-                                    int bottom = App.getPixel(cp.getX(), cp.getY() - 1);
-
-                                    int defaultTop = App.getDefaultColor(cp.getX(), cp.getY() + 1);
-                                    int defaultLeft = App.getDefaultColor(cp.getX() - 1, cp.getY());
-                                    int defaultRight = App.getDefaultColor(cp.getX() + 1, cp.getY());
-                                    int defaultBottom = App.getDefaultColor(cp.getX(), cp.getY() - 1);
-                                    if (top != defaultTop || left != defaultLeft || right != defaultRight || bottom != defaultBottom) {
-                                        // The pixel has at least one other attached pixel
-                                        isInsidePlacemap = c != cp.getColor() && c != 0xFF && c != -1;
-                                    }
-                                    break;
+                            // Allow normal placement
+                            if (placemapType == 0) {
+                                isInsidePlacemap = c != cp.getColor();
+                            } else if (placemapType == 2) {// Allow tendril placement
+                                int top = App.getPixel(cp.getX(), cp.getY() + 1);
+                                int left = App.getPixel(cp.getX() - 1, cp.getY());
+                                int right = App.getPixel(cp.getX() + 1, cp.getY());
+                                int bottom = App.getPixel(cp.getX(), cp.getY() - 1);
+                                int defaultTop = App.getDefaultColor(cp.getX(), cp.getY() + 1);
+                                int defaultLeft = App.getDefaultColor(cp.getX() - 1, cp.getY());
+                                int defaultRight = App.getDefaultColor(cp.getX() + 1, cp.getY());
+                                int defaultBottom = App.getDefaultColor(cp.getX(), cp.getY() - 1);
+                                if (top != defaultTop || left != defaultLeft || right != defaultRight
+                                    || bottom != defaultBottom) {
+                                    // The pixel has at least one other attached pixel
+                                    isInsidePlacemap = c != cp.getColor() && c != 0xFF && c != -1;
+                                }
                             }
                         } else {
                             isInsidePlacemap = c != cp.getColor() && c != 0xFF && c != -1;
                         }
-                        int c_old = c;
                         if (user.hasIgnorePlacemap() || isInsidePlacemap) {
                             int seconds = getCooldown();
-                            if (c_old != 0xFF && c_old != -1 && App.getDatabase().shouldPixelTimeIncrease(user.getId(), cp.getX(), cp.getY()) && App.getConfig().getBoolean("backgroundPixel.enabled")) {
+                            if (c != 0xFF && c != -1 && App.getDatabase().shouldPixelTimeIncrease(user.getId(), cp.getX(), cp.getY()) && App.getConfig().getBoolean("backgroundPixel.enabled")) {
                                 seconds = (int)Math.round(seconds * App.getConfig().getDouble("backgroundPixel.multiplier"));
                             }
                             if (user.isShadowBanned()) {
@@ -340,7 +335,8 @@ public class PacketHandler {
         }
     }
 
-    private void handlePlaceMaybe(WebSocketChannel channel, User user, ClientPlace cp, String ip) {
+    private void handlePlaceMaybe(User user, ClientPlace cp, String ip) {
+        // TODO document why this method is empty
     }
 
     private void handleCaptcha(WebSocketChannel channel, User user, ClientCaptcha cc) {
@@ -369,21 +365,21 @@ public class PacketHandler {
 
                     @Override
                     public void failed(UnirestException e) {
-
+                        // TODO document why this method is empty
                     }
 
                     @Override
                     public void cancelled() {
-
+                        // TODO document why this method is empty
                     }
                 });
     }
 
-    public void handleChatbanState(WebSocketChannel channel, User user, ClientChatbanState clientChatbanState) {
+    public void handleChatbanState(WebSocketChannel channel, User user) {
         server.send(channel, new ServerChatbanState(user.isPermaChatbanned(), user.getChatbanReason(), user.getChatbanExpiryTime()));
     }
 
-    public void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
+    public void handleChatHistory(WebSocketChannel channel, User user) {
         boolean includePurged = user.hasPermission("chat.history.purged");
         var messages = App.getDatabase().getLastXMessages(100, includePurged).stream()
                 .map(dbChatMessage -> {

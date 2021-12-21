@@ -91,16 +91,6 @@ public class Faction {
         return color != null && color >= 0x000000 && color <= 0xffffff;
     }
 
-    public void reloadFromDb() {
-        Optional<Faction> dbf = FactionManager.getInstance().invalidate(this.id).getByID(this.id);
-        if (dbf.isPresent()) {
-            this.id = dbf.get().getId();
-            this.name = dbf.get().getName();
-            this.owner = dbf.get().getOwner();
-            this.created = dbf.get().getCreated();
-        }
-    }
-
     public User fetchOwner() {
         if (_cachedOwner == null) {
             _cachedOwner = App.getUserManager().getByID(this.owner);

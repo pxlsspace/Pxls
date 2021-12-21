@@ -51,7 +51,6 @@ public class DiscordAuthService extends AuthService {
 
             long minAgeMillis = App.getConfig().getDuration("oauth.discord.minAge", TimeUnit.MILLISECONDS);
             if (ageMillis < minAgeMillis){
-                long days = minAgeMillis / 86400 / 1000;
                 throw new InvalidAccountException("Account too young");
             }
             return json.getString("id");

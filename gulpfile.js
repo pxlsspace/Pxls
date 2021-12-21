@@ -132,4 +132,4 @@ exports.css = css;
 exports.minJS = minJS;
 exports.srcJS = srcJS;
 exports.lint = lint;
-exports.default = parallel(html, css, minJS, series(lint, srcJS));
+exports.default = parallel(html, css, series(srcJS));
