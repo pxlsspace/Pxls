@@ -210,7 +210,7 @@ public class PacketHandler {
                 DBPixelPlacementFull lastPixel = App.getDatabase().getPixelByID(null, thisPixel.secondaryId);
                 if (lastPixel != null) {
                     App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
-                    App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, ip, false, "user undo");
+                    App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, false, "user undo");
                     user.decreasePixelCounts();
                     broadcastPixelUpdate(lastPixel.x, lastPixel.y, lastPixel.color);
                     ackUndo(user, lastPixel.x, lastPixel.y);
@@ -218,7 +218,7 @@ public class PacketHandler {
                     byte defaultColor = App.getDefaultColor(thisPixel.x, thisPixel.y);
                     App.getDatabase().putUserUndoPixel(thisPixel.x, thisPixel.y, defaultColor, user, thisPixel.id);
                     user.decreasePixelCounts();
-                    App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, ip, false, "user undo");
+                    App.putPixel(thisPixel.x, thisPixel.y, defaultColor, user, false, false, "user undo");
                     broadcastPixelUpdate(thisPixel.x, thisPixel.y, defaultColor);
                     ackUndo(user, thisPixel.x, thisPixel.y);
                 }
@@ -297,7 +297,7 @@ public class PacketHandler {
                                 }
                             } else {
                                 boolean modAction = cp.getColor() == 0xFF || user.hasIgnoreCooldown() || (user.hasIgnorePlacemap() && !isInsidePlacemap);
-                                App.putPixel(cp.getX(), cp.getY(), cp.getColor(), user, modAction, ip, true, "");
+                                App.putPixel(cp.getX(), cp.getY(), cp.getColor(), user, modAction, true, "");
                                 App.saveMap();
                                 broadcastPixelUpdate(cp.getX(), cp.getY(), cp.getColor());
                                 ackPlace(user, cp.getX(), cp.getY());

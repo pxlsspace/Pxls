@@ -54,7 +54,7 @@ public class App {
     private static PxlsTimer mapBackupTimer;
     private static UndertowServer server;
 
-    private static String cachedWhoamiOrigin = null;
+    
     private static int stackMultiplier;
     private static int stackMaxStacked;
     private static long userIdleTimeout;
@@ -83,7 +83,10 @@ public class App {
         virginmap = new byte[width * height];
         defaultBoard = null;
 
-        initStorage();
+        if (!initStorage()) {
+            getLogger().warn("Unable to init storage");
+            System.exit(-1);
+        }
         loadDefaultMap();
         loadMap();
         loadHeatmap();
@@ -113,7 +116,7 @@ public class App {
         new Timer().schedule(new HeatmapTimer(), 0, heatmap_timer_cd * 1000 / 256);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("Saving map before shutdown...");
+            getLogger().info("Saving map before shutdown...");
             saveMapBackup();
             saveMapForce();
         }));
@@ -141,7 +144,7 @@ public class App {
                 if (!backupsDir.toFile().mkdirs()) {
                     getLogger().error("Failed to make backup dirs");
                 } else {
-                    getLogger().info(String.format("Created missing backups dir at %s%n", backupsDir.toAbsolutePath().normalize()));
+                    getLogger().info(String.format("Created missing backups dir at %s", backupsDir.toAbsolutePath().normalize()));
                 }
             }
         } catch (Exception e) {
@@ -151,22 +154,23 @@ public class App {
     }
 
     private static void handleCommand(String line) {
+        String cantFindUser = "Cannot find user {}";
         try {
             String[] token = line.split(" ");
             if (token[0].equalsIgnoreCase("reload")) {
                 try {
                     cachedWhoamiOrigin = null;
                     loadConfig();
-                    System.out.println("Reloaded configuration");
+                    getLogger().info("Reloaded configuration");
                     loadPalette();
-                    System.out.println("Reloaded palette configuration");
+                    getLogger().info("Reloaded palette configuration");
                     loadRoles();
-                    System.out.println("Reloaded roles configuration");
+                    getLogger().info("Reloaded roles configuration");
                     FactionManager.getInstance().invalidateAll();
-                    System.out.println("Invalidated all factions");
+                    getLogger().info("Invalidated all factions");
                     userManager.reload();
-                    System.out.println("Reloaded user manager");
-                    System.out.println("Success!");
+                    getLogger().info("Reloaded user manager");
+                    getLogger().info("Success!");
                 } catch (Exception x) {
                     x.printStackTrace();
                 }
@@ -174,29 +178,29 @@ public class App {
                 try {
                     saveMapForce();
                     saveMapBackup();
-                    System.out.println("Success!");
+                    getLogger().info("Success!");
                 } catch (Exception x) {
                     x.printStackTrace();
                 }
             } else if (token[0].equalsIgnoreCase("logins") || token[0].equalsIgnoreCase("login")) {
                 if (token.length < 2) {
-                    System.out.println("Usage: logins <username> [{service ID}:{service user ID} ...]");
+                    getLogger().info("Usage: logins <username> [{service ID}:{service user ID} ...]");
                     return;
                 }
                 User user = userManager.getByName(token[1]);
                 if (user == null) {
-                    System.out.println("Cannot find user " + token[1]);
+                    getLogger().info(cantFindUser, token[1]);
                     return;
                 }
                 if (token.length < 3) {
                     var logins = user.getLogins();
                     if (logins.isEmpty()) {
-                        System.out.println("User " + user.getName() + " has no logins");
+                        getLogger().info("User {} has no logins", user.getName());
                     } else {
                         String prettyLogins = logins.stream()
                             .map(UserLogin::toString)
                             .collect(Collectors.joining(", "));
-                        System.out.println("User " + user.getName() + " has logins " + prettyLogins);
+                        getLogger().info("User {} has logins {}", user.getName(), prettyLogins);
                     }
                     return;
                 }
@@ -209,7 +213,7 @@ public class App {
                             .map(UserLogin::fromString)
                             .collect(Collectors.toList());
                     } catch (IllegalArgumentException ex) {
-                        System.out.println(ex.toString());
+                        getLogger().info(ex.toString());
                         return;
                     }
                 }
@@ -222,15 +226,15 @@ public class App {
                     logMessage = "Removed " + user.getName() + "'s login methods";
                 }
                 database.insertServerAdminLog(logMessage);
-                System.out.println(logMessage);
+                getLogger().info(logMessage);
             } else if (token[0].equalsIgnoreCase("addlogins") || token[0].equalsIgnoreCase("addlogin")) {
                 if (token.length < 3) {
-                    System.out.println("Usage: addlogins <username> [{service ID}:{service user ID} ...]");
+                    getLogger().info("Usage: addlogins <username> [{service ID}:{service user ID} ...]");
                     return;
                 }
                 User user = userManager.getByName(token[1]);
                 if (user == null) {
-                    System.out.println("Cannot find user " + token[1]);
+                    getLogger().info(cantFindUser, token[1]);
                     return;
                 }
                 var rest = Arrays.copyOfRange(token, 2, token.length);
@@ -241,592 +245,590 @@ public class App {
                         .map(UserLogin::fromString)
                         .collect(Collectors.toList());
                 } catch (IllegalArgumentException ex) {
-                    System.out.println(ex);
+                    getLogger().info(ex);
                     return;
                 }
                 String prettyLogins = addedLogins.stream().map(UserLogin::toString).collect(Collectors.joining(", "));
                 database.bulkAddUserLogins(user.getId(), addedLogins);
                 String message = "Added login methods \"" + prettyLogins + "\" to " + user.getName();
                 database.insertServerAdminLog(message);
-                System.out.println(message);
+                getLogger().info(message);
             } else if (token[0].equalsIgnoreCase("removelogins") || token[0].equalsIgnoreCase("removelogin")) {
                 if (token.length < 3) {
-                    System.out.println("Usage: removelogins <username> [service ID ...]");
+                    getLogger().info("Usage: removelogins <username> [service ID ...]");
                     return;
                 }
                 User user = userManager.getByName(token[1]);
                 if (user == null) {
-                    System.out.println("Cannot find user " + token[1]);
+                    getLogger().info("Cannot find user {}", token[1]);
                     return;
                 }
                 var rest = Arrays.copyOfRange(token, 2, token.length);
                 database.bulkRemoveUserLoginServices(user.getId(), List.of(rest));
                 String message = "Removed login methods \"" + String.join(", ", rest) + "\" from " + user.getName();
                 database.insertServerAdminLog(message);
-                System.out.println(message);
-            } else if (token[0].equalsIgnoreCase("roles") || token[0].equalsIgnoreCase("role")) {
-                if (token.length < 2) {
-                    System.out.println("Usage: roles <username> [role ID ...]");
-                    return;
-                }
-                User user = userManager.getByName(token[1]);
-                if (user == null) {
-                    System.out.println("Cannot find user " + token[1]);
-                    return;
-                }
-                if (token.length < 3) {
-                    if (user.getRoles().isEmpty()) {
-                        System.out.println("User " + user.getName() + " has no roles");
-                    } else {
-                        System.out.println("User " + user.getName() + " has roles " + user.getRolesString());
+                getLogger().info(message);
+            } else {
+                if (token[0].equalsIgnoreCase("roles") || token[0].equalsIgnoreCase("role")) {
+                    if (token.length < 2) {
+                        getLogger().info("Usage: roles <username> [role ID ...]");
+                        return;
                     }
-                    return;
-                }
-                var rest = Arrays.copyOfRange(token, 2, token.length);
-                List<Role> roles = new ArrayList<>();
-                if (!rest[0].equals("-")) {
-                    roles = Role.fromMixed(List.of(rest));
-                }
-                if (roles.stream().anyMatch(role -> role.isGuest() || role.isDefault())) {
-                    System.out.println("Guest/default roles cannot be assigned");
-                    return;
-                }
-                user.setRoles(roles);
-                database.setUserRoles(user.getId(), roles);
-                String logMessage = "Set " + user.getName() + "'s roles to " + user.getRoleIDsString();
-                if (roles.isEmpty()) {
-                    logMessage = "Removed " + user.getName() + "'s roles";
-                }
-                database.insertServerAdminLog(logMessage);
-                System.out.println(logMessage);
-            } else if (token[0].equalsIgnoreCase("addroles") || token[0].equalsIgnoreCase("addrole")) {
-                if (token.length < 2) {
-                    System.out.println("Usage: addroles <username> [role ID ...]");
-                    return;
-                }
-                User user = userManager.getByName(token[1]);
-                if (user == null) {
-                    System.out.println("Cannot find user " + token[1]);
-                    return;
-                }
-                if (token.length < 3) {
-                    System.out.println("Usage: addroles <username> <role ID ...>");
-                    return;
-                }
-                var rest = Arrays.copyOfRange(token, 2, token.length);
-                List<Role> roles = Role.fromMixed(List.of(rest));
-                user.addRoles(roles);
-                database.setUserRoles(user.getId(), user.getRoles());
-                String message = "Added roles \"" + roles.stream().map(Role::getName).collect(Collectors.joining(", ")) + "\" to " + user.getName();
-                database.insertServerAdminLog(message);
-                System.out.println(message);
-            } else if (token[0].equalsIgnoreCase("removeroles") || token[0].equalsIgnoreCase("removerole")) {
-                if (token.length < 2) {
-                    System.out.println("Usage: removeroles <username> [role ID ...]");
-                    return;
-                }
-                User user = userManager.getByName(token[1]);
-                if (user == null) {
-                    System.out.println("Cannot find user " + token[1]);
-                    return;
-                }
-                if (token.length < 3) {
-                    System.out.println("Usage: removeroles <username> <role ID ...>");
-                    return;
-                }
-                var rest = Arrays.copyOfRange(token, 2, token.length);
-                List<Role> roles = Role.fromMixed(List.of(rest));
-                user.removeRoles(roles);
-                database.setUserRoles(user.getId(), user.getRoles());
-                String message = "Removed roles \"" + roles.stream().map(Role::getName).collect(Collectors.joining(", ")) + "\" from " + user.getName();
-                database.insertServerAdminLog(message);
-                System.out.println(message);
-            } else if (token[0].equalsIgnoreCase("alert")) {
-                var rest = Arrays.copyOfRange(token, 1, token.length);
-                String message = String.join(" ", rest);
-                App.getDatabase().insertServerAdminLog(String.format("Sent a server-wide broadcast with the content: %s", message));
-                server.broadcast(new ServerAlert("console", message));
-                System.out.println("Alert sent");
-            } else if (token[0].equalsIgnoreCase("ban")) {
-                if (token.length < 2) {
-                    System.out.println("Usage: ban <username> [reason]");
-                    return;
-                }
-                var rest = Arrays.copyOfRange(token, 2, token.length);
-                User user = userManager.getByName(token[1]);
-                if (user != null) {
-                    String reason = String.join(" ", rest);
-                    if (reason.equals("")) reason = "Banned via console; no reason given";
-                    user.ban(24 * 60 * 60, reason, null);
-                    database.insertServerAdminLog(String.format("ban %s with reason: %s", user.getName(), reason));
-                    System.out.println("Banned " + user.getName() + " for 24 hours.");
-                } else {
-                    System.out.println("Cannot find user " + token[1]);
-                }
-            } else if (token[0].equalsIgnoreCase("permaban")) {
-                if (token.length < 2) {
-                    System.out.println("Usage: permaban <username> [reason]");
-                    return;
-                }
-                User user = userManager.getByName(token[1]);
-                var rest = Arrays.copyOfRange(token, 2, token.length);
-                if (user != null) {
-                    String reason = String.join(" ", rest);
-                    if (reason.equals("")) reason = "Banned via console; no reason given";
-                    user.ban(0, reason, null);
-                    database.insertServerAdminLog(String.format("permaban %s with reason: %s", user.getName(), reason));
-                    System.out.println("Permabanned " + user.getName());
-                } else {
-                    System.out.println("Cannot find user " + token[1]);
-                }
-            } else if (token[0].equalsIgnoreCase("shadowban")) {
-                if (token.length < 2) {
-                    System.out.println("Usage: shadowban <username> [reason]");
-                    return;
-                }
-                var rest = Arrays.copyOfRange(token, 2, token.length);
-                User user = userManager.getByName(token[1]);
-                if (user != null) {
-                    String reason = String.join(" ", rest);
-                    if (reason.equals("")) reason = "Banned via console; no reason given";
-                    user.shadowBan(reason, null);
-                    database.insertServerAdminLog(String.format("shadowban %s with reason: %s", user.getName(), reason));
-                    System.out.println("Shadowbanned " + user.getName());
-                } else {
-                    System.out.println("Cannot find user " + token[1]);
-                }
-            } else if (token[0].equalsIgnoreCase("unban")) {
-                if (token.length < 2) {
-                    System.out.println("Usage: unban <username> [true/false] [reason]");
-                    return;
-                }
-                String[] rest = Arrays.copyOfRange(token, 2, token.length);
-                var shouldRevert = true;
-                if (token.length >= 3) {
-                    if ("true".equalsIgnoreCase(token[2]) || "false".equalsIgnoreCase(token[2])) {
-                        shouldRevert = Boolean.parseBoolean(token[2]);
-                        rest = Arrays.copyOfRange(token, 3, token.length);
+                    User user = userManager.getByName(token[1]);
+                    if (user == null) {
+                        getLogger().info(cantFindUser, token[1]);
+                        return;
                     }
-                }
-                User user = userManager.getByName(token[1]);
-                if (user != null) {
-                    String reason = String.join(" ", rest);
-                    if (reason.equals("")) reason = "Unbanned via console; no reason given";
-                    System.out.println(reason);
-                    user.unban(null, reason, shouldRevert);
-                    database.insertServerAdminLog("unban " + user.getName());
-                    System.out.println("Unbanned " + user.getName() + ".");
-                } else {
-                    System.out.println("Cannot find user " + token[1]);
-                }
-            } else if (token[0].equalsIgnoreCase("nuke")) {
-                int fromX = Integer.parseInt(token[1]);
-                int fromY = Integer.parseInt(token[2]);
-                int toX = Integer.parseInt(token[3]);
-                int toY = Integer.parseInt(token[4]);
-                byte toColor = (byte) (token.length >= 6 ? Integer.parseInt(token[5]) : 0xFF);
-                nuke(fromX, fromY, toX, toY, (byte) 0xFF, toColor);
-            } else if (token[0].equalsIgnoreCase("replace")) {
-                int fromX = Integer.parseInt(token[1]);
-                int fromY = Integer.parseInt(token[2]);
-                int toX = Integer.parseInt(token[3]);
-                int toY = Integer.parseInt(token[4]);
-                byte fromColor = (byte) Integer.parseInt(token[5]);
-                byte toColor = (byte) (token.length >= 7 ? Integer.parseInt(token[6]) : 0xFF);
-                nuke(fromX, fromY, toX, toY, fromColor, toColor);
-            } else if (token[0].equalsIgnoreCase("cons")) {
-                if (token.length > 1) {
-                    if (token[1].equalsIgnoreCase("authed") || token[1].equalsIgnoreCase("authd")) {
-                        System.out.println("Authenticated connections count: " + server.getAuthedUsers().size());
-                    } else {
-                        System.out.println("All connections count: " + server.getPacketHandler().getNumAllCons());
-                        System.out.println("Authenticated connections count: " + server.getAuthedUsers().size());
+                    if (token.length < 3) {
+                        if (user.getRoles().isEmpty()) {
+                            getLogger().info("User {} has no roles", user.getName());
+                        } else {
+                            getLogger().info("User {} has roles {}", user.getName(), user.getRolesString());
+                        }
+                        return;
                     }
-                } else {
-                    System.out.println("All connections count: " + server.getPacketHandler().getNumAllCons());
-                    System.out.println("Authenticated connections count: " + server.getAuthedUsers().size());
-                }
-            } else if (token[0].equalsIgnoreCase("users")) {
-                System.out.println("Number of authenticated users: " + server.getAuthedUsers().size());
-                for (User user : server.getAuthedUsers().values()) {
-                    System.out.println(String.format("[%d] %s (%s) (num connections: %d)", user.getId(), user.getName(), user.getRoleIDsString(), user.getConnections().size()));
-                }
-            } else if (token[0].equalsIgnoreCase("stack")) {
-                //stack USERNAME[ set AMOUNT]
-                if (token.length > 1) {
+                    var rest = Arrays.copyOfRange(token, 2, token.length);
+                    List<Role> roles = new ArrayList<>();
+                    if (!rest[0].equals("-")) {
+                        roles = Role.fromMixed(List.of(rest));
+                    }
+                    if (roles.stream().anyMatch(role -> role.isGuest() || role.isDefault())) {
+                        getLogger().info("Guest/default roles cannot be assigned");
+                        return;
+                    }
+                    user.setRoles(roles);
+                    database.setUserRoles(user.getId(), roles);
+                    String logMessage = "Set " + user.getName() + "'s roles to " + user.getRoleIDsString();
+                    if (roles.isEmpty()) {
+                        logMessage = "Removed " + user.getName() + "'s roles";
+                    }
+                    database.insertServerAdminLog(logMessage);
+                    getLogger().info(logMessage);
+                } else if (token[0].equalsIgnoreCase("addroles") || token[0].equalsIgnoreCase("addrole")) {
+                    if (token.length < 2) {
+                        getLogger().info("Usage: addroles <username> [role ID ...]");
+                        return;
+                    }
+                    User user = userManager.getByName(token[1]);
+                    if (user == null) {
+                        getLogger().info(cantFindUser, token[1]);
+                        return;
+                    }
+                    if (token.length < 3) {
+                        getLogger().info("Usage: addroles <username> <role ID ...>");
+                        return;
+                    }
+                    var rest = Arrays.copyOfRange(token, 2, token.length);
+                    List<Role> roles = Role.fromMixed(List.of(rest));
+                    user.addRoles(roles);
+                    database.setUserRoles(user.getId(), user.getRoles());
+                    String message = "Added roles \"" + roles.stream().map(Role::getName).collect(Collectors.joining(", ")) + "\" to " + user.getName();
+                    database.insertServerAdminLog(message);
+                    getLogger().info(message);
+                } else if (token[0].equalsIgnoreCase("removeroles") || token[0].equalsIgnoreCase("removerole")) {
+                    if (token.length < 2) {
+                        getLogger().info("Usage: removeroles <username> [role ID ...]");
+                        return;
+                    }
+                    User user = userManager.getByName(token[1]);
+                    if (user == null) {
+                        getLogger().info(cantFindUser, token[1]);
+                        return;
+                    }
+                    if (token.length < 3) {
+                        getLogger().info("Usage: removeroles <username> <role ID ...>");
+                        return;
+                    }
+                    var rest = Arrays.copyOfRange(token, 2, token.length);
+                    List<Role> roles = Role.fromMixed(List.of(rest));
+                    user.removeRoles(roles);
+                    database.setUserRoles(user.getId(), user.getRoles());
+                    String message = "Removed roles \"" + roles.stream().map(Role::getName).collect(Collectors.joining(", ")) + "\" from " + user.getName();
+                    database.insertServerAdminLog(message);
+                    getLogger().info(message);
+                } else if (token[0].equalsIgnoreCase("alert")) {
+                    var rest = Arrays.copyOfRange(token, 1, token.length);
+                    String message = String.join(" ", rest);
+                    App.getDatabase().insertServerAdminLog(String.format("Sent a server-wide broadcast with the content: %s", message));
+                    server.broadcast(new ServerAlert("console", message));
+                    getLogger().info("Alert sent");
+                } else if (token[0].equalsIgnoreCase("ban")) {
+                    if (token.length < 2) {
+                        getLogger().info("Usage: ban <username> [reason]");
+                        return;
+                    }
+                    var rest = Arrays.copyOfRange(token, 2, token.length);
                     User user = userManager.getByName(token[1]);
                     if (user != null) {
-                        if (token.length == 2) {
-                            System.out.printf("User %s has %d stacked%n", user.getName(), user.getStacked());
+                        String reason = String.join(" ", rest);
+                        if (reason.equals("")) reason = "Banned via console; no reason given";
+                        user.ban(24 * 60 * 60, reason, null);
+                        database.insertServerAdminLog(String.format("ban %s with reason: %s", user.getName(), reason));
+                        getLogger().info("Banned {}  for 24 hours.", user.getName());
+                    } else {
+                        getLogger().info(cantFindUser, token[1]);
+                    }
+                } else if (token[0].equalsIgnoreCase("permaban")) {
+                    if (token.length < 2) {
+                        getLogger().info("Usage: permaban <username> [reason]");
+                        return;
+                    }
+                    User user = userManager.getByName(token[1]);
+                    var rest = Arrays.copyOfRange(token, 2, token.length);
+                    if (user != null) {
+                        String reason = String.join(" ", rest);
+                        if (reason.equals("")) reason = "Banned via console; no reason given";
+                        user.ban(0, reason, null);
+                        database.insertServerAdminLog(String.format("permaban %s with reason: %s", user.getName(), reason));
+                        getLogger().info("Permabanned {}", user.getName());
+                    } else {
+                        getLogger().info(cantFindUser, token[1]);
+                    }
+                } else if (token[0].equalsIgnoreCase("shadowban")) {
+                    if (token.length < 2) {
+                        getLogger().info("Usage: shadowban <username> [reason]");
+                        return;
+                    }
+                    var rest = Arrays.copyOfRange(token, 2, token.length);
+                    User user = userManager.getByName(token[1]);
+                    if (user != null) {
+                        String reason = String.join(" ", rest);
+                        if (reason.equals("")) reason = "Banned via console; no reason given";
+                        user.shadowBan(reason, null);
+                        database.insertServerAdminLog(String.format("shadowban %s with reason: %s", user.getName(), reason));
+                        getLogger().info("Shadowbanned {}", user.getName());
+                    } else {
+                        getLogger().info(cantFindUser, token[1]);
+                    }
+                } else if (token[0].equalsIgnoreCase("unban")) {
+                    if (token.length < 2) {
+                        getLogger().info("Usage: unban <username> [true/false] [reason]");
+                        return;
+                    }
+                    String[] rest = Arrays.copyOfRange(token, 2, token.length);
+                    var shouldRevert = true;
+                    if (token.length >= 3) {
+                        if ("true".equalsIgnoreCase(token[2]) || "false".equalsIgnoreCase(token[2])) {
+                            shouldRevert = Boolean.parseBoolean(token[2]);
+                            rest = Arrays.copyOfRange(token, 3, token.length);
+                        }
+                    }
+                    User user = userManager.getByName(token[1]);
+                    if (user != null) {
+                        String reason = String.join(" ", rest);
+                        if (reason.equals("")) reason = "Unbanned via console; no reason given";
+                        getLogger().info(reason);
+                        user.unban(null, reason, shouldRevert);
+                        database.insertServerAdminLog("unban " + user.getName());
+                        getLogger().info("Unbanned {}.", user.getName());
+                    } else {
+                        getLogger().info(cantFindUser, token[1]);
+                    }
+                } else if (token[0].equalsIgnoreCase("nuke")) {
+                    int fromX = Integer.parseInt(token[1]);
+                    int fromY = Integer.parseInt(token[2]);
+                    int toX = Integer.parseInt(token[3]);
+                    int toY = Integer.parseInt(token[4]);
+                    byte toColor = (byte) (token.length >= 6 ? Integer.parseInt(token[5]) : 0xFF);
+                    nuke(fromX, fromY, toX, toY, (byte) 0xFF, toColor);
+                } else if (token[0].equalsIgnoreCase("replace")) {
+                    int fromX = Integer.parseInt(token[1]);
+                    int fromY = Integer.parseInt(token[2]);
+                    int toX = Integer.parseInt(token[3]);
+                    int toY = Integer.parseInt(token[4]);
+                    byte fromColor = (byte) Integer.parseInt(token[5]);
+                    byte toColor = (byte) (token.length >= 7 ? Integer.parseInt(token[6]) : 0xFF);
+                    nuke(fromX, fromY, toX, toY, fromColor, toColor);
+                } else if (token[0].equalsIgnoreCase("cons")) {
+                    if (token.length > 1) {
+                        if (token[1].equalsIgnoreCase("authed") || token[1].equalsIgnoreCase("authd")) {
+                            getLogger().info("Authenticated connections count: {}", server.getAuthedUsers().size());
                         } else {
-                            if (token[2].equalsIgnoreCase("set")) {
-                                try {
-                                    Integer toSet = Integer.valueOf(token[3]);
-                                    user.setStacked(toSet);
-                                    server.getPacketHandler().sendAvailablePixels(user, "override");
-                                } catch (NumberFormatException ignored) {
-                                    System.out.printf("Invalid value: %s%n", token[3]);
-                                }
-                            }
+                            getLogger().info("All connections count: {}", server.getPacketHandler().getNumAllCons());
+                            getLogger().info("Authenticated connections count: {}", server.getAuthedUsers().size());
                         }
                     } else {
-                        System.out.printf("Unknown user: %s%n", token[1]);
+                        getLogger().info("All connections count: {}", server.getPacketHandler().getNumAllCons());
+                        getLogger().info("Authenticated connections count: {}", server.getAuthedUsers().size());
                     }
-                }
-            } else if (token[0].equalsIgnoreCase("placementOverride") || token[0].equalsIgnoreCase("placementOverrides")) {
-                //placementOverride list|USERNAME[ NAME STATE]
-                //NAME=placeanycolor|ignorecooldown|ignoreplacemap
-                //STATE=on|off
-                if (token.length > 1 && !token[1].equalsIgnoreCase("help")) {
-                    if (token[1].equalsIgnoreCase("list")) {
-                        StringBuilder sb = new StringBuilder();
-                        userManager.getAllUsersByToken().forEach((s, user) -> {
-                            PlacementOverrides po = user.getPlaceOverrides();
-                            ArrayList<String> enabledPOs = new ArrayList<String>();
-                            if (po.getCanPlaceAnyColor()) {
-                                enabledPOs.add("placeAnyColor");
-                            }
-                            if (po.hasIgnoreCooldown()) {
-                                enabledPOs.add("ignoreCooldown");
-                            }
-                            if (po.hasIgnorePlacemap()) {
-                                enabledPOs.add("ignorePlacemap");
-                            }
-
-                            if (enabledPOs.size() > 0) {
-                                sb.append("    ").append(user.getName()).append(": ").append(String.join(", ", enabledPOs)).append("\n");
-                            }
-                        });
-
-                        System.out.println(sb.length() > 0 ? sb.toString().trim() : "    <no one has any Placement Overrides enabled>");
-                    } else {
-                        User user = getUserManager().getByName(token[1]);
-                        if (user == null) {
-                            System.out.printf("Unknown user: %s%n", token[1]);
-                        } else {
-                            PlacementOverrides po = user.getPlaceOverrides();
-                            if (token.length >= 4) {
-                                boolean state = token[3].equalsIgnoreCase("on");
-                                if (token[3].equalsIgnoreCase("on")) {
-                                    state = true;
-                                } else if (token[3].equalsIgnoreCase("off")) {
-                                    state = false;
-                                } else {
-                                    System.out.printf("Invalid state: %s%n", token[3]);
-                                    return;
-                                }
-
-                                if (token[2].equalsIgnoreCase("placeAnyColor")) {
-                                    po.setCanPlaceAnyColor(state);
-                                } else if (token[2].equalsIgnoreCase("ignoreCooldown")) {
-                                    po.setIgnoreCooldown(state);
-                                } else if (token[2].equalsIgnoreCase("ignorePlacemap")) {
-                                    po.setIgnorePlacemap(state);
-                                } else {
-                                    System.out.printf("Invalid placement override name: %s%n", token[2]);
-                                    return;
-                                }
-
-                                System.out.printf("Updated %s's %s state to %s%n", user.getName(), token[2].toLowerCase(), state ? "on" : "off");
-                                server.getPacketHandler().sendPlacementOverrides(user);
+                } else if (token[0].equalsIgnoreCase("users")) {
+                    getLogger().log(Level.INFO, "Number of authenticated users: {}", server.getAuthedUsers().size());
+                    for (User user : server.getAuthedUsers().values()) {
+                        getLogger().info("[{}] {} ({}) (num connections: {})", user.getId(), user.getName(), user.getRoleIDsString(), user.getConnections().size());
+                    }
+                } else if (token[0].equalsIgnoreCase("stack")) {
+                    //stack USERNAME[ set AMOUNT]
+                    if (token.length > 1) {
+                        User user = userManager.getByName(token[1]);
+                        if (user != null) {
+                            if (token.length == 2) {
+                                getLogger().info("User {} has {} stacked", user.getName(), user.getStacked());
                             } else {
-                                System.out.printf(
-                                    "User's Placement Overrides:%n    Ignore cooldown: %s%n    Ignore placemap: %s%n    Place any color: %s%n",
-                                    po.hasIgnoreCooldown() ? "on" : "off",
-                                    po.hasIgnorePlacemap() ? "on" : "off",
-                                    po.getCanPlaceAnyColor() ? "on" : "off"
-                                );
-                            }
-                        }
-                    }
-                } else {
-                    System.out.println("placementOverride list|USERNAME[ NAME STATE]");
-                    System.out.println("NAME=placeAnyColor|ignoreCooldown|ignorePlacemap");
-                    System.out.println("STATE=on|off");
-                }
-            } else if (token[0].equalsIgnoreCase("captchaOverride")) {
-                //captchaOverride list|USERNAME[ STATE]
-                //STATE=on|off
-                if (!isCaptchaConfigured()) {
-                    System.out.println(
-                        "NOTE: captcha is not configured (missing key and/or secret). " +
-                        "Users with captchaOverride on won't receive any captchas."
-                    );
-                }
-                if (token.length > 1) {
-                    if (token[1].equalsIgnoreCase("list")) {
-                        StringBuilder sb = new StringBuilder();
-                        userManager.getAllUsersByToken().forEach((s, user) -> {
-                            if (user.isOverridingCaptcha()) sb.append("    ").append(user.getName()).append('\n');
-                        });
-                        System.out.println(sb);
-                    } else if (token[1].equalsIgnoreCase("help")) {
-                        System.out.println("captchaOverride list|USERNAME[ STATE]");
-                        System.out.println("STATE=on|off");
-                    } else {
-                        User user = getUserManager().getByName(token[1]);
-                        if (user == null) {
-                            System.out.printf("Unknown user: %s%n", token[1]);
-                        } else {
-                            if (token.length >= 3) {
-                                if (token[2].equalsIgnoreCase("on") || token[2].equalsIgnoreCase("off")) {
-                                    user.setOverrideCaptcha(token[2].equalsIgnoreCase("on"));
-                                    System.out.printf("Updated %s's captchaOverride state to %s%n", user.getName(), token[2].toLowerCase());
-                                } else {
-                                    System.out.printf("Invalid state: %s%n", token[2]);
+                                if (token[2].equalsIgnoreCase("set")) {
+                                    try {
+                                        var toSet = Integer.valueOf(token[3]);
+                                        user.setStacked(toSet);
+                                        server.getPacketHandler().sendAvailablePixels(user, "override");
+                                    } catch (NumberFormatException ignored) {
+                                        getLogger().info("Invalid value: {}", token[3]);
+                                    }
                                 }
+                            }
+                        } else {
+                            getLogger().info("Unknown user: %s", token[1]);
+                        }
+                    }
+                } else if (token[0].equalsIgnoreCase("placementOverride") || token[0].equalsIgnoreCase("placementOverrides")) {
+                    //placementOverride list|USERNAME[ NAME STATE]
+                    //NAME=placeanycolor|ignorecooldown|ignoreplacemap
+                    //STATE=on|off
+                    if (token.length > 1 && !token[1].equalsIgnoreCase("help")) {
+                        if (token[1].equalsIgnoreCase("list")) {
+                            StringBuilder sb = new StringBuilder();
+                            userManager.getAllUsersByToken().forEach((s, user) -> {
+                                PlacementOverrides po = user.getPlaceOverrides();
+                                ArrayList<String> enabledPOs = new ArrayList<>();
+                                if (po.getCanPlaceAnyColor()) {
+                                    enabledPOs.add("placeAnyColor");
+                                }
+                                if (po.hasIgnoreCooldown()) {
+                                    enabledPOs.add("ignoreCooldown");
+                                }
+                                if (po.hasIgnorePlacemap()) {
+                                    enabledPOs.add("ignorePlacemap");
+                                }
+    
+                                if (!enabledPOs.isEmpty()) {
+                                    sb.append("    ").append(user.getName()).append(": ").append(String.join(", ", enabledPOs)).append("\n");
+                                }
+                            });
+    
+                            getLogger().info(sb.length() > 0 ? sb.toString().trim() : "    <no one has any Placement Overrides enabled>");
+                        } else {
+                            User user = getUserManager().getByName(token[1]);
+                            if (user == null) {
+                                getLogger().info("Unknown user: {}", token[1]);
                             } else {
-                                System.out.printf("User's Captcha Override state is: %s%n", user.isOverridingCaptcha() ? "on" : "off");
+                                PlacementOverrides po = user.getPlaceOverrides();
+                                if (token.length >= 4) {
+                                    boolean state = token[3].equalsIgnoreCase("on");
+                                    if (token[3].equalsIgnoreCase("on")) {
+                                        state = true;
+                                    } else if (token[3].equalsIgnoreCase("off")) {
+                                        state = false;
+                                    } else {
+                                        getLogger().info("Invalid state: {}", token[3]);
+                                        return;
+                                    }
+    
+                                    if (token[2].equalsIgnoreCase("placeAnyColor")) {
+                                        po.setCanPlaceAnyColor(state);
+                                    } else if (token[2].equalsIgnoreCase("ignoreCooldown")) {
+                                        po.setIgnoreCooldown(state);
+                                    } else if (token[2].equalsIgnoreCase("ignorePlacemap")) {
+                                        po.setIgnorePlacemap(state);
+                                    } else {
+                                        getLogger().info("Invalid placement override name: {}", token[2]);
+                                        return;
+                                    }
+    
+                                    getLogger().info("Updated {}'s {} state to {}", user.getName(), token[2].toLowerCase(), state ? "on" : "off");
+                                    server.getPacketHandler().sendPlacementOverrides(user);
+                                } else {
+                                    getLogger().info(
+                                        "User's Placement Overrides:%n    Ignore cooldown: {}%n    Ignore placemap: {}%n    Place any color: {}",
+                                        po.hasIgnoreCooldown() ? "on" : "off",
+                                        po.hasIgnorePlacemap() ? "on" : "off",
+                                        po.getCanPlaceAnyColor() ? "on" : "off"
+                                    );
+                                }
                             }
                         }
-                    }
-                } else {
-                    System.out.println("captchaOverride list|USERNAME[ STATE]");
-                    System.out.println("STATE=on|off");
-                }
-            } else if (token[0].equalsIgnoreCase("broadcast")) {
-                //broadcast MESSAGE
-                if (token.length > 1) {
-                    App.getServer().getPacketHandler().handleChatMessage(null, null, new ClientChatMessage(line.substring(token[0].length() + 1)));
-                }
-            } else if (token[0].equalsIgnoreCase("ChatBan")) {
-                if (token.length > 4) {
-                    User user = getUserManager().getByName(token[1]);
-                    if (user == null) System.out.printf("Unknown user: %s%n", token[1]);
-                    else {
-                        Integer banLength = 600;
-                        try {
-                            banLength = Integer.valueOf(token[2]);
-                        } catch (Exception e) {
-                            System.out.printf("Failed to parse BAN_LENGTH '%s'. Defaulting to 600", token[2]);
-                        }
-                        Boolean messageRemoval = token[3].equals("1") || token[3].equalsIgnoreCase("yes") || token[3].equalsIgnoreCase("true");
-                        String reason = line.substring(token[0].length() + token[1].length() + token[2].length() + token[3].length() + 4);
-                        Chatban.TEMP(user, null, System.currentTimeMillis() + banLength * 1000L, reason, messageRemoval, Integer.MAX_VALUE).commit();
-                    }
-                } else {
-                    System.out.println("chatban USER BAN_LENGTH MESSAGE_REMOVAL REASON\n    USER: The name of the user\n    BAN_LENGTH: The length in seconds of the chatban. For permas, see 'PermaChatBan' command.\n    MESSAGE_REMOVAL: Boolean (1|0) of whether or not to purge the user from chat.\n    REASON: The reason for the chatban. Will be displayed to the user");
-                }
-            } else if (token[0].equalsIgnoreCase("PermaChatBan")) {
-                if (token.length > 3) {
-                    User user = userManager.getByName(token[1]);
-                    if (user == null) System.out.printf("Unknown user: %s%n", token[1]);
-                    else {
-                        Boolean messageRemoval = token[2].equals("1") || token[2].equalsIgnoreCase("yes") || token[2].equalsIgnoreCase("true");
-                        String reason = line.substring(token[0].length() + token[1].length() + token[2].length() + 3);
-                        Chatban.PERMA(user, null, reason, messageRemoval, Integer.MAX_VALUE).commit();
-                    }
-                } else {
-                    System.out.println("PermaChatBan USER MESSAGE_REMOVAL REASON\n    USER: The name of the user\n    MESSAGE_REMOVAL: Boolean (1|0) of whether or not to purge the user from chat.\n    REASON: The reason for the chatban. Will be displayed to the user");
-                }
-            } else if (token[0].equalsIgnoreCase("UnChatBan")) {
-                if (token.length > 2) {
-                    User user = userManager.getByName(token[1]);
-                    if (user == null) System.out.printf("Unknown user: %s%n", token[1]);
-                    else {
-                        Chatban.UNBAN(user, null, line.substring(token[0].length() + token[1].length() + 2)).commit();
-                    }
-                } else {
-                    System.out.println("UnChatBan USER REASON");
-                }
-            } else if (token[0].equalsIgnoreCase("ChatPurge")) {
-                if (token.length > 2) {
-                    User user = userManager.getByName(token[1]);
-                    if (user == null) System.out.printf("Unknown user: %s%n", token[1]);
-                    else {
-                        Integer toPurge = Integer.MAX_VALUE;
-                        String reason = "";
-                        try {
-                            toPurge = Integer.valueOf(token[2]);
-                        } catch (Exception e) {
-                            System.out.printf("Failed to parse '%s' as a number, defaulting to %s%n", token[2], toPurge);
-                        }
-
-                        if (token.length >= 4) {
-                            reason = line.substring(token[0].length() + token[1].length() + token[2].length() + 3);
-                        } else {
-                            reason = "";
-                        }
-
-                        if (toPurge > 0) {
-                            App.getDatabase().purgeChat(user, null, toPurge, reason, true);
-                        } else {
-                            System.out.printf("Invalid toPurge. Should be >0, got %s%n", toPurge);
-                        }
-
-                    }
-                } else {
-                    System.out.println("ChatPurge USER [AMOUNT ]REASON");
-                }
-            } else if (token[0].equalsIgnoreCase("cf")) {
-                String z = line.substring(token[0].length() + 1);
-                System.out.printf("running chat filter against '%s'%nResult: %s%n", z, TextFilter.getInstance().filter(z, true));
-            } else if (token[0].equalsIgnoreCase("reloadUsers")) {
-                System.out.println("Working... (may cause some lag)");
-                userManager.reload();
-                System.out.println("Done.");
-            } else if (token[0].equalsIgnoreCase("flagRename")) {
-                //flagRename USERNAME [1|0]
-                if (token.length >= 2) {
-                    boolean flagState = token.length < 3 || (token[2].equalsIgnoreCase("1") || token[2].equalsIgnoreCase("true") || token[2].equalsIgnoreCase("yes") || token[2].equalsIgnoreCase("y"));
-                    User toFlag = userManager.getByName(token[1]);
-                    if (toFlag != null) {
-                        System.out.printf("Flagging %s as %s%n", toFlag.getName(), flagState);
-                        toFlag.setRenameRequested(flagState);
-                        App.getDatabase().insertServerAdminLog(String.format("%s %s (%d) for name change", flagState ? "Flagged" : "Unflagged", toFlag.getName(), toFlag.getId()));
                     } else {
-                        System.out.println("User doesn't exist");
+                        getLogger().info("placementOverride list|USERNAME[ NAME STATE]");
+                        getLogger().info("NAME=placeAnyColor|ignoreCooldown|ignorePlacemap");
+                        getLogger().info("STATE=on|off");
                     }
-                } else {
-                    System.out.println("flagRename USERNAME [1|0]");
-                }
-            } else if (token[0].equalsIgnoreCase("setName") || token[0].equalsIgnoreCase("updateUsername")) {
-                //setName USERNAME NEW_USERNAME
-                if (token.length >= 3) {
-                    User toRename = userManager.getByName(token[1]);
-                    if (toRename != null) {
-                        toRename.setRenameRequested(false);
-                        if (toRename.updateUsername(token[2], true)) {
-                            App.getServer().send(toRename, new ServerRenameSuccess(toRename.getName()));
-                            App.getDatabase().insertServerAdminLog(String.format("Changed %s's name to %s (uid: %d)", token[1], token[2], toRename.getId()));
-                            System.out.println("Name updated");
+                } else if (token[0].equalsIgnoreCase("captchaOverride")) {
+                    //captchaOverride list|USERNAME[ STATE]
+                    //STATE=on|off
+                    if (!isCaptchaConfigured()) {
+                        getLogger().info(
+                            "NOTE: captcha is not configured (missing key and/or secret). " +
+                            "Users with captchaOverride on won't receive any captchas."
+                        );
+                    }
+                    if (token.length > 1) {
+                        if (token[1].equalsIgnoreCase("list")) {
+                            StringBuilder sb = new StringBuilder();
+                            userManager.getAllUsersByToken().forEach((s, user) -> {
+                                if (user.isOverridingCaptcha()) sb.append("    ").append(user.getName()).append('\n');
+                            });
+                            getLogger().info(sb);
+                        } else if (token[1].equalsIgnoreCase("help")) {
+                            getLogger().info("captchaOverride list|USERNAME[ STATE]");
+                            getLogger().info("STATE=on|off");
                         } else {
-                            System.out.println("Failed to update name (function returned false. name taken or an error occurred)");
+                            User user = getUserManager().getByName(token[1]);
+                            if (user == null) {
+                                getLogger().info("Unknown user: {}", token[1]);
+                            } else {
+                                if (token.length >= 3) {
+                                    if (token[2].equalsIgnoreCase("on") || token[2].equalsIgnoreCase("off")) {
+                                        user.setOverrideCaptcha(token[2].equalsIgnoreCase("on"));
+                                        getLogger().info("Updated {}'s captchaOverride state to {}", user.getName(), token[2].toLowerCase());
+                                    } else {
+                                        getLogger().info("Invalid state: {}", token[2]);
+                                    }
+                                } else {
+                                    getLogger().info("User's Captcha Override state is: {}", user.isOverridingCaptcha() ? "on" : "off");
+                                }
+                            }
                         }
                     } else {
-                        System.out.println("User doesn't exist");
+                        getLogger().info("captchaOverride list|USERNAME[ STATE]");
+                        getLogger().info("STATE=on|off");
                     }
-                } else {
-                    System.out.printf("%s USERNAME NEW_USERNAME%n", token[0]);
-                }
-            } else if (token[0].equalsIgnoreCase("idleCheck")) {
-                try {
-                    checkUserTimeout();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            } else if (token[0].equalsIgnoreCase("sendUserData")) {
-                App.getServer().getPacketHandler().updateUserData();
-            } else if (token[0].equalsIgnoreCase("addnotification")) {
-                if (token.length < 4) {
-                    System.out.printf("%s TITLE EXPIRY BODY%n", token[0]);
-                    return;
-                }
-
-                String title = token[1];
-                long expiry;
-                try {
-                    if (token[2].startsWith("+")) {
-                        expiry = (new Date().getTime() / 1000) + Long.parseUnsignedLong(token[2].substring(1));
+                } else if (token[0].equalsIgnoreCase("broadcast")) {
+                    //broadcast MESSAGE
+                    if (token.length > 1) {
+                        App.getServer().getPacketHandler().handleChatMessage(null, null, new ClientChatMessage(line.substring(token[0].length() + 1)));
+                    }
+                } else if (token[0].equalsIgnoreCase("ChatBan")) {
+                    if (token.length > 4) {
+                        User user = getUserManager().getByName(token[1]);
+                        if (user == null) getLogger().info("Unknown user: {}", token[1]);
+                        else {
+                            var banLength = 600;
+                            try {
+                                banLength = Integer.parseInt(token[2]);
+                            } catch (Exception e) {
+                                getLogger().info("Failed to parse BAN_LENGTH '{}'. Defaulting to 600", token[2]);
+                            }
+                            var messageRemoval = token[3].equals("1") || token[3].equalsIgnoreCase("yes") || token[3].equalsIgnoreCase("true");
+                            String reason = line.substring(token[0].length() + token[1].length() + token[2].length() + token[3].length() + 4);
+                            Chatban.TEMP(user, null, System.currentTimeMillis() + banLength * 1000L, reason, messageRemoval, Integer.MAX_VALUE).commit();
+                        }
                     } else {
-                        expiry = Long.parseUnsignedLong(token[2]);
+                        getLogger().info("chatban USER BAN_LENGTH MESSAGE_REMOVAL REASON\n    USER: The name of the user\n    BAN_LENGTH: The length in seconds of the chatban. For permas, see 'PermaChatBan' command.\n    MESSAGE_REMOVAL: Boolean (1|0) of whether or not to purge the user from chat.\n    REASON: The reason for the chatban. Will be displayed to the user");
                     }
-                } catch (NumberFormatException e) {
-                    e.printStackTrace();
-                    System.err.println("Invalid expiry.");
-                    return;
-                }
-                String body = token[3];
-
-                int id = App.getDatabase().createNotification(-1, title, body, expiry);
-                App.getServer().broadcast(new ServerNotification(App.getDatabase().getNotification(id)));
-                System.out.println("Notification sent");
-            } else if (token[0].equalsIgnoreCase("bp")) {
-                if (token.length == 1) {
-                    System.out.printf("%s raw_packet%n", token[0]);
-                    return;
-                }
-                String raw = line.substring(token[0].length() + 1);
-                App.getServer().broadcastRaw(raw);
-                System.out.println("Packet broadcast sent.");
-            } else if (token[0].equalsIgnoreCase("up")) {
-                if (token.length < 3) {
-                    System.out.printf("%s username raw_packet%n", token[0]);
-                    return;
-                }
-                User user = userManager.getByName(token[1]);
-                if (user == null) {
-                    System.out.println("User doesn't exist");
-                    return;
-                }
-                String raw = line.substring(token[0].length() + token[1].length() + 2);
-                App.getServer().sendRaw(user, raw);
-                System.out.println(String.format("Packet sent to %s (UID %d)'s connections (#%d).", user.getName(), user.getId(), user.getConnections().size()));
-            } else if (token[0].equalsIgnoreCase("f")) {
-                // f $FID [$ACTION[ $VALUE]]
-                String subcommand;
-                if (token.length == 1) {
-                    subcommand = "help";
-                } else {
-                    subcommand = token[1].toLowerCase().trim();
-                }
-                switch(subcommand) {
-                    case "reload": {
-                        FactionManager.getInstance().invalidateAll();
-                        System.out.println("Invalidated factions");
-                        return;
+                } else if (token[0].equalsIgnoreCase("PermaChatBan")) {
+                    if (token.length > 3) {
+                        User user = userManager.getByName(token[1]);
+                        if (user == null) getLogger().info("Unknown user: {}", token[1]);
+                        else {
+                            var messageRemoval = token[2].equals("1") || token[2].equalsIgnoreCase("yes") || token[2].equalsIgnoreCase("true");
+                            String reason = line.substring(token[0].length() + token[1].length() + token[2].length() + 3);
+                            Chatban.PERMA(user, null, reason, messageRemoval, Integer.MAX_VALUE).commit();
+                        }
+                    } else {
+                        getLogger().info("PermaChatBan USER MESSAGE_REMOVAL REASON\n    USER: The name of the user\n    MESSAGE_REMOVAL: Boolean (1|0) of whether or not to purge the user from chat.\n    REASON: The reason for the chatban. Will be displayed to the user");
                     }
-                    case "mc": {
-                        System.out.println(FactionManager.getInstance().getCachedFactions().getStats());
-                        return;
-                    }
-                    case "help": {
-                        System.out.println("f $FID [delete|tag|name[ $VALUE]]");
-                        return;
-                    }
-                }
-                int i;
-                try {
-                    i = Integer.parseInt(token[1]);
-                } catch (NumberFormatException nfe) {
-                    System.out.printf("Invalid ID: %s%n", token[1]);
-                    return;
-                }
-                Optional<Faction> f = FactionManager.getInstance().getByID(i);
-                if (f.isPresent()) {
-                    Faction faction = f.get();
-                    String _action = "list";
-                    String _value = null;
+                } else if (token[0].equalsIgnoreCase("UnChatBan")) {
                     if (token.length > 2) {
-                        _action = token[2].toLowerCase().trim();
-                        if (token.length > 3) {
-                            _value = line.substring(token[0].length() + token[1].length() + token[2].length() + 3).toLowerCase().trim();
+                        User user = userManager.getByName(token[1]);
+                        if (user == null) getLogger().info("Unknown user: {}", token[1]);
+                        else {
+                            Chatban.UNBAN(user, null, line.substring(token[0].length() + token[1].length() + 2)).commit();
                         }
+                    } else {
+                        getLogger().info("UnChatBan USER REASON");
                     }
-                    switch(_action) {
-                        case "delete": {
-                            FactionManager.getInstance().deleteByID(i);
-                            System.out.printf("Delete invoked for faction %d%n", i);
-                            break;
-                        }
-                        case "tag": {
-                            if (_value == null) {
-                                System.out.printf("Faction %d's tag: %s%n", i, faction.getTag());
-                            } else {
-                                faction.setTag(_value);
-                                FactionManager.getInstance().update(faction, true);
-                                System.out.println("Faction updated");
+                } else if (token[0].equalsIgnoreCase("ChatPurge")) {
+                    if (token.length > 2) {
+                        User user = userManager.getByName(token[1]);
+                        if (user == null) getLogger().info("Unknown user: {}", token[1]);
+                        else {
+                            var toPurge = Integer.MAX_VALUE;
+                            String reason = "";
+                            try {
+                                toPurge = Integer.parseInt(token[2]);
+                            } catch (Exception e) {
+                                getLogger().info("Failed to parse '{}' as a number, defaulting to {}", token[2], toPurge);
                             }
-                            break;
-                        }
-                        case "name": {
-                            if (_value == null) {
-                                System.out.printf("Faction %d's name: %s%n", i, faction.getName());
+    
+                            if (token.length >= 4) {
+                                reason = line.substring(token[0].length() + token[1].length() + token[2].length() + 3);
                             } else {
-                                faction.setName(_value);
-                                FactionManager.getInstance().update(faction, true);
-                                System.out.println("Faction updated");
+                                reason = "";
                             }
-                            break;
+    
+                            if (toPurge > 0) {
+                                App.getDatabase().purgeChat(user, null, toPurge, reason, true);
+                            } else {
+                                getLogger().info("Invalid toPurge. Should be >0, got {}", toPurge);
+                            }
+    
                         }
-                        // TODO: ban, unban, owner, color
-                        default: {
-                            System.out.println(faction.toString());
-                            break;
-                        }
+                    } else {
+                        getLogger().info("ChatPurge USER [AMOUNT ]REASON");
                     }
-                } else {
-                    System.out.printf("The faction %s does not exist.%n", i);
+                } else if (token[0].equalsIgnoreCase("cf")) {
+                    String z = line.substring(token[0].length() + 1);
+                    getLogger().info("running chat filter against '{}'Result: {}", z, TextFilter.getInstance().filter(z, true));
+                } else if (token[0].equalsIgnoreCase("reloadUsers")) {
+                    getLogger().info("Working... (may cause some lag)");
+                    userManager.reload();
+                    getLogger().info("Done.");
+                } else if (token[0].equalsIgnoreCase("flagRename")) {
+                    //flagRename USERNAME [1|0]
+                    if (token.length >= 2) {
+                        boolean flagState = token.length < 3 || (token[2].equalsIgnoreCase("1") || token[2].equalsIgnoreCase("true") || token[2].equalsIgnoreCase("yes") || token[2].equalsIgnoreCase("y"));
+                        User toFlag = userManager.getByName(token[1]);
+                        if (toFlag != null) {
+                            getLogger().info("Flagging {} as {}", toFlag.getName(), flagState);
+                            toFlag.setRenameRequested(flagState);
+                            App.getDatabase().insertServerAdminLog(String.format("%s %s (%d) for name change", flagState ? "Flagged" : "Unflagged", toFlag.getName(), toFlag.getId()));
+                        } else {
+                            getLogger().info("User doesn't exist");
+                        }
+                    } else {
+                        getLogger().info("flagRename USERNAME [1|0]");
+                    }
+                } else if (token[0].equalsIgnoreCase("setName") || token[0].equalsIgnoreCase("updateUsername")) {
+                    //setName USERNAME NEW_USERNAME
+                    if (token.length >= 3) {
+                        User toRename = userManager.getByName(token[1]);
+                        if (toRename != null) {
+                            toRename.setRenameRequested(false);
+                            if (toRename.updateUsername(token[2], true)) {
+                                App.getServer().send(toRename, new ServerRenameSuccess(toRename.getName()));
+                                App.getDatabase().insertServerAdminLog(String.format("Changed %s's name to %s (uid: %d)", token[1], token[2], toRename.getId()));
+                                getLogger().info("Name updated");
+                            } else {
+                                getLogger().info("Failed to update name (function returned false. name taken or an error occurred)");
+                            }
+                        } else {
+                            getLogger().info("User doesn't exist");
+                        }
+                    } else {
+                        getLogger().info("{} USERNAME NEW_USERNAME", token[0]);
+                    }
+                } else if (token[0].equalsIgnoreCase("idleCheck")) {
+                    try {
+                        checkUserTimeout();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                } else if (token[0].equalsIgnoreCase("sendUserData")) {
+                    App.getServer().getPacketHandler().updateUserData();
+                } else if (token[0].equalsIgnoreCase("addnotification")) {
+                    if (token.length < 4) {
+                        getLogger().info("{} TITLE EXPIRY BODY", token[0]);
+                        return;
+                    }
+    
+                    String title = token[1];
+                    long expiry;
+                    try {
+                        if (token[2].startsWith("+")) {
+                            expiry = (new Date().getTime() / 1000) + Long.parseUnsignedLong(token[2].substring(1));
+                        } else {
+                            expiry = Long.parseUnsignedLong(token[2]);
+                        }
+                    } catch (NumberFormatException e) {
+                        e.printStackTrace();
+                        System.err.println("Invalid expiry.");
+                        return;
+                    }
+                    String body = token[3];
+    
+                    int id = App.getDatabase().createNotification(-1, title, body, expiry);
+                    App.getServer().broadcast(new ServerNotification(App.getDatabase().getNotification(id)));
+                    getLogger().info("Notification sent");
+                } else if (token[0].equalsIgnoreCase("bp")) {
+                    if (token.length == 1) {
+                        getLogger().info("{} raw_packet", token[0]);
+                        return;
+                    }
+                    String raw = line.substring(token[0].length() + 1);
+                    App.getServer().broadcastRaw(raw);
+                    getLogger().info("Packet broadcast sent.");
+                } else if (token[0].equalsIgnoreCase("up")) {
+                    if (token.length < 3) {
+                        getLogger().info("{} username raw_packet", token[0]);
+                        return;
+                    }
+                    User user = userManager.getByName(token[1]);
+                    if (user == null) {
+                        getLogger().info("User doesn't exist");
+                        return;
+                    }
+                    String raw = line.substring(token[0].length() + token[1].length() + 2);
+                    App.getServer().sendRaw(user, raw);
+                    getLogger().info("Packet sent to {} (UID {})'s connections (#{}).", user.getName(), user.getId(), user.getConnections().size());
+                } else if (token[0].equalsIgnoreCase("f")) {
+                    // f $FID [$ACTION[ $VALUE]]
+                    String subcommand;
+                    if (token.length == 1) {
+                        subcommand = "help";
+                    } else {
+                        subcommand = token[1].toLowerCase().trim();
+                    }
+                    if ("reload".equals(subcommand)) {
+                        FactionManager.getInstance().invalidateAll();
+                        getLogger().info("Invalidated factions");
+                        return;
+                    } else if ("mc".equals(subcommand)) {
+                        getLogger().info(FactionManager.getInstance().getCachedFactions().getStats());
+                        return;
+                    } else if ("help".equals(subcommand)) {
+                        getLogger().info("f $FID [delete|tag|name[ $VALUE]]");
+                        return;
+                    }
+                    int i;
+                    try {
+                        i = Integer.parseInt(token[1]);
+                    } catch (NumberFormatException nfe) {
+                        getLogger().info("Invalid ID: {}", token[1]);
+                        return;
+                    }
+                    Optional<Faction> f = FactionManager.getInstance().getByID(i);
+                    if (f.isPresent()) {
+                        Faction faction = f.get();
+                        String _action = "list";
+                        String _value = null;
+                        if (token.length > 2) {
+                            _action = token[2].toLowerCase().trim();
+                            if (token.length > 3) {
+                                _value = line.substring(token[0].length() + token[1].length() + token[2].length() + 3).toLowerCase().trim();
+                            }
+                        }
+                        switch(_action) {
+                            case "delete": {
+                                FactionManager.getInstance().deleteByID(i);
+                                getLogger().info("Delete invoked for faction {}", i);
+                                break;
+                            }
+                            case "tag": {
+                                if (_value == null) {
+                                    getLogger().info("Faction {}'s tag: {}", i, faction.getTag());
+                                } else {
+                                    faction.setTag(_value);
+                                    FactionManager.getInstance().update(faction, true);
+                                    getLogger().info("Faction updated");
+                                }
+                                break;
+                            }
+                            case "name": {
+                                if (_value == null) {
+                                    getLogger().info("Faction {}'s name: {}", i, faction.getName());
+                                } else {
+                                    faction.setName(_value);
+                                    FactionManager.getInstance().update(faction, true);
+                                    getLogger().info("Faction updated");
+                                }
+                                break;
+                            }
+                            // TODO: ban, unban, owner, color
+                            default: {
+                                getLogger().info(faction.toString());
+                                break;
+                            }
+                        }
+                    } else {
+                        getLogger().info("The faction {} does not exist.", i);
+                    }
                 }
             }
         } catch (RuntimeException e) {
@@ -910,7 +912,7 @@ public class App {
         var paletteConfigFile = new File("palette.conf");
         var paletteConfig = ConfigFactory.parseFile(paletteConfigFile.exists() ? paletteConfigFile : new File("resources/palette-reference.conf"));
 
-        ArrayList<Color> colors = new ArrayList<Color>();
+        ArrayList<Color> colors = new ArrayList<>();
         int defaultIdx = -1;
         for (ConfigValue colorConfig : paletteConfig.getList("colors")) {
             Map<String, Object> color = (Map<String, Object>) colorConfig.unwrapped();
@@ -1041,7 +1043,8 @@ public class App {
         return getConfig().getBoolean("chat.enabled");
     }
 
-    public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase, String action) {
+    public static void putPixel(int x, int y, int color, User user, boolean mod_action,
+        boolean updateDatabase, String action) {
         if (x < 0 || x >= width || y < 0 || y >= height || (color >= getPalette().getColors().size() && !(color == 0xFF || color == -1))) return;
         String userName = user != null ? user.getName() : "<server>";
 
@@ -1071,10 +1074,10 @@ public class App {
         }
 
         XnioWorker worker = server.getServer().getWorker();
-        worker.execute(() -> rollbackAfterBan_(who, seconds));
+        worker.execute(() -> doRollbackAfterBan(who, seconds));
     }
 
-    private static void rollbackAfterBan_(User who, int seconds) {
+    private static void doRollbackAfterBan(User who, int seconds) {
         List<DBRollbackPixel> pixels = database.getRollbackPixels(who, seconds); //get all pixels that can and need to be rolled back
         List<ServerPlace.Pixel> forBroadcast = new ArrayList<>();
         for (DBRollbackPixel rbPixel : pixels) {
@@ -1083,13 +1086,13 @@ public class App {
             //  forBroadcast.add() adds the pixel and later broadcasts it via websocket
             //  putRollbackPixel() adds rollback pixel to database (TABLE pixels) for undo and timelapse purposes
             if (rbPixel.toPixel != null) { //if previous pixel (the one we are rolling back to) exists
-                putPixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color, who, false, "", false, "rollback");
+                putPixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color, who, false, false, "rollback");
                 forBroadcast.add(new ServerPlace.Pixel(rbPixel.toPixel.x, rbPixel.toPixel.y, rbPixel.toPixel.color));
                 database.putRollbackPixel(who, rbPixel.fromId, rbPixel.toPixel.id);
             } else { //else rollback to blank canvas
                 DBPixelPlacementFull fromPixel = database.getPixelByID(null, rbPixel.fromId);
                 byte rollbackDefault = getDefaultColor(fromPixel.x, fromPixel.y);
-                putPixel(fromPixel.x, fromPixel.y, rollbackDefault, who, false, "", false, "rollback");
+                putPixel(fromPixel.x, fromPixel.y, rollbackDefault, who, false, false, "rollback");
                 forBroadcast.add(new ServerPlace.Pixel(fromPixel.x, fromPixel.y, (int) rollbackDefault));
                 database.putRollbackPixelNoPrevious(fromPixel.x, fromPixel.y, who, fromPixel.id);
             }
@@ -1108,7 +1111,7 @@ public class App {
         List<ServerPlace.Pixel> forBroadcast = new ArrayList<>();
         for (DBPixelPlacementFull fromPixel : pixels) {
             //restores original pixel
-            putPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, false, "", false, "rollback undo"); //in board[]
+            putPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, false, false, "rollback undo"); //in board[]
             forBroadcast.add(new ServerPlace.Pixel(fromPixel.x, fromPixel.y, fromPixel.color)); //in websocket
             database.putUndoPixel(fromPixel.x, fromPixel.y, fromPixel.color, who, fromPixel.id); //in database
         }
@@ -1131,9 +1134,9 @@ public class App {
                 int pixelColor = getPixel(x, y);
                 // fromColor is 0xFF or -1 if we're nuking
                 if (pixelColor != toColor) {
-                    putPixel(x, y, c, null, true, "", false, "console nuke");
+                    putPixel(x, y, c, null, true, false, "console nuke");
                     forBroadcast.add(new ServerPlace.Pixel(x, y, (int) c));
-                    if (fromColor == 0xFF || fromColor == -1) {
+                    if (fromColor == -1) {
                         database.putNukePixel(x, y, c);
                     } else if (pixelColor == fromColor) {
                         database.putNukePixel(x, y, (int) fromColor, c);
@@ -1169,7 +1172,7 @@ public class App {
         }
     }
 
-    private static boolean loadMap() {
+    private static void loadMap() {
         Path path = getStorageDir().resolve("board.dat");
         if (!Files.exists(path)) {
             getLogger().warn("Cannot find board.dat in working directory, using blank board");
@@ -1179,64 +1182,52 @@ public class App {
                 }
             }
             saveMapToDir(path);
-            return true;
         }
 
         try {
             byte[] bytes = Files.readAllBytes(path);
             System.arraycopy(bytes, 0, board, 0, width * height);
-            return true;
         } catch (ArrayIndexOutOfBoundsException e) {
             getLogger().error("board.dat dimensions don't match the ones on pxls.conf");
-            return false;
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
         }
     }
 
-    private static boolean loadHeatmap() {
+    private static void loadHeatmap() {
         Path path = getStorageDir().resolve("heatmap.dat");
         if (!Files.exists(path)) {
             getLogger().warn("Cannot find heatmap.dat in working directory, using heatmap");
             saveHeatmapToDir(path);
-            return true;
         }
 
         try {
             byte[] bytes = Files.readAllBytes(path);
             System.arraycopy(bytes, 0, heatmap, 0, width * height);
-            return true;
         } catch (ArrayIndexOutOfBoundsException e) {
             getLogger().error("heatmap.dat dimensions don't match the ones on pxls.conf");
-            return false;
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
         }
     }
 
-    private static boolean loadPlacemap() {
+    private static void loadPlacemap() {
         Path path = getStorageDir().resolve("placemap.dat");
         if (!Files.exists(path)) {
             getLogger().warn("Cannot find placemap.dat in working directory, assuming transparent pixels are unplaceable");
-            return false;
         }
 
         try {
             byte[] bytes = Files.readAllBytes(path);
             System.arraycopy(bytes, 0, placemap, 0, width * height);
-            return true;
         } catch (ArrayIndexOutOfBoundsException e) {
             getLogger().error("placemap.dat dimensions don't match the ones on pxls.conf");
-            return false;
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
         }
     }
 
-    private static boolean loadVirginmap() {
+    private static void loadVirginmap() {
         Path path = getStorageDir().resolve("virginmap.dat");
         if (!Files.exists(path)) {
             getLogger().warn("Cannot find virginmap.dat in working directory, using blank virginmap");
@@ -1247,19 +1238,15 @@ public class App {
                 }
             }
             saveVirginmapToDir(path);
-            return true;
         }
 
         try {
             byte[] bytes = Files.readAllBytes(path);
             System.arraycopy(bytes, 0, virginmap, 0, width * height);
-            return true;
         } catch (ArrayIndexOutOfBoundsException e) {
             getLogger().error("virginmap.dat dimensions don't match the ones on pxls.conf");
-            return false;
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
         }
     }
 
@@ -1284,7 +1271,7 @@ public class App {
             if (user.isIdled()) continue;
 
             Long toUse = user.getLastPixelTime() == 0L ? user.getInitialAuthTime() : user.getLastPixelTime();
-            Long delta = loopStart - toUse;
+            var delta = loopStart - toUse;
             boolean isIdled = userIdleTimeout - delta <= 0;
 
             if (isIdled) {
