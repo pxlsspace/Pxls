@@ -159,7 +159,6 @@ public class App {
             String[] token = line.split(" ");
             if (token[0].equalsIgnoreCase("reload")) {
                 try {
-                    cachedWhoamiOrigin = null;
                     loadConfig();
                     getLogger().info("Reloaded configuration");
                     loadPalette();
@@ -1211,7 +1210,7 @@ public class App {
         }
     }
 
-    private static void loadPlacemap() {
+    private static boolean loadPlacemap() {
         Path path = getStorageDir().resolve("placemap.dat");
         if (!Files.exists(path)) {
             getLogger().warn("Cannot find placemap.dat in working directory, assuming transparent pixels are unplaceable");
@@ -1220,10 +1219,13 @@ public class App {
         try {
             byte[] bytes = Files.readAllBytes(path);
             System.arraycopy(bytes, 0, placemap, 0, width * height);
+            return true;
         } catch (ArrayIndexOutOfBoundsException e) {
             getLogger().error("placemap.dat dimensions don't match the ones on pxls.conf");
+            return false;
         } catch (IOException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
