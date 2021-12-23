@@ -1,8 +1,8 @@
 package space.pxls.palette;
 
 public class Color {
-	private String name;
-	private String value;
+	private final String name;
+	private final String value;
 
 	public Color(String name, String value) {
 		this.name = name;

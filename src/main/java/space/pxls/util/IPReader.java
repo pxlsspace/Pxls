@@ -9,9 +9,9 @@ import space.pxls.App;
 import java.util.List;
 
 public class IPReader implements HttpHandler {
-    public static AttachmentKey<String> IP = AttachmentKey.create(String.class);
+    public static final AttachmentKey<String> IP = AttachmentKey.create(String.class);
 
-    private HttpHandler next;
+    private final HttpHandler next;
 
     public IPReader(HttpHandler next) {
         this.next = next;

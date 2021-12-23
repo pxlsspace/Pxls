@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class App {
+
     private static Gson gson;
     private static Config config;
     private static Database database;
@@ -58,6 +59,12 @@ public class App {
     private static int stackMultiplier;
     private static int stackMaxStacked;
     private static long userIdleTimeout;
+
+    public static final String STATE_ON_OFF = "STATE=on|off";
+    public static final String USER_NOT_EXISTS = "User doesn't exist";
+    public static final String UNKNOWN_USER = "Unknown user: {}";
+    public static final String AUTHENTICATED_CONNECTIONS_COUNT = "Authenticated connections count: {}";
+    public static final String BANNED_VIA_CONSOLE_NO_REASON_GIVEN = "Banned via console; no reason given";
 
     public static void main(String[] args) {
         gson = new Gson();
@@ -112,8 +119,8 @@ public class App {
 
         new Timer().schedule(new SessionTimer(), 0, 1000 * 3600); // execute once every hour
 
-        int heatmap_timer_cd = (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS);
-        new Timer().schedule(new HeatmapTimer(), 0, heatmap_timer_cd * 1000 / 256);
+        int heatmapTimerCd = (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS);
+        new Timer().schedule(new HeatmapTimer(), 0, heatmapTimerCd * 1000 / 256);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             getLogger().info("Saving map before shutdown...");
@@ -144,7 +151,7 @@ public class App {
                 if (!backupsDir.toFile().mkdirs()) {
                     getLogger().error("Failed to make backup dirs");
                 } else {
-                    getLogger().info(String.format("Created missing backups dir at %s", backupsDir.toAbsolutePath().normalize()));
+                    getLogger().info("Created missing backups dir at {}", backupsDir.toAbsolutePath().normalize());
                 }
             }
         } catch (Exception e) {
@@ -360,7 +367,7 @@ public class App {
                     User user = userManager.getByName(token[1]);
                     if (user != null) {
                         String reason = String.join(" ", rest);
-                        if (reason.equals("")) reason = "Banned via console; no reason given";
+                        if (reason.equals("")) reason = BANNED_VIA_CONSOLE_NO_REASON_GIVEN;
                         user.ban(24 * 60 * 60, reason, null);
                         database.insertServerAdminLog(String.format("ban %s with reason: %s", user.getName(), reason));
                         getLogger().info("Banned {}  for 24 hours.", user.getName());
@@ -376,7 +383,7 @@ public class App {
                     var rest = Arrays.copyOfRange(token, 2, token.length);
                     if (user != null) {
                         String reason = String.join(" ", rest);
-                        if (reason.equals("")) reason = "Banned via console; no reason given";
+                        if (reason.equals("")) reason = BANNED_VIA_CONSOLE_NO_REASON_GIVEN;
                         user.ban(0, reason, null);
                         database.insertServerAdminLog(String.format("permaban %s with reason: %s", user.getName(), reason));
                         getLogger().info("Permabanned {}", user.getName());
@@ -392,7 +399,7 @@ public class App {
                     User user = userManager.getByName(token[1]);
                     if (user != null) {
                         String reason = String.join(" ", rest);
-                        if (reason.equals("")) reason = "Banned via console; no reason given";
+                        if (reason.equals("")) reason = BANNED_VIA_CONSOLE_NO_REASON_GIVEN;
                         user.shadowBan(reason, null);
                         database.insertServerAdminLog(String.format("shadowban %s with reason: %s", user.getName(), reason));
                         getLogger().info("Shadowbanned {}", user.getName());
@@ -441,14 +448,14 @@ public class App {
                 } else if (token[0].equalsIgnoreCase("cons")) {
                     if (token.length > 1) {
                         if (token[1].equalsIgnoreCase("authed") || token[1].equalsIgnoreCase("authd")) {
-                            getLogger().info("Authenticated connections count: {}", server.getAuthedUsers().size());
+                            getLogger().info(AUTHENTICATED_CONNECTIONS_COUNT, server.getAuthedUsers().size());
                         } else {
                             getLogger().info("All connections count: {}", server.getPacketHandler().getNumAllCons());
-                            getLogger().info("Authenticated connections count: {}", server.getAuthedUsers().size());
+                            getLogger().info(AUTHENTICATED_CONNECTIONS_COUNT, server.getAuthedUsers().size());
                         }
                     } else {
                         getLogger().info("All connections count: {}", server.getPacketHandler().getNumAllCons());
-                        getLogger().info("Authenticated connections count: {}", server.getAuthedUsers().size());
+                        getLogger().info(AUTHENTICATED_CONNECTIONS_COUNT, server.getAuthedUsers().size());
                     }
                 } else if (token[0].equalsIgnoreCase("users")) {
                     getLogger().log(Level.INFO, "Number of authenticated users: {}", server.getAuthedUsers().size());
@@ -474,7 +481,7 @@ public class App {
                                 }
                             }
                         } else {
-                            getLogger().info("Unknown user: %s", token[1]);
+                            getLogger().info(UNKNOWN_USER, token[1]);
                         }
                     }
                 } else if (token[0].equalsIgnoreCase("placementOverride") || token[0].equalsIgnoreCase("placementOverrides")) {
@@ -506,7 +513,7 @@ public class App {
                         } else {
                             User user = getUserManager().getByName(token[1]);
                             if (user == null) {
-                                getLogger().info("Unknown user: {}", token[1]);
+                                getLogger().info(UNKNOWN_USER, token[1]);
                             } else {
                                 PlacementOverrides po = user.getPlaceOverrides();
                                 if (token.length >= 4) {
@@ -546,7 +553,7 @@ public class App {
                     } else {
                         getLogger().info("placementOverride list|USERNAME[ NAME STATE]");
                         getLogger().info("NAME=placeAnyColor|ignoreCooldown|ignorePlacemap");
-                        getLogger().info("STATE=on|off");
+                        getLogger().info(STATE_ON_OFF);
                     }
                 } else if (token[0].equalsIgnoreCase("captchaOverride")) {
                     //captchaOverride list|USERNAME[ STATE]
@@ -566,16 +573,16 @@ public class App {
                             getLogger().info(sb);
                         } else if (token[1].equalsIgnoreCase("help")) {
                             getLogger().info("captchaOverride list|USERNAME[ STATE]");
-                            getLogger().info("STATE=on|off");
+                            getLogger().info(STATE_ON_OFF);
                         } else {
                             User user = getUserManager().getByName(token[1]);
                             if (user == null) {
-                                getLogger().info("Unknown user: {}", token[1]);
+                                getLogger().info(UNKNOWN_USER, token[1]);
                             } else {
                                 if (token.length >= 3) {
                                     if (token[2].equalsIgnoreCase("on") || token[2].equalsIgnoreCase("off")) {
                                         user.setOverrideCaptcha(token[2].equalsIgnoreCase("on"));
-                                        getLogger().info("Updated {}'s captchaOverride state to {}", user.getName(), token[2].toLowerCase());
+                                        getLogger().info("Updated {}'s captchaOverride state to {}", user.getName(), token[2]);
                                     } else {
                                         getLogger().info("Invalid state: {}", token[2]);
                                     }
@@ -586,7 +593,7 @@ public class App {
                         }
                     } else {
                         getLogger().info("captchaOverride list|USERNAME[ STATE]");
-                        getLogger().info("STATE=on|off");
+                        getLogger().info(STATE_ON_OFF);
                     }
                 } else if (token[0].equalsIgnoreCase("broadcast")) {
                     //broadcast MESSAGE
@@ -596,7 +603,7 @@ public class App {
                 } else if (token[0].equalsIgnoreCase("ChatBan")) {
                     if (token.length > 4) {
                         User user = getUserManager().getByName(token[1]);
-                        if (user == null) getLogger().info("Unknown user: {}", token[1]);
+                        if (user == null) getLogger().info(UNKNOWN_USER, token[1]);
                         else {
                             var banLength = 600;
                             try {
@@ -614,7 +621,7 @@ public class App {
                 } else if (token[0].equalsIgnoreCase("PermaChatBan")) {
                     if (token.length > 3) {
                         User user = userManager.getByName(token[1]);
-                        if (user == null) getLogger().info("Unknown user: {}", token[1]);
+                        if (user == null) getLogger().info(UNKNOWN_USER, token[1]);
                         else {
                             var messageRemoval = token[2].equals("1") || token[2].equalsIgnoreCase("yes") || token[2].equalsIgnoreCase("true");
                             String reason = line.substring(token[0].length() + token[1].length() + token[2].length() + 3);
@@ -626,7 +633,7 @@ public class App {
                 } else if (token[0].equalsIgnoreCase("UnChatBan")) {
                     if (token.length > 2) {
                         User user = userManager.getByName(token[1]);
-                        if (user == null) getLogger().info("Unknown user: {}", token[1]);
+                        if (user == null) getLogger().info(UNKNOWN_USER, token[1]);
                         else {
                             Chatban.UNBAN(user, null, line.substring(token[0].length() + token[1].length() + 2)).commit();
                         }
@@ -636,7 +643,7 @@ public class App {
                 } else if (token[0].equalsIgnoreCase("ChatPurge")) {
                     if (token.length > 2) {
                         User user = userManager.getByName(token[1]);
-                        if (user == null) getLogger().info("Unknown user: {}", token[1]);
+                        if (user == null) getLogger().info(UNKNOWN_USER, token[1]);
                         else {
                             var toPurge = Integer.MAX_VALUE;
                             String reason = "";
@@ -679,7 +686,7 @@ public class App {
                             toFlag.setRenameRequested(flagState);
                             App.getDatabase().insertServerAdminLog(String.format("%s %s (%d) for name change", flagState ? "Flagged" : "Unflagged", toFlag.getName(), toFlag.getId()));
                         } else {
-                            getLogger().info("User doesn't exist");
+                            getLogger().info(USER_NOT_EXISTS);
                         }
                     } else {
                         getLogger().info("flagRename USERNAME [1|0]");
@@ -698,7 +705,7 @@ public class App {
                                 getLogger().info("Failed to update name (function returned false. name taken or an error occurred)");
                             }
                         } else {
-                            getLogger().info("User doesn't exist");
+                            getLogger().info(USER_NOT_EXISTS);
                         }
                     } else {
                         getLogger().info("{} USERNAME NEW_USERNAME", token[0]);
@@ -750,7 +757,7 @@ public class App {
                     }
                     User user = userManager.getByName(token[1]);
                     if (user == null) {
-                        getLogger().info("User doesn't exist");
+                        getLogger().info(USER_NOT_EXISTS);
                         return;
                     }
                     String raw = line.substring(token[0].length() + token[1].length() + 2);
@@ -821,7 +828,7 @@ public class App {
                             }
                             // TODO: ban, unban, owner, color
                             default: {
-                                getLogger().info(faction.toString());
+                                getLogger().info(faction);
                                 break;
                             }
                         }
@@ -1054,17 +1061,19 @@ public class App {
         board[x + y * width] = (byte) color;
         heatmap[x + y * width] = (byte) 0xFF;
         virginmap[x + y * width] = (byte) 0x00;
-        pixelLogger.log(Level.INFO, String.format("%s\t%d\t%d\t%d\t%s", userName, x, y, color, action));
+        pixelLogger.log(Level.INFO,"{}\t{}\t{}\t{}\t{}", userName, x, y, color, action);
         if (updateDatabase) {
             database.placePixel(x, y, color, user, mod_action);
             if (!mod_action) {
-                user.increasePixelCounts();
+                if (user != null) {
+                    user.increasePixelCounts();
+                }
             }
         }
     }
 
     public static void logShadowbannedPixel(int x, int y, int color, String userName, String ip) {
-        shadowbannedPixelLogger.info(String.format("%s\t%d\t%d\t%d\t%s", userName, x, y, color, ip));
+        shadowbannedPixelLogger.info("{}\t{}\t{}\t{}\t{}", userName, x, y, color, ip);
     }
 
     public static void rollbackAfterBan(User who, int seconds) {
@@ -1150,24 +1159,20 @@ public class App {
         return new File(getStorageDir().toString()).mkdirs();
     }
 
-    private static boolean loadDefaultMap() {
+    private static void loadDefaultMap() {
         Path path = getStorageDir().resolve("default_board.dat").toAbsolutePath();
         if (!Files.exists(path)) {
             defaultBoard = null;
-            return false;
         }
 
         try {
             byte[] bytes = Files.readAllBytes(path);
             defaultBoard = new byte[width * height];
             System.arraycopy(bytes, 0, defaultBoard, 0, width * height);
-            return true;
         } catch (ArrayIndexOutOfBoundsException e) {
             getLogger().error("board.dat dimensions don't match the ones on pxls.conf");
-            return false;
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
         }
     }
 

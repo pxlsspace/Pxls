@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
  * @see BlockingHandler
  */
 public class JsonReader implements HttpHandler {
-    public static AttachmentKey<JsonElement> ATTACHMENT_KEY = AttachmentKey.create(JsonElement.class);
-    private HttpHandler next;
+    public static final AttachmentKey<JsonElement> ATTACHMENT_KEY = AttachmentKey.create(JsonElement.class);
+    private final HttpHandler next;
 
     public JsonReader(HttpHandler next) {
         this.next = Objects.requireNonNull(next);

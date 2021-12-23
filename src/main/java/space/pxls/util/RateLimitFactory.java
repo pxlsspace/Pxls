@@ -4,8 +4,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RateLimitFactory {
-    private Map<String, Map<String, RequestBucket>> bucketMap = new ConcurrentHashMap<>();
-    private Map<String, BucketConfig> bucketConfigs = new ConcurrentHashMap<>();
+    private final Map<String, Map<String, RequestBucket>> bucketMap = new ConcurrentHashMap<>();
+    private final Map<String, BucketConfig> bucketConfigs = new ConcurrentHashMap<>();
 
     private static RateLimitFactory _instance;
     public static RateLimitFactory getInstance() {
@@ -36,51 +36,92 @@ public class RateLimitFactory {
         });
         RequestBucket bucket = getInstance().bucketMap.computeIfAbsent(bucketType, k -> new ConcurrentHashMap<>()).compute(identifier, (key, old) -> {
             if (old == null) return new RequestBucket(System.currentTimeMillis(), 0);
-            if (old.startTime + bucketConfig.resetSeconds * 1000 < System.currentTimeMillis())
+            if (old.getStartTime() + bucketConfig.getResetSeconds() * 1000L < System.currentTimeMillis())
                 return new RequestBucket(System.currentTimeMillis(), 0);
             return old;
         });
 
-        int toRet = bucket.count >= bucketConfig.maxRequests ? (int) Math.ceil(((bucket.startTime + bucketConfig.resetSeconds * 1000) - System.currentTimeMillis()) / 1000f) : 0;
-        if (increaseBucket) bucket.count++;
+        int toRet = bucket.getCount() >= bucketConfig.getMaxRequests()
+            ? (int) Math.ceil(((bucket.getStartTime() + bucketConfig.getResetSeconds() * 1000) - System.currentTimeMillis()) / 1000f) : 0;
+        if (increaseBucket) bucket.setCount(bucket.getCount() + 1);
         return toRet;
     }
 
     public static class BucketConfig {
-        public int resetSeconds;
-        public int maxRequests;
-        public boolean global;
+        private int resetSeconds;
+        private int maxRequests;
+        private boolean global;
 
         public BucketConfig(int resetSeconds, int maxRequests) {
-            this.resetSeconds = resetSeconds;
-            this.maxRequests = maxRequests;
-            this.global = false;
+            this.setResetSeconds(resetSeconds);
+            this.setMaxRequests(maxRequests);
+            this.setGlobal(false);
         }
 
         public BucketConfig(int resetSeconds, int maxRequests, boolean global) {
-            this.resetSeconds = resetSeconds;
-            this.maxRequests = maxRequests;
-            this.global = global;
+            this.setResetSeconds(resetSeconds);
+            this.setMaxRequests(maxRequests);
+            this.setGlobal(global);
         }
 
         @Override
         public String toString() {
-            return String.format("%ss / %s", resetSeconds, maxRequests);
+            return String.format("%ss / %s", getResetSeconds(), getMaxRequests());
+        }
+
+        public int getResetSeconds() {
+            return resetSeconds;
+        }
+
+        public void setResetSeconds(int resetSeconds) {
+            this.resetSeconds = resetSeconds;
+        }
+
+        public int getMaxRequests() {
+            return maxRequests;
+        }
+
+        public void setMaxRequests(int maxRequests) {
+            this.maxRequests = maxRequests;
+        }
+
+        public boolean isGlobal() {
+            return global;
+        }
+
+        public void setGlobal(boolean global) {
+            this.global = global;
         }
     }
 
     public static class RequestBucket {
-        public long startTime;
-        public int count;
+        private long startTime;
+        private int count;
 
         public RequestBucket(long startTime, int count) {
-            this.startTime = startTime;
-            this.count = count;
+            this.setStartTime(startTime);
+            this.setCount(count);
         }
 
         @Override
         public String toString() {
-            return String.format("%s / %s", startTime, count);
+            return String.format("%s / %s", getStartTime(), getCount());
+        }
+
+        public long getStartTime() {
+            return startTime;
+        }
+
+        public void setStartTime(long startTime) {
+            this.startTime = startTime;
+        }
+
+        public int getCount() {
+            return count;
+        }
+
+        public void setCount(int count) {
+            this.count = count;
         }
     }
 }

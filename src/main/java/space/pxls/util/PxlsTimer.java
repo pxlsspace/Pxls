@@ -2,7 +2,7 @@ package space.pxls.util;
 
 public class PxlsTimer {
     private long lastRun;
-    private float wait;
+    private final float wait;
 
     public PxlsTimer(float wait) {
         this.wait = wait;

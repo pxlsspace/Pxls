@@ -11,11 +11,11 @@ import space.pxls.user.UserLogin;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class AuthReader implements HttpHandler {
-    public static AttachmentKey<User> USER = AttachmentKey.create(User.class);
+    public static final AttachmentKey<User> USER = AttachmentKey.create(User.class);
 
-    private static ConcurrentHashMap<String, String> loginCache = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, String> loginCache = new ConcurrentHashMap<>();
 
-    private HttpHandler next;
+    private final HttpHandler next;
 
     public AuthReader(HttpHandler next) {
         this.next = next;
