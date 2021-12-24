@@ -123,6 +123,7 @@ public class UndertowServer {
         User user = exchange.getAttachment(AuthReader.USER);
         String ip = exchange.getAttachment(IPReader.IP);
 
+        // IMPORTANT LOGIC
         socketHandler.connect(channel, user);
 
         PxlsWebSocketConnection con = new PxlsWebSocketConnection(channel, user);

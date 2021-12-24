@@ -10,6 +10,8 @@ import space.pxls.user.UserLogin;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+// IMPORTANT LOGIC
+
 public class AuthReader implements HttpHandler {
     public static final AttachmentKey<User> USER = AttachmentKey.create(User.class);
 

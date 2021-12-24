@@ -81,7 +81,9 @@ public class PacketHandler {
 
     public void connect(WebSocketChannel channel, User user) {
         if (user != null) {
+            // IMPORTANT LOGIC
             userdata(channel, user);
+
             sendCooldownData(channel, user);
             user.flagForCaptcha();
             server.addAuthedUser(user);
@@ -106,19 +108,19 @@ public class PacketHandler {
 
 
     public void accept(WebSocketChannel channel, User user, ClientPlace obj, String ip) {
-        if (user.hasPermission("board.place")) handlePlace(channel, user, obj, ip);
+        if (user != null && user.hasPermission("board.place")) handlePlace(channel, user, obj, ip);
     }
 
     public void accept(WebSocketChannel channel, User user, ClientUndo obj, String ip) {
-        if (user.hasPermission("board.undo")) handleUndo(user, obj, ip);
+        if (user != null && user.hasPermission("board.undo")) handleUndo(user, obj, ip);
     }
 
     public void accept(WebSocketChannel channel, User user, ClientAdminPlacementOverrides obj, String ip) {
-        if (user.hasPermission("user.admin")) handlePlacementOverrides(user, obj);
+        if (user != null && user.hasPermission("user.admin")) handlePlacementOverrides(user, obj);
     }
 
     public void accept(WebSocketChannel channel, User user, ClientAdminMessage obj, String ip) {
-        if (user.hasPermission("user.alert")) handleAdminMessage(user, obj);
+        if (user != null && user.hasPermission("user.alert")) handleAdminMessage(user, obj);
     }
     public void accept(WebSocketChannel channel, User user, ClientCaptcha obj, String ip) {
         handleCaptcha(channel, user, obj);
@@ -134,15 +136,15 @@ public class PacketHandler {
     }
 
     public void accept(WebSocketChannel channel, User user, ClientChatHistory obj, String ip) {
-        if (App.isChatEnabled() && user.hasPermission("chat.history")) handleChatHistory(channel, user);
+        if (App.isChatEnabled() && user != null && user.hasPermission("chat.history")) handleChatHistory(channel, user);
     }
 
     public void accept(WebSocketChannel channel, User user, ClientChatMessage obj, String ip) {
-        if (App.isChatEnabled() && user.hasPermission("chat.send")) handleChatMessage(channel, user, obj);
+        if (App.isChatEnabled() && user != null && user.hasPermission("chat.send")) handleChatMessage(channel, user, obj);
     }
 
     public void accept(WebSocketChannel channel, User user, ClientChatLookup obj, String ip) {
-        if (App.isChatEnabled() && user.hasPermission("chat.lookup")) handleChatLookup(channel, obj);
+        if (App.isChatEnabled() && user != null && user.hasPermission("chat.lookup")) handleChatLookup(channel, obj);
     }
 
     private void handleAdminMessage(User user, ClientAdminMessage obj) {

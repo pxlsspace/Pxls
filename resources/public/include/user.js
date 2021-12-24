@@ -81,7 +81,7 @@ const user = (function() {
             crel('h1', __('Sign in with...')),
             crel('ul',
               Object.values(data.authServices).map(service => {
-                const anchor = crel('a', { href: `/signin/${service.id}?redirect=1` }, service.name);
+                const anchor = crel('a', { href: `/signin/${service.id}?redirect=1` }, service.id);
                 anchor.addEventListener('click', function(e) {
                   if (window.open(this.href, '_blank')) {
                     e.preventDefault();
@@ -193,7 +193,10 @@ const user = (function() {
         let isBanned = false;
         const banelem = crel('div', { class: 'ban-alert-content' });
         self.username = data.username;
+
+        // IMPORTANT LOGIC
         self.loggedIn = true;
+
         self.pixelCount = data.pixelCount;
         self.pixelCountAllTime = data.pixelCountAllTime;
         self.updatePixelCountElements();

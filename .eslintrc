@@ -18,6 +18,7 @@
     "pxlsMarkdown": "readonly",
     "grecaptcha": "readonly",
     "twemoji": "readonly",
+    "near-api-js": "readonly",
     // Pxls-specific
     "App": "writable",
     "SLIDEIN": "readonly",
