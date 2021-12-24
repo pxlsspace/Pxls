@@ -39,6 +39,7 @@ window.App = (function() {
   const { timer } = require('./include/timer');
   const { coords } = require('./include/coords');
   const { user } = require('./include/user');
+  const { wallet } = require('./include/wallet');
   const { nativeNotifications } = require('./include/nativeNotifications');
   const { notifications } = require('./include/notifications');
   const { chromeOffsetWorkaround } = require('./include/chromeOffsetWorkaround');
@@ -61,6 +62,7 @@ window.App = (function() {
   nativeNotifications.init();
   notifications.init();
   chat.init();
+  wallet.init();
   chromeOffsetWorkaround.init();
   // and here we finally go...
   board.start();

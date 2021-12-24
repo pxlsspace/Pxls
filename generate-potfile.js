@@ -166,6 +166,7 @@ const JS_FILES = [
   'resources/public/include/typeahead.js',
   'resources/public/include/uiHelper.js',
   'resources/public/include/user.js',
+  'resources/public/include/wallet.js',
   'resources/public/admin/admin.js'
 ];
 

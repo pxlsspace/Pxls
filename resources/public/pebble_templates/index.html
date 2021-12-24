@@ -14,7 +14,6 @@
     <link rel="icon" href="/favicon.ico" type="image/x-icon">
     <script src="./jquery-3.4.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/interact.js/1.2.8/interact.min.js"></script>
-    <script src="near-api-js.min.js"></script>
     <script src="moment.min.js"></script>
     <script src="crel.min.js"></script>
     <script src="emoji-button.min.js"></script>
@@ -44,6 +43,9 @@
     </div>
     <div class="mid"></div>
     <div class="right">
+        <button type="button" id="connect_wallet">
+            <img src="../near.png" width="40px" height="40px" alt="Connect NEAR Wallet"/>
+        </button>
         <button type="button" class="panel-trigger" data-panel="settings">
             <i class="fas fa-cog"></i>
         </button>
@@ -759,7 +761,7 @@
         {# FAQ panel #}
         <h3><i class="fas fa-question-circle fa-is-left"></i>{{i18n('Localization', 'Help') | raw}}</h3>
         <div class="right">
-            <button type="button" class="panel-closer" title="{{i18n('Localization', 'Close Panel') | raw}}"><i class="fas fa-times"></i></button>
+            <button type="button" clasfs="panel-closer" title="{{i18n('Localization', 'Close Panel') | raw}}"><i class="fas fa-times"></i></button>
         </div>
     </header>
     <div class="panel-body">

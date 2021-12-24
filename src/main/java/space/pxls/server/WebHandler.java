@@ -1026,7 +1026,7 @@ public class WebHandler {
             return;
         }
 
-        // TODO(netux): Fix infraestructure and allow to purge during snip mode
+        // TODO(netux): Fix infrastructure and allow to purge during snip mode
         if (App.getSnipMode()) {
             sendForbidden(exchange, "Cannot purge chat during snip mode");
             return;
