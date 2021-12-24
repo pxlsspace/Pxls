@@ -155,28 +155,24 @@ public class UndertowServer {
                 JsonObject jsonObj = App.getGson().fromJson(data, JsonObject.class);
                 String type = jsonObj.get("type").getAsString();
 
-                Object obj = null;
-                if (type.equals("pixel")) obj = App.getGson().fromJson(jsonObj, ClientPlace.class);
-                if (type.equals("undo")) obj = App.getGson().fromJson(jsonObj, ClientUndo.class);
-                if (type.equals("captcha")) obj = App.getGson().fromJson(jsonObj, ClientCaptcha.class);
-                if (type.equals("admin_placement_overrides")) obj = App.getGson().fromJson(jsonObj, ClientAdminPlacementOverrides.class);
-                if (type.equals("admin_message")) obj = App.getGson().fromJson(jsonObj, ClientAdminMessage.class);
-                if (type.equals("shadowbanme")) obj = App.getGson().fromJson(jsonObj, ClientShadowBanMe.class);
-                if (type.equals("banme")) obj = App.getGson().fromJson(jsonObj, ClientBanMe.class);
-                if (type.equalsIgnoreCase("ChatHistory")) obj = App.getGson().fromJson(jsonObj, ClientChatHistory.class);
-                if (type.equalsIgnoreCase("ChatbanState")) obj = App.getGson().fromJson(jsonObj, ClientChatbanState.class);
-                if (type.equalsIgnoreCase("ChatMessage")) obj = App.getGson().fromJson(jsonObj, ClientChatMessage.class);
-                if (type.equalsIgnoreCase("ChatLookup")) obj = App.getGson().fromJson(jsonObj, ClientChatLookup.class);
+                if (type.equals("pixel")) socketHandler.accept(channel, user, App.getGson().fromJson(jsonObj, ClientPlace.class), ip);
+                if (type.equals("undo")) socketHandler.accept(channel, user, App.getGson().fromJson(jsonObj, ClientUndo.class), ip);
+                if (type.equals("captcha")) socketHandler.accept(channel, user, App.getGson().fromJson(jsonObj, ClientCaptcha.class), ip);
+                if (type.equals("admin_placement_overrides")) socketHandler.accept(channel, user, App.getGson().fromJson(jsonObj, ClientAdminPlacementOverrides.class), ip);
+                if (type.equals("admin_message")) socketHandler.accept(channel, user, App.getGson().fromJson(jsonObj, ClientAdminMessage.class), ip);
+                if (type.equals("shadowbanme")) socketHandler.accept(channel, user, App.getGson().fromJson(jsonObj, ClientShadowBanMe.class), ip);
+                if (type.equals("banme")) socketHandler.accept(channel, user, App.getGson().fromJson(jsonObj, ClientBanMe.class), ip);
+                if (type.equalsIgnoreCase("ChatHistory")) socketHandler.accept(channel, user, App.getGson().fromJson(jsonObj, ClientChatHistory.class), ip);
+                if (type.equalsIgnoreCase("ChatbanState")) socketHandler.accept(channel, user, App.getGson().fromJson(jsonObj, ClientChatbanState.class), ip);
+                if (type.equalsIgnoreCase("ChatMessage")) socketHandler.accept(channel, user, App.getGson().fromJson(jsonObj, ClientChatMessage.class), ip);
+                if (type.equalsIgnoreCase("ChatLookup")) socketHandler.accept(channel, user, App.getGson().fromJson(jsonObj, ClientChatLookup.class), ip);
 
                 // old thing, will auto-shadowban
-                if (type.equals("place")) obj = App.getGson().fromJson(jsonObj, ClientPlace.class);
+                if (type.equals("place")) socketHandler.accept(channel, user, App.getGson().fromJson(jsonObj, ClientPlace.class), ip);
 
                 // lol
-                if (type.equals("placepixel")) obj = App.getGson().fromJson(jsonObj, ClientBanMe.class);
+                if (type.equals("placepixel")) socketHandler.accept(channel, user, App.getGson().fromJson(jsonObj, ClientBanMe.class), ip);
 
-                if (obj != null) {
-                    socketHandler.accept(channel, user, obj, ip);
-                }
             }
         });
         channel.getCloseSetter().set(c -> {

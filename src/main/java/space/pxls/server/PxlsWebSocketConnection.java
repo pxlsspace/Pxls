@@ -7,8 +7,8 @@ import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.user.User;
 
 public class PxlsWebSocketConnection {
-	private WebSocketChannel channel;
-	private User user;
+	private final WebSocketChannel channel;
+	private final User user;
 
 	PxlsWebSocketConnection(WebSocketChannel channel, User user) {
 		this.channel = channel;

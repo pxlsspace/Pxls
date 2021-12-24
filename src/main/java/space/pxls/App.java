@@ -90,10 +90,7 @@ public class App {
         virginmap = new byte[width * height];
         defaultBoard = null;
 
-        if (!initStorage()) {
-            getLogger().warn("Unable to init storage");
-            System.exit(-1);
-        }
+        initStorage();
         loadDefaultMap();
         loadMap();
         loadHeatmap();
@@ -120,7 +117,7 @@ public class App {
         new Timer().schedule(new SessionTimer(), 0, 1000 * 3600); // execute once every hour
 
         int heatmapTimerCd = (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS);
-        new Timer().schedule(new HeatmapTimer(), 0, heatmapTimerCd * 1000 / 256);
+        new Timer().schedule(new HeatmapTimer(), 0, heatmapTimerCd * 1000L / 256);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             getLogger().info("Saving map before shutdown...");
@@ -1155,8 +1152,8 @@ public class App {
         server.broadcastNoShadow(new ServerPlace(forBroadcast));
     }
 
-    private static boolean initStorage() {
-        return new File(getStorageDir().toString()).mkdirs();
+    private static void initStorage() {
+        new File(getStorageDir().toString()).mkdirs();
     }
 
     private static void loadDefaultMap() {
