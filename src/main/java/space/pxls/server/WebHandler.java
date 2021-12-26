@@ -12,6 +12,8 @@ import io.undertow.server.handlers.CookieSameSiteMode;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
 import io.undertow.util.*;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import space.pxls.App;
 import space.pxls.auth.*;
 import space.pxls.data.*;
@@ -47,6 +49,8 @@ public class WebHandler {
     public static final String TEMPLATE_PROFILE = "public/pebble_templates/profile.html";
     public static final String TEMPLATE_40X = "public/pebble_templates/40x.html";
     public static final String TEMPLATE_INDEX = "public/pebble_templates/index.html";
+
+    private static final Logger appLogger = LogManager.getLogger("App");
 
     public WebHandler() {
         addServiceIfAvailable("near", new NearAuthService("near"));
@@ -1682,61 +1686,55 @@ public class WebHandler {
                 return;
             }
 
-            // Get the one-time authorization code from the request
-            String code = extractOAuthCode(exchange);
-            if (code == null) {
-                if (redirect) {
-                    redirect(exchange, "/auth_done.html?nologin=1");
-                } else {
-                    respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_code", "No OAuth code specified"));
-                }
-                return;
+
+            String accountId = exchange.getQueryParameters().get("account_id").peekFirst();
+            if (accountId == null) {
+                appLogger.warn("Connect NEAR failed");
+                //todo redirect
+            } else {
+
             }
+
+            // Get the one-time authorization code from the request
+//            String code = extractOAuthCode(exchange);
+//            if (code == null) {
+//                if (redirect) {
+//                    redirect(exchange, "/auth_done.html?nologin=1");
+//                } else {
+//                    respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_code", "No OAuth code specified"));
+//                }
+//                return;
+//            }
 
             // Get a more persistent user token
-            String token = service.getToken(code);
-            if (token == null) {
-                respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("bad_code", "OAuth code invalid"));
-                return;
-            }
+//            String token = service.getToken(code);
+//            if (token == null) {
+//                respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("bad_code", "OAuth code invalid"));
+//                return;
+//            }
 
             // And get an account identifier from that
-            String identifier;
-            try {
-                identifier = service.getIdentifier(token);
-            } catch (AuthService.InvalidAccountException e) {
-                respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("invalid_account", e.getMessage()));
-                return;
-            }
+//            String identifier;
+//            try {
+//                identifier = service.getIdentifier(token);
+//            } catch (AuthService.InvalidAccountException e) {
+//                respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("invalid_account", e.getMessage()));
+//                return;
+//            }
 
-            if (identifier != null) {
-                User user = App.getUserManager().getByLogin(id, identifier);
-                // If there is no user with that identifier, we make a signup token and tell the client to sign up with that token
+            User user = App.getUserManager().getByLogin(id, accountId);
+            String ip = exchange.getAttachment(IPReader.IP);
+            if (user == null) {
+                String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin(id, accountId));
+                user = App.getUserManager().signUp(accountId, signUpToken, ip);
                 if (user == null) {
-                    if (service.isRegistrationEnabled()) {
-                        String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin(id, identifier));
-                        if (redirect) {
-                            redirect(exchange, String.format("/auth_done.html?token=%s&signup=true", encodedURIComponent(signUpToken)));
-                        } else {
-                            respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
-                        }
-                    } else {
-                        respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("invalid_service_operation", "Registration is currently disabled for this service. Please try one of the other ones."));
-                    }
-                } else {
-                    // We need the IP for logging/db purposes
-                    String ip = exchange.getAttachment(IPReader.IP);
-                    String loginToken = App.getUserManager().logIn(user, ip);
-                    setAuthCookie(exchange, loginToken, 24);
-                    if (redirect) {
-                        redirect(exchange, String.format("/auth_done.html?token=%s&signup=false", encodedURIComponent(loginToken)));
-                    } else {
-                        respond(exchange, StatusCodes.OK, new AuthResponse(loginToken, false));
-                    }
+                    respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_username", "Username taken, try another?"));
                 }
-            } else {
-                respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_service", "No auth service named " + id));
             }
+            // We need the IP for logging/db purposes
+            String loginToken = App.getUserManager().logIn(user, ip);
+            setAuthCookie(exchange, loginToken, 24);
+            redirect(exchange, "/?" + exchange.getQueryString());
         } else {
             respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_service", "No auth service named " + id));
         }

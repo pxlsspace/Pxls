@@ -16,7 +16,7 @@ public class NearAuthService extends AuthService {
 
     @Override
     public String getRedirectUrl(String state) {
-        return "https://discord.com/api/oauth2/authorize?client_id=" + App.getConfig().getString("oauth.discord.key") + "&response_type=code&redirect_uri=" + getCallbackUrl() + "&duration=temporary&scope=identify&state=" + state;
+        return null;
     }
 
     @Override
@@ -37,5 +37,10 @@ public class NearAuthService extends AuthService {
     @Override
     public String generateState() {
         return "";
+    }
+
+    @Override
+    public boolean verifyState(String state) {
+        return true;
     }
 }
