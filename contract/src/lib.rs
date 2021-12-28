@@ -1,22 +1,44 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::{env, near_bindgen};
-use std::collections::HashMap;
-
+use near_sdk::{near_bindgen};
+use crate::borsh::maybestd::{
+    io::{Result, Write},
+};
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-const BOARD_DIMENSIONS: usize = 1000 * 1000;
+const BOARD_SIDE: usize = 1000;
+const BOARD_DIMENSIONS: usize = BOARD_SIDE * BOARD_SIDE;
+
+
+pub struct Board([u8; BOARD_DIMENSIONS]);
 
 #[near_bindgen]
+#[derive(BorshDeserialize, BorshSerialize)]
 pub struct NearCanvas {
-    board: [i8; BOARD_DIMENSIONS]
+    board: Board
 }
 
+impl BorshSerialize for Board {
+    #[inline]
+    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
+        self.0.serialize(writer)
+    }
+}
+
+impl BorshDeserialize for Board {
+    fn deserialize(buf: &mut &[u8]) -> Result<Self> {
+        let mut board = Board([0; BOARD_DIMENSIONS]);
+        for i in 0..BOARD_DIMENSIONS {
+            board.0[i] = buf[i]
+        }
+        Ok(board)
+    }
+}
 
 impl Default for NearCanvas {
-    fn default() -> NearCanvas{
+    fn default() -> NearCanvas {
         NearCanvas {
-            board: [0; BOARD_DIMENSIONS]
+            board: Board([0; BOARD_DIMENSIONS])
         }
     }
 }
@@ -24,45 +46,9 @@ impl Default for NearCanvas {
 #[near_bindgen]
 impl NearCanvas {
 
-    // pub fn apply(&mut self) {
-    //
-    //     let applicant = env::signer_account_id();
-    //
-    //     if !self.application_state.contains_key(&applicant) {
-    //         self.application_state.insert(applicant, "NEW".to_string());
-    //         ext_social_credit_check::person_on_check_score(
-    //             env::signer_account_id().to_string(), // voter AccountId
-    //             &"social-credit.isonar.testnet".to_string(),
-    //             0,             // attached yocto NEAR
-    //             80000000000000             // attached gas
-    //         );
-    //     } else {
-    //         env::log("No double applications!".as_bytes());
-    //     }
-    // }
-    //
-    // pub fn job_applications_on_background_checked(&mut self, person: String, score: f32) {
-    //     let applicant = person;
-    //     let approved: String  = "APPROVED".to_string();
-    //     let rejected: String = "REJECTED".to_string();
-    //
-    //     if score < 0.5 {
-    //         env::log("rejected".as_bytes());
-    //         *self.application_state.get_mut(&applicant).unwrap() = rejected;
-    //     } else {
-    //         env::log("approved".as_bytes());
-    //         *self.application_state.get_mut(&applicant).unwrap() = approved;
-    //     }
-    //     env::log(score.to_string().as_bytes());
-    // }
-    //
-    // pub fn my_application(self, account_id: String) -> String {
-    //
-    //     match self.application_state.get(&account_id) {
-    //         Some(status) => {
-    //             status.to_string()
-    //         }
-    //         None => "NOT_FOUND".to_string()
-    //     }
-    // }
+    pub fn put_pixel(&mut self, x: usize, y: usize, color: u8) {
+        // let applicant = env::signer_account_id();
+        self.board.0[x * y * BOARD_SIDE] = color
+    }
+
 }
