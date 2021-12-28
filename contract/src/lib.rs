@@ -1,54 +1,42 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
-use near_sdk::{near_bindgen};
-use crate::borsh::maybestd::{
-    io::{Result, Write},
-};
+use near_sdk::{env, near_bindgen, PanicOnDefault};
+use near_sdk::collections::{Vector};
+use near_sdk::BorshStorageKey;
+
 #[global_allocator]
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
-const BOARD_SIDE: usize = 1000;
+const BOARD_SIDE: usize = 10;
 const BOARD_DIMENSIONS: usize = BOARD_SIDE * BOARD_SIDE;
 
-
-pub struct Board([u8; BOARD_DIMENSIONS]);
+#[derive(BorshStorageKey, BorshSerialize)]
+pub enum StorageKeys {
+    Board,
+}
 
 #[near_bindgen]
-#[derive(BorshDeserialize, BorshSerialize)]
+#[derive(BorshDeserialize, BorshSerialize, PanicOnDefault)]
 pub struct NearCanvas {
-    board: Board
+    board: Vector<u8>
 }
 
-impl BorshSerialize for Board {
-    #[inline]
-    fn serialize<W: Write>(&self, writer: &mut W) -> Result<()> {
-        self.0.serialize(writer)
-    }
-}
-
-impl BorshDeserialize for Board {
-    fn deserialize(buf: &mut &[u8]) -> Result<Self> {
-        let mut board = Board([0; BOARD_DIMENSIONS]);
-        for i in 0..BOARD_DIMENSIONS {
-            board.0[i] = buf[i]
-        }
-        Ok(board)
-    }
-}
-
-impl Default for NearCanvas {
-    fn default() -> NearCanvas {
-        NearCanvas {
-            board: Board([0; BOARD_DIMENSIONS])
-        }
-    }
-}
 
 #[near_bindgen]
 impl NearCanvas {
 
-    pub fn put_pixel(&mut self, x: usize, y: usize, color: u8) {
+    #[init]
+    pub fn new() -> Self {
+        let mut v = Vector::new(StorageKeys::Board);
+        v.extend(vec![0; BOARD_DIMENSIONS]);
+        Self {
+            board: v,
+        }
+    }
+
+    pub fn put_pixel(&mut self, x: u64, y: u64, color: u8) {
         // let applicant = env::signer_account_id();
-        self.board.0[x * y * BOARD_SIDE] = color
+        env::log(self.board.len().to_string().as_bytes());
+        self.board.replace(x + y * BOARD_SIDE as u64, &color);
     }
 
 }
