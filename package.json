@@ -24,7 +24,8 @@
     "gulp-tap": "^2.0.0",
     "merge-stream": "^2.0.0",
     "near-api-js": "^0.44.2",
-    "pofile": "^1.1.0"
+    "pofile": "^1.1.0",
+    "shelljs": "^0.8.4"
   },
   "devDependencies": {
     "gulp-rename": "^2.0.0",
