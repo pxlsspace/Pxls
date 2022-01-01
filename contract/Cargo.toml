@@ -10,7 +10,7 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 serde = { version = "*", features = ["derive"] }
 serde_json = "*"
-near-sdk = "3.1.0"
+near-sdk = {version = "4.0.0-pre.5", default-features = false, features = ["unstable"]}
 wee_alloc = { version = "0.4.5", default-features = false, features = [] }
 
 [profile.release]
@@ -25,3 +25,6 @@ overflow-checks = true
 
 [workspace]
 members = []
+
+[features]
+unstable = []
