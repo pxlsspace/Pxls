@@ -1,6 +1,6 @@
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::{env, near_bindgen, PanicOnDefault};
-use near_sdk::store::LazyOption;
+use near_sdk::collections::LazyOption;
 use crate::borsh::maybestd::{
     io::{Result, Write},
 };
@@ -66,37 +66,34 @@ impl NearCanvas {
     #[init]
     pub fn new() -> Self {
         Self {
-            sh00: LazyOption::new(b"a", Some(BoardArray([0; SHARD_DIMENSIONS]))),
-            sh01: LazyOption::new(b"b", Some(BoardArray([0; SHARD_DIMENSIONS]))),
-            sh02: LazyOption::new(b"c", Some(BoardArray([0; SHARD_DIMENSIONS]))),
-            sh03: LazyOption::new(b"d", Some(BoardArray([0; SHARD_DIMENSIONS]))),
-            sh10: LazyOption::new(b"e", Some(BoardArray([0; SHARD_DIMENSIONS]))),
-            sh11: LazyOption::new(b"f", Some(BoardArray([0; SHARD_DIMENSIONS]))),
-            sh12: LazyOption::new(b"g", Some(BoardArray([0; SHARD_DIMENSIONS]))),
-            sh13: LazyOption::new(b"h", Some(BoardArray([0; SHARD_DIMENSIONS]))),
-            sh20: LazyOption::new(b"i", Some(BoardArray([0; SHARD_DIMENSIONS]))),
-            sh21: LazyOption::new(b"j", Some(BoardArray([0; SHARD_DIMENSIONS]))),
-            sh22: LazyOption::new(b"k", Some(BoardArray([0; SHARD_DIMENSIONS]))),
-            sh23: LazyOption::new(b"l", Some(BoardArray([0; SHARD_DIMENSIONS]))),
-            sh30: LazyOption::new(b"m", Some(BoardArray([0; SHARD_DIMENSIONS]))),
-            sh31: LazyOption::new(b"n", Some(BoardArray([0; SHARD_DIMENSIONS]))),
-            sh32: LazyOption::new(b"o", Some(BoardArray([0; SHARD_DIMENSIONS]))),
-            sh33: LazyOption::new(b"p", Some(BoardArray([0; SHARD_DIMENSIONS]))),
+            sh00: LazyOption::new(b"a", Some(&BoardArray([0; SHARD_DIMENSIONS]))),
+            sh01: LazyOption::new(b"b", Some(&BoardArray([0; SHARD_DIMENSIONS]))),
+            sh02: LazyOption::new(b"c", Some(&BoardArray([0; SHARD_DIMENSIONS]))),
+            sh03: LazyOption::new(b"d", Some(&BoardArray([0; SHARD_DIMENSIONS]))),
+            sh10: LazyOption::new(b"e", Some(&BoardArray([0; SHARD_DIMENSIONS]))),
+            sh11: LazyOption::new(b"f", Some(&BoardArray([0; SHARD_DIMENSIONS]))),
+            sh12: LazyOption::new(b"g", Some(&BoardArray([0; SHARD_DIMENSIONS]))),
+            sh13: LazyOption::new(b"h", Some(&BoardArray([0; SHARD_DIMENSIONS]))),
+            sh20: LazyOption::new(b"i", Some(&BoardArray([0; SHARD_DIMENSIONS]))),
+            sh21: LazyOption::new(b"j", Some(&BoardArray([0; SHARD_DIMENSIONS]))),
+            sh22: LazyOption::new(b"k", Some(&BoardArray([0; SHARD_DIMENSIONS]))),
+            sh23: LazyOption::new(b"l", Some(&BoardArray([0; SHARD_DIMENSIONS]))),
+            sh30: LazyOption::new(b"m", Some(&BoardArray([0; SHARD_DIMENSIONS]))),
+            sh31: LazyOption::new(b"n", Some(&BoardArray([0; SHARD_DIMENSIONS]))),
+            sh32: LazyOption::new(b"o", Some(&BoardArray([0; SHARD_DIMENSIONS]))),
+            sh33: LazyOption::new(b"p", Some(&BoardArray([0; SHARD_DIMENSIONS]))),
         }
 
     }
 
     pub fn put_pixel(&mut self, x: usize, y: usize, color: u8) {
         if x >= BOARD_SIDE || y >= BOARD_SIDE {
-            env::log_str("Illegal coordinates");
+            env::log(b"Illegal coordinates");
         } else {
             let shard = self.get_mutable_shard(x, y);
-            let mut shard_data: [u8; SHARD_DIMENSIONS] = shard.get().as_ref().unwrap().0;
-            shard_data[ x % SHARD_SIDE + (y % SHARD_SIDE) * SHARD_SIDE] = color;
-            shard.flush()
-
-            // self.sh00.get_mut().as_ref().unwrap().0[x % SHARD_SIDE + (y % SHARD_SIDE) * SHARD_SIDE] = color;
-            // self.sh00.flush();
+            let mut board = shard.take().unwrap();
+            board.0[ x % SHARD_SIDE + (y % SHARD_SIDE) * SHARD_SIDE] = color;
+            shard.set(&board);
         }
     }
 
