@@ -12,6 +12,7 @@ static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 const BOARD_SIDE: usize = 1000;
 const SHARD_SIDE: usize = 250;
 const SHARD_DIMENSIONS: usize = SHARD_SIDE * SHARD_SIDE;
+const MAX_COLOR: u8 = 28; // taken from Pxls palette.conf
 
 pub struct BoardArray([u8; SHARD_DIMENSIONS]);
 
@@ -89,11 +90,13 @@ impl NearCanvas {
     pub fn put_pixel(&mut self, x: usize, y: usize, color: u8) {
         if x >= BOARD_SIDE || y >= BOARD_SIDE {
             env::log(b"Illegal coordinates");
+        } else if color > MAX_COLOR {
+            env::log(b"Illegal color");
         } else {
             let shard = self.get_mutable_shard(x, y);
-            let mut board = shard.take().unwrap();
-            board.0[ x % SHARD_SIDE + (y % SHARD_SIDE) * SHARD_SIDE] = color;
-            shard.set(&board);
+            let mut shard_data = shard.take().unwrap();
+            shard_data.0[ x % SHARD_SIDE + (y % SHARD_SIDE) * SHARD_SIDE] = color;
+            shard.set(&shard_data);
         }
     }
 
@@ -102,8 +105,8 @@ impl NearCanvas {
             env::log(b"Illegal coordinates");
             0
         } else {
-            let shard : &LazyOption<BoardArray> = self.get_shard(x, y);
-            let shard_data: [u8; SHARD_DIMENSIONS] = shard.get().as_ref().unwrap().0;
+            let shard= self.get_shard(x, y);
+            let shard_data: [u8; SHARD_DIMENSIONS] = shard.get().unwrap().0;
             shard_data[ x % SHARD_SIDE + (y % SHARD_SIDE) * SHARD_SIDE]
         }
     }
@@ -211,5 +214,4 @@ impl NearCanvas {
             &mut self.sh33
         } 
     }
-
 }
