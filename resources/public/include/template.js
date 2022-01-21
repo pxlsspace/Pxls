@@ -101,8 +101,6 @@ module.exports.template = (function() {
       if (self.corsProxy.base !== undefined) {
         self.loading = true;
 
-        self.options.use = true;
-
         self.elements.imageErrorWarning.empty();
         self.elements.imageErrorWarning.hide();
 
