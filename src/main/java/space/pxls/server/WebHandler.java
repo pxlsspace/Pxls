@@ -1473,7 +1473,9 @@ public class WebHandler {
     }
 
     public void notificationsList(HttpServerExchange exchange) {
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+        exchange.getResponseHeaders()
+            .put(Headers.CONTENT_TYPE, "application/json")
+            .add(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
         exchange.setStatusCode(200);
         exchange.getResponseSender().send(App.getGson().toJson(App.getDatabase().getNotifications(false)));
         exchange.endExchange();
