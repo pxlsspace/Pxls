@@ -529,12 +529,17 @@ public class PacketHandler {
             e.printStackTrace();
         }
 
+        var footer = new JSONObject();
+
+        footer.put("text", message.getId());
+
+        embed.put("footer", footer);
+
         var postDataBuilder = new JSONObject();
 
         postDataBuilder.put("embeds", new JSONObject[] { embed });
 
         var postData = postDataBuilder.toString();
-        System.out.println(postData);
 
         for(var hook : webhooks) {
             try {
@@ -542,21 +547,10 @@ public class PacketHandler {
                 connection.setRequestMethod("POST");
                 connection.setRequestProperty("Content-Type", "application/json");
                 connection.setDoOutput(true);
-                System.out.println(connection.getRequestProperties().toString());
                 var postDataStream = new DataOutputStream(connection.getOutputStream());
                 postDataStream.writeBytes(postData);
                 postDataStream.flush();
                 postDataStream.close();
-
-                if(connection.getResponseCode() == 200) {
-                    var response = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-
-                    for(var line: response.lines().collect(Collectors.toList())) {
-                        System.out.println(line);
-                    }
-
-                    response.close();
-                }
 
                 // NOTE ([  ]): this error code might be a bit cryptic when printed,
                 // but I don't want to clean it up and it's better than failing silently.
