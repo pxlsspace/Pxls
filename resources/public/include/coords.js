@@ -45,7 +45,7 @@ module.exports.coords = (function() {
           return;
         }
 
-        if (!event.ctrlKey && (event.key === 'c' || event.key === 'C' || event.keyCode === 67)) {
+        if (!event.ctrlKey && !event.metaKey && (event.key === 'c' || event.key === 'C' || event.keyCode === 67)) {
           self.copyCoords();
         }
       });
