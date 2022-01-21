@@ -519,6 +519,7 @@ public class PacketHandler {
         try {
             var authorProfile = new URL("https://" + App.getConfig().getString("host") + "/profile/" + message.getAuthor() + "/");
 
+            // NOTE (Flying): The pixel count badge seems to always come last.
             String pixelCount = message.getBadges().get(message.getBadges().size() - 1).getDisplayName() + " ";
             String factionTag = message.getStrippedFaction() != null ? "[" + message.getStrippedFaction().getTag() + "] " : "";
             author.put("name", pixelCount + factionTag + message.getAuthor());
