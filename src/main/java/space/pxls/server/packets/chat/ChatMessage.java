@@ -90,6 +90,14 @@ public class ChatMessage {
             this.tag = f.getTag();
             this.color = f.getColor();
         }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getTag() {
+            return tag;
+        }
     }
 
     public static class Purge {
