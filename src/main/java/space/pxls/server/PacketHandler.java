@@ -509,7 +509,11 @@ public class PacketHandler {
         // see https://discord.com/developers/docs/resources/channel#embed-object
         var embed = new JSONObject();
 
-        embed.put("description", message.getMessage_raw());
+        var description = message.getMessage_raw()
+                // NOTE (Flying): This suffices for breaking markdown links.
+                .replaceAll("\\[", "\\\\[");
+
+        embed.put("description", description);
         embed.put("timestamp", Instant.ofEpochSecond(message.getDate()).toString());
         embed.put("color", Long.decode("0x" + App.getPalette().getColors().get(message.getAuthorNameColor().intValue()).getValue()));
 
