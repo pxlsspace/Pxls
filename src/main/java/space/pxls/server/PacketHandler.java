@@ -8,6 +8,7 @@ import com.mashape.unirest.http.exceptions.UnirestException;
 import com.typesafe.config.Config;
 import io.undertow.websockets.core.WebSocketChannel;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import space.pxls.App;
@@ -518,7 +519,9 @@ public class PacketHandler {
         try {
             var authorProfile = new URL("https://" + App.getConfig().getString("host") + "/profile/" + message.getAuthor() + "/");
 
-            author.put("name", message.getAuthor());
+            String pixelCount = message.getBadges().get(message.getBadges().size() - 1).getDisplayName() + " ";
+            String factionTag = message.getStrippedFaction() != null ? "[" + message.getStrippedFaction().getTag() + "] " : "";
+            author.put("name", pixelCount + factionTag + message.getAuthor());
             author.put("url", authorProfile);
 
             embed.put("author", author);
