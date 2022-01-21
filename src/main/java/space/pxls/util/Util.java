@@ -45,9 +45,12 @@ public class Util {
     public static Locale negotiateLocale(HttpServerExchange exchange) {
         List<Locale> locales = LocaleUtils.getLocalesFromHeader(exchange.getRequestHeaders().get(Headers.ACCEPT_LANGUAGE));
         locales.retainAll(SUPPORTED_LOCALES);
-        locales.add(FALLBACK_LOCALE);
-
-        return locales.get(0);
+        
+        if (locales.size() > 0) {
+            return locales.get(0);
+        } else {
+            return FALLBACK_LOCALE;
+        }
     }
 
     public static List<Locale> SUPPORTED_LOCALES = List.of(Locale.forLanguageTag("en-US"), Locale.forLanguageTag("fr-FR"), Locale.forLanguageTag("ru-RU"), Locale.forLanguageTag("bg-BG"));
