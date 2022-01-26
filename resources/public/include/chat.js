@@ -309,7 +309,7 @@ const chat = (function() {
           if (e.expiry - self.chatban.banStart > 0 && !e.permanent) {
             self.chatban.banned = true;
             self.elements.rate_limit_counter.text('You have been banned from chat.');
-            self.addServerAction(`You are banned ${e.permanent ? 'permanently from chat.' : 'until ' + self.chatban.banEndFormatted}`);
+            self.addServerAction(`You are banned from chat${e.permanent ? ' permanently' : 'until ' + self.chatban.banEndFormatted}`);
             if (e.reason) {
               self.addServerAction(`Ban reason: ${e.reason}`);
             }
