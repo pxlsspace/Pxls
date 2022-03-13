@@ -179,6 +179,13 @@ html, body {
     -moz-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
     text-size-adjust: 100%;
+
+    --panel-shadow-size: 10px;
+    --panel-min-width: 300px;
+
+    /* -(--panel-shadow-size + --panel-min-width) */
+    /* not done with calc for nesting reasons */
+    --panel-hide-offset: -310px;
 }
 
 * {
@@ -517,7 +524,7 @@ body .message {
     color: var(--floating-panel-text-color);
     box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
     padding: 16px;
-    max-width: 300px;
+    max-width: var(--panel-min-width);
 }
 
 .floating-panel .content {
@@ -1185,7 +1192,7 @@ aside.panel {
     position: fixed;
     top: 0;
     width: 30%;
-    min-width: 300px;
+    min-width: var(--panel-min-width);
     height: 100%;
     z-index: 21;
     cursor: initial !important;
@@ -1198,8 +1205,8 @@ aside.panel[data-disabled] {
 aside.panel.left {
     right: initial;
     transition: left ease-in-out .25s;
-    left: -30%;
-    left: min(-30%, -300px);
+    left: -35%;
+    left: min(calc(-30% - var(--panel-shadow-size)), var(--panel-hide-offset));
 }
 
 aside.panel.left.open, .panel.left[data-state=open] {
@@ -1209,8 +1216,8 @@ aside.panel.left.open, .panel.left[data-state=open] {
 aside.panel.right {
     left: initial;
     transition: right ease-in-out .25s;
-    right: -30%;
-    right: min(-30%, -300px);
+    right: -35%;
+    right: min(calc(-30% - var(--panel-shadow-size)), var(--panel-hide-offset));
 }
 
 aside.panel.right.open, .panel.right[data-state=open] {
@@ -1225,16 +1232,17 @@ aside.panel .panel-body {
 
 aside.panel.half-width {
     width: 50%;
-    min-width: unset;
     max-width: 50%;
 }
 
 aside.panel.half-width.left {
     left: -55%;
+    left: min(calc(-50% - var(--panel-shadow-size)), var(--panel-hide-offset));
 }
 
 aside.panel.half-width.right {
     right: -55%;
+    right: min(calc(-50% - var(--panel-shadow-size)), var(--panel-hide-offset));
 }
 
 aside.panel.horizontal {
@@ -1252,7 +1260,7 @@ aside.panel.horizontal.right {
 }
 
 .panel {
-    box-shadow: 0 0 10px 5px #0009;
+    box-shadow: 0 0 var(--panel-shadow-size) 5px #0009;
     background: var(--panel-background);
     color: var(--panel-text-color);
 }
@@ -1403,12 +1411,12 @@ aside.panel.horizontal.right {
 
 body.panel-open.panel-left #ui {
     left: 30%;
-    left: max(30%, 300px);
+    left: max(30%, var(--panel-min-width));
 }
 
 body.panel-open.panel-right #ui {
     right: 30%;
-    right: max(30%, 300px);
+    right: max(30%, var(--panel-min-width));
 }
 
 body.panel-open.panel-left.panel-left-halfwidth #ui {
@@ -2057,10 +2065,12 @@ body .emoji-picker {
 
     aside.panel.left {
         left: -105% !important;
+        left: min(calc(-100% - var(--panel-shadow-size)), var(--panel-hide-offset)) !important;
     }
 
     aside.panel.right {
         right: -105% !important;
+        right: min(calc(-100% - var(--panel-shadow-size)), var(--panel-hide-offset)) !important;
     }
 
     body.panel-open #ui {
