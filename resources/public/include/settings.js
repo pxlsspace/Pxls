@@ -313,12 +313,12 @@ module.exports.settings = (function() {
     filterSettings(searchInput.val());
   });
 
-  return {
+  const self = {
     // utilities
     filter: {
       search: (query) => {
         searchInput.val(query);
-        if (query) {
+        if (typeof query === 'string') {
           filterSettings(query);
         }
       }
@@ -484,4 +484,10 @@ module.exports.settings = (function() {
       }
     }
   };
+  $(window).on('pxls:panel:closed', (event, panel) => {
+    if (panel === 'settings') {
+      self.filter.search('');
+    }
+  });
+  return self;
 })();
