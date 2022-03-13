@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-08-19T06:22:24.977Z\n"
+"POT-Creation-Date: 2022-03-13T22:28:42.255Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -47,8 +47,7 @@ msgid "Loading online user count&hellip;"
 msgstr "Зареждане на броя онрайн потребители&hellip"
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/include/lookup.js
-#: resources/public/admin/admin.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Pixels"
 msgstr "Пиксели"
 
@@ -310,6 +309,34 @@ msgstr "ui;interface;външен вид;интерфейс"
 #: resources/public/pebble_templates/index.html
 msgid "UI Settings"
 msgstr "Настройки за външния вид"
+
+#: resources/public/pebble_templates/index.html
+msgid "language override;text"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Language override:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Use Browser Language"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "English"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "French"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Russian"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Bulgarian"
+msgstr ""
 
 #: resources/public/pebble_templates/index.html
 msgid "themes;look;stylesheets;visuals"
@@ -796,8 +823,8 @@ msgid "Title:"
 msgstr "Заглавие"
 
 #: resources/public/pebble_templates/index.html
-msgid "template location;template source;template="
-msgstr "шаблон;гид;положение"
+msgid "template location source;template source URL;template URL;template="
+msgstr ""
 
 #: resources/public/pebble_templates/index.html
 msgid "URL:"
@@ -816,14 +843,6 @@ msgid "Vertical position:"
 msgstr "Вертикална позиция"
 
 #: resources/public/pebble_templates/index.html
-msgid "template transparency;template opacity;oo="
-msgstr "прозрачност;яркост;тъмнота"
-
-#: resources/public/pebble_templates/index.html
-msgid "Opacity:"
-msgstr "Прозрачност"
-
-#: resources/public/pebble_templates/index.html
 msgid "template width;tw="
 msgstr "широчина"
 
@@ -834,6 +853,66 @@ msgstr "Широчина"
 #: resources/public/pebble_templates/index.html
 msgid "Reset"
 msgstr "Нулиране"
+
+#: resources/public/pebble_templates/index.html
+msgid "template style;custom template"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Style:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Use Source Style"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Dotted (Small, 1:2)"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Dotted (Big, 2:2)"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Numbers"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Custom…"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "template style source;template style URL;custom style URL;custom template"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Custom style URL:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "template conversion;template palette conversion;convert to palette"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Color Conversion Mode:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Unconverted"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Nearest Custom"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "template transparency;template opacity;oo="
+msgstr "прозрачност;яркост;тъмнота"
+
+#: resources/public/pebble_templates/index.html
+msgid "Opacity:"
+msgstr "Прозрачност"
 
 #: resources/public/pebble_templates/index.html
 msgid "sound;notification;alert;notify;ping"
@@ -1461,8 +1540,7 @@ msgid "Faction Bans"
 msgstr "Премахнати от фракцията"
 
 #: resources/public/pebble_templates/profile.html
-#: resources/public/include/chat.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/admin/admin.js
 msgid "Unban"
 msgstr "Отмени наказанието"
 
@@ -1541,6 +1619,10 @@ msgid "Jump to coordinates without replacing template"
 msgstr "Посети координатите без смяна на шаблона"
 
 #: resources/public/include/chat.js
+msgid "You must be logged in to chat."
+msgstr ""
+
+#: resources/public/include/chat.js
 msgid "none provided"
 msgstr ""
 
@@ -1576,8 +1658,7 @@ msgstr "Този линк ще премахне сегашния ви шабло
 msgid "Note: You can set a default action in the settings menu which bypasses this popup completely."
 msgstr "Нота: Можете да зададете настройки, които да премахнат това съобщение в настройките."
 
-#: resources/public/include/chat.js
-#: resources/public/include/lookup.js
+#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Report"
 msgstr "Докладвай"
 
@@ -1589,8 +1670,7 @@ msgstr "Спомени"
 msgid "Ignore"
 msgstr "Игнорирай"
 
-#: resources/public/include/chat.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/admin/admin.js
 msgid "Profile"
 msgstr "Профил"
 
@@ -1614,15 +1694,12 @@ msgstr ""
 msgid "Enter a reason for your report"
 msgstr "Въведете причина за Вашия доклад (на английски)"
 
-#: resources/public/include/chat.js
-#: resources/public/include/lookup.js
-#: resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/include/lookup.js
+#: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Cancel"
 msgstr "Отказ"
 
-#: resources/public/include/chat.js
-#: resources/public/include/lookup.js
+#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Error sending report."
 msgstr "Грешка при изпращането на докладване."
 
@@ -1690,14 +1767,12 @@ msgstr ""
 msgid "Purging all messages is disabled during snip mode"
 msgstr ""
 
-#: resources/public/include/chat.js
-#: resources/public/include/user.js
+#: resources/public/include/chat.js resources/public/include/user.js
 #: resources/public/admin/admin.js
 msgid "Yes"
 msgstr ""
 
-#: resources/public/include/chat.js
-#: resources/public/include/user.js
+#: resources/public/include/chat.js resources/public/include/user.js
 #: resources/public/admin/admin.js
 msgid "No"
 msgstr ""
@@ -1706,8 +1781,7 @@ msgstr ""
 msgid "Custom reason"
 msgstr ""
 
-#: resources/public/include/chat.js
-#: resources/public/include/lookup.js
+#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Additional information (if applicable)"
 msgstr ""
 
@@ -1728,16 +1802,13 @@ msgid "Failed to delete"
 msgstr ""
 
 #: resources/public/include/chat.js
-#: resources/public/include/chat.js
 msgid "ID: "
 msgstr ""
 
 #: resources/public/include/chat.js
-#: resources/public/include/chat.js
 msgid "User: "
 msgstr ""
 
-#: resources/public/include/chat.js
 #: resources/public/include/chat.js
 msgid "Message: "
 msgstr ""
@@ -1764,10 +1835,6 @@ msgstr ""
 
 #: resources/public/include/chat.js
 msgid "Error sending purge."
-msgstr ""
-
-#: resources/public/include/chat.js
-msgid "ChatLookup"
 msgstr ""
 
 #: resources/public/include/chat.js
@@ -1850,8 +1917,7 @@ msgstr "Случи се грешка, или не сте свързани, ил�
 msgid "Coords"
 msgstr "Координати"
 
-#: resources/public/include/lookup.js
-#: resources/public/admin/admin.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Username"
 msgstr "Име"
 
@@ -1976,10 +2042,6 @@ msgid "Are you sure you want to sign out?"
 msgstr "Сигурни ли сте, че искате да излезете?"
 
 #: resources/public/include/user.js
-msgid "Too many sessions open, try closing some tabs."
-msgstr "Твърде много раздели, отворени наведнъж, затворете някои от тях."
-
-#: resources/public/include/user.js
 msgid "You are permanently banned."
 msgstr "Вие сте наказани за неопределен срок."
 
@@ -1995,8 +2057,7 @@ msgstr "Ако мислите, че това е грешка, контактув
 msgid "Ban reason:"
 msgstr "Причина за наказанието:"
 
-#: resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Banned"
 msgstr "Наказан"
 
@@ -2020,8 +2081,7 @@ msgstr "Не сега"
 msgid "Change"
 msgstr "Промени"
 
-#: resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Rename Requested"
 msgstr "Промяната е изпратена за одобрение"
 
@@ -2063,7 +2123,6 @@ msgid "shadow"
 msgstr ""
 
 #: resources/public/admin/admin.js
-#: resources/public/admin/admin.js
 msgid "never"
 msgstr ""
 
@@ -2075,7 +2134,6 @@ msgstr ""
 msgid "Yes (permanent)"
 msgstr ""
 
-#: resources/public/admin/admin.js
 #: resources/public/admin/admin.js
 msgid "Logins"
 msgstr ""
@@ -2144,3 +2202,9 @@ msgstr ""
 #: resources/public/admin/admin.js
 msgid "Mod Actions"
 msgstr ""
+
+#~ msgid "template location;template source;template="
+#~ msgstr "шаблон;гид;положение"
+
+#~ msgid "Too many sessions open, try closing some tabs."
+#~ msgstr "Твърде много раздели, отворени наведнъж, затворете някои от тях."
