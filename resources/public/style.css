@@ -1196,6 +1196,7 @@ aside.panel {
     height: 100%;
     z-index: 21;
     cursor: initial !important;
+    overflow: hidden;
 }
 
 aside.panel[data-disabled] {
@@ -2061,6 +2062,9 @@ body .emoji-picker {
     aside.panel {
         max-width: 100% !important;
         width: 100% !important;
+
+        --panel-min-width: 0;
+        --panel-hide-offset: -10px;
     }
 
     aside.panel.left {
