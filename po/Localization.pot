@@ -1310,7 +1310,7 @@ msgstr ""
 msgid "Generator, progress checker, and monitor for Pxls templates"
 msgstr ""
 
-#. link to pxlsfiddle.com
+#. link to charity.pxls.space
 #: resources/public/pebble_templates/info.html
 msgid "Charity (templates, monitors, etc.)"
 msgstr ""
