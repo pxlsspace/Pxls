@@ -50,6 +50,7 @@ if __name__ == '__main__':
 				cur.execute('''
 					SELECT
 						p.time,
+						CASE WHEN p.who IS NULL THEN NULL ELSE u.id END AS uid,
 						CASE WHEN p.who IS NULL THEN NULL ELSE u.username END AS username,
 						p.x,
 						p.y,
@@ -68,7 +69,7 @@ if __name__ == '__main__':
 
 				for dbpixel in cur.fetchall():
 					action_str = 'user place'
-					(time, user, x, y, color_idx, undo_action, mod_action, rollback_action, has_secondary_id) = dbpixel
+					(time, uid, user, x, y, color_idx, undo_action, mod_action, rollback_action, has_secondary_id) = dbpixel
 					if mod_action:
 						action_str = 'mod overwrite'
 					elif rollback_action:
@@ -80,7 +81,7 @@ if __name__ == '__main__':
 						action_str = 'console nuke'
 
 					time_str = time.strftime('%Y-%m-%d %H:%M:%S,%f')[:-3]
-					file.write('\t'.join(map(str, (time_str, user if not args.snip_mode else '-snip-', x, y, color_idx, action_str))) + '\n')
+					file.write('\t'.join(map(str, (time_str, uid if not args.snip_mode else '-snip-', user if not args.snip_mode else '-snip-', x, y, color_idx, action_str))) + '\n')
 					count += 1
 		except KeyboardInterrupt:
 			file.flush()

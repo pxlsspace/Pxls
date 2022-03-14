@@ -45,7 +45,7 @@ module.exports.coords = (function() {
           return;
         }
 
-        if (!event.ctrlKey && (event.key === 'c' || event.key === 'C' || event.keyCode === 67)) {
+        if (!event.ctrlKey && !event.metaKey && (event.key === 'c' || event.key === 'C' || event.keyCode === 67)) {
           self.copyCoords();
         }
       });
@@ -70,7 +70,7 @@ module.exports.coords = (function() {
      * @param {number} scale The board scale.
      */
     getLinkToCoords: (x = 0, y = 0, scale = 20) => {
-      const templateConfig = ['template', 'tw', 'oo', 'ox', 'oy', 'title']
+      const templateConfig = ['template', 'tw', 'ox', 'oy', 'title', 'convert']
         .filter(query.has)
         .map((conf) => `${conf}=${encodeURIComponent(query.get(conf))}`)
         .join('&');

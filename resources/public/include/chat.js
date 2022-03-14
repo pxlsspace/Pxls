@@ -155,7 +155,12 @@ const chat = (function() {
         if (last) {
           self._doScroll(last);
           if (last.dataset.id && last.dataset.id > ls.get('chat-last_seen_id')) {
-            self.elements.message_icon.addClass('has-notification');
+            if (settings.ui.chat.icon.badge.get() === 'message') {
+              self.elements.panel_trigger.addClass('has-ping');
+            }
+            if (settings.ui.chat.icon.color.get() === 'message') {
+              self.elements.message_icon.addClass('has-notification');
+            }
           }
         }
         self.seenHistory = true;
@@ -166,7 +171,12 @@ const chat = (function() {
         self._process(e.message);
         const isChatOpen = panels.isOpen('chat');
         if (!isChatOpen) {
-          self.elements.message_icon.addClass('has-notification');
+          if (settings.ui.chat.icon.badge.get() === 'message') {
+            self.elements.panel_trigger.addClass('has-ping');
+          }
+          if (settings.ui.chat.icon.color.get() === 'message') {
+            self.elements.message_icon.addClass('has-notification');
+          }
         }
         if (self.stickToBottom) {
           const chatLine = self.elements.body.find(`[data-id="${e.message.id}"]`)[0];
@@ -309,7 +319,7 @@ const chat = (function() {
           if (e.expiry - self.chatban.banStart > 0 && !e.permanent) {
             self.chatban.banned = true;
             self.elements.rate_limit_counter.text('You have been banned from chat.');
-            self.addServerAction(`You are banned ${e.permanent ? 'permanently from chat.' : 'until ' + self.chatban.banEndFormatted}`);
+            self.addServerAction(`You are banned from chat ${e.permanent ? 'permanently.' : 'until ' + self.chatban.banEndFormatted}`);
             if (e.reason) {
               self.addServerAction(`Ban reason: ${e.reason}`);
             }
@@ -1010,6 +1020,11 @@ const chat = (function() {
         hasAllDonatorColors || hasPermForColor('donator.green') ? crel('option', { value: -2, class: 'donator donator--green' }, '*. Donator Green') : null,
         hasAllDonatorColors || hasPermForColor('donator.gray') ? crel('option', { value: -3, class: 'donator donator--gray' }, '*. Donator Gray') : null,
         hasAllDonatorColors || hasPermForColor('donator.synthwave') ? crel('option', { value: -4, class: 'donator donator--synthwave' }, '*. Donator Synthwave') : null,
+        hasAllDonatorColors || hasPermForColor('donator.ace') ? crel('option', { value: -5, class: 'donator donator--ace' }, '*. Donator Asexual') : null,
+        hasAllDonatorColors || hasPermForColor('donator.trans') ? crel('option', { value: -6, class: 'donator donator--trans' }, '*. Donator Transgender') : null,
+        hasAllDonatorColors || hasPermForColor('donator.bi') ? crel('option', { value: -7, class: 'donator donator--bi' }, '*. Donator Bisexual') : null,
+        hasAllDonatorColors || hasPermForColor('donator.pan') ? crel('option', { value: -8, class: 'donator donator--pan' }, '*. Donator Pansexual') : null,
+        hasAllDonatorColors || hasPermForColor('donator.nonbinary') ? crel('option', { value: -9, class: 'donator donator--nonbinary' }, '*. Donator Nonbinary') : null,
         place.palette.map(({ name, value: hex }, i) => crel('option', {
           value: i,
           'data-idx': i,
@@ -1227,8 +1242,12 @@ const chat = (function() {
         self.pingsList.push(packet);
         if (!((panels.isOpen('chat') && self.stickToBottom) || (packet.date < self.last_opened_panel))) {
           ++self.pings;
-          self.elements.panel_trigger.addClass('has-ping');
-          self.elements.pings_button.addClass('has-notification');
+          if (settings.ui.chat.icon.badge.get() === 'ping') {
+            self.elements.panel_trigger.addClass('has-ping');
+          }
+          if (settings.ui.chat.icon.color.get() === 'ping') {
+            self.elements.message_icon.addClass('has-notification');
+          }
         }
 
         const pingAudioState = settings.chat.pings.audio.when.get();

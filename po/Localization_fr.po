@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-12-06T15:35:04.074Z\n"
+"POT-Creation-Date: 2022-03-13T22:28:42.255Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -311,6 +311,34 @@ msgid "UI Settings"
 msgstr "Paramètres de l'interface utilisateur"
 
 #: resources/public/pebble_templates/index.html
+msgid "language override;text"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Language override:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Use Browser Language"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "English"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "French"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Russian"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Bulgarian"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
 msgid "themes;look;stylesheets;visuals"
 msgstr "thèmes;look;graphiques;visuels"
 
@@ -529,6 +557,34 @@ msgstr "lien;url"
 #: resources/public/pebble_templates/index.html
 msgid "Default internal link action click:"
 msgstr "Action par défaut au clic sur un lien interne :"
+
+#: resources/public/pebble_templates/index.html
+msgid "chat icon;chat notifications;chat ping"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Chat icon badge mode:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Show on unread ping"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Show on unread message"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Never show"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "chat icon;chat notifications;chat message"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Chat icon highlight mode:"
+msgstr ""
 
 #: resources/public/pebble_templates/index.html
 msgid "ignored;ignores;unignore;blocked;blocking;unblock"
@@ -1070,8 +1126,8 @@ msgid "How do I make a template?"
 msgstr "Comment créer un modèle ?"
 
 #: resources/public/pebble_templates/faq.html
-msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use the 3rd party tool <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into PxlsFiddle."
-msgstr "Un modèle est un lien d'image qui est posté dans la boîte de texte des modèles dans les paramètres afin de pouvoir le placer sur le canvas. Tu peux utiliser un lien d'image normal pour ton pixel art, mais beaucoup de gens utilisent l'outil <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> pour transformer ton pixel art en un lien plus simple. Si tu as besoin de faire un pixel art toi même, tu peux utliser <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> pour créer un modèle et le mettre ensuite dans PxlsFiddle."
+msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or PxlsFiddle."
+msgstr "Un modèle est un lien d'image qui est posté dans la boîte de texte des modèles dans les paramètres afin de pouvoir le placer sur le canvas. Tu peux utiliser un lien d'image normal pour ton pixel art, mais beaucoup de gens utilisent des outils comme <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> ou <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> pour transformer ton pixel art en un lien plus simple. Si tu as besoin de faire un pixel art toi-même, tu peux utliser <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> pour créer un modèle et le mettre ensuite dans PxlsFiddle ou Charity."
 
 #: resources/public/pebble_templates/faq.html
 msgid "How do I move a template?"
@@ -1296,10 +1352,18 @@ msgstr "Profil (informations sur les utilisateurs, factions, etc.)"
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
+msgid "Generator, progress checker, and monitor for Pxls templates"
+msgstr "Générateur, vérificateur de progrès, et contrôleur pour les modèles de Pxls"
+
+#. link to pxlsfiddle.com
+#: resources/public/pebble_templates/info.html
+msgid "Charity (templates, monitors, etc.)"
+msgstr "Charity (modèles, contrôleurs, etc...)"
+
+#: resources/public/pebble_templates/info.html
 msgid "Template generator, archives, timelapses, and other utilities"
 msgstr "Générateur de modèles, archives, timelapses et autres outils"
 
-#. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
 msgid "PxlsFiddle (templates, archives, etc.)"
 msgstr "PxlsFiddle (modèles, archives, etc.)"
@@ -1328,12 +1392,20 @@ msgid "My Factions"
 msgstr "Mes Factions"
 
 #: resources/public/pebble_templates/profile.html
+msgid "My Data"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
 msgid "Reports"
 msgstr "Signalements"
 
 #: resources/public/pebble_templates/profile.html
 msgid "Factions"
 msgstr "Factions"
+
+#: resources/public/pebble_templates/profile.html
+msgid "Data"
+msgstr ""
 
 #: resources/public/pebble_templates/profile.html
 msgid "You must be logged in to view your profile."
@@ -1488,6 +1560,34 @@ msgstr "Quitter"
 #: resources/public/pebble_templates/profile.html
 msgid "You are not in any factions yet!"
 msgstr "Tu n'es pas encore dans une faction !"
+
+#: resources/public/pebble_templates/profile.html
+msgid "You must be logged in to view your data."
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log Keys"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log keys can be used by those who have them to tell which pixels you placed on previous canvases."
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Canvas Code"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log Key"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "You have no log keys yet!"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log keys should show up here after a canvas you have placed on ends."
+msgstr ""
 
 #: resources/public/pebble_templates/profile.html
 msgid "Members of {0} ([{1}])"
@@ -2182,3 +2282,6 @@ msgstr "Envoyer une alerte"
 #: resources/public/admin/admin.js
 msgid "Mod Actions"
 msgstr "Actions modérateur"
+
+#~ msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use the 3rd party tool <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into PxlsFiddle."
+#~ msgstr "Un modèle est un lien d'image qui est posté dans la boîte de texte des modèles dans les paramètres afin de pouvoir le placer sur le canvas. Tu peux utiliser un lien d'image normal pour ton pixel art, mais beaucoup de gens utilisent l'outil <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> pour transformer ton pixel art en un lien plus simple. Si tu as besoin de faire un pixel art toi même, tu peux utliser <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> pour créer un modèle et le mettre ensuite dans PxlsFiddle."

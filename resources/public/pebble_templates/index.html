@@ -151,7 +151,10 @@
     <header class="panel-header">
         <div class="left"></div>
         <div class="mid">
-            <h2><i class="fas fa-info-circle fa-is-left"></i>{{i18n('Localization', 'Info') | raw}}</h2>
+            <h2>
+                <i class="fas fa-info-circle fa-is-left"></i>
+                <span class="panel-title">{{i18n('Localization', 'Info') | raw}}</span>
+            </h2>
         </div>
         <div class="right">
             <button type="button" class="panel-closer"><i class="fas fa-times"></i></button>
@@ -167,7 +170,11 @@
         <div class="left">
             <button type="button" class="panel-closer" title="{{i18n('Localization', 'Close Panel') | raw}}"><i class="fas fa-times"></i></button>
         </div>
-        <h2><i class="fas fa-comment-alt fa-is-left"></i>{{i18n('Localization', 'Chat') | raw}} <span class="mobile-only" id="txtMobileChatCooldown"></span></h2>
+        <h2>
+            <i class="fas fa-comment-alt fa-is-left"></i>
+            <span class="panel-title">{{i18n('Localization', 'Chat') | raw}}</span>
+            <span class="mobile-only" id="txtMobileChatCooldown"></span>
+        </h2>
         <div class="right">
             <button type="button" title="{{i18n('Localization', 'Pings') | raw}}"><i class="fas fa-at" id="btnPings"></i></i></button>
             <button type="button" title="{{i18n('Localization', 'Settings') | raw}}"><i class="fas fa-cogs" id="btnChatSettings"></i></button>
@@ -206,7 +213,10 @@
             <button type="button" class="panel-closer" title="{{i18n('Localization', 'Close Panel') | raw}}"><i class="fas fa-times"></i></button>
         </div>
         <div class="mid">
-            <h2><i class="fas fa-cogs fa-is-left"></i>{{i18n('Localization', 'Settings') | raw}}</h2>
+            <h2>
+                <i class="fas fa-cogs fa-is-left"></i>
+                <span class="panel-title">{{i18n('Localization', 'Settings') | raw}}</span>
+            </h2>
         </div>
         <div class="right"></div>
     </header>
@@ -259,6 +269,18 @@
             </header>
             <div class="pad-wrapper">
                 <section>
+                    <div data-keywords="{{i18n('Localization', 'language override;text') | raw}}">
+                        <label class="input-group">
+                            <span class="label-text">{{i18n('Localization', 'Language override:') | raw}}</span>
+                            <select id="setting-ui-language-override">
+                                <option value="" selected>{{i18n('Localization', 'Use Browser Language') | raw}}</option>
+                                <option value="en" selected>{{i18n('Localization', 'English') | raw}}</option>
+                                <option value="fr" selected>{{i18n('Localization', 'French') | raw}}</option>
+                                <option value="ru" selected>{{i18n('Localization', 'Russian') | raw}}</option>
+                                <option value="bg" selected>{{i18n('Localization', 'Bulgarian') | raw}}</option>
+                            </select>
+                        </label>
+                    </div>
                     <div data-keywords="{{i18n('Localization', 'themes;look;stylesheets;visuals') | raw}}">
                         <label class="input-group">
                             <span class="label-text">{{i18n('Localization', 'Theme:') | raw}}</span>
@@ -416,6 +438,26 @@
                         <label class="input-group">
                             <span class="label-text">{{i18n("Localization", "Default internal link action click:") | raw}}</span>
                             <select id="setting-chat-links-internal-behavior"></select>
+                        </label>
+                    </div>
+                    <div data-keywords="{{i18n('Localization', 'chat icon;chat notifications;chat ping') | raw}}">
+                        <label class="input-group">
+                            <span class="label-text">{{i18n('Localization', 'Chat icon badge mode:') | raw}}</span>
+                            <select id="setting-ui-chat-icon-badge">
+                                <option value="ping">{{i18n('Localization', 'Show on unread ping') | raw}}</option>
+                                <option value="message" selected>{{i18n('Localization', 'Show on unread message') | raw}}</option>
+                                <option value="off">{{i18n('Localization', 'Never show') | raw}}</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div data-keywords="{{i18n('Localization', 'chat icon;chat notifications;chat message') | raw}}">
+                        <label class="input-group">
+                            <span class="label-text">{{i18n('Localization', 'Chat icon highlight mode:') | raw}}</span>
+                            <select id="setting-ui-chat-icon-color">
+                                <option value="message" selected>{{i18n('Localization', 'Show on unread message') | raw}}</option>
+                                <option value="ping">{{i18n('Localization', 'Show on unread ping') | raw}}</option>
+                                <option value="off">{{i18n('Localization', 'Never show') | raw}}</option>
+                            </select>
                         </label>
                     </div>
                 </section>
@@ -757,8 +799,11 @@
 <aside id="faq" data-panel="faq" class="panel left half-width">
     <header class="panel-header">
         <div class="left"></div>
-        {# FAQ panel #}
-        <h3><i class="fas fa-question-circle fa-is-left"></i>{{i18n('Localization', 'Help') | raw}}</h3>
+        <h2>
+            <i class="fas fa-question-circle fa-is-left"></i>
+            {# FAQ panel #}
+            <span class="panel-title">{{i18n('Localization', 'Help') | raw}}</span>
+        </h2>
         <div class="right">
             <button type="button" class="panel-closer" title="{{i18n('Localization', 'Close Panel') | raw}}"><i class="fas fa-times"></i></button>
         </div>
@@ -771,7 +816,10 @@
 <aside id="notifications" data-panel="notifications" class="panel left">
     <header class="panel-header">
         <div class="left"></div>
-        <h3><i class="fas fa-bell fa-is-left"></i>{{i18n('Localization', 'Notifications') | raw}}</h3>
+        <h2>
+            <i class="fas fa-bell fa-is-left"></i>
+            <span class="panel-title">{{i18n('Localization', 'Notifications') | raw}}</span>    
+        </h2>
         <div class="right">
             <button type="button" class="panel-closer" title="{{i18n('Localization', 'Close Panel') | raw}}"><i class="fas fa-times"></i></button>
         </div>

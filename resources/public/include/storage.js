@@ -1,22 +1,24 @@
-const storageFactory = function(storageType, prefix, exdays) {
-  const getCookie = function(cookieName) {
-    let i; let x; let y; const ARRcookies = document.cookie.split(';');
-    for (i = 0; i < ARRcookies.length; i++) {
-      x = ARRcookies[i].substr(0, ARRcookies[i].indexOf('='));
-      y = ARRcookies[i].substr(ARRcookies[i].indexOf('=') + 1);
-      x = x.replace(/^\s+|\s+$/g, '');
-      if (x === cookieName) {
-        return unescape(y);
-      }
+const getCookie = module.exports.getCookie = function(cookieName) {
+  let i; let x; let y; const ARRcookies = document.cookie.split(';');
+  for (i = 0; i < ARRcookies.length; i++) {
+    x = ARRcookies[i].substr(0, ARRcookies[i].indexOf('='));
+    y = ARRcookies[i].substr(ARRcookies[i].indexOf('=') + 1);
+    x = x.replace(/^\s+|\s+$/g, '');
+    if (x === cookieName) {
+      return unescape(y);
     }
-  };
-  const setCookie = function(cookieName, value, exdays) {
-    const exdate = new Date();
-    let cookieValue = escape(value);
-    exdate.setDate(exdate.getDate() + exdays);
-    cookieValue += ((exdays == null) ? '' : '; expires=' + exdate.toUTCString());
-    document.cookie = cookieName + '=' + cookieValue;
-  };
+  }
+};
+
+const setCookie = module.exports.setCookie = function(cookieName, value, exdays) {
+  const exdate = new Date();
+  let cookieValue = escape(value);
+  exdate.setDate(exdate.getDate() + exdays);
+  cookieValue += ((exdays == null) ? '' : '; expires=' + exdate.toUTCString());
+  document.cookie = cookieName + '=' + cookieValue;
+};
+
+const storageFactory = function(storageType, prefix, exdays) {
   const _get = function(name, haveSupport) {
     let s;
     if (haveSupport) {

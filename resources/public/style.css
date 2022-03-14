@@ -179,6 +179,13 @@ html, body {
     -moz-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
     text-size-adjust: 100%;
+
+    --panel-shadow-size: 10px;
+    --panel-min-width: 300px;
+
+    /* -(--panel-shadow-size + --panel-min-width) */
+    /* not done with calc for nesting reasons */
+    --panel-hide-offset: -310px;
 }
 
 * {
@@ -409,6 +416,21 @@ dt {
 .donator.donator--synthwave{
     background-image: linear-gradient(90deg, #ff00ff, #af94fc,#0ff ,#7544ff, #ff00ff);
 }
+.donator.donator--ace{
+    background-image: linear-gradient(45deg, #000000, #a3a3a3, #ffffff ,#800080, #000000);
+}
+.donator.donator--trans{
+    background-image: linear-gradient(45deg, #5ecff8, #f4abb8, #ffffff, #5ecff8, #f4abb8);
+}
+.donator.donator--bi{
+    background-image: linear-gradient(45deg, #d60370, #9a4f94, #0038a7, #d60370);
+}
+.donator.donator--pan{
+    background-image: linear-gradient(45deg, #fe218b, #fed700, #21b0fe, #fe218b);
+}
+.donator.donator--nonbinary{
+    background-image: linear-gradient(45deg, #fff45f, #ffffff, #9c59d1, #000000, #fff45f);
+}
 
 .error {
     color: var(--error-color);
@@ -502,7 +524,7 @@ body .message {
     color: var(--floating-panel-text-color);
     box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
     padding: 16px;
-    max-width: 300px;
+    max-width: var(--panel-min-width);
 }
 
 .floating-panel .content {
@@ -1169,13 +1191,12 @@ footer {
 aside.panel {
     position: fixed;
     top: 0;
-    /* NOTE ([  ]): Ideally this would be max-width and we could set an overriding fixed min-width.
-                    This is just width because the main ui currently can't know how much of the min-with is used
-                    and can't adjust its own width accordingly. */
     width: 30%;
+    min-width: var(--panel-min-width);
     height: 100%;
     z-index: 21;
     cursor: initial !important;
+    overflow: hidden;
 }
 
 aside.panel[data-disabled] {
@@ -1186,6 +1207,7 @@ aside.panel.left {
     right: initial;
     transition: left ease-in-out .25s;
     left: -35%;
+    left: min(calc(-30% - var(--panel-shadow-size)), var(--panel-hide-offset));
 }
 
 aside.panel.left.open, .panel.left[data-state=open] {
@@ -1196,6 +1218,7 @@ aside.panel.right {
     left: initial;
     transition: right ease-in-out .25s;
     right: -35%;
+    right: min(calc(-30% - var(--panel-shadow-size)), var(--panel-hide-offset));
 }
 
 aside.panel.right.open, .panel.right[data-state=open] {
@@ -1215,10 +1238,12 @@ aside.panel.half-width {
 
 aside.panel.half-width.left {
     left: -55%;
+    left: min(calc(-50% - var(--panel-shadow-size)), var(--panel-hide-offset));
 }
 
 aside.panel.half-width.right {
     right: -55%;
+    right: min(calc(-50% - var(--panel-shadow-size)), var(--panel-hide-offset));
 }
 
 aside.panel.horizontal {
@@ -1236,7 +1261,7 @@ aside.panel.horizontal.right {
 }
 
 .panel {
-    box-shadow: 0 0 10px 5px #0009;
+    box-shadow: 0 0 var(--panel-shadow-size) 5px #0009;
     background: var(--panel-background);
     color: var(--panel-text-color);
 }
@@ -1246,7 +1271,10 @@ aside.panel.horizontal.right {
     word-wrap: break-word;
 }
 
-.panel-header, .panel-footer {
+.panel-header {
+    display: flex;
+    justify-content: center;
+    white-space: nowrap;
     height: 2.5rem;
     line-height: 2.5rem;
 }
@@ -1261,10 +1289,35 @@ aside.panel.horizontal.right {
     font-size: 2rem;
 }
 
-.panel-footer {
-    color: var(--panel-footer-text-color);
-    border-top: 1px solid var(--panel-border-color);
-    background: var(--panel-footer-background);
+.panel-header h1,
+.panel-header h2,
+.panel-header h3,
+.panel-header h4,
+.panel-header h5,
+.panel-header h6 {
+    flex-shrink: 1;
+    flex-grow: 0;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.panel-header h1 > .fas,
+.panel-header h2 > .fas,
+.panel-header h3 > .fas,
+.panel-header h4 > .fas,
+.panel-header h5 > .fas,
+.panel-header h6 > .fas {
+    flex-shrink: 1;
+    overflow: hidden;
+}
+
+.panel-title {
+    flex-shrink: 999999999;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .panel-trigger {
@@ -1342,7 +1395,12 @@ aside.panel.horizontal.right {
     margin: .5rem 0;
 }
 
-.panel-body article > header h1, .panel-body article > header h2, .panel-body article > header h3, .panel-body article > header h4, .panel-body article > header h5, .panel-body article > header h6 {
+.panel-body article > header h1,
+.panel-body article > header h2,
+.panel-body article > header h3,
+.panel-body article > header h4,
+.panel-body article > header h5,
+.panel-body article > header h6 {
     font-size: x-large;
     text-align: center;
     width:  100%;
@@ -1354,10 +1412,12 @@ aside.panel.horizontal.right {
 
 body.panel-open.panel-left #ui {
     left: 30%;
+    left: max(30%, var(--panel-min-width));
 }
 
 body.panel-open.panel-right #ui {
     right: 30%;
+    right: max(30%, var(--panel-min-width));
 }
 
 body.panel-open.panel-left.panel-left-halfwidth #ui {
@@ -1988,24 +2048,33 @@ body .emoji-picker {
     display: none;
 }
 
+#txtMobileChatCooldown {
+    margin-left: 0.25em;
+}
+
 @media (max-width: 1500px) {
     #donate, #donate > * {
         max-width: 300px;
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
     aside.panel {
         max-width: 100% !important;
         width: 100% !important;
+
+        --panel-min-width: 0;
+        --panel-hide-offset: -10px;
     }
 
     aside.panel.left {
         left: -105% !important;
+        left: min(calc(-100% - var(--panel-shadow-size)), var(--panel-hide-offset)) !important;
     }
 
     aside.panel.right {
         right: -105% !important;
+        right: min(calc(-100% - var(--panel-shadow-size)), var(--panel-hide-offset)) !important;
     }
 
     body.panel-open #ui {

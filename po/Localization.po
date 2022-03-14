@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-12-06T15:35:04.074Z\n"
+"POT-Creation-Date: 2022-03-13T22:28:42.255Z\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -311,6 +311,34 @@ msgid "UI Settings"
 msgstr "UI Settings"
 
 #: resources/public/pebble_templates/index.html
+msgid "language override;text"
+msgstr "language override;text"
+
+#: resources/public/pebble_templates/index.html
+msgid "Language override:"
+msgstr "Language override:"
+
+#: resources/public/pebble_templates/index.html
+msgid "Use Browser Language"
+msgstr "Use Browser Language"
+
+#: resources/public/pebble_templates/index.html
+msgid "English"
+msgstr "English"
+
+#: resources/public/pebble_templates/index.html
+msgid "French"
+msgstr "French"
+
+#: resources/public/pebble_templates/index.html
+msgid "Russian"
+msgstr "Russian"
+
+#: resources/public/pebble_templates/index.html
+msgid "Bulgarian"
+msgstr "Bulgarian"
+
+#: resources/public/pebble_templates/index.html
 msgid "themes;look;stylesheets;visuals"
 msgstr "themes;look;stylesheets;visuals"
 
@@ -529,6 +557,34 @@ msgstr "link;url;behaviour"
 #: resources/public/pebble_templates/index.html
 msgid "Default internal link action click:"
 msgstr "Default internal link action click:"
+
+#: resources/public/pebble_templates/index.html
+msgid "chat icon;chat notifications;chat ping"
+msgstr "chat icon;chat notifications;chat ping"
+
+#: resources/public/pebble_templates/index.html
+msgid "Chat icon badge mode:"
+msgstr "Chat icon badge mode:"
+
+#: resources/public/pebble_templates/index.html
+msgid "Show on unread ping"
+msgstr "Show on unread ping"
+
+#: resources/public/pebble_templates/index.html
+msgid "Show on unread message"
+msgstr "Show on unread message"
+
+#: resources/public/pebble_templates/index.html
+msgid "Never show"
+msgstr "Never show"
+
+#: resources/public/pebble_templates/index.html
+msgid "chat icon;chat notifications;chat message"
+msgstr "chat icon;chat notifications;chat message"
+
+#: resources/public/pebble_templates/index.html
+msgid "Chat icon highlight mode:"
+msgstr "Chat icon highlight mode:"
 
 #: resources/public/pebble_templates/index.html
 msgid "ignored;ignores;unignore;blocked;blocking;unblock"
@@ -1070,8 +1126,8 @@ msgid "How do I make a template?"
 msgstr "How do I make a template?"
 
 #: resources/public/pebble_templates/faq.html
-msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use the 3rd party tool <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into PxlsFiddle."
-msgstr "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use the 3rd party tool <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into PxlsFiddle."
+msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or PxlsFiddle."
+msgstr "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or PxlsFiddle."
 
 #: resources/public/pebble_templates/faq.html
 msgid "How do I move a template?"
@@ -1296,10 +1352,18 @@ msgstr "Profile (user info, factions, etc.)"
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
+msgid "Generator, progress checker, and monitor for Pxls templates"
+msgstr "Generator, progress checker, and monitor for Pxls templates"
+
+#. link to pxlsfiddle.com
+#: resources/public/pebble_templates/info.html
+msgid "Charity (templates, monitors, etc.)"
+msgstr "Charity (templates, monitors, etc.)"
+
+#: resources/public/pebble_templates/info.html
 msgid "Template generator, archives, timelapses, and other utilities"
 msgstr "Template generator, archives, timelapses, and other utilities"
 
-#. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
 msgid "PxlsFiddle (templates, archives, etc.)"
 msgstr "PxlsFiddle (templates, archives, etc.)"
@@ -1328,12 +1392,20 @@ msgid "My Factions"
 msgstr "My Factions"
 
 #: resources/public/pebble_templates/profile.html
+msgid "My Data"
+msgstr "My Data"
+
+#: resources/public/pebble_templates/profile.html
 msgid "Reports"
 msgstr "Reports"
 
 #: resources/public/pebble_templates/profile.html
 msgid "Factions"
 msgstr "Factions"
+
+#: resources/public/pebble_templates/profile.html
+msgid "Data"
+msgstr "Data"
 
 #: resources/public/pebble_templates/profile.html
 msgid "You must be logged in to view your profile."
@@ -1488,6 +1560,34 @@ msgstr "Leave"
 #: resources/public/pebble_templates/profile.html
 msgid "You are not in any factions yet!"
 msgstr "You are not in any factions yet!"
+
+#: resources/public/pebble_templates/profile.html
+msgid "You must be logged in to view your data."
+msgstr "You must be logged in to view your data."
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log Keys"
+msgstr "Log Keys"
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log keys can be used by those who have them to tell which pixels you placed on previous canvases."
+msgstr "Log keys can be used by those who have them to tell which pixels you placed on previous canvases."
+
+#: resources/public/pebble_templates/profile.html
+msgid "Canvas Code"
+msgstr "Canvas Code"
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log Key"
+msgstr "Log Key"
+
+#: resources/public/pebble_templates/profile.html
+msgid "You have no log keys yet!"
+msgstr "You have no log keys yet!"
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log keys should show up here after a canvas you have placed on ends."
+msgstr "Log keys should show up here after a canvas you have placed on ends."
 
 #: resources/public/pebble_templates/profile.html
 msgid "Members of {0} ([{1}])"
@@ -2182,3 +2282,6 @@ msgstr "Send Alert"
 #: resources/public/admin/admin.js
 msgid "Mod Actions"
 msgstr "Mod Actions"
+
+#~ msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use the 3rd party tool <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into PxlsFiddle."
+#~ msgstr "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use the 3rd party tool <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into PxlsFiddle."

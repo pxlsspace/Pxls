@@ -6,7 +6,7 @@ const { socket } = require('./socket');
 const { chat } = require('./chat');
 const { serviceWorkerHelper } = require('./serviceworkers');
 const { template } = require('./template');
-const { ls } = require('./storage');
+const { ls, setCookie } = require('./storage');
 let timer;
 let place;
 let board;
@@ -97,7 +97,7 @@ const uiHelper = (function() {
         color: '#1d192c'
       }
     ],
-    specialChatColorClasses: ['rainbow', ['donator', 'donator--green'], ['donator', 'donator--gray'], ['donator', 'donator--synthwave']],
+    specialChatColorClasses: ['rainbow', ['donator', 'donator--green'], ['donator', 'donator--gray'], ['donator', 'donator--synthwave'], ['donator', 'donator--ace'], ['donator', 'donator--trans'], ['donator', 'donator--bi'], ['donator', 'donator--pan'], ['donator', 'donator--nonbinary']],
     init: function() {
       timer = require('./timer').timer;
       place = require('./place').place;
@@ -189,6 +189,21 @@ const uiHelper = (function() {
 
       settings.ui.cursor.enable.listen(function(value) {
         place.toggleCursor(value && place.color !== -1);
+      });
+
+      let overrideLang = null;
+      settings.ui.language.override.listen(function(value) {
+        if (overrideLang !== null && overrideLang !== value) {
+          if (value) {
+            setCookie('pxls-accept-language-override', value);
+          } else {
+            setCookie('pxls-accept-language-override', null, -1);
+          }
+          // we need to fetch the page in the new locale, so reload
+          window.location.reload();
+        } else {
+          overrideLang = value;
+        }
       });
 
       $(window).keydown((evt) => {
