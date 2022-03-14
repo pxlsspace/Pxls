@@ -24,7 +24,6 @@ module.exports.template = (function() {
       styleSelect: $('#template-style-mode'),
       styleOptionCustom: $('#template-style-mode-custom'),
       conversionModeSelect: $('#template-conversion-mode-select'),
-      opacityInput: $('#template-opacity'),
       opacityPercentage: $('#template-opacity-percentage')
     },
     gl: {
@@ -70,7 +69,6 @@ module.exports.template = (function() {
       x: 0,
       y: 0,
       width: -1,
-      opacity: 0.5,
       title: '',
       convertMode: 'unconverted',
       style: undefined
@@ -103,8 +101,6 @@ module.exports.template = (function() {
       if (self.corsProxy.base !== undefined) {
         self.loading = true;
 
-        self.options.use = true;
-
         self.elements.imageErrorWarning.empty();
         self.elements.imageErrorWarning.hide();
 
@@ -121,10 +117,11 @@ module.exports.template = (function() {
         .prop('disabled', !self.options.use)
         .val(self.options.title ? self.options.title : '');
 
-      self.elements.opacityInput
-        .prop('disabled', !self.options.use)
-        .val(self.options.opacity);
-      self.elements.opacityPercentage.text(`${Math.floor(self.options.opacity * 100)}%`);
+      if (self.options.use) {
+        settings.board.template.opacity.controls.enable();
+      } else {
+        settings.board.template.opacity.controls.disable();
+      }
 
       self.elements.coordsXInput
         .prop('disabled', !self.options.use)
@@ -148,7 +145,7 @@ module.exports.template = (function() {
       // direction: true = url_to_template_obj, else = template_obj_to_url
       // normalize the given update object with settings that may be present from someone guessing options based on the URL
 
-      const iterOver = [['tw', 'width'], ['ox', 'x'], ['oy', 'y'], ['oo', 'opacity'], ['template', 'url'], ['title', 'title'], ['convert', 'convertMode']];
+      const iterOver = [['tw', 'width'], ['ox', 'x'], ['oy', 'y'], ['template', 'url'], ['title', 'title'], ['convert', 'convertMode']];
       if (direction !== true) {
         for (let i = 0; i < iterOver.length; i++) { iterOver[i].reverse(); }
       }
@@ -190,7 +187,7 @@ module.exports.template = (function() {
 
       // fix for `width` and other props being set after disabling template with the 'v' key then enabling a template without said prop set in the URL.
       if (urlUpdated && !self.options.use) {
-        ['width', 'x', 'y', 'opacity', 'convertMode'].forEach(x => {
+        ['width', 'x', 'y', 'convertMode'].forEach(x => {
           if (!Object.prototype.hasOwnProperty.call(options, x)) {
             options[x] = self._defaults[x];
           }
@@ -203,7 +200,6 @@ module.exports.template = (function() {
           options[x] = self._defaults[x];
         }
       });
-      options.opacity = parseFloat(options.opacity.toFixed(2)); // cleans up opacity for the URL, e.g. 1.3877787807814457e-16 => 0
 
       if (!(options.convertMode in self.gl.programs.downscaling)) {
         options.convertMode = self._defaults.convertMode;
@@ -216,7 +212,7 @@ module.exports.template = (function() {
       if (options.url.length === 0 || options.use === false) {
         self.options.use = false;
         board.update(true);
-        ['template', 'ox', 'oy', 'oo', 'tw', 'title', 'convert'].forEach(x => query.remove(x, true));
+        ['template', 'ox', 'oy', 'tw', 'title', 'convert'].forEach(x => query.remove(x, true));
       } else {
         self.options.use = true;
         if (urlUpdated === true) {
@@ -227,7 +223,7 @@ module.exports.template = (function() {
           self.rasterizeTemplate();
         }
 
-        [['url', 'template'], ['x', 'ox'], ['y', 'oy'], ['width', 'tw'], ['opacity', 'oo'], ['title', 'title'], ['convertMode', 'convert']].forEach(x => {
+        [['url', 'template'], ['x', 'ox'], ['y', 'oy'], ['width', 'tw'], ['title', 'title'], ['convertMode', 'convert']].forEach(x => {
           query.set(x[1], self.options[x[0]], true);
         });
       }
@@ -252,10 +248,12 @@ module.exports.template = (function() {
     },
     applyOptions() {
       if (self.options.use) {
-        [['left', 'x'], ['top', 'y'], ['opacity', 'opacity']].forEach(x => {
+        [['left', 'x'], ['top', 'y']].forEach(x => {
           self.elements.visibles.css(x[0], self.options[x[1]]);
         });
       }
+
+      self.elements.visibles.css('opacity', settings.board.template.opacity.get());
 
       self.elements.template.toggleClass('hidden', !self.options.use || !self.usesStyle());
       self.elements.sourceImage.toggleClass('hidden', !self.options.use || self.usesStyle());
@@ -288,7 +286,7 @@ module.exports.template = (function() {
         height *= (self.options.width / width);
         width = self.options.width;
       }
-      ctx2.globalAlpha = self.options.opacity;
+      ctx2.globalAlpha = settings.board.template.opacity.get();
       ctx2.drawImage(self.elements.template[0], (self.options.x - pxlX) * scale, (self.options.y - pxlY) * scale, width * scale, height * scale);
     },
     init: function() {
@@ -303,16 +301,16 @@ module.exports.template = (function() {
       self.elements.titleInput.change((e) => self._update({ title: e.target.value }, false));
       self.elements.urlInput.change((e) => self._update({ use: true, url: e.target.value }));
 
-      self.elements.opacityInput.on('change input', (e) => {
-        self.elements.opacityPercentage.text(`${Math.floor(e.target.value * 100)}%`);
-        self._update({ opacity: parseFloat(e.target.value) }, false);
-      });
-
       self.elements.coordsXInput.on('change input', (e) => self._update({ x: parseInt(e.target.value) }, false));
       self.elements.coordsYInput.on('change input', (e) => self._update({ y: parseInt(e.target.value) }, false));
 
       self.elements.widthInput.on('change input', (e) => self._update({ width: parseFloat(e.target.value) }, false));
       self.elements.widthResetBtn.on('click', (e) => self._update({ width: -1 }));
+
+      settings.board.template.opacity.listen((value) => {
+        self.elements.opacityPercentage.text(`${Math.floor(value * 100)}%`);
+        self.applyOptions();
+      });
 
       settings.board.template.style.source.listen((style) => {
         // NOTE ([  ]): this is basically a hack. Order of operations is
@@ -367,12 +365,12 @@ module.exports.template = (function() {
           case 'PageUp':
           case 33:
             newOpacity = Math.min(1, self.options.opacity + 0.1);
-            self._update({ opacity: newOpacity });
+            settings.board.template.opacity.set(newOpacity);
             break;
           case 'PageDown':
           case 34:
             newOpacity = Math.max(0, self.options.opacity - 0.1);
-            self._update({ opacity: newOpacity });
+            settings.board.template.opacity.set(newOpacity);
             break;
           case 'KeyV':
           case 86:

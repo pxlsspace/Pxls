@@ -416,12 +416,6 @@ const board = (function() {
           case 'title':
             template.queueUpdate({ title: nullish ? '' : newValue });
             break;
-          case 'oo': {
-            let parsed = parseFloat(newValue);
-            if (!Number.isFinite(parsed)) parsed = null;
-            template.queueUpdate({ oo: parsed == null ? null : parsed });
-            break;
-          }
           case 'convert':
             template.queueUpdate({ convert: newValue });
             break;
@@ -496,11 +490,9 @@ const board = (function() {
             use: true,
             x: parseFloat(query.get('ox')),
             y: parseFloat(query.get('oy')),
-            opacity: parseFloat(query.get('oo')),
             width: parseFloat(query.get('tw')),
             title: query.get('title'),
             url: url,
-            direct: query.get('direct'),
             convertMode: query.get('convert')
           });
         }
