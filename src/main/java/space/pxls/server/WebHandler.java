@@ -166,6 +166,7 @@ public class WebHandler {
                     List<DBChatReport> chatReports = new ArrayList<>();
                     List<DBCanvasReport> canvasReports = new ArrayList<>();
                     List<Faction> factions = App.getDatabase().getFactionsForUID(profileUser.getId()).stream().map(Faction::new).collect(Collectors.toList());
+                    Map<String, String> keys = App.getDatabase().getUserKeys(profileUser.getId());
 
                     m.put("snip_mode", App.getSnipMode());
                     m.put("requested_self", requested_self);
@@ -173,6 +174,7 @@ public class WebHandler {
                     m.put("factions", factions);
                     m.put("palette", App.getPalette().getColors().stream().map(color -> color.getValue()).collect(Collectors.toList()));
                     m.put("route_root", requested_self ? "/profile" : String.format("/profile/%s", requested));
+                    m.put("keys", keys);
 
                     if (requested_self) {
                         try {
@@ -1103,7 +1105,7 @@ public class WebHandler {
 
         try {
             int t = Integer.parseInt(nameColor.getValue());
-            if (t >= -7 && t < App.getPalette().getColors().size()) {
+            if (t >= -12 && t < App.getPalette().getColors().size()) {
                 var hasAllDonatorColors = user.hasPermission("chat.usercolor.donator") || user.hasPermission("chat.usercolor.donator.*");
                 if (t == -1 && !user.hasPermission("chat.usercolor.rainbow")) {
                     sendBadRequest(exchange, "Color reserved for staff members");
@@ -1117,13 +1119,28 @@ public class WebHandler {
                 } else if (t == -4 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.synthwave"))) {
                     sendBadRequest(exchange, "Color reserved for donators");
                     return;
-                } else if (t == -5 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.mines"))) {
+                } else if (t == -5 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.ace"))) {
                     sendBadRequest(exchange, "Color reserved for donators");
                     return;
-                } else if (t == -6 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.eggplant"))) {
+                } else if (t == -6 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.trans"))) {
                     sendBadRequest(exchange, "Color reserved for donators");
                     return;
-                } else if (t == -7 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.banana"))) {
+                } else if (t == -7 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.bi"))) {
+                    sendBadRequest(exchange, "Color reserved for donators");
+                    return;
+                } else if (t == -8 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.pan"))) {
+                    sendBadRequest(exchange, "Color reserved for donators");
+                    return;
+                } else if (t == -9 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.nonbinary"))) {
+                    sendBadRequest(exchange, "Color reserved for donators");
+                    return;
+                } else if (t == -10 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.mines"))) {
+                    sendBadRequest(exchange, "Color reserved for donators");
+                    return;
+                } else if (t == -11 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.eggplant"))) {
+                    sendBadRequest(exchange, "Color reserved for donators");
+                    return;
+                } else if (t == -12 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.banana"))) {
                     sendBadRequest(exchange, "Color reserved for donators");
                     return;
                 }
@@ -1467,7 +1484,9 @@ public class WebHandler {
     }
 
     public void notificationsList(HttpServerExchange exchange) {
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+        exchange.getResponseHeaders()
+            .put(Headers.CONTENT_TYPE, "application/json")
+            .add(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
         exchange.setStatusCode(200);
         exchange.getResponseSender().send(App.getGson().toJson(App.getDatabase().getNotifications(false)));
         exchange.endExchange();
@@ -1815,6 +1834,8 @@ public class WebHandler {
             App.getConfig().getStringList("chat.bannerText"),
             App.getSnipMode(),
             App.getConfig().getList("chat.customEmoji").unwrapped(),
+            App.getConfig().getString("cors.proxyBase"),
+            App.getConfig().getString("cors.proxyParam"),
             App.getConfig().getString("chat.ratelimitMessage")
         )));
     }

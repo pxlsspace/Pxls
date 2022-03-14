@@ -313,18 +313,21 @@ module.exports.settings = (function() {
     filterSettings(searchInput.val());
   });
 
-  return {
+  const self = {
     // utilities
     filter: {
       search: (query) => {
         searchInput.val(query);
-        if (query) {
+        if (typeof query === 'string') {
           filterSettings(query);
         }
       }
     },
     // setting objects
     ui: {
+      language: {
+        override: setting('ui.language.override', SettingType.SELECT, '', $('#setting-ui-language-override'))
+      },
       theme: {
         index: setting('ui.theme.index', SettingType.SELECT, '-1', $('#setting-ui-theme-index'))
       },
@@ -361,6 +364,10 @@ module.exports.settings = (function() {
         },
         horizontal: {
           enable: setting('ui.chat.horizontal.enable', SettingType.TOGGLE, false, $('#setting-ui-chat-horizontal-enable'))
+        },
+        icon: {
+          badge: setting('ui.chat.icon.badge', SettingType.SELECT, 'ping', $('#setting-ui-chat-icon-badge')),
+          color: setting('ui.chat.icon.color', SettingType.SELECT, 'message', $('#setting-ui-chat-icon-color'))
         }
       }
     },
@@ -397,7 +404,18 @@ module.exports.settings = (function() {
         }
       },
       template: {
-        beneathoverlays: setting('board.template.beneathoverlays', SettingType.TOGGLE, false, $('#setting-board-template-beneathoverlays'))
+        beneathoverlays: setting('board.template.beneathoverlays', SettingType.TOGGLE, false, $('#setting-board-template-beneathoverlays')),
+        opacity: setting('board.template.opacity', SettingType.RANGE, 1.0, $('#template-opacity')),
+        style: {
+          // NOTE ([  ]): This is a bit ugly, since both of these are essentially
+          // the URL of the style. The issue is that I can't think of a good way
+          // to have defaults and also allow custom input without this duplication.
+          // `source` is the canonical source of the template value in theory,
+          // so a simplified system can just drop the other setting rather than
+          // converting it.
+          source: setting('board.template.style.source', SettingType.SELECT, null, $('#template-style-mode')),
+          customsource: setting('board.template.style.customsource', SettingType.TEXT, '', $('#template-custom-style-url'))
+        }
       },
       snapshot: {
         format: setting('board.snapshot.format', SettingType.SELECT, 'image/png', $('#setting-board-snapshot-format'))
@@ -473,4 +491,10 @@ module.exports.settings = (function() {
       }
     }
   };
+  $(window).on('pxls:panel:closed', (event, panel) => {
+    if (panel === 'settings') {
+      self.filter.search('');
+    }
+  });
+  return self;
 })();
