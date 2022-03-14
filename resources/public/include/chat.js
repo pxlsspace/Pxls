@@ -155,7 +155,12 @@ const chat = (function() {
         if (last) {
           self._doScroll(last);
           if (last.dataset.id && last.dataset.id > ls.get('chat-last_seen_id')) {
-            self.elements.message_icon.addClass('has-notification');
+            if (settings.ui.chat.icon.badge.get() === 'message') {
+              self.elements.panel_trigger.addClass('has-ping');
+            }
+            if (settings.ui.chat.icon.color.get() === 'message') {
+              self.elements.message_icon.addClass('has-notification');
+            }
           }
         }
         self.seenHistory = true;
@@ -166,7 +171,12 @@ const chat = (function() {
         self._process(e.message);
         const isChatOpen = panels.isOpen('chat');
         if (!isChatOpen) {
-          self.elements.message_icon.addClass('has-notification');
+          if (settings.ui.chat.icon.badge.get() === 'message') {
+            self.elements.panel_trigger.addClass('has-ping');
+          }
+          if (settings.ui.chat.icon.color.get() === 'message') {
+            self.elements.message_icon.addClass('has-notification');
+          }
         }
         if (self.stickToBottom) {
           const chatLine = self.elements.body.find(`[data-id="${e.message.id}"]`)[0];
@@ -1232,8 +1242,12 @@ const chat = (function() {
         self.pingsList.push(packet);
         if (!((panels.isOpen('chat') && self.stickToBottom) || (packet.date < self.last_opened_panel))) {
           ++self.pings;
-          self.elements.panel_trigger.addClass('has-ping');
-          self.elements.pings_button.addClass('has-notification');
+          if (settings.ui.chat.icon.badge.get() === 'ping') {
+            self.elements.panel_trigger.addClass('has-ping');
+          }
+          if (settings.ui.chat.icon.color.get() === 'ping') {
+            self.elements.message_icon.addClass('has-notification');
+          }
         }
 
         const pingAudioState = settings.chat.pings.audio.when.get();

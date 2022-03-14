@@ -440,6 +440,26 @@
                             <select id="setting-chat-links-internal-behavior"></select>
                         </label>
                     </div>
+                    <div data-keywords="{{i18n('Localization', 'chat icon;chat notifications;chat ping') | raw}}">
+                        <label class="input-group">
+                            <span class="label-text">{{i18n('Localization', 'Chat icon badge mode:') | raw}}</span>
+                            <select id="setting-ui-chat-icon-badge">
+                                <option value="ping">{{i18n('Localization', 'Show on unread ping') | raw}}</option>
+                                <option value="message" selected>{{i18n('Localization', 'Show on unread message') | raw}}</option>
+                                <option value="off">{{i18n('Localization', 'Never show') | raw}}</option>
+                            </select>
+                        </label>
+                    </div>
+                    <div data-keywords="{{i18n('Localization', 'chat icon;chat notifications;chat message') | raw}}">
+                        <label class="input-group">
+                            <span class="label-text">{{i18n('Localization', 'Chat icon highlight mode:') | raw}}</span>
+                            <select id="setting-ui-chat-icon-color">
+                                <option value="message" selected>{{i18n('Localization', 'Show on unread message') | raw}}</option>
+                                <option value="ping">{{i18n('Localization', 'Show on unread ping') | raw}}</option>
+                                <option value="off">{{i18n('Localization', 'Never show') | raw}}</option>
+                            </select>
+                        </label>
+                    </div>
                 </section>
                 <section data-keywords="{{i18n('Localization', 'ignored;ignores;unignore;blocked;blocking;unblock') | raw}}">
                     <h4>{{i18n('Localization', 'Ignores') | raw}}</h4>

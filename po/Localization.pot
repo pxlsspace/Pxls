@@ -574,6 +574,37 @@ msgid "Default internal link action click:"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
+msgid "chat icon;chat notifications;chat ping"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Chat icon badge mode:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
+msgid "Show on unread ping"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
+msgid "Show on unread message"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
+msgid "Never show"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "chat icon;chat notifications;chat message"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Chat icon highlight mode:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
 msgid "ignored;ignores;unignore;blocked;blocking;unblock"
 msgstr ""
 

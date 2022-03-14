@@ -364,6 +364,10 @@ module.exports.settings = (function() {
         },
         horizontal: {
           enable: setting('ui.chat.horizontal.enable', SettingType.TOGGLE, false, $('#setting-ui-chat-horizontal-enable'))
+        },
+        icon: {
+          badge: setting('ui.chat.icon.badge', SettingType.SELECT, 'ping', $('#setting-ui-chat-icon-badge')),
+          color: setting('ui.chat.icon.color', SettingType.SELECT, 'message', $('#setting-ui-chat-icon-color'))
         }
       }
     },
