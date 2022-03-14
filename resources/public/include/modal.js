@@ -1,18 +1,7 @@
 const modal = (function() {
   return {
     showText: function(text, opts) {
-      opts = Object.assign({}, { title: 'Pxls', footerButtons: [], modalOpts: {} }, opts);
-      if (opts.footerButtons != null && !Array.isArray(opts.footerButtons)) {
-        if (!(opts.footerButtons instanceof HTMLElement)) throw new Error('Invalid footerButtons provided. Expected HTMLElement[]');
-        opts.footerButtons = [opts.footerButtons];
-      }
-      /* let footer;
-      if (Array.isArray(opts.footerButtons)) {
-        const validButtons = opts.footerButtons.filter(x => x instanceof HTMLElement);
-        if (validButtons.length > 0) {
-          footer = crel('div', { class: 'modal-footer' }, validButtons);
-        }
-      } */
+      opts = Object.assign({}, { title: 'Pxls', modalOpts: {} }, opts);
       return modal.show(modal.buildDom(
         crel('h2', { class: 'modal-title' }, opts.title || 'Pxls'),
         crel('p', { style: 'margin: 0;' }, text)
@@ -43,15 +32,14 @@ const modal = (function() {
       button.addEventListener('click', () => modal.closeTop());
       return button;
     },
-    buildDom: function(headerContent, bodyContent, footerContent) {
+    buildDom: function(headerContent, bodyContent) {
       return crel('div', { class: 'modal panel', tabindex: '-1', role: 'dialog' },
         crel('div', { class: 'modal-wrapper', role: 'document' },
           headerContent == null ? null : crel('header', { class: 'modal-header panel-header' },
             crel('div', { class: 'left' }),
             crel('div', { class: 'mid' }, headerContent),
             crel('div', { class: 'right' }, this.buildCloser())),
-          bodyContent == null ? null : crel('div', { class: 'modal-body panel-body' }, bodyContent),
-          footerContent == null ? null : crel('footer', { class: 'modal-footer panel-footer' }, footerContent)
+          bodyContent == null ? null : crel('div', { class: 'modal-body panel-body' }, bodyContent)
         )
       );
     },

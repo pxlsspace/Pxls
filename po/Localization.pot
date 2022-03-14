@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-12-06T15:43:19.833Z\n"
+"POT-Creation-Date: 2022-03-13T22:28:42.255Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -326,6 +326,34 @@ msgid "UI Settings"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
+msgid "language override;text"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Language override:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Use Browser Language"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "English"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "French"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Russian"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Bulgarian"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
 msgid "themes;look;stylesheets;visuals"
 msgstr ""
 
@@ -543,6 +571,37 @@ msgstr ""
 
 #: resources/public/pebble_templates/index.html
 msgid "Default internal link action click:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "chat icon;chat notifications;chat ping"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Chat icon badge mode:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
+msgid "Show on unread ping"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
+msgid "Show on unread message"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+#: resources/public/pebble_templates/index.html
+msgid "Never show"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "chat icon;chat notifications;chat message"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Chat icon highlight mode:"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
@@ -1079,7 +1138,7 @@ msgid "How do I make a template?"
 msgstr ""
 
 #: resources/public/pebble_templates/faq.html
-msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use the 3rd party tool <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into PxlsFiddle."
+msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or PxlsFiddle."
 msgstr ""
 
 #: resources/public/pebble_templates/faq.html
@@ -1307,10 +1366,18 @@ msgstr ""
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
+msgid "Generator, progress checker, and monitor for Pxls templates"
+msgstr ""
+
+#. link to charity.pxls.space
+#: resources/public/pebble_templates/info.html
+msgid "Charity (templates, monitors, etc.)"
+msgstr ""
+
+#: resources/public/pebble_templates/info.html
 msgid "Template generator, archives, timelapses, and other utilities"
 msgstr ""
 
-#. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
 msgid "PxlsFiddle (templates, archives, etc.)"
 msgstr ""
