@@ -895,6 +895,14 @@ msgid "Use Source Style"
 msgstr "Use Source Style"
 
 #: resources/public/pebble_templates/index.html
+msgid "1-to-1"
+msgstr "1-to-1"
+
+#: resources/public/pebble_templates/index.html
+msgid "1-to-1 (keep incorrect colors)"
+msgstr "1-to-1 (keep incorrect colors)"
+
+#: resources/public/pebble_templates/index.html
 msgid "Dotted (Small, 1:2)"
 msgstr "Dotted (Small, 1:2)"
 
