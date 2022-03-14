@@ -1409,12 +1409,20 @@ msgid "My Factions"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html
+msgid "My Data"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
 #: resources/public/pebble_templates/profile.html
 msgid "Reports"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html
 msgid "Factions"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Data"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html
@@ -1573,6 +1581,34 @@ msgstr ""
 
 #: resources/public/pebble_templates/profile.html
 msgid "You are not in any factions yet!"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "You must be logged in to view your data."
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log Keys"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log keys can be used by those who have them to tell which pixels you placed on previous canvases."
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Canvas Code"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log Key"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "You have no log keys yet!"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log keys should show up here after a canvas you have placed on ends."
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html

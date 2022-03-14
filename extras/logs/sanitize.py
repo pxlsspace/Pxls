@@ -60,19 +60,19 @@ if __name__ == '__main__':
 					print(f'Line {i + 1} doesn\'t have exactly 7 fields. Manual review needed.')
 					out_line = line
 				else:
-					(date, username, x, y, color_index, ip, action_type) = split_line
+					(date, uid, username, x, y, color_index, action_type) = split_line
 
 					if args.snip_mode:
 						username = '-snip-'
 					elif args.hash_mode:
-						if username in keys:
-							key = keys[username]
+						if uid in keys:
+							key = keys[uid]
 						else:
 							key = secrets.token_hex(args.key_strength)
-							keys[username] = key
+							keys[uid] = key
 
 							if args.keys_input_path:
-								print(f'Missing key for user: {username}, generated key: {key}')
+								print(f'Missing key for user: {username} ({uid}), generated key: {key}')
 
 						username = sha256(f'{date},{x},{y},{color_index},{key}'.encode('utf-8')).hexdigest()
 

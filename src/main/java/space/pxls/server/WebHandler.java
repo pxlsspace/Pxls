@@ -166,6 +166,7 @@ public class WebHandler {
                     List<DBChatReport> chatReports = new ArrayList<>();
                     List<DBCanvasReport> canvasReports = new ArrayList<>();
                     List<Faction> factions = App.getDatabase().getFactionsForUID(profileUser.getId()).stream().map(Faction::new).collect(Collectors.toList());
+                    Map<String, String> keys = App.getDatabase().getUserKeys(profileUser.getId());
 
                     m.put("snip_mode", App.getSnipMode());
                     m.put("requested_self", requested_self);
@@ -173,6 +174,7 @@ public class WebHandler {
                     m.put("factions", factions);
                     m.put("palette", App.getPalette().getColors().stream().map(color -> color.getValue()).collect(Collectors.toList()));
                     m.put("route_root", requested_self ? "/profile" : String.format("/profile/%s", requested));
+                    m.put("keys", keys);
 
                     if (requested_self) {
                         try {
