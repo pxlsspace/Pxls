@@ -269,6 +269,18 @@
             </header>
             <div class="pad-wrapper">
                 <section>
+                    <div data-keywords="{{i18n('Localization', 'language override;text') | raw}}">
+                        <label class="input-group">
+                            <span class="label-text">{{i18n('Localization', 'Language override:') | raw}}</span>
+                            <select id="setting-ui-language-override">
+                                <option value="" selected>{{i18n('Localization', 'Use Browser Language') | raw}}</option>
+                                <option value="en" selected>{{i18n('Localization', 'English') | raw}}</option>
+                                <option value="fr" selected>{{i18n('Localization', 'French') | raw}}</option>
+                                <option value="ru" selected>{{i18n('Localization', 'Russian') | raw}}</option>
+                                <option value="bg" selected>{{i18n('Localization', 'Bulgarian') | raw}}</option>
+                            </select>
+                        </label>
+                    </div>
                     <div data-keywords="{{i18n('Localization', 'themes;look;stylesheets;visuals') | raw}}">
                         <label class="input-group">
                             <span class="label-text">{{i18n('Localization', 'Theme:') | raw}}</span>

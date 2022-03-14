@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-12-24T02:28:33.366Z\n"
+"POT-Creation-Date: 2022-03-13T22:28:42.255Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -323,6 +323,34 @@ msgstr ""
 
 #: resources/public/pebble_templates/index.html
 msgid "UI Settings"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "language override;text"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Language override:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Use Browser Language"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "English"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "French"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Russian"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Bulgarian"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
