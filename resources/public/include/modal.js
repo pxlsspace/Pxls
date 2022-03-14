@@ -32,14 +32,15 @@ const modal = (function() {
       button.addEventListener('click', () => modal.closeTop());
       return button;
     },
-    buildDom: function(headerContent, bodyContent) {
+    buildDom: function(headerContent, bodyContent, footerContent) {
       return crel('div', { class: 'modal panel', tabindex: '-1', role: 'dialog' },
         crel('div', { class: 'modal-wrapper', role: 'document' },
           headerContent == null ? null : crel('header', { class: 'modal-header panel-header' },
             crel('div', { class: 'left' }),
             crel('div', { class: 'mid' }, headerContent),
             crel('div', { class: 'right' }, this.buildCloser())),
-          bodyContent == null ? null : crel('div', { class: 'modal-body panel-body' }, bodyContent)
+          bodyContent == null ? null : crel('div', { class: 'modal-body panel-body' }, bodyContent),
+          footerContent == null ? null : crel('footer', { class: 'modal-footer panel-footer' }, footerContent)
         )
       );
     },
