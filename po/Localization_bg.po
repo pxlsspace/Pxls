@@ -559,6 +559,34 @@ msgid "Default internal link action click:"
 msgstr "Зададено действие при отваряне на лиск с шаблон"
 
 #: resources/public/pebble_templates/index.html
+msgid "chat icon;chat notifications;chat ping"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Chat icon badge mode:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Show on unread ping"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Show on unread message"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Never show"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "chat icon;chat notifications;chat message"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Chat icon highlight mode:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
 msgid "ignored;ignores;unignore;blocked;blocking;unblock"
 msgstr "игнориран;блок;блокиран;блокване;блокиране"
 
@@ -867,6 +895,14 @@ msgid "Use Source Style"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
+msgid "1-to-1"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "1-to-1 (keep incorrect colors)"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
 msgid "Dotted (Small, 1:2)"
 msgstr ""
 
@@ -1090,8 +1126,8 @@ msgid "How do I make a template?"
 msgstr "Как да направя шаблон?"
 
 #: resources/public/pebble_templates/faq.html
-msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use the 3rd party tool <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into PxlsFiddle."
-msgstr "Можете просто да поставите адреса на вашето изображение в настройките за шаблон, но повечето от нашите потребители използват сайта <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a>."
+msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or PxlsFiddle."
+msgstr ""
 
 #: resources/public/pebble_templates/faq.html
 msgid "How do I move a template?"
@@ -1314,6 +1350,16 @@ msgstr "Статистики"
 msgid "Profile (user info, factions, etc.)"
 msgstr "Профил (информация и фракции)"
 
+#. link to charity.pxls.space
+#: resources/public/pebble_templates/info.html
+msgid "Generator, progress checker, and monitor for Pxls templates"
+msgstr ""
+
+#. link to charity.pxls.space
+#: resources/public/pebble_templates/info.html
+msgid "Charity (templates, monitors, etc.)"
+msgstr ""
+
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
 msgid "Template generator, archives, timelapses, and other utilities"
@@ -1343,9 +1389,13 @@ msgid "My Profile"
 msgstr "Моят профил"
 
 #: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/40x.html
+#: resources/public/Fpebble_templates/40x.html
 msgid "My Factions"
 msgstr "Моите фракции"
+
+#: resources/public/pebble_templates/profile.html
+msgid "My Data"
+msgstr ""
 
 #: resources/public/pebble_templates/profile.html
 msgid "Reports"
@@ -1354,6 +1404,10 @@ msgstr "Докладвания"
 #: resources/public/pebble_templates/profile.html
 msgid "Factions"
 msgstr "Фракции"
+
+#: resources/public/pebble_templates/profile.html
+msgid "Data"
+msgstr ""
 
 #: resources/public/pebble_templates/profile.html
 msgid "You must be logged in to view your profile."
@@ -1510,6 +1564,34 @@ msgid "You are not in any factions yet!"
 msgstr "Вие не сте членове на нито една фракция."
 
 #: resources/public/pebble_templates/profile.html
+msgid "You must be logged in to view your data."
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log Keys"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log keys can be used by those who have them to tell which pixels you placed on previous canvases."
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Canvas Code"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log Key"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "You have no log keys yet!"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log keys should show up here after a canvas you have placed on ends."
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
 msgid "Members of {0} ([{1}])"
 msgstr "Mчленове на {0} ([{1}])"
 
@@ -1541,6 +1623,7 @@ msgstr "Премахнати от фракцията"
 
 #: resources/public/pebble_templates/profile.html
 #: resources/public/include/chat.js resources/public/admin/admin.js
+#: resources/public/admin/admin.js
 msgid "Unban"
 msgstr "Отмени наказанието"
 
@@ -2202,9 +2285,3 @@ msgstr ""
 #: resources/public/admin/admin.js
 msgid "Mod Actions"
 msgstr ""
-
-#~ msgid "template location;template source;template="
-#~ msgstr "шаблон;гид;положение"
-
-#~ msgid "Too many sessions open, try closing some tabs."
-#~ msgstr "Твърде много раздели, отворени наведнъж, затворете някои от тях."

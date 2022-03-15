@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-03-13T22:28:42.255Z\n"
+"POT-Creation-Date: 2022-03-15T22:35:45.353Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -34,9 +34,6 @@ msgstr ""
 #. Canvas pixel count
 #. All time pixel count
 #: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
 msgid "N/A"
 msgstr ""
 
@@ -50,8 +47,7 @@ msgid "Loading online user count&hellip;"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/include/lookup.js
-#: resources/public/admin/admin.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Pixels"
 msgstr ""
 
@@ -67,7 +63,6 @@ msgstr ""
 msgid "Loading..."
 msgstr ""
 
-#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/index.html
 msgid "Sign up"
 msgstr ""
@@ -86,9 +81,6 @@ msgid "Info"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
 msgid "Close Panel"
 msgstr ""
 
@@ -100,7 +92,6 @@ msgstr ""
 msgid "Pings"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/index.html
 msgid "Settings"
 msgstr ""
@@ -131,7 +122,6 @@ msgid "general"
 msgstr ""
 
 #. General settings
-#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/index.html
 msgid "General"
 msgstr ""
@@ -168,7 +158,6 @@ msgstr ""
 msgid "<kbd>Shift</kbd> + Click/Hold touch to lookup pixel"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/index.html
 msgid "overlays;alignment;grid hidden;grid shown;hide grid;show grid"
 msgstr ""
@@ -218,7 +207,6 @@ msgid "<kbd>P</kbd> to take a snapshot"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
 msgid "overlays;user activity;pixels placed pixels;heatmap hidden;heatmap shown;hide heatmap;show heatmap"
 msgstr ""
 
@@ -226,7 +214,6 @@ msgstr ""
 msgid "<kbd>H</kbd> to toggle heatmap"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/index.html
 msgid "overlays;user activity;pixels unplaced pixels;virginmap hidden;virginmap shown;hide virginmap;show virginmap"
 msgstr ""
@@ -288,11 +275,9 @@ msgid "templates;guides"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
 msgid "Template"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/index.html
 msgid "transparency"
 msgstr ""
@@ -582,16 +567,13 @@ msgid "Chat icon badge mode:"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
 msgid "Show on unread ping"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
 msgid "Show on unread message"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/index.html
 msgid "Never show"
 msgstr ""
@@ -897,7 +879,6 @@ msgid "Width:"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
 msgid "Reset"
 msgstr ""
 
@@ -1087,7 +1068,6 @@ msgid "Public Discord name:"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/include/chat.js
 #: resources/public/include/chat.js
 msgid "Set"
 msgstr ""
@@ -1286,11 +1266,9 @@ msgid "Any automated aggregation of data from user lookups is not allowed, and w
 msgstr ""
 
 #: resources/public/pebble_templates/info.html
-#: resources/public/pebble_templates/info.html
 msgid "Staff have final say in any rule disputes"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html
 #: resources/public/pebble_templates/info.html
 msgid "If you feel a moderator has acted inappropriately, please report it to an administrator."
 msgstr ""
@@ -1372,7 +1350,7 @@ msgstr ""
 msgid "Profile (user info, factions, etc.)"
 msgstr ""
 
-#. link to pxlsfiddle.com
+#. link to charity.pxls.space
 #: resources/public/pebble_templates/info.html
 msgid "Generator, progress checker, and monitor for Pxls templates"
 msgstr ""
@@ -1382,10 +1360,12 @@ msgstr ""
 msgid "Charity (templates, monitors, etc.)"
 msgstr ""
 
+#. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
 msgid "Template generator, archives, timelapses, and other utilities"
 msgstr ""
 
+#. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
 msgid "PxlsFiddle (templates, archives, etc.)"
 msgstr ""
@@ -1400,13 +1380,10 @@ msgstr ""
 
 #. eg "Alice's profile". Double singlequote is a java thing - needed if a replacement (such as this) contains a singlequote.
 #: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/profile.html
 msgid "{0}''s Profile"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/40x.html
-#: resources/public/pebble_templates/40x.html
 #: resources/public/pebble_templates/40x.html
 msgid "My Profile"
 msgstr ""
@@ -1420,7 +1397,6 @@ msgstr ""
 msgid "My Data"
 msgstr ""
 
-#: resources/public/pebble_templates/profile.html
 #: resources/public/pebble_templates/profile.html
 msgid "Reports"
 msgstr ""
@@ -1473,7 +1449,6 @@ msgid "Canvas Ban Expiry"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/profile.html
 msgid "Never"
 msgstr ""
 
@@ -1495,18 +1470,15 @@ msgstr ""
 
 #. eg "Report on Bob (closed)
 #: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/profile.html
 msgid "Report on {0} (closed)"
 msgstr ""
 
 #. eg "Report on Bob (open)
 #: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/profile.html
 msgid "Report on {0} (open)"
 msgstr ""
 
 #. eg "Reported Bob on Jan 1, 1970, 00:00:00 AM (UTC)
-#: resources/public/pebble_templates/profile.html
 #: resources/public/pebble_templates/profile.html
 msgid "Reported {0} on {1}"
 msgstr ""
@@ -1624,9 +1596,6 @@ msgid "Members of {0} ([{1}])"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/profile.html
 msgid "Close"
 msgstr ""
 
@@ -1645,7 +1614,6 @@ msgid "Ban"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/profile.html
 msgid "Nothing to see here!"
 msgstr ""
 
@@ -1654,9 +1622,7 @@ msgid "Faction Bans"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/admin/admin.js
 #: resources/public/admin/admin.js
 msgid "Unban"
 msgstr ""
@@ -1687,8 +1653,6 @@ msgid "The content you requested could not be found at this URL. If you believe 
 msgstr ""
 
 #. links to the homepage (the app itself)
-#: resources/public/pebble_templates/40x.html
-#: resources/public/pebble_templates/40x.html
 #: resources/public/pebble_templates/40x.html
 msgid "Back to Pxls"
 msgstr ""
@@ -1738,11 +1702,9 @@ msgid "Jump to coordinates without replacing template"
 msgstr ""
 
 #: resources/public/include/chat.js
-#: resources/public/include/chat.js
 msgid "You must be logged in to chat."
 msgstr ""
 
-#: resources/public/include/chat.js
 #: resources/public/include/chat.js
 msgid "none provided"
 msgstr ""
@@ -1756,16 +1718,13 @@ msgid "template:"
 msgstr ""
 
 #: resources/public/include/chat.js
-#: resources/public/include/chat.js
 msgid "Open Failed"
 msgstr ""
 
 #: resources/public/include/chat.js
-#: resources/public/include/chat.js
 msgid "Failed to automatically open in a new tab"
 msgstr ""
 
-#: resources/public/include/chat.js
 #: resources/public/include/chat.js
 msgid "Click here to open in a new tab instead"
 msgstr ""
@@ -1782,9 +1741,7 @@ msgstr ""
 msgid "Note: You can set a default action in the settings menu which bypasses this popup completely."
 msgstr ""
 
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
-#: resources/public/include/lookup.js
+#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Report"
 msgstr ""
 
@@ -1796,8 +1753,7 @@ msgstr ""
 msgid "Ignore"
 msgstr ""
 
-#: resources/public/include/chat.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/admin/admin.js
 msgid "Profile"
 msgstr ""
 
@@ -1805,7 +1761,6 @@ msgstr ""
 msgid "Chat (un)ban"
 msgstr ""
 
-#: resources/public/include/chat.js
 #: resources/public/include/chat.js
 msgid "Purge User"
 msgstr ""
@@ -1822,20 +1777,12 @@ msgstr ""
 msgid "Enter a reason for your report"
 msgstr ""
 
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
-#: resources/public/include/lookup.js
-#: resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/include/lookup.js
+#: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Cancel"
 msgstr ""
 
-#: resources/public/include/chat.js
-#: resources/public/include/lookup.js
+#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Error sending report."
 msgstr ""
 
@@ -1876,8 +1823,6 @@ msgid "Rule 5: NSFW"
 msgstr ""
 
 #: resources/public/include/chat.js
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
 msgid "Custom"
 msgstr ""
 
@@ -1905,16 +1850,12 @@ msgstr ""
 msgid "Purging all messages is disabled during snip mode"
 msgstr ""
 
-#: resources/public/include/chat.js
-#: resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/include/user.js
 #: resources/public/admin/admin.js
 msgid "Yes"
 msgstr ""
 
-#: resources/public/include/chat.js
-#: resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/include/user.js
 #: resources/public/admin/admin.js
 msgid "No"
 msgstr ""
@@ -1923,8 +1864,7 @@ msgstr ""
 msgid "Custom reason"
 msgstr ""
 
-#: resources/public/include/chat.js
-#: resources/public/include/lookup.js
+#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Additional information (if applicable)"
 msgstr ""
 
@@ -1945,16 +1885,13 @@ msgid "Failed to delete"
 msgstr ""
 
 #: resources/public/include/chat.js
-#: resources/public/include/chat.js
 msgid "ID: "
 msgstr ""
 
 #: resources/public/include/chat.js
-#: resources/public/include/chat.js
 msgid "User: "
 msgstr ""
 
-#: resources/public/include/chat.js
 #: resources/public/include/chat.js
 msgid "Message: "
 msgstr ""
@@ -1995,7 +1932,6 @@ msgstr ""
 msgid "Select one of the options below to set the current rename request state."
 msgstr ""
 
-#: resources/public/include/chat.js
 #: resources/public/include/chat.js
 msgid "An unknown error occurred. Please contact a developer"
 msgstr ""
@@ -2064,8 +2000,7 @@ msgstr ""
 msgid "Coords"
 msgstr ""
 
-#: resources/public/include/lookup.js
-#: resources/public/admin/admin.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Username"
 msgstr ""
 
@@ -2205,8 +2140,7 @@ msgstr ""
 msgid "Ban reason:"
 msgstr ""
 
-#: resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Banned"
 msgstr ""
 
@@ -2230,8 +2164,7 @@ msgstr ""
 msgid "Change"
 msgstr ""
 
-#: resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Rename Requested"
 msgstr ""
 
@@ -2273,7 +2206,6 @@ msgid "shadow"
 msgstr ""
 
 #: resources/public/admin/admin.js
-#: resources/public/admin/admin.js
 msgid "never"
 msgstr ""
 
@@ -2285,7 +2217,6 @@ msgstr ""
 msgid "Yes (permanent)"
 msgstr ""
 
-#: resources/public/admin/admin.js
 #: resources/public/admin/admin.js
 msgid "Logins"
 msgstr ""
