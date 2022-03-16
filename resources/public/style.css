@@ -1404,6 +1404,7 @@ aside.panel.horizontal.right {
     font-size: x-large;
     text-align: center;
     width:  100%;
+    cursor: pointer;
 }
 
 .panel-body article .pad-wrapper {
