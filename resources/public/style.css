@@ -460,6 +460,10 @@ dt {
     margin: 0 !important;
 }
 
+.display-none {
+    display: none;
+}
+
 /*//////////////////////////*\
 | Overlays
 \*\\\\\\\\\\\\\\\\\\\\\\\\\\*/
@@ -1404,6 +1408,7 @@ aside.panel.horizontal.right {
     font-size: x-large;
     text-align: center;
     width:  100%;
+    cursor: pointer;
 }
 
 .panel-body article .pad-wrapper {

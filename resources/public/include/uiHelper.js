@@ -124,6 +124,11 @@ const uiHelper = (function() {
         new SLIDEIN.Slidein(__(`A new ${type} report has been received.`), 'info-circle').show().closeAfter(3000);
       });
 
+      $('article > header').on('click', event => {
+        const body = $(event.currentTarget).next();
+        body.toggleClass('display-none');
+      });
+
       settings.ui.palette.numbers.enable.listen(function(value) {
         place.setNumberedPaletteEnabled(value);
       });
