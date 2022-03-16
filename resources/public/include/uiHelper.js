@@ -126,7 +126,7 @@ const uiHelper = (function() {
 
       $('article > header').on('click', event => {
         const body = $(event.currentTarget).next();
-        body.toggleClass('display-none');
+        body.toggleClass('hidden');
       });
 
       settings.ui.palette.numbers.enable.listen(function(value) {
