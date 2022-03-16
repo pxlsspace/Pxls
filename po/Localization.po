@@ -303,6 +303,134 @@ msgid "Note: These values are based on QWERTY keyboards. For other layouts, use 
 msgstr "Note: These values are based on QWERTY keyboards. For other layouts, use the keys corresponding to the same position on a QWERTY keyboard."
 
 #: resources/public/pebble_templates/index.html
+msgid "templates;overlays;guides"
+msgstr "templates;overlays;guides"
+
+#: resources/public/pebble_templates/index.html
+msgid "templates;overlays;image;pixel art"
+msgstr "templates;overlays;image;pixel art"
+
+#: resources/public/pebble_templates/index.html
+msgid "template enabled;template disabled;show template;hide template;template shown;template hidden"
+msgstr "template enabled;template disabled;show template;hide template;template shown;template hidden"
+
+#: resources/public/pebble_templates/index.html
+msgid "Use template"
+msgstr "Use template"
+
+#: resources/public/pebble_templates/index.html
+msgid "Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around"
+msgstr "Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around"
+
+#: resources/public/pebble_templates/index.html
+msgid "template title;template name;tab name;tab title;title="
+msgstr "template title;template name;tab name;tab title;title="
+
+#: resources/public/pebble_templates/index.html
+msgid "Title:"
+msgstr "Title:"
+
+#: resources/public/pebble_templates/index.html
+msgid "template location source;template source URL;template URL;template="
+msgstr "template location source;template source URL;template URL;template="
+
+#: resources/public/pebble_templates/index.html
+msgid "URL:"
+msgstr "URL:"
+
+#: resources/public/pebble_templates/index.html
+msgid "template position;template x;template y;template location; template vertical; template horizontal;ox=;oy="
+msgstr "template position;template x;template y;template location; template vertical; template horizontal;ox=;oy="
+
+#: resources/public/pebble_templates/index.html
+msgid "Horizontal position:"
+msgstr "Horizontal position:"
+
+#: resources/public/pebble_templates/index.html
+msgid "Vertical position:"
+msgstr "Vertical position:"
+
+#: resources/public/pebble_templates/index.html
+msgid "template width;tw="
+msgstr "template width;tw="
+
+#: resources/public/pebble_templates/index.html
+msgid "Width:"
+msgstr "Width:"
+
+#: resources/public/pebble_templates/index.html
+msgid "Reset"
+msgstr "Reset"
+
+#: resources/public/pebble_templates/index.html
+msgid "template style;custom template"
+msgstr "template style;custom template"
+
+#: resources/public/pebble_templates/index.html
+msgid "Style:"
+msgstr "Style:"
+
+#: resources/public/pebble_templates/index.html
+msgid "Use Source Style"
+msgstr "Use Source Style"
+
+#: resources/public/pebble_templates/index.html
+msgid "1-to-1"
+msgstr "1-to-1"
+
+#: resources/public/pebble_templates/index.html
+msgid "1-to-1 (keep incorrect colors)"
+msgstr "1-to-1 (keep incorrect colors)"
+
+#: resources/public/pebble_templates/index.html
+msgid "Dotted (Small, 1:2)"
+msgstr "Dotted (Small, 1:2)"
+
+#: resources/public/pebble_templates/index.html
+msgid "Dotted (Big, 2:2)"
+msgstr "Dotted (Big, 2:2)"
+
+#: resources/public/pebble_templates/index.html
+msgid "Numbers"
+msgstr "Numbers"
+
+#: resources/public/pebble_templates/index.html
+msgid "Custom…"
+msgstr "Custom…"
+
+#: resources/public/pebble_templates/index.html
+msgid "template style source;template style URL;custom style URL;custom template"
+msgstr "template style source;template style URL;custom style URL;custom template"
+
+#: resources/public/pebble_templates/index.html
+msgid "Custom style URL:"
+msgstr "Custom style URL:"
+
+#: resources/public/pebble_templates/index.html
+msgid "template conversion;template palette conversion;convert to palette"
+msgstr "template conversion;template palette conversion;convert to palette"
+
+#: resources/public/pebble_templates/index.html
+msgid "Color Conversion Mode:"
+msgstr "Color Conversion Mode:"
+
+#: resources/public/pebble_templates/index.html
+msgid "Unconverted"
+msgstr "Unconverted"
+
+#: resources/public/pebble_templates/index.html
+msgid "Nearest Custom"
+msgstr "Nearest Custom"
+
+#: resources/public/pebble_templates/index.html
+msgid "template transparency;template opacity;oo="
+msgstr "template transparency;template opacity;oo="
+
+#: resources/public/pebble_templates/index.html
+msgid "Opacity:"
+msgstr "Opacity:"
+
+#: resources/public/pebble_templates/index.html
 msgid "ui;interface"
 msgstr "ui;interface"
 
@@ -821,134 +949,6 @@ msgstr "JPEG"
 #: resources/public/pebble_templates/index.html
 msgid "WEBP (Chrome only)"
 msgstr "WEBP (Chrome only)"
-
-#: resources/public/pebble_templates/index.html
-msgid "templates;overlays;guides"
-msgstr "templates;overlays;guides"
-
-#: resources/public/pebble_templates/index.html
-msgid "templates;overlays;image;pixel art"
-msgstr "templates;overlays;image;pixel art"
-
-#: resources/public/pebble_templates/index.html
-msgid "template enabled;template disabled;show template;hide template;template shown;template hidden"
-msgstr "template enabled;template disabled;show template;hide template;template shown;template hidden"
-
-#: resources/public/pebble_templates/index.html
-msgid "Use template"
-msgstr "Use template"
-
-#: resources/public/pebble_templates/index.html
-msgid "Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around"
-msgstr "Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around"
-
-#: resources/public/pebble_templates/index.html
-msgid "template title;template name;tab name;tab title;title="
-msgstr "template title;template name;tab name;tab title;title="
-
-#: resources/public/pebble_templates/index.html
-msgid "Title:"
-msgstr "Title:"
-
-#: resources/public/pebble_templates/index.html
-msgid "template location source;template source URL;template URL;template="
-msgstr "template location source;template source URL;template URL;template="
-
-#: resources/public/pebble_templates/index.html
-msgid "URL:"
-msgstr "URL:"
-
-#: resources/public/pebble_templates/index.html
-msgid "template position;template x;template y;template location; template vertical; template horizontal;ox=;oy="
-msgstr "template position;template x;template y;template location; template vertical; template horizontal;ox=;oy="
-
-#: resources/public/pebble_templates/index.html
-msgid "Horizontal position:"
-msgstr "Horizontal position:"
-
-#: resources/public/pebble_templates/index.html
-msgid "Vertical position:"
-msgstr "Vertical position:"
-
-#: resources/public/pebble_templates/index.html
-msgid "template width;tw="
-msgstr "template width;tw="
-
-#: resources/public/pebble_templates/index.html
-msgid "Width:"
-msgstr "Width:"
-
-#: resources/public/pebble_templates/index.html
-msgid "Reset"
-msgstr "Reset"
-
-#: resources/public/pebble_templates/index.html
-msgid "template style;custom template"
-msgstr "template style;custom template"
-
-#: resources/public/pebble_templates/index.html
-msgid "Style:"
-msgstr "Style:"
-
-#: resources/public/pebble_templates/index.html
-msgid "Use Source Style"
-msgstr "Use Source Style"
-
-#: resources/public/pebble_templates/index.html
-msgid "1-to-1"
-msgstr "1-to-1"
-
-#: resources/public/pebble_templates/index.html
-msgid "1-to-1 (keep incorrect colors)"
-msgstr "1-to-1 (keep incorrect colors)"
-
-#: resources/public/pebble_templates/index.html
-msgid "Dotted (Small, 1:2)"
-msgstr "Dotted (Small, 1:2)"
-
-#: resources/public/pebble_templates/index.html
-msgid "Dotted (Big, 2:2)"
-msgstr "Dotted (Big, 2:2)"
-
-#: resources/public/pebble_templates/index.html
-msgid "Numbers"
-msgstr "Numbers"
-
-#: resources/public/pebble_templates/index.html
-msgid "Custom…"
-msgstr "Custom…"
-
-#: resources/public/pebble_templates/index.html
-msgid "template style source;template style URL;custom style URL;custom template"
-msgstr "template style source;template style URL;custom style URL;custom template"
-
-#: resources/public/pebble_templates/index.html
-msgid "Custom style URL:"
-msgstr "Custom style URL:"
-
-#: resources/public/pebble_templates/index.html
-msgid "template conversion;template palette conversion;convert to palette"
-msgstr "template conversion;template palette conversion;convert to palette"
-
-#: resources/public/pebble_templates/index.html
-msgid "Color Conversion Mode:"
-msgstr "Color Conversion Mode:"
-
-#: resources/public/pebble_templates/index.html
-msgid "Unconverted"
-msgstr "Unconverted"
-
-#: resources/public/pebble_templates/index.html
-msgid "Nearest Custom"
-msgstr "Nearest Custom"
-
-#: resources/public/pebble_templates/index.html
-msgid "template transparency;template opacity;oo="
-msgstr "template transparency;template opacity;oo="
-
-#: resources/public/pebble_templates/index.html
-msgid "Opacity:"
-msgstr "Opacity:"
 
 #: resources/public/pebble_templates/index.html
 msgid "sound;notification;alert;notify;ping"
