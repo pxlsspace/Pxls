@@ -48,5 +48,8 @@
         <Logger name="Debug" level="DEBUG">
             <AppenderRef ref="Debug" />
         </Logger>
+
+        <Logger name="com.zaxxer.hikari" level="ERROR" />
+        <Logger name="org.apache.commons.jcs3" level="ERROR" additivity="false" />
     </Loggers>
 </Configuration>

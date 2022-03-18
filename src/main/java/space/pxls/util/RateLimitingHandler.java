@@ -34,7 +34,7 @@ public class RateLimitingHandler implements HttpHandler {
         // FIXME: is there anything wrong with using 0.0.0.0?
         String ip = "0.0.0.0";
         if (!global) ip = exchange.getAttachment(IPReader.IP);
-        Cookie header = exchange.getRequestCookies().get("pxls-token");
+        Cookie header = exchange.getRequestCookie("pxls-token");
         if (header != null) {
             User user = App.getUserManager().getByToken(header.getValue());
             if (user != null && user.hasPermission("user.ratelimits.bypass")) {

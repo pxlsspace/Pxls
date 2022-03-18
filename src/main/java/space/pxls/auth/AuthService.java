@@ -1,6 +1,6 @@
 package space.pxls.auth;
 
-import com.mashape.unirest.http.exceptions.UnirestException;
+import kong.unirest.UnirestException;
 import space.pxls.App;
 
 import java.util.Map;

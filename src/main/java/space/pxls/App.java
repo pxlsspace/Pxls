@@ -2,7 +2,7 @@ package space.pxls;
 
 import com.google.gson.Gson;
 import com.typesafe.config.*;
-import org.apache.commons.jcs.JCS;
+import org.apache.commons.jcs3.JCS;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -64,6 +64,8 @@ public class App {
 
         loadConfig();
         loadPalette();
+
+        JCS.setLogSystem(org.apache.commons.jcs3.log.LogManager.LOGSYSTEM_LOG4J2);
 
         // ensure JCS reads our configs
         JCS.getInstance("factions");

@@ -1,13 +1,14 @@
 package space.pxls.auth;
 
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
+import kong.unirest.HttpResponse;
+import kong.unirest.JsonNode;
+import kong.unirest.Unirest;
+import kong.unirest.UnirestException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import org.json.JSONObject;
-import org.json.JSONException;
+
+import kong.unirest.json.JSONException;
+import kong.unirest.json.JSONObject;
 import space.pxls.App;
 
 public class VKAuthService extends AuthService {

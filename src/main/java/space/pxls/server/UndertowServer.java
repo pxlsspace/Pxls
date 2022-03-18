@@ -94,8 +94,10 @@ public class UndertowServer {
                 .addExactPath("/", webHandler::index)
                 .addExactPath("/index.html", webHandler::index)
                 .addExactPath("/factions", new AllowedMethodsHandler(webHandler::getRequestingUserFactions, Methods.GET))
-                .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/")).setCacheTime(10))
-                .addPrefixPath("/emoji", Handlers.resource(new FileResourceManager(new File(App.getStorageDir().resolve("emoji").toString()))).setCacheTime(604800));
+                .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/")).setCacheTime(10));
+        if (new File(App.getStorageDir().resolve("emoji").toString()).exists()) {
+            pathHandler.addPrefixPath("/emoji", Handlers.resource(new FileResourceManager(new File(App.getStorageDir().resolve("emoji").toString()))).setCacheTime(604800));
+        }
         PxlsRoutingHandler routingHandler = PxlsHandlers.routing()
             .getPermGated("/profile", "user.profile", webHandler::profileView)
             .getPermGated("/profile/{who}", "user.profile.other", webHandler::profileView)

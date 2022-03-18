@@ -3,7 +3,7 @@ package space.pxls.server;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mashape.unirest.http.exceptions.UnirestException;
+import kong.unirest.UnirestException;
 import com.mitchellbosecke.pebble.PebbleEngine;
 import com.mitchellbosecke.pebble.loader.ClasspathLoader;
 import io.undertow.server.HttpServerExchange;
@@ -573,7 +573,7 @@ public class WebHandler {
         JsonObject editQuery;
         if ((_editQuery == null || _editQuery.isJsonNull() || !_editQuery.isJsonObject()) && data != null && data.contains("payload")) {
             try {
-                _editQuery = new JsonParser().parse(data.getFirst("payload").getValue());
+                _editQuery = JsonParser.parseString(data.getFirst("payload").getValue());
             } catch (Exception ignored) {}
         }
         if (_editQuery == null || _editQuery.isJsonNull() || !_editQuery.isJsonObject()) {
@@ -1671,7 +1671,7 @@ public class WebHandler {
                 redirect = stateArray[1].equals("redirect");
             } else {
                 // check for cookie...
-                Cookie redirectCookie = exchange.getRequestCookies().get("pxls-auth-redirect");
+                Cookie redirectCookie = exchange.getRequestCookie("pxls-auth-redirect");
                 redirect = redirectCookie != null;
             }
             // let's just delete the redirect cookie
@@ -1837,7 +1837,7 @@ public class WebHandler {
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
 
         // let's also update the cookie, if present. This place will get called frequent enough
-        Cookie tokenCookie = exchange.getRequestCookies().get("pxls-token");
+        Cookie tokenCookie = exchange.getRequestCookie("pxls-token");
         if (tokenCookie != null) {
             setAuthCookie(exchange, tokenCookie.getValue(), 24);
         }
@@ -1875,7 +1875,7 @@ public class WebHandler {
     }
 
     public void logout(HttpServerExchange exchange) {
-        Cookie tokenCookie = exchange.getRequestCookies().get("pxls-token");
+        Cookie tokenCookie = exchange.getRequestCookie("pxls-token");
 
         if (tokenCookie != null) {
             App.getUserManager().logOut(tokenCookie.getValue());
