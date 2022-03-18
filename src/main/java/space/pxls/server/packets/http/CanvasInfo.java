@@ -1,5 +1,6 @@
 package space.pxls.server.packets.http;
 
+import com.typesafe.config.ConfigObject;
 import space.pxls.auth.AuthService;
 import space.pxls.palette.Color;
 
@@ -11,6 +12,7 @@ public class CanvasInfo {
     public Integer width;
     public Integer height;
     public List<Color> palette;
+    public CooldownInfo cooldownInfo;
     public String captchaKey;
     public Integer heatmapCooldown;
     public Integer maxStacked;
@@ -26,11 +28,12 @@ public class CanvasInfo {
     public String corsParam;
     public String chatRatelimitMessage;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, List<Object> customEmoji, String corsBase, String corsParam, String chatRatelimitMessage) {
+    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, List<Object> customEmoji, String corsBase, String corsParam, String chatRatelimitMessage) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
         this.palette = palette;
+        this.cooldownInfo = cooldownInfo;
         this.captchaKey = captchaKey;
         this.heatmapCooldown = heatmapCooldown;
         this.maxStacked = maxStacked;
@@ -110,7 +113,7 @@ public class CanvasInfo {
     public String getCorsBase() {
         return corsBase;
     }
-    
+
     public String getCorsParam() {
         return corsParam;
     }
@@ -118,4 +121,6 @@ public class CanvasInfo {
     public String getChatRatelimitMessage() {
         return chatRatelimitMessage;
     }
+
+    public record CooldownInfo(String type, long staticCooldownSeconds, Map<String, Object> activityCooldown) {};
 }
