@@ -8,7 +8,6 @@ import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 
 import space.pxls.App;
-import space.pxls.server.packets.chat.Badge;
 import space.pxls.server.packets.chat.ChatMessage;
 import space.pxls.server.packets.chat.ServerChatLookup;
 import space.pxls.user.Chatban;
@@ -21,7 +20,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;

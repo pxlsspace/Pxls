@@ -3,7 +3,6 @@ package space.pxls.server;
 import com.google.gson.JsonObject;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
-import io.undertow.server.RoutingHandler;
 import io.undertow.server.handlers.AllowedMethodsHandler;
 import io.undertow.server.handlers.form.EagerFormParsingHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;

@@ -5,7 +5,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import kong.unirest.UnirestException;
 import com.mitchellbosecke.pebble.PebbleEngine;
-import com.mitchellbosecke.pebble.loader.ClasspathLoader;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
