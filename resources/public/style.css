@@ -179,13 +179,6 @@ html, body {
     -moz-text-size-adjust: 100%;
     -ms-text-size-adjust: 100%;
     text-size-adjust: 100%;
-
-    --panel-shadow-size: 10px;
-    --panel-min-width: 300px;
-
-    /* -(--panel-shadow-size + --panel-min-width) */
-    /* not done with calc for nesting reasons */
-    --panel-hide-offset: -310px;
 }
 
 * {
@@ -1207,7 +1200,7 @@ aside.panel.left {
     right: initial;
     transition: left ease-in-out .25s;
     left: -35%;
-    left: min(calc(-30% - var(--panel-shadow-size)), var(--panel-hide-offset));
+    left: min(calc(-30% - 10px), -310px);
 }
 
 aside.panel.left.open, .panel.left[data-state=open] {
@@ -1218,7 +1211,7 @@ aside.panel.right {
     left: initial;
     transition: right ease-in-out .25s;
     right: -35%;
-    right: min(calc(-30% - var(--panel-shadow-size)), var(--panel-hide-offset));
+    right: min(calc(-30% - 10px), -310px);
 }
 
 aside.panel.right.open, .panel.right[data-state=open] {
@@ -1238,12 +1231,12 @@ aside.panel.half-width {
 
 aside.panel.half-width.left {
     left: -55%;
-    left: min(calc(-50% - var(--panel-shadow-size)), var(--panel-hide-offset));
+    left: min(calc(-50% - 10px), -310px);
 }
 
 aside.panel.half-width.right {
     right: -55%;
-    right: min(calc(-50% - var(--panel-shadow-size)), var(--panel-hide-offset));
+    right: min(calc(-50% - 10px), -310px);
 }
 
 aside.panel.horizontal {
@@ -1261,7 +1254,7 @@ aside.panel.horizontal.right {
 }
 
 .panel {
-    box-shadow: 0 0 var(--panel-shadow-size) 5px #0009;
+    box-shadow: 0 0 10px 5px #0009;
     background: var(--panel-background);
     color: var(--panel-text-color);
 }
@@ -2070,12 +2063,12 @@ body .emoji-picker {
 
     aside.panel.left {
         left: -105% !important;
-        left: min(calc(-100% - var(--panel-shadow-size)), var(--panel-hide-offset)) !important;
+        left: min(calc(-100% - 10px), -310px) !important;
     }
 
     aside.panel.right {
         right: -105% !important;
-        right: min(calc(-100% - var(--panel-shadow-size)), var(--panel-hide-offset)) !important;
+        right: min(calc(-100% - 10px), -310px) !important;
     }
 
     body.panel-open #ui {
