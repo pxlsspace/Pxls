@@ -540,6 +540,8 @@ body .message {
     top: 50px;
     right: 16px;
     z-index: 22;
+    max-width: 300px;
+    word-wrap: break-word;
 }
 
 /* moderator action popup styles */
