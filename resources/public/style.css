@@ -1407,12 +1407,12 @@ aside.panel.horizontal.right {
 
 body.panel-open.panel-left #ui {
     left: 30%;
-    left: max(30%, var(--panel-min-width));
+    left: max(30%, 300px);
 }
 
 body.panel-open.panel-right #ui {
     right: 30%;
-    right: max(30%, var(--panel-min-width));
+    right: max(30%, 300px);
 }
 
 body.panel-open.panel-left.panel-left-halfwidth #ui {
@@ -2057,19 +2057,16 @@ body .emoji-picker {
     aside.panel {
         max-width: 100% !important;
         width: 100% !important;
-
-        --panel-min-width: 0;
-        --panel-hide-offset: -10px;
     }
 
     aside.panel.left {
         left: -105% !important;
-        left: min(calc(-100% - 10px), -310px) !important;
+        left: min(calc(-100% - 10px), -10px) !important;
     }
 
     aside.panel.right {
         right: -105% !important;
-        right: min(calc(-100% - 10px), -310px) !important;
+        right: min(calc(-100% - 10px), -10px) !important;
     }
 
     body.panel-open #ui {
