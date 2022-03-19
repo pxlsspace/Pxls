@@ -103,7 +103,8 @@ window.App = (function() {
         return uiHelper.tabId;
       },
       tabHasFocus: uiHelper.tabHasFocus,
-      updateAudio: uiHelper.updateAudio
+      updateAudio: uiHelper.updateAudio,
+      handleFile: uiHelper.handleFile
     },
     template: {
       update: function(t) {

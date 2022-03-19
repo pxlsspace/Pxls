@@ -40,7 +40,8 @@ const uiHelper = (function() {
       themeSelect: $('#setting-ui-theme-index'),
       themeColorMeta: $('meta[name="theme-color"]'),
       txtDiscordName: $('#txtDiscordName'),
-      bottomBanner: $('#bottom-banner')
+      bottomBanner: $('#bottom-banner'),
+      dragDrop: $('#drag-drop')
     },
     themes: [
       {
@@ -255,6 +256,30 @@ const uiHelper = (function() {
         };
         $(window).on('pxls:panel:opened', toAttach);
       }
+
+      self.elements.dragDrop.hide();
+
+      // NOTE (Flying): Needed for dragenter and drop to fire.
+      document.addEventListener('dragover', event => event.preventDefault(), false);
+
+      document.addEventListener('dragenter', event => {
+        event.preventDefault();
+        if (!self.elements.dragDrop.is(':visible')) self.elements.dragDrop.fadeIn(200);
+      }, false);
+
+      /**
+       * @param event {DragEvent} The drop event data.
+       */
+      document.addEventListener('drop', event => {
+        event.preventDefault();
+        self.elements.dragDrop.fadeOut(200);
+        const data = event.dataTransfer;
+        if (!data.files[0].type.startsWith('image/')) {
+          modal.showText(__('Drag and dropped file must be a valid image.'));
+          return;
+        }
+        self.handleFile(data);
+      }, false);
     },
     prettifyRange: function (ranges) {
       ranges = $(ranges);
@@ -640,6 +665,15 @@ const uiHelper = (function() {
             }
           };
         });
+    },
+    /**
+     * Handles a file drop or upload.
+     * @param dataTransfer {DataTransfer} The data transfer.
+     */
+    handleFile(dataTransfer) {
+      const reader = new FileReader();
+      reader.onload = () => template.update({ use: true, url: reader.result, convertMode: 'nearestCustom' });
+      reader.readAsDataURL(dataTransfer.files[0]);
     }
   };
 
@@ -686,7 +720,8 @@ const uiHelper = (function() {
         ? self._workerIsTabFocused
         : ls.get('tabs.has-focus') === self.tabId;
     },
-    prettifyRange: self.prettifyRange
+    prettifyRange: self.prettifyRange,
+    handleFile: self.handleFile
   };
 })();
 

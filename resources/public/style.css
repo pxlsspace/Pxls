@@ -19,6 +19,7 @@ z-index:
 
 98 - lost connection
 99 - alert box
+100 - drag and drop
 */
 
 /*//////////////////////////*\
@@ -585,6 +586,26 @@ body .message {
 
 .buttons {
     text-align: right;
+}
+
+#drag-drop {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+
+    background: var(--bubble-background);
+    color: var(--bubble-text-color);
+    pointer-events: none;
+    font-size: 32px;
+    text-shadow: 0 0 5px black;
+    border-radius: 5px;
+    padding: 15px;
+}
+
+#template-file-selector {
+    margin: 5px 0;
 }
 
 /*//////////////////////////*\
