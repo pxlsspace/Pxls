@@ -517,7 +517,8 @@ body .message {
     color: var(--floating-panel-text-color);
     box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
     padding: 16px;
-    max-width: var(--panel-min-width);
+    max-width: 320px;
+    word-wrap: break-word;
 }
 
 .floating-panel .content {
@@ -533,8 +534,6 @@ body .message {
     top: 50px;
     right: 16px;
     z-index: 22;
-    max-width: 300px;
-    word-wrap: break-word;
 }
 
 /* moderator action popup styles */
