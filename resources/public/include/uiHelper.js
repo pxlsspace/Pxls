@@ -41,6 +41,7 @@ const uiHelper = (function() {
       themeColorMeta: $('meta[name="theme-color"]'),
       txtDiscordName: $('#txtDiscordName'),
       bottomBanner: $('#bottom-banner'),
+      dragDropTarget: $('#drag-drop-target'),
       dragDrop: $('#drag-drop')
     },
     themes: [
@@ -257,6 +258,7 @@ const uiHelper = (function() {
         $(window).on('pxls:panel:opened', toAttach);
       }
 
+      self.elements.dragDropTarget.hide();
       self.elements.dragDrop.hide();
 
       // NOTE (Flying): Needed for dragenter and drop to fire.
@@ -264,17 +266,26 @@ const uiHelper = (function() {
 
       document.addEventListener('dragenter', event => {
         event.preventDefault();
-        if (!self.elements.dragDrop.is(':visible')) self.elements.dragDrop.fadeIn(200);
+        if (!self.elements.dragDropTarget.is(':visible')) {
+          self.elements.dragDropTarget.show();
+          self.elements.dragDrop.fadeIn(200);
+        }
       }, false);
 
-      /**
-       * @param event {DragEvent} The drop event data.
-       */
+      document.addEventListener('dragleave', event => {
+        event.preventDefault();
+        if (self.elements.dragDropTarget.is(event.target)) {
+          self.elements.dragDropTarget.hide();
+          self.elements.dragDrop.fadeOut(200);
+        }
+      }, false);
+
       document.addEventListener('drop', event => {
         event.preventDefault();
+        self.elements.dragDropTarget.hide();
         self.elements.dragDrop.fadeOut(200);
         const data = event.dataTransfer;
-        if (!data.files[0].type.startsWith('image/')) {
+        if (!['image/png', 'image/jpeg', 'image/webp'].includes(data.files[0].type)) {
           modal.showText(__('Drag and dropped file must be a valid image.'));
           return;
         }
