@@ -1186,7 +1186,7 @@ aside.panel {
     position: fixed;
     top: 0;
     width: 30%;
-    min-width: var(--panel-min-width);
+    min-width: 300px;
     height: 100%;
     z-index: 21;
     cursor: initial !important;
