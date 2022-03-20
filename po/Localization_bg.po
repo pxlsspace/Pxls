@@ -76,6 +76,10 @@ msgid "Username:"
 msgstr "Име:"
 
 #: resources/public/pebble_templates/index.html
+msgid "Drag and drop template image"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/profile.html
 msgid "Info"
 msgstr "Информация"
@@ -2099,6 +2103,10 @@ msgstr "Терминал"
 #: resources/public/include/uiHelper.js
 msgid "Red"
 msgstr "Червена"
+
+#: resources/public/include/uiHelper.js
+msgid "Drag and dropped file must be a valid image."
+msgstr ""
 
 #: resources/public/include/uiHelper.js
 msgid "Discord name updated successfully"

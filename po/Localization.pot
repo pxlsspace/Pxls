@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-03-16T01:58:20.057Z\n"
+"POT-Creation-Date: 2022-03-19T05:16:12.444Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -73,6 +73,10 @@ msgstr ""
 
 #: resources/public/pebble_templates/index.html
 msgid "Username:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Drag and drop template image"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
@@ -2098,6 +2102,10 @@ msgstr ""
 #. theme name
 #: resources/public/include/uiHelper.js
 msgid "Red"
+msgstr ""
+
+#: resources/public/include/uiHelper.js
+msgid "Drag and dropped file must be a valid image."
 msgstr ""
 
 #: resources/public/include/uiHelper.js

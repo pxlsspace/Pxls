@@ -141,6 +141,11 @@
     </div>
     <button id="signup-button" class="float-right text-button">{{i18n('Localization', 'Sign up') | raw}}</button>
 </div>
+<div id="drag-drop-target">
+    <div id="drag-drop">
+        <span>{{i18n('Localization', 'Drag and drop template image') | raw}}</span>
+    </div>
+</div>
 
 
 <div class="g-recaptcha"
@@ -286,6 +291,7 @@
                         <label class="input-group">
                             <span class="label-text">{{i18n('Localization', 'URL:') | raw}}</span>
                             <input class="fullwidth" type="text" id="template-url" autocomplete="off">
+                            <input type="file" id="template-file-selector" accept="image/png, image/jpeg, image/webp" onchange="App.uiHelper.handleFile(this)">
                         </label>
                         <label id="template-image-error-warning" for="template-url" class="text-red extra-label"></label>
                     </div>
