@@ -510,7 +510,9 @@ public class PacketHandler {
 
         embed.put("description", description);
         embed.put("timestamp", Instant.ofEpochSecond(message.getDate()).toString());
-        embed.put("color", Long.decode("0x" + App.getPalette().getColors().get(message.getAuthorNameColor().intValue()).getValue()));
+        if (message.getAuthorNameColor().intValue() >= 0) {
+            embed.put("color", Long.decode("0x" + App.getPalette().getColors().get(message.getAuthorNameColor().intValue()).getValue()));
+        }
 
         var author = new JSONObject();
         // NOTE ([  ]): There's no clean way to determining if we're on http or https
