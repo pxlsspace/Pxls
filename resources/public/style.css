@@ -426,6 +426,16 @@ dt {
     background-image: linear-gradient(45deg, #fff45f, #ffffff, #9c59d1, #000000, #fff45f);
 }
 
+.donator.donator--mines{
+    background-image: linear-gradient(90deg, #fffa00, #fcc200, #8f4a16, #b46e30, #8f4a16, #ffba00, #fff000);
+}
+.donator.donator--eggplant{
+    background-image: linear-gradient(45deg, #507d2a, #8e4585, #8e4585, #702963, #8b4789, #8b4789, #5e8c31);
+}
+.donator.donator--banana{
+    background-image: linear-gradient(80deg, #fef9d3, #fdf3a7, #ffff99, #ffff31, #ffe135, #7e5126, #ffe135, #ffff31, #ffff99, #fdf3a7, #fef9d3);
+}
+
 .error {
     color: var(--error-color);
     font-weight: 700;

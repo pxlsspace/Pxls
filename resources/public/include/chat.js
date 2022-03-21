@@ -1025,6 +1025,9 @@ const chat = (function() {
         hasAllDonatorColors || hasPermForColor('donator.bi') ? crel('option', { value: -7, class: 'donator donator--bi' }, '*. Donator Bisexual') : null,
         hasAllDonatorColors || hasPermForColor('donator.pan') ? crel('option', { value: -8, class: 'donator donator--pan' }, '*. Donator Pansexual') : null,
         hasAllDonatorColors || hasPermForColor('donator.nonbinary') ? crel('option', { value: -9, class: 'donator donator--nonbinary' }, '*. Donator Nonbinary') : null,
+        hasAllDonatorColors || hasPermForColor('donator.mines') ? crel('option', { value: -10, class: 'donator donator--mines' }, '*. Donator Mines') : null,
+        hasAllDonatorColors || hasPermForColor('donator.eggplant') ? crel('option', { value: -11, class: 'donator donator--eggplant' }, '*. Donator Eggplant') : null,
+        hasAllDonatorColors || hasPermForColor('donator.banana') ? crel('option', { value: -12, class: 'donator donator--banana' }, '*. Donator Banana') : null,
         place.palette.map(({ name, value: hex }, i) => crel('option', {
           value: i,
           'data-idx': i,
