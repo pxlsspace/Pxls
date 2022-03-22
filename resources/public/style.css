@@ -2095,6 +2095,7 @@ body .emoji-picker {
 
 @media (max-width: 600px) {
     aside.panel {
+        min-width: 0;
         max-width: 100% !important;
         width: 100% !important;
     }
