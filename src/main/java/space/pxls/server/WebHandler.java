@@ -1142,6 +1142,9 @@ public class WebHandler {
                 } else if (t == -12 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.banana"))) {
                     sendBadRequest(exchange, "Color reserved for donators");
                     return;
+                } else if (t == -13 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.teal"))) {
+                    sendBadRequest(exchange, "Color reserved for donators");
+                    return;
                 }
 
                 user.setChatNameColor(t, true, !App.getSnipMode());
