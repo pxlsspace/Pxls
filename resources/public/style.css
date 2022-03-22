@@ -436,7 +436,7 @@ dt {
     background-image: linear-gradient(80deg, #fef9d3, #fdf3a7, #ffff99, #ffff31, #ffe135, #7e5126, #ffe135, #ffff31, #ffff99, #fdf3a7, #fef9d3);
 }
 .donator.donator--teal{
-    background-image: linear-gradient(45deg, #277e6c, #32b69f, #88fff3, #32b69f);
+    background-image: linear-gradient(45deg, #277e6c, #32b69f, #88fff3, #32b69f, #277e6c);
 }
 
 .error {
