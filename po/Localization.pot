@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-12-03T07:36:36.932Z\n"
+"POT-Creation-Date: 2022-03-19T05:16:12.444Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -34,9 +34,6 @@ msgstr ""
 #. Canvas pixel count
 #. All time pixel count
 #: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
 msgid "N/A"
 msgstr ""
 
@@ -50,8 +47,7 @@ msgid "Loading online user count&hellip;"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/include/lookup.js
-#: resources/public/admin/admin.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Pixels"
 msgstr ""
 
@@ -68,7 +64,6 @@ msgid "Loading..."
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
 msgid "Sign up"
 msgstr ""
 
@@ -81,13 +76,14 @@ msgid "Username:"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
+msgid "Drag and drop template image"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/profile.html
 msgid "Info"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/index.html
 msgid "Close Panel"
 msgstr ""
@@ -100,7 +96,6 @@ msgstr ""
 msgid "Pings"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/index.html
 msgid "Settings"
 msgstr ""
@@ -131,7 +126,6 @@ msgid "general"
 msgstr ""
 
 #. General settings
-#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/index.html
 msgid "General"
 msgstr ""
@@ -168,7 +162,6 @@ msgstr ""
 msgid "<kbd>Shift</kbd> + Click/Hold touch to lookup pixel"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/index.html
 msgid "overlays;alignment;grid hidden;grid shown;hide grid;show grid"
 msgstr ""
@@ -218,7 +211,6 @@ msgid "<kbd>P</kbd> to take a snapshot"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
 msgid "overlays;user activity;pixels placed pixels;heatmap hidden;heatmap shown;hide heatmap;show heatmap"
 msgstr ""
 
@@ -226,7 +218,6 @@ msgstr ""
 msgid "<kbd>H</kbd> to toggle heatmap"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/index.html
 msgid "overlays;user activity;pixels unplaced pixels;virginmap hidden;virginmap shown;hide virginmap;show virginmap"
 msgstr ""
@@ -288,11 +279,9 @@ msgid "templates;guides"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
 msgid "Template"
 msgstr ""
 
-#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/index.html
 msgid "transparency"
 msgstr ""
@@ -318,11 +307,167 @@ msgid "Note: These values are based on QWERTY keyboards. For other layouts, use 
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
+msgid "templates;overlays;guides"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "templates;overlays;image;pixel art"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "template enabled;template disabled;show template;hide template;template shown;template hidden"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Use template"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "template title;template name;tab name;tab title;title="
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Title:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "template location source;template source URL;template URL;template="
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "URL:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "template position;template x;template y;template location; template vertical; template horizontal;ox=;oy="
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Horizontal position:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Vertical position:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "template width;tw="
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Width:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Reset"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "template style;custom template"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Style:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Use Source Style"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "1-to-1"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "1-to-1 (keep incorrect colors)"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Dotted (Small, 1:2)"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Dotted (Big, 2:2)"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Numbers"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Custom…"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "template style source;template style URL;custom style URL;custom template"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Custom style URL:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "template conversion;template palette conversion;convert to palette"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Color Conversion Mode:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Unconverted"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Nearest Custom"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "template transparency;template opacity;oo="
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Opacity:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
 msgid "ui;interface"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
 msgid "UI Settings"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "language override;text"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Language override:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Use Browser Language"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "English"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "French"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Russian"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Bulgarian"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
@@ -543,6 +688,34 @@ msgstr ""
 
 #: resources/public/pebble_templates/index.html
 msgid "Default internal link action click:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "chat icon;chat notifications;chat ping"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Chat icon badge mode:"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Show on unread ping"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Show on unread message"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Never show"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "chat icon;chat notifications;chat message"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Chat icon highlight mode:"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
@@ -782,127 +955,6 @@ msgid "WEBP (Chrome only)"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
-msgid "templates;overlays;guides"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "templates;overlays;image;pixel art"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "template enabled;template disabled;show template;hide template;template shown;template hidden"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "Use template"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "template title;template name;tab name;tab title;title="
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "Title:"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "template location source;template source URL;template URL;template="
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "URL:"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "template position;template x;template y;template location; template vertical; template horizontal;ox=;oy="
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "Horizontal position:"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "Vertical position:"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "template width;tw="
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "Width:"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-#: resources/public/pebble_templates/index.html
-msgid "Reset"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "template style;custom template"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "Style:"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "Use Source Style"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "Dotted (Small, 1:2)"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "Dotted (Big, 2:2)"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "Numbers"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "Custom…"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "template style source;template style URL;custom style URL;custom template"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "Custom style URL:"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "template conversion;template palette conversion;convert to palette"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "Color Conversion Mode:"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "Unconverted"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "Nearest Custom"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "template transparency;template opacity;oo="
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
-msgid "Opacity:"
-msgstr ""
-
-#: resources/public/pebble_templates/index.html
 msgid "sound;notification;alert;notify;ping"
 msgstr ""
 
@@ -1021,7 +1073,6 @@ msgstr ""
 
 #: resources/public/pebble_templates/index.html
 #: resources/public/include/chat.js
-#: resources/public/include/chat.js
 msgid "Set"
 msgstr ""
 
@@ -1079,7 +1130,7 @@ msgid "How do I make a template?"
 msgstr ""
 
 #: resources/public/pebble_templates/faq.html
-msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use the 3rd party tool <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into PxlsFiddle."
+msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or PxlsFiddle."
 msgstr ""
 
 #: resources/public/pebble_templates/faq.html
@@ -1219,11 +1270,9 @@ msgid "Any automated aggregation of data from user lookups is not allowed, and w
 msgstr ""
 
 #: resources/public/pebble_templates/info.html
-#: resources/public/pebble_templates/info.html
 msgid "Staff have final say in any rule disputes"
 msgstr ""
 
-#: resources/public/pebble_templates/info.html
 #: resources/public/pebble_templates/info.html
 msgid "If you feel a moderator has acted inappropriately, please report it to an administrator."
 msgstr ""
@@ -1305,6 +1354,16 @@ msgstr ""
 msgid "Profile (user info, factions, etc.)"
 msgstr ""
 
+#. link to charity.pxls.space
+#: resources/public/pebble_templates/info.html
+msgid "Generator, progress checker, and monitor for Pxls templates"
+msgstr ""
+
+#. link to charity.pxls.space
+#: resources/public/pebble_templates/info.html
+msgid "Charity (templates, monitors, etc.)"
+msgstr ""
+
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
 msgid "Template generator, archives, timelapses, and other utilities"
@@ -1325,13 +1384,10 @@ msgstr ""
 
 #. eg "Alice's profile". Double singlequote is a java thing - needed if a replacement (such as this) contains a singlequote.
 #: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/profile.html
 msgid "{0}''s Profile"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/40x.html
-#: resources/public/pebble_templates/40x.html
 #: resources/public/pebble_templates/40x.html
 msgid "My Profile"
 msgstr ""
@@ -1342,12 +1398,19 @@ msgid "My Factions"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html
+msgid "My Data"
+msgstr ""
+
 #: resources/public/pebble_templates/profile.html
 msgid "Reports"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html
 msgid "Factions"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Data"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html
@@ -1390,7 +1453,6 @@ msgid "Canvas Ban Expiry"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/profile.html
 msgid "Never"
 msgstr ""
 
@@ -1412,18 +1474,15 @@ msgstr ""
 
 #. eg "Report on Bob (closed)
 #: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/profile.html
 msgid "Report on {0} (closed)"
 msgstr ""
 
 #. eg "Report on Bob (open)
 #: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/profile.html
 msgid "Report on {0} (open)"
 msgstr ""
 
 #. eg "Reported Bob on Jan 1, 1970, 00:00:00 AM (UTC)
-#: resources/public/pebble_templates/profile.html
 #: resources/public/pebble_templates/profile.html
 msgid "Reported {0} on {1}"
 msgstr ""
@@ -1509,12 +1568,37 @@ msgid "You are not in any factions yet!"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html
-msgid "Members of {0} ([{1}])"
+msgid "You must be logged in to view your data."
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html
+msgid "Log Keys"
+msgstr ""
+
 #: resources/public/pebble_templates/profile.html
+msgid "Log keys can be used by those who have them to tell which pixels you placed on previous canvases."
+msgstr ""
+
 #: resources/public/pebble_templates/profile.html
+msgid "Canvas Code"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log Key"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "You have no log keys yet!"
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log keys should show up here after a canvas you have placed on ends."
+msgstr ""
+
+#: resources/public/pebble_templates/profile.html
+msgid "Members of {0} ([{1}])"
+msgstr ""
+
 #: resources/public/pebble_templates/profile.html
 msgid "Close"
 msgstr ""
@@ -1534,7 +1618,6 @@ msgid "Ban"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/profile.html
 msgid "Nothing to see here!"
 msgstr ""
 
@@ -1543,9 +1626,7 @@ msgid "Faction Bans"
 msgstr ""
 
 #: resources/public/pebble_templates/profile.html
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/admin/admin.js
 #: resources/public/admin/admin.js
 msgid "Unban"
 msgstr ""
@@ -1576,8 +1657,6 @@ msgid "The content you requested could not be found at this URL. If you believe 
 msgstr ""
 
 #. links to the homepage (the app itself)
-#: resources/public/pebble_templates/40x.html
-#: resources/public/pebble_templates/40x.html
 #: resources/public/pebble_templates/40x.html
 msgid "Back to Pxls"
 msgstr ""
@@ -1627,11 +1706,9 @@ msgid "Jump to coordinates without replacing template"
 msgstr ""
 
 #: resources/public/include/chat.js
-#: resources/public/include/chat.js
 msgid "You must be logged in to chat."
 msgstr ""
 
-#: resources/public/include/chat.js
 #: resources/public/include/chat.js
 msgid "none provided"
 msgstr ""
@@ -1645,16 +1722,13 @@ msgid "template:"
 msgstr ""
 
 #: resources/public/include/chat.js
-#: resources/public/include/chat.js
 msgid "Open Failed"
 msgstr ""
 
 #: resources/public/include/chat.js
-#: resources/public/include/chat.js
 msgid "Failed to automatically open in a new tab"
 msgstr ""
 
-#: resources/public/include/chat.js
 #: resources/public/include/chat.js
 msgid "Click here to open in a new tab instead"
 msgstr ""
@@ -1671,9 +1745,7 @@ msgstr ""
 msgid "Note: You can set a default action in the settings menu which bypasses this popup completely."
 msgstr ""
 
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
-#: resources/public/include/lookup.js
+#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Report"
 msgstr ""
 
@@ -1685,8 +1757,7 @@ msgstr ""
 msgid "Ignore"
 msgstr ""
 
-#: resources/public/include/chat.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/admin/admin.js
 msgid "Profile"
 msgstr ""
 
@@ -1694,7 +1765,6 @@ msgstr ""
 msgid "Chat (un)ban"
 msgstr ""
 
-#: resources/public/include/chat.js
 #: resources/public/include/chat.js
 msgid "Purge User"
 msgstr ""
@@ -1711,20 +1781,12 @@ msgstr ""
 msgid "Enter a reason for your report"
 msgstr ""
 
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
-#: resources/public/include/lookup.js
-#: resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/include/lookup.js
+#: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Cancel"
 msgstr ""
 
-#: resources/public/include/chat.js
-#: resources/public/include/lookup.js
+#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Error sending report."
 msgstr ""
 
@@ -1765,8 +1827,6 @@ msgid "Rule 5: NSFW"
 msgstr ""
 
 #: resources/public/include/chat.js
-#: resources/public/include/chat.js
-#: resources/public/include/chat.js
 msgid "Custom"
 msgstr ""
 
@@ -1794,16 +1854,12 @@ msgstr ""
 msgid "Purging all messages is disabled during snip mode"
 msgstr ""
 
-#: resources/public/include/chat.js
-#: resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/include/user.js
 #: resources/public/admin/admin.js
 msgid "Yes"
 msgstr ""
 
-#: resources/public/include/chat.js
-#: resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/include/user.js
 #: resources/public/admin/admin.js
 msgid "No"
 msgstr ""
@@ -1812,8 +1868,7 @@ msgstr ""
 msgid "Custom reason"
 msgstr ""
 
-#: resources/public/include/chat.js
-#: resources/public/include/lookup.js
+#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Additional information (if applicable)"
 msgstr ""
 
@@ -1834,16 +1889,13 @@ msgid "Failed to delete"
 msgstr ""
 
 #: resources/public/include/chat.js
-#: resources/public/include/chat.js
 msgid "ID: "
 msgstr ""
 
 #: resources/public/include/chat.js
-#: resources/public/include/chat.js
 msgid "User: "
 msgstr ""
 
-#: resources/public/include/chat.js
 #: resources/public/include/chat.js
 msgid "Message: "
 msgstr ""
@@ -1884,7 +1936,6 @@ msgstr ""
 msgid "Select one of the options below to set the current rename request state."
 msgstr ""
 
-#: resources/public/include/chat.js
 #: resources/public/include/chat.js
 msgid "An unknown error occurred. Please contact a developer"
 msgstr ""
@@ -1953,8 +2004,7 @@ msgstr ""
 msgid "Coords"
 msgstr ""
 
-#: resources/public/include/lookup.js
-#: resources/public/admin/admin.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Username"
 msgstr ""
 
@@ -2055,6 +2105,10 @@ msgid "Red"
 msgstr ""
 
 #: resources/public/include/uiHelper.js
+msgid "Drag and dropped file must be a valid image."
+msgstr ""
+
+#: resources/public/include/uiHelper.js
 msgid "Discord name updated successfully"
 msgstr ""
 
@@ -2094,8 +2148,7 @@ msgstr ""
 msgid "Ban reason:"
 msgstr ""
 
-#: resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Banned"
 msgstr ""
 
@@ -2119,8 +2172,7 @@ msgstr ""
 msgid "Change"
 msgstr ""
 
-#: resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Rename Requested"
 msgstr ""
 
@@ -2162,7 +2214,6 @@ msgid "shadow"
 msgstr ""
 
 #: resources/public/admin/admin.js
-#: resources/public/admin/admin.js
 msgid "never"
 msgstr ""
 
@@ -2174,7 +2225,6 @@ msgstr ""
 msgid "Yes (permanent)"
 msgstr ""
 
-#: resources/public/admin/admin.js
 #: resources/public/admin/admin.js
 msgid "Logins"
 msgstr ""

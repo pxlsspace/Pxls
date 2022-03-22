@@ -1,15 +1,10 @@
 package space.pxls.server;
 
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.async.Callback;
-import com.mashape.unirest.http.exceptions.UnirestException;
+import kong.unirest.*;
 import com.typesafe.config.Config;
 import io.undertow.websockets.core.WebSocketChannel;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
-import org.json.JSONArray;
-import org.json.JSONObject;
+import kong.unirest.json.JSONObject;
 
 import space.pxls.App;
 import space.pxls.data.DBChatMessage;
@@ -30,7 +25,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
+import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
 public class PacketHandler {
     private UndertowServer server;
@@ -515,7 +510,9 @@ public class PacketHandler {
 
         embed.put("description", description);
         embed.put("timestamp", Instant.ofEpochSecond(message.getDate()).toString());
-        embed.put("color", Long.decode("0x" + App.getPalette().getColors().get(message.getAuthorNameColor().intValue()).getValue()));
+        if (message.getAuthorNameColor().intValue() >= 0) {
+            embed.put("color", Long.decode("0x" + App.getPalette().getColors().get(message.getAuthorNameColor().intValue()).getValue()));
+        }
 
         var author = new JSONObject();
         // NOTE ([  ]): There's no clean way to determining if we're on http or https

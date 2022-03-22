@@ -24,7 +24,7 @@ public class AuthReader implements HttpHandler {
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         if (!App.getConfig().getBoolean("oauth.useIp")) {
-            Cookie header = exchange.getRequestCookies().get("pxls-token");
+            Cookie header = exchange.getRequestCookie("pxls-token");
             if (header != null) {
                 User user = App.getUserManager().getByToken(header.getValue());
                 if (user != null) {

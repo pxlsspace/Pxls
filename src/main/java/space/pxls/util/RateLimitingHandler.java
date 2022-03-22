@@ -5,7 +5,6 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.util.StatusCodes;
 import space.pxls.App;
-import space.pxls.user.Role;
 import space.pxls.user.User;
 
 public class RateLimitingHandler implements HttpHandler {
@@ -34,7 +33,7 @@ public class RateLimitingHandler implements HttpHandler {
         // FIXME: is there anything wrong with using 0.0.0.0?
         String ip = "0.0.0.0";
         if (!global) ip = exchange.getAttachment(IPReader.IP);
-        Cookie header = exchange.getRequestCookies().get("pxls-token");
+        Cookie header = exchange.getRequestCookie("pxls-token");
         if (header != null) {
             User user = App.getUserManager().getByToken(header.getValue());
             if (user != null && user.hasPermission("user.ratelimits.bypass")) {

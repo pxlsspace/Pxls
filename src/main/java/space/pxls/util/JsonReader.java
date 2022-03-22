@@ -33,7 +33,7 @@ public class JsonReader implements HttpHandler {
     public void handleRequest(HttpServerExchange exchange) throws Exception {
         new BlockingHandler(exchange1 -> { // we need to move into an nio thread. BlockingHandler will execute immediately if we're already in one.
             try {
-                exchange1.putAttachment(JsonReader.ATTACHMENT_KEY, new JsonParser().parse(new BufferedReader(new InputStreamReader(exchange1.startBlocking().getInputStream(), StandardCharsets.UTF_8)).lines().collect(Collectors.joining(System.lineSeparator()))));
+                exchange1.putAttachment(JsonReader.ATTACHMENT_KEY, JsonParser.parseString(new BufferedReader(new InputStreamReader(exchange1.startBlocking().getInputStream(), StandardCharsets.UTF_8)).lines().collect(Collectors.joining(System.lineSeparator()))));
             } catch (Exception e) {
                 /* probably a syntax error. not our problem */
             } finally { // ensure no matter what we continue the handler chain.

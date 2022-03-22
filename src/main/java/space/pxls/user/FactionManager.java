@@ -1,7 +1,7 @@
 package space.pxls.user;
 
-import org.apache.commons.jcs.JCS;
-import org.apache.commons.jcs.access.CacheAccess;
+import org.apache.commons.jcs3.JCS;
+import org.apache.commons.jcs3.access.CacheAccess;
 import space.pxls.App;
 import space.pxls.data.DBFaction;
 import space.pxls.server.packets.chat.ServerFactionClear;

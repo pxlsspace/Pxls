@@ -3,7 +3,6 @@ package space.pxls.util;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.StatusCodes;
-import space.pxls.App;
 import space.pxls.user.Role;
 import space.pxls.user.User;
 

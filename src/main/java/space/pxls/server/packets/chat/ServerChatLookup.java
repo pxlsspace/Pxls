@@ -1,7 +1,6 @@
 package space.pxls.server.packets.chat;
 
 import space.pxls.data.DBChatMessage;
-import space.pxls.data.DBChatban;
 import space.pxls.data.DBExtendedChatban;
 import space.pxls.data.DBUser;
 

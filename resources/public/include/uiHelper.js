@@ -6,7 +6,7 @@ const { socket } = require('./socket');
 const { chat } = require('./chat');
 const { serviceWorkerHelper } = require('./serviceworkers');
 const { template } = require('./template');
-const { ls } = require('./storage');
+const { ls, setCookie } = require('./storage');
 let timer;
 let place;
 let board;
@@ -40,7 +40,9 @@ const uiHelper = (function() {
       themeSelect: $('#setting-ui-theme-index'),
       themeColorMeta: $('meta[name="theme-color"]'),
       txtDiscordName: $('#txtDiscordName'),
-      bottomBanner: $('#bottom-banner')
+      bottomBanner: $('#bottom-banner'),
+      dragDropTarget: $('#drag-drop-target'),
+      dragDrop: $('#drag-drop')
     },
     themes: [
       {
@@ -97,7 +99,7 @@ const uiHelper = (function() {
         color: '#1d192c'
       }
     ],
-    specialChatColorClasses: ['rainbow', ['donator', 'donator--green'], ['donator', 'donator--gray'], ['donator', 'donator--synthwave'], ['donator', 'donator--ace'], ['donator', 'donator--trans'], ['donator', 'donator--bi'], ['donator', 'donator--pan'], ['donator', 'donator--nonbinary']],
+    specialChatColorClasses: ['rainbow', ['donator', 'donator--green'], ['donator', 'donator--gray'], ['donator', 'donator--synthwave'], ['donator', 'donator--ace'], ['donator', 'donator--trans'], ['donator', 'donator--bi'], ['donator', 'donator--pan'], ['donator', 'donator--nonbinary'], ['donator', 'donator--mines'], ['donator', 'donator--eggplant'], ['donator', 'donator--banana']],
     init: function() {
       timer = require('./timer').timer;
       place = require('./place').place;
@@ -122,6 +124,11 @@ const uiHelper = (function() {
       socket.on('received_report', (data) => {
         const type = data.report_type.toLowerCase();
         new SLIDEIN.Slidein(__(`A new ${type} report has been received.`), 'info-circle').show().closeAfter(3000);
+      });
+
+      $('article > header').on('click', event => {
+        const body = $(event.currentTarget).next();
+        body.toggleClass('hidden');
       });
 
       settings.ui.palette.numbers.enable.listen(function(value) {
@@ -191,6 +198,21 @@ const uiHelper = (function() {
         place.toggleCursor(value && place.color !== -1);
       });
 
+      let overrideLang = null;
+      settings.ui.language.override.listen(function(value) {
+        if (overrideLang !== null && overrideLang !== value) {
+          if (value) {
+            setCookie('pxls-accept-language-override', value);
+          } else {
+            setCookie('pxls-accept-language-override', null, -1);
+          }
+          // we need to fetch the page in the new locale, so reload
+          window.location.reload();
+        } else {
+          overrideLang = value;
+        }
+      });
+
       $(window).keydown((evt) => {
         if (['INPUT', 'TEXTAREA'].includes(evt.target.nodeName)) {
           // prevent inputs from triggering shortcuts
@@ -235,6 +257,40 @@ const uiHelper = (function() {
         };
         $(window).on('pxls:panel:opened', toAttach);
       }
+
+      self.elements.dragDropTarget.hide();
+      self.elements.dragDrop.hide();
+
+      // NOTE (Flying): Needed for dragenter and drop to fire.
+      document.addEventListener('dragover', event => event.preventDefault(), false);
+
+      document.addEventListener('dragenter', event => {
+        event.preventDefault();
+        if (!self.elements.dragDropTarget.is(':visible')) {
+          self.elements.dragDropTarget.show();
+          self.elements.dragDrop.fadeIn(200);
+        }
+      }, false);
+
+      document.addEventListener('dragleave', event => {
+        event.preventDefault();
+        if (self.elements.dragDropTarget.is(event.target)) {
+          self.elements.dragDropTarget.hide();
+          self.elements.dragDrop.fadeOut(200);
+        }
+      }, false);
+
+      document.addEventListener('drop', event => {
+        event.preventDefault();
+        self.elements.dragDropTarget.hide();
+        self.elements.dragDrop.fadeOut(200);
+        const data = event.dataTransfer;
+        if (!['image/png', 'image/jpeg', 'image/webp'].includes(data.files[0].type)) {
+          modal.showText(__('Drag and dropped file must be a valid image.'));
+          return;
+        }
+        self.handleFile(data);
+      }, false);
     },
     prettifyRange: function (ranges) {
       ranges = $(ranges);
@@ -620,6 +676,15 @@ const uiHelper = (function() {
             }
           };
         });
+    },
+    /**
+     * Handles a file drop or upload.
+     * @param dataTransfer {DataTransfer} The data transfer.
+     */
+    handleFile(dataTransfer) {
+      const reader = new FileReader();
+      reader.onload = () => template.update({ use: true, url: reader.result, convertMode: 'nearestCustom' });
+      reader.readAsDataURL(dataTransfer.files[0]);
     }
   };
 
@@ -666,7 +731,8 @@ const uiHelper = (function() {
         ? self._workerIsTabFocused
         : ls.get('tabs.has-focus') === self.tabId;
     },
-    prettifyRange: self.prettifyRange
+    prettifyRange: self.prettifyRange,
+    handleFile: self.handleFile
   };
 })();
 

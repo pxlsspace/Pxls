@@ -122,10 +122,13 @@ for (const path of PEBBLE_FILES) {
       const item = itemsById.get(id);
 
       item.msgid = id;
-      // NOTE ([  ]): linenumber and position are cool to have, but they cause
-      // too much noise in localization updates.
-      // item.references.push(`${path}:${callLine + 1}:${callLocalOffset + 1}`);
-      item.references.push(path);
+      // push reference only if unique
+      if (item.references.indexOf(path) === -1) {
+        // NOTE ([  ]): linenumber and position are cool to have, but they cause
+        // too much noise in localization updates.
+        // item.references.push(`${path}:${callLine + 1}:${callLocalOffset + 1}`);
+        item.references.push(path);
+      }
 
       if (commentsByLine.has(callLine - 1)) {
         item.extractedComments.push(...commentsByLine.get(callLine - 1));
@@ -230,9 +233,46 @@ for (const path of JS_FILES) {
     const item = jsItemsById.get(id);
 
     item.msgid = id;
-    // see note on html reference extraction.
-    // item.references.push(`${path}:${callLine + 1}:${callLocalOffset + 1}`);
-    item.references.push(path);
+
+    // push reference only if unique
+    if (item.references.indexOf(path) === -1) {
+      // NOTE (Flying): The below logic will "double up" references for
+      // JavaScript files. For example:
+      //
+      //   #: resources/public/include/chat.js
+      //   #: resources/public/include/user.js
+      //   #: resources/public/admin/admin.js
+      //
+      // will become:
+      //
+      //   #: resources/public/include/chat.js resources/public/include/user.js
+      //   #: resources/public/admin/admin.js
+      //
+      // This is to remain consistent with how .po files are structured.
+      // Copy/pasting them one-per-line into a .po file and running the
+      // compile-localizations.js script will cause the output .properties file
+      // to break like so:
+      //
+      //   #: resources/public/include/chat.js
+      //    resources/public/include/user.js
+      //   #: resources/public/admin/admin.js
+      //
+      // This should make it cleaner to create new localization files by
+      // copying Localization.pot.
+
+      // find last index of references ending in .js
+      const lastJs = item.references.indexOf(item.references.filter(r => r.endsWith('.js')).reverse()[0]);
+      // if the path doesn't end in .js, there are no .js files yet, or the
+      // last .js file has a space in it (already "doubled up"), push like
+      // normal and continue
+      if (path.endsWith('.js') && lastJs !== -1 && !item.references[lastJs].includes(' ')) {
+        item.references[lastJs] += ' ' + path;
+      } else {
+        // see note on html reference extraction.
+        // item.references.push(`${path}:${callLine + 1}:${callLocalOffset + 1}`);
+        item.references.push(path);
+      }
+    }
 
     for (const comment of relevantComments) {
       item.extractedComments.push(comment);

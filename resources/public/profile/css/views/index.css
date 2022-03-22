@@ -87,3 +87,7 @@
     border-radius: .25rem;
     color: #ccc;
 }
+
+.break {
+    word-break: break-all;
+}

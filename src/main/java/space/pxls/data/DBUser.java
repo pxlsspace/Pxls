@@ -2,13 +2,10 @@ package space.pxls.data;
 
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
-import space.pxls.App;
-import space.pxls.user.Role;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.List;
 
 public class DBUser {
     public int id;
