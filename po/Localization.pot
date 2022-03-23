@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-03-19T05:16:12.444Z\n"
+"POT-Creation-Date: 2022-03-23T01:02:39.456Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -1854,13 +1854,13 @@ msgstr ""
 msgid "Purging all messages is disabled during snip mode"
 msgstr ""
 
-#: resources/public/include/chat.js resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/include/uiHelper.js
+#: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Yes"
 msgstr ""
 
-#: resources/public/include/chat.js resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/include/uiHelper.js
+#: resources/public/include/user.js resources/public/admin/admin.js
 msgid "No"
 msgstr ""
 
@@ -2102,6 +2102,14 @@ msgstr ""
 #. theme name
 #: resources/public/include/uiHelper.js
 msgid "Red"
+msgstr ""
+
+#: resources/public/include/uiHelper.js
+msgid "Redirect Warning"
+msgstr ""
+
+#: resources/public/include/uiHelper.js
+msgid "Are you sure you want to redirect to the following URL?"
 msgstr ""
 
 #: resources/public/include/uiHelper.js

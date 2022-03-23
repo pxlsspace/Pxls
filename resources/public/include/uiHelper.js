@@ -316,7 +316,25 @@ const uiHelper = (function() {
             const url = linkFile.split('URL=')[1].trim();
             if (url.startsWith(window.location.origin)) {
               // TODO: Perform same type of prompt when clicking template links in chat
-              window.location.href = url;
+              modal.show(modal.buildDom(
+                crel('h2', { class: 'modal-title' }, __('Redirect Warning')),
+                crel('div',
+                  crel('p', __('Are you sure you want to redirect to the following URL?')),
+                  crel('pre', url),
+                  crel('div', { class: 'buttons' },
+                    crel('button', {
+                      class: 'dangerous-button text-button',
+                      onclick: () => {
+                        window.location.href = url;
+                      }
+                    }, __('Yes')),
+                    crel('button', {
+                      class: 'text-button',
+                      onclick: () => modal.closeAll()
+                    }, __('No'))
+                  )
+                )
+              ));
               return;
             }
             template.update({ use: true, url: url, convertMode: 'nearestCustom' });

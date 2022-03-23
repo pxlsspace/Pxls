@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-03-13T22:28:42.255Z\n"
+"POT-Creation-Date: 2022-03-23T01:02:39.456Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -1627,7 +1627,6 @@ msgstr "Bannissements de la Faction"
 
 #: resources/public/pebble_templates/profile.html
 #: resources/public/include/chat.js resources/public/admin/admin.js
-#: resources/public/admin/admin.js
 msgid "Unban"
 msgstr "Révoquer le bannissement"
 
@@ -1854,13 +1853,13 @@ msgstr "Purger les messages"
 msgid "Purging all messages is disabled during snip mode"
 msgstr "La purge de tous les messages est désactivée en mode snip"
 
-#: resources/public/include/chat.js resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/include/uiHelper.js
+#: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Yes"
 msgstr "Oui"
 
-#: resources/public/include/chat.js resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/include/uiHelper.js
+#: resources/public/include/user.js resources/public/admin/admin.js
 msgid "No"
 msgstr "Non"
 
@@ -2103,6 +2102,14 @@ msgstr "Terminal"
 #: resources/public/include/uiHelper.js
 msgid "Red"
 msgstr "Rouge"
+
+#: resources/public/include/uiHelper.js
+msgid "Redirect Warning"
+msgstr ""
+
+#: resources/public/include/uiHelper.js
+msgid "Are you sure you want to redirect to the following URL?"
+msgstr ""
 
 #: resources/public/include/uiHelper.js
 msgid "Drag and dropped file must be a valid image."
