@@ -395,6 +395,10 @@ msgid "Dotted (Big, 2:2)"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
+msgid "Symbols"
+msgstr "Symboles"
+
+#: resources/public/pebble_templates/index.html
 msgid "Numbers"
 msgstr ""
 
