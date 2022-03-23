@@ -16,7 +16,7 @@ Pxls is a collaborative canvas where users can place one pixel from a limited pa
 
 # Installation
 
-Automatically built `pxls*.jar` files are available as artifacts on each push [here](actions).
+Automatically built `pxls*.jar` files are available as artifacts on each push [here][actions].
 
 ## Building
 
