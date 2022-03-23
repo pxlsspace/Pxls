@@ -2105,11 +2105,11 @@ msgstr "Red"
 
 #: resources/public/include/uiHelper.js
 msgid "Redirect Warning"
-msgstr ""
+msgstr "Redirect Warning"
 
 #: resources/public/include/uiHelper.js
 msgid "Are you sure you want to redirect to the following URL?"
-msgstr ""
+msgstr "Are you sure you want to redirect to the following URL?"
 
 #: resources/public/include/uiHelper.js
 msgid "Drag and dropped file must be a valid image."
