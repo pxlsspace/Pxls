@@ -35,8 +35,9 @@ The output `.jar` is in `target/`.
 2. Copy `resources/` and the output `.jar` to it.
 3. Copy `resources/reference.conf` to the directory as `pxls.conf`.
 4. Copy `resources/roles-reference.conf` to the directory as `roles.conf`.
-5. Configure `pxls.conf` and `roles.conf` (optional; see [roles.md](roles.md) for details).
-6. Execute the jar with `java -jar pxls-1.0-SNAPSHOT.jar`
+5. Copy `resources/palette-reference.conf` to the directory as `palette.conf` (see below for details).
+6. Configure `pxls.conf` and `roles.conf` (optional; see [roles.md](roles.md) for details).
+7. Execute the jar with `java -jar pxls-1.0-SNAPSHOT.jar`
 
 The server will start on port 4567 by default, and will expose a rudimentary console with a few commands (listed in `Commands` below).
 You will need to configure the database for the server to start, see the `Configuring Database` section below.
@@ -45,6 +46,19 @@ The config file uses [HOCON][hocon]. The config will not be automatically create
 
 Pxls will automatically save a backup of the map every five minutes to `$STORAGE/backups/board.<timestamp>.dat`,
 as well as before executing a blank operation and right before exiting (via Ctrl-C).
+
+The `Symbols` template style (located in `resources/public/pebble_templates/index.html` and localization files between `Dotted (Big, 2:2)` and `"Numbers"`)
+uses the reference palette configuration. Any changes to the palette will break this style. To modify it, decode the base64 string for the symbols into a `.png`
+and open it in an image editor.
+
+<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAABwCAMAAADxPgR5AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAGUExURQMDAwAAAHbmHl8AAAACdFJOU/8A5bcwSgAAAAlwSFlzAAAOwwAADsMBx2+oZAAAAVNJREFUaEPtkeFuxDAMgtv3f+nZgJO0/yahTpr4rjXBccLudt0fc91X0YvR+rSj1AuBfU0u2k1TVQcovWBVD40RHtRoN9F/Oi0P3xV9HlfuU6r00w5WL8HGaiyH0T7QG6wSvdqTPEcw0JdwJVnnFQEOdzSbJZzY7ogYV6UfzLDJIRVcsHvHCDrbPaS1q06sWdVSdb7jTwLxK+jH2I5/yzRRX3AAn5GZn1vQ202+2tM/gX7aVSDYOODeTJTq+L5DE7O3mnjOTVrewrIFFWApz7WOU1p3EzquvU5yiYmSrtudzQKr6eJgmXP2bfZIf5XWbqDQ/UJ0Egb6ENaRUi4/JIF2EmgngXYSaCeBdhJoJ4F2EmgngXYSaCeBdhJoJ4F2EmgngXYSaCeBdhJoJ4F2EmgngXYSaCeBdhJoJ4F2EmgngXYSaCeBdhJoJ4F2Emjnvwfe9w+Roy870oaFiQAAAABJRU5ErkJggg==">
+
+Each symbol is in a 7x7 block going from left to right, top to bottom. The color of the symbols do not matter as they will be re-mapped to the palette when applied.
+The symbols can be resized so long as they remain proportional to the image size so that there are two rows of 16 blocks each, or however many colors are in the palette.
+Once finished editing, convert the `.png` back into base64 format and replace the option value in `resources/public/pebble_templates/index.html`.
+
+To remove the symbols, delete the `<option value="...">{{i18n('Localization', 'Symbols') | raw}}</option>` from `resources/public/pebble_templates/index.html` and remove
+or comment out the localization strings from each file in `po/`. Compile localizations with `node compile-localizations.js`.
 
 ## Configuring Database
 
