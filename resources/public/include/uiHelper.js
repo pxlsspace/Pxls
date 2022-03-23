@@ -280,16 +280,91 @@ const uiHelper = (function() {
         }
       }, false);
 
-      document.addEventListener('drop', event => {
+      /**
+       * NOTE (Flying): There are different behaviors when different things are
+       * dropped onto the window. Here's a list of what I've found so far:
+       *
+       * For files dragged from a file manager onto the browser, the name is
+       * the file name, the type is the mime type (like image/png), and the
+       * contents is the file data.
+       *
+       * For URLs and embedded images (like in Discord), the name is the
+       * sanitized URL (i.e. :/ replaced with -) ending in '.url', the type is
+       * an empty string, and the contents is a base64 string like so:
+       *
+       *   data:application/octet-stream;base64,W0ludGVybmV0U2hvcnRjdXRdDQp ...
+       *
+       * Decoding the base64 string will give you something like this:
+       *
+       *   [InternetShortcut]
+       *   URL=https://example.org/mycooltemplateimage.png
+       */
+      document.addEventListener('drop', async event => {
         event.preventDefault();
         self.elements.dragDropTarget.hide();
         self.elements.dragDrop.fadeOut(200);
         const data = event.dataTransfer;
-        if (!['image/png', 'image/jpeg', 'image/webp'].includes(data.files[0].type)) {
-          modal.showText(__('Drag and dropped file must be a valid image.'));
+        let url;
+        if (data.types.includes('Files')) {
+          const file = data.files[0];
+          url = await new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              if (reader.result.startsWith('data:application/octet-stream')) {
+                // Windows only
+                const linkFile = Buffer.from(reader.result.split(',')[1], 'base64');
+                const linkFileStr = String.fromCharCode.apply(null, linkFile);
+                resolve(linkFileStr.split('URL=')[1].trim());
+              }
+              resolve(reader.result);
+            };
+            reader.readAsDataURL(file);
+          });
+        } else {
+          url = data.getData('text/plain');
+        }
+
+        if (url.startsWith('file:')) {
+          modal.showText(__('Cannot fetch local files. Use the file selector in template settings.'));
           return;
         }
-        self.handleFile(data);
+
+        if (url.startsWith(window.location.origin)) {
+          modal.show(modal.buildDom(
+            crel('h2', { class: 'modal-title' }, __('Redirect Warning')),
+            crel('div',
+              crel('p', __('Are you sure you want to redirect to the following URL?')),
+              crel('p', {
+                style: 'font-family: monospace; max-width: 50vw;'
+              }, url),
+              crel('div', { class: 'buttons' },
+                crel('button', {
+                  class: 'dangerous-button text-button',
+                  onclick: () => {
+                    window.location.href = url;
+                    modal.closeAll();
+                  }
+                }, __('Yes')),
+                crel('button', {
+                  class: 'text-button',
+                  onclick: () => modal.closeAll()
+                }, __('No'))
+              )
+            )
+          ));
+          return;
+        }
+
+        if (url.startsWith('data:')) {
+          // data:image/png;base64, ...
+          const mimeType = url.substring(5, url.indexOf(';'));
+          if (!['image/png', 'image/jpeg', 'image/webp'].includes(mimeType)) {
+            modal.showText(__('Drag and dropped file must be a valid image.'));
+            return;
+          }
+        }
+
+        self.handleFileUrl(url);
       }, false);
     },
     prettifyRange: function (ranges) {
@@ -678,13 +753,20 @@ const uiHelper = (function() {
         });
     },
     /**
-     * Handles a file drop or upload.
-     * @param dataTransfer {DataTransfer} The data transfer.
+     * Handles a file upload through the file browser.
+     * @param {DataTransfer} dataTransfer The data transfer.
      */
     handleFile(dataTransfer) {
       const reader = new FileReader();
-      reader.onload = () => template.update({ use: true, url: reader.result, convertMode: 'nearestCustom' });
+      reader.onload = () => this.handleFileUrl(reader.result);
       reader.readAsDataURL(dataTransfer.files[0]);
+    },
+    /**
+     * Handles a file URL either through drag-and-drop or the file browser.
+     * @param {string} url The file URL.
+     */
+    handleFileUrl(url) {
+      template.update({ use: true, url, convertMode: 'nearestCustom' });
     }
   };
 
