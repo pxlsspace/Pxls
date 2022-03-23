@@ -280,12 +280,51 @@ const uiHelper = (function() {
         }
       }, false);
 
+      /**
+       * NOTE (Flying): There are different behaviors when different things are
+       * dropped onto the window. Here's a list of what I've found so far:
+       *
+       * For files dragged from a file manager onto the browser, the name is
+       * the file name, the type is the mime type (like image/png), and the
+       * contents is the file data.
+       *
+       * For URLs and embedded images (like in Discord), the name is the
+       * sanitized URL (i.e. :/ replaced with -) ending in '.url', the type is
+       * an empty string, and the contents is a base64 string like so:
+       *
+       *   data:application/octet-stream;base64,W0ludGVybmV0U2hvcnRjdXRdDQp ...
+       *
+       * Decoding the base64 string will give you something like this:
+       *
+       *   [InternetShortcut]
+       *   URL=https://example.org/mycooltemplateimage.png
+       */
       document.addEventListener('drop', event => {
         event.preventDefault();
         self.elements.dragDropTarget.hide();
         self.elements.dragDrop.fadeOut(200);
         const data = event.dataTransfer;
-        if (!['image/png', 'image/jpeg', 'image/webp'].includes(data.files[0].type)) {
+        const file = data.files[0];
+        if (file.name.endsWith('.url')) {
+          // URL or dragged image
+          const reader = new FileReader();
+          reader.onload = () => {
+            // data:application/octet-stream;base64,W0ludGVybmV0U2hvcnRjdXRdDQp ...
+            const linkFile = Buffer.from(reader.result.split(',')[1], 'base64').toString('ascii');
+            // [InternetShortcut]
+            // URL=https://example.org/mycooltemplateimage.png
+            const url = linkFile.split('URL=')[1].trim();
+            if (url.startsWith(window.location.origin)) {
+              // TODO: Perform same type of prompt when clicking template links in chat
+              window.location.href = url;
+              return;
+            }
+            template.update({ use: true, url: url, convertMode: 'nearestCustom' });
+          };
+          reader.readAsDataURL(file);
+          return;
+        }
+        if (!['image/png', 'image/jpeg', 'image/webp'].includes(file.type)) {
           modal.showText(__('Drag and dropped file must be a valid image.'));
           return;
         }
