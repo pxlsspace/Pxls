@@ -51,7 +51,7 @@ The `Symbols` template style (located in `resources/public/pebble_templates/inde
 uses the reference palette configuration. Any changes to the palette will break this style. To modify it, decode the base64 string for the symbols into a `.png`
 and open it in an image editor.
 
-<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHAAAABwCAMAAADxPgR5AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAGUExURQMDAwAAAHbmHl8AAAACdFJOU/8A5bcwSgAAAAlwSFlzAAAOwwAADsMBx2+oZAAAAVNJREFUaEPtkeFuxDAMgtv3f+nZgJO0/yahTpr4rjXBccLudt0fc91X0YvR+rSj1AuBfU0u2k1TVQcovWBVD40RHtRoN9F/Oi0P3xV9HlfuU6r00w5WL8HGaiyH0T7QG6wSvdqTPEcw0JdwJVnnFQEOdzSbJZzY7ogYV6UfzLDJIRVcsHvHCDrbPaS1q06sWdVSdb7jTwLxK+jH2I5/yzRRX3AAn5GZn1vQ202+2tM/gX7aVSDYOODeTJTq+L5DE7O3mnjOTVrewrIFFWApz7WOU1p3EzquvU5yiYmSrtudzQKr6eJgmXP2bfZIf5XWbqDQ/UJ0Egb6ENaRUi4/JIF2EmgngXYSaCeBdhJoJ4F2EmgngXYSaCeBdhJoJ4F2EmgngXYSaCeBdhJoJ4F2EmgngXYSaCeBdhJoJ4F2EmgngXYSaCeBdhJoJ4F2Emjnvwfe9w+Roy870oaFiQAAAABJRU5ErkJggg==">
+<img src="https://i.imgur.com/efz5tk7.png">
 
 Each symbol is in a 7x7 block going from left to right, top to bottom. The color of the symbols do not matter as they will be re-mapped to the palette when applied.
 The symbols can be resized so long as they remain proportional to the image size so that there are two rows of 16 blocks each, or however many colors are in the palette.
