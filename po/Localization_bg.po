@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-03-23T01:02:39.456Z\n"
+"POT-Creation-Date: 2022-03-23T04:10:29.174Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -2104,15 +2104,19 @@ msgid "Red"
 msgstr "Червена"
 
 #: resources/public/include/uiHelper.js
+msgid "Cannot fetch local files. Use the file selector in template settings."
+msgstr ""
+
+#: resources/public/include/uiHelper.js
+msgid "Drag and dropped file must be a valid image."
+msgstr ""
+
+#: resources/public/include/uiHelper.js
 msgid "Redirect Warning"
 msgstr ""
 
 #: resources/public/include/uiHelper.js
 msgid "Are you sure you want to redirect to the following URL?"
-msgstr ""
-
-#: resources/public/include/uiHelper.js
-msgid "Drag and dropped file must be a valid image."
 msgstr ""
 
 #: resources/public/include/uiHelper.js
