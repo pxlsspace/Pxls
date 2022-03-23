@@ -355,11 +355,13 @@ const uiHelper = (function() {
           return;
         }
 
-        // data:image/png;base64, ...
-        const mimeType = url.substring(5, url.indexOf(';'));
-        if (!['image/png', 'image/jpeg', 'image/webp'].includes(mimeType)) {
-          modal.showText(__('Drag and dropped file must be a valid image.'));
-          return;
+        if (url.startsWith('data:')) {
+          // data:image/png;base64, ...
+          const mimeType = url.substring(5, url.indexOf(';'));
+          if (!['image/png', 'image/jpeg', 'image/webp'].includes(mimeType)) {
+            modal.showText(__('Drag and dropped file must be a valid image.'));
+            return;
+          }
         }
 
         self.handleFileUrl(url);
