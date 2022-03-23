@@ -57,8 +57,8 @@ Each symbol is in a 7x7 block going from left to right, top to bottom. The color
 The symbols can be resized so long as they remain proportional to the image size so that there are two rows of 16 blocks each, or however many colors are in the palette.
 Once finished editing, convert the `.png` back into base64 format and replace the option value in `index.html`.
 
-To remove the symbols, delete the `<option value="...">{{i18n('Localization', 'Symbols') | raw}}</option>` from `index.html` and remove or comment out the localization
-strings from each file in `po/`. Compile localizations with `node compile-localizations.js`.
+To remove the symbols, delete the `<option value="...">{{i18n('Localization', 'Symbols') | raw}}</option>` from `index.html` and remove or comment out the relevant
+localization string from each file in `po/`. Compile localizations with `node compile-localizations.js`.
 
 ## Configuring Database
 
