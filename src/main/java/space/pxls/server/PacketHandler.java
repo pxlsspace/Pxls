@@ -3,6 +3,8 @@ package space.pxls.server;
 import kong.unirest.*;
 import com.typesafe.config.Config;
 import io.undertow.websockets.core.WebSocketChannel;
+
+import org.apache.commons.text.StringEscapeUtils;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 import kong.unirest.json.JSONObject;
 
@@ -522,8 +524,10 @@ public class PacketHandler {
 
             // NOTE (Flying): The pixel count badge seems to always come last.
             var pixelCount = message.getBadges().get(message.getBadges().size() - 1).getDisplayName() + " ";
-            var factionTag = message.getStrippedFaction() != null ? "[" + message.getStrippedFaction().getTag() + "] " : "";
-            author.put("name", pixelCount + factionTag + message.getAuthor());
+            // TODO: Determine why unicode faction tags break webhook
+            //   {"code": 50109, "message": "The request body contains invalid JSON."}
+            // var factionTag = message.getStrippedFaction() != null ? "[" + message.getStrippedFaction().getTag() + "] " : "";
+            author.put("name", pixelCount + message.getAuthor());
             author.put("url", authorProfile);
 
             embed.put("author", author);
@@ -542,6 +546,8 @@ public class PacketHandler {
         postDataBuilder.put("embeds", new JSONObject[] { embed });
 
         var postData = postDataBuilder.toString();
+
+        System.out.println(postData);
 
         for(var hook : webhooks) {
             try {
