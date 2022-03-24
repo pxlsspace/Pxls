@@ -49,7 +49,7 @@ msgstr "Загрузка пользователей в сети&hellip;"
 #: resources/public/pebble_templates/index.html
 #: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Pixels"
-msgstr "пикселей"
+msgstr "Пиксели"
 
 #: resources/public/pebble_templates/index.html
 msgid "Undo"
@@ -1428,7 +1428,7 @@ msgstr "Дата регистрации"
 #: resources/public/pebble_templates/profile.html
 #: resources/public/include/lookup.js
 msgid "Alltime Pixels"
-msgstr "Общее число пикселей"
+msgstr "Всего пикселей"
 
 #: resources/public/pebble_templates/profile.html
 msgid "Current Canvas Pixels"
