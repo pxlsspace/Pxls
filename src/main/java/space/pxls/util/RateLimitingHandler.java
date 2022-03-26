@@ -5,7 +5,6 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.util.StatusCodes;
 import space.pxls.App;
-import space.pxls.user.Role;
 import space.pxls.user.User;
 
 public class RateLimitingHandler implements HttpHandler {

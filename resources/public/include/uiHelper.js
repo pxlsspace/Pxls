@@ -6,7 +6,7 @@ const { socket } = require('./socket');
 const { chat } = require('./chat');
 const { serviceWorkerHelper } = require('./serviceworkers');
 const { template } = require('./template');
-const { ls } = require('./storage');
+const { ls, setCookie } = require('./storage');
 let timer;
 let place;
 let board;
@@ -39,7 +39,9 @@ const uiHelper = (function() {
       btnForceAudioUpdate: $('#btnForceAudioUpdate'),
       themeSelect: $('#setting-ui-theme-index'),
       themeColorMeta: $('meta[name="theme-color"]'),
-      bottomBanner: $('#bottom-banner')
+      bottomBanner: $('#bottom-banner'),
+      dragDropTarget: $('#drag-drop-target'),
+      dragDrop: $('#drag-drop')
     },
     themes: [
       {
@@ -96,7 +98,7 @@ const uiHelper = (function() {
         color: '#1d192c'
       }
     ],
-    specialChatColorClasses: ['rainbow', ['donator', 'donator--green'], ['donator', 'donator--gray'], ['donator', 'donator--synthwave']],
+    specialChatColorClasses: ['rainbow', ['donator', 'donator--green'], ['donator', 'donator--gray'], ['donator', 'donator--synthwave'], ['donator', 'donator--ace'], ['donator', 'donator--trans'], ['donator', 'donator--bi'], ['donator', 'donator--pan'], ['donator', 'donator--nonbinary'], ['donator', 'donator--mines'], ['donator', 'donator--eggplant'], ['donator', 'donator--banana'], ['donator', 'donator--teal']],
     init: function() {
       timer = require('./timer').timer;
       place = require('./place').place;
@@ -120,6 +122,11 @@ const uiHelper = (function() {
       socket.on('received_report', (data) => {
         const type = data.report_type.toLowerCase();
         new SLIDEIN.Slidein(__(`A new ${type} report has been received.`), 'info-circle').show().closeAfter(3000);
+      });
+
+      $('article > header').on('click', event => {
+        const body = $(event.currentTarget).next();
+        body.toggleClass('hidden');
       });
 
       settings.ui.palette.numbers.enable.listen(function(value) {
@@ -189,6 +196,21 @@ const uiHelper = (function() {
         place.toggleCursor(value && place.color !== -1);
       });
 
+      let overrideLang = null;
+      settings.ui.language.override.listen(function(value) {
+        if (overrideLang !== null && overrideLang !== value) {
+          if (value) {
+            setCookie('pxls-accept-language-override', value);
+          } else {
+            setCookie('pxls-accept-language-override', null, -1);
+          }
+          // we need to fetch the page in the new locale, so reload
+          window.location.reload();
+        } else {
+          overrideLang = value;
+        }
+      });
+
       $(window).keydown((evt) => {
         if (['INPUT', 'TEXTAREA'].includes(evt.target.nodeName)) {
           // prevent inputs from triggering shortcuts
@@ -233,6 +255,115 @@ const uiHelper = (function() {
         };
         $(window).on('pxls:panel:opened', toAttach);
       }
+
+      self.elements.dragDropTarget.hide();
+      self.elements.dragDrop.hide();
+
+      // NOTE (Flying): Needed for dragenter and drop to fire.
+      document.addEventListener('dragover', event => event.preventDefault(), false);
+
+      document.addEventListener('dragenter', event => {
+        event.preventDefault();
+        if (!self.elements.dragDropTarget.is(':visible')) {
+          self.elements.dragDropTarget.show();
+          self.elements.dragDrop.fadeIn(200);
+        }
+      }, false);
+
+      document.addEventListener('dragleave', event => {
+        event.preventDefault();
+        if (self.elements.dragDropTarget.is(event.target)) {
+          self.elements.dragDropTarget.hide();
+          self.elements.dragDrop.fadeOut(200);
+        }
+      }, false);
+
+      /**
+       * NOTE (Flying): There are different behaviors when different things are
+       * dropped onto the window. Here's a list of what I've found so far:
+       *
+       * For files dragged from a file manager onto the browser, the name is
+       * the file name, the type is the mime type (like image/png), and the
+       * contents is the file data.
+       *
+       * For URLs and embedded images (like in Discord), the name is the
+       * sanitized URL (i.e. :/ replaced with -) ending in '.url', the type is
+       * an empty string, and the contents is a base64 string like so:
+       *
+       *   data:application/octet-stream;base64,W0ludGVybmV0U2hvcnRjdXRdDQp ...
+       *
+       * Decoding the base64 string will give you something like this:
+       *
+       *   [InternetShortcut]
+       *   URL=https://example.org/mycooltemplateimage.png
+       */
+      document.addEventListener('drop', async event => {
+        event.preventDefault();
+        self.elements.dragDropTarget.hide();
+        self.elements.dragDrop.fadeOut(200);
+        const data = event.dataTransfer;
+        let url;
+        if (data.types.includes('Files')) {
+          const file = data.files[0];
+          url = await new Promise(resolve => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              if (reader.result.startsWith('data:application/octet-stream')) {
+                // Windows only
+                const linkFile = Buffer.from(reader.result.split(',')[1], 'base64');
+                const linkFileStr = String.fromCharCode.apply(null, linkFile);
+                resolve(linkFileStr.split('URL=')[1].trim());
+              }
+              resolve(reader.result);
+            };
+            reader.readAsDataURL(file);
+          });
+        } else {
+          url = data.getData('text/plain');
+        }
+
+        if (url.startsWith('file:')) {
+          modal.showText(__('Cannot fetch local files. Use the file selector in template settings.'));
+          return;
+        }
+
+        if (url.startsWith(window.location.origin)) {
+          modal.show(modal.buildDom(
+            crel('h2', { class: 'modal-title' }, __('Redirect Warning')),
+            crel('div',
+              crel('p', __('Are you sure you want to redirect to the following URL?')),
+              crel('p', {
+                style: 'font-family: monospace; max-width: 50vw;'
+              }, url),
+              crel('div', { class: 'buttons' },
+                crel('button', {
+                  class: 'dangerous-button text-button',
+                  onclick: () => {
+                    window.location.href = url;
+                    modal.closeAll();
+                  }
+                }, __('Yes')),
+                crel('button', {
+                  class: 'text-button',
+                  onclick: () => modal.closeAll()
+                }, __('No'))
+              )
+            )
+          ));
+          return;
+        }
+
+        if (url.startsWith('data:')) {
+          // data:image/png;base64, ...
+          const mimeType = url.substring(5, url.indexOf(';'));
+          if (!['image/png', 'image/jpeg', 'image/webp'].includes(mimeType)) {
+            modal.showText(__('Drag and dropped file must be a valid image.'));
+            return;
+          }
+        }
+
+        self.handleFileUrl(url);
+      }, false);
     },
     prettifyRange: function (ranges) {
       ranges = $(ranges);
@@ -577,6 +708,22 @@ const uiHelper = (function() {
             }
           };
         });
+    },
+    /**
+     * Handles a file upload through the file browser.
+     * @param {DataTransfer} dataTransfer The data transfer.
+     */
+    handleFile(dataTransfer) {
+      const reader = new FileReader();
+      reader.onload = () => this.handleFileUrl(reader.result);
+      reader.readAsDataURL(dataTransfer.files[0]);
+    },
+    /**
+     * Handles a file URL either through drag-and-drop or the file browser.
+     * @param {string} url The file URL.
+     */
+    handleFileUrl(url) {
+      template.update({ use: true, url, convertMode: 'nearestCustom' });
     }
   };
 
@@ -622,7 +769,8 @@ const uiHelper = (function() {
         ? self._workerIsTabFocused
         : ls.get('tabs.has-focus') === self.tabId;
     },
-    prettifyRange: self.prettifyRange
+    prettifyRange: self.prettifyRange,
+    handleFile: self.handleFile
   };
 })();
 

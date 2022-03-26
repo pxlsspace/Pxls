@@ -41,6 +41,7 @@
                     <div class="dropdown-menu dropdown-menu-right" id="navUserDropdown" aria-labelledby="btnNavUserDropdown">
                         <a href="/profile?action=details" class="dropdown-item">{{i18n('Localization', 'My Profile') | raw}}</a>
                         <a href="/profile?action=factions" class="dropdown-item">{{i18n('Localization', 'My Factions') | raw}}</a>
+                        <a href="/profile?action=data" class="dropdown-item">{{i18n('Localization', 'My Data') | raw}}</a>
                     </div>
                 </div>
             </div>
@@ -62,6 +63,9 @@
                             </a>
                             <a href="{{route_root}}?action=factions" class="list-group-item text-light" data-action="factions">
                                 <i class="fas fa-users mr-2 d-none d-md-inline-block"></i>{{i18n('Localization', 'Factions') | raw}}
+                            </a>
+                            <a href="{{route_root}}?action=data" class="list-group-item text-light" data-action="data">
+                                <i class="fas fa-key mr-2 d-none d-md-inline-block"></i>{{i18n('Localization', 'Data') | raw}}
                             </a>
                             {% endif %}
                         </div>
@@ -252,6 +256,35 @@
                             {% endfor %}
                             {% else %}
                             <p class="text-center text-warning">{{i18n('Localization', 'You are not in any factions yet!') | raw}}</p>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+                        <div id="tab-data" class="tab-pane text-center" data-tab="data">
+                            {% if profile_of is null %}
+                            <p class="text-warning text-center">{{i18n('Localization', 'You must be logged in to view your data.') | raw}}</p>
+                            {% else %}
+                            <h3>{{i18n('Localization', 'Log Keys') | raw}}</h3>
+                            <p><i class="fas fa-info-circle"></i> {{i18n('Localization', 'Log keys can be used by those who have them to tell which pixels you placed on previous canvases.') | raw}}</p>
+                            {% if keys|length > 0 %}
+                            <table class="inline-block">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center pr-3">{{i18n('Localization', 'Canvas Code') | raw}}</th>
+                                        <th class="text-center">{{i18n('Localization', 'Log Key') | raw}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for entry in keys %}
+                                    <tr>
+                                        <td class="text-center pr-3">{{entry.key}}</td>
+                                        <td class="text-left"><code class="break">{{entry.value}}</code></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% else %}
+                            <p class="text-center text-warning">{{i18n('Localization', 'You have no log keys yet!') | raw}}</p>
+                            <p class="text-center text-warning">{{i18n('Localization', 'Log keys should show up here after a canvas you have placed on ends.') | raw}}</p>
                             {% endif %}
                             {% endif %}
                         </div>

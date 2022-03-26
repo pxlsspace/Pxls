@@ -1,13 +1,13 @@
 package space.pxls.server;
 
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.JsonNode;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.async.Callback;
-import com.mashape.unirest.http.exceptions.UnirestException;
+import kong.unirest.*;
 import com.typesafe.config.Config;
 import io.undertow.websockets.core.WebSocketChannel;
+
+import org.apache.commons.text.StringEscapeUtils;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
+import kong.unirest.json.JSONObject;
+
 import space.pxls.App;
 import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBPixelPlacementFull;
@@ -18,11 +18,16 @@ import space.pxls.user.User;
 import space.pxls.util.TextFilter;
 import space.pxls.util.RateLimitFactory;
 
+import java.io.*;
+import java.net.*;
+
+import java.time.Instant;
+
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static org.apache.commons.lang3.StringEscapeUtils.escapeHtml4;
+import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
 public class PacketHandler {
     private UndertowServer server;
@@ -479,10 +484,93 @@ public class PacketHandler {
                 }
                 if (userPacket != null || staffPacket != null) {
                     server.broadcastSeparateForStaff(userPacket, staffPacket);
+                    if(userPacket != null) {
+                        relayChatMessageToWebhooks(userPacket.getMessage(), App.getConfig().getStringList("chat.publicWebhooks"));
+                    }
+
+                    if(staffPacket != null) {
+                        relayChatMessageToWebhooks(staffPacket.getMessage(), App.getConfig().getStringList("chat.staffWebhooks"));
+                    }
                 }
             } catch (UnableToExecuteStatementException utese) {
                 utese.printStackTrace();
                 System.err.println("Failed to execute the ChatMessage insert statement.");
+            }
+        }
+    }
+
+    private void relayChatMessageToWebhooks(ChatMessage message, List<String> webhooks) {
+        // NOTE ([  ]): these are very much discord embeds at the moment.
+        // see https://discord.com/developers/docs/resources/channel#embed-object
+        var embed = new JSONObject();
+
+        var description = message.getMessage_raw()
+                // NOTE (Flying): This suffices for breaking markdown links.
+                .replaceAll("\\[", "\\\\[");
+
+        embed.put("description", description);
+        embed.put("timestamp", Instant.ofEpochSecond(message.getDate()).toString());
+        if (message.getAuthorNameColor().intValue() >= 0) {
+            embed.put("color", Long.decode("0x" + App.getPalette().getColors().get(message.getAuthorNameColor().intValue()).getValue()));
+        }
+
+        var author = new JSONObject();
+        // NOTE ([  ]): There's no clean way to determining if we're on http or https
+        // so I gave up — you should be using https anyway.
+        try {
+            var authorProfile = new URL("https://" + App.getConfig().getString("host") + "/profile/" + message.getAuthor() + "/");
+
+            // NOTE (Flying): The pixel count badge seems to always come last.
+            var pixelCount = message.getBadges().get(message.getBadges().size() - 1).getDisplayName() + " ";
+            // TODO: Determine why unicode faction tags break webhook
+            //   {"code": 50109, "message": "The request body contains invalid JSON."}
+            // var factionTag = message.getStrippedFaction() != null ? "[" + message.getStrippedFaction().getTag() + "] " : "";
+            author.put("name", pixelCount + message.getAuthor());
+            author.put("url", authorProfile);
+
+            embed.put("author", author);
+        } catch(MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        var footer = new JSONObject();
+
+        footer.put("text", message.getId());
+
+        embed.put("footer", footer);
+
+        var postDataBuilder = new JSONObject();
+
+        postDataBuilder.put("embeds", new JSONObject[] { embed });
+
+        var postData = postDataBuilder.toString();
+
+        System.out.println(postData);
+
+        for(var hook : webhooks) {
+            try {
+                var connection = (HttpURLConnection) new URL(hook).openConnection();
+                connection.setRequestMethod("POST");
+                connection.setRequestProperty("Content-Type", "application/json");
+                connection.setDoOutput(true);
+                var postDataStream = new DataOutputStream(connection.getOutputStream());
+                postDataStream.writeBytes(postData);
+                postDataStream.flush();
+                postDataStream.close();
+
+                // NOTE ([  ]): this error code might be a bit cryptic when printed,
+                // but I don't want to clean it up and it's better than failing silently.
+                if(connection.getResponseCode() >= 400) {
+                    var response = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
+
+                    for(var line: response.lines().collect(Collectors.toList())) {
+                        System.err.println(line);
+                    }
+
+                    response.close();
+                }
+            } catch(Exception e) {
+                e.printStackTrace();
             }
         }
     }

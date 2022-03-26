@@ -1,64 +1,69 @@
-# Pxls
+<div align="center">
 
-![Java CI with Maven](https://github.com/pxlsspace/Pxls/workflows/Java%20CI%20with%20Maven/badge.svg)
+![Pxls](https://i.imgur.com/K7j14LL.png)
 
-Pxls is a collaborative image editor where you can place up to six pixels at a time, inspired by Reddit's [r/Place][place] experiment.
+![Java CI with Maven](https://img.shields.io/github/workflow/status/pxlsspace/Pxls/Java%20CI%20with%20Maven?style=flat-square)
+[![GitHub issues](https://img.shields.io/github/issues/pxlsspace/Pxls?style=flat-square)](https://github.com/pxlsspace/Pxls/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/pxlsspace/Pxls?style=flat-square)](https://github.com/pxlsspace/Pxls/pulls)
+[![GitHub contributors](https://img.shields.io/github/contributors/pxlsspace/Pxls?style=flat-square)](https://github.com/pxlsspace/Pxls/graphs/contributors)
+[![GitHub stars](https://img.shields.io/github/stars/pxlsspace/Pxls?style=flat-square)](https://github.com/pxlsspace/Pxls/stargazers)
+
+</div>
+
+Pxls is a collaborative canvas where users can place one pixel from a limited palette at a time, inspired by Reddit's [r/Place][place] experiment.
 
 **Note:** A Docker image is available at [aneurinprice/docker-pxls.space][docker] and on [Docker Hub][dockerhub].
 
-## Prerequisites
+# Installation
 
-- [Maven][maven]
-- [JDK 14][jdk14]
-- [Postgres][postgres]
+Automatically built `pxls*.jar` files are available as artifacts on each push [here][actions].
 
 ## Building
 
-1. Install the above requirements either via package manager (recommended) or by building from their sources.
-2. Clone the repo:
+The following are required on the **build** system:
 
-    > $ git clone git@github.com:pxlsspace/Pxls.git
+* [JDK 16][jdk16]
+* [Apache Maven][maven]
 
-3. Navigate to the directory:
+The following are required on the **target** system:
 
-    > $ cd Pxls
+* [JRE 16][jdk16]
+* [Postgres][postgres]
 
-4. Clean the package:
+To build, run `mvn clean package` in the project root.
 
-    > $ mvn clean package
-
-The output `.jar` is in `target/`.
+The built `pxls*.jar` file is available in `target/`.
 
 ## Running
 
-1. Create a new directory.
-2. Copy `resources/` and the output `.jar` to it.
-3. Copy `resources/reference.conf` to the directory as `pxls.conf`.
-4. Copy `resources/roles-reference.conf` to the directory as `roles.conf`.
-5. Configure `pxls.conf` and `roles.conf` (optional; see [roles.md](roles.md) for details).
-6. Execute the jar with `java -jar pxls-1.0-SNAPSHOT.jar`
+Copy the built `pxls*.jar` along with the following (renamed) to the instance directory:
 
-The server will start on port 4567 by default, and will expose a rudimentary console with a few commands (listed in `Commands` below).
-You will need to configure the database for the server to start, see the `Configuring Database` section below.
+* `reference.conf` (`pxls.conf`)
+* `roles-reference.conf` (`roles.conf`)
+* `palette-reference.conf` (`palette.conf`)
 
-The config file uses [HOCON][hocon]. The config will not be automatically created, you must create/copy it yourself. Any unspecified option will use the default value from `resources/reference.conf`.
+Edit configuration files as necessary. The following `pxls.conf` keys MUST be configured from default for an instance to run:
 
-Pxls will automatically save a backup of the map every five minutes to `$STORAGE/backups/board.<timestamp>.dat`,
-as well as before executing a blank operation and right before exiting (via Ctrl-C).
+* `database.user`
+* `database.pass`
+* `database.url`
+* `host`
+* `oauth` (necessary for any form of user authentication)
+    * [Reddit][redditapps], [Google][googleconsole], [Discord][discordapps], [VK][vkapps], and [Tumblr][tumblrapps] are current supported.
 
-## Configuring Database
+Run with `java -jar pxls*.jar`
 
-You will need to set the database URI/credentials in `pxls.conf`.
+# Notes
 
-The relevant config options are `database.url`, `database.user`, and `database.pass`. An example database section in the config could look like this:
-
-    database {
-      url: "jdbc:postgresql://localhost:3306/pxls"
-      user: "AzureDiamond"
-      pass: "hunter2"
-    }
+* The server will start on port `4567` by default.
+* The instance has a [rudimentary console](#console-commands).
+* The configuration file uses [HOCON][hocon].
+* Unspecified configuration values will use built-in defaults from `resources/reference.conf`.
+* Automatic backups of `board.dat` are saved every five minutes to `backups/` in the configured storage directory, as well as before exiting (with `CTRL + C`).
+* The `Symbols` template style uses the reference palette configuration. See [here](developer.md#symbols-template-style) to modify or remove.
 
 ## Configuring User Login
+
 Pxls authenticates users with an identity server.
 You have several choices available for this, such as:
 - [Keycloak](https://www.keycloak.org/)
@@ -92,74 +97,84 @@ An example auth section could look like this:
 
 ## Configuring CAPTCHA
 
-By default, CAPTCHAs are disabled, and need to be configured in the config to work.
-You will need a [CAPTCHA key and secret][captcha]. The type must be `Invisible reCAPTCHA`.
+CAPTCHAs are disabled by default and must be configured to work.
+A [CAPTCHA key and secret][captcha] is needed and the type must be "Invisible reCAPTCHA".
 
-The `host` key also needs to be one of the approved domains on the reCAPTCHA admin panel. For local testing, this will likely be `localhost` (no port).
+The `host` configuration key must be an approved domain on the reCAPTCHA admin panel. For local testing, this will likely be `localhost` (no port).
 
 An example CAPTCHA section could look like this:
 
-    host: "example.com"
+```hocon
+host: "example.com"
 
-    captcha {
-        enabled: true
-        key: "6LcedG4UAAAAAKA6l9BbRPvZ2vt3lTrCQwz8rfPe"
-        secret: "6LcedG4UAAAAAIXZcNFhnLKvTQwG1E8BzQQt_-MR"
-    }
+captcha {
+  enabled: false
+  // Captcha will show rougly 1/<threshold> times
+  threshold: 5
+  key: "6LcedG4UAAAAAKA6l9BbRPvZ2vt3lTrCQwz8rfPe"
+  secret: "6LcedG4UAAAAAIXZcNFhnLKvTQwG1E8BzQQt_-MR"
+  maxPixels: 0
+  allTime: true
+}
+```
 
+# Console Commands
 
-## Commands
+Commands can be entered into the running instance through standard input.
 
-Commands are entered directly into the running instance (stdin):
+`exact |exact| (required description) [optional description] one-or-more... DEFAULT/possible/values {description}`
 
-- `reload` - Reloads the main configuration, applying _most_ changes immediately. Also reloads the user and faction cache.
-- `save` - Saves the map.
-- `logins <username> [{service ID}:{service user ID} ...]` - Gets or sets the user's login method(s).
-- `addlogins <username> <{service ID}:{service user ID} ...>` - Adds login method(s) to the user.
-- `removelogins <username> <service ID ...>` - Removes login method(s) from the user.
-- `roles <username> [role ID ...]` - Gets or sets the user's role(s).
-- `addroles <username> <role ID ...>` - Adds role(s) to the user.
-- `removeroles <username> <role ID ...>` - Removes role(s) from the user.
-- `alert <text>` - Sends an popup-like alert to all users on the canvas.
-- `ban <user> <reason>` - Bans the user for 24 hours, with the specified reason (if any).
-- `permaban <user> <reason>` - Permanently bans the user, with the specified reason (if any).
-- `shadowban <user> <reason>` - Shadowbans the user (hiding newly-placed pixels to all but themself), with the specified reason (if any).
-- `unban <user> [true/false] [reason]` - Unbans the user with the specified reason and reverts their pixels if true.
-- `nuke <x1> <y1> <x2> <y2> <color>` - Replaces all pixels from (`x1`, `y1`) to (`x2`, `y2`) with the color (by index).
-- `replace <x1> <y1> <x2> <y2> <from> <to>` - Replaces all pixels in the rectangle delimited by (`x1`, `y1`) to (`x2`, `y2`) from the color `from` to the color `to`
-- `cons [authed]` - Lists the total (or authed) connection count.
-- `users` - Lists all of the authed users, by username.
-- `stack <user> [set <amount>]` - Sets the user's stack count. The user must not be on cooldown before setting.
-- `placementOverride list|<user> [placeAnyColor|ignoreCooldown|ignorePlacemap] [on|off]` - Sets or lists the placement overrides of an user
-- `captchaOverride list|<user> [on|off]` - Lists all captcha overrides or sets the captcha override of an user
-- `broadcast <message>` - Sends a message in chat
-- `chatban <user> <length> <purge> <reason>` - Chat bans the user for `length` in seconds, optionally purges all of their messages
-- `permachatban <user> <purge> <reason>` - Perma chat bans the user, optionally purges all of their messages
-- `unchatban <user>` - Unchatbans the user
-- `chatpurge <user> [amount] [reason]` - Purges up to `amount` chat messages from the user
-- `cf <query>` - Runs a chat filter against `query`
-- `reloadusers` - Reloads the user manager (laggy)
-- `setname <user> <name>` - (alias: updateusername) Changes the user's name
-- `idlecheck` - Runs an user timeout check
-- `senduserdata` - Broadcasts the non-idle user count in chat
-- `addnotification <title> <expiry> <body>` - Adds a notification to the notification panel. A "+x" on the `expiry` makes the expiry now + x in seconds.
-- `bp <json packet>` broadcast a raw packet to everyone online.
-- `up <username> <json packet>` send a raw packet to all active connections from an user.
-- `f <faction_id> [delete|tag|name [<new_value>]]` updates a faction. if <new_value> is omitted, then the console will print the current values.
+## General
 
-## Contributors
+| Command | Arguments | Description |
+| --- | --- | --- |
+| `reload` || Reloads `pxls.conf` and `roles.conf`, applying _most_ changes immediately. Also reloads the user and faction cache. |
+| `save` || Saves the board. |
+| `alert` | `[message]` | Alerts every user with the given message (or blank if left empty). |
+| `cons` | `[\|authed\|]` | Lists the total (or authenticated) connection count. |
+| `users` || Lists all authenticated usernames. |
+| `broadcast` | `(message)` | Sends the message in chat. |
+| `cf` | `(query)` | Runs the query through the chat filter. |
+| `relaodusers` || Reloads the user manager. **Laggy!** |
+| `idlecheck` || Runs the user timeout check. |
+| `senduserdata` || Broadcasts the non-idle user count in chat. |
+| `addnotification` | `(title) (expiry) (body)` | Adds a new notification to the notification panel with the body. `+123` for the expiry means 123 seconds from now. |
+| `bp` | `(packet)` | Broadcasts a raw JSON packet to all connections. |
+| `up` | `(username) (packet)` | Broadcasts a raw JSON packet to all active connections from the user. |
+| `f` | `(faction ID) [delete/tag [new tag]/name [new name]]` | Prints information about the faction or changes the tag or name. |
 
-* [xSke](https://github.com/xSke) - Main code
-* [jasperandrew](https://github.com/jasperandrew) - Client UI/UX
-* [Sorunome](https://github.com/Sorunome) - Loads of client improvements
-* [GlowingSocc](https://github.com/GlowingSocc) - Loads of client improvements
-* [haykam821](https://github.com/haykam821) - Copy link and color-switching keybinds
-* [FlyingSixtySix](https://github.com/FlyingSixtySix) - Miscellaneous contributions
-* [Netux](https://github.com/netux) - Various QoL improvements
+## Canvas Management
 
-A full list of contributors is available [here](https://github.com/xSke/Pxls/graphs/contributors).
+| Command | Arguments | Description |
+| --- | --- | --- |
+| `nuke` | `(x1) (y1) (x2) (y2) (color)` | Replaces all pixels from (`x1`, `y1`) to (`x2`, `y2`) with the specified color index. |
+| `replace` | `(x1) (y1) (x2) (y2) (from color) (to color)` | Replaces all pixels from (`x1`, `y1`) to (`x2`, `y2`) matching the `from color` index with the `to color` index. |
 
-## Licenses
+## User Management
+
+| Command | Arguments | Description |
+| --- | --- | --- |
+| `logins` | `(username) [{service ID}:{service user ID} ...]` | Gets or sets the user's login method(s). |
+| `addlogins` | `(username) ({service ID}:{service user ID} ...`) | Adds login method(s) to the user. |
+| `removelogins` | `(username) ({service ID}:{service user ID} ...`) | Removes login method(s) from the user. |
+| `roles` | `(username) [role ID ...]` | Gets or sets the user's roles. |
+| `addroles` | `(username) (role ID ...)` | Adds role(s) to the user. |
+| `removeroles` | `(username) (role ID ...)` | Removes role(s) from the user. |
+| `ban` | `(username) [reason]` | Bans the user for 24 hours with the given reason. |
+| `permaban` | `(username) [reason]` | Permanently bans the user with the given reason. |
+| `shadowban` | `(username) [reason]` | Shadowbans the user (making new pixels local) with the given reason. |
+| `unban` | `(username) [{revert} TRUE/false] [reason]` | Unbans the user, reverting their pixels and with the given reason. |
+| `stack` | `(user) [\|set\| (amount)]` | Gets or sets the user's stacked pixels. User must not be on cooldown before setting. |
+| `placementOverride` | `\|list\|/(user) [placeAnyColor/ignoreCooldown/ignorePlacemap] [on/off]` | Lists all placement overrides or turns a placement override on/off for the user. |
+| `captchaOverride` | `\|list\|/(user) [on/off]` | Lists all captcha overrides or turns it on/off for the user. |
+| `chatban` | `(username) (length) ({purge} true/false) (reason)` | Bans the user from chat for the `length` in seconds, optionally purging all of their messages, with the given reason. |
+| `permachatban` | `(username) ({purge} true/false) (reason)` | Permanently bans the user from chat optionally purging all of their messages, with the given reason. |
+| `unchatban` | `(username)` | Unbans the user from chat. |
+| `chatpurge` | `(username) [amount] [reason]` | Purges up to `amount` chat messages from the user for the given reason. |
+| `flagrename` | `(username) [{flag} TRUE/false]` | Flags or unflags the user for rename. |
+| `setname\|updateusername` | `(username) (new username)` | Renames the user. |
+
+# Licenses
 - This project includes icons from Font Awesome Free 5.9.0 by fontawesome - https://fontawesome.com
     - License: https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License)
 
@@ -167,9 +182,10 @@ A full list of contributors is available [here](https://github.com/xSke/Pxls/gra
 [place]: https://reddit.com/r/place/
 [docker]: https://github.com/aneurinprice/docker-pxls.space
 [dockerhub]: https://hub.docker.com/r/m08y/docker-pxls.space
+[actions]: https://github.com/pxlsspace/Pxls/actions/workflows/maven.yml
 [maven]: https://maven.apache.org/
 [java]: https://www.java.com/en/download/linux_manual.jsp
-[jdk14]: https://openjdk.java.net/projects/jdk/14/
+[jdk16]: https://openjdk.java.net/projects/jdk/16/
 [postgres]: https://www.postgresql.org/
 [hocon]: https://github.com/typesafehub/config/blob/master/HOCON.md
 [googleconsole]: https://console.developers.google.com

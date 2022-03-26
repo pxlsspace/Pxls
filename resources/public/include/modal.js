@@ -1,18 +1,7 @@
 const modal = (function() {
   return {
     showText: function(text, opts) {
-      opts = Object.assign({}, { title: 'Pxls', footerButtons: [], modalOpts: {} }, opts);
-      if (opts.footerButtons != null && !Array.isArray(opts.footerButtons)) {
-        if (!(opts.footerButtons instanceof HTMLElement)) throw new Error('Invalid footerButtons provided. Expected HTMLElement[]');
-        opts.footerButtons = [opts.footerButtons];
-      }
-      /* let footer;
-      if (Array.isArray(opts.footerButtons)) {
-        const validButtons = opts.footerButtons.filter(x => x instanceof HTMLElement);
-        if (validButtons.length > 0) {
-          footer = crel('div', { class: 'modal-footer' }, validButtons);
-        }
-      } */
+      opts = Object.assign({}, { title: 'Pxls', modalOpts: {} }, opts);
       return modal.show(modal.buildDom(
         crel('h2', { class: 'modal-title' }, opts.title || 'Pxls'),
         crel('p', { style: 'margin: 0;' }, text)

@@ -223,3 +223,45 @@ $(window).on("pxls:user:loginState", function(e, isLoggedIn) {
     console.log(isLoggedIn ? "Client is logged in" : "Client isn't logged in");
 })
 ```
+
+## Localizations
+
+We use [GNU gettext](https://www.gnu.org/software/gettext/) for our localization format. The source files for localizations are located in the `po` directory.
+
+`Localization.pot` is the template file and `Localization*.po` are the localizations for the relevant language.
+
+### Creating a new language localization
+
+Copy `po/Localization.pot` to `po/Localization_$LC$.po` (where `$LC$` is the language [ISO 639-1 code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes)).
+
+Fill in each empty `msgstr ""` with the translation of the `msgid "..."`. If additional context is needed, open the relevant file(s) (denoted by `#: ...`)
+and search for the relevant `msgid` string.
+
+### Compiling localizations
+
+Use the `compile-localizations.js` helper script. This should generate new versions of `resources/Localization*.properties`.
+
+### Generating new localization strings
+
+After creating a new localization string in the code somewhere, it must be added to the `.pot` and `.po` files.
+
+Use the `generate-potfile.js` helper script and the following command to unify it across all `.po` files:
+
+```bash
+for f in po/*.po; do msgmerge -N -U --no-wrap $f po/Localization.pot; done
+```
+
+## Symbols Template Style
+
+The `Symbols` template style (located in `resources/public/pebble_templates/index.html` and localization files between `Dotted (Big, 2:2)` and `"Numbers"`)
+uses the reference palette configuration. Any changes to the palette will break this style. To modify it, decode the base64 string for the symbols into a `.png`
+and open it in an image editor. 
+
+<img src="https://i.imgur.com/efz5tk7.png">
+
+Each symbol is in a 7x7 block going from left to right, top to bottom. The color of the symbols do not matter as they will be re-mapped to the palette when applied.
+The symbols can be resized so long as they remain proportional to the image size so that there are two rows of 16 blocks each, or however many colors are in the palette.
+Once finished editing, convert the `.png` back into base64 format and replace the option value in `index.html`.
+
+To remove the symbols, delete the `<option value="...">{{i18n('Localization', 'Symbols') | raw}}</option>` from `index.html` and remove or comment out the relevant
+localization string from each file in `po/`. Compile localizations with `node compile-localizations.js`.

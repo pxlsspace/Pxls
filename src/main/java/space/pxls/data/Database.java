@@ -4,6 +4,9 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.core.mapper.RowMapper;
+import org.jdbi.v3.core.statement.StatementContext;
+
 import space.pxls.App;
 import space.pxls.auth.Provider;
 import space.pxls.server.packets.chat.ChatMessage;
@@ -14,11 +17,16 @@ import space.pxls.user.Role;
 import space.pxls.user.User;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import java.util.AbstractMap.SimpleEntry;
 
 import static java.lang.Math.toIntExact;
 
@@ -102,6 +110,13 @@ public class Database {
                     "id INTEGER REFERENCES users," +
                     "role VARCHAR(512)," +
                     "PRIMARY KEY (id, role))")
+                    .execute();
+            // user keys
+            handle.createUpdate("CREATE TABLE IF NOT EXISTS user_keys (" +
+                    "uid INT NOT NULL REFERENCES users(id)," +
+                    "key CHAR(512) NOT NULL," +
+                    "canvas_code VARCHAR(64) NOT NULL);" +
+                    "CREATE UNIQUE INDEX IF NOT EXISTS _user_keys_uid_canvas_code_pair ON user_keys(uid, canvas_code);")
                     .execute();
             // lookups
             handle.createUpdate("CREATE TABLE IF NOT EXISTS lookups (" +
@@ -746,6 +761,27 @@ public class Database {
                 .orElse(null);
             return user;
         });
+    }
+
+    /**
+     * @param userID The user's ID.
+     */
+    public Map<String, String> getUserKeys(int userID) {
+        return jdbi.withHandle(handle ->
+                        handle.select("SELECT key, canvas_code FROM user_keys WHERE uid = :uid ORDER BY canvas_code ASC")
+                                .bind("uid", userID)
+                                .map(new UserkeyMapper())
+                                .list()
+                )
+                .stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
+
+    static class UserkeyMapper implements RowMapper<Map.Entry<String, String>> {
+        @Override
+        public Map.Entry<String, String> map(ResultSet rs, StatementContext ctx) throws SQLException {
+            return new SimpleEntry<String, String>(rs.getString("canvas_code"), rs.getString("key"));
+        }
     }
 
     /**

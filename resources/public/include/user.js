@@ -127,7 +127,7 @@ const user = (function() {
         }
       });
       socket.on('users', function(data) {
-        self.elements.users.text(data.count + ' online').fadeIn(200);
+        self.elements.users.text(data.count + ' ' + __('online')).fadeIn(200);
       });
       socket.on('userinfo', function(data) {
         let isBanned = false;

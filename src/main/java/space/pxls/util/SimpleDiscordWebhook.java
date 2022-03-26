@@ -1,7 +1,7 @@
 package space.pxls.util;
 
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
+import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
 
 /**
  * A simple Discord webhook builder. Used for basic text webhooks, doesn't provide support for more advanced things like file uploads.

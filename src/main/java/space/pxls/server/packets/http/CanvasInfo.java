@@ -1,14 +1,18 @@
 package space.pxls.server.packets.http;
 
+import com.typesafe.config.ConfigObject;
+import space.pxls.auth.AuthService;
 import space.pxls.palette.Color;
 
 import java.util.List;
+import java.util.Map;
 
 public class CanvasInfo {
     public String canvasCode;
     public Integer width;
     public Integer height;
     public List<Color> palette;
+    public CooldownInfo cooldownInfo;
     public String captchaKey;
     public Integer heatmapCooldown;
     public Integer maxStacked;
@@ -27,6 +31,7 @@ public class CanvasInfo {
         Integer width,
         Integer height,
         List<Color> palette,
+        CooldownInfo cooldownInfo,
         String captchaKey,
         Integer heatmapCooldown,
         Integer maxStacked,
@@ -44,6 +49,7 @@ public class CanvasInfo {
         this.width = width;
         this.height = height;
         this.palette = palette;
+        this.cooldownInfo = cooldownInfo;
         this.captchaKey = captchaKey;
         this.heatmapCooldown = heatmapCooldown;
         this.maxStacked = maxStacked;
@@ -113,7 +119,7 @@ public class CanvasInfo {
     public String getCorsBase() {
         return corsBase;
     }
-    
+
     public String getCorsParam() {
         return corsParam;
     }
@@ -121,4 +127,6 @@ public class CanvasInfo {
     public String getChatRatelimitMessage() {
         return chatRatelimitMessage;
     }
+
+    public record CooldownInfo(String type, long staticCooldownSeconds, Map<String, Object> activityCooldown) {};
 }

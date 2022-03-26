@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2021-12-06T19:12:50.407Z\n"
+"POT-Creation-Date: 2022-03-24T16:29:23.229Z\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -46,6 +46,10 @@ msgstr "All Time:"
 msgid "Loading online user count&hellip;"
 msgstr "Loading online user count&hellip;"
 
+#: resources/public/include/user.js
+msgid "online"
+msgstr "online"
+
 #: resources/public/pebble_templates/index.html
 #: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Pixels"
@@ -74,6 +78,10 @@ msgstr "Pick a username"
 #: resources/public/pebble_templates/index.html
 msgid "Username:"
 msgstr "Username:"
+
+#: resources/public/pebble_templates/index.html
+msgid "Drag and drop template image"
+msgstr "Drag and drop template image"
 
 #: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/profile.html
@@ -303,12 +311,172 @@ msgid "Note: These values are based on QWERTY keyboards. For other layouts, use 
 msgstr "Note: These values are based on QWERTY keyboards. For other layouts, use the keys corresponding to the same position on a QWERTY keyboard."
 
 #: resources/public/pebble_templates/index.html
+msgid "templates;overlays;guides"
+msgstr "templates;overlays;guides"
+
+#: resources/public/pebble_templates/index.html
+msgid "templates;overlays;image;pixel art"
+msgstr "templates;overlays;image;pixel art"
+
+#: resources/public/pebble_templates/index.html
+msgid "template enabled;template disabled;show template;hide template;template shown;template hidden"
+msgstr "template enabled;template disabled;show template;hide template;template shown;template hidden"
+
+#: resources/public/pebble_templates/index.html
+msgid "Use template"
+msgstr "Use template"
+
+#: resources/public/pebble_templates/index.html
+msgid "Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around"
+msgstr "Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around"
+
+#: resources/public/pebble_templates/index.html
+msgid "template title;template name;tab name;tab title;title="
+msgstr "template title;template name;tab name;tab title;title="
+
+#: resources/public/pebble_templates/index.html
+msgid "Title:"
+msgstr "Title:"
+
+#: resources/public/pebble_templates/index.html
+msgid "template location source;template source URL;template URL;template="
+msgstr "template location source;template source URL;template URL;template="
+
+#: resources/public/pebble_templates/index.html
+msgid "URL:"
+msgstr "URL:"
+
+#: resources/public/pebble_templates/index.html
+msgid "template position;template x;template y;template location; template vertical; template horizontal;ox=;oy="
+msgstr "template position;template x;template y;template location; template vertical; template horizontal;ox=;oy="
+
+#: resources/public/pebble_templates/index.html
+msgid "Horizontal position:"
+msgstr "Horizontal position:"
+
+#: resources/public/pebble_templates/index.html
+msgid "Vertical position:"
+msgstr "Vertical position:"
+
+#: resources/public/pebble_templates/index.html
+msgid "template width;tw="
+msgstr "template width;tw="
+
+#: resources/public/pebble_templates/index.html
+msgid "Width:"
+msgstr "Width:"
+
+#: resources/public/pebble_templates/index.html
+msgid "Reset"
+msgstr "Reset"
+
+#: resources/public/pebble_templates/index.html
+msgid "template style;custom template"
+msgstr "template style;custom template"
+
+#: resources/public/pebble_templates/index.html
+msgid "Style:"
+msgstr "Style:"
+
+#: resources/public/pebble_templates/index.html
+msgid "Use Source Style"
+msgstr "Use Source Style"
+
+#: resources/public/pebble_templates/index.html
+msgid "1-to-1"
+msgstr "1-to-1"
+
+#: resources/public/pebble_templates/index.html
+msgid "1-to-1 (keep incorrect colors)"
+msgstr "1-to-1 (keep incorrect colors)"
+
+#: resources/public/pebble_templates/index.html
+msgid "Dotted (Small, 1:2)"
+msgstr "Dotted (Small, 1:2)"
+
+#: resources/public/pebble_templates/index.html
+msgid "Dotted (Big, 2:2)"
+msgstr "Dotted (Big, 2:2)"
+
+#: resources/public/pebble_templates/index.html
+msgid "Symbols"
+msgstr "Symbols"
+
+#: resources/public/pebble_templates/index.html
+msgid "Numbers"
+msgstr "Numbers"
+
+#: resources/public/pebble_templates/index.html
+msgid "Custom…"
+msgstr "Custom…"
+
+#: resources/public/pebble_templates/index.html
+msgid "template style source;template style URL;custom style URL;custom template"
+msgstr "template style source;template style URL;custom style URL;custom template"
+
+#: resources/public/pebble_templates/index.html
+msgid "Custom style URL:"
+msgstr "Custom style URL:"
+
+#: resources/public/pebble_templates/index.html
+msgid "template conversion;template palette conversion;convert to palette"
+msgstr "template conversion;template palette conversion;convert to palette"
+
+#: resources/public/pebble_templates/index.html
+msgid "Color Conversion Mode:"
+msgstr "Color Conversion Mode:"
+
+#: resources/public/pebble_templates/index.html
+msgid "Unconverted"
+msgstr "Unconverted"
+
+#: resources/public/pebble_templates/index.html
+msgid "Nearest Custom"
+msgstr "Nearest Custom"
+
+#: resources/public/pebble_templates/index.html
+msgid "template transparency;template opacity;oo="
+msgstr "template transparency;template opacity;oo="
+
+#: resources/public/pebble_templates/index.html
+msgid "Opacity:"
+msgstr "Opacity:"
+
+#: resources/public/pebble_templates/index.html
 msgid "ui;interface"
 msgstr "ui;interface"
 
 #: resources/public/pebble_templates/index.html
 msgid "UI Settings"
 msgstr "UI Settings"
+
+#: resources/public/pebble_templates/index.html
+msgid "language override;text"
+msgstr "language override;text"
+
+#: resources/public/pebble_templates/index.html
+msgid "Language override:"
+msgstr "Language override:"
+
+#: resources/public/pebble_templates/index.html
+msgid "Use Browser Language"
+msgstr "Use Browser Language"
+
+#: resources/public/pebble_templates/index.html
+msgid "English"
+msgstr "English"
+
+#: resources/public/pebble_templates/index.html
+msgid "French"
+msgstr "French"
+
+#: resources/public/pebble_templates/index.html
+msgid "Russian"
+msgstr "Russian"
+
+#: resources/public/pebble_templates/index.html
+msgid "Bulgarian"
+msgstr "Bulgarian"
 
 #: resources/public/pebble_templates/index.html
 msgid "themes;look;stylesheets;visuals"
@@ -529,6 +697,34 @@ msgstr "link;url;behaviour"
 #: resources/public/pebble_templates/index.html
 msgid "Default internal link action click:"
 msgstr "Default internal link action click:"
+
+#: resources/public/pebble_templates/index.html
+msgid "chat icon;chat notifications;chat ping"
+msgstr "chat icon;chat notifications;chat ping"
+
+#: resources/public/pebble_templates/index.html
+msgid "Chat icon badge mode:"
+msgstr "Chat icon badge mode:"
+
+#: resources/public/pebble_templates/index.html
+msgid "Show on unread ping"
+msgstr "Show on unread ping"
+
+#: resources/public/pebble_templates/index.html
+msgid "Show on unread message"
+msgstr "Show on unread message"
+
+#: resources/public/pebble_templates/index.html
+msgid "Never show"
+msgstr "Never show"
+
+#: resources/public/pebble_templates/index.html
+msgid "chat icon;chat notifications;chat message"
+msgstr "chat icon;chat notifications;chat message"
+
+#: resources/public/pebble_templates/index.html
+msgid "Chat icon highlight mode:"
+msgstr "Chat icon highlight mode:"
 
 #: resources/public/pebble_templates/index.html
 msgid "ignored;ignores;unignore;blocked;blocking;unblock"
@@ -767,126 +963,6 @@ msgid "WEBP (Chrome only)"
 msgstr "WEBP (Chrome only)"
 
 #: resources/public/pebble_templates/index.html
-msgid "templates;overlays;guides"
-msgstr "templates;overlays;guides"
-
-#: resources/public/pebble_templates/index.html
-msgid "templates;overlays;image;pixel art"
-msgstr "templates;overlays;image;pixel art"
-
-#: resources/public/pebble_templates/index.html
-msgid "template enabled;template disabled;show template;hide template;template shown;template hidden"
-msgstr "template enabled;template disabled;show template;hide template;template shown;template hidden"
-
-#: resources/public/pebble_templates/index.html
-msgid "Use template"
-msgstr "Use template"
-
-#: resources/public/pebble_templates/index.html
-msgid "Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around"
-msgstr "Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around"
-
-#: resources/public/pebble_templates/index.html
-msgid "template title;template name;tab name;tab title;title="
-msgstr "template title;template name;tab name;tab title;title="
-
-#: resources/public/pebble_templates/index.html
-msgid "Title:"
-msgstr "Title:"
-
-#: resources/public/pebble_templates/index.html
-msgid "template location source;template source URL;template URL;template="
-msgstr "template location source;template source URL;template URL;template="
-
-#: resources/public/pebble_templates/index.html
-msgid "URL:"
-msgstr "URL:"
-
-#: resources/public/pebble_templates/index.html
-msgid "template position;template x;template y;template location; template vertical; template horizontal;ox=;oy="
-msgstr "template position;template x;template y;template location; template vertical; template horizontal;ox=;oy="
-
-#: resources/public/pebble_templates/index.html
-msgid "Horizontal position:"
-msgstr "Horizontal position:"
-
-#: resources/public/pebble_templates/index.html
-msgid "Vertical position:"
-msgstr "Vertical position:"
-
-#: resources/public/pebble_templates/index.html
-msgid "template width;tw="
-msgstr "template width;tw="
-
-#: resources/public/pebble_templates/index.html
-msgid "Width:"
-msgstr "Width:"
-
-#: resources/public/pebble_templates/index.html
-msgid "Reset"
-msgstr "Reset"
-
-#: resources/public/pebble_templates/index.html
-msgid "template style;custom template"
-msgstr "template style;custom template"
-
-#: resources/public/pebble_templates/index.html
-msgid "Style:"
-msgstr "Style:"
-
-#: resources/public/pebble_templates/index.html
-msgid "Use Source Style"
-msgstr "Use Source Style"
-
-#: resources/public/pebble_templates/index.html
-msgid "Dotted (Small, 1:2)"
-msgstr "Dotted (Small, 1:2)"
-
-#: resources/public/pebble_templates/index.html
-msgid "Dotted (Big, 2:2)"
-msgstr "Dotted (Big, 2:2)"
-
-#: resources/public/pebble_templates/index.html
-msgid "Numbers"
-msgstr "Numbers"
-
-#: resources/public/pebble_templates/index.html
-msgid "Custom…"
-msgstr "Custom…"
-
-#: resources/public/pebble_templates/index.html
-msgid "template style source;template style URL;custom style URL;custom template"
-msgstr "template style source;template style URL;custom style URL;custom template"
-
-#: resources/public/pebble_templates/index.html
-msgid "Custom style URL:"
-msgstr "Custom style URL:"
-
-#: resources/public/pebble_templates/index.html
-msgid "template conversion;template palette conversion;convert to palette"
-msgstr "template conversion;template palette conversion;convert to palette"
-
-#: resources/public/pebble_templates/index.html
-msgid "Color Conversion Mode:"
-msgstr "Color Conversion Mode:"
-
-#: resources/public/pebble_templates/index.html
-msgid "Unconverted"
-msgstr "Unconverted"
-
-#: resources/public/pebble_templates/index.html
-msgid "Nearest Custom"
-msgstr "Nearest Custom"
-
-#: resources/public/pebble_templates/index.html
-msgid "template transparency;template opacity;oo="
-msgstr "template transparency;template opacity;oo="
-
-#: resources/public/pebble_templates/index.html
-msgid "Opacity:"
-msgstr "Opacity:"
-
-#: resources/public/pebble_templates/index.html
 msgid "sound;notification;alert;notify;ping"
 msgstr "sound;notification;alert;notify;ping"
 
@@ -1040,8 +1116,8 @@ msgid "How do I make a template?"
 msgstr "How do I make a template?"
 
 #: resources/public/pebble_templates/faq.html
-msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use the 3rd party tool <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into PxlsFiddle."
-msgstr "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use the 3rd party tool <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into PxlsFiddle."
+msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or PxlsFiddle."
+msgstr "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or PxlsFiddle."
 
 #: resources/public/pebble_templates/faq.html
 msgid "How do I move a template?"
@@ -1264,6 +1340,16 @@ msgstr "Statistics"
 msgid "Profile (user info, factions, etc.)"
 msgstr "Profile (user info, factions, etc.)"
 
+#. link to charity.pxls.space
+#: resources/public/pebble_templates/info.html
+msgid "Generator, progress checker, and monitor for Pxls templates"
+msgstr "Generator, progress checker, and monitor for Pxls templates"
+
+#. link to charity.pxls.space
+#: resources/public/pebble_templates/info.html
+msgid "Charity (templates, monitors, etc.)"
+msgstr "Charity (templates, monitors, etc.)"
+
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
 msgid "Template generator, archives, timelapses, and other utilities"
@@ -1302,12 +1388,20 @@ msgid "My Factions"
 msgstr "My Factions"
 
 #: resources/public/pebble_templates/profile.html
+msgid "My Data"
+msgstr "My Data"
+
+#: resources/public/pebble_templates/profile.html
 msgid "Reports"
 msgstr "Reports"
 
 #: resources/public/pebble_templates/profile.html
 msgid "Factions"
 msgstr "Factions"
+
+#: resources/public/pebble_templates/profile.html
+msgid "Data"
+msgstr "Data"
 
 #: resources/public/pebble_templates/profile.html
 msgid "You must be logged in to view your profile."
@@ -1466,6 +1560,34 @@ msgstr "Leave"
 #: resources/public/pebble_templates/profile.html
 msgid "You are not in any factions yet!"
 msgstr "You are not in any factions yet!"
+
+#: resources/public/pebble_templates/profile.html
+msgid "You must be logged in to view your data."
+msgstr "You must be logged in to view your data."
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log Keys"
+msgstr "Log Keys"
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log keys can be used by those who have them to tell which pixels you placed on previous canvases."
+msgstr "Log keys can be used by those who have them to tell which pixels you placed on previous canvases."
+
+#: resources/public/pebble_templates/profile.html
+msgid "Canvas Code"
+msgstr "Canvas Code"
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log Key"
+msgstr "Log Key"
+
+#: resources/public/pebble_templates/profile.html
+msgid "You have no log keys yet!"
+msgstr "You have no log keys yet!"
+
+#: resources/public/pebble_templates/profile.html
+msgid "Log keys should show up here after a canvas you have placed on ends."
+msgstr "Log keys should show up here after a canvas you have placed on ends."
 
 #: resources/public/pebble_templates/profile.html
 msgid "Members of {0} ([{1}])"
@@ -1725,13 +1847,13 @@ msgstr "Purge Messages"
 msgid "Purging all messages is disabled during snip mode"
 msgstr "Purging all messages is disabled during snip mode"
 
-#: resources/public/include/chat.js resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/include/uiHelper.js
+#: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Yes"
 msgstr "Yes"
 
-#: resources/public/include/chat.js resources/public/include/user.js
-#: resources/public/admin/admin.js
+#: resources/public/include/chat.js resources/public/include/uiHelper.js
+#: resources/public/include/user.js resources/public/admin/admin.js
 msgid "No"
 msgstr "No"
 
@@ -1946,6 +2068,22 @@ msgstr "Terminal"
 #: resources/public/include/uiHelper.js
 msgid "Red"
 msgstr "Red"
+
+#: resources/public/include/uiHelper.js
+msgid "Cannot fetch local files. Use the file selector in template settings."
+msgstr "Cannot fetch local files. Use the file selector in template settings."
+
+#: resources/public/include/uiHelper.js
+msgid "Drag and dropped file must be a valid image."
+msgstr "Drag and dropped file must be a valid image."
+
+#: resources/public/include/uiHelper.js
+msgid "Redirect Warning"
+msgstr "Redirect Warning"
+
+#: resources/public/include/uiHelper.js
+msgid "Are you sure you want to redirect to the following URL?"
+msgstr "Are you sure you want to redirect to the following URL?"
 
 #: resources/public/include/user.js
 msgid "Sign Out"

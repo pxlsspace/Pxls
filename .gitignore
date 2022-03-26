@@ -30,3 +30,5 @@ node/
 node_modules/
 .factorypath
 *~
+.vscode/
+venv

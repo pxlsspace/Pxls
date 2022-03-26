@@ -6,6 +6,7 @@ import java.util.*;
 import java.util.function.Supplier;
 
 import io.undertow.server.HttpServerExchange;
+import io.undertow.server.handlers.Cookie;
 import io.undertow.util.*;
 
 public class Util {
@@ -43,13 +44,27 @@ public class Util {
     }
 
     public static Locale negotiateLocale(HttpServerExchange exchange) {
-        List<Locale> locales = LocaleUtils.getLocalesFromHeader(exchange.getRequestHeaders().get(Headers.ACCEPT_LANGUAGE));
-        locales.retainAll(SUPPORTED_LOCALES);
-        locales.add(FALLBACK_LOCALE);
+        final Cookie cookie = exchange.getRequestCookie("pxls-accept-language-override");
+        String cookieValue;
+        if (cookie != null && "" != (cookieValue = cookie.getValue())) {
+            switch (cookieValue) {
+                case "en": return Locale.forLanguageTag("en-US");
+                case "fr": return Locale.forLanguageTag("fr-FR");
+                case "ru": return Locale.forLanguageTag("ru-RU");
+                case "bg": return Locale.forLanguageTag("bg-BG");
+            }
+        } else {
+            List<Locale> locales = LocaleUtils.getLocalesFromHeader(exchange.getRequestHeaders().get(Headers.ACCEPT_LANGUAGE));
+            locales.retainAll(SUPPORTED_LOCALES);
+            
+            if (locales.size() > 0) {
+                return locales.get(0);
+            }
+        }
 
-        return locales.get(0);
+        return FALLBACK_LOCALE;
     }
 
-    public static List<Locale> SUPPORTED_LOCALES = List.of(Locale.forLanguageTag("en-US"), Locale.forLanguageTag("fr-FR"));
+    public static List<Locale> SUPPORTED_LOCALES = List.of(Locale.forLanguageTag("en-US"), Locale.forLanguageTag("fr-FR"), Locale.forLanguageTag("ru-RU"), Locale.forLanguageTag("bg-BG"));
     public static Locale FALLBACK_LOCALE = SUPPORTED_LOCALES.get(0);
 }
