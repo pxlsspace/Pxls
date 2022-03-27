@@ -265,7 +265,7 @@
                             <h3>{{i18n('Localization', 'Log Keys') | raw}}</h3>
                             <p><i class="fas fa-info-circle"></i> {{i18n('Localization', 'Log keys can be used by those who have them to tell which pixels you placed on previous canvases.') | raw}}</p>
                             {% if keys|length > 0 %}
-                            <table class="inline-block">
+                            <table class="inline-block table-border-between">
                                 <thead>
                                     <tr>
                                         <th class="text-center pr-3">{{i18n('Localization', 'Canvas Code') | raw}}</th>
@@ -275,7 +275,7 @@
                                 <tbody>
                                     {% for entry in keys %}
                                     <tr>
-                                        <td class="text-center pr-3">{{entry.key}}</td>
+                                        <td class="text-center pr-3 align-text-top">{{entry.key}}</td>
                                         <td class="text-left"><code class="break">{{entry.value}}</code></td>
                                     </tr>
                                     {% endfor %}

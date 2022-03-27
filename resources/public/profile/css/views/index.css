@@ -91,3 +91,7 @@
 .break {
     word-break: break-all;
 }
+
+.table-border-between tbody tr {
+    border-top: 1px solid #919191aa;
+}
