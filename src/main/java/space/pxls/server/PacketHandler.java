@@ -547,8 +547,6 @@ public class PacketHandler {
 
         var postData = postDataBuilder.toString();
 
-        System.out.println(postData);
-
         for(var hook : webhooks) {
             try {
                 var connection = (HttpURLConnection) new URL(hook).openConnection();
@@ -565,6 +563,7 @@ public class PacketHandler {
                 if(connection.getResponseCode() >= 400) {
                     var response = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
 
+                    System.err.println("Error(s) relaying chat message to webhooks:");
                     for(var line: response.lines().collect(Collectors.toList())) {
                         System.err.println(line);
                     }
