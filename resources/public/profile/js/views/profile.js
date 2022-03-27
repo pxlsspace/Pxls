@@ -37,6 +37,9 @@ window.DEFAULT_SPECTRUM_OPTIONS = window.DEFAULT_SPECTRUM_OPTIONS || {
   // hook up faction search/join interaction
   initFactionSearch();
 
+  // hook up log key copy interaction
+  Array.from(document.querySelectorAll('[data-action="copy-log-key"]')).forEach(elAction => elAction.addEventListener('click', e => handleCopyLogKey(e, elAction)));
+
   // hook up any existing color inputs if available
   if ($ && $.spectrum) {
     if (document.body.dataset.palette) { DEFAULT_SPECTRUM_OPTIONS.palette = document.body.dataset.palette.trim().split(','); }
@@ -395,6 +398,47 @@ function handleGlobalFactionAction(e) {
       break;
     }
   }
+}
+
+function handleCopyLogKey(e, elAction) {
+  e.preventDefault();
+  const btnCopy = elAction;
+  const btnIcon = btnCopy.querySelector('i');
+  const logKey = btnCopy.parentNode.parentNode.querySelector('code').innerText;
+
+  navigator.clipboard.writeText(logKey).then(() => {
+    // Primary -> Success
+    btnCopy.classList.remove('btn-primary');
+    btnCopy.classList.add('btn-success');
+    // Clipboard List -> Check
+    btnIcon.classList.remove('fa-clipboard-list');
+    btnIcon.classList.add('fa-clipboard-check');
+    setTimeout(() => {
+      // Success -> Primary
+      btnCopy.classList.remove('btn-success');
+      btnCopy.classList.add('btn-primary');
+      // Clipboard Check -> List
+      btnIcon.classList.remove('fa-clipboard-check');
+      btnIcon.classList.add('fa-clipboard-list');
+    }, 1500);
+  }, err => {
+    console.error('Failed to copy log key');
+    console.trace(err);
+    // Primary -> Danger
+    btnCopy.classList.remove('btn-primary');
+    btnCopy.classList.add('btn-danger');
+    // Clipboard List -> Blank
+    btnIcon.classList.remove('fa-clipboard-list');
+    btnIcon.classList.add('fa-clipboard');
+    setTimeout(() => {
+      // Danger -> Primary
+      btnCopy.classList.remove('btn-danger');
+      btnCopy.classList.add('btn-primary');
+      // Clipboard Blank -> List
+      btnIcon.classList.remove('fa-clipboard');
+      btnIcon.classList.add('fa-clipboard-list');
+    }, 1500);
+  });
 }
 
 function intToHex(int) {
