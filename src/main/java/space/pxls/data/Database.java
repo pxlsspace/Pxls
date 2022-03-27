@@ -849,7 +849,7 @@ public class Database {
      */
     public Map<String, String> getUserKeys(int userID) {
         return jdbi.withHandle(handle ->
-            handle.select("SELECT key, canvas_code FROM user_keys WHERE uid = :uid ORDER BY canvas_code ASC")
+            handle.select("SELECT key, canvas_code FROM user_keys WHERE uid = :uid")
                 .bind("uid", userID)
                 .map(new UserkeyMapper())
                 .list()
