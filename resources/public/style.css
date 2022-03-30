@@ -511,6 +511,12 @@ dt {
     z-index: 99;
 }
 
+#signup-discord-input {
+    display: block;
+    width: 100%;
+    margin-top: 5px;
+}
+
 /* body preselector is to give more precident to .message than to .floating-panel */
 body .message {
     max-width: 40%;

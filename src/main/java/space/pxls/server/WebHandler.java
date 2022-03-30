@@ -1605,6 +1605,7 @@ public class WebHandler {
         }
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         FormData.FormValue nameVal = data.getFirst("username");
+        FormData.FormValue discordVal = data.getFirst("discord");
         FormData.FormValue tokenVal = data.getFirst("token");
         if (nameVal == null || tokenVal == null) {
             respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_params", "Missing parameters"));
@@ -1612,6 +1613,7 @@ public class WebHandler {
         }
 
         String name = nameVal.getValue();
+        String discord = discordVal == null ? "" : discordVal.getValue();
         String token = tokenVal.getValue();
         if (token.isEmpty()) {
             respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_token", "Missing signup token"));
@@ -1621,6 +1623,9 @@ public class WebHandler {
             return;
         } else if (!name.matches("[a-zA-Z0-9_\\-]+")) {
             respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_username", "Username contains invalid characters"));
+            return;
+        } else if (!discord.isEmpty() && !discord.matches("^.+?#\\d{4}")) {
+            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_discord", "Discord tag contains invalid characters"));
             return;
         } else if (!App.getUserManager().isValidSignupToken(token)) {
             respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_token", "Invalid signup token"));
@@ -1633,6 +1638,10 @@ public class WebHandler {
         if (user == null) {
             respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_username", "Username taken, try another?"));
             return;
+        }
+
+        if (!discord.isEmpty()) {
+            user.setDiscordName(discord);
         }
 
         // Do additional checks below:

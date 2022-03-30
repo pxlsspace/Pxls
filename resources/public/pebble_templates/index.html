@@ -137,6 +137,12 @@
               <input id="signup-username-input" type="text" maxlength="32">
           </label>
       </p>
+        <p>
+            <label class="input-group">
+                <span class="label-text">{{i18n('Localization', 'Discord Tag (Optional):') | raw}}</span>
+                <input id="signup-discord-input" type="text" maxlength="64" placeholder="Username#1234">
+            </label>
+        </p>
       <div class="error" id="error"></div>
     </div>
     <button id="signup-button" class="float-right text-button">{{i18n('Localization', 'Sign up') | raw}}</button>
