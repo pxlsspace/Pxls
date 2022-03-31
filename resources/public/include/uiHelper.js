@@ -320,6 +320,9 @@ const uiHelper = (function() {
             };
             reader.readAsDataURL(file);
           });
+        } else if (data.types.length === 0) {
+          // Triggered by dragging random text
+          return;
         } else {
           url = data.getData('text/plain');
         }
