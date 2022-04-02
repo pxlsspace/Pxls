@@ -80,6 +80,10 @@ msgid "Username:"
 msgstr "Username:"
 
 #: resources/public/pebble_templates/index.html
+msgid "Discord Tag (Optional):"
+msgstr "Discord Tag (Optional):"
+
+#: resources/public/pebble_templates/index.html
 msgid "Drag and drop template image"
 msgstr "Drag and drop template image"
 

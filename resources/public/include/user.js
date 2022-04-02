@@ -117,11 +117,13 @@ const user = (function() {
         url: '/signup',
         data: {
           token: self.pendingSignupToken,
-          username: self.elements.signup.find('input').val()
+          username: self.elements.signup.find('#signup-username-input').val(),
+          discord: self.elements.signup.find('#signup-discord-input').val()
         },
         success: function() {
           self.elements.signup.find('#error').text('');
-          self.elements.signup.find('input').val('');
+          self.elements.signup.find('#signup-username-input').val('');
+          self.elements.signup.find('#signup-discord-input').val('');
           self.elements.signup.fadeOut(200);
           socket.reconnectSocket();
           self.pendingSignupToken = null;
