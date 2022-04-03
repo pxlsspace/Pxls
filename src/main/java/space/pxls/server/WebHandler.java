@@ -868,6 +868,7 @@ public class WebHandler {
         FormData.FormValue reasonData;
         FormData.FormValue removalData;
         FormData.FormValue banlengthData;
+        FormData.FormValue announceData;
 
         String who;
         String type;
@@ -875,6 +876,7 @@ public class WebHandler {
         Integer cmid;
         Integer removal;
         Integer banLength;
+        boolean announce;
 
         boolean isPerma = false,
                 isUnban = false;
@@ -886,6 +888,7 @@ public class WebHandler {
             reasonData = data.getFirst("reason");
             removalData = data.getFirst("removalAmount");
             banlengthData = data.getFirst("banLength");
+            announceData = data.getFirst("announce");
         } catch (NullPointerException npe) {
             sendBadRequest(exchange);
             return;
@@ -908,6 +911,7 @@ public class WebHandler {
             cmid = cmidData == null ? null : Integer.parseInt(cmidData.getValue());
             removal = Integer.parseInt(removalData.getValue());
             banLength = Integer.parseInt(banlengthData.getValue());
+            announce = Boolean.parseBoolean(announceData.getValue());
         } catch (Exception e) {
             sendBadRequest(exchange);
             return;
@@ -947,8 +951,8 @@ public class WebHandler {
             chatban = Chatban.UNBAN(target, user, reason);
         } else {
             chatban = isPerma ?
-                    Chatban.PERMA(target, user, reason, _removal, removal == -1 ? Integer.MAX_VALUE : removal) :
-                    Chatban.TEMP(target, user, System.currentTimeMillis() + (banLength * 1000L), reason, _removal, removal == -1 ? Integer.MAX_VALUE : removal);
+                    Chatban.PERMA(target, user, reason, _removal, removal == -1 ? Integer.MAX_VALUE : removal, announce) :
+                    Chatban.TEMP(target, user, System.currentTimeMillis() + (banLength * 1000L), reason, _removal, removal == -1 ? Integer.MAX_VALUE : removal, announce);
         }
 
         chatban.commit();
@@ -980,6 +984,7 @@ public class WebHandler {
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         FormData.FormValue chatId = null;
         String reason = null;
+        Boolean silent = null;
 
         try {
             chatId = data.getFirst("cmid");
@@ -1020,7 +1025,14 @@ public class WebHandler {
             reason = "";
         }
 
-        App.getDatabase().purgeChatID(author, user, chatMessage.id, reason, true);
+        try {
+            FormData.FormValue formSilent = data.getFirst("silent");
+            silent = formSilent.getValue().equals("on");
+        } catch (NullPointerException npe) {
+            silent = false;
+        }
+
+        App.getDatabase().purgeChatID(author, user, chatMessage.id, reason, true, !silent);
 
         send(StatusCodes.OK, exchange, "");
     }
@@ -1053,10 +1065,12 @@ public class WebHandler {
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         FormData.FormValue targetData = null;
         FormData.FormValue reasonData = null;
+        FormData.FormValue silentData = null;
 
         try {
             targetData = data.getFirst("who");
             reasonData = data.getFirst("reason");
+            silentData = data.getFirst("silent");
         } catch (NullPointerException npe) {
             sendBadRequest(exchange);
             return;
@@ -1073,7 +1087,7 @@ public class WebHandler {
             return;
         }
 
-        App.getDatabase().purgeChat(target, user, Integer.MAX_VALUE, reasonData.getValue(), true);
+        App.getDatabase().purgeChat(target, user, Integer.MAX_VALUE, reasonData.getValue(), true, silentData.getValue().equals("on"));
 
         exchange.setStatusCode(200);
         exchange.getResponseSender().send("{}");

@@ -373,10 +373,12 @@ const chat = (function() {
             }
           }
         } else console.warn(lines, 'was not an array-like, or was empty.');
-        if (e.amount >= 2147483647) {
-          self.addServerAction(`${e.initiator} purged all messages from ${e.target}.`);
-        } else {
-          self.addServerAction(`${e.amount} message${e.amount !== 1 ? 's' : ''} from ${e.target} ${e.amount !== 1 ? 'were' : 'was'} purged by ${e.initiator}.`);
+        if (e.announce) {
+          if (e.amount >= 2147483647) {
+            self.addServerAction(`${e.initiator} purged all messages from ${e.target}.`);
+          } else {
+            self.addServerAction(`${e.amount} message${e.amount !== 1 ? 's' : ''} from ${e.target} ${e.amount !== 1 ? 'were' : 'was'} purged by ${e.initiator}.`);
+          }
         }
       });
       socket.on('chat_purge_specific', e => {
@@ -389,7 +391,9 @@ const chat = (function() {
         }
         if (lines.length) {
           lines.forEach(x => _doPurge(x, e));
-          self.addServerAction(`${e.IDs.length} message${e.IDs.length !== 1 ? 's' : ''} from ${e.target} ${e.IDs.length !== 1 ? 'were' : 'was'} purged by ${e.initiator}`);
+          if (e.announce) {
+            self.addServerAction(`${e.IDs.length} message${e.IDs.length !== 1 ? 's' : ''} from ${e.target} ${e.IDs.length !== 1 ? 'were' : 'was'} purged by ${e.initiator}`);
+          }
         }
       });
 
@@ -1697,6 +1701,13 @@ const chat = (function() {
           });
           const _rbPurgeNo = crel('input', { type: 'radio', name: 'rbPurge' });
 
+          const _silentPurgeWrap = crel('div', { style: 'display: block;' });
+          const _cbSilentPurge = crel('input', {
+            type: 'checkbox',
+            name: 'cbSilentPurge',
+            style: 'display: inline; width: initial; margin-right: 5px;'
+          });
+
           const _reasonWrap = crel('div', { style: 'display: block;' });
 
           const _btnCancel = crel('button', {
@@ -1738,6 +1749,9 @@ const chat = (function() {
                 crel('label', { style: 'display: inline;' }, _rbPurgeNo, __('No'))
               ]
           ),
+          board.snipMode ? '' : crel(_silentPurgeWrap,
+            crel('label', { style: 'display: inline;' }, _cbSilentPurge, __('Silent (no purge message)'))
+          ),
           crel('div', { class: 'buttons' },
             _btnCancel,
             _btnOK
@@ -1776,6 +1790,7 @@ const chat = (function() {
               reason: __('none provided'),
               // TODO(netux): Fix infraestructure and allow to purge during snip mode
               removalAmount: !board.snipMode ? (_rbPurgeYes.checked ? -1 : 0) : 0, // message purges are based on username, so if we purge when everyone in chat is -snip-, we aren't gonna have a good time
+              announce: !_cbSilentPurge.checked,
               banLength: 0
             };
 
@@ -1823,10 +1838,17 @@ const chat = (function() {
             name: 'txtReason',
             style: 'display: inline-block; width: 100%; font-family: sans-serif; font-size: 1rem;'
           });
+          const _cbSilentPurge = crel('input', {
+            type: 'checkbox',
+            name: 'cbSilentPurge',
+            id: 'cbSilentPurge',
+            style: 'display: inline-block; width: 100%;'
+          });
 
           const dodelete = () => $.post('/admin/delete', {
             cmid: this.dataset.id,
-            reason: _txtReason.value
+            reason: _txtReason.value,
+            silent: _cbSilentPurge.checked
           }, () => {
             modal.closeAll();
           }).fail(() => {
@@ -1855,6 +1877,10 @@ const chat = (function() {
               crel('tr',
                 crel('th', __('Reason: ')),
                 crel('td', _txtReason)
+              ),
+              crel('tr',
+                crel('th', _cbSilentPurge),
+                crel('td', crel('label', { for: 'cbSilentPurge' }, __('Silent (no purge message)')))
               )
             ),
             crel('div', { class: 'buttons' },

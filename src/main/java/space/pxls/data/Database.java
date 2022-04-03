@@ -1491,7 +1491,7 @@ public class Database {
      * @param reason The reason for the purge.
      * @param broadcast Whether or not to broadcast a purge message.
      */
-    public void purgeChat(User target, User initiator, int amount, String reason, boolean broadcast) {
+    public void purgeChat(User target, User initiator, int amount, String reason, boolean broadcast, boolean announce) {
         jdbi.useHandle(handle -> handle.createUpdate("UPDATE chat_messages SET purged = true, purged_by = :initiator, purge_reason = :reason WHERE author = :who")
                 .bind("initiator", initiator == null ? 0 : initiator.getId())
                 .bind("who", target.getId())
@@ -1507,7 +1507,7 @@ public class Database {
             insertAdminLog(initiatorID, logMessage);
         }
         if (broadcast) {
-            App.getServer().getPacketHandler().sendChatPurge(target, initiator, amount, reason);
+            App.getServer().getPacketHandler().sendChatPurge(target, initiator, amount, reason, announce);
         }
     }
 
@@ -1519,7 +1519,7 @@ public class Database {
      * @param reason The reason for the purge.
      * @param broadcast Whether or not to broadcast a purge message.
      */
-    public void purgeChatID(User target, User initiator, Integer id, String reason, boolean broadcast) {
+    public void purgeChatID(User target, User initiator, Integer id, String reason, boolean broadcast, boolean announce) {
         jdbi.useHandle(handle -> handle.createUpdate("UPDATE chat_messages SET purged = true, purged_by = :initiator, purge_reason = :reason WHERE id = :id")
                 .bind("initiator", initiator.getId())
                 .bind("id", id)
@@ -1535,7 +1535,7 @@ public class Database {
             insertAdminLog(initiatorID, logMessage);
         }
         if (broadcast) {
-            App.getServer().getPacketHandler().sendSpecificPurge(target, initiator, id, reason);
+            App.getServer().getPacketHandler().sendSpecificPurge(target, initiator, id, reason, announce);
         }
     }
 
