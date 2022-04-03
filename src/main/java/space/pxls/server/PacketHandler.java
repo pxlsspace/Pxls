@@ -580,18 +580,18 @@ public class PacketHandler {
         server.send(user, chatban);
     }
 
-    public void sendChatPurge(User target, User initiator, int amount, String reason) {
-        var barePacket = new ServerChatPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), amount, reason);
+    public void sendChatPurge(User target, User initiator, int amount, String reason, boolean announce) {
+        var barePacket = new ServerChatPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), amount, reason, announce);
         var redactedPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
         server.broadcastSeparateForStaff(redactedPacket, barePacket);
     }
 
-    public void sendSpecificPurge(User target, User initiator, Integer cmid, String reason) {
-        sendSpecificPurge(target, initiator, Collections.singletonList(cmid), reason);
+    public void sendSpecificPurge(User target, User initiator, Integer cmid, String reason, boolean announce) {
+        sendSpecificPurge(target, initiator, Collections.singletonList(cmid), reason, announce);
     }
 
-    public void sendSpecificPurge(User target, User initiator, List<Integer> cmids, String reason) {
-        var barePacket = new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), cmids, reason);
+    public void sendSpecificPurge(User target, User initiator, List<Integer> cmids, String reason, boolean announce) {
+        var barePacket = new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), cmids, reason, announce);
         var redactedPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
         server.broadcastSeparateForStaff(redactedPacket, barePacket);
     }

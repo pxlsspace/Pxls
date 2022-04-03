@@ -9,7 +9,8 @@ public class Chatban {
     public final boolean purge;
     public final int purgeAmount;
     public final long instantiatedMS;
-    private Chatban(User target, User initiator, Type type, long expiryTimeMS, String reason, boolean purge, int purgeAmount) {
+    public final boolean announce;
+    private Chatban(User target, User initiator, Type type, long expiryTimeMS, String reason, boolean purge, int purgeAmount, boolean announce) {
         //assert target != null
         instantiatedMS = System.currentTimeMillis();
         this.target = target;
@@ -19,6 +20,7 @@ public class Chatban {
         this.reason = reason;
         this.purge = purge;
         this.purgeAmount = purgeAmount;
+        this.announce = announce;
     }
 
     /**
@@ -29,8 +31,8 @@ public class Chatban {
      * @param purgeAmount The amount of messages to purge.
      * @return A {@link Chatban} object denoting this user should be permanently banned
      */
-    public static Chatban PERMA(User target, User initiator, String reason, boolean purge, int purgeAmount) {
-        return new Chatban(target, initiator, Type.PERMA, 5000000L, reason, purge, purgeAmount);
+    public static Chatban PERMA(User target, User initiator, String reason, boolean purge, int purgeAmount, boolean announce) {
+        return new Chatban(target, initiator, Type.PERMA, 5000000L, reason, purge, purgeAmount, announce);
     }
 
     /**
@@ -42,8 +44,8 @@ public class Chatban {
      * @param purgeAmount   The amount of messages to purge.
      * @return A {@link Chatban} object denoting this user should be temporarily banned
      */
-    public static Chatban TEMP(User target, User initiator, long chatbanExpiry, String reason, boolean purge, int purgeAmount) {
-        return new Chatban(target, initiator, Type.TEMP, chatbanExpiry, reason, purge, purgeAmount);
+    public static Chatban TEMP(User target, User initiator, long chatbanExpiry, String reason, boolean purge, int purgeAmount, boolean announce) {
+        return new Chatban(target, initiator, Type.TEMP, chatbanExpiry, reason, purge, purgeAmount, announce);
     }
 
     /**
@@ -53,7 +55,7 @@ public class Chatban {
      * @return A {@link Chatban} object denoting this user should be unbanned
      */
     public static Chatban UNBAN(User target, User initiator, String reason) {
-        return new Chatban(target, initiator, Type.UNBAN, System.currentTimeMillis(), reason, false, 0);
+        return new Chatban(target, initiator, Type.UNBAN, System.currentTimeMillis(), reason, false, 0, false);
     }
 
     public void commit() {

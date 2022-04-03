@@ -8,12 +8,14 @@ public class ServerChatSpecificPurge {
     public String initiator;
     public List<Integer> IDs;
     public String reason;
+    public boolean announce;
 
-    public ServerChatSpecificPurge(String target, String initiator, List<Integer> IDs, String reason) {
+    public ServerChatSpecificPurge(String target, String initiator, List<Integer> IDs, String reason, Boolean announce) {
         this.target = target;
         this.initiator = initiator;
         this.IDs = IDs;
         this.reason = reason;
+        this.announce = announce;
     }
 
     public String getType() {
@@ -36,7 +38,11 @@ public class ServerChatSpecificPurge {
         return reason;
     }
 
+    public boolean shouldAnnounce() {
+        return announce;
+    }
+
     public ServerChatSpecificPurge asSnipRedacted() {
-        return new ServerChatSpecificPurge("-snip-", "-snip-", this.IDs, this.reason);
+        return new ServerChatSpecificPurge("-snip-", "-snip-", this.IDs, this.reason, this.announce);
     }
 }
