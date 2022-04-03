@@ -761,7 +761,7 @@ const uiHelper = (function() {
      */
     handleFile(dataTransfer) {
       const reader = new FileReader();
-      reader.onload = () => this.handleFileUrl(reader.result);
+      reader.onload = () => self.handleFileUrl(reader.result);
       reader.readAsDataURL(dataTransfer.files[0]);
     },
     /**
