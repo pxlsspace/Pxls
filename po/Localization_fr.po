@@ -1876,6 +1876,10 @@ msgid "No"
 msgstr "Non"
 
 #: resources/public/include/chat.js
+msgid "Silent (no purge message)"
+msgstr ""
+
+#: resources/public/include/chat.js
 msgid "Custom reason"
 msgstr "Raison personalisée"
 

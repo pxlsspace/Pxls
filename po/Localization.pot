@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-03-24T17:10:30.158Z\n"
+"POT-Creation-Date: 2022-04-03T04:05:27.870Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -44,10 +44,6 @@ msgstr ""
 
 #: resources/public/pebble_templates/index.html
 msgid "Loading online user count&hellip;"
-msgstr ""
-
-#: resources/public/include/user.js
-msgid "online"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
@@ -1876,6 +1872,10 @@ msgstr ""
 #: resources/public/include/user.js resources/public/admin/admin.js
 #: resources/public/admin/admin.js
 msgid "No"
+msgstr ""
+
+#: resources/public/include/chat.js
+msgid "Silent (no purge message)"
 msgstr ""
 
 #: resources/public/include/chat.js
