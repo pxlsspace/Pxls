@@ -1691,6 +1691,10 @@ msgstr ""
 msgid "Alert"
 msgstr ""
 
+#: resources/public/include/board.js
+msgid "The canvas is now locked. Press L to unlock."
+msgstr ""
+
 #. Snapshot save name
 #: resources/public/include/board.js
 msgid "pxls canvas"
