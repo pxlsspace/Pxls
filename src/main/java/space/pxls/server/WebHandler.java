@@ -1027,7 +1027,7 @@ public class WebHandler {
 
         try {
             FormData.FormValue formSilent = data.getFirst("silent");
-            silent = formSilent.getValue().equals("on");
+            silent = Boolean.parseBoolean(formSilent.getValue());
         } catch (NullPointerException npe) {
             silent = false;
         }
@@ -1087,7 +1087,7 @@ public class WebHandler {
             return;
         }
 
-        App.getDatabase().purgeChat(target, user, Integer.MAX_VALUE, reasonData.getValue(), true, silentData.getValue().equals("on"));
+        App.getDatabase().purgeChat(target, user, Integer.MAX_VALUE, reasonData.getValue(), true, !Boolean.parseBoolean(silentData.getValue()));
 
         exchange.setStatusCode(200);
         exchange.getResponseSender().send("{}");

@@ -1767,6 +1767,7 @@ const chat = (function() {
             const isUnban = _selBanLength.value === '-3';
             _reasonWrap.style.display = isUnban ? 'none' : 'block';
             _purgeWrap.style.display = isUnban ? 'none' : 'block';
+            _silentPurgeWrap.style.display = isUnban ? 'none' : 'block';
             _btnOK.innerHTML = isUnban ? __('Unban') : __('Ban');
           });
           _selCustomLength.selectedIndex = 1; // minutes
@@ -1904,6 +1905,12 @@ const chat = (function() {
         case 'purge': {
           const txtPurgeReason = crel('input', { type: 'text', onkeydown: e => e.stopPropagation() });
 
+          const cbSilentPurge = crel('input', {
+            type: 'checkbox',
+            name: 'cbSilentPurge',
+            style: 'display: inline; width: initial; margin-right: 5px;'
+          });
+
           const btnPurge = crel('button', { class: 'text-button dangerous-button', type: 'submit' }, __('Purge'));
 
           const messageTable = mode
@@ -1931,6 +1938,7 @@ const chat = (function() {
               crel('h5', __('Purge Reason')),
               txtPurgeReason
             ),
+            crel('label', { style: 'display: inline;' }, cbSilentPurge, __('Silent (no purge message)')),
             crel('div', { class: 'buttons' },
               crel('button', {
                 class: 'text-button',
@@ -1948,7 +1956,8 @@ const chat = (function() {
 
             $.post('/admin/chatPurge', {
               who: reportingTarget,
-              reason: txtPurgeReason.value
+              reason: txtPurgeReason.value,
+              silent: cbSilentPurge.checked
             }, function() {
               purgeWrapper.remove();
               modal.showText(__('User purged'));
