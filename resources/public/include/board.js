@@ -159,7 +159,7 @@ const board = (function() {
           case 'L':
             settings.board.lock.enable.toggle();
             if (settings.board.lock.enable.get()) {
-              new SLIDEIN.Slidein(__('The canvas is now locked. Press L to unlock.'), 'info-circle').show().closeAfter(3000);
+              new SLIDEIN.Slidein(__('The canvas is now locked. Press L to unlock.'), 'lock').show().closeAfter(3000);
             }
             break;
           case 'KeyR':
