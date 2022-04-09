@@ -2,7 +2,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
 "POT-Creation-Date: 2022-04-09T01:17:13.344Z\n"
-"Language: \n"
+"Language: ru\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
 #. Site description
