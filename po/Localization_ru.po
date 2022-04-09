@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-03-24T16:29:23.229Z\n"
+"POT-Creation-Date: 2022-04-09T00:41:19.596Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -45,10 +45,6 @@ msgstr "Общее:"
 #: resources/public/pebble_templates/index.html
 msgid "Loading online user count&hellip;"
 msgstr "Загрузка пользователей в сети&hellip;"
-
-#: resources/public/include/user.js
-msgid "online"
-msgstr "онлайн"
 
 #: resources/public/pebble_templates/index.html
 #: resources/public/include/lookup.js resources/public/admin/admin.js
@@ -1400,7 +1396,7 @@ msgid "{0}''s Profile"
 msgstr "{0}''s профиль"
 
 #: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/40x.html
+#: resources/public/pebble_templates/40x.html resources/public/include/user.js
 msgid "My Profile"
 msgstr "Мой профиль"
 
@@ -1612,6 +1608,7 @@ msgid "Members of {0} ([{1}])"
 msgstr "Члены {0} ([{1}])"
 
 #: resources/public/pebble_templates/profile.html
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Close"
 msgstr "Закрыть"
 
@@ -1761,6 +1758,15 @@ msgid "Note: You can set a default action in the settings menu which bypasses th
 msgstr "Примечание: В меню настроек можно установить действие по умолчанию, которое полностью обходит это всплывающее окно."
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
+#: resources/public/include/user.js resources/public/admin/admin.js
+msgid "Cancel"
+msgstr "Отменить"
+
+#: resources/public/include/chat.js
+msgid "OK"
+msgstr ""
+
+#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Report"
 msgstr "Жалоба"
 
@@ -1796,14 +1802,17 @@ msgstr "Проверка чата"
 msgid "Enter a reason for your report"
 msgstr "Введите причину вашей жалобы"
 
-#: resources/public/include/chat.js resources/public/include/lookup.js
-#: resources/public/include/user.js resources/public/admin/admin.js
-msgid "Cancel"
-msgstr "Отменить"
+#: resources/public/include/chat.js
+msgid "You are reporting a chat message from ${reportTarget} with the content:"
+msgstr ""
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Error sending report."
 msgstr "Ошибка отправки жалобы"
+
+#: resources/public/include/chat.js resources/public/include/lookup.js
+msgid "Sent report!"
+msgstr ""
 
 #: resources/public/include/chat.js
 msgid "Report User"
@@ -1888,6 +1897,7 @@ msgid "Custom reason"
 msgstr "Другая причина"
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
+#: resources/public/admin/admin.js
 msgid "Additional information (if applicable)"
 msgstr "Дополнительная информация (если применимо)"
 
@@ -1898,6 +1908,10 @@ msgstr "Дополнительная информация:"
 #: resources/public/include/chat.js
 msgid "Error occurred while chatbanning"
 msgstr "Произошла ошибка при чат-бане"
+
+#: resources/public/include/chat.js
+msgid "Chatban initiated"
+msgstr ""
 
 #: resources/public/include/chat.js
 msgid "Chatban"
@@ -1944,6 +1958,10 @@ msgid "Error sending purge."
 msgstr "Ошибка удаления"
 
 #: resources/public/include/chat.js
+msgid "User purged"
+msgstr ""
+
+#: resources/public/include/chat.js
 msgid "On"
 msgstr "Включить"
 
@@ -1960,12 +1978,20 @@ msgid "An unknown error occurred. Please contact a developer"
 msgstr "Произошла неизвестная ошибка. Пожалуйста обратитесь к разработчику"
 
 #: resources/public/include/chat.js
+msgid "Rename request updated"
+msgstr ""
+
+#: resources/public/include/chat.js
 msgid "New Name: "
 msgstr "Новое имя: "
 
 #: resources/public/include/chat.js
 msgid "Enter the new name for the user below. Please note that if you\\'re trying to change the caps, you\\'ll have to rename to something else first."
 msgstr "Введите новое имя для пользователя ниже. Пожалуйста заметьте, что если вы хотите изметь заглавные буквы, вам сначала придется переименовать их во что-то другое."
+
+#: resources/public/include/chat.js
+msgid "User renamed"
+msgstr ""
 
 #: resources/public/include/chat.js
 msgid "Force Rename"
@@ -1979,7 +2005,7 @@ msgstr "Вы не можете использовать чат, пока заб�
 msgid "Sending..."
 msgstr "Отправка..."
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "You must specify the details."
 msgstr "Вы должны уточнить детали."
 
@@ -1991,29 +2017,37 @@ msgstr "дополнительная информация:"
 msgid "Report Pixel"
 msgstr "Пожаловаться"
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Rule #1: Hateful/derogatory speech or symbols"
 msgstr "Правило #1: Ненавистнические/уничижительные высказывания или символы"
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Rule #2: Nudity, genitalia, or non-PG-13 content"
 msgstr "Правило #2: Нагота, гениталии или не 13+ контент"
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Rule #3: Multi-account"
 msgstr "Правило #3: Мультиаккаунт"
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Rule #4: Botting"
 msgstr "Правило #4: Ботоводство"
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Other (specify below)"
 msgstr "Другое (укажите ниже)"
 
 #: resources/public/include/lookup.js
 msgid "Hide sensitive information"
 msgstr "Скрыть конфиденциальную информацию"
+
+#: resources/public/include/lookup.js
+msgid "This pixel is background (was not placed by a user)."
+msgstr ""
+
+#: resources/public/include/lookup.js
+msgid "Move Template Here"
+msgstr ""
 
 #: resources/public/include/lookup.js
 msgid "An error occurred, either you aren't logged in or you may be attempting to look up users too fast. Please try again in 60 seconds"
@@ -2124,12 +2158,12 @@ msgid "Red"
 msgstr "Красная"
 
 #: resources/public/include/uiHelper.js
-msgid "Cannot fetch local files. Use the file selector in template settings."
-msgstr "Невозможно получить локальные файлы. Используйте кнопку [Выбрать файл] в настройках шаблона."
+msgid "A new ${type} report has been received."
+msgstr ""
 
 #: resources/public/include/uiHelper.js
-msgid "Drag and dropped file must be a valid image."
-msgstr "Перетаскиваемый файл должен быть допустимым изображением."
+msgid "Cannot fetch local files. Use the file selector in template settings."
+msgstr "Невозможно получить локальные файлы. Используйте кнопку [Выбрать файл] в настройках шаблона."
 
 #: resources/public/include/uiHelper.js
 msgid "Redirect Warning"
@@ -2138,6 +2172,10 @@ msgstr "Предупреждение о перенаправлении"
 #: resources/public/include/uiHelper.js
 msgid "Are you sure you want to redirect to the following URL?"
 msgstr "Вы уверены, что хотите перейти по указанной ссылке?"
+
+#: resources/public/include/uiHelper.js
+msgid "Drag and dropped file must be a valid image."
+msgstr "Перетаскиваемый файл должен быть допустимым изображением."
 
 #: resources/public/include/uiHelper.js
 msgid "Discord name updated successfully"
@@ -2164,12 +2202,20 @@ msgid "Are you sure you want to sign out?"
 msgstr "Вы уверены что хотите выйти?"
 
 #: resources/public/include/user.js
+msgid "online"
+msgstr "онлайн"
+
+#: resources/public/include/user.js
 msgid "You are permanently banned."
 msgstr "Вы забанены навсегда."
 
 #: resources/public/include/user.js
 msgid "You are temporarily banned and will not be allowed to place until ${timestamp}"
 msgstr "Вы временно забанены и не сможете размещать пиксели до ${timestamp}"
+
+#: resources/public/include/user.js
+msgid "You can contact us using one of the links in the info menu."
+msgstr ""
 
 #: resources/public/include/user.js
 msgid "If you think this was an error, please contact us using one of the links in the info tab."
@@ -2182,6 +2228,10 @@ msgstr "Причина бана:"
 #: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Banned"
 msgstr "Забанен"
+
+#: resources/public/include/user.js
+msgid "An unknown error occurred. Please contact staff on discord"
+msgstr ""
 
 #: resources/public/include/user.js
 msgid "Staff have required you to change your username, this usually means your name breaks one of our rules."
@@ -2206,6 +2256,26 @@ msgstr "Изменить"
 #: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Rename Requested"
 msgstr "Переименование запрошено"
+
+#: resources/public/include/user.js
+msgid "You must change your username."
+msgstr ""
+
+#: resources/public/include/user.js
+msgid "Click here to continue."
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Send alert..."
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Revert pixels of the last "
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid " hours"
+msgstr ""
 
 #: resources/public/admin/admin.js
 msgid "Something went wrong! Perhaps insufficient permissions?"
@@ -2296,6 +2366,22 @@ msgstr "когда истекает бан канваса"
 msgid "Chatban Expires"
 msgstr "Истечение чат-бана"
 
+#: resources/public/admin/admin.js
+msgid "Ban (24h)"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Permaban"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Shadowban"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Custom ban length: "
+msgstr ""
+
 #. Admin check. Example: type = 'username', arg = 'pxlsuser94'
 #: resources/public/admin/admin.js
 msgid "${type} ${arg} not found."
@@ -2308,6 +2394,34 @@ msgstr "Причина разбана"
 #: resources/public/admin/admin.js
 msgid "Unbanning ${username}"
 msgstr "Разбан ${username}"
+
+#: resources/public/admin/admin.js
+msgid "MOD"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Ignore cooldown"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Place any color"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Ignore placemap"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Ban user (24h)"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Unban user"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Check user"
+msgstr ""
 
 #: resources/public/admin/admin.js
 msgid "profile"
@@ -2324,3 +2438,7 @@ msgstr "Отправить предупреждение"
 #: resources/public/admin/admin.js
 msgid "Mod Actions"
 msgstr "Действия модератора"
+
+#: resources/public/admin/admin.js
+msgid "More..."
+msgstr ""
