@@ -53,10 +53,10 @@
             evt.stopPropagation();
           }),
           $('<div>').addClass('text').append(
-            // "Revert pixels of the last *n* hours", part before 'n'
+            // translator: "Revert pixels of the last *n* hours", part before 'n'
             __('Revert pixels of the last '),
             timeInput,
-            // "Revert pixels of the last *n* hours", part after 'n'
+            // translator: "Revert pixels of the last *n* hours", part after 'n'
             __(' hours')
           ),
           $('<div>').addClass('buttons').append(
@@ -363,7 +363,7 @@
       },
       init: function () {
         self.elements.panel.hide().addClass('admin bubble').append(
-          // Moderator panel label
+          // translator: Moderator panel label
           $('<h2>').text(__('MOD')),
           $('<div>').append(
             // first do the checkboxes

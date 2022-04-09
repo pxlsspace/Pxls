@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-04-09T00:41:19.596Z\n"
+"POT-Creation-Date: 2022-04-09T01:17:13.344Z\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -2269,10 +2269,12 @@ msgstr "Click here to continue."
 msgid "Send alert..."
 msgstr "Send alert..."
 
+#. "Revert pixels of the last *n* hours", part before 'n'
 #: resources/public/admin/admin.js
 msgid "Revert pixels of the last "
 msgstr "Revert pixels of the last "
 
+#. "Revert pixels of the last *n* hours", part after 'n'
 #: resources/public/admin/admin.js
 msgid " hours"
 msgstr " hours"
@@ -2395,6 +2397,7 @@ msgstr "Unban Reason:"
 msgid "Unbanning ${username}"
 msgstr "Unbanning ${username}"
 
+#. Moderator panel label
 #: resources/public/admin/admin.js
 msgid "MOD"
 msgstr "MOD"
