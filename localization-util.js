@@ -86,9 +86,8 @@ function findTranslationCalls(expression) {
         .map(findTranslationCalls)
         .flat();
     case NewExpression:
-      return expression.arguments
-        .map(findTranslationCalls)
-        .concat(findTranslationCalls(expression.callee))
+      return findTranslationCalls(expression.callee)
+        .concat(expression.arguments.map(findTranslationCalls))
         .flat();
     case CallExpression:
       if (isGettextCall(expression)) {
@@ -98,9 +97,8 @@ function findTranslationCalls(expression) {
 
         return [expression];
       } else {
-        return expression.arguments
-          .map(findTranslationCalls)
-          .concat(findTranslationCalls(expression.callee))
+        return findTranslationCalls(expression.callee)
+          .concat(expression.arguments.map(findTranslationCalls))
           .flat();
       }
     case WhileStatement:
