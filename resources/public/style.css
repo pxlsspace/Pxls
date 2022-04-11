@@ -101,6 +101,7 @@ html {
     --ping-highlight-color: #feedd1;
     --ping-flash-color: #8ef7d1;
     --ping-counter-color: #ffa500;
+    --reply-highlight-color: #ffdfab;
     --notification-expiry-color: #b66;
 
     --panel-background: #dfdfdf;
@@ -1502,6 +1503,7 @@ ul.chat-body li.chat-line {
     line-height: 1.5em;
     border-bottom: 1px solid var(--chat-separator-color);
     overflow: hidden;
+    position: relative;
 }
 
 ul.chat-body li.chat-line:nth-child(odd) {
@@ -1585,12 +1587,26 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     margin-right: .2em;
 }
 
+li.chat-line[data-id] .reply-button {
+    z-index: 1;
+    font-size: 1.3rem;
+    position: absolute;
+    top: 0.2rem;
+    right: 0.2rem;
+    visibility: hidden;
+}
+
+li.chat-line[data-id]:hover .reply-button {
+    visibility: visible;
+}
+
 .chat-wrapper .chat-controls, .chat-wrapper .chat-hints {
     flex: 0;
     position: relative;
 }
 
 .chat-wrapper .chat-controls {
+    z-index: 1; /* to be above reply-label and jump-to-bottom, in case of clipping */
     height: 3rem;
     position: absolute;
     bottom: calc(5px + 1.25rem);
@@ -1679,16 +1695,19 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     word-break:break-all;
 }
 
-.chat-line.purged {
+.chat-line.purged > :not(.reply-preview), .reply-preview.purged {
     font-style: italic;
-    font-size: .9em;
     color: var(--chat-purged-text-color);
     text-decoration: line-through;
 }
 
-.chat-line.shadow-banned {
-    font-size: .9em;
+.chat-line.shadow-banned > :not(.reply-preview), .reply-preview.shadow-banned {
     color: var(--chat-shadowbanned-text-color);
+}
+
+.chat-line.purged, .chat-line.shadow-banned,
+.reply-preview.purged, .reply-preview.shadow-banned {
+    font-size: .9em;
 }
 
 #jump-to-bottom {
@@ -1706,9 +1725,43 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
     right: 0;
 }
 
+/* Selects reply-label when jump-to-bottom is visible */
+#jump-to-bottom[style*="block"] + #reply-label {
+    border-radius: 0;
+}
+
 #jump-to-bottom:hover {
     color: var(--chat-tobottom-text-color-hover);
     background: var(--chat-tobottom-background-hover);
+}
+
+#reply-label {
+    color: var(--chat-tobottom-text-color);
+    line-height: 1.25rem;
+    font-size: .8rem;
+    font-weight: bold;
+    border-radius: 5px 5px 0 0;
+    background: var(--chat-tobottom-background);
+    position: absolute;
+    top: -1.25rem;
+    left: 0;
+    right: 0;
+    z-index: -1;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+#cancel-reply {
+    position: absolute;
+    z-index: 1;
+    right: 0.2rem;
+    font-size: 1.2rem;
+}
+
+.reply-preview {
+    font-size: .6rem;
+    line-height: 1.0em;
+    cursor: text;
 }
 
 #emojiPanelTrigger {
@@ -1784,6 +1837,10 @@ li.chat-line .actions [data-action]:not(:last-of-type):not(:only-child) {
 
 ul.chat-body .chat-line[data-id].has-ping {
     background: var(--ping-highlight-color);
+}
+
+ul.chat-body .chat-line[data-id].replying-to {
+    background: var(--reply-highlight-color);
 }
 
 ul.chat-body .chat-line[data-id].has-ping.-scrolled-to {
@@ -2150,12 +2207,6 @@ body .emoji-picker {
 
     #chat-ratelimit {
         font-size: 1rem;
-    }
-
-    #jump-to-bottom {
-        line-height: 2rem;
-        font-size: 1.25rem;
-        top: -2rem;
     }
 
     .halves .side {
