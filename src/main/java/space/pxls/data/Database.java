@@ -188,6 +188,7 @@ public class Database {
                     "sent BIGINT NOT NULL," +
                     "content VARCHAR(2048) NOT NULL," +
                     "filtered VARCHAR(2048) NOT NULL DEFAULT ''," +
+                    "replying_to_id INT," +
                     "purged BOOL NOT NULL DEFAULT false," +
                     "purged_by INT," +
                     "purge_reason TEXT," +
@@ -1342,12 +1343,13 @@ public class Database {
      * @param shadowBanned Whether or not the user sending the message is shadow-banned.
      * @return The new chat message's ID.
      */
-    public Integer createChatMessage(int authorID, long sent, String content, String filtered, boolean shadowBanned) {
-        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO chat_messages (author, sent, content, filtered, shadow_banned) VALUES (:author, :sent, :content, :filtered, :shadow_banned)")
+    public Integer createChatMessage(int authorID, long sent, String content, String filtered, int replyingToId, boolean shadowBanned) {
+        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO chat_messages (author, sent, content, filtered, replying_to_id, shadow_banned) VALUES (:author, :sent, :content, :filtered, :replying_to_id, :shadow_banned)")
                 .bind("author", authorID)
                 .bind("sent", sent)
                 .bind("content", content)
                 .bind("filtered", filtered)
+                .bind("replying_to_id", replyingToId)
                 .bind("shadow_banned", shadowBanned)
                 .executeAndReturnGeneratedKeys("id")
                     .mapTo(Integer.TYPE)
@@ -1361,8 +1363,8 @@ public class Database {
      * @param filtered The filtered chat contents.
      * @return The new chat message's ID.
      */
-    public Integer createChatMessage(User author, long sent, String content, String filtered) {
-        return createChatMessage(author == null ? -1 : author.getId(), sent / 1000L, content, filtered, author != null && author.isShadowBanned());
+    public Integer createChatMessage(User author, long sent, String content, String filtered, int replyingToId) {
+        return createChatMessage(author == null ? -1 : author.getId(), sent / 1000L, content, filtered, replyingToId, author != null && author.isShadowBanned());
     }
 
     /**
