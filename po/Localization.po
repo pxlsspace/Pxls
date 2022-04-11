@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-03-24T16:29:23.229Z\n"
+"POT-Creation-Date: 2022-04-09T15:04:32.029Z\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -45,10 +45,6 @@ msgstr "All Time:"
 #: resources/public/pebble_templates/index.html
 msgid "Loading online user count&hellip;"
 msgstr "Loading online user count&hellip;"
-
-#: resources/public/include/user.js
-msgid "online"
-msgstr "online"
 
 #: resources/public/pebble_templates/index.html
 #: resources/public/include/lookup.js resources/public/admin/admin.js
@@ -111,6 +107,10 @@ msgstr "Settings"
 #: resources/public/pebble_templates/index.html
 msgid "Jump To Bottom"
 msgstr "Jump To Bottom"
+
+#: resources/public/pebble_templates/index.html
+msgid "Replying to"
+msgstr "Replying to"
 
 #. Open emoji picker
 #: resources/public/pebble_templates/index.html
@@ -1694,10 +1694,6 @@ msgstr "The action you attempted to perform is not allowed or resulted in an err
 msgid "Alert"
 msgstr "Alert"
 
-#: resources/public/include/board.js
-msgid "The canvas is now locked. Press L to unlock."
-msgstr "The canvas is now locked. Press L to unlock."
-
 #. Snapshot save name
 #: resources/public/include/board.js
 msgid "pxls canvas"
@@ -2128,16 +2124,16 @@ msgid "Cannot fetch local files. Use the file selector in template settings."
 msgstr "Cannot fetch local files. Use the file selector in template settings."
 
 #: resources/public/include/uiHelper.js
-msgid "Drag and dropped file must be a valid image."
-msgstr "Drag and dropped file must be a valid image."
-
-#: resources/public/include/uiHelper.js
 msgid "Redirect Warning"
 msgstr "Redirect Warning"
 
 #: resources/public/include/uiHelper.js
 msgid "Are you sure you want to redirect to the following URL?"
 msgstr "Are you sure you want to redirect to the following URL?"
+
+#: resources/public/include/uiHelper.js
+msgid "Drag and dropped file must be a valid image."
+msgstr "Drag and dropped file must be a valid image."
 
 #: resources/public/include/uiHelper.js
 msgid "Discord name updated successfully"
@@ -2324,3 +2320,9 @@ msgstr "Send Alert"
 #: resources/public/admin/admin.js
 msgid "Mod Actions"
 msgstr "Mod Actions"
+
+#~ msgid "online"
+#~ msgstr "online"
+
+#~ msgid "The canvas is now locked. Press L to unlock."
+#~ msgstr "The canvas is now locked. Press L to unlock."

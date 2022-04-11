@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-04-03T04:05:27.870Z\n"
+"POT-Creation-Date: 2022-04-09T16:49:48.488Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -106,6 +106,10 @@ msgstr ""
 
 #: resources/public/pebble_templates/index.html
 msgid "Jump To Bottom"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Replying to"
 msgstr ""
 
 #. Open emoji picker
@@ -1691,10 +1695,6 @@ msgstr ""
 msgid "Alert"
 msgstr ""
 
-#: resources/public/include/board.js
-msgid "The canvas is now locked. Press L to unlock."
-msgstr ""
-
 #. Snapshot save name
 #: resources/public/include/board.js
 msgid "pxls canvas"
@@ -2127,15 +2127,15 @@ msgid "Cannot fetch local files. Use the file selector in template settings."
 msgstr ""
 
 #: resources/public/include/uiHelper.js
-msgid "Drag and dropped file must be a valid image."
-msgstr ""
-
-#: resources/public/include/uiHelper.js
 msgid "Redirect Warning"
 msgstr ""
 
 #: resources/public/include/uiHelper.js
 msgid "Are you sure you want to redirect to the following URL?"
+msgstr ""
+
+#: resources/public/include/uiHelper.js
+msgid "Drag and dropped file must be a valid image."
 msgstr ""
 
 #: resources/public/include/uiHelper.js
