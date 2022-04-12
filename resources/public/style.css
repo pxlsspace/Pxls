@@ -1594,10 +1594,15 @@ li.chat-line[data-id] .reply-button {
     top: 0.2rem;
     right: 0.2rem;
     visibility: hidden;
+    opacity: 0.6;
 }
 
 li.chat-line[data-id]:hover .reply-button {
     visibility: visible;
+}
+
+li.chat-line[data-id] .reply-button:hover {
+    opacity: 1;
 }
 
 .chat-wrapper .chat-controls, .chat-wrapper .chat-hints {
@@ -1759,7 +1764,7 @@ li.chat-line[data-id]:hover .reply-button {
 }
 
 .reply-preview {
-    font-size: .6rem;
+    font-size: .7rem;
     line-height: 1.0em;
     cursor: pointer;
     user-select: none;
@@ -1767,6 +1772,10 @@ li.chat-line[data-id]:hover .reply-button {
 
 .reply-preview.reply-preview-nojump {
     cursor: default;
+}
+
+.reply-preview > i {
+    margin-right: 5px;
 }
 
 #emojiPanelTrigger {
