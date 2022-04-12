@@ -1365,7 +1365,7 @@ const chat = (function() {
         };
       }
 
-      const targetUsername = replyTarget.prop('data-author');
+      const targetUsername = replyTarget[0].dataset.author;
       // Replies to you should ping you
       if (targetUsername === user.getUsername() && !hasPing) {
         hasPing = true;
