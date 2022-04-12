@@ -406,7 +406,6 @@ const chat = (function() {
             if (line) {
               lines.push(line);
               // There may be multiple replies to a single purged message
-              console.warn('');
               _purgeSelector(`.reply-preview[data-id="${x}"]`, e, true);
             }
           });
