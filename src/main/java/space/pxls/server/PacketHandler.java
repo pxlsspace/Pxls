@@ -96,8 +96,6 @@ public class PacketHandler {
             sendAvailablePixels(channel, user, "connect");
         }
         numAllCons++;
-
-        updateUserData();
     }
 
     public void disconnect(WebSocketChannel channel, User user) {
@@ -105,8 +103,6 @@ public class PacketHandler {
             server.removeAuthedUser(user);
         }
         numAllCons--;
-
-        updateUserData();
     }
 
     public void accept(WebSocketChannel channel, User user, Object obj, String ip) {
@@ -316,7 +312,6 @@ public class PacketHandler {
                             if (!user.hasIgnoreCooldown()) {
                                 if (user.isIdled()) {
                                     user.setIdled(false);
-                                    updateUserData();
                                 }
                                 user.setLastPixelTime();
                                 if (user.getStacked() > 0) {
