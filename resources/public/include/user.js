@@ -159,7 +159,12 @@ const user = (function() {
         }
       });
       self.elements.signup.find('#signup-button').click(self.doSignup);
-      self.elements.users.hide();
+      $.get('/users', data => {
+        self.elements.users.text(data.count + ' ' + __('online')).fadeIn(200);
+      }).fail(function(e) {
+        console.error('Error fetching /users: ', e);
+        self.elements.users.hide();
+      });
       self.elements.pixelCounts.hide();
       self.elements.userInfo.hide();
       self.elements.userInfo.find('.logout').click(function(evt) {
@@ -189,7 +194,7 @@ const user = (function() {
         }
       });
       socket.on('users', function(data) {
-        self.elements.users.text(data.count + ' ' + __('online')).fadeIn(200);
+        self.elements.users.text(data.count + ' ' + __('online'));
       });
       socket.on('userinfo', function(data) {
         let isBanned = false;
