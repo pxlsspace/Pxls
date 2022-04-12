@@ -1387,7 +1387,8 @@ const chat = (function() {
             class: classes.join(' '),
             'data-id': replyTarget[0].dataset.id,
             'data-author': replyTarget[0].dataset.author,
-            'data-date': replyTarget[0].dataset.date
+            'data-date': replyTarget[0].dataset.date,
+            onclick: self._handlePingJumpClick
           },
           crel('i', {
             class: 'fas fa-reply fa-flip-horizontal'
