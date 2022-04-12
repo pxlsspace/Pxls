@@ -32,6 +32,7 @@ import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 public class PacketHandler {
     private UndertowServer server;
     private int numAllCons = 0;
+    private int previousUserCount = 0;
 
     public int getCooldown() {
         Config config = App.getConfig();
@@ -592,7 +593,11 @@ public class PacketHandler {
     }
 
     public void updateUserData() {
-        server.broadcast(new ServerUsers(App.getServer().getNonIdledUsersCount()));
+        int userCount = App.getServer().getNonIdledUsersCount();
+        if (previousUserCount != userCount) {
+            previousUserCount = userCount;
+            server.broadcast(new ServerUsers(userCount));
+        }
     }
 
     private void sendPlacementOverrides(WebSocketChannel channel, User user) {
