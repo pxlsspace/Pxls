@@ -1761,7 +1761,12 @@ li.chat-line[data-id]:hover .reply-button {
 .reply-preview {
     font-size: .6rem;
     line-height: 1.0em;
-    cursor: text;
+    cursor: pointer;
+    user-select: none;
+}
+
+.reply-preview.reply-preview-nojump {
+    cursor: default;
 }
 
 #emojiPanelTrigger {

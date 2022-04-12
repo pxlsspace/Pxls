@@ -365,6 +365,8 @@ const chat = (function() {
         if (!isReplyPreview) return elem.remove();
 
         // else we want to Replace content with "purged" for reply-preview elements
+        // Disable "pointer" cursor for purged preview
+        elem.classList.add('reply-preview-nojump');
         // Remove all childern except for the reply icon
         while (elem.childNodes.length > 1) {
           elem.removeChild(elem.lastChild);
@@ -1345,7 +1347,7 @@ const chat = (function() {
       const replyTarget = $(`[data-id=${replyingToId}]`);
       if (!replyTarget[0]) {
         return {
-          div: crel('div', { class: 'reply-preview' },
+          div: crel('div', { class: 'reply-preview reply-preview-nojump' },
             crel('i', { class: 'fas fa-reply fa-flip-horizontal' }),
             'Message couldn\'t be found'
           ),
@@ -1357,7 +1359,7 @@ const chat = (function() {
       const targetPart = replyTarget.children().eq(targetPartIndex).clone();
       if (!targetPart[0]) {
         return {
-          div: crel('div', { class: 'reply-preview' },
+          div: crel('div', { class: 'reply-preview reply-preview-nojump' },
             crel('i', { class: 'fas fa-reply fa-flip-horizontal' }),
             'Message couldn\'t be found'
           ),
