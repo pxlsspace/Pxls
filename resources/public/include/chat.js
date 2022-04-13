@@ -505,7 +505,7 @@ const chat = (function() {
       });
 
       self.elements.chat_settings_button[0].addEventListener('click', () => {
-        settings.filter.search('Chat');
+        settings.filter.search(__('Chat'));
         panels.toggle('settings');
       });
 
