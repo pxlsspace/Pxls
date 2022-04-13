@@ -1547,6 +1547,7 @@ const chat = (function() {
       self.elements.reply_label[0].appendChild(authorSpan.cloneNode(true));
       self.elements.reply_label[0].style.display = 'block';
       self.elements.jump_button.css('top', '-2.5rem');
+      self.elements.input.focus();
     },
     _popUserPanel: function(e) {
       if (this && this.closest) {
