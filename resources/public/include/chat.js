@@ -814,7 +814,7 @@ const chat = (function() {
           got = self.typeahead.helper.suggestions(scanRes);
           self.typeahead.hasResults = got.length > 0;
           if (!got.length) {
-            self.elements.typeahead_list[0].innerHTML = '<li class="no-results">No Results</li>'; // no reason to crel this if we're just gonna innerHTML anyway.
+            self.elements.typeahead_list[0].innerHTML = `<li class="no-results">${__('No Results')}</li>`; // no reason to crel this if we're just gonna innerHTML anyway.
           } else {
             self.elements.typeahead_list[0].innerHTML = '';
             const db = self.typeahead.helper.getDatabase(scanRes.trigger.dbType);
