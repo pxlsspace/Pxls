@@ -998,6 +998,7 @@ const chat = (function() {
       self.elements.reply_label_username[0].removeChild(self.elements.reply_label_username[0].lastChild);
       self.elements.jump_button.css('top', '-1.25rem');
       self.elements.toggle_mention_button[0].dataset.state = 'On';
+      self.elements.toggle_mention_label[0].innerHTML = 'On';
     },
     setCharLimit(num) {
       self.elements.input.prop('maxlength', num);
