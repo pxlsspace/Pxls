@@ -1755,6 +1755,7 @@ li.chat-line[data-id] .reply-button:hover {
     white-space: nowrap;
     overflow: hidden;
     justify-content: end;
+    user-select: none;
 }
 
 #reply-label-username {
