@@ -12,6 +12,7 @@ public class ChatMessage {
     public Long date;
     public String message_raw;
     public int replyingToId;
+    public Boolean replyShouldMention;
     public Purge purge;
     public List<Badge> badges;
     public List<String> authorNameClass;
@@ -19,12 +20,14 @@ public class ChatMessage {
     public Boolean authorWasShadowBanned;
     public StrippedFaction strippedFaction;
 
-    public ChatMessage(int id, String author, Long date, String message_raw, int replyingToId, Purge purge, List<Badge> badges, List<String> authorNameClass, Number authorNameColor, boolean authorWasShadowBanned, Faction faction) {
+    public ChatMessage(int id, String author, Long date, String message_raw, int replyingToId, boolean replyShouldMention, Purge purge, List<Badge> badges, List<String> authorNameClass, Number authorNameColor, boolean authorWasShadowBanned, Faction faction) {
         this.id = id;
         this.author = author;
         this.date = date;
         this.message_raw = message_raw;
         this.replyingToId = replyingToId;
+        // set replyShouldMention to null when false so that it is skipped by Gson
+        this.replyShouldMention = replyShouldMention ? true : null;
         this.purge = purge;
         this.badges = badges;
         this.authorNameClass = authorNameClass;
@@ -54,6 +57,10 @@ public class ChatMessage {
         return replyingToId;
     }
 
+    public boolean getReplyShouldMention() {
+        return replyShouldMention;
+    }
+
     public List<Badge> getBadges() {
         return badges;
     }
@@ -76,12 +83,12 @@ public class ChatMessage {
 
     public ChatMessage asSnipRedacted() {
         // Redact username.
-        return new ChatMessage(id, "-snip-", date, message_raw, replyingToId, purge, badges, authorNameClass, authorNameColor, authorWasShadowBanned, null);
+        return new ChatMessage(id, "-snip-", date, message_raw, replyingToId, replyShouldMention, purge, badges, authorNameClass, authorNameColor, authorWasShadowBanned, null);
     }
 
     public ChatMessage asShadowBanned() {
         // Hide the fact that the user is shadow banned.
-        return new ChatMessage(id, author, date, message_raw, replyingToId, purge, badges, authorNameClass, authorNameColor, false, null);
+        return new ChatMessage(id, author, date, message_raw, replyingToId, replyShouldMention, purge, badges, authorNameClass, authorNameColor, false, null);
     }
 
     public static class StrippedFaction {

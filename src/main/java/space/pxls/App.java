@@ -589,7 +589,7 @@ public class App {
             } else if (token[0].equalsIgnoreCase("broadcast")) {
                 //broadcast MESSAGE
                 if (token.length > 1) {
-                    App.getServer().getPacketHandler().handleChatMessage(null, null, new ClientChatMessage(line.substring(token[0].length() + 1)));
+                    App.getServer().getPacketHandler().handleChatMessage(null, null, new ClientChatMessage(line.substring(token[0].length() + 1), -1, true));
                 }
             } else if (token[0].equalsIgnoreCase("ChatBan")) {
                 if (token.length > 4) {
