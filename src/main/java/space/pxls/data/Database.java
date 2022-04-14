@@ -188,7 +188,7 @@ public class Database {
                     "sent BIGINT NOT NULL," +
                     "content VARCHAR(2048) NOT NULL," +
                     "filtered VARCHAR(2048) NOT NULL DEFAULT ''," +
-                    "replying_to_id INT," +
+                    "replying_to_id INT NOT NULL DEFAULT -1," +
                     "reply_should_mention BOOL NOT NULL DEFAULT true," +
                     "purged BOOL NOT NULL DEFAULT false," +
                     "purged_by INT," +
