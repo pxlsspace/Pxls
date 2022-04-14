@@ -1093,7 +1093,7 @@ const chat = (function() {
       self.elements.username_color_select[0].value = user.getChatNameColor();
     },
     _updateAuthorNameColor: (author, colorIdx) => {
-      self.elements.body.find(`.chat-line[data-author="${author}"] .user`).each(function() {
+      self.elements.body.find(`.chat-line[data-author="${author}"] > :not(.reply-preview) .user, .reply-preview[data-author="${author}"] .user`).each(function() {
         uiHelper.styleElemWithChatNameColor(this, colorIdx, 'color');
       });
     },
