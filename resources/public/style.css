@@ -1593,12 +1593,12 @@ li.chat-line[data-id] .reply-button {
     position: absolute;
     top: 0.2rem;
     right: 0.2rem;
-    visibility: hidden;
-    opacity: 0.6;
+    opacity: 0;
+    will-change: opacity;
 }
 
-li.chat-line[data-id]:hover .reply-button {
-    visibility: visible;
+li.chat-line[data-id]:hover > .reply-button {
+    opacity: 0.6;
 }
 
 li.chat-line[data-id] .reply-button:hover {
