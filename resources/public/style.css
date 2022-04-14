@@ -1519,7 +1519,7 @@ li.chat-line span[title]:not(.text-badge) {
     cursor: default;
 }
 
-li.chat-line i[title] {
+li.chat-line i[title], #reply-label-username i[title] {
     padding-bottom: 1px;
 }
 
@@ -1565,11 +1565,11 @@ li.chat-line.server-action {
     cursor: default;
 }
 
-li.chat-line .flairs .flair {
+li.chat-line .flairs .flair, #reply-label-username .flairs .flair {
     margin-right: .25rem;
 }
 
-li.chat-line .user {
+li.chat-line .user, #reply-label-username .user {
     font-weight: bold;
     cursor: pointer;
     text-shadow: 1px 1px 0 var(--chat-user-text-shadow-color), -1px 1px 0 var(--chat-user-text-shadow-color), 1px -1px 0 var(--chat-user-text-shadow-color), -1px -1px 0 var(--chat-user-text-shadow-color), 0 1px 0 var(--chat-user-text-shadow-color), 0 -1px 0 var(--chat-user-text-shadow-color), -1px 0 0 var(--chat-user-text-shadow-color), 1px 0 0 var(--chat-user-text-shadow-color);
@@ -1740,13 +1740,13 @@ li.chat-line[data-id] .reply-button:hover {
     background: var(--chat-tobottom-background-hover);
 }
 
-#reply-label {
-    color: var(--chat-tobottom-text-color);
+#reply-label { /* has display: flex; set by js when visible */
+    color: var(--input-text-color);
+    background: var(--input-background);
     line-height: 1.25rem;
     font-size: .8rem;
     font-weight: bold;
     border-radius: 5px 5px 0 0;
-    background: var(--chat-tobottom-background);
     position: absolute;
     top: -1.25rem;
     left: 0;
