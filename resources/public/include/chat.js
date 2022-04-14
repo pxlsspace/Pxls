@@ -1388,13 +1388,6 @@ const chat = (function() {
       if (targetUsername === user.getUsername() && !hasPing) {
         hasPing = true;
       }
-      // Some aproximate truncating of reply previews - doesn't take flairs into account
-      const lenBeforeTruncate = 74 - (targetUsername ? targetUsername.length : 0);
-      const targetContent = targetPart.find('.content');
-      if (targetContent.html()) {
-        const targetContentLen = targetContent.html().length;
-        targetContent.html(targetContent.html().slice(0, lenBeforeTruncate) + (targetContentLen > lenBeforeTruncate ? '...' : ''));
-      }
       // Make sure to carry over purged or shadow-banned status - pretty much a "just in case" for if a reply is sent after a purge
       const classes = ['reply-preview'];
       if (replyTarget[0].classList.contains('purged')) classes.push('purged');

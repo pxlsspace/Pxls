@@ -1788,6 +1788,11 @@ li.chat-line[data-id] .reply-button:hover {
     line-height: 1.0em;
     cursor: pointer;
     user-select: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2; /* limit to 2 lines */
 }
 
 .reply-preview.reply-preview-nojump {
