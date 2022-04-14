@@ -1268,7 +1268,7 @@ const chat = (function() {
       }
 
       const genReplyPreviewOut = self._generateReplyPreview(packet.replyingToId, hasPing); // Empty array will be ignored by crel
-      hasPing = genReplyPreviewOut.hasPing;
+      if (packet.replyShouldMention) hasPing = genReplyPreviewOut.hasPing;
 
       const userDisplay = crel('span', {},
         flairs,
