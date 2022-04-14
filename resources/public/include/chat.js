@@ -153,7 +153,6 @@ const chat = (function() {
       socket.on('faction_clear', e => self._clearFaction(e.fid));
       socket.on('chat_history', e => {
         if (self.seenHistory) return;
-        console.warn(e.messages.length);
         for (const packet of e.messages.reverse()) {
           self._process(packet, true);
         }
