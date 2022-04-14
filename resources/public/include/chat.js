@@ -986,7 +986,7 @@ const chat = (function() {
     toggleMention() {
       const btnNode = self.elements.toggle_mention_button[0];
       btnNode.dataset.state = (btnNode.dataset.state === 'On' ? 'Off' : 'On');
-      self.elements.toggle_mention_label[0].innerHTML = btnNode.dataset.state;
+      self.elements.toggle_mention_label[0].innerHTML = btnNode.dataset.state === 'On' ? __('On') : __('Off');
     },
     cancelReply() {
       const replyTargetId = self.elements.input[0].dataset.replyTarget;
@@ -998,7 +998,7 @@ const chat = (function() {
       self.elements.reply_label_username[0].removeChild(self.elements.reply_label_username[0].lastChild);
       self.elements.jump_button.css('top', '-1.25rem');
       self.elements.toggle_mention_button[0].dataset.state = 'On';
-      self.elements.toggle_mention_label[0].innerHTML = 'On';
+      self.elements.toggle_mention_label[0].innerHTML = __('On');
     },
     setCharLimit(num) {
       self.elements.input.prop('maxlength', num);
