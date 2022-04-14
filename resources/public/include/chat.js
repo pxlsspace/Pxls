@@ -61,8 +61,11 @@ const chat = (function() {
       chat_settings_button: $('#btnChatSettings'),
       pings_button: $('#btnPings'),
       jump_button: $('#jump-to-bottom'),
+      toggle_mention_button: $('#toggle-mention'),
+      toggle_mention_label: $('#toggle-mention-label'),
       cancel_reply_button: $('#cancel-reply'),
       reply_label: $('#reply-label'),
+      reply_label_username: $('#reply-label-username'),
       emoji_button: $('#emojiPanelTrigger'),
       typeahead: $('#typeahead'),
       typeahead_list: $('#typeahead ul'),
@@ -441,9 +444,10 @@ const chat = (function() {
 
           if (!self.typeahead.shouldInsert) {
             const replyTargetId = self.elements.input[0].dataset.replyTarget;
+            const replyShouldMention = self.elements.toggle_mention_button[0].dataset.state === 'On';
             self.cancelReply();
             self.typeahead.lastLength = -1;
-            self._send(trimmed, replyTargetId !== undefined ? replyTargetId : -1);
+            self._send({ message: trimmed, replyingToId: replyTargetId !== undefined ? replyTargetId : -1, replyShouldMention });
             self.elements.input.val('');
           }
         } else if (e.originalEvent.key === 'Tab' || e.originalEvent.which === 9) {
@@ -570,6 +574,10 @@ const chat = (function() {
 
       self.elements.jump_button[0].addEventListener('click', self.scrollToBottom);
       self.elements.cancel_reply_button[0].addEventListener('click', self.cancelReply);
+      self.elements.reply_label_username[0].addEventListener('click', () => {
+        self.scrollToCMID(self.elements.input[0].dataset.replyTarget);
+      });
+      self.elements.toggle_mention_button[0].addEventListener('click', self.toggleMention);
 
       const notifBody = document.querySelector('.panel[data-panel="notifications"] .panel-body');
 
@@ -975,6 +983,11 @@ const chat = (function() {
       self.elements.body[0].scrollTop = self.elements.body[0].scrollHeight;
       self.stickToBottom = true;
     },
+    toggleMention() {
+      const btnNode = self.elements.toggle_mention_button[0];
+      btnNode.dataset.state = (btnNode.dataset.state === 'On' ? 'Off' : 'On');
+      self.elements.toggle_mention_label[0].innerHTML = btnNode.dataset.state;
+    },
     cancelReply() {
       const replyTargetId = self.elements.input[0].dataset.replyTarget;
       if (!replyTargetId) return;
@@ -982,8 +995,9 @@ const chat = (function() {
       replyTarget.removeClass('replying-to');
       delete self.elements.input[0].dataset.replyTarget;
       self.elements.reply_label[0].style.display = 'none';
-      self.elements.reply_label[0].removeChild(self.elements.reply_label[0].lastChild);
+      self.elements.reply_label_username[0].removeChild(self.elements.reply_label_username[0].lastChild);
       self.elements.jump_button.css('top', '-1.25rem');
+      self.elements.toggle_mention_button[0].dataset.state = 'On';
     },
     setCharLimit(num) {
       self.elements.input.prop('maxlength', num);
@@ -1034,8 +1048,9 @@ const chat = (function() {
         self._doScroll(toAppend);
       }
     },
-    _send: (msg, replyTargetId) => {
-      socket.send({ type: 'ChatMessage', message: msg, replyingToId: replyTargetId });
+    _send: (data) => {
+      data.type = 'ChatMessage';
+      socket.send(data);
     },
     jump: (x, y, zoom) => {
       if (typeof x !== 'number') { x = parseFloat(x); }
@@ -1544,8 +1559,8 @@ const chat = (function() {
       const messageToReplyTo = $(`[data-id=${id}]`);
       messageToReplyTo.addClass('replying-to');
       self.elements.input[0].dataset.replyTarget = id;
-      self.elements.reply_label[0].appendChild(authorSpan.cloneNode(true));
-      self.elements.reply_label[0].style.display = 'block';
+      self.elements.reply_label_username[0].appendChild(authorSpan.cloneNode(true));
+      self.elements.reply_label[0].style.display = 'flex';
       self.elements.jump_button.css('top', '-2.5rem');
       self.elements.input.focus();
     },

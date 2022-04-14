@@ -1754,13 +1754,32 @@ li.chat-line[data-id] .reply-button:hover {
     z-index: -1;
     white-space: nowrap;
     overflow: hidden;
+    justify-content: end;
+}
+
+#reply-label-username {
+    overflow: hidden;
+    margin-right: auto; /* Puts this at the start of the reply-label */
+    cursor: pointer;
+}
+
+#reply-label > button {
+    margin-left: 5px;
+    z-index: 1;
+}
+
+#reply-label > button[data-state="On"] {
+    color: #800080;
+    color: var(--chat-mention-text-color);
+}
+
+#reply-label > button[data-state="Off"] {
+    color: --chat-tobottom-text-color;
 }
 
 #cancel-reply {
-    position: absolute;
-    z-index: 1;
-    right: 0.2rem;
     font-size: 1.2rem;
+    margin-right: 5px;
 }
 
 .reply-preview {
