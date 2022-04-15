@@ -1304,9 +1304,9 @@ const chat = (function() {
       messageDisplay,
       crel('button', {
         class: 'reply-button',
-        title: 'Reply',
-        onclick: (e) => {
-          self._addReplyToChatbox(e, packet.id, userDisplay);
+        title: __('Reply'),
+        onclick: () => {
+          self._addReplyToChatbox(packet.id, userDisplay);
         }
       },
       crel('i', {
