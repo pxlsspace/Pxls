@@ -992,6 +992,7 @@ const chat = (function() {
       if (!replyTargetId) return;
       const replyTarget = $(`[data-id=${replyTargetId}]`);
       replyTarget.removeClass('replying-to');
+      self.elements.body.css('padding-bottom', '0');
       delete self.elements.input[0].dataset.replyTarget;
       self.elements.reply_label[0].style.display = 'none';
       self.elements.reply_label_username[0].removeChild(self.elements.reply_label_username[0].lastChild);
@@ -1555,6 +1556,8 @@ const chat = (function() {
       self.elements.reply_label_username[0].appendChild(authorSpan.cloneNode(true));
       self.elements.reply_label[0].style.display = 'flex';
       self.elements.jump_button.css('top', '-2.5rem');
+      self.elements.body.css('padding-bottom', '1.25em');
+      if (self.stickToBottom) self.elements.body[0].scrollTop = self.elements.body[0].scrollHeight;
       self.elements.input.focus();
     },
     _popUserPanel: function(e) {
