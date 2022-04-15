@@ -1295,6 +1295,7 @@ const chat = (function() {
         'data-author': packet.author,
         'data-date': packet.date,
         'data-badges': JSON.stringify(packet.badges || []),
+        'data-message-raw': packet.message_raw,
         class: `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`
       },
       genReplyPreviewOut.div,
@@ -1399,6 +1400,7 @@ const chat = (function() {
             'data-id': replyTarget[0].dataset.id,
             'data-author': replyTarget[0].dataset.author,
             'data-date': replyTarget[0].dataset.date,
+            title: `${targetUsername}: ${replyTarget[0].dataset.messageRaw}`,
             onclick: self._handlePingJumpClick
           },
           crel('i', {
