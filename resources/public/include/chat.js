@@ -1636,7 +1636,7 @@ const chat = (function() {
         ];
 
         crel(leftPanel, crel('p', { class: 'popup-timestamp-header text-muted' }, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(settings.chat.timestamps['24h'].get() === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
-        crel(leftPanel, crel('p', { class: 'content', style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector('.content').textContent));
+        crel(leftPanel, crel('p', { class: 'content', style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector(':not(.reply-preview) > span > .content').textContent));
 
         crel(actionsList, actions
           .filter((action) => action && (user.isStaff() || !action.staffaction))
@@ -1693,7 +1693,7 @@ const chat = (function() {
       if (!chatLine && !this.dataset.target) return console.warn('no chatLine/target? searched for id %o', this.dataset.id);
       const mode = !!chatLine;
 
-      const reportingMessage = mode ? chatLine.querySelector('.content').textContent : '';
+      const reportingMessage = mode ? chatLine.querySelector(':not(.reply-preview) > span > .content').textContent : '';
       const reportingTarget = mode ? chatLine.dataset.author : this.dataset.target;
 
       $('.popup').remove();
