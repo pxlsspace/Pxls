@@ -1212,7 +1212,7 @@ const chat = (function() {
 
       // Truncate older chat messages by removing the diff of the current message count and the maximum count.
       const diff = self.elements.body.children().length - settings.chat.truncate.max.get();
-      if (diff > 0) {
+      if (diff > 1) {
         self.elements.body.children().slice(0, diff).remove();
       }
 
