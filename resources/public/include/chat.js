@@ -1271,14 +1271,16 @@ const chat = (function() {
       const genReplyPreviewOut = self._generateReplyPreview(packet.replyingToId, hasPing); // Empty array will be ignored by crel
       if (packet.replyShouldMention) hasPing = genReplyPreviewOut.hasPing;
 
-      const userDisplay = crel('span', {},
-        flairs,
-        crel('span', {
-          class: nameClasses,
-          style: `color: #${place.getPaletteColorValue(packet.authorNameColor)}`,
-          onclick: self._popUserPanel,
-          onmousemiddledown: self._addAuthorMentionToChatbox
-        }, board.snipMode ? '-snip-' : packet.author)
+      const userDisplay = crel('span', {
+        class: 'userDisplay'
+      },
+      flairs,
+      crel('span', {
+        class: nameClasses,
+        style: `color: #${place.getPaletteColorValue(packet.authorNameColor)}`,
+        onclick: self._popUserPanel,
+        onmousemiddledown: self._addAuthorMentionToChatbox
+      }, board.snipMode ? '-snip-' : packet.author)
       );
 
       const messageDisplay = crel('span', {},
@@ -1622,6 +1624,7 @@ const chat = (function() {
         const actions = [
           { label: __('Report'), action: 'report', class: 'dangerous-button' },
           { label: __('Mention'), action: 'mention' },
+          { label: __('Reply'), action: 'reply' },
           { label: __('Ignore'), action: 'ignore' },
           (!board.snipMode || App.user.hasPermission('user.receivestaffbroadcasts')) && { label: __('Profile'), action: 'profile' },
           { label: __('Chat (un)ban'), action: 'chatban', staffaction: true },
@@ -1759,6 +1762,19 @@ const chat = (function() {
           if (reportingTarget) {
             self.elements.input.val(self.elements.input.val() + `@${reportingTarget} `);
           } else console.warn('no reportingTarget');
+          break;
+        }
+        case 'reply': {
+          if (!mode) {
+            console.warn('reply called in with false mode');
+            return;
+          }
+          const userDisplay = chatLine.querySelector(':not(.reply-preview) > span > .userDisplay');
+          if (!userDisplay) {
+            console.warn('reply couldn\'t find userDisplay');
+            return;
+          }
+          self._addReplyToChatbox(this.dataset.id, userDisplay);
           break;
         }
         case 'ignore': {
