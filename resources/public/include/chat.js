@@ -1552,7 +1552,7 @@ const chat = (function() {
         self.elements.input.focus();
       }
     },
-    _addReplyToChatbox: function(e, id, authorSpan) {
+    _addReplyToChatbox: function(id, authorSpan) {
       self.cancelReply();
       const messageToReplyTo = $(`[data-id=${id}]`);
       messageToReplyTo.addClass('replying-to');
