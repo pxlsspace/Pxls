@@ -46,7 +46,8 @@ const {
   WhileStatement,
   ThrowStatement,
   SequenceExpression,
-  ContinueStatement
+  ContinueStatement,
+  ArrayPattern
 } = esprima.Syntax;
 
 function isGettextCall(callExpression) {
@@ -85,9 +86,8 @@ function findTranslationCalls(expression) {
         .map(findTranslationCalls)
         .flat();
     case NewExpression:
-      return expression.arguments
-        .map(findTranslationCalls)
-        .concat(findTranslationCalls(expression.callee))
+      return findTranslationCalls(expression.callee)
+        .concat(expression.arguments.map(findTranslationCalls))
         .flat();
     case CallExpression:
       if (isGettextCall(expression)) {
@@ -97,9 +97,8 @@ function findTranslationCalls(expression) {
 
         return [expression];
       } else {
-        return expression.arguments
-          .map(findTranslationCalls)
-          .concat(findTranslationCalls(expression.callee))
+        return findTranslationCalls(expression.callee)
+          .concat(expression.arguments.map(findTranslationCalls))
           .flat();
       }
     case WhileStatement:
@@ -161,16 +160,18 @@ function findTranslationCalls(expression) {
       return expression.expressions
         .map(findTranslationCalls)
         .flat();
-    case ThisExpression:
     case MemberExpression:
     case ComputedMemberExpression:
     case StaticMemberExpression:
+      return findTranslationCalls(expression.object);
+    case ThisExpression:
     case Identifier:
     case Literal:
     case UpdateExpression:
     case UnaryExpression:
     case BreakStatement:
     case ContinueStatement:
+    case ArrayPattern:
       return [];
     default:
       console.debug(`Unknown expression type: ${expression.type}`);

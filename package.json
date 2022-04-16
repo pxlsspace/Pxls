@@ -14,6 +14,7 @@
     "eslint-plugin-node": "^11.0.0",
     "eslint-plugin-promise": "^4.2.1",
     "eslint-plugin-standard": "^4.0.1",
+    "esprima": "^4.0.1",
     "gulp": "^4.0.2",
     "gulp-buffer": "^0.0.2",
     "gulp-clean-css": "^4.2.0",
