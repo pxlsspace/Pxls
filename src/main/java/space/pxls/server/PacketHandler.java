@@ -415,6 +415,8 @@ public class PacketHandler {
                         App.getConfig().getBoolean("textFilter.enabled") && dbChatMessage.filtered_content.length() > 0
                             ? dbChatMessage.filtered_content
                             : dbChatMessage.content,
+                        dbChatMessage.replying_to_id,
+                        dbChatMessage.reply_should_mention,
                         dbChatMessage.purged
                             ? new ChatMessage.Purge(dbChatMessage.purged_by_uid, dbChatMessage.purge_reason)
                             : null,
@@ -444,12 +446,14 @@ public class PacketHandler {
         }
         Long nowMS = System.currentTimeMillis();
         String message = clientChatMessage.getMessage();
+        int replyingToId = clientChatMessage.getReplyingToId();
+        boolean replyShouldMention = clientChatMessage.getReplyShouldMention();
         if (message.contains("\r")) message = message.replaceAll("\r", "");
         if (message.endsWith("\n")) message = message.replaceFirst("\n$", "");
         if (message.length() > charLimit) message = message.substring(0, charLimit);
         if (user == null) { //console
-            Integer cmid = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "", false);
-            server.broadcast(new ServerChatMessage(new ChatMessage(cmid, "CONSOLE", nowMS / 1000L, message, null, null, null, 0, false, null)));
+            Integer cmid = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "", replyingToId, replyShouldMention, false);
+            server.broadcast(new ServerChatMessage(new ChatMessage(cmid, "CONSOLE", nowMS / 1000L, message, replyingToId, replyShouldMention, null, null, null, 0, false, null)));
         } else {
             if (!user.canChat()) return;
             if (message.trim().length() == 0) return;
@@ -470,8 +474,8 @@ public class PacketHandler {
                     toSend = result.filterHit ? result.filtered : result.original;
                     toFilter = toSend;
                 }
-                Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter, user.isShadowBanned());
-                var chatMessage = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), user.isShadowBanned(), usersFaction);
+                Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter, replyingToId, replyShouldMention, user.isShadowBanned());
+                var chatMessage = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, replyingToId, replyShouldMention, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), user.isShadowBanned(), usersFaction);
 
                 var barePacket = new ServerChatMessage(chatMessage);
                 var userPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;

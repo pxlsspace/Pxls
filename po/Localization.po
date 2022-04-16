@@ -108,6 +108,10 @@ msgstr "Settings"
 msgid "Jump To Bottom"
 msgstr "Jump To Bottom"
 
+#: resources/public/pebble_templates/index.html
+msgid "Replying to"
+msgstr "Replying to"
+
 #. Open emoji picker
 #: resources/public/pebble_templates/index.html
 msgid "Emoji"
@@ -1691,10 +1695,6 @@ msgstr "The action you attempted to perform is not allowed or resulted in an err
 msgid "Alert"
 msgstr "Alert"
 
-#: resources/public/include/board.js
-msgid "The canvas is now locked. Press L to unlock."
-msgstr "The canvas is now locked. Press L to unlock."
-
 #. Snapshot save name
 #: resources/public/include/board.js
 msgid "pxls canvas"
@@ -2441,7 +2441,3 @@ msgstr "Send Alert"
 #: resources/public/admin/admin.js
 msgid "Mod Actions"
 msgstr "Mod Actions"
-
-#: resources/public/admin/admin.js
-msgid "More..."
-msgstr "More..."

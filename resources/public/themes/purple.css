@@ -62,6 +62,7 @@ html {
     --ping-highlight-color: #860d82;
     --ping-flash-color: #8ef7d1;
     --ping-counter-color: #ae5cdb;
+    --reply-highlight-color: #c41fbe;
     --notification-expiry-color: var(--text-orange-color);
 
     --panel-background: #3d204d;

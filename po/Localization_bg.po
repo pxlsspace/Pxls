@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-04-09T01:17:13.344Z\n"
+"POT-Creation-Date: 2022-04-09T15:04:32.029Z\n"
 "Language: bg\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -1690,10 +1690,6 @@ msgstr "Действието, което се опитвате да извърш
 #: resources/public/pxls.js
 msgid "Alert"
 msgstr "Внимание"
-
-#: resources/public/include/board.js
-msgid "The canvas is now locked. Press L to unlock."
-msgstr ""
 
 #. Snapshot save name
 #: resources/public/include/board.js

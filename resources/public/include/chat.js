@@ -61,6 +61,11 @@ const chat = (function() {
       chat_settings_button: $('#btnChatSettings'),
       pings_button: $('#btnPings'),
       jump_button: $('#jump-to-bottom'),
+      toggle_mention_button: $('#toggle-mention'),
+      toggle_mention_label: $('#toggle-mention-label'),
+      cancel_reply_button: $('#cancel-reply'),
+      reply_label: $('#reply-label'),
+      reply_label_username: $('#reply-label-username'),
       emoji_button: $('#emojiPanelTrigger'),
       typeahead: $('#typeahead'),
       typeahead_list: $('#typeahead ul'),
@@ -353,26 +358,42 @@ const chat = (function() {
       socket.on('chat_ban', handleChatban);
       socket.on('chat_ban_state', handleChatban);
 
-      const _doPurge = (elem, e) => {
+      const _doPurge = (elem, e, isReplyPreview) => {
         if (user.hasPermission('chat.history.purged')) {
-          self._markMessagePurged(elem, e);
-        } else {
-          elem.remove();
+          return self._markMessagePurged(elem, e);
+        }
+
+        // Delete normal message lines
+        if (!isReplyPreview) return elem.remove();
+
+        // else we want to Replace content with "purged" for reply-preview elements
+        // Disable "pointer" cursor for purged preview
+        elem.classList.add('reply-preview-nojump');
+        // Remove all childern except for the reply icon
+        while (elem.childNodes.length > 1) {
+          elem.removeChild(elem.lastChild);
+        }
+        elem.appendChild(document.createTextNode('Message was purged'));
+      };
+      const _purgeSelector = (selector, e, isReplyPreview) => {
+        const lines = Array.from(self.elements.body[0].querySelectorAll(selector));
+        if (!Array.isArray(lines) || !lines.length) return;
+
+        const amountToPurge = isReplyPreview ? 2147483647 : e.amount;
+        if (!amountToPurge) console.warn('_purgeSelector called without e.amount or isReplyPreview');
+        lines.sort((a, b) => (a.dataset.date >> 0) - (b.dataset.date >> 0));
+        for (let i = 0; i < amountToPurge; i++) {
+          const line = lines.pop();
+          if (line) {
+            _doPurge(line, e, isReplyPreview);
+          } else {
+            break;
+          }
         }
       };
       socket.on('chat_purge', e => {
-        const lines = Array.from(self.elements.body[0].querySelectorAll(`.chat-line[data-author="${e.target}"]`));
-        if (Array.isArray(lines) && lines.length) {
-          lines.sort((a, b) => (a.dataset.date >> 0) - (b.dataset.date >> 0));
-          for (let i = 0; i < e.amount; i++) {
-            const line = lines.pop();
-            if (line) {
-              _doPurge(line, e);
-            } else {
-              break;
-            }
-          }
-        } else console.warn(lines, 'was not an array-like, or was empty.');
+        _purgeSelector(`.chat-line[data-author="${e.target}"]`, e, false);
+        _purgeSelector(`.reply-preview[data-author="${e.target}"]`, e, true);
         if (e.announce) {
           if (e.amount >= 2147483647) {
             self.addServerAction(`${e.initiator} purged all messages from ${e.target}.`);
@@ -386,11 +407,15 @@ const chat = (function() {
         if (e.IDs && e.IDs.length) {
           e.IDs.forEach(x => {
             const line = self.elements.body.find(`.chat-line[data-id="${x}"]`)[0];
-            if (line) lines.push(line);
+            if (line) {
+              lines.push(line);
+              // There may be multiple replies to a single purged message
+              _purgeSelector(`.reply-preview[data-id="${x}"]`, e, true);
+            }
           });
         }
         if (lines.length) {
-          lines.forEach(x => _doPurge(x, e));
+          lines.forEach(x => _doPurge(x, e, false));
           if (e.announce) {
             self.addServerAction(`${e.IDs.length} message${e.IDs.length !== 1 ? 's' : ''} from ${e.target} ${e.IDs.length !== 1 ? 'were' : 'was'} purged by ${e.initiator}`);
           }
@@ -417,8 +442,11 @@ const chat = (function() {
           }
 
           if (!self.typeahead.shouldInsert) {
+            const replyTargetId = self.elements.input[0].dataset.replyTarget;
+            const replyShouldMention = self.elements.toggle_mention_button[0].dataset.state === 'On';
+            self.cancelReply();
             self.typeahead.lastLength = -1;
-            self._send(trimmed);
+            self._send({ message: trimmed, replyingToId: replyTargetId !== undefined ? replyTargetId : -1, replyShouldMention });
             self.elements.input.val('');
           }
         } else if (e.originalEvent.key === 'Tab' || e.originalEvent.which === 9) {
@@ -544,6 +572,11 @@ const chat = (function() {
       });
 
       self.elements.jump_button[0].addEventListener('click', self.scrollToBottom);
+      self.elements.cancel_reply_button[0].addEventListener('click', self.cancelReply);
+      self.elements.reply_label_username[0].addEventListener('click', () => {
+        self.scrollToCMID(self.elements.input[0].dataset.replyTarget);
+      });
+      self.elements.toggle_mention_button[0].addEventListener('click', self.toggleMention);
 
       const notifBody = document.querySelector('.panel[data-panel="notifications"] .panel-body');
 
@@ -555,7 +588,7 @@ const chat = (function() {
         if (self.stickToBottom && self.elements.chat_panel[0].classList.contains('open')) {
           self.clearPings();
         }
-        self.elements.jump_button[0].style.display = self.stickToBottom ? 'none' : 'block';
+        self.elements.jump_button.css('display', self.stickToBottom ? 'none' : 'block');
       });
 
       // settings
@@ -949,6 +982,24 @@ const chat = (function() {
       self.elements.body[0].scrollTop = self.elements.body[0].scrollHeight;
       self.stickToBottom = true;
     },
+    toggleMention() {
+      const btnNode = self.elements.toggle_mention_button[0];
+      btnNode.dataset.state = (btnNode.dataset.state === 'On' ? 'Off' : 'On');
+      self.elements.toggle_mention_label[0].innerHTML = btnNode.dataset.state === 'On' ? __('On') : __('Off');
+    },
+    cancelReply() {
+      const replyTargetId = self.elements.input[0].dataset.replyTarget;
+      if (!replyTargetId) return;
+      const replyTarget = $(`[data-id=${replyTargetId}]`);
+      replyTarget.removeClass('replying-to');
+      self.elements.body.css('padding-bottom', '0');
+      delete self.elements.input[0].dataset.replyTarget;
+      self.elements.reply_label[0].style.display = 'none';
+      self.elements.reply_label_username[0].removeChild(self.elements.reply_label_username[0].lastChild);
+      self.elements.jump_button.css('top', '-1.25rem');
+      self.elements.toggle_mention_button[0].dataset.state = 'On';
+      self.elements.toggle_mention_label[0].innerHTML = __('On');
+    },
     setCharLimit(num) {
       self.elements.input.prop('maxlength', num);
     },
@@ -998,8 +1049,9 @@ const chat = (function() {
         self._doScroll(toAppend);
       }
     },
-    _send: msg => {
-      socket.send({ type: 'ChatMessage', message: msg });
+    _send: (data) => {
+      data.type = 'ChatMessage';
+      socket.send(data);
     },
     jump: (x, y, zoom) => {
       if (typeof x !== 'number') { x = parseFloat(x); }
@@ -1042,7 +1094,7 @@ const chat = (function() {
       self.elements.username_color_select[0].value = user.getChatNameColor();
     },
     _updateAuthorNameColor: (author, colorIdx) => {
-      self.elements.body.find(`.chat-line[data-author="${author}"] .user`).each(function() {
+      self.elements.body.find(`.chat-line[data-author="${author}"] > :not(.reply-preview) .user, .reply-preview[data-author="${author}"] .user`).each(function() {
         uiHelper.styleElemWithChatNameColor(this, colorIdx, 'color');
       });
     },
@@ -1216,6 +1268,28 @@ const chat = (function() {
         self.elements.body.children().slice(0, diff).remove();
       }
 
+      const genReplyPreviewOut = self._generateReplyPreview(packet.replyingToId, hasPing); // Empty array will be ignored by crel
+      if (packet.replyShouldMention) hasPing = genReplyPreviewOut.hasPing;
+
+      const userDisplay = crel('span', {
+        class: 'userDisplay'
+      },
+      flairs,
+      crel('span', {
+        class: nameClasses,
+        style: `color: #${place.getPaletteColorValue(packet.authorNameColor)}`,
+        onclick: self._popUserPanel,
+        onmousemiddledown: self._addAuthorMentionToChatbox
+      }, board.snipMode ? '-snip-' : packet.author)
+      );
+
+      const messageDisplay = crel('span', {},
+        userDisplay,
+        document.createTextNode(': '),
+        contentSpan,
+        document.createTextNode(' ')
+      );
+
       const chatLine = crel('li', {
         'data-id': packet.id,
         'data-tag': !board.snipMode ? _facTag : '',
@@ -1223,20 +1297,24 @@ const chat = (function() {
         'data-author': packet.author,
         'data-date': packet.date,
         'data-badges': JSON.stringify(packet.badges || []),
+        'data-message-raw': packet.message_raw,
         class: `chat-line${hasPing ? ' has-ping' : ''} ${packet.author.toLowerCase().trim() === user.getUsername().toLowerCase().trim() ? 'is-from-us' : ''}`
       },
+      genReplyPreviewOut.div,
       crel('span', { title: when.format('MMM Do YYYY, hh:mm:ss A') }, when.format(settings.chat.timestamps['24h'].get() === true ? 'HH:mm' : 'hh:mm A')),
       document.createTextNode(' '),
-      flairs,
-      crel('span', {
-        class: nameClasses,
-        style: `color: #${place.getPaletteColorValue(packet.authorNameColor)}`,
-        onclick: self._popUserPanel,
-        onmousemiddledown: self._addAuthorMentionToChatbox
-      }, board.snipMode ? '-snip-' : packet.author),
-      document.createTextNode(': '),
-      contentSpan,
-      document.createTextNode(' '));
+      messageDisplay,
+      crel('button', {
+        class: 'reply-button',
+        title: __('Reply'),
+        onclick: () => {
+          self._addReplyToChatbox(packet.id, userDisplay);
+        }
+      },
+      crel('i', {
+        class: 'fas fa-reply'
+      })
+      ));
       self.elements.body.append(chatLine);
 
       if (packet.purge) {
@@ -1281,6 +1359,59 @@ const chat = (function() {
       }
 
       return content;
+    },
+    _generateReplyPreview: (replyingToId, hasPing) => {
+      if (replyingToId === -1) return { div: [], hasPing };
+
+      const replyTarget = $(`[data-id=${replyingToId}]`);
+      if (!replyTarget[0]) {
+        return {
+          div: crel('div', { class: 'reply-preview reply-preview-nojump' },
+            crel('i', { class: 'fas fa-reply fa-flip-horizontal' }),
+            'Message couldn\'t be found'
+          ),
+          hasPing
+        };
+      }
+
+      const targetPartIndex = replyTarget.children().first().hasClass('reply-preview') ? 2 : 1;
+      const targetPart = replyTarget.children().eq(targetPartIndex).clone();
+      if (!targetPart[0]) {
+        return {
+          div: crel('div', { class: 'reply-preview reply-preview-nojump' },
+            crel('i', { class: 'fas fa-reply fa-flip-horizontal' }),
+            'Message couldn\'t be found'
+          ),
+          hasPing
+        };
+      }
+
+      const targetUsername = replyTarget[0].dataset.author;
+      // Replies to you should ping you
+      if (targetUsername === user.getUsername() && !hasPing) {
+        hasPing = true;
+      }
+      // Make sure to carry over purged or shadow-banned status - pretty much a "just in case" for if a reply is sent after a purge
+      const classes = ['reply-preview'];
+      if (replyTarget[0].classList.contains('purged')) classes.push('purged');
+      if (replyTarget[0].classList.contains('shadow-banned')) classes.push('shadow-banned');
+      return {
+        div: crel('div',
+          {
+            class: classes.join(' '),
+            'data-id': replyTarget[0].dataset.id,
+            'data-author': replyTarget[0].dataset.author,
+            'data-date': replyTarget[0].dataset.date,
+            title: `${targetUsername}: ${replyTarget[0].dataset.messageRaw}`,
+            onclick: self._handlePingJumpClick
+          },
+          crel('i', {
+            class: 'fas fa-reply fa-flip-horizontal'
+          }),
+          targetPart[0]
+        ),
+        hasPing
+      };
     },
     _markMessagePurged: (elem, purge) => {
       elem.classList.add('purged');
@@ -1421,6 +1552,18 @@ const chat = (function() {
         self.elements.input.focus();
       }
     },
+    _addReplyToChatbox: function(id, authorSpan) {
+      self.cancelReply();
+      const messageToReplyTo = $(`[data-id=${id}]`);
+      messageToReplyTo.addClass('replying-to');
+      self.elements.input[0].dataset.replyTarget = id;
+      self.elements.reply_label_username[0].appendChild(authorSpan.cloneNode(true));
+      self.elements.reply_label[0].style.display = 'flex';
+      self.elements.jump_button.css('top', '-2.5rem');
+      self.elements.body.css('padding-bottom', '1.25em');
+      if (self.stickToBottom) self.elements.body[0].scrollTop = self.elements.body[0].scrollHeight;
+      self.elements.input.focus();
+    },
     _popUserPanel: function(e) {
       if (this && this.closest) {
         const closest = this.closest('.chat-line[data-id]');
@@ -1481,6 +1624,7 @@ const chat = (function() {
         const actions = [
           { label: __('Report'), action: 'report', class: 'dangerous-button' },
           { label: __('Mention'), action: 'mention' },
+          { label: __('Reply'), action: 'reply' },
           { label: __('Ignore'), action: 'ignore' },
           (!board.snipMode || App.user.hasPermission('user.receivestaffbroadcasts')) && { label: __('Profile'), action: 'profile' },
           { label: __('Chat (un)ban'), action: 'chatban', staffaction: true },
@@ -1492,7 +1636,7 @@ const chat = (function() {
         ];
 
         crel(leftPanel, crel('p', { class: 'popup-timestamp-header text-muted' }, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(settings.chat.timestamps['24h'].get() === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
-        crel(leftPanel, crel('p', { class: 'content', style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector('.content').textContent));
+        crel(leftPanel, crel('p', { class: 'content', style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector(':not(.reply-preview) > span > .content').textContent));
 
         crel(actionsList, actions
           .filter((action) => action && (user.isStaff() || !action.staffaction))
@@ -1549,7 +1693,7 @@ const chat = (function() {
       if (!chatLine && !this.dataset.target) return console.warn('no chatLine/target? searched for id %o', this.dataset.id);
       const mode = !!chatLine;
 
-      const reportingMessage = mode ? chatLine.querySelector('.content').textContent : '';
+      const reportingMessage = mode ? chatLine.querySelector(':not(.reply-preview) > span > .content').textContent : '';
       const reportingTarget = mode ? chatLine.dataset.author : this.dataset.target;
 
       $('.popup').remove();
@@ -1618,6 +1762,19 @@ const chat = (function() {
           if (reportingTarget) {
             self.elements.input.val(self.elements.input.val() + `@${reportingTarget} `);
           } else console.warn('no reportingTarget');
+          break;
+        }
+        case 'reply': {
+          if (!mode) {
+            console.warn('reply called in with false mode');
+            return;
+          }
+          const userDisplay = chatLine.querySelector(':not(.reply-preview) > span > .userDisplay');
+          if (!userDisplay) {
+            console.warn('reply couldn\'t find userDisplay');
+            return;
+          }
+          self._addReplyToChatbox(this.dataset.id, userDisplay);
           break;
         }
         case 'ignore': {

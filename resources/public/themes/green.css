@@ -39,6 +39,7 @@ html {
     --text-yellow-color: #cc0;
     --ping-highlight-color: #04c81eb3;
     --ping-counter-color: #03cc1eb3;
+    --reply-highlight-color: #12e62eb3;
 
     --panel-header-background: linear-gradient(to bottom, #194a1bfc, #0b330d);
     --panel-background: #084a0b;
