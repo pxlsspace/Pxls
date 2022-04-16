@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-03-24T16:29:23.229Z\n"
+"POT-Creation-Date: 2022-04-09T01:17:13.344Z\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -45,10 +45,6 @@ msgstr "All Time:"
 #: resources/public/pebble_templates/index.html
 msgid "Loading online user count&hellip;"
 msgstr "Loading online user count&hellip;"
-
-#: resources/public/include/user.js
-msgid "online"
-msgstr "online"
 
 #: resources/public/pebble_templates/index.html
 #: resources/public/include/lookup.js resources/public/admin/admin.js
@@ -1400,7 +1396,7 @@ msgid "{0}''s Profile"
 msgstr "{0}''s Profile"
 
 #: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/40x.html
+#: resources/public/pebble_templates/40x.html resources/public/include/user.js
 msgid "My Profile"
 msgstr "My Profile"
 
@@ -1612,6 +1608,7 @@ msgid "Members of {0} ([{1}])"
 msgstr "Members of {0} ([{1}])"
 
 #: resources/public/pebble_templates/profile.html
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Close"
 msgstr "Close"
 
@@ -1761,6 +1758,15 @@ msgid "Note: You can set a default action in the settings menu which bypasses th
 msgstr "Note: You can set a default action in the settings menu which bypasses this popup completely."
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
+#: resources/public/include/user.js resources/public/admin/admin.js
+msgid "Cancel"
+msgstr "Cancel"
+
+#: resources/public/include/chat.js
+msgid "OK"
+msgstr "OK"
+
+#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Report"
 msgstr "Report"
 
@@ -1796,14 +1802,17 @@ msgstr "Chat Lookup"
 msgid "Enter a reason for your report"
 msgstr "Enter a reason for your report"
 
-#: resources/public/include/chat.js resources/public/include/lookup.js
-#: resources/public/include/user.js resources/public/admin/admin.js
-msgid "Cancel"
-msgstr "Cancel"
+#: resources/public/include/chat.js
+msgid "You are reporting a chat message from ${reportTarget} with the content:"
+msgstr "You are reporting a chat message from ${reportTarget} with the content:"
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Error sending report."
 msgstr "Error sending report."
+
+#: resources/public/include/chat.js resources/public/include/lookup.js
+msgid "Sent report!"
+msgstr "Sent report!"
 
 #: resources/public/include/chat.js
 msgid "Report User"
@@ -1881,13 +1890,14 @@ msgstr "No"
 
 #: resources/public/include/chat.js
 msgid "Silent (no purge message)"
-msgstr ""
+msgstr "Silent (no purge message)"
 
 #: resources/public/include/chat.js
 msgid "Custom reason"
 msgstr "Custom reason"
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
+#: resources/public/admin/admin.js
 msgid "Additional information (if applicable)"
 msgstr "Additional information (if applicable)"
 
@@ -1898,6 +1908,10 @@ msgstr "Additional information:"
 #: resources/public/include/chat.js
 msgid "Error occurred while chatbanning"
 msgstr "Error occurred while chatbanning"
+
+#: resources/public/include/chat.js
+msgid "Chatban initiated"
+msgstr "Chatban initiated"
 
 #: resources/public/include/chat.js
 msgid "Chatban"
@@ -1944,6 +1958,10 @@ msgid "Error sending purge."
 msgstr "Error sending purge."
 
 #: resources/public/include/chat.js
+msgid "User purged"
+msgstr "User purged"
+
+#: resources/public/include/chat.js
 msgid "On"
 msgstr "On"
 
@@ -1960,12 +1978,20 @@ msgid "An unknown error occurred. Please contact a developer"
 msgstr "An unknown error occurred. Please contact a developer"
 
 #: resources/public/include/chat.js
+msgid "Rename request updated"
+msgstr "Rename request updated"
+
+#: resources/public/include/chat.js
 msgid "New Name: "
 msgstr "New Name: "
 
 #: resources/public/include/chat.js
 msgid "Enter the new name for the user below. Please note that if you\\'re trying to change the caps, you\\'ll have to rename to something else first."
 msgstr "Enter the new name for the user below. Please note that if you\\'re trying to change the caps, you\\'ll have to rename to something else first."
+
+#: resources/public/include/chat.js
+msgid "User renamed"
+msgstr "User renamed"
 
 #: resources/public/include/chat.js
 msgid "Force Rename"
@@ -1979,7 +2005,7 @@ msgstr "You cannot use chat while canvas banned."
 msgid "Sending..."
 msgstr "Sending..."
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "You must specify the details."
 msgstr "You must specify the details."
 
@@ -1991,29 +2017,37 @@ msgstr "additional information:"
 msgid "Report Pixel"
 msgstr "Report Pixel"
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Rule #1: Hateful/derogatory speech or symbols"
 msgstr "Rule #1: Hateful/derogatory speech or symbols"
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Rule #2: Nudity, genitalia, or non-PG-13 content"
 msgstr "Rule #2: Nudity, genitalia, or non-PG-13 content"
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Rule #3: Multi-account"
 msgstr "Rule #3: Multi-account"
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Rule #4: Botting"
 msgstr "Rule #4: Botting"
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Other (specify below)"
 msgstr "Other (specify below)"
 
 #: resources/public/include/lookup.js
 msgid "Hide sensitive information"
 msgstr "Hide sensitive information"
+
+#: resources/public/include/lookup.js
+msgid "This pixel is background (was not placed by a user)."
+msgstr "This pixel is background (was not placed by a user)."
+
+#: resources/public/include/lookup.js
+msgid "Move Template Here"
+msgstr "Move Template Here"
 
 #: resources/public/include/lookup.js
 msgid "An error occurred, either you aren't logged in or you may be attempting to look up users too fast. Please try again in 60 seconds"
@@ -2124,12 +2158,12 @@ msgid "Red"
 msgstr "Red"
 
 #: resources/public/include/uiHelper.js
-msgid "Cannot fetch local files. Use the file selector in template settings."
-msgstr "Cannot fetch local files. Use the file selector in template settings."
+msgid "A new ${type} report has been received."
+msgstr "A new ${type} report has been received."
 
 #: resources/public/include/uiHelper.js
-msgid "Drag and dropped file must be a valid image."
-msgstr "Drag and dropped file must be a valid image."
+msgid "Cannot fetch local files. Use the file selector in template settings."
+msgstr "Cannot fetch local files. Use the file selector in template settings."
 
 #: resources/public/include/uiHelper.js
 msgid "Redirect Warning"
@@ -2138,6 +2172,10 @@ msgstr "Redirect Warning"
 #: resources/public/include/uiHelper.js
 msgid "Are you sure you want to redirect to the following URL?"
 msgstr "Are you sure you want to redirect to the following URL?"
+
+#: resources/public/include/uiHelper.js
+msgid "Drag and dropped file must be a valid image."
+msgstr "Drag and dropped file must be a valid image."
 
 #: resources/public/include/uiHelper.js
 msgid "Discord name updated successfully"
@@ -2164,12 +2202,20 @@ msgid "Are you sure you want to sign out?"
 msgstr "Are you sure you want to sign out?"
 
 #: resources/public/include/user.js
+msgid "online"
+msgstr "online"
+
+#: resources/public/include/user.js
 msgid "You are permanently banned."
 msgstr "You are permanently banned."
 
 #: resources/public/include/user.js
 msgid "You are temporarily banned and will not be allowed to place until ${timestamp}"
 msgstr "You are temporarily banned and will not be allowed to place until ${timestamp}"
+
+#: resources/public/include/user.js
+msgid "You can contact us using one of the links in the info menu."
+msgstr "You can contact us using one of the links in the info menu."
 
 #: resources/public/include/user.js
 msgid "If you think this was an error, please contact us using one of the links in the info tab."
@@ -2182,6 +2228,10 @@ msgstr "Ban reason:"
 #: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Banned"
 msgstr "Banned"
+
+#: resources/public/include/user.js
+msgid "An unknown error occurred. Please contact staff on discord"
+msgstr "An unknown error occurred. Please contact staff on discord"
 
 #: resources/public/include/user.js
 msgid "Staff have required you to change your username, this usually means your name breaks one of our rules."
@@ -2206,6 +2256,28 @@ msgstr "Change"
 #: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Rename Requested"
 msgstr "Rename Requested"
+
+#: resources/public/include/user.js
+msgid "You must change your username."
+msgstr "You must change your username."
+
+#: resources/public/include/user.js
+msgid "Click here to continue."
+msgstr "Click here to continue."
+
+#: resources/public/admin/admin.js
+msgid "Send alert..."
+msgstr "Send alert..."
+
+#. "Revert pixels of the last *n* hours", part before 'n'
+#: resources/public/admin/admin.js
+msgid "Revert pixels of the last "
+msgstr "Revert pixels of the last "
+
+#. "Revert pixels of the last *n* hours", part after 'n'
+#: resources/public/admin/admin.js
+msgid " hours"
+msgstr " hours"
 
 #: resources/public/admin/admin.js
 msgid "Something went wrong! Perhaps insufficient permissions?"
@@ -2296,6 +2368,22 @@ msgstr "when canvas ban ends"
 msgid "Chatban Expires"
 msgstr "Chatban Expires"
 
+#: resources/public/admin/admin.js
+msgid "Ban (24h)"
+msgstr "Ban (24h)"
+
+#: resources/public/admin/admin.js
+msgid "Permaban"
+msgstr "Permaban"
+
+#: resources/public/admin/admin.js
+msgid "Shadowban"
+msgstr "Shadowban"
+
+#: resources/public/admin/admin.js
+msgid "Custom ban length: "
+msgstr "Custom ban length: "
+
 #. Admin check. Example: type = 'username', arg = 'pxlsuser94'
 #: resources/public/admin/admin.js
 msgid "${type} ${arg} not found."
@@ -2308,6 +2396,35 @@ msgstr "Unban Reason:"
 #: resources/public/admin/admin.js
 msgid "Unbanning ${username}"
 msgstr "Unbanning ${username}"
+
+#. Moderator panel label
+#: resources/public/admin/admin.js
+msgid "MOD"
+msgstr "MOD"
+
+#: resources/public/admin/admin.js
+msgid "Ignore cooldown"
+msgstr "Ignore cooldown"
+
+#: resources/public/admin/admin.js
+msgid "Place any color"
+msgstr "Place any color"
+
+#: resources/public/admin/admin.js
+msgid "Ignore placemap"
+msgstr "Ignore placemap"
+
+#: resources/public/admin/admin.js
+msgid "Ban user (24h)"
+msgstr "Ban user (24h)"
+
+#: resources/public/admin/admin.js
+msgid "Unban user"
+msgstr "Unban user"
+
+#: resources/public/admin/admin.js
+msgid "Check user"
+msgstr "Check user"
 
 #: resources/public/admin/admin.js
 msgid "profile"
@@ -2324,3 +2441,7 @@ msgstr "Send Alert"
 #: resources/public/admin/admin.js
 msgid "Mod Actions"
 msgstr "Mod Actions"
+
+#: resources/public/admin/admin.js
+msgid "More..."
+msgstr "More..."
