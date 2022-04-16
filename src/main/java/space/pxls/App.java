@@ -129,13 +129,13 @@ public class App {
                 tickStackedPixels();
                 checkUserTimeout();
             }
-        }, 0, 5000);
+        }, 0, 5 * 1000);
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
                 getServer().getPacketHandler().updateUserData();
             }
-        }, 0, 600000); //10 minutes
+        }, 0, 60 * 1000); // 1 minute
 
         try {
             Path backupsDir = getStorageDir().resolve("backups/");

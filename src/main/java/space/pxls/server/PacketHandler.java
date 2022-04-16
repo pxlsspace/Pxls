@@ -32,6 +32,7 @@ import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 public class PacketHandler {
     private UndertowServer server;
     private int numAllCons = 0;
+    private int previousUserCount = 0;
 
     public int getCooldown() {
         Config config = App.getConfig();
@@ -96,8 +97,6 @@ public class PacketHandler {
             sendAvailablePixels(channel, user, "connect");
         }
         numAllCons++;
-
-        updateUserData();
     }
 
     public void disconnect(WebSocketChannel channel, User user) {
@@ -105,8 +104,6 @@ public class PacketHandler {
             server.removeAuthedUser(user);
         }
         numAllCons--;
-
-        updateUserData();
     }
 
     public void accept(WebSocketChannel channel, User user, Object obj, String ip) {
@@ -316,7 +313,6 @@ public class PacketHandler {
                             if (!user.hasIgnoreCooldown()) {
                                 if (user.isIdled()) {
                                     user.setIdled(false);
-                                    updateUserData();
                                 }
                                 user.setLastPixelTime();
                                 if (user.getStacked() > 0) {
@@ -601,7 +597,11 @@ public class PacketHandler {
     }
 
     public void updateUserData() {
-        server.broadcast(new ServerUsers(App.getServer().getNonIdledUsersCount()));
+        int userCount = App.getServer().getNonIdledUsersCount();
+        if (previousUserCount != userCount) {
+            previousUserCount = userCount;
+            server.broadcast(new ServerUsers(userCount));
+        }
     }
 
     private void sendPlacementOverrides(WebSocketChannel channel, User user) {
