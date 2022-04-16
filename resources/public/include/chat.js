@@ -447,7 +447,7 @@ const chat = (function() {
             const replyShouldMention = self.elements.toggle_mention_button[0].dataset.state === 'On';
             self.cancelReply();
             self.typeahead.lastLength = -1;
-            self._send({ message: trimmed, replyingToId: replyTargetId !== undefined ? replyTargetId : -1, replyShouldMention });
+            self._send({ message: trimmed, replyingToId: replyTargetId !== undefined ? replyTargetId : 0, replyShouldMention });
             self.elements.input.val('');
           }
         } else if (e.originalEvent.key === 'Tab' || e.originalEvent.which === 9) {
@@ -1362,7 +1362,7 @@ const chat = (function() {
       return content;
     },
     _generateReplyPreview: (replyingToId, hasPing) => {
-      if (replyingToId === -1) return { div: [], hasPing };
+      if (replyingToId === 0) return { div: [], hasPing };
 
       const replyTarget = $(`[data-id=${replyingToId}]`);
       if (!replyTarget[0]) {
