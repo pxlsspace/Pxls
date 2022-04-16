@@ -374,6 +374,7 @@ const chat = (function() {
           elem.removeChild(elem.lastChild);
         }
         elem.appendChild(document.createTextNode('Message was purged'));
+        elem.title = '';
       };
       const _purgeSelector = (selector, e, isReplyPreview) => {
         const lines = Array.from(self.elements.body[0].querySelectorAll(selector));
