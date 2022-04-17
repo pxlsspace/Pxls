@@ -573,11 +573,14 @@ const chat = (function() {
       });
 
       self.elements.jump_button[0].addEventListener('click', self.scrollToBottom);
+      self.elements.jump_button[0].addEventListener('mousedown', (e) => e.preventDefault()); // Prevent loss of focus from input
       self.elements.cancel_reply_button[0].addEventListener('click', self.cancelReply);
       self.elements.reply_label_username[0].addEventListener('click', () => {
         self.scrollToCMID(self.elements.input[0].dataset.replyTarget);
       });
+      self.elements.reply_label_username[0].addEventListener('mousedown', (e) => e.preventDefault()); // Prevent loss of focus from input
       self.elements.toggle_mention_button[0].addEventListener('click', self.toggleMention);
+      self.elements.toggle_mention_button[0].addEventListener('mousedown', (e) => e.preventDefault()); // Prevent loss of focus from input
 
       const notifBody = document.querySelector('.panel[data-panel="notifications"] .panel-body');
 
@@ -1310,7 +1313,8 @@ const chat = (function() {
         title: __('Reply'),
         onclick: () => {
           self._addReplyToChatbox(packet.id, userDisplay);
-        }
+        },
+        onmousedown: (e) => e.preventDefault() // Prevent loss of focus from input
       },
       crel('i', {
         class: 'fas fa-reply'
@@ -1404,7 +1408,8 @@ const chat = (function() {
             'data-author': replyTarget[0].dataset.author,
             'data-date': replyTarget[0].dataset.date,
             title: `${targetUsername}: ${replyTarget[0].dataset.messageRaw}`,
-            onclick: self._handlePingJumpClick
+            onclick: self._handlePingJumpClick,
+            onmousedown: (e) => e.preventDefault() // Prevent loss of focus from input
           },
           crel('i', {
             class: 'fas fa-reply fa-flip-horizontal'
