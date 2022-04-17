@@ -189,7 +189,7 @@ const chat = (function() {
             if (isChatOpen && uiHelper.tabHasFocus()) {
               ls.set('chat-last_seen_id', e.message.id);
             }
-            self._doScroll(chatLine);
+            self.elements.body[0].scrollTop = self.elements.body[0].scrollHeight;
           }
         }
       });
