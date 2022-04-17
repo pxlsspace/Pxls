@@ -2065,6 +2065,7 @@ body .emoji-picker {
     overflow: hidden;
     max-width: 400px;
     min-width: 300px;
+    max-height: 100vh;
 }
 
 .popup .details-wrapper {
