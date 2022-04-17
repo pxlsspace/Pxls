@@ -986,7 +986,7 @@ const chat = (function() {
       self.elements.body[0].scrollTop = self.elements.body[0].scrollHeight;
       self.stickToBottom = true;
     },
-    toggleMention(e) {
+    toggleMention() {
       const btnNode = self.elements.toggle_mention_button[0];
       btnNode.dataset.state = (btnNode.dataset.state === 'On' ? 'Off' : 'On');
       self.elements.toggle_mention_label[0].innerHTML = btnNode.dataset.state === 'On' ? __('On') : __('Off');
