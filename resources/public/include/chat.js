@@ -987,6 +987,7 @@ const chat = (function() {
       const btnNode = self.elements.toggle_mention_button[0];
       btnNode.dataset.state = (btnNode.dataset.state === 'On' ? 'Off' : 'On');
       self.elements.toggle_mention_label[0].innerHTML = btnNode.dataset.state === 'On' ? __('On') : __('Off');
+      self.elements.input.focus();
     },
     cancelReply() {
       const replyTargetId = self.elements.input[0].dataset.replyTarget;
