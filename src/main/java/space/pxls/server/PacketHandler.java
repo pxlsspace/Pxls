@@ -443,6 +443,9 @@ public class PacketHandler {
         Long nowMS = System.currentTimeMillis();
         String message = clientChatMessage.getMessage();
         int replyingToId = clientChatMessage.getReplyingToId();
+        if (replyingToId == -1) { // Old clients may send -1 when they mean 0
+            replyingToId = 0;
+        }
         boolean replyShouldMention = clientChatMessage.getReplyShouldMention();
         if (message.contains("\r")) message = message.replaceAll("\r", "");
         if (message.endsWith("\n")) message = message.replaceFirst("\n$", "");
