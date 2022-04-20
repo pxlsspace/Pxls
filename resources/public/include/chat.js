@@ -460,8 +460,39 @@ const chat = (function() {
         }
       });
 
+      function handleIgnoreChange(who, isIgnored) {
+        const tags = ['del', 'li'];
+        const currentTag = tags[(0 + isIgnored) % 2];
+        const targetTag = tags[(1 + isIgnored) % 2];
+        Array.from(document.querySelectorAll(`${currentTag}.chat-line[data-author="${who}"]`)).forEach(x => {
+          self._changeElemTag(x, targetTag);
+        });
+        Array.from(document.querySelectorAll(`.reply-preview[data-author="${who}"]`)).forEach(x => {
+          const parent = x.parentNode;
+          // If the message is already ignored somehow and we want to ignore, or if the message isn't ignored somehow and we want to unignore, return
+          if (isIgnored ? (!parent.firstChild.classList.contains('reply-preview') || parent.firstChild.dataset.ignoreText) : !parent.firstChild.dataset.ignoreText) return;
+          // If unignoring, remove "was ignored" message
+          if (!isIgnored) parent.firstChild.remove();
+          // if reply-preview was purged before we unignored, or otherwise is gone, return
+          if (!isIgnored && !parent.firstChild.classList.contains('reply-preview')) return;
+          // Hide or unhide the original reply-preview accordingly
+          if (isIgnored) parent.firstChild.classList.add('hidden');
+          else parent.firstChild.classList.remove('hidden');
+          // If ignoring, prepend the "was ignored" message
+          if (!isIgnored) return;
+          parent.prepend(crel('div', { class: 'reply-preview reply-preview-nojump', 'data-ignore-text': '1' },
+            crel('i', { class: 'fas fa-reply fa-flip-horizontal' }),
+            'Message was ignored'
+          ));
+        });
+      }
+
       $(window).on('pxls:chat:userIgnored', (e, who) => {
-        Array.from(document.querySelectorAll(`.chat-line[data-author="${who}"]`)).forEach(x => x.remove());
+        handleIgnoreChange(who, true);
+      });
+
+      $(window).on('pxls:chat:userUnignored', (e, who) => {
+        handleIgnoreChange(who, false);
       });
 
       $(window).on('pxls:panel:opened', (e, which) => {
@@ -937,6 +968,16 @@ const chat = (function() {
         }
       });
     },
+    _changeElemTag: (elem, tag) => {
+      const clone = document.createElement(tag);
+      for (const attr of elem.attributes) {
+        clone.setAttribute(attr.name, attr.value);
+      }
+      while (elem.firstChild) {
+        clone.appendChild(elem.firstChild);
+      }
+      elem.replaceWith(clone);
+    },
     reloadIgnores: () => { self.ignored = (ls.get('chat.ignored') || '').split(','); },
     saveIgnores: () => ls.set('chat.ignored', (self.ignored || []).join(',')),
     addIgnore: name => {
@@ -1212,8 +1253,6 @@ const chat = (function() {
 
       if (!board.snipMode) {
         self.typeahead.helper.getDatabase('users').addEntry(packet.author, packet.author);
-
-        if (self.ignored.indexOf(packet.author) >= 0) return;
       }
       let hasPing = !board.snipMode && settings.chat.pings.enable.get() === true && user.isLoggedIn() && hookDatas.some((data) => data.pings.length > 0);
       const when = moment.unix(packet.date);
@@ -1294,7 +1333,8 @@ const chat = (function() {
         document.createTextNode(' ')
       );
 
-      const chatLine = crel('li', {
+      const isIgnored = !self.snipMode && self.ignored.indexOf(packet.author) >= 0;
+      const chatLine = crel(isIgnored ? 'del' : 'li', {
         'data-id': packet.id,
         'data-tag': !board.snipMode ? _facTag : '',
         'data-faction': !board.snipMode ? (packet.strippedFaction && packet.strippedFaction.id) || '' : '',
@@ -1396,26 +1436,35 @@ const chat = (function() {
       if (targetUsername === user.getUsername() && !hasPing) {
         hasPing = true;
       }
+      const isIgnored = !board.snipMode && self.ignored.indexOf(targetUsername) >= 0;
       // Make sure to carry over purged or shadow-banned status - pretty much a "just in case" for if a reply is sent after a purge
       const classes = ['reply-preview'];
       if (replyTarget[0].classList.contains('purged')) classes.push('purged');
       if (replyTarget[0].classList.contains('shadow-banned')) classes.push('shadow-banned');
+      if (isIgnored) classes.push('hidden');
+      const output = [crel('div',
+        {
+          class: classes.join(' '),
+          'data-id': replyTarget[0].dataset.id,
+          'data-author': replyTarget[0].dataset.author,
+          'data-date': replyTarget[0].dataset.date,
+          title: `${targetUsername}: ${replyTarget[0].dataset.messageRaw}`,
+          onclick: self._handlePingJumpClick,
+          onmousedown: (e) => e.preventDefault() // Prevent loss of focus from input
+        },
+        crel('i', {
+          class: 'fas fa-reply fa-flip-horizontal'
+        }),
+        targetPart[0]
+      )];
+      if (isIgnored) {
+        output.unshift(crel('div', { class: 'reply-preview reply-preview-nojump', 'data-ignore-text': '1' },
+          crel('i', { class: 'fas fa-reply fa-flip-horizontal' }),
+          'Message was ignored'
+        ));
+      }
       return {
-        div: crel('div',
-          {
-            class: classes.join(' '),
-            'data-id': replyTarget[0].dataset.id,
-            'data-author': replyTarget[0].dataset.author,
-            'data-date': replyTarget[0].dataset.date,
-            title: `${targetUsername}: ${replyTarget[0].dataset.messageRaw}`,
-            onclick: self._handlePingJumpClick,
-            onmousedown: (e) => e.preventDefault() // Prevent loss of focus from input
-          },
-          crel('i', {
-            class: 'fas fa-reply fa-flip-horizontal'
-          }),
-          targetPart[0]
-        ),
+        div: output,
         hasPing
       };
     },
