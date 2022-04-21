@@ -126,9 +126,24 @@ const uiHelper = (function() {
         new SLIDEIN.Slidein(__(`A new ${type} report has been received.`), 'info-circle').show().closeAfter(3000);
       });
 
+      const _states = ls.get('settings.collapse.states');
+      if (_states) {
+        for (const [sectionId, state] of Object.entries(_states)) {
+          if (state) $(`article[data-id=${sectionId}] > header`).next().addClass('hidden');
+        }
+      }
+
       $('article > header').on('click', event => {
         const body = $(event.currentTarget).next();
-        body.toggleClass('hidden');
+        const sectionId = event.currentTarget.parentNode.dataset.id;
+        // In case id is unset, we should fallback to toggling the class
+        if (!sectionId) return body.toggleClass('hidden');
+        let states = ls.get('settings.collapse.states');
+        if (states === null) states = {};
+        const currentState = (states[sectionId] !== undefined) ? !states[sectionId] : true;
+        states[sectionId] = currentState;
+        currentState ? body.addClass('hidden') : body.removeClass('hidden');
+        ls.set('settings.collapse.states', states);
       });
 
       settings.ui.palette.numbers.enable.listen(function(value) {
