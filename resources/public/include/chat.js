@@ -1311,8 +1311,8 @@ const chat = (function() {
       crel('button', {
         class: 'reply-button',
         title: __('Reply'),
-        onclick: () => {
-          self._addReplyToChatbox(packet.id, userDisplay);
+        onclick: (e) => {
+          self._addReplyToChatbox(e, packet.id, userDisplay);
         },
         onmousedown: (e) => e.preventDefault() // Prevent loss of focus from input
       },
@@ -1558,8 +1558,9 @@ const chat = (function() {
         self.elements.input.focus();
       }
     },
-    _addReplyToChatbox: function(id, authorSpan) {
+    _addReplyToChatbox: function(e, id, authorSpan) {
       self.cancelReply();
+      if (e.shiftKey) self.toggleMention();
       const messageToReplyTo = $(`[data-id=${id}]`);
       messageToReplyTo.addClass('replying-to');
       self.elements.input[0].dataset.replyTarget = id;
@@ -1780,7 +1781,7 @@ const chat = (function() {
             console.warn('reply couldn\'t find userDisplay');
             return;
           }
-          self._addReplyToChatbox(this.dataset.id, userDisplay);
+          self._addReplyToChatbox(e, this.dataset.id, userDisplay);
           break;
         }
         case 'ignore': {
