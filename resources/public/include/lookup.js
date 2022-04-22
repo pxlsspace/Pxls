@@ -30,7 +30,7 @@ module.exports.lookup = (function() {
           }
           msg = textarea;
         } else if (textarea !== '') {
-          msg += `; ${__('additional information:')} ' ${textarea}`;
+          msg += `; ${__('additional information:')} ${textarea}`;
         }
         $.post('/report', {
           id: id,
