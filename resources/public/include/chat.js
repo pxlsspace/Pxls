@@ -1272,8 +1272,8 @@ const chat = (function() {
         self.elements.body.children().slice(0, diff).remove();
       }
 
-      const genReplyPreviewOut = self._generateReplyPreview(packet.replyingToId, hasPing); // Empty array will be ignored by crel
-      if (packet.replyShouldMention) hasPing = genReplyPreviewOut.hasPing;
+      const genReplyPreviewOut = self._generateReplyPreview(packet.replyingToId, packet.replyShouldMention, hasPing); // Empty array will be ignored by crel
+      hasPing = genReplyPreviewOut.hasPing;
 
       const userDisplay = crel('span', {
         class: 'userDisplay'
@@ -1365,7 +1365,7 @@ const chat = (function() {
 
       return content;
     },
-    _generateReplyPreview: (replyingToId, hasPing) => {
+    _generateReplyPreview: (replyingToId, replyShouldMention, hasPing) => {
       if (replyingToId === 0) return { div: [], hasPing };
 
       const replyTarget = $(`[data-id=${replyingToId}]`);
@@ -1397,13 +1397,15 @@ const chat = (function() {
 
       const targetUsername = replyTarget[0].dataset.author;
       // Replies to you should ping you
-      if (targetUsername === user.getUsername() && !hasPing) {
+      if (targetUsername === user.getUsername() && !hasPing && replyShouldMention) {
         hasPing = true;
       }
       // Make sure to carry over purged or shadow-banned status - pretty much a "just in case" for if a reply is sent after a purge
       const classes = ['reply-preview'];
       if (replyTarget[0].classList.contains('purged')) classes.push('purged');
       if (replyTarget[0].classList.contains('shadow-banned')) classes.push('shadow-banned');
+      // Add an @ before the username if the user will be mentioned
+      if (replyShouldMention) targetPart.find('.user').prepend('@');
       return {
         div: crel('div',
           {
