@@ -1391,6 +1391,10 @@ const chat = (function() {
         };
       }
 
+      // [int3nse] Remove href from links in the preview, so that we can jump to the message instead
+      // (removing this also causes issues with coordinate / template links in the reply-preview, we would need to apply a click event to them)
+      Array.from(targetPart[0].querySelectorAll('.content a')).forEach(elem => elem.removeAttribute('href'));
+
       const targetUsername = replyTarget[0].dataset.author;
       // Replies to you should ping you
       if (targetUsername === user.getUsername() && !hasPing) {
