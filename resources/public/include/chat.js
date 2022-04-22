@@ -1111,10 +1111,10 @@ const chat = (function() {
         ttStr = `${faction.name} (ID: ${faction.id})`;
       }
 
-      self.elements.body.find(`.chat-line[data-author="${author}"]`).each(function() {
+      self.elements.body.find(`.chat-line[data-author="${author}"], .reply-preview[data-author="${author}"]`).each(function() {
         this.dataset.faction = (faction && faction.id) || '';
         this.dataset.tag = tag;
-        $(this).find('.faction-tag').each(function() {
+        $(this).children('span').find('.faction-tag').each(function() {
           this.dataset.tag = tag;
           this.style.color = color;
           this.style.display = settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
@@ -1126,15 +1126,15 @@ const chat = (function() {
     _updateFaction: (faction) => {
       if (faction == null || faction.id == null) return;
       const colorHex = `#${('000000' + (faction.color >>> 0).toString(16)).slice(-6)}`;
-      self.elements.body.find(`.chat-line[data-faction="${faction.id}"]`).each(function() {
+      self.elements.body.find(`.chat-line[data-faction="${faction.id}"], .reply-preview[data-faction="${faction.id}"]`).each(function() {
         this.dataset.tag = faction.tag;
-        $(this).find('.faction-tag').attr('data-tag', faction.tag).attr('title', `${faction.name} (ID: ${faction.id})`).css('color', colorHex).html(`[${twemoji.parse(faction.tag)}]`);
+        $(this).children('span').find('.faction-tag').attr('data-tag', faction.tag).attr('title', `${faction.name} (ID: ${faction.id})`).css('color', colorHex).html(`[${twemoji.parse(faction.tag)}]`);
       });
     },
     _clearFaction: (fid) => {
       if (fid == null) return;
-      self.elements.body.find(`.chat-line[data-faction="${fid}"]`).each(function() {
-        const _ft = $(this).find('.faction-tag')[0];
+      self.elements.body.find(`.chat-line[data-faction="${fid}"], .reply-preview[data-faction="${fid}"]`).each(function() {
+        const _ft = $(this).children('span').find('.faction-tag')[0];
         ['tag', 'faction', 'title'].forEach(x => {
           this.dataset[x] = '';
           _ft.dataset[x] = '';
@@ -1148,7 +1148,7 @@ const chat = (function() {
       });
     },
     _toggleFactionTagFlairs: (enabled = settings.chat.factiontags.enable.get() === true) => {
-      self.elements.body.find('.chat-line:not([data-faction=""]) .flairs .faction-tag').each(function() {
+      self.elements.body.find('.chat-line:not([data-faction=""]) > span > .userDisplay > .flairs > .faction-tag, .reply-preview:not([data-faction=""]) > span > .userDisplay > .flairs > .faction-tag').each(function() {
         this.style.display = enabled ? 'initial' : 'none';
       });
     },
@@ -1408,9 +1408,8 @@ const chat = (function() {
         div: crel('div',
           {
             class: classes.join(' '),
-            'data-id': replyTarget[0].dataset.id,
-            'data-author': replyTarget[0].dataset.author,
-            'data-date': replyTarget[0].dataset.date,
+            // Grab subset of keys from replyTarget dataset
+            dataset: ['id', 'tag', 'faction', 'author', 'date'].reduce((obj, key) => { obj[key] = replyTarget[0].dataset[key]; return obj; }, {}),
             title: `${targetUsername}: ${replyTarget[0].dataset.messageRaw}`,
             onclick: self._handlePingJumpClick,
             onmousedown: (e) => e.preventDefault() // Prevent loss of focus from input
