@@ -184,7 +184,7 @@ const chat = (function() {
           }
         }
         if (self.stickToBottom) {
-          const chatLine = self.elements.body.find(`[data-id="${e.message.id}"]`)[0];
+          const chatLine = self.elements.body.find(`.chat-line[data-id="${e.message.id}"]`)[0];
           if (chatLine) {
             if (isChatOpen && uiHelper.tabHasFocus()) {
               ls.set('chat-last_seen_id', e.message.id);
@@ -499,7 +499,7 @@ const chat = (function() {
         if (which === 'chat') {
           ls.set('chat.last_opened_panel', new Date() / 1e3 >> 0);
           self.clearPings();
-          const lastN = self.elements.body.find('[data-id]').last()[0];
+          const lastN = self.elements.body.find('.chat-line[data-id]').last()[0];
           if (lastN) {
             ls.set('chat-last_seen_id', lastN.dataset.id);
           }
@@ -516,7 +516,7 @@ const chat = (function() {
       window.addEventListener('storage', (ev) => {
         // value updated on another tab
         if (ev.storageArea === window.localStorage && ev.key === 'chat-last_seen_id') {
-          const isLastChild = self.elements.body.find(`[data-id="${JSON.parse(ev.newValue)}"]`).is(':last-child');
+          const isLastChild = self.elements.body.find(`.chat-line[data-id="${JSON.parse(ev.newValue)}"]`).is(':last-child');
           if (isLastChild) {
             self.clearPings();
           }
@@ -1408,7 +1408,7 @@ const chat = (function() {
     _generateReplyPreview: (replyingToId, hasPing) => {
       if (replyingToId === 0) return { div: [], hasPing };
 
-      const replyTarget = $(`[data-id=${replyingToId}]`);
+      const replyTarget = $(`.chat-line[data-id=${replyingToId}]`);
       if (!replyTarget[0]) {
         return {
           div: crel('div', { class: 'reply-preview reply-preview-nojump' },
@@ -1419,7 +1419,7 @@ const chat = (function() {
         };
       }
 
-      const targetPartIndex = replyTarget.children().first().hasClass('reply-preview') ? 2 : 1;
+      const targetPartIndex = replyTarget.children('.reply-preview').length + 1;
       const targetPart = replyTarget.children().eq(targetPartIndex).clone();
       if (!targetPart[0]) {
         return {
@@ -1609,7 +1609,7 @@ const chat = (function() {
     },
     _addReplyToChatbox: function(id, authorSpan) {
       self.cancelReply();
-      const messageToReplyTo = $(`[data-id=${id}]`);
+      const messageToReplyTo = $(`.chat-line[data-id=${id}]`);
       messageToReplyTo.addClass('replying-to');
       self.elements.input[0].dataset.replyTarget = id;
       self.elements.reply_label_username[0].appendChild(authorSpan.cloneNode(true));
