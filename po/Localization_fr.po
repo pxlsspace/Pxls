@@ -2095,7 +2095,7 @@ msgstr "Posté par ${notification.who}"
 
 #: resources/public/include/notifications.js
 msgid "Expires ${expiry}"
-msgstr "Expire à"
+msgstr "Expire à ${expiry}"
 
 #: resources/public/include/template.js
 msgid "There was an error getting the image"

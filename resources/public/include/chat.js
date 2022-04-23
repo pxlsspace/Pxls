@@ -1152,10 +1152,10 @@ const chat = (function() {
         ttStr = `${faction.name} (ID: ${faction.id})`;
       }
 
-      self.elements.body.find(`.chat-line[data-author="${author}"]`).each(function() {
+      self.elements.body.find(`.chat-line[data-author="${author}"], .reply-preview[data-author="${author}"]`).each(function() {
         this.dataset.faction = (faction && faction.id) || '';
         this.dataset.tag = tag;
-        $(this).find('.faction-tag').each(function() {
+        $(this).children('span').find('.faction-tag').each(function() {
           this.dataset.tag = tag;
           this.style.color = color;
           this.style.display = settings.chat.factiontags.enable.get() === true ? 'initial' : 'none';
@@ -1167,15 +1167,15 @@ const chat = (function() {
     _updateFaction: (faction) => {
       if (faction == null || faction.id == null) return;
       const colorHex = `#${('000000' + (faction.color >>> 0).toString(16)).slice(-6)}`;
-      self.elements.body.find(`.chat-line[data-faction="${faction.id}"]`).each(function() {
+      self.elements.body.find(`.chat-line[data-faction="${faction.id}"], .reply-preview[data-faction="${faction.id}"]`).each(function() {
         this.dataset.tag = faction.tag;
-        $(this).find('.faction-tag').attr('data-tag', faction.tag).attr('title', `${faction.name} (ID: ${faction.id})`).css('color', colorHex).html(`[${twemoji.parse(faction.tag)}]`);
+        $(this).children('span').find('.faction-tag').attr('data-tag', faction.tag).attr('title', `${faction.name} (ID: ${faction.id})`).css('color', colorHex).html(`[${twemoji.parse(faction.tag)}]`);
       });
     },
     _clearFaction: (fid) => {
       if (fid == null) return;
-      self.elements.body.find(`.chat-line[data-faction="${fid}"]`).each(function() {
-        const _ft = $(this).find('.faction-tag')[0];
+      self.elements.body.find(`.chat-line[data-faction="${fid}"], .reply-preview[data-faction="${fid}"]`).each(function() {
+        const _ft = $(this).children('span').find('.faction-tag')[0];
         ['tag', 'faction', 'title'].forEach(x => {
           this.dataset[x] = '';
           _ft.dataset[x] = '';
@@ -1189,7 +1189,7 @@ const chat = (function() {
       });
     },
     _toggleFactionTagFlairs: (enabled = settings.chat.factiontags.enable.get() === true) => {
-      self.elements.body.find('.chat-line:not([data-faction=""]) .flairs .faction-tag').each(function() {
+      self.elements.body.find('.chat-line:not([data-faction=""]) > span > .userDisplay > .flairs > .faction-tag, .reply-preview:not([data-faction=""]) > span > .userDisplay > .flairs > .faction-tag').each(function() {
         this.style.display = enabled ? 'initial' : 'none';
       });
     },
@@ -1311,8 +1311,8 @@ const chat = (function() {
         self.elements.body.children().slice(0, diff).remove();
       }
 
-      const genReplyPreviewOut = self._generateReplyPreview(packet.replyingToId, hasPing); // Empty array will be ignored by crel
-      if (packet.replyShouldMention) hasPing = genReplyPreviewOut.hasPing;
+      const genReplyPreviewOut = self._generateReplyPreview(packet.replyingToId, packet.replyShouldMention, hasPing); // Empty array will be ignored by crel
+      hasPing = genReplyPreviewOut.hasPing;
 
       const userDisplay = crel('span', {
         class: 'userDisplay'
@@ -1351,8 +1351,8 @@ const chat = (function() {
       crel('button', {
         class: 'reply-button',
         title: __('Reply'),
-        onclick: () => {
-          self._addReplyToChatbox(packet.id, userDisplay);
+        onclick: (e) => {
+          self._addReplyToChatbox(e, packet.id, userDisplay);
         },
         onmousedown: (e) => e.preventDefault() // Prevent loss of focus from input
       },
@@ -1405,7 +1405,7 @@ const chat = (function() {
 
       return content;
     },
-    _generateReplyPreview: (replyingToId, hasPing) => {
+    _generateReplyPreview: (replyingToId, replyShouldMention, hasPing) => {
       if (replyingToId === 0) return { div: [], hasPing };
 
       const replyTarget = $(`.chat-line[data-id=${replyingToId}]`);
@@ -1431,9 +1431,13 @@ const chat = (function() {
         };
       }
 
+      // [int3nse] Remove href from links in the preview, so that we can jump to the message instead
+      // (removing this also causes issues with coordinate / template links in the reply-preview, we would need to apply a click event to them)
+      Array.from(targetPart[0].querySelectorAll('.content a')).forEach(elem => elem.removeAttribute('href'));
+
       const targetUsername = replyTarget[0].dataset.author;
       // Replies to you should ping you
-      if (targetUsername === user.getUsername() && !hasPing) {
+      if (targetUsername === user.getUsername() && !hasPing && replyShouldMention) {
         hasPing = true;
       }
       const isIgnored = !board.snipMode && self.ignored.indexOf(targetUsername) >= 0;
@@ -1442,12 +1446,13 @@ const chat = (function() {
       if (replyTarget[0].classList.contains('purged')) classes.push('purged');
       if (replyTarget[0].classList.contains('shadow-banned')) classes.push('shadow-banned');
       if (isIgnored) classes.push('hidden');
+      // Add an @ before the username if the user will be mentioned
+      if (replyShouldMention) targetPart.find('.user').prepend('@');
       const output = [crel('div',
         {
           class: classes.join(' '),
-          'data-id': replyTarget[0].dataset.id,
-          'data-author': replyTarget[0].dataset.author,
-          'data-date': replyTarget[0].dataset.date,
+          // Grab subset of keys from replyTarget dataset
+          dataset: ['id', 'tag', 'faction', 'author', 'date'].reduce((obj, key) => { obj[key] = replyTarget[0].dataset[key]; return obj; }, {}),
           title: `${targetUsername}: ${replyTarget[0].dataset.messageRaw}`,
           onclick: self._handlePingJumpClick,
           onmousedown: (e) => e.preventDefault() // Prevent loss of focus from input
@@ -1607,8 +1612,9 @@ const chat = (function() {
         self.elements.input.focus();
       }
     },
-    _addReplyToChatbox: function(id, authorSpan) {
+    _addReplyToChatbox: function(e, id, authorSpan) {
       self.cancelReply();
+      if (e.shiftKey) self.toggleMention();
       const messageToReplyTo = $(`.chat-line[data-id=${id}]`);
       messageToReplyTo.addClass('replying-to');
       self.elements.input[0].dataset.replyTarget = id;
@@ -1829,7 +1835,7 @@ const chat = (function() {
             console.warn('reply couldn\'t find userDisplay');
             return;
           }
-          self._addReplyToChatbox(this.dataset.id, userDisplay);
+          self._addReplyToChatbox(e, this.dataset.id, userDisplay);
           break;
         }
         case 'ignore': {
