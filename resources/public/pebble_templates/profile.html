@@ -229,7 +229,7 @@
                                         <i class="fas fa-eye mr-1 text-success" style="font-size: 0.75em;" title="{{i18n('Localization', 'This is your currently displayed faction.') | raw}}"></i>
                                         {% endif %}
                                         {# eg "Pixelers (members: 100, ID: 1)" #}
-                                        {{i18n('Localization', '{0} (members: {1}, ID: {2}', [faction.name, faction.fetchMembers|length, faction.id]) | raw}}
+                                        {{i18n('Localization', '{0} (members: {1}, ID: {2})', [faction.name, faction.fetchMembers|length, faction.id]) | raw}}
                                     </h5>
                                     <div class="mb-1 mt-2">
                                         <span class="text-muted">{{i18n('Localization', 'Owner: {0}', faction.fetchOwner.name) | raw}}</span>

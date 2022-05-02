@@ -1541,8 +1541,8 @@ msgstr "This is your currently displayed faction."
 
 #. eg "Pixelers (members: 100, ID: 1)"
 #: resources/public/pebble_templates/profile.html
-msgid "{0} (members: {1}, ID: {2}"
-msgstr "{0} (members: {1}, ID: {2}"
+msgid "{0} (members: {1}, ID: {2})"
+msgstr "{0} (members: {1}, ID: {2})"
 
 #: resources/public/pebble_templates/profile.html
 msgid "Owner: {0}"
