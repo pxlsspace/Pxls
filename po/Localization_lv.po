@@ -1730,6 +1730,10 @@ msgid "Jump to coordinates without replacing template"
 msgstr "Aizlekt uz koordināti neaizstājot šablonu"
 
 #: resources/public/include/chat.js
+msgid "Please upload your template image to a third-party image host."
+msgstr ""
+
+#: resources/public/include/chat.js
 msgid "You must be logged in to chat."
 msgstr "Jums ir nepieciešams pierakstīties lai izmantotu čatu."
 

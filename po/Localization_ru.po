@@ -1714,6 +1714,10 @@ msgid "Jump to coordinates without replacing template"
 msgstr "Перейти к координатам без замены шаблона"
 
 #: resources/public/include/chat.js
+msgid "Please upload your template image to a third-party image host."
+msgstr ""
+
+#: resources/public/include/chat.js
 msgid "You must be logged in to chat."
 msgstr "Вы должны быть авторизованы в чате."
 
