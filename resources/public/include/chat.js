@@ -430,12 +430,9 @@ const chat = (function() {
 
       let allowSend = true;
 
-      self.elements.input.on('keydown keyup paste', e => {
+      self.elements.input.on('keydown keyup', e => {
         e.stopPropagation();
-        let toSend = self.elements.input[0].value;
-        if (e.originalEvent.clipboardData) {
-          toSend = e.originalEvent.clipboardData.getData('text');
-        }
+        const toSend = self.elements.input[0].value;
         const trimmed = toSend.trim();
 
         if (decodeURIComponent(trimmed).includes('data:image')) {
