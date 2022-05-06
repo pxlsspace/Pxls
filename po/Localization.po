@@ -1788,11 +1788,6 @@ msgstr "Chat Lookup"
 msgid "Enter a reason for your report"
 msgstr "Enter a reason for your report"
 
-#: resources/public/include/chat.js resources/public/include/lookup.js
-#: resources/public/admin/admin.js
-msgid "Cancel"
-msgstr "Cancel"
-
 #: resources/public/include/chat.js
 msgid "You are reporting a chat message from ${reportTarget} with the content:"
 msgstr "You are reporting a chat message from ${reportTarget} with the content:"
@@ -1947,6 +1942,10 @@ msgstr "Purge Reason"
 #: resources/public/include/chat.js
 msgid "Error sending purge."
 msgstr "Error sending purge."
+
+#: resources/public/include/chat.js
+msgid "On"
+msgstr "On"
 
 #: resources/public/include/chat.js
 msgid "You cannot use chat while canvas banned."

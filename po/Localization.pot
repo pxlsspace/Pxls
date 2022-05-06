@@ -1952,6 +1952,10 @@ msgid "Error sending purge."
 msgstr ""
 
 #: resources/public/include/chat.js
+msgid "On"
+msgstr ""
+
+#: resources/public/include/chat.js
 msgid "You cannot use chat while canvas banned."
 msgstr ""
 
