@@ -80,6 +80,12 @@ function translate(pofile) {
 
             const replaceContent = (item && item.msgstr[0]) || original;
             const replace = quote + replaceContent.replace(new RegExp(`([^\\\\])([${quote}])`, 'g'), '$1\\$2') + quote;
+
+            // just in case something goes wrong
+            if (contents.substring(start + offset, start + offset + 2) !== '__') {
+              callback(new Error('Translation offset drift'));
+            }
+
             contents = contents.substring(0, offset + start) + replace + contents.substring(offset + end);
             offset += replace.length - length;
           }

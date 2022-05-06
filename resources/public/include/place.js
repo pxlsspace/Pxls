@@ -317,7 +317,7 @@ module.exports.place = (function() {
         analytics('send', 'event', 'Captcha', 'Sent');
       };
       self.elements.palette.on('wheel', e => {
-        if (settings.place.palette.scrolling.enable.get() !== true) return;
+        if (settings.place.palette.scrolling.enable.get() !== true || !e.originalEvent.deltaY) return;
         const delta = e.originalEvent.deltaY * -40;
         const newVal = (self.color + ((delta > 0 ? 1 : -1) * (settings.place.palette.scrolling.invert.get() === true ? -1 : 1))) % self.palette.length;
         self.switch(newVal <= -1 ? self.palette.length - 1 : newVal);

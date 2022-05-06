@@ -127,13 +127,13 @@ public class App {
                 tickStackedPixels();
                 checkUserTimeout();
             }
-        }, 0, 5000);
+        }, 0, 5 * 1000);
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
                 getServer().getPacketHandler().updateUserData();
             }
-        }, 0, 600000); //10 minutes
+        }, 0, 60 * 1000); // 1 minute
 
         try {
             Path backupsDir = getStorageDir().resolve("backups/");
@@ -501,7 +501,7 @@ public class App {
             } else if (token[0].equalsIgnoreCase("broadcast")) {
                 //broadcast MESSAGE
                 if (token.length > 1) {
-                    App.getServer().getPacketHandler().handleChatMessage(null, null, new ClientChatMessage(line.substring(token[0].length() + 1)));
+                    App.getServer().getPacketHandler().handleChatMessage(null, null, new ClientChatMessage(line.substring(token[0].length() + 1), 0, true));
                 }
             } else if (token[0].equalsIgnoreCase("ChatBan")) {
                 if (token.length > 4) {
@@ -516,7 +516,7 @@ public class App {
                         }
                         Boolean messageRemoval = token[3].equals("1") || token[3].equalsIgnoreCase("yes") || token[3].equalsIgnoreCase("true");
                         String reason = line.substring(token[0].length() + token[1].length() + token[2].length() + token[3].length() + 4);
-                        Chatban.TEMP(user, null, System.currentTimeMillis() + banLength * 1000L, reason, messageRemoval, Integer.MAX_VALUE).commit();
+                        Chatban.TEMP(user, null, System.currentTimeMillis() + banLength * 1000L, reason, messageRemoval, Integer.MAX_VALUE, true).commit();
                     }
                 } else {
                     System.out.println("chatban USER BAN_LENGTH MESSAGE_REMOVAL REASON\n    USER: The name of the user\n    BAN_LENGTH: The length in seconds of the chatban. For permas, see 'PermaChatBan' command.\n    MESSAGE_REMOVAL: Boolean (1|0) of whether or not to purge the user from chat.\n    REASON: The reason for the chatban. Will be displayed to the user");
@@ -528,7 +528,7 @@ public class App {
                     else {
                         Boolean messageRemoval = token[2].equals("1") || token[2].equalsIgnoreCase("yes") || token[2].equalsIgnoreCase("true");
                         String reason = line.substring(token[0].length() + token[1].length() + token[2].length() + 3);
-                        Chatban.PERMA(user, null, reason, messageRemoval, Integer.MAX_VALUE).commit();
+                        Chatban.PERMA(user, null, reason, messageRemoval, Integer.MAX_VALUE, true).commit();
                     }
                 } else {
                     System.out.println("PermaChatBan USER MESSAGE_REMOVAL REASON\n    USER: The name of the user\n    MESSAGE_REMOVAL: Boolean (1|0) of whether or not to purge the user from chat.\n    REASON: The reason for the chatban. Will be displayed to the user");
@@ -563,7 +563,7 @@ public class App {
                         }
 
                         if (toPurge > 0) {
-                            App.getDatabase().purgeChat(user, null, toPurge, reason, true);
+                            App.getDatabase().purgeChat(user, null, toPurge, reason, true, true);
                         } else {
                             System.out.printf("Invalid toPurge. Should be >0, got %s%n", toPurge);
                         }

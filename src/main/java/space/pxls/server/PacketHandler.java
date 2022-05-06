@@ -32,6 +32,7 @@ import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 public class PacketHandler {
     private UndertowServer server;
     private int numAllCons = 0;
+    private int previousUserCount = 0;
 
     public int getCooldown() {
         Config config = App.getConfig();
@@ -95,8 +96,6 @@ public class PacketHandler {
             sendAvailablePixels(channel, user, "connect");
         }
         numAllCons++;
-
-        updateUserData();
     }
 
     public void disconnect(WebSocketChannel channel, User user) {
@@ -104,8 +103,6 @@ public class PacketHandler {
             server.removeAuthedUser(user);
         }
         numAllCons--;
-
-        updateUserData();
     }
 
     public void accept(WebSocketChannel channel, User user, Object obj, String ip) {
@@ -315,7 +312,6 @@ public class PacketHandler {
                             if (!user.hasIgnoreCooldown()) {
                                 if (user.isIdled()) {
                                     user.setIdled(false);
-                                    updateUserData();
                                 }
                                 user.setLastPixelTime();
                                 if (user.getStacked() > 0) {
@@ -414,6 +410,8 @@ public class PacketHandler {
                         App.getConfig().getBoolean("textFilter.enabled") && dbChatMessage.filtered_content.length() > 0
                             ? dbChatMessage.filtered_content
                             : dbChatMessage.content,
+                        dbChatMessage.replying_to_id,
+                        dbChatMessage.reply_should_mention,
                         dbChatMessage.purged
                             ? new ChatMessage.Purge(dbChatMessage.purged_by_uid, dbChatMessage.purge_reason)
                             : null,
@@ -443,12 +441,17 @@ public class PacketHandler {
         }
         Long nowMS = System.currentTimeMillis();
         String message = clientChatMessage.getMessage();
+        int replyingToId = clientChatMessage.getReplyingToId();
+        if (replyingToId == -1) { // Old clients may send -1 when they mean 0
+            replyingToId = 0;
+        }
+        boolean replyShouldMention = clientChatMessage.getReplyShouldMention();
         if (message.contains("\r")) message = message.replaceAll("\r", "");
         if (message.endsWith("\n")) message = message.replaceFirst("\n$", "");
         if (message.length() > charLimit) message = message.substring(0, charLimit);
         if (user == null) { //console
-            Integer cmid = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "", false);
-            server.broadcast(new ServerChatMessage(new ChatMessage(cmid, "CONSOLE", nowMS / 1000L, message, null, null, null, 0, false, null)));
+            Integer cmid = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "", replyingToId, replyShouldMention, false);
+            server.broadcast(new ServerChatMessage(new ChatMessage(cmid, "CONSOLE", nowMS / 1000L, message, replyingToId, replyShouldMention, null, null, null, 0, false, null)));
         } else {
             if (!user.canChat()) return;
             if (message.trim().length() == 0) return;
@@ -468,8 +471,8 @@ public class PacketHandler {
                     toSend = result.filterHit ? result.filtered : result.original;
                     toFilter = toSend;
                 }
-                Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter, user.isShadowBanned());
-                var chatMessage = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), user.isShadowBanned(), usersFaction);
+                Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter, replyingToId, replyShouldMention, user.isShadowBanned());
+                var chatMessage = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, replyingToId, replyShouldMention, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), user.isShadowBanned(), usersFaction);
 
                 var barePacket = new ServerChatMessage(chatMessage);
                 var userPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
@@ -545,8 +548,6 @@ public class PacketHandler {
 
         var postData = postDataBuilder.toString();
 
-        System.out.println(postData);
-
         for(var hook : webhooks) {
             try {
                 var connection = (HttpURLConnection) new URL(hook).openConnection();
@@ -563,6 +564,7 @@ public class PacketHandler {
                 if(connection.getResponseCode() >= 400) {
                     var response = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
 
+                    System.err.println("Error(s) relaying chat message to webhooks:");
                     for(var line: response.lines().collect(Collectors.toList())) {
                         System.err.println(line);
                     }
@@ -579,24 +581,28 @@ public class PacketHandler {
         server.send(user, chatban);
     }
 
-    public void sendChatPurge(User target, User initiator, int amount, String reason) {
-        var barePacket = new ServerChatPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), amount, reason);
+    public void sendChatPurge(User target, User initiator, int amount, String reason, boolean announce) {
+        var barePacket = new ServerChatPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), amount, reason, announce);
         var redactedPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
         server.broadcastSeparateForStaff(redactedPacket, barePacket);
     }
 
-    public void sendSpecificPurge(User target, User initiator, Integer cmid, String reason) {
-        sendSpecificPurge(target, initiator, Collections.singletonList(cmid), reason);
+    public void sendSpecificPurge(User target, User initiator, Integer cmid, String reason, boolean announce) {
+        sendSpecificPurge(target, initiator, Collections.singletonList(cmid), reason, announce);
     }
 
-    public void sendSpecificPurge(User target, User initiator, List<Integer> cmids, String reason) {
-        var barePacket = new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), cmids, reason);
+    public void sendSpecificPurge(User target, User initiator, List<Integer> cmids, String reason, boolean announce) {
+        var barePacket = new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), cmids, reason, announce);
         var redactedPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
         server.broadcastSeparateForStaff(redactedPacket, barePacket);
     }
 
     public void updateUserData() {
-        server.broadcast(new ServerUsers(App.getServer().getNonIdledUsersCount()));
+        int userCount = App.getServer().getNonIdledUsersCount();
+        if (previousUserCount != userCount) {
+            previousUserCount = userCount;
+            server.broadcast(new ServerUsers(userCount));
+        }
     }
 
     private void sendPlacementOverrides(WebSocketChannel channel, User user) {

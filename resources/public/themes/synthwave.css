@@ -65,6 +65,7 @@ html {
     --ping-highlight-color: #6036ff;
     --ping-flash-color: #8ef7d1;
     --ping-counter-color: var(--text-yellow-color);
+    --reply-highlight-color: #9a81f8;
     --notification-expiry-color: #a30041;
 
     --panel-background: linear-gradient(90deg, #2a0161 20%, #180027 100%);
@@ -474,6 +475,10 @@ input[type='number'] {
 
 ul.chat-body .chat-line[data-id].has-ping {
     background: linear-gradient(90deg, var(--ping-highlight-color), #220052);
+}
+
+ul.chat-body .chat-line[data-id].replying-to {
+    background: linear-gradient(90deg, var(--reply-highlight-color), #220052);
 }
 
 .chat-line.purged {

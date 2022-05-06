@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{{title}}</title>
-    <meta name="keywords" content="pxls, pixels, place, art">
+    <meta name="keywords" content="pxls, pixels, place, art, r/place">
     {# Site description #}
     <meta name="description" content="{{i18n('Localization', 'Place pixels with people to create art') | raw}}">
     <meta name="google-play-app" content="app-id=space.pxls.android">
@@ -137,6 +137,12 @@
               <input id="signup-username-input" type="text" maxlength="32">
           </label>
       </p>
+        <p>
+            <label class="input-group">
+                <span class="label-text">{{i18n('Localization', 'Discord Tag (Optional):') | raw}}</span>
+                <input id="signup-discord-input" type="text" maxlength="64" placeholder="Username#1234">
+            </label>
+        </p>
       <div class="error" id="error"></div>
     </div>
     <button id="signup-button" class="float-right text-button">{{i18n('Localization', 'Sign up') | raw}}</button>
@@ -198,6 +204,18 @@
                     <span>{{i18n('Localization', 'Jump To Bottom') | raw}}</span>
                     <i class="fas fa-arrow-down fa-is-left" style="float: right; margin-top: 4px;"></i>
                 </button>
+                <div id="reply-label" class="fullwidth" style="display: none;">
+                    <span id="reply-label-username">
+                        <span style="margin-left: 5px;">Replying to</span>
+                    </span>
+                    <button type="button" id="toggle-mention" data-state="On">
+                        <i class="fas fa-at"></i>
+                        <span id="toggle-mention-label">{{i18n('Localization', 'On') | raw}}</span>
+                    </button>
+                    <button type="button" id="cancel-reply">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
                 <div id="typeahead" style="display: none;">
                     <button data-dismiss="typeahead" class="text-muted" style="width: 100%; font-size: inherit; display:block; padding-top: .25rem; padding-bottom: .25rem; margin: 0 0 .5rem 0rem; text-align: center; font-style: italic;">Tap here or press ESC to cancel</button>
                     <ul></ul>
@@ -227,7 +245,7 @@
     </header>
     <div class="panel-body">
         <input id="settings-search-input" type="search" placeholder="{{i18n('Localization', 'Search') | raw}}" class="fullwidth" />
-        <article class="no-p-margin" data-keywords="{{i18n('Localization', 'keybinds;keys;keyboard;hotkeys') | raw}}">
+        <article data-id="keybinds" class="no-p-margin" data-keywords="{{i18n('Localization', 'keybinds;keys;keyboard;hotkeys') | raw}}">
             <header>
                 <h3>{{i18n('Localization', 'Keybinds') | raw}}</h3>
             </header>
@@ -268,7 +286,7 @@
                 </small>
             </div>
         </article>
-        <article data-keywords="{{i18n('Localization', 'templates;overlays;guides') | raw}}">
+        <article data-id="templates" data-keywords="{{i18n('Localization', 'templates;overlays;guides') | raw}}">
             <header>
                 <h3>{{i18n('Localization', 'Template') | raw}}</h3>
             </header>
@@ -353,7 +371,7 @@
                 </section>
             </div>
         </article>
-        <article data-keywords="{{i18n('Localization', 'ui;interface') | raw}}">
+        <article data-id="ui" data-keywords="{{i18n('Localization', 'ui;interface') | raw}}">
             <header>
                 <h3>{{i18n('Localization', 'UI Settings') | raw}}</h3>
             </header>
@@ -460,7 +478,7 @@
                 </section>
             </div>
         </article>
-        <article data-keywords="{{i18n('Localization', 'chat;message;ping sound') | raw}}">
+        <article data-id="chat" data-keywords="{{i18n('Localization', 'chat;message;ping sound') | raw}}">
             <header>
                 <h3>{{i18n('Localization', 'Chat Settings') | raw}}</h3>
             </header>
@@ -565,7 +583,7 @@
                 </section>
             </div>
         </article>
-        <article data-keywords="{{i18n('Localization', 'overlays;virginmap;heatmap;grid') | raw}}">
+        <article data-id="overlays" data-keywords="{{i18n('Localization', 'overlays;virginmap;heatmap;grid') | raw}}">
             <header>
                 <h3>{{i18n('Localization', 'Overlay Settings') | raw}}</h3>
             </header>
@@ -628,7 +646,7 @@
                 </section>
             </div>
         </article>
-        <article data-keywords="{{i18n('Localization', 'controls;zooming;panning;movement') | raw}}">
+        <article data-id="controls" data-keywords="{{i18n('Localization', 'controls;zooming;panning;movement') | raw}}">
             <header>
                 <h3>{{i18n('Localization', 'Control Settings') | raw}}</h3>
             </header>
@@ -687,7 +705,7 @@
                 </section>
             </div>
         </article>
-        <article data-keywords="{{i18n('Localization', 'snapshots;screenshot;download;picture;canvas') | raw}}">
+        <article data-id="snapshots" data-keywords="{{i18n('Localization', 'snapshots;screenshot;download;picture;canvas') | raw}}">
             <header>
                 <h3>{{i18n('Localization', 'Snapshot Settings') | raw}}</h3>
             </header>
@@ -706,7 +724,7 @@
                 </section>
             </div>
         </article>
-        <article data-keywords="{{i18n('Localization', 'sound;notification;alert;notify;ping') | raw}}">
+        <article data-id="sound" data-keywords="{{i18n('Localization', 'sound;notification;alert;notify;ping') | raw}}">
             <header>
                 <h3>{{i18n('Localization', 'Sound and Notification Settings') | raw}}</h3>
             </header>

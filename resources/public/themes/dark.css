@@ -35,6 +35,7 @@ html {
     --text-red-color:#f44;
     --text-yellow-color:#cc0;
     --ping-highlight-color: #5b5345;
+    --reply-highlight-color: #918674;
 
     --panel-header-background: linear-gradient(to bottom, #444, #333);
     --panel-background: #333;

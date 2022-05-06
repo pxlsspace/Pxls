@@ -180,6 +180,8 @@ public class Database {
                     "sent BIGINT NOT NULL," +
                     "content VARCHAR(2048) NOT NULL," +
                     "filtered VARCHAR(2048) NOT NULL DEFAULT ''," +
+                    "replying_to_id BIGINT NOT NULL DEFAULT 0," +
+                    "reply_should_mention BOOL NOT NULL DEFAULT true," +
                     "purged BOOL NOT NULL DEFAULT false," +
                     "purged_by INT," +
                     "purge_reason TEXT," +
@@ -1231,12 +1233,14 @@ public class Database {
      * @param shadowBanned Whether or not the user sending the message is shadow-banned.
      * @return The new chat message's ID.
      */
-    public Integer createChatMessage(int authorID, long sent, String content, String filtered, boolean shadowBanned) {
-        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO chat_messages (author, sent, content, filtered, shadow_banned) VALUES (:author, :sent, :content, :filtered, :shadow_banned)")
+    public Integer createChatMessage(int authorID, long sent, String content, String filtered, int replyingToId, boolean replyShouldMention, boolean shadowBanned) {
+        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO chat_messages (author, sent, content, filtered, replying_to_id, reply_should_mention, shadow_banned) VALUES (:author, :sent, :content, :filtered, :replying_to_id, :reply_should_mention, :shadow_banned)")
                 .bind("author", authorID)
                 .bind("sent", sent)
                 .bind("content", content)
                 .bind("filtered", filtered)
+                .bind("replying_to_id", replyingToId)
+                .bind("reply_should_mention", replyShouldMention)
                 .bind("shadow_banned", shadowBanned)
                 .executeAndReturnGeneratedKeys("id")
                     .mapTo(Integer.TYPE)
@@ -1250,8 +1254,8 @@ public class Database {
      * @param filtered The filtered chat contents.
      * @return The new chat message's ID.
      */
-    public Integer createChatMessage(User author, long sent, String content, String filtered) {
-        return createChatMessage(author == null ? -1 : author.getId(), sent / 1000L, content, filtered, author != null && author.isShadowBanned());
+    public Integer createChatMessage(User author, long sent, String content, String filtered, int replyingToId, boolean replyShouldMention) {
+        return createChatMessage(author == null ? -1 : author.getId(), sent / 1000L, content, filtered, replyingToId, replyShouldMention, author != null && author.isShadowBanned());
     }
 
     /**
@@ -1380,7 +1384,7 @@ public class Database {
      * @param reason The reason for the purge.
      * @param broadcast Whether or not to broadcast a purge message.
      */
-    public void purgeChat(User target, User initiator, int amount, String reason, boolean broadcast) {
+    public void purgeChat(User target, User initiator, int amount, String reason, boolean broadcast, boolean announce) {
         jdbi.useHandle(handle -> handle.createUpdate("UPDATE chat_messages SET purged = true, purged_by = :initiator, purge_reason = :reason WHERE author = :who")
                 .bind("initiator", initiator == null ? 0 : initiator.getId())
                 .bind("who", target.getId())
@@ -1396,7 +1400,7 @@ public class Database {
             insertAdminLog(initiatorID, logMessage);
         }
         if (broadcast) {
-            App.getServer().getPacketHandler().sendChatPurge(target, initiator, amount, reason);
+            App.getServer().getPacketHandler().sendChatPurge(target, initiator, amount, reason, announce);
         }
     }
 
@@ -1408,7 +1412,7 @@ public class Database {
      * @param reason The reason for the purge.
      * @param broadcast Whether or not to broadcast a purge message.
      */
-    public void purgeChatID(User target, User initiator, Integer id, String reason, boolean broadcast) {
+    public void purgeChatID(User target, User initiator, Integer id, String reason, boolean broadcast, boolean announce) {
         jdbi.useHandle(handle -> handle.createUpdate("UPDATE chat_messages SET purged = true, purged_by = :initiator, purge_reason = :reason WHERE id = :id")
                 .bind("initiator", initiator.getId())
                 .bind("id", id)
@@ -1424,7 +1428,7 @@ public class Database {
             insertAdminLog(initiatorID, logMessage);
         }
         if (broadcast) {
-            App.getServer().getPacketHandler().sendSpecificPurge(target, initiator, id, reason);
+            App.getServer().getPacketHandler().sendSpecificPurge(target, initiator, id, reason, announce);
         }
     }
 

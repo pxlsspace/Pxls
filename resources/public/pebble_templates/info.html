@@ -1,4 +1,4 @@
-<article>
+<article data-id="welcome">
 	<header>
 		<h3>{{i18n('Localization', 'Welcome!') | raw}}</h3>
 	</header>
@@ -8,7 +8,7 @@
 		<p>{{i18n('Localization', 'Check out our social media pages, and please take the time to read the rules below. Have fun creating (or changing) art!') | raw}}</p>
 	</div>
 </article>
-<article id="canvas-rules">
+<article data-id="canvas-rules" id="canvas-rules">
 	<header>
 		<h3 class="text-red">{{i18n('Localization', 'Canvas Rules') | raw}}</h3>
 	</header>
@@ -38,7 +38,7 @@
 		<p>{{i18n('Localization', 'If you believe you have been falsely banned you may contact a moderator or administrator.') | raw}}</p>
 	</div>
 </article>
-<article id="chat-rules">
+<article data-id="chat-rules" id="chat-rules">
 	<header>
 		<h3 class="text-red">{{i18n('Localization', 'Chat Rules') | raw}}</h3>
 	</header>
@@ -67,7 +67,7 @@
 		</ol>
 	</div>
 </article>
-<article>
+<article data-id="links">
 	<header>
 		<h3>{{i18n('Localization', 'Links') | raw}}</h3>
 	</header>
@@ -75,10 +75,10 @@
 		<ul>
 			<li><a href="https://pxls.space/discord" target="_blank">{{i18n('Localization', 'Discord (main hub)') | raw}}</a></li>
 			<li><a href="https://reddit.com/r/pxlsspace" target="_blank">{{i18n('Localization', 'Subreddit') | raw}}</a></li>
-			<li><a href="https://twitter.com/pxls_space" target="_blank">{{i18n('Localization', 'Twitter') | raw}}</a></li>
-			<li><a href="https://github.com/xSke/Pxls" target="_blank">{{i18n('Localization', 'GitHub') | raw}}</a></li>
+			<li><a href="https://twitter.com/pxlsspace" target="_blank">{{i18n('Localization', 'Twitter') | raw}}</a></li>
+			<li><a href="https://github.com/pxlsspace/Pxls" target="_blank">{{i18n('Localization', 'GitHub') | raw}}</a></li>
 			{# link to piskelapp.com #}
-			<li><a href="http://www.piskelapp.com/p/create" target="_blank">{{i18n('Localization', 'Single-player mode') | raw}}</a></li>
+			<li><a href="http://www.piskelapp.com/p/create/sprite" target="_blank">{{i18n('Localization', 'Single-player mode') | raw}}</a></li>
 		</ul>
 		<ul>
 			<li><a href="https://pxls.space/stats" target="_blank">{{i18n('Localization', 'Statistics') | raw}}</a></li>
@@ -90,7 +90,7 @@
 		</ul>
 	</div>
 </article>
-<article>
+<article data-id="donate">
 	<header>
 		<h3>{{i18n('Localization', 'Donate') | raw}}</h3>
 	</header>

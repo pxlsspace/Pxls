@@ -54,6 +54,7 @@ html {
     --ping-highlight-color: #004e00;
     --ping-flash-color: #94e044;
     --ping-counter-color: #004e00;
+    --reply-highlight-color: #009400;
     --notification-expiry-color: var(--text-orange-color);
     --panel-background: #000801;
     --panel-text-color: inherit;
