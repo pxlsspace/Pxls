@@ -1142,8 +1142,8 @@ msgid "How do I make a template?"
 msgstr "How do I make a template?"
 
 #: resources/public/pebble_templates/faq.html
-msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or PxlsFiddle."
-msgstr "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or PxlsFiddle."
+msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://discord.gg/5MVDCq53vC\" target=\"blank\">Clueless</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or Clueless."
+msgstr "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://discord.gg/5MVDCq53vC\" target=\"blank\">Clueless</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or Clueless."
 
 #: resources/public/pebble_templates/faq.html
 msgid "How do I move a template?"
@@ -1378,13 +1378,13 @@ msgstr "Charity (templates, monitors, etc.)"
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
-msgid "Template generator, archives, timelapses, and other utilities"
-msgstr "Template generator, archives, timelapses, and other utilities"
+msgid "Archives, timelapses, and other utilities"
+msgstr "Archives, timelapses, and other utilities"
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
-msgid "PxlsFiddle (templates, archives, etc.)"
-msgstr "PxlsFiddle (templates, archives, etc.)"
+msgid "PxlsFiddle (archives)"
+msgstr "PxlsFiddle (archives)"
 
 #: resources/public/pebble_templates/info.html
 msgid "Donate"
