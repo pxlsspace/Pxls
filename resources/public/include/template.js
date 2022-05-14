@@ -571,7 +571,27 @@ module.exports.template = (function () {
         #define PALETTE_TRANSPARENT (PALETTE_MAXSIZE - 1.0) / PALETTE_MAXSIZE
         #define PALETTE_UNKNOWN 1.0
       `;
-      const diffCustom = `
+      const diffLuma = `
+        #define LUMA_WEIGHTS vec3(0.299, 0.587, 0.114)
+        // a simple custom colorspace that stores:
+        // - brightness
+        // - red/green-ness
+        // - blue/yellow-ness
+        // this storing of contrasts is similar to how humans
+        // see color difference and provides a simple difference function
+        // with decent results.
+        vec3 rgb2Custom(vec3 rgb) {
+          return vec3(
+            length(rgb * LUMA_WEIGHTS),
+            rgb.r - rgb.g,
+            rgb.b - (rgb.r + rgb.g) / 2.0
+          );
+        }
+        float diffLuma(vec3 col1, vec3 col2) {
+          return length(rgb2Custom(col1) - rgb2Custom(col2));
+        }
+      `;
+      const diffEITP = `
         mat3 MATRIX_ICTCP_RGB_TO_LMS = mat3(0.41210938, 0.16674805, 0.02416992, 0.52392578, 0.72045898, 0.07543945, 0.06396484, 0.11279297, 0.90039062);
         mat3 MATRIX_ICTCP_LMS_P_TO_ICTCP = mat3(0.5,  1.61376953,  4.37817383,  0.5, -3.32348633, -4.24560547,  0.,  1.7097168 , -0.13256836);
 
@@ -594,10 +614,20 @@ module.exports.template = (function () {
             return MATRIX_ICTCP_LMS_P_TO_ICTCP * lms_p;
           }
 
-        float diffCustom(vec3 col1, vec3 col2) {
+        float diffEITP(vec3 col1, vec3 col2) {
           return distance(0.5*rgb2ictcp(col1) - 0.5*rgb2ictcp(col2));
         }
       `;
+      
+      const diffRedmean = `
+        float diffRedmean(vec3 c1, vec3 c2){
+          vec3 delta2 = 65025. * (c1-c2) * (c1-c2) ;
+          float r_bar = 127.5 * (c1.r + c2.r);
+          return (2.+r_bar/256.)*delta2.r + 4. * delta2.g + (2.+(255.-r_bar)/256.)*delta2.b;
+        }
+      `;
+      const distanceFunctions = {'diffRedmean': diffRedmean, 'diffEITP': diffEITP, 'diffLuma': diffLuma};
+
       const downscalingFragmentShader = (comparisonFunctionName = null) => `
         precision mediump float;
         // GLES (and thus WebGL) does not support dynamic for loops
@@ -606,7 +636,7 @@ module.exports.template = (function () {
         #define MAX_SAMPLE_SIZE 16.0
         
         ${paletteDefs}
-        ${comparisonFunctionName !== null ? '#define CONVERT_COLORS' : ''}
+        ${distanceFunctions[comparisonFunctionName] !== undefined ? '#define CONVERT_COLORS' : ''}
         #define HIGHEST_DIFF 999999.9
         uniform sampler2D u_Template;
         uniform vec2 u_TexelSize;
@@ -616,7 +646,7 @@ module.exports.template = (function () {
         const float epsilon = 1.0 / 128.0;
         // The alpha channel is used to index the palette: 
         const vec4 transparentColor = vec4(0.0, 0.0, 0.0, PALETTE_TRANSPARENT);
-        ${diffCustom}
+        ${distanceFunctions[comparisonFunctionName]}
         void main () {
           vec4 color = vec4(0.0);
           vec2 actualSampleSize = min(u_SampleSize, vec2(MAX_SAMPLE_SIZE));
@@ -680,7 +710,7 @@ module.exports.template = (function () {
         }
       `;
       self.gl.programs.downscaling.unconverted = self.createGlProgram(identityVertexShader, downscalingFragmentShader(null));
-      self.gl.programs.downscaling.nearestCustom = self.createGlProgram(identityVertexShader, downscalingFragmentShader('diffCustom'));
+      self.gl.programs.downscaling.nearestCustom = self.createGlProgram(identityVertexShader, downscalingFragmentShader('diffEITP'));
       const int2rgb = i => [(i >> 16) & 0xFF, (i >> 8) & 0xFF, i & 0xFF];
       const paletteBuffer = new Float32Array(palette.flatMap(c => int2rgb(parseInt(c.value, 16)).map(c => c / 255)));
       for (const program of Object.values(self.gl.programs.downscaling)) {
