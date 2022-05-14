@@ -4,7 +4,7 @@ let query;
 let uiHelper;
 
 // here all the template stuff happens
-module.exports.template = (function () {
+module.exports.template = (function() {
   const STYLES_Y = 16;
   const STYLES_X = 16;
   const self = {
@@ -74,13 +74,13 @@ module.exports.template = (function () {
       style: undefined
     },
     options: {},
-    initCORS: function (base, param) {
+    initCORS: function(base, param) {
       self.corsProxy.base = base;
       self.corsProxy.param = param;
 
       self.loadImage();
     },
-    cors: function (location) {
+    cors: function(location) {
       try {
         const url = new URL(location);
         if (url.protocol === 'data:' || self.corsProxy.safeHosts.some(h => url.hostname.endsWith(h))) {
@@ -97,7 +97,7 @@ module.exports.template = (function () {
         return location;
       }
     },
-    loadImage: function () {
+    loadImage: function() {
       if (self.corsProxy.base !== undefined) {
         self.loading = true;
 
@@ -109,7 +109,7 @@ module.exports.template = (function () {
         });
       }
     },
-    updateSettings: function () {
+    updateSettings: function() {
       self.elements.useCheckbox.prop('checked', self.options.use);
       self.elements.urlInput.val(self.options.url ? self.options.url : '');
 
@@ -160,19 +160,19 @@ module.exports.template = (function () {
 
       return objectToNormalize;
     },
-    queueUpdate: function (obj) {
+    queueUpdate: function(obj) {
       obj = self.normalizeTemplateObj(obj, true);
       self._queuedUpdates = Object.assign(self._queuedUpdates, obj);
       if (self.queueTimer) {
         clearTimeout(self.queueTimer);
       }
-      self.queueTimer = setTimeout(function () {
+      self.queueTimer = setTimeout(function() {
         self._update(self._queuedUpdates);
         self._queuedUpdates = {};
         self.queueTimer = 0;
       }, 200);
     },
-    _update: function (options, updateSettings = true) {
+    _update: function(options, updateSettings = true) {
       if (!Object.keys(options).length) {
         return;
       }
@@ -258,7 +258,7 @@ module.exports.template = (function () {
       self.elements.template.toggleClass('hidden', !self.options.use || !self.usesStyle());
       self.elements.sourceImage.toggleClass('hidden', !self.options.use || self.usesStyle());
     },
-    updateSize: function () {
+    updateSize: function() {
       self.elements.visibles.css({
         width: self.getDisplayWidth()
       });
@@ -267,15 +267,15 @@ module.exports.template = (function () {
         height: self.getInternalHeight()
       });
     },
-    isDirty: function () {
+    isDirty: function() {
       return parseFloat(self.elements.visibles.css('width')) !== self.getDisplayWidth() ||
         parseFloat(self.elements.visibles.attr('width')) !== self.getInternalWidth() ||
         parseFloat(self.elements.visibles.attr('height')) !== self.getInternalHeight();
     },
-    disableTemplate: function () {
+    disableTemplate: function() {
       self._update({ url: null });
     },
-    draw: function (ctx2, pxlX, pxlY) {
+    draw: function(ctx2, pxlX, pxlY) {
       if (!self.options.use) {
         return;
       }
@@ -289,7 +289,7 @@ module.exports.template = (function () {
       ctx2.globalAlpha = settings.board.template.opacity.get();
       ctx2.drawImage(self.elements.template[0], (self.options.x - pxlX) * scale, (self.options.y - pxlY) * scale, width * scale, height * scale);
     },
-    init: function () {
+    init: function() {
       board = require('./board').board;
       query = require('./query').query;
       uiHelper = require('./uiHelper').uiHelper;
@@ -339,7 +339,7 @@ module.exports.template = (function () {
 
       self.updateSettings();
 
-      $(window).keydown(function (evt) {
+      $(window).keydown(function(evt) {
         if (['INPUT', 'TEXTAREA'].includes(evt.target.nodeName)) {
           // prevent inputs from triggering shortcuts
           return;
@@ -389,17 +389,17 @@ module.exports.template = (function () {
       };
       self.elements.visibles.data(
         'dragging', false
-      ).on('mousedown pointerdown', function (evt) {
+      ).on('mousedown pointerdown', function(evt) {
         evt.preventDefault();
         $(this).data('dragging', true);
         drag.x = evt.clientX;
         drag.y = evt.clientY;
         evt.stopPropagation();
-      }).on('mouseup pointerup', function (evt) {
+      }).on('mouseup pointerup', function(evt) {
         evt.preventDefault();
         $(this).data('dragging', false);
         evt.stopPropagation();
-      }).on('mousemove pointermove', function (evt) {
+      }).on('mousemove pointermove', function(evt) {
         evt.preventDefault();
         if ($(this).data('dragging')) {
           if (!evt.ctrlKey && !evt.altKey) {
@@ -423,7 +423,7 @@ module.exports.template = (function () {
         }
       });
 
-      self.elements.styleImage.on('load', function (e) {
+      self.elements.styleImage.on('load', function(e) {
         self.loadStyle(!self.loading);
       });
 
@@ -446,7 +446,7 @@ module.exports.template = (function () {
       }
       board.getRenderBoard().parent().prepend(self.elements.visibles);
     },
-    webinit: function (data) {
+    webinit: function(data) {
       self.initGl(self.elements.template[0].getContext('webgl', {
         premultipliedAlpha: false
       }), data.palette);
@@ -457,55 +457,55 @@ module.exports.template = (function () {
         self.rasterizeTemplate();
       }
     },
-    stopDragging: function () {
+    stopDragging: function() {
       if (self.options.use) {
         self.elements.visibles.css('pointer-events', 'none').data('dragging', false);
       }
     },
-    setPixelated: function (pixelate = true) {
+    setPixelated: function(pixelate = true) {
       self.elements.visibles.toggleClass('pixelate', pixelate);
     },
-    getWidthRatio: function () {
+    getWidthRatio: function() {
       if (self.usesStyle()) {
         return self.getInternalWidth() / self.getDisplayWidth();
       } else {
         return self.getSourceWidth() / self.getDisplayWidth();
       }
     },
-    getDownscaleWidthRatio: function () {
+    getDownscaleWidthRatio: function() {
       return self.getSourceWidth() / self.getDisplayWidth();
     },
-    getDownscaleHeightRatio: function () {
+    getDownscaleHeightRatio: function() {
       return self.getSourceHeight() / self.getDisplayHeight();
     },
-    getDisplayWidth: function () {
+    getDisplayWidth: function() {
       return Math.round(self.options.width >= 0 ? self.options.width : self.getSourceWidth());
     },
-    getDisplayHeight: function () {
+    getDisplayHeight: function() {
       return Math.round(self.getDisplayWidth() * self.getAspectRatio());
     },
-    getStyleWidth: function () {
+    getStyleWidth: function() {
       return self.elements.styleImage[0].naturalWidth / STYLES_X;
     },
-    getStyleHeight: function () {
+    getStyleHeight: function() {
       return self.elements.styleImage[0].naturalHeight / STYLES_Y;
     },
-    getSourceWidth: function () {
+    getSourceWidth: function() {
       return self.elements.sourceImage[0].naturalWidth;
     },
-    getSourceHeight: function () {
+    getSourceHeight: function() {
       return self.elements.sourceImage[0].naturalHeight;
     },
-    getAspectRatio: function () {
+    getAspectRatio: function() {
       return self.getSourceWidth() === 0 ? 1 : self.getSourceHeight() / self.getSourceWidth();
     },
-    getInternalWidth: function () {
+    getInternalWidth: function() {
       return self.getDisplayWidth() * self.getStyleWidth();
     },
-    getInternalHeight: function () {
+    getInternalHeight: function() {
       return self.getDisplayHeight() * self.getStyleHeight();
     },
-    loadStyle: function (redraw = true) {
+    loadStyle: function(redraw = true) {
       const style = self.elements.styleImage[0];
       if (self.gl.context !== null && style.naturalWidth !== 0 && style.naturalHeight !== 0) {
         self.gl.context.activeTexture(self.gl.context.TEXTURE1);
@@ -523,7 +523,7 @@ module.exports.template = (function () {
         }
       }
     },
-    initGl: function (context, palette) {
+    initGl: function(context, palette) {
       self.gl.context = context;
       if (self.gl.context === null) {
         console.info('WebGL is unsupported on this system');
@@ -618,7 +618,7 @@ module.exports.template = (function () {
           return distance(0.5*rgb2ictcp(col1) - 0.5*rgb2ictcp(col2));
         }
       `;
-      
+
       const diffRedmean = `
         float diffRedmean(vec3 c1, vec3 c2){
           vec3 delta2 = 65025. * (c1-c2) * (c1-c2) ;
@@ -626,7 +626,7 @@ module.exports.template = (function () {
           return (2.+r_bar/256.)*delta2.r + 4. * delta2.g + (2.+(255.-r_bar)/256.)*delta2.b;
         }
       `;
-      const distanceFunctions = {'diffRedmean': diffRedmean, 'diffEITP': diffEITP, 'diffLuma': diffLuma};
+      const distanceFunctions = { diffRedmean: diffRedmean, diffEITP: diffEITP, diffLuma: diffLuma };
 
       const downscalingFragmentShader = (comparisonFunctionName = null) => `
         precision mediump float;
@@ -749,7 +749,7 @@ module.exports.template = (function () {
       self.gl.context.uniform1i(self.gl.context.getUniformLocation(self.gl.programs.stylize, 'u_Template'), 0);
       self.gl.context.uniform1i(self.gl.context.getUniformLocation(self.gl.programs.stylize, 'u_Style'), 1);
     },
-    createGlProgram: function (vertexSource, fragmentSource) {
+    createGlProgram: function(vertexSource, fragmentSource) {
       const program = self.gl.context.createProgram();
       self.gl.context.attachShader(program, self.createGlShader(self.gl.context.VERTEX_SHADER, vertexSource));
       self.gl.context.attachShader(program, self.createGlShader(self.gl.context.FRAGMENT_SHADER, fragmentSource));
@@ -759,7 +759,7 @@ module.exports.template = (function () {
       }
       return program;
     },
-    createGlShader: function (type, source) {
+    createGlShader: function(type, source) {
       const shader = self.gl.context.createShader(type);
       self.gl.context.shaderSource(shader, source);
       self.gl.context.compileShader(shader);
@@ -768,7 +768,7 @@ module.exports.template = (function () {
       }
       return shader;
     },
-    createGlTexture: function () {
+    createGlTexture: function() {
       const texture = self.gl.context.createTexture();
       self.gl.context.bindTexture(self.gl.context.TEXTURE_2D, texture);
       self.gl.context.texParameteri(self.gl.context.TEXTURE_2D, self.gl.context.TEXTURE_WRAP_S, self.gl.context.CLAMP_TO_EDGE);
@@ -777,11 +777,11 @@ module.exports.template = (function () {
       self.gl.context.texParameteri(self.gl.context.TEXTURE_2D, self.gl.context.TEXTURE_MAG_FILTER, self.gl.context.NEAREST);
       return texture;
     },
-    rasterizeTemplate: function () {
+    rasterizeTemplate: function() {
       self.downscaleTemplate();
       self.stylizeTemplate();
     },
-    downscaleTemplate: function () {
+    downscaleTemplate: function() {
       const width = self.getDisplayWidth();
       const height = self.getDisplayHeight();
       if (self.gl.context == null || width === 0 || height === 0) {
@@ -836,7 +836,7 @@ module.exports.template = (function () {
 
       self.gl.context.drawArrays(self.gl.context.TRIANGLE_STRIP, 0, 4);
     },
-    stylizeTemplate: function () {
+    stylizeTemplate: function() {
       self.updateSize();
 
       const width = self.getInternalWidth();
