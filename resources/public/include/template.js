@@ -615,7 +615,7 @@ module.exports.template = (function() {
           }
 
         float diffEITP(vec3 col1, vec3 col2) {
-          return distance(0.5*rgb2ictcp(col1) - 0.5*rgb2ictcp(col2));
+          return length(rgb2ictcp(col1) - rgb2ictcp(col2));
         }
       `;
 
