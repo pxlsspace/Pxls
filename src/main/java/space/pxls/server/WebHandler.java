@@ -1925,7 +1925,7 @@ public class WebHandler {
     public void lookup(HttpServerExchange exchange) {
         User user = exchange.getAttachment(AuthReader.USER);
 
-        if (user.isBanned()) {
+        if (user != null && user.isBanned()) {
             send(StatusCodes.FORBIDDEN, exchange, "");
             return;
         }
