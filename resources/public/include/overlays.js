@@ -142,11 +142,10 @@ module.exports.overlays = (function() {
 
       // create default overlays
 
-      async function createOverlayImageData(basepath, placepath, color, dataXOR = 0) {
-        // we use xhr directly because of jquery being weird on raw binary
-        const overlayData = await binaryAjax(basepath + '?_' + (new Date()).getTime());
+      async function createOverlayImageData(fetchOverlayData, fetchPlacemapData, color, dataXOR = 0) {
+        const overlayData = await fetchOverlayData;
         const imageData = createImageData(width, height);
-        const placemapData = await binaryAjax(placepath + '?_' + (new Date()).getTime());
+        const placemapData = await fetchPlacemapData;
 
         const intView = new Uint32Array(imageData.data.buffer);
         for (let i = 0; i < width * height; i++) {
@@ -161,9 +160,14 @@ module.exports.overlays = (function() {
         return imageData;
       }
 
+      // we use xhr directly because of jquery being weird on raw binary
+      const fetchVirginData = binaryAjax('/virginmap?_' + (new Date()).getTime());
+      const fetchHeatData = binaryAjax('/heatmap?_' + (new Date()).getTime());
+      const fetchPlaceData = binaryAjax('/placemap?_' + (new Date()).getTime());
+
       // virginmap stuff
-      const virginbackground = self.add('virginbackground', () => createOverlayImageData('/virginmap', '/placemap', 0x0000FF00, 0x00));
-      const virginmap = self.add('virginmap', () => createOverlayImageData('/virginmap', '/placemap', 0x00000000, 0xff), (width, height, isReload) => {
+      const virginbackground = self.add('virginbackground', () => createOverlayImageData(fetchVirginData, fetchPlaceData, 0x0000FF00, 0x00));
+      const virginmap = self.add('virginmap', () => createOverlayImageData(fetchVirginData, fetchPlaceData, 0x00000000, 0xff), (width, height, isReload) => {
         if (isReload) {
           return;
         }
@@ -203,8 +207,8 @@ module.exports.overlays = (function() {
       });
 
       // heatmap stuff
-      const heatbackground = self.add('heatbackground', () => createOverlayImageData('/heatmap', '/placemap', 0xFF000000));
-      const heatmap = self.add('heatmap', () => createOverlayImageData('/heatmap', '/placemap', 0x005C5CCD), (width, height, isReload) => {
+      const heatbackground = self.add('heatbackground', () => createOverlayImageData(fetchHeatData, fetchPlaceData, 0xFF000000));
+      const heatmap = self.add('heatmap', () => createOverlayImageData(fetchHeatData, fetchPlaceData, 0x005C5CCD), (width, height, isReload) => {
         // Ran when lazy init finshes
         if (isReload) {
           return;
