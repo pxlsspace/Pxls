@@ -64,7 +64,7 @@ module.exports.overlays = (function() {
       setShown: function(value = self.isShown) {
         self.isShown = value === true;
 
-        if (!self.lazyInitStarted) {
+        if (self.isShown && !self.lazyInitStarted) {
           self.lazyInit();
         }
 
