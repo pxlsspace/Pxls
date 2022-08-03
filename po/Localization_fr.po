@@ -1374,8 +1374,8 @@ msgstr "Charity (modèles, contrôleurs, etc...)"
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
-msgid "Archives, timelapses, and other utilities"
-msgstr "Archives, timelapses et autres outils"
+msgid "Archives"
+msgstr "Archives"
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html

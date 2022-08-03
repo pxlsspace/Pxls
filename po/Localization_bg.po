@@ -1374,8 +1374,8 @@ msgstr ""
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
-msgid "Archives, timelapses, and other utilities"
-msgstr "Архиви и др."
+msgid "Archives"
+msgstr "Архиви"
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html

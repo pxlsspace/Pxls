@@ -1374,8 +1374,8 @@ msgstr "Charity (шаблоны, мониторинг и т.д.)"
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
-msgid "Archives, timelapses, and other utilities"
-msgstr "Aрхивы, таймлапсы, и другие возможности"
+msgid "Archives"
+msgstr "Aрхивы"
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
