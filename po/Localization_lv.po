@@ -1148,8 +1148,8 @@ msgstr "Kā man izveidot šablonu?"
 
 
 #: resources/public/pebble_templates/faq.html
-msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or PxlsFiddle."
-msgstr "Šablons ir saite uz attēlu kura ir ievietota šablona teksta lodziņā, iestatījumu panelī, kuru tad var novietot uz kanvas. Jūs varat izmantot parastu attēla saiti uz jūsu pikseļu zīmējumu, bet daudzi izmanto trešās puses rīkus, kā piemēram, <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> vai <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a>. Ja jums pašiem vajag izveidot pikseļu zīmejumu, jūs varat izmantot <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a>, kuru tad var ielikt iekšā Charity vai PxlsFiddle."
+msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://discord.gg/5MVDCq53vC\" target=\"blank\">Clueless</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or Clueless."
+msgstr "Šablons ir saite uz attēlu kura ir ievietota šablona teksta lodziņā, iestatījumu panelī, kuru tad var novietot uz kanvas. Jūs varat izmantot parastu attēla saiti uz jūsu pikseļu zīmējumu, bet daudzi izmanto trešās puses rīkus, kā piemēram, <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> vai <a href=\"https://discord.gg/5MVDCq53vC\" target=\"blank\">Clueless</a>. Ja jums pašiem vajag izveidot pikseļu zīmejumu, jūs varat izmantot <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a>, kuru tad var ielikt iekšā Charity vai Clueless."
 
 #: resources/public/pebble_templates/faq.html
 msgid "How do I move a template?"
@@ -1386,13 +1386,13 @@ msgstr "Charity (šabloni, grafiki, utt.)"
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
-msgid "Template generator, archives, timelapses, and other utilities"
-msgstr "Pxls šablonu veidotājs, arhīvi, video, grafiki u.c."
+msgid "Archives, timelapses, and other utilities"
+msgstr "Arhīvi, video, grafiki u.c."
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
-msgid "PxlsFiddle (templates, archives, etc.)"
-msgstr "PxlsFiddle(šabloni, arhīvi, utt.)"
+msgid "PxlsFiddle (archives)"
+msgstr "PxlsFiddle (arhīvi)"
 
 #: resources/public/pebble_templates/info.html
 msgid "Donate"
@@ -1728,6 +1728,10 @@ msgstr "Atvērt pašreizējā cilnē (aizstājot šablonu)"
 #: resources/public/include/chat.js
 msgid "Jump to coordinates without replacing template"
 msgstr "Aizlekt uz koordināti neaizstājot šablonu"
+
+#: resources/public/include/chat.js
+msgid "Please upload your template image to a third-party image host."
+msgstr ""
 
 #: resources/public/include/chat.js
 msgid "You must be logged in to chat."

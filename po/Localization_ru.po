@@ -1138,8 +1138,8 @@ msgid "How do I make a template?"
 msgstr "Как мне сделать шаблон?"
 
 #: resources/public/pebble_templates/faq.html
-msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or PxlsFiddle."
-msgstr "Шаблон — это ссылка на изображение, которая размещена в текстовом поле шаблона на панели настроек, чтобы вы могли поместить ее на холст. Вы можете использовать обычную ссылку на изображение для своего пиксельного арта, но многие люди используют сторонние инструменты, такие как <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> или <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> чтобы превратить пиксель-арт в более красивую ссылку. Если вам нужно сделать пиксель-арт самостоятельно, вы можете использовать <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> для создания артов и для размещения их в Charity или PxlsFiddle."
+msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://discord.gg/5MVDCq53vC\" target=\"blank\">Clueless</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or Clueless."
+msgstr "Шаблон — это ссылка на изображение, которая размещена в текстовом поле шаблона на панели настроек, чтобы вы могли поместить ее на холст. Вы можете использовать обычную ссылку на изображение для своего пиксельного арта, но многие люди используют сторонние инструменты, такие как <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> или <a href=\"https://discord.gg/5MVDCq53vC\" target=\"blank\">Clueless</a> чтобы превратить пиксель-арт в более красивую ссылку. Если вам нужно сделать пиксель-арт самостоятельно, вы можете использовать <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> для создания артов и для размещения их в Charity или Clueless."
 
 #: resources/public/pebble_templates/faq.html
 msgid "How do I move a template?"
@@ -1374,13 +1374,13 @@ msgstr "Charity (шаблоны, мониторинг и т.д.)"
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
-msgid "Template generator, archives, timelapses, and other utilities"
-msgstr "Генератор шаблона, архивы, таймлапсы, и другие возможности"
+msgid "Archives, timelapses, and other utilities"
+msgstr "Aрхивы, таймлапсы, и другие возможности"
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
-msgid "PxlsFiddle (templates, archives, etc.)"
-msgstr "PxlsFiddle (шаблоны, архивы, и т.д.)"
+msgid "PxlsFiddle (archives)"
+msgstr "PxlsFiddle (архивы)"
 
 #: resources/public/pebble_templates/info.html
 msgid "Donate"
@@ -1712,6 +1712,10 @@ msgstr "Открыть в текущей вкладке (заменить шаб
 #: resources/public/include/chat.js
 msgid "Jump to coordinates without replacing template"
 msgstr "Перейти к координатам без замены шаблона"
+
+#: resources/public/include/chat.js
+msgid "Please upload your template image to a third-party image host."
+msgstr "Пожалуйста, загрузите изображение вашего шаблона на сторонний хостинг."
 
 #: resources/public/include/chat.js
 msgid "You must be logged in to chat."

@@ -1138,7 +1138,7 @@ msgid "How do I make a template?"
 msgstr "Как да направя шаблон?"
 
 #: resources/public/pebble_templates/faq.html
-msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or PxlsFiddle."
+msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://discord.gg/5MVDCq53vC\" target=\"blank\">Clueless</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or Clueless."
 msgstr ""
 
 #: resources/public/pebble_templates/faq.html
@@ -1374,13 +1374,13 @@ msgstr ""
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
-msgid "Template generator, archives, timelapses, and other utilities"
-msgstr "Генератор на шаблони, архиви и др."
+msgid "Archives, timelapses, and other utilities"
+msgstr "Архиви и др."
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
-msgid "PxlsFiddle (templates, archives, etc.)"
-msgstr "PxlsFiddle (шаблони, архиви и др.)"
+msgid "PxlsFiddle (archives)"
+msgstr "PxlsFiddle (архиви)"
 
 #: resources/public/pebble_templates/info.html
 msgid "Donate"
@@ -1712,6 +1712,10 @@ msgstr "Отвори в сегашния раздел, заменяйки сег
 #: resources/public/include/chat.js
 msgid "Jump to coordinates without replacing template"
 msgstr "Посети координатите без смяна на шаблона"
+
+#: resources/public/include/chat.js
+msgid "Please upload your template image to a third-party image host."
+msgstr ""
 
 #: resources/public/include/chat.js
 msgid "You must be logged in to chat."
