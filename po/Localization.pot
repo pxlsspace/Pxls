@@ -1378,7 +1378,7 @@ msgstr ""
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
-msgid "Archives, timelapses, and other utilities"
+msgid "Archives"
 msgstr ""
 
 #. link to pxlsfiddle.com

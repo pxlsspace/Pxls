@@ -1386,8 +1386,8 @@ msgstr "Charity (šabloni, grafiki, utt.)"
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
-msgid "Archives, timelapses, and other utilities"
-msgstr "Arhīvi, video, grafiki u.c."
+msgid "Archives"
+msgstr "Arhīvi"
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
