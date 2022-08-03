@@ -1654,14 +1654,16 @@ li.chat-line[data-id] .reply-button:hover {
 }
 
 .chat-wrapper .chat-hints {
-    font-family: monospace;
-    font-size: 1.3rem;
+    display: none;
     font-weight: bold;
-    position: absolute;
-    bottom: 3.5rem;
+    transform: translateY(-100%);
+    position: relative;
     width: calc(100% - 16px);
-    background-color: #555d;
+    background-color: var(--input-background);
     color: #ff8c00;
+    padding: 5px;
+    z-index: 2;
+    border-radius: 5px;
 }
 
 .chat-wrapper .chat-controls textarea {

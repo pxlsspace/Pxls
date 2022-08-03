@@ -57,6 +57,7 @@ const chat = (function() {
       rate_limit_overlay: $('.chat-ratelimit-overlay'),
       rate_limit_counter: $('#chat-ratelimit'),
       chat_panel: $('.panel[data-panel=chat]'),
+      chat_hints: $('.chat-hints'),
       chat_hint: $('#chat-hint'),
       chat_settings_button: $('#btnChatSettings'),
       pings_button: $('#btnPings'),
@@ -427,12 +428,27 @@ const chat = (function() {
 
       self.elements.rate_limit_overlay.hide();
 
-      self.elements.input.on('keydown', e => {
+      let allowSend = true;
+
+      self.elements.input.on('keydown keyup', e => {
         e.stopPropagation();
         const toSend = self.elements.input[0].value;
         const trimmed = toSend.trim();
+
+        if (decodeURIComponent(trimmed).includes('data:image')) {
+          allowSend = false;
+          self.showHint(__('Please upload your template image to a third-party image host.'), true);
+        } else {
+          allowSend = true;
+          self.hideHints();
+        }
+
         if ((e.originalEvent.key === 'Enter' || e.originalEvent.which === 13) && !e.shiftKey) {
           e.preventDefault();
+
+          if (!allowSend) {
+            return;
+          }
 
           if (trimmed.length === 0) {
             return;
@@ -1037,7 +1053,11 @@ const chat = (function() {
       return needle >= (haystack - drift) && needle <= (haystack + drift);
     },
     showHint: (msg, isError = false) => {
+      self.elements.chat_hints.show();
       self.elements.chat_hint.toggleClass('text-red', isError === true).text(msg);
+    },
+    hideHints: () => {
+      self.elements.chat_hints.hide();
     },
     addServerAction: msg => {
       const when = moment();
