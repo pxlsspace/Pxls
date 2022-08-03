@@ -28,6 +28,40 @@ module.exports.analytics = function() {
     window.ga.apply(this, arguments);
   }
 };
+
+class LazyPromise extends Promise {
+  constructor(execute) {
+    super(resolve => {
+      resolve();
+    });
+    this.execute = execute;
+    this.promise = null;
+  }
+
+  static wrap(createPromise) {
+    return new LazyPromise(resolve => {
+      resolve(createPromise());
+    });
+  }
+
+  then(onFulfilled, onRejected) {
+    this.promise = this.promise || new Promise(this.execute);
+    this.promise.then(onFulfilled, onRejected);
+  }
+
+  catch(onRejected) {
+    this.promise = this.promise || new Promise(this.execute);
+    this.promise.catch(onRejected);
+  }
+
+  finally(onFinally) {
+    this.promise = this.promise || new Promise(this.execute);
+    this.promise.finally(onFinally);
+  }
+}
+
+module.exports.LazyPromise = LazyPromise;
+
 const nua = navigator.userAgent;
 let haveImageRendering = (function() {
   const checkImageRendering = function(prefix, crisp, pixelated, optimizeContrast) {
