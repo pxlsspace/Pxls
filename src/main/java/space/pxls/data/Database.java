@@ -131,7 +131,8 @@ public class Database {
                     "id SERIAL NOT NULL PRIMARY KEY," +
                     "who INT," +
                     "time TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
-                    "ip INET)")
+                    "ip INET," +
+                    "pixel INT REFERENCES pixels(id))")
                     .execute();
             // admin_log
             handle.createUpdate("CREATE TABLE IF NOT EXISTS admin_log (" +
@@ -1288,12 +1289,14 @@ public class Database {
     /**
      * @param who The {@link User}'s ID.
      * @param ip The {@link User}'s IP.
+     * @param pixel The {@link DBPixelPlacement} given to the user by the lookup.
      * @return The inserted row ID.
      */
-    public Integer insertLookup(Integer who, String ip) {
-        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO lookups (who, ip) VALUES (:who, :ip::INET)")
+    public Integer insertLookup(Integer who, String ip, Integer pixel) {
+        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO lookups (who, ip, pixel) VALUES (:who, :ip::INET, :pixel)")
                 .bind("who", who)
                 .bind("ip", ip)
+                .bind("pixel", pixel)
                 .execute());
     }
 

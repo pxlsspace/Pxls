@@ -1925,7 +1925,7 @@ public class WebHandler {
     public void lookup(HttpServerExchange exchange) {
         User user = exchange.getAttachment(AuthReader.USER);
 
-        if (user.isBanned()) {
+        if (user != null && user.isBanned()) {
             send(StatusCodes.FORBIDDEN, exchange, "");
             return;
         }
@@ -1950,11 +1950,6 @@ public class WebHandler {
         exchange.getResponseHeaders()
                 .put(Headers.CONTENT_TYPE, "application/json")
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
-        if (user == null) {
-            App.getDatabase().insertLookup(null, exchange.getAttachment(IPReader.IP));
-        } else {
-            App.getDatabase().insertLookup(user.getId(), exchange.getAttachment(IPReader.IP));
-        }
 
         Lookup lookup;
         if (user != null && user.hasPermission("board.check")) {
@@ -1965,6 +1960,20 @@ public class WebHandler {
                 lookup = lookup.asSnipRedacted();
             }
         }
+        
+        Integer id;
+        if (lookup == null) {
+            id = null;
+        } else {
+            id = lookup.id;
+        }
+
+        if (user == null) {
+            App.getDatabase().insertLookup(null, exchange.getAttachment(IPReader.IP), id);
+        } else {
+            App.getDatabase().insertLookup(user.getId(), exchange.getAttachment(IPReader.IP), id);
+        }
+
         exchange.getResponseSender().send(App.getGson().toJson(lookup));
     }
 
