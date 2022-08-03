@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-04-09T16:49:48.488Z\n"
+"POT-Creation-Date: 2022-05-05T21:00:41.313Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -1697,6 +1697,10 @@ msgstr ""
 msgid "Alert"
 msgstr ""
 
+#: resources/public/include/board.js
+msgid "The canvas is now locked. Press L to unlock."
+msgstr ""
+
 #. Snapshot save name
 #: resources/public/include/board.js
 msgid "pxls canvas"
@@ -1717,6 +1721,10 @@ msgstr ""
 
 #: resources/public/include/chat.js
 msgid "Jump to coordinates without replacing template"
+msgstr ""
+
+#: resources/public/include/chat.js
+msgid "Please upload your template image to a third-party image host."
 msgstr ""
 
 #: resources/public/include/chat.js
