@@ -1715,7 +1715,7 @@ msgstr "Перейти к координатам без замены шабло�
 
 #: resources/public/include/chat.js
 msgid "Please upload your template image to a third-party image host."
-msgstr ""
+msgstr "Пожалуйста, загрузите изображение вашего шаблона на сторонний хостинг."
 
 #: resources/public/include/chat.js
 msgid "You must be logged in to chat."
