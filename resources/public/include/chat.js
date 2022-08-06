@@ -435,7 +435,14 @@ const chat = (function() {
         const toSend = self.elements.input[0].value;
         const trimmed = toSend.trim();
 
-        if (decodeURIComponent(trimmed).includes('data:image')) {
+        let decoded = trimmed;
+        try {
+          decoded = decodeURIComponent(trimmed);
+        } catch (err) {
+          // should not fail if malformed
+        }
+
+        if (decoded.includes('data:image')) {
           allowSend = false;
           self.showHint(__('Please upload your template image to a third-party image host.'), true);
         } else {
