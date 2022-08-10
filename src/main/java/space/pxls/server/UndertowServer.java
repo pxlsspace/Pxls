@@ -242,6 +242,19 @@ public class UndertowServer {
         });
     }
 
+    public void broadcastPredicateSeparateForStaff(Object nonStaffObj, Object staffObj, Predicate<PxlsWebSocketConnection> predicate) {
+        String nonStaffJSON = nonStaffObj != null ? App.getGson().toJson(nonStaffObj) : null;
+        String staffJSON = staffObj != null ? App.getGson().toJson(staffObj) : null;
+        broadcastMapped(con -> {
+            if (predicate.test(con)) {
+                boolean sendStaffObject = con.getUser().isPresent() && userCanReceiveStaffBroadcasts.test(con.getUser().get());
+                return sendStaffObject ? staffJSON : nonStaffJSON;
+            } else {
+                return null;
+            }
+        });
+    }
+
     public void broadcastMapped(Function<PxlsWebSocketConnection, String> mapper) {
         connections.parallelStream()
                 .forEach(con -> {

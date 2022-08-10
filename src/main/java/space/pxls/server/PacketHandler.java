@@ -26,6 +26,7 @@ import java.time.Instant;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import java.util.function.Predicate;
 
 import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
@@ -488,7 +489,10 @@ public class PacketHandler {
                     staffPacket = App.getConfig().getBoolean("chat.showShadowBannedMessagesToStaff") ? staffPacket : null;
                 }
                 if (userPacket != null || staffPacket != null) {
-                    server.broadcastSeparateForStaff(userPacket, staffPacket);
+                    Predicate<PxlsWebSocketConnection> userCanReadChat = con -> con.getUser()
+                        .map(predicateUser -> predicateUser.hasPermission("chat.read"))
+                        .orElse(false);
+                    server.broadcastPredicateSeparateForStaff(userPacket, staffPacket, userCanReadChat);
                     if(userPacket != null) {
                         relayChatMessageToWebhooks(userPacket.getMessage(), App.getConfig().getStringList("chat.publicWebhooks"));
                     }
