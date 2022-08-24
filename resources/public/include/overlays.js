@@ -143,10 +143,8 @@ module.exports.overlays = (function() {
       // create default overlays
 
       async function createOverlayImageData(fetchOverlayData, fetchPlacemapData, color, dataXOR = 0) {
-        // we use xhr directly because of jquery being weird on raw binary
-        const overlayData = await fetchOverlayData;
+        const [overlayData, placemapData] = await Promise.all([fetchOverlayData, fetchPlacemapData]);
         const imageData = createImageData(width, height);
-        const placemapData = await fetchPlacemapData;
 
         const intView = new Uint32Array(imageData.data.buffer);
         for (let i = 0; i < width * height; i++) {
