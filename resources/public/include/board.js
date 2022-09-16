@@ -450,6 +450,8 @@ const board = (function() {
       const { chromeOffsetWorkaround } = require('./chromeOffsetWorkaround');
 
       $.get('/info', async (data) => {
+        self.webInfo = data;
+        lookup.webinit();
         overlays.webinit(data);
         user.webinit(data);
         self.width = data.width;
@@ -460,7 +462,6 @@ const board = (function() {
         chat.webinit(data);
         uiHelper.initBanner(data.chatBannerText);
         chromeOffsetWorkaround.update();
-        self.webInfo = data;
         if (data.captchaKey) {
           $('.g-recaptcha').attr('data-sitekey', data.captchaKey);
 

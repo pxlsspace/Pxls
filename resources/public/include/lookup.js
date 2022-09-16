@@ -208,7 +208,7 @@ module.exports.lookup = (function() {
         self.elements.lookup.fadeIn(200);
       });
     },
-    init: function() {
+    webinit: function() {
       board = require('./board').board;
 
       // Register default hooks
@@ -221,6 +221,7 @@ module.exports.lookup = (function() {
         }, {
           id: 'username',
           name: __('Username'),
+          sensitive: board.snipMode,
           get: data => data.username
             ? !board.snipMode
               ? crel('a', {
