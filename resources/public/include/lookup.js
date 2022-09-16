@@ -234,6 +234,7 @@ module.exports.lookup = (function() {
         }, {
           id: 'faction',
           name: __('Faction'),
+          sensitive: board.snipMode,
           get: data => data.faction || null
         }, {
           id: 'origin',
@@ -275,14 +276,17 @@ module.exports.lookup = (function() {
         }, {
           id: 'pixels',
           name: __('Pixels'),
+          sensitive: board.snipMode,
           get: data => data.pixelCount
         }, {
           id: 'pixels_alltime',
           name: __('Alltime Pixels'),
+          sensitive: board.snipMode,
           get: data => data.pixelCountAlltime
         }, {
           id: 'discord_name',
           name: __('Discord'),
+          sensitive: board.snipMode,
           get: data => data.discordName
         }
       );
