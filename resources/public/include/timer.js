@@ -97,6 +97,7 @@ module.exports.timer = (function() {
 
       if (!self.hasFiredNotification) {
         self.playAudio();
+        self.playVibration();
         if (!document.hasFocus()) {
           const notif = nativeNotifications.maybeShow(__('Your next pixel is available!'));
           if (notif) {
@@ -128,6 +129,9 @@ module.exports.timer = (function() {
         self.audio.play();
       }
     },
+    playVibration: function() {
+      window.navigator.vibrate(200);
+    },
     getCurrentTimer: function() {
       return self.currentTimer;
     }
@@ -136,6 +140,7 @@ module.exports.timer = (function() {
     init: self.init,
     cooledDown: self.cooledDown,
     playAudio: self.playAudio,
+    playVibration: self.playVibration,
     getCurrentTimer: self.getCurrentTimer,
     audioElem: self.audio
   };
