@@ -378,6 +378,9 @@ module.exports.settings = (function() {
         volume: setting('audio.alert.volume', SettingType.RANGE, 1, $('#setting-audio-alert-volume'))
       }
     },
+    vibration: {
+      enable: setting('vibration.enable', SettingType.TOGGLE, false, $('#setting-vibration-enable'))
+    },
     board: {
       heatmap: {
         enable: setting('board.heatmap.enable', SettingType.TOGGLE, false, $('#setting-board-heatmap-enable')),

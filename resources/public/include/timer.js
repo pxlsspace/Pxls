@@ -130,7 +130,9 @@ module.exports.timer = (function() {
       }
     },
     playVibration: function() {
-      window.navigator.vibrate(200);
+      if (settings.vibration.enable.get()) {
+        window.navigator.vibrate(400);
+      }
     },
     getCurrentTimer: function() {
       return self.currentTimer;
