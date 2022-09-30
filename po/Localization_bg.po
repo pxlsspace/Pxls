@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-04-09T15:04:32.029Z\n"
+"POT-Creation-Date: 2022-09-29T20:37:34.118Z\n"
 "Language: bg\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -93,6 +93,7 @@ msgid "Close Panel"
 msgstr "Затворете панела"
 
 #: resources/public/pebble_templates/index.html
+#: resources/public/include/chat.js
 msgid "Chat"
 msgstr "Чат"
 
@@ -107,6 +108,11 @@ msgstr "Настройки"
 #: resources/public/pebble_templates/index.html
 msgid "Jump To Bottom"
 msgstr "Слезте до дъното"
+
+#: resources/public/pebble_templates/index.html
+#: resources/public/include/chat.js
+msgid "On"
+msgstr ""
 
 #. Open emoji picker
 #: resources/public/pebble_templates/index.html
@@ -1027,6 +1033,14 @@ msgid "Delay (seconds):"
 msgstr "Закъснение (в секунди)"
 
 #: resources/public/pebble_templates/index.html
+msgid "Vibration"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Enable vibration"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
 msgid "chat mentions;chat pings;chat sound"
 msgstr "споменаване;тагване;пингване"
 
@@ -1691,6 +1705,10 @@ msgstr "Действието, което се опитвате да извърш
 msgid "Alert"
 msgstr "Внимание"
 
+#: resources/public/include/board.js
+msgid "The canvas is now locked. Press L to unlock."
+msgstr ""
+
 #. Snapshot save name
 #: resources/public/include/board.js
 msgid "pxls canvas"
@@ -1719,6 +1737,14 @@ msgstr ""
 
 #: resources/public/include/chat.js
 msgid "You must be logged in to chat."
+msgstr ""
+
+#: resources/public/include/chat.js
+msgid "No Results"
+msgstr ""
+
+#: resources/public/include/chat.js
+msgid "Reply"
 msgstr ""
 
 #: resources/public/include/chat.js
@@ -1807,12 +1833,12 @@ msgid "You are reporting a chat message from ${reportTarget} with the content:"
 msgstr ""
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
-msgid "Error sending report."
-msgstr "Грешка при изпращането на докладване."
-
-#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Sent report!"
 msgstr ""
+
+#: resources/public/include/chat.js resources/public/include/lookup.js
+msgid "Error sending report."
+msgstr "Грешка при изпращането на докладване."
 
 #: resources/public/include/chat.js
 msgid "Report User"
@@ -1906,11 +1932,11 @@ msgid "Additional information:"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "Error occurred while chatbanning"
+msgid "Chatban initiated"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "Chatban initiated"
+msgid "Error occurred while chatbanning"
 msgstr ""
 
 #: resources/public/include/chat.js
@@ -1954,15 +1980,11 @@ msgid "Purge Reason"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "Error sending purge."
-msgstr ""
-
-#: resources/public/include/chat.js
 msgid "User purged"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "On"
+msgid "Error sending purge."
 msgstr ""
 
 #: resources/public/include/chat.js
@@ -1974,11 +1996,11 @@ msgid "Select one of the options below to set the current rename request state."
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "An unknown error occurred. Please contact a developer"
+msgid "Rename request updated"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "Rename request updated"
+msgid "An unknown error occurred. Please contact a developer"
 msgstr ""
 
 #: resources/public/include/chat.js
@@ -2038,11 +2060,11 @@ msgid "Other (specify below)"
 msgstr "Друго (пишете на английски)"
 
 #: resources/public/include/lookup.js
-msgid "Hide sensitive information"
+msgid "This pixel is background (was not placed by a user)."
 msgstr ""
 
 #: resources/public/include/lookup.js
-msgid "This pixel is background (was not placed by a user)."
+msgid "Hide sensitive information"
 msgstr ""
 
 #: resources/public/include/lookup.js
@@ -2194,16 +2216,16 @@ msgid "New Accounts Disabled"
 msgstr "Новите профили не са използваеми"
 
 #: resources/public/include/user.js
+msgid "online"
+msgstr ""
+
+#: resources/public/include/user.js
 msgid "Sign Out"
 msgstr "Изход"
 
 #: resources/public/include/user.js
 msgid "Are you sure you want to sign out?"
 msgstr "Сигурни ли сте, че искате да излезете?"
-
-#: resources/public/include/user.js
-msgid "online"
-msgstr ""
 
 #: resources/public/include/user.js
 msgid "You are permanently banned."

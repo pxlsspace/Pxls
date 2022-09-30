@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-04-03T04:05:27.870Z\n"
+"POT-Creation-Date: 2022-09-29T20:37:34.118Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -94,6 +94,7 @@ msgid "Close Panel"
 msgstr "Aizvērt Paneli"
 
 #: resources/public/pebble_templates/index.html
+#: resources/public/include/chat.js
 msgid "Chat"
 msgstr "Čats"
 
@@ -108,6 +109,11 @@ msgstr "Iestatījumi"
 #: resources/public/pebble_templates/index.html
 msgid "Jump To Bottom"
 msgstr "Aizlekt Uz Leju"
+
+#: resources/public/pebble_templates/index.html
+#: resources/public/include/chat.js
+msgid "On"
+msgstr ""
 
 #. Open emoji picker
 #: resources/public/pebble_templates/index.html
@@ -1036,6 +1042,14 @@ msgid "Delay (seconds):"
 msgstr "Aizkave (sekundēs):"
 
 #: resources/public/pebble_templates/index.html
+msgid "Vibration"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Enable vibration"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
 msgid "chat mentions;chat pings;chat sound"
 msgstr "čata pieminējumi;čata skaņa"
 
@@ -1145,7 +1159,6 @@ msgstr "Sazinieties ar mums <a href=\"https://pxls.space/discord\" target=\"_bla
 #: resources/public/pebble_templates/faq.html
 msgid "How do I make a template?"
 msgstr "Kā man izveidot šablonu?"
-
 
 #: resources/public/pebble_templates/faq.html
 msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://discord.gg/5MVDCq53vC\" target=\"blank\">Clueless</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or Clueless."
@@ -1408,7 +1421,7 @@ msgid "{0}''s Profile"
 msgstr "{0} Profils"
 
 #: resources/public/pebble_templates/profile.html
-#: resources/public/pebble_templates/40x.html
+#: resources/public/pebble_templates/40x.html resources/public/include/user.js
 msgid "My Profile"
 msgstr "Mans Profils"
 
@@ -1620,6 +1633,7 @@ msgid "Members of {0} ([{1}])"
 msgstr "{0} ([{1}]) biedri"
 
 #: resources/public/pebble_templates/profile.html
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Close"
 msgstr "Aizvērt"
 
@@ -1647,7 +1661,6 @@ msgstr "Frakcijas Bani"
 
 #: resources/public/pebble_templates/profile.html
 #: resources/public/include/chat.js resources/public/admin/admin.js
-#: resources/public/admin/admin.js
 msgid "Unban"
 msgstr "Noņemt banu"
 
@@ -1738,6 +1751,14 @@ msgid "You must be logged in to chat."
 msgstr "Jums ir nepieciešams pierakstīties lai izmantotu čatu."
 
 #: resources/public/include/chat.js
+msgid "No Results"
+msgstr ""
+
+#: resources/public/include/chat.js
+msgid "Reply"
+msgstr ""
+
+#: resources/public/include/chat.js
 msgid "none provided"
 msgstr "nav norādīts"
 
@@ -1772,6 +1793,15 @@ msgstr "Šī saite pārrakstīs pašreizejo šablonu. Ko jūs vēlētos darīt?"
 #: resources/public/include/chat.js
 msgid "Note: You can set a default action in the settings menu which bypasses this popup completely."
 msgstr "Piezīme: Jūs varat iestatīt noklusējuma darbību iestatījumos lai izlaistu šo logu pilnībā."
+
+#: resources/public/include/chat.js resources/public/include/lookup.js
+#: resources/public/include/user.js resources/public/admin/admin.js
+msgid "Cancel"
+msgstr "Atcelt"
+
+#: resources/public/include/chat.js
+msgid "OK"
+msgstr ""
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Report"
@@ -1809,10 +1839,13 @@ msgstr ""
 msgid "Enter a reason for your report"
 msgstr "Ievadiet iemeslu jūsu sūdzībai"
 
+#: resources/public/include/chat.js
+msgid "You are reporting a chat message from ${reportTarget} with the content:"
+msgstr ""
+
 #: resources/public/include/chat.js resources/public/include/lookup.js
-#: resources/public/include/user.js resources/public/admin/admin.js
-msgid "Cancel"
-msgstr "Atcelt"
+msgid "Sent report!"
+msgstr ""
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Error sending report."
@@ -1884,13 +1917,11 @@ msgstr ""
 
 #: resources/public/include/chat.js resources/public/include/uiHelper.js
 #: resources/public/include/user.js resources/public/admin/admin.js
-#: resources/public/admin/admin.js
 msgid "Yes"
 msgstr "Jā"
 
 #: resources/public/include/chat.js resources/public/include/uiHelper.js
 #: resources/public/include/user.js resources/public/admin/admin.js
-#: resources/public/admin/admin.js
 msgid "No"
 msgstr "Nē"
 
@@ -1903,12 +1934,17 @@ msgid "Custom reason"
 msgstr ""
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
+#: resources/public/admin/admin.js
 msgid "Additional information (if applicable)"
 msgstr "Papildus informācija (ja piemērojams)"
 
 #: resources/public/include/chat.js
 msgid "Additional information:"
 msgstr "Papildus informācija:"
+
+#: resources/public/include/chat.js
+msgid "Chatban initiated"
+msgstr ""
 
 #: resources/public/include/chat.js
 msgid "Error occurred while chatbanning"
@@ -1955,11 +1991,11 @@ msgid "Purge Reason"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "Error sending purge."
+msgid "User purged"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "On"
+msgid "Error sending purge."
 msgstr ""
 
 #: resources/public/include/chat.js
@@ -1968,6 +2004,10 @@ msgstr ""
 
 #: resources/public/include/chat.js
 msgid "Select one of the options below to set the current rename request state."
+msgstr ""
+
+#: resources/public/include/chat.js
+msgid "Rename request updated"
 msgstr ""
 
 #: resources/public/include/chat.js
@@ -1983,6 +2023,10 @@ msgid "Enter the new name for the user below. Please note that if you\\'re tryin
 msgstr ""
 
 #: resources/public/include/chat.js
+msgid "User renamed"
+msgstr ""
+
+#: resources/public/include/chat.js
 msgid "Force Rename"
 msgstr ""
 
@@ -1994,7 +2038,7 @@ msgstr "Kanvas bana dēļ jūs nevarat izmantot čatu"
 msgid "Sending..."
 msgstr "Sūta..."
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "You must specify the details."
 msgstr "Jums ir jānorāda detaļas."
 
@@ -2006,28 +2050,36 @@ msgstr "papildus informācija:"
 msgid "Report Pixel"
 msgstr "Sūdzēties Par Pikseli"
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Rule #1: Hateful/derogatory speech or symbols"
 msgstr "Noteikums #1: Naida runa vai simboli"
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Rule #2: Nudity, genitalia, or non-PG-13 content"
 msgstr "Noteikums #2: Kailums, ģenitālijas vai 13+ saturs"
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Rule #3: Multi-account"
 msgstr "Noteikums #3: Vairāki konti"
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Rule #4: Botting"
 msgstr "Noteikums #4: Automātiski rīki"
 
-#: resources/public/include/lookup.js
+#: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Other (specify below)"
 msgstr "Cits (paskaidrojiet zemāk)"
 
 #: resources/public/include/lookup.js
+msgid "This pixel is background (was not placed by a user)."
+msgstr ""
+
+#: resources/public/include/lookup.js
 msgid "Hide sensitive information"
+msgstr ""
+
+#: resources/public/include/lookup.js
+msgid "Move Template Here"
 msgstr ""
 
 #: resources/public/include/lookup.js
@@ -2139,12 +2191,12 @@ msgid "Red"
 msgstr "Sarkans"
 
 #: resources/public/include/uiHelper.js
-msgid "Cannot fetch local files. Use the file selector in template settings."
-msgstr "Neizdevās iegūt lokālos failus. Izmantojiet failu atlasītaju šablona iestatījumos."
+msgid "A new ${type} report has been received."
+msgstr ""
 
 #: resources/public/include/uiHelper.js
-msgid "Drag and dropped file must be a valid image."
-msgstr "Vilktajam un nomestajam failam jābūt derīgam attēlam."
+msgid "Cannot fetch local files. Use the file selector in template settings."
+msgstr "Neizdevās iegūt lokālos failus. Izmantojiet failu atlasītaju šablona iestatījumos."
 
 #: resources/public/include/uiHelper.js
 msgid "Redirect Warning"
@@ -2153,6 +2205,10 @@ msgstr "Novirzīšanas Brīdinājums"
 #: resources/public/include/uiHelper.js
 msgid "Are you sure you want to redirect to the following URL?"
 msgstr "Vai jūs esat pārliecināts ka vēlaties novirzīties uz sekojošo URL?"
+
+#: resources/public/include/uiHelper.js
+msgid "Drag and dropped file must be a valid image."
+msgstr "Vilktajam un nomestajam failam jābūt derīgam attēlam."
 
 #: resources/public/include/uiHelper.js
 msgid "Discord name updated successfully"
@@ -2171,6 +2227,10 @@ msgid "New Accounts Disabled"
 msgstr "Jauni Konti Atspējoti"
 
 #: resources/public/include/user.js
+msgid "online"
+msgstr ""
+
+#: resources/public/include/user.js
 msgid "Sign Out"
 msgstr "Iziet"
 
@@ -2187,6 +2247,10 @@ msgid "You are temporarily banned and will not be allowed to place until ${times
 msgstr "Jūs esat īslaicīgā banā un nevarēsiet likt līdz ${timestamp}"
 
 #: resources/public/include/user.js
+msgid "You can contact us using one of the links in the info menu."
+msgstr ""
+
+#: resources/public/include/user.js
 msgid "If you think this was an error, please contact us using one of the links in the info tab."
 msgstr "Ja uzskatāt, ka tā ir kļuda, lūdzu sazinieties ar mums izmantojot vienu no saitēm info panelī"
 
@@ -2197,6 +2261,10 @@ msgstr "Bana iemesls:"
 #: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Banned"
 msgstr "Banots"
+
+#: resources/public/include/user.js
+msgid "An unknown error occurred. Please contact staff on discord"
+msgstr ""
 
 #: resources/public/include/user.js
 msgid "Staff have required you to change your username, this usually means your name breaks one of our rules."
@@ -2221,6 +2289,28 @@ msgstr "Nomainīt"
 #: resources/public/include/user.js resources/public/admin/admin.js
 msgid "Rename Requested"
 msgstr "Pārsaukšana Pieprasīta"
+
+#: resources/public/include/user.js
+msgid "You must change your username."
+msgstr ""
+
+#: resources/public/include/user.js
+msgid "Click here to continue."
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Send alert..."
+msgstr ""
+
+#. "Revert pixels of the last *n* hours", part before 'n'
+#: resources/public/admin/admin.js
+msgid "Revert pixels of the last "
+msgstr ""
+
+#. "Revert pixels of the last *n* hours", part after 'n'
+#: resources/public/admin/admin.js
+msgid " hours"
+msgstr ""
 
 #: resources/public/admin/admin.js
 msgid "Something went wrong! Perhaps insufficient permissions?"
@@ -2311,6 +2401,22 @@ msgstr ""
 msgid "Chatban Expires"
 msgstr ""
 
+#: resources/public/admin/admin.js
+msgid "Ban (24h)"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Permaban"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Shadowban"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Custom ban length: "
+msgstr ""
+
 #. Admin check. Example: type = 'username', arg = 'pxlsuser94'
 #: resources/public/admin/admin.js
 msgid "${type} ${arg} not found."
@@ -2322,6 +2428,35 @@ msgstr ""
 
 #: resources/public/admin/admin.js
 msgid "Unbanning ${username}"
+msgstr ""
+
+#. Moderator panel label
+#: resources/public/admin/admin.js
+msgid "MOD"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Ignore cooldown"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Place any color"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Ignore placemap"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Ban user (24h)"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Unban user"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "Check user"
 msgstr ""
 
 #: resources/public/admin/admin.js
@@ -2338,4 +2473,8 @@ msgstr ""
 
 #: resources/public/admin/admin.js
 msgid "Mod Actions"
+msgstr ""
+
+#: resources/public/admin/admin.js
+msgid "More..."
 msgstr ""

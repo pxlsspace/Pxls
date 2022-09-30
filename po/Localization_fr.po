@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-04-09T15:04:32.029Z\n"
+"POT-Creation-Date: 2022-09-29T20:37:34.118Z\n"
 "Language: fr\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -93,6 +93,7 @@ msgid "Close Panel"
 msgstr "Fermer le panneau"
 
 #: resources/public/pebble_templates/index.html
+#: resources/public/include/chat.js
 msgid "Chat"
 msgstr "Chat"
 
@@ -107,6 +108,11 @@ msgstr "Paramètres"
 #: resources/public/pebble_templates/index.html
 msgid "Jump To Bottom"
 msgstr "Sauter à la fin"
+
+#: resources/public/pebble_templates/index.html
+#: resources/public/include/chat.js
+msgid "On"
+msgstr "Activé"
 
 #. Open emoji picker
 #: resources/public/pebble_templates/index.html
@@ -1027,6 +1033,14 @@ msgid "Delay (seconds):"
 msgstr "Délai (secondes) :"
 
 #: resources/public/pebble_templates/index.html
+msgid "Vibration"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Enable vibration"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
 msgid "chat mentions;chat pings;chat sound"
 msgstr "mentions de chat;notifications de chat;ping"
 
@@ -1691,6 +1705,10 @@ msgstr "L'action que tu essayes d'effectuer n'est pas permise ou une erreur est 
 msgid "Alert"
 msgstr "Alerte"
 
+#: resources/public/include/board.js
+msgid "The canvas is now locked. Press L to unlock."
+msgstr ""
+
 #. Snapshot save name
 #: resources/public/include/board.js
 msgid "pxls canvas"
@@ -1719,6 +1737,14 @@ msgstr ""
 
 #: resources/public/include/chat.js
 msgid "You must be logged in to chat."
+msgstr ""
+
+#: resources/public/include/chat.js
+msgid "No Results"
+msgstr ""
+
+#: resources/public/include/chat.js
+msgid "Reply"
 msgstr ""
 
 #: resources/public/include/chat.js
@@ -1807,12 +1833,12 @@ msgid "You are reporting a chat message from ${reportTarget} with the content:"
 msgstr ""
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
-msgid "Error sending report."
-msgstr "Erreur lors de l'envoi du signalement."
-
-#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Sent report!"
 msgstr ""
+
+#: resources/public/include/chat.js resources/public/include/lookup.js
+msgid "Error sending report."
+msgstr "Erreur lors de l'envoi du signalement."
 
 #: resources/public/include/chat.js
 msgid "Report User"
@@ -1906,12 +1932,12 @@ msgid "Additional information:"
 msgstr "Information supplémentaire :"
 
 #: resources/public/include/chat.js
-msgid "Error occurred while chatbanning"
-msgstr "Une erreur s'est produite lors du bannissement de chat"
-
-#: resources/public/include/chat.js
 msgid "Chatban initiated"
 msgstr ""
+
+#: resources/public/include/chat.js
+msgid "Error occurred while chatbanning"
+msgstr "Une erreur s'est produite lors du bannissement de chat"
 
 #: resources/public/include/chat.js
 msgid "Chatban"
@@ -1954,16 +1980,12 @@ msgid "Purge Reason"
 msgstr "Raison de la purge"
 
 #: resources/public/include/chat.js
-msgid "Error sending purge."
-msgstr "Erreur lors de l'envoi de la purge"
-
-#: resources/public/include/chat.js
 msgid "User purged"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "On"
-msgstr "Activé"
+msgid "Error sending purge."
+msgstr "Erreur lors de l'envoi de la purge"
 
 #: resources/public/include/chat.js
 msgid "Toggle Rename Request"
@@ -1974,12 +1996,12 @@ msgid "Select one of the options below to set the current rename request state."
 msgstr "Sélectionner une des options ci-dessous pour définir le statut actuel de la demande de renommage"
 
 #: resources/public/include/chat.js
-msgid "An unknown error occurred. Please contact a developer"
-msgstr "Une erreur inconnue s'est produite. Merci de contacter un développeur."
-
-#: resources/public/include/chat.js
 msgid "Rename request updated"
 msgstr ""
+
+#: resources/public/include/chat.js
+msgid "An unknown error occurred. Please contact a developer"
+msgstr "Une erreur inconnue s'est produite. Merci de contacter un développeur."
 
 #: resources/public/include/chat.js
 msgid "New Name: "
@@ -2038,12 +2060,12 @@ msgid "Other (specify below)"
 msgstr "Autre (préciser ci-dessous)"
 
 #: resources/public/include/lookup.js
-msgid "Hide sensitive information"
-msgstr "Cacher les informations sensibles"
-
-#: resources/public/include/lookup.js
 msgid "This pixel is background (was not placed by a user)."
 msgstr ""
+
+#: resources/public/include/lookup.js
+msgid "Hide sensitive information"
+msgstr "Cacher les informations sensibles"
 
 #: resources/public/include/lookup.js
 msgid "Move Template Here"
@@ -2194,16 +2216,16 @@ msgid "New Accounts Disabled"
 msgstr "Nouveaux comptes désactivés"
 
 #: resources/public/include/user.js
+msgid "online"
+msgstr ""
+
+#: resources/public/include/user.js
 msgid "Sign Out"
 msgstr "Se déconnecter"
 
 #: resources/public/include/user.js
 msgid "Are you sure you want to sign out?"
 msgstr "Es-tu sûr(e) de vouloir te déconnecter ?"
-
-#: resources/public/include/user.js
-msgid "online"
-msgstr ""
 
 #: resources/public/include/user.js
 msgid "You are permanently banned."

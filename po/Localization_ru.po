@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-04-09T15:04:32.029Z\n"
+"POT-Creation-Date: 2022-09-29T20:37:34.118Z\n"
 "Language: ru\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -93,6 +93,7 @@ msgid "Close Panel"
 msgstr "Закрыть панель"
 
 #: resources/public/pebble_templates/index.html
+#: resources/public/include/chat.js
 msgid "Chat"
 msgstr "Чат"
 
@@ -107,6 +108,11 @@ msgstr "Настройки"
 #: resources/public/pebble_templates/index.html
 msgid "Jump To Bottom"
 msgstr "Переместиться вниз"
+
+#: resources/public/pebble_templates/index.html
+#: resources/public/include/chat.js
+msgid "On"
+msgstr "Включить"
 
 #. Open emoji picker
 #: resources/public/pebble_templates/index.html
@@ -1027,6 +1033,14 @@ msgid "Delay (seconds):"
 msgstr "Задержка (секунды):"
 
 #: resources/public/pebble_templates/index.html
+msgid "Vibration"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Enable vibration"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
 msgid "chat mentions;chat pings;chat sound"
 msgstr "упоминания чата;оповещения чата;звук чата"
 
@@ -1691,6 +1705,10 @@ msgstr "Действие, которое вы пытались выполнит�
 msgid "Alert"
 msgstr "Предупреждение"
 
+#: resources/public/include/board.js
+msgid "The canvas is now locked. Press L to unlock."
+msgstr ""
+
 #. Snapshot save name
 #: resources/public/include/board.js
 msgid "pxls canvas"
@@ -1720,6 +1738,14 @@ msgstr "Пожалуйста, загрузите изображение ваше
 #: resources/public/include/chat.js
 msgid "You must be logged in to chat."
 msgstr "Вы должны быть авторизованы в чате."
+
+#: resources/public/include/chat.js
+msgid "No Results"
+msgstr ""
+
+#: resources/public/include/chat.js
+msgid "Reply"
+msgstr ""
 
 #: resources/public/include/chat.js
 msgid "none provided"
@@ -1807,12 +1833,12 @@ msgid "You are reporting a chat message from ${reportTarget} with the content:"
 msgstr ""
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
-msgid "Error sending report."
-msgstr "Ошибка отправки жалобы"
-
-#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Sent report!"
 msgstr ""
+
+#: resources/public/include/chat.js resources/public/include/lookup.js
+msgid "Error sending report."
+msgstr "Ошибка отправки жалобы"
 
 #: resources/public/include/chat.js
 msgid "Report User"
@@ -1906,12 +1932,12 @@ msgid "Additional information:"
 msgstr "Дополнительная информация:"
 
 #: resources/public/include/chat.js
-msgid "Error occurred while chatbanning"
-msgstr "Произошла ошибка при чат-бане"
-
-#: resources/public/include/chat.js
 msgid "Chatban initiated"
 msgstr ""
+
+#: resources/public/include/chat.js
+msgid "Error occurred while chatbanning"
+msgstr "Произошла ошибка при чат-бане"
 
 #: resources/public/include/chat.js
 msgid "Chatban"
@@ -1954,16 +1980,12 @@ msgid "Purge Reason"
 msgstr "Причина удаления"
 
 #: resources/public/include/chat.js
-msgid "Error sending purge."
-msgstr "Ошибка удаления"
-
-#: resources/public/include/chat.js
 msgid "User purged"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "On"
-msgstr "Включить"
+msgid "Error sending purge."
+msgstr "Ошибка удаления"
 
 #: resources/public/include/chat.js
 msgid "Toggle Rename Request"
@@ -1974,12 +1996,12 @@ msgid "Select one of the options below to set the current rename request state."
 msgstr "Выберите один из вариантов ниже, чтобы установить текущее состояние запроса на переименование."
 
 #: resources/public/include/chat.js
-msgid "An unknown error occurred. Please contact a developer"
-msgstr "Произошла неизвестная ошибка. Пожалуйста обратитесь к разработчику"
-
-#: resources/public/include/chat.js
 msgid "Rename request updated"
 msgstr ""
+
+#: resources/public/include/chat.js
+msgid "An unknown error occurred. Please contact a developer"
+msgstr "Произошла неизвестная ошибка. Пожалуйста обратитесь к разработчику"
 
 #: resources/public/include/chat.js
 msgid "New Name: "
@@ -2038,12 +2060,12 @@ msgid "Other (specify below)"
 msgstr "Другое (укажите ниже)"
 
 #: resources/public/include/lookup.js
-msgid "Hide sensitive information"
-msgstr "Скрыть конфиденциальную информацию"
-
-#: resources/public/include/lookup.js
 msgid "This pixel is background (was not placed by a user)."
 msgstr ""
+
+#: resources/public/include/lookup.js
+msgid "Hide sensitive information"
+msgstr "Скрыть конфиденциальную информацию"
 
 #: resources/public/include/lookup.js
 msgid "Move Template Here"
@@ -2194,16 +2216,16 @@ msgid "New Accounts Disabled"
 msgstr "Новые аккаунты отключены"
 
 #: resources/public/include/user.js
+msgid "online"
+msgstr "онлайн"
+
+#: resources/public/include/user.js
 msgid "Sign Out"
 msgstr "Выйти"
 
 #: resources/public/include/user.js
 msgid "Are you sure you want to sign out?"
 msgstr "Вы уверены что хотите выйти?"
-
-#: resources/public/include/user.js
-msgid "online"
-msgstr "онлайн"
 
 #: resources/public/include/user.js
 msgid "You are permanently banned."
@@ -2441,3 +2463,7 @@ msgstr "Отправить предупреждение"
 #: resources/public/admin/admin.js
 msgid "Mod Actions"
 msgstr "Действия модератора"
+
+#: resources/public/admin/admin.js
+msgid "More..."
+msgstr ""
