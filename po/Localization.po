@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-09-29T20:37:34.118Z\n"
+"POT-Creation-Date: 2022-10-01T15:12:45.667Z\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -1039,6 +1039,10 @@ msgstr "Vibration"
 #: resources/public/pebble_templates/index.html
 msgid "Enable vibration"
 msgstr "Enable vibration"
+
+#: resources/public/pebble_templates/index.html
+msgid "Vibration duration (miliseconds):"
+msgstr "Vibration duration (miliseconds):"
 
 #: resources/public/pebble_templates/index.html
 msgid "chat mentions;chat pings;chat sound"
@@ -2467,6 +2471,9 @@ msgstr "Mod Actions"
 #: resources/public/admin/admin.js
 msgid "More..."
 msgstr ""
+
+#~ msgid "Vibration lenght (miliseconds):"
+#~ msgstr "Vibration lenght (miliseconds):"
 
 #~ msgid "Replying to"
 #~ msgstr "Replying to"

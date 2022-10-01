@@ -379,7 +379,8 @@ module.exports.settings = (function() {
       }
     },
     vibration: {
-      enable: setting('vibration.enable', SettingType.TOGGLE, false, $('#setting-vibration-enable'))
+      enable: setting('vibration.enable', SettingType.TOGGLE, false, $('#setting-vibration-enable')),
+      duration: setting('vibration.duration', SettingType.NUMBER, 500, $('#setting-vibration-duration'))
     },
     board: {
       heatmap: {

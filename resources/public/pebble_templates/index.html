@@ -779,6 +779,12 @@
                             <span class="label-text">{{i18n('Localization', 'Enable vibration') | raw}}</span>
                         </label>
                     </div>
+                    <div data-keywords="">
+                        <label class="input-group">
+                            <span class="label-text">{{i18n('Localization', 'Vibration duration (miliseconds):') | raw}}</span>
+                            <input id="setting-vibration-duration" type="number" min="0" max="5000">
+                        </label>
+                    </div>
                 </section>
                 <section data-keywords="{{i18n('Localization', 'chat mentions;chat pings;chat sound') | raw}}">
                     <h4>{{i18n('Localization', 'Chat Pings') | raw}}</h4>

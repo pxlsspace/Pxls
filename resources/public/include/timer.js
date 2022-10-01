@@ -131,7 +131,8 @@ module.exports.timer = (function() {
     },
     playVibration: function() {
       if (settings.vibration.enable.get()) {
-        window.navigator.vibrate(400);
+        const lenght = settings.vibration.duration.get();
+        window.navigator.vibrate(lenght);
       }
     },
     getCurrentTimer: function() {

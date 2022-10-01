@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-09-29T20:37:34.118Z\n"
+"POT-Creation-Date: 2022-10-01T15:12:45.667Z\n"
 "Language: bg\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -1038,6 +1038,10 @@ msgstr ""
 
 #: resources/public/pebble_templates/index.html
 msgid "Enable vibration"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Vibration duration (miliseconds):"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
