@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-10-01T21:18:22.474Z\n"
+"POT-Creation-Date: 2022-10-01T22:43:26.451Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -1033,7 +1033,19 @@ msgid "Delay (seconds):"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
+msgid "vibration;alert;notification"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
 msgid "Vibration"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Not supported on Safari and Firefox"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "enable vibration;disable vibration"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
@@ -1041,7 +1053,15 @@ msgid "Enable vibration"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
+msgid "anticipation ticks;previbe"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
 msgid "Enable anticipation ticks"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "vibration duration;vibration lenght;vibration strenght"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
