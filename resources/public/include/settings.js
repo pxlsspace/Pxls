@@ -380,7 +380,10 @@ module.exports.settings = (function() {
     },
     vibration: {
       enable: setting('vibration.enable', SettingType.TOGGLE, false, $('#setting-vibration-enable')),
-      duration: setting('vibration.duration', SettingType.NUMBER, 500, $('#setting-vibration-duration'))
+      duration: setting('vibration.duration', SettingType.NUMBER, 500, $('#setting-vibration-duration')),
+      anticipationticks: {
+        enable: setting('vibration.anticipationticks.enable', SettingType.TOGGLE, false, $('#setting-vibration-anticipationticks-enable'))
+      }
     },
     board: {
       heatmap: {

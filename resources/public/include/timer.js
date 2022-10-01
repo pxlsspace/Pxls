@@ -13,6 +13,7 @@ module.exports.timer = (function() {
       timer_chat: $('#txtMobileChatCooldown')
     },
     hasFiredNotification: true,
+    hasFiredTick: true,
     cooldown: 0,
     runningTimer: false,
     audio: new Audio('notify.wav'),
@@ -34,6 +35,16 @@ module.exports.timer = (function() {
       }
 
       const alertDelay = settings.place.alert.delay.get();
+
+      const tickDuration = 75;
+      const tickSeconds = 3;
+      if (settings.vibration.anticipationticks.enable.get() && !self.hasFiredTick) {
+        setTimeout(() => {
+          self.playAnticipationTicks(tickDuration, tickSeconds);
+        }, (delta - tickSeconds) * 1000);
+        self.hasFiredTick = true;
+      }
+
       if (alertDelay < 0 && delta < Math.abs(alertDelay) && !self.hasFiredNotification) {
         self.playAudio();
         let notif;
@@ -121,6 +132,7 @@ module.exports.timer = (function() {
       socket.on('cooldown', function(data) {
         self.cooldown = (new Date()).getTime() + (data.wait * 1000);
         self.hasFiredNotification = data.wait === 0;
+        self.hasFiredTick = data.wait === 0;
         self.update();
       });
     },
@@ -131,8 +143,15 @@ module.exports.timer = (function() {
     },
     playVibration: function() {
       if (settings.vibration.enable.get()) {
-        const lenght = settings.vibration.duration.get();
-        window.navigator.vibrate(lenght);
+        const duration = settings.vibration.duration.get();
+        window.navigator.vibrate(duration);
+      }
+    },
+    playAnticipationTicks: function(tickDuration, seconds) {
+      if (settings.vibration.enable.get()) {
+        const pattern = [tickDuration, 1000 - tickDuration];
+        console.info(pattern, Array(seconds).fill(pattern).flat());
+        window.navigator.vibrate(Array(seconds).fill(pattern).flat());
       }
     },
     getCurrentTimer: function() {
