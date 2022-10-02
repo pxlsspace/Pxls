@@ -41,12 +41,13 @@ module.exports.timer = (function() {
       if (settings.vibration.anticipationticks.enable.get() && !self.hasFiredTick) {
         setTimeout(() => {
           self.playAnticipationTicks(tickDuration, tickSeconds);
-        }, (delta - tickSeconds) * 1000);
+        }, (delta - tickSeconds + parseInt(alertDelay)) * 1000);
         self.hasFiredTick = true;
       }
 
       if (alertDelay < 0 && delta < Math.abs(alertDelay) && !self.hasFiredNotification) {
         self.playAudio();
+        self.playVibration();
         let notif;
         const delay = Math.abs(alertDelay);
         if (!document.hasFocus()) {
@@ -94,6 +95,7 @@ module.exports.timer = (function() {
       if (alertDelay > 0) {
         setTimeout(() => {
           self.playAudio();
+          self.playVibration();
           if (!document.hasFocus()) {
             const notif = nativeNotifications.maybeShow(__(`Your next pixel has been available for ${alertDelay} seconds!`));
             if (notif) {
@@ -150,7 +152,6 @@ module.exports.timer = (function() {
     playAnticipationTicks: function(tickDuration, seconds) {
       if (settings.vibration.enable.get()) {
         const pattern = [tickDuration, 1000 - tickDuration];
-        console.info(pattern, Array(seconds).fill(pattern).flat());
         window.navigator.vibrate(Array(seconds).fill(pattern).flat());
       }
     },
