@@ -635,7 +635,10 @@ const uiHelper = (function() {
       }
     },
     updateAvailable: function(count, cause) {
-      if (count > 0 && cause === 'stackGain') timer.playAudio();
+      if (count > 0 && cause === 'stackGain') {
+        timer.playAudio();
+        timer.playVibration();
+      }
       self.setPlaceableText(count);
     },
     setMax(maxStacked) {
