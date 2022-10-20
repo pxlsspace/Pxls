@@ -439,6 +439,9 @@ dt {
 .donator.donator--teal{
     background-image: linear-gradient(45deg, #277e6c, #32b69f, #88fff3, #32b69f, #277e6c);
 }
+.donator.donator--icy{
+    background-image: linear-gradient(45deg, #153FA2, #1C95DF, #A0E8FF, #1C95DF, #153FA2);
+}
 
 .error {
     color: var(--error-color);
