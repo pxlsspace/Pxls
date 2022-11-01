@@ -4,6 +4,7 @@ import kong.unirest.*;
 import com.typesafe.config.Config;
 import io.undertow.websockets.core.WebSocketChannel;
 
+import kong.unirest.json.JSONArray;
 import org.apache.commons.text.StringEscapeUtils;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 import kong.unirest.json.JSONObject;
@@ -21,6 +22,7 @@ import space.pxls.util.RateLimitFactory;
 import java.io.*;
 import java.net.*;
 
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 
 import java.util.*;
@@ -527,10 +529,8 @@ public class PacketHandler {
 
             // NOTE (Flying): The pixel count badge seems to always come last.
             var pixelCount = message.getBadges().get(message.getBadges().size() - 1).getDisplayName() + " ";
-            // TODO: Determine why unicode faction tags break webhook
-            //   {"code": 50109, "message": "The request body contains invalid JSON."}
-            // var factionTag = message.getStrippedFaction() != null ? "[" + message.getStrippedFaction().getTag() + "] " : "";
-            author.put("name", pixelCount + message.getAuthor());
+            var factionTag = message.getStrippedFaction() != null ? "[" + message.getStrippedFaction().getTag() + "] " : "";
+            author.put("name", pixelCount + factionTag + message.getAuthor());
             author.put("url", authorProfile);
 
             embed.put("author", author);
@@ -540,7 +540,13 @@ public class PacketHandler {
 
         var footer = new JSONObject();
 
-        footer.put("text", message.getId());
+        var footerText = String.valueOf(message.getId());
+
+        if (message.getReplyingToId() != 0) {
+            footerText += " • Replying to " + message.getReplyingToId();
+        }
+
+        footer.put("text", footerText);
 
         embed.put("footer", footer);
 
@@ -556,8 +562,9 @@ public class PacketHandler {
                 connection.setRequestMethod("POST");
                 connection.setRequestProperty("Content-Type", "application/json");
                 connection.setDoOutput(true);
-                var postDataStream = new DataOutputStream(connection.getOutputStream());
-                postDataStream.writeBytes(postData);
+
+                OutputStreamWriter postDataStream = new OutputStreamWriter(connection.getOutputStream(), StandardCharsets.UTF_8);
+                postDataStream.write(postData);
                 postDataStream.flush();
                 postDataStream.close();
 
