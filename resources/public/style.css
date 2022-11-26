@@ -519,14 +519,21 @@ dt {
 }
 
 /* body preselector is to give more precident to .message than to .floating-panel */
-body .message {
-    max-width: 40%;
-    z-index: 22;
-
+body > .messages {
     position: fixed;
-    top: 45vh;
-    left: 50%;
-    transform: translateX(-50%) translateY(-50%);
+    z-index: 22;
+    top: 0;
+    right: 0;
+    left: 0;
+    bottom: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.messages .message {
     word-wrap: break-word;
     overflow-wrap: break-word;
 }

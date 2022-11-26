@@ -303,7 +303,7 @@
         ).fadeIn(200);
       },
       init: function () {
-        self.elements.check.hide().appendTo(document.body);
+        self.elements.check.hide().appendTo(document.getElementById('messages'));
       },
       deinit: function () {
         self.elements.check.remove();
