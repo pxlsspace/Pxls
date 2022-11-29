@@ -1513,11 +1513,12 @@ const chat = (function() {
     _makeCoordinatesElement: (raw, x, y, scale, template, title) => {
       let text = `(${x}, ${y}${scale != null ? `, ${scale}x` : ''})`;
       if (template != null && template.length >= 11) { // we have a template, should probably make that known
-        let tmplName = decodeURIComponent(
-          settings.chat.links.templates.preferurls.get() !== true && title && title.trim()
-            ? title
-            : template
-        );
+        let tmplName = settings.chat.links.templates.preferurls.get() !== true && title && title.trim() ? title : template;
+        try {
+          tmplName = decodeURIComponent(tmplName);
+        } catch (e) {
+          if (!(e instanceof URIError)) throw e;
+        }
         if (tmplName.length > 25) {
           tmplName = `${tmplName.substr(0, 22)}...`;
         }
