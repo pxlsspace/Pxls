@@ -1498,6 +1498,10 @@ body.panel-open.panel-right.panel-right-horizontal #ui {
     font-family: Arial, Helvetica, sans-serif;
 }
 
+ul.chat-body del {
+    display: none;
+}
+
 ul.chat-body li.chat-line {
     /*border:1px solid #000;*/
     line-height: 1.5em;
@@ -1506,7 +1510,7 @@ ul.chat-body li.chat-line {
     position: relative;
 }
 
-ul.chat-body li.chat-line:nth-child(odd) {
+ul.chat-body li.chat-line:nth-of-type(odd) {
     background: var(--chat-odd-background);
 }
 
