@@ -518,8 +518,7 @@ dt {
     margin-top: 5px;
 }
 
-/* body preselector is to give more precident to .message than to .floating-panel */
-body > .messages {
+#messages {
     position: fixed;
     z-index: 22;
     top: 0;
@@ -531,9 +530,11 @@ body > .messages {
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    pointer-events: none;
 }
 
-.messages .message {
+#messages .message {
+    pointer-events: all;
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
