@@ -532,7 +532,10 @@ public class PacketHandler {
             var authorProfile = new URL("https://" + App.getConfig().getString("host") + "/profile/" + message.getAuthor() + "/");
 
             // NOTE (Flying): The pixel count badge seems to always come last.
-            var pixelCount = message.getBadges().get(message.getBadges().size() - 1).getDisplayName() + " ";
+            var pixelCount = "?k+ ";
+            if (message.getBadges().size() > 0) {
+                pixelCount = message.getBadges().get(message.getBadges().size() - 1).getDisplayName() + " ";
+            }
             var factionTag = message.getStrippedFaction() != null ? "[" + message.getStrippedFaction().getTag() + "] " : "";
             author.put("name", pixelCount + factionTag + message.getAuthor());
             author.put("url", authorProfile);

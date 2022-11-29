@@ -47,7 +47,6 @@ window.App = (function() {
   // init progress
   query.init();
   board.init();
-  lookup.init();
   template.init();
   ban.init();
   grid.init();

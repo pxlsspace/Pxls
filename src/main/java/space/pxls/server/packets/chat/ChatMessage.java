@@ -20,7 +20,7 @@ public class ChatMessage {
     public Boolean authorWasShadowBanned;
     public StrippedFaction strippedFaction;
 
-    public ChatMessage(int id, String author, Long date, String message_raw, int replyingToId, boolean replyShouldMention, Purge purge, List<Badge> badges, List<String> authorNameClass, Number authorNameColor, boolean authorWasShadowBanned, Faction faction) {
+    public ChatMessage(int id, String author, Long date, String message_raw, int replyingToId, boolean replyShouldMention, Purge purge, List<Badge> badges, List<String> authorNameClass, Number authorNameColor, Boolean authorWasShadowBanned, Faction faction) {
         this.id = id;
         this.author = author;
         this.date = date;
@@ -83,7 +83,7 @@ public class ChatMessage {
 
     public ChatMessage asSnipRedacted() {
         // Redact username.
-        return new ChatMessage(id, "-snip-", date, message_raw, replyingToId, replyShouldMention, purge, badges, authorNameClass, authorNameColor, authorWasShadowBanned, null);
+        return new ChatMessage(id, "-snip-", date, message_raw, replyingToId, replyShouldMention, purge, badges, authorNameClass, authorNameColor, authorWasShadowBanned != null, null);
     }
 
     public ChatMessage asShadowBanned() {
