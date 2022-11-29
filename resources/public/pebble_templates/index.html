@@ -126,26 +126,28 @@
     <div id="cursor-text"><i class="fas fa-spinner fa-spin captcha-loading-icon"></i> <span id="placeableCount-cursor">{{i18n('Localization', 'N/A') | raw}}</span></div>
 </div>
 <div id="reticule"></div>
-<div id="prompt" class="message floating-panel"></div>
-<div id="signup" class="message floating-panel">
-    <div class="content">
-      <h1>{{i18n('Localization', 'Sign up') | raw}}</h1>
-      <h4>{{i18n('Localization', 'Pick a username') | raw}}</h4>
-      <p>
-          <label class="input-group">
-              <span class="label-text">{{i18n('Localization', 'Username:') | raw}}</span>
-              <input id="signup-username-input" type="text" maxlength="32">
-          </label>
-      </p>
-        <p>
-            <label class="input-group">
-                <span class="label-text">{{i18n('Localization', 'Discord Tag (Optional):') | raw}}</span>
-                <input id="signup-discord-input" type="text" maxlength="64" placeholder="Username#1234">
-            </label>
-        </p>
-      <div class="error" id="error"></div>
+<div id="messages">
+    <div id="prompt" class="message floating-panel"></div>
+    <div id="signup" class="message floating-panel">
+        <div class="content">
+          <h1>{{i18n('Localization', 'Sign up') | raw}}</h1>
+          <h4>{{i18n('Localization', 'Pick a username') | raw}}</h4>
+          <p>
+              <label class="input-group">
+                  <span class="label-text">{{i18n('Localization', 'Username:') | raw}}</span>
+                  <input id="signup-username-input" type="text" maxlength="32">
+              </label>
+          </p>
+            <p>
+                <label class="input-group">
+                    <span class="label-text">{{i18n('Localization', 'Discord Tag (Optional):') | raw}}</span>
+                    <input id="signup-discord-input" type="text" maxlength="64" placeholder="Username#1234">
+                </label>
+            </p>
+          <div class="error" id="error"></div>
+        </div>
+        <button id="signup-button" class="float-right text-button">{{i18n('Localization', 'Sign up') | raw}}</button>
     </div>
-    <button id="signup-button" class="float-right text-button">{{i18n('Localization', 'Sign up') | raw}}</button>
 </div>
 <div id="drag-drop-target">
     <div id="drag-drop">
