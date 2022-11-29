@@ -208,7 +208,7 @@ module.exports.lookup = (function() {
         self.elements.lookup.fadeIn(200);
       });
     },
-    init: function() {
+    webinit: function() {
       board = require('./board').board;
 
       // Register default hooks
@@ -221,6 +221,7 @@ module.exports.lookup = (function() {
         }, {
           id: 'username',
           name: __('Username'),
+          sensitive: board.snipMode,
           get: data => data.username
             ? !board.snipMode
               ? crel('a', {
@@ -233,6 +234,7 @@ module.exports.lookup = (function() {
         }, {
           id: 'faction',
           name: __('Faction'),
+          sensitive: board.snipMode,
           get: data => data.faction || null
         }, {
           id: 'origin',
@@ -274,14 +276,17 @@ module.exports.lookup = (function() {
         }, {
           id: 'pixels',
           name: __('Pixels'),
+          sensitive: board.snipMode,
           get: data => data.pixelCount
         }, {
           id: 'pixels_alltime',
           name: __('Alltime Pixels'),
+          sensitive: board.snipMode,
           get: data => data.pixelCountAlltime
         }, {
           id: 'discord_name',
           name: __('Discord'),
+          sensitive: board.snipMode,
           get: data => data.discordName
         }
       );
