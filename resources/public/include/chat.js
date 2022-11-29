@@ -1476,6 +1476,11 @@ const chat = (function() {
       }
 
       function handleClick(e) {
+        if (e.shiftKey || e.ctrlKey || e.metaKey) {
+          // open the link in a new window / tab
+          return;
+        }
+
         e.preventDefault();
 
         if (template) {
