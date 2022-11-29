@@ -312,7 +312,7 @@ module.exports.lookup = (function() {
     }
   };
   return {
-    init: self.init,
+    webinit: self.webinit,
     registerHandle: self.registerHandle,
     registerHook: self.registerHook,
     replaceHook: self.replaceHook,
