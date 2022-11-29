@@ -80,18 +80,23 @@ module.exports.timer = (function() {
       self.elements.timer_container.hide();
       self.elements.timer_chat.text('');
 
-      if (alertDelay > 0) {
+      if (alertDelay > 0 && !self.hasFiredNotification) {
         setTimeout(() => {
-          self.playAudio();
-          if (!document.hasFocus()) {
-            const notif = nativeNotifications.maybeShow(__(`Your next pixel has been available for ${alertDelay} seconds!`));
-            if (notif) {
-              $(window).one('pxls:ack:place', () => notif.close());
+          if (!this.runningTimer) {
+            self.playAudio();
+            if (!document.hasFocus()) {
+              const notif = nativeNotifications.maybeShow(__(`Your next pixel has been available for ${alertDelay} seconds!`));
+              if (notif) {
+                $(window).one('pxls:ack:place', () => notif.close());
+              }
             }
           }
-          uiHelper.setPlaceableText(1);
+
           self.hasFiredNotification = true;
         }, alertDelay * 1000);
+        setTimeout(() => {
+          uiHelper.setPlaceableText(1);
+        }, delta * 1000);
         return;
       }
 
