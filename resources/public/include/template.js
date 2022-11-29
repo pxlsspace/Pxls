@@ -57,7 +57,9 @@ module.exports.template = (function() {
       // a list of sites that will already serve cors-enabled content
       safeHosts: [
         'imgur.com',
+        'media.discordapp.net',
         'pxlsfiddle.com',
+        'zaix.ru',
         window.location.host
       ]
     },
