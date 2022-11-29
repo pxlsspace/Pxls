@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-04-09T15:04:32.029Z\n"
+"POT-Creation-Date: 2022-05-05T21:00:41.313Z\n"
 "Language: ru\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -107,6 +107,10 @@ msgstr "Настройки"
 #: resources/public/pebble_templates/index.html
 msgid "Jump To Bottom"
 msgstr "Переместиться вниз"
+
+#: resources/public/pebble_templates/index.html
+msgid "Replying to"
+msgstr ""
 
 #. Open emoji picker
 #: resources/public/pebble_templates/index.html
@@ -1691,6 +1695,10 @@ msgstr "Действие, которое вы пытались выполнит�
 msgid "Alert"
 msgstr "Предупреждение"
 
+#: resources/public/include/board.js
+msgid "The canvas is now locked. Press L to unlock."
+msgstr ""
+
 #. Snapshot save name
 #: resources/public/include/board.js
 msgid "pxls canvas"
@@ -2441,3 +2449,7 @@ msgstr "Отправить предупреждение"
 #: resources/public/admin/admin.js
 msgid "Mod Actions"
 msgstr "Действия модератора"
+
+#: resources/public/admin/admin.js
+msgid "More..."
+msgstr ""
