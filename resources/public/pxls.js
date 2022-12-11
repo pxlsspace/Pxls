@@ -64,6 +64,10 @@ window.App = (function() {
   // and here we finally go...
   board.start();
 
+  console.info('%cHey, be careful!', 'color: red; font-size: 24px;');
+  console.info('%cIt\'s safer to close this unless you KNOW what you\'re doing.', 'font-size: 16px;');
+  console.info('%cDeveloper documentation can be found here: https://github.com/pxlsspace/Pxls/blob/master/developer.md', 'font-size: 14px;');
+
   window.TH = window.TH || TH;
 
   return {
