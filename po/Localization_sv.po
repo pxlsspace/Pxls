@@ -490,6 +490,10 @@ msgid "Bulgarian"
 msgstr "Bulgariska"
 
 #: resources/public/pebble_templates/index.html
+msgid "Swedish"
+msgstr "Svenska"
+
+#: resources/public/pebble_templates/index.html
 msgid "themes;look;stylesheets;visuals"
 msgstr "teman;titta;stilmallar;visueller"
 

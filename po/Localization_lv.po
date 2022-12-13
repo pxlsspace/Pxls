@@ -489,6 +489,10 @@ msgid "Bulgarian"
 msgstr "Bulgāru"
 
 #: resources/public/pebble_templates/index.html
+msgid "Swedish"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
 msgid "themes;look;stylesheets;visuals"
 msgstr "tēmas;izskats;stila lapas;motīvs"
 

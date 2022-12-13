@@ -52,6 +52,7 @@ public class Util {
                 case "fr": return Locale.forLanguageTag("fr-FR");
                 case "ru": return Locale.forLanguageTag("ru-RU");
                 case "bg": return Locale.forLanguageTag("bg-BG");
+                case "sv": return Locale.forLanguageTag("sv-SE");
             }
         } else {
             List<Locale> locales = LocaleUtils.getLocalesFromHeader(exchange.getRequestHeaders().get(Headers.ACCEPT_LANGUAGE));
@@ -65,6 +66,6 @@ public class Util {
         return FALLBACK_LOCALE;
     }
 
-    public static List<Locale> SUPPORTED_LOCALES = List.of(Locale.forLanguageTag("en-US"), Locale.forLanguageTag("fr-FR"), Locale.forLanguageTag("ru-RU"), Locale.forLanguageTag("bg-BG"));
+    public static List<Locale> SUPPORTED_LOCALES = List.of(Locale.forLanguageTag("en-US"), Locale.forLanguageTag("fr-FR"), Locale.forLanguageTag("ru-RU"), Locale.forLanguageTag("bg-BG"), Locale.forLanguageTag("sv-SE"));
     public static Locale FALLBACK_LOCALE = SUPPORTED_LOCALES.get(0);
 }
