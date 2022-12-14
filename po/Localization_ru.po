@@ -484,7 +484,7 @@ msgstr "Болгарский"
 
 #: resources/public/pebble_templates/index.html
 msgid "Swedish"
-msgstr ""
+msgstr "Шведский"
 
 #: resources/public/pebble_templates/index.html
 msgid "themes;look;stylesheets;visuals"
