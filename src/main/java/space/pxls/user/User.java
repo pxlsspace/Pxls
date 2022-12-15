@@ -411,7 +411,7 @@ public class User {
         } else if (timeFromNowSeconds == 0) {
             this.banExpiryTime = 0L;
         } else {
-            this.banExpiryTime = (timeFromNowSeconds*1000) + System.currentTimeMillis();
+            this.banExpiryTime = (timeFromNowSeconds*1000L) + System.currentTimeMillis();
         }
         App.getDatabase().updateBan(this, timeFromNowSeconds);
         if (!skipSendUserData) sendUserData();
