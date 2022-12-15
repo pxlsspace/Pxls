@@ -1710,10 +1710,6 @@ msgstr "Darbība, kuru mēģinājāt izpildīt, nav atļauta vai izraisīja kļ�
 msgid "Alert"
 msgstr "Brīdinājums"
 
-#: resources/public/include/board.js
-msgid "The canvas is now locked. Press L to unlock."
-msgstr "Kanva ir nobloķēta. Nospiediet L lai atbloķētu."
-
 #. Snapshot save name
 #: resources/public/include/board.js
 msgid "pxls canvas"

@@ -1706,10 +1706,6 @@ msgstr "Handlingen du försökte utföra är inte tillåten eller resulterade i 
 msgid "Alert"
 msgstr "Alert"
 
-#: resources/public/include/board.js
-msgid "The canvas is now locked. Press L to unlock."
-msgstr ""
-
 #. Snapshot save name
 #: resources/public/include/board.js
 msgid "pxls canvas"
