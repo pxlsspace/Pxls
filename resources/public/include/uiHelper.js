@@ -146,12 +146,18 @@ const uiHelper = (function() {
         ls.set('settings.collapse.states', states);
       });
 
-      const setLockIcon = () => $('#lock-button i').attr('class', settings.board.lock.enable.get() ? 'fas fa-unlock' : 'fas fa-lock');
+      $('#lock-button i')
+        .toggleClass('fa-lock', !settings.board.lock.enable.get())
+        .toggleClass('fa-unlock', settings.board.lock.enable.get());
 
-      setLockIcon();
       $('#lock-button').on('click', () => {
-        settings.board.lock.enable.set(!settings.board.lock.enable.get());
-        setLockIcon();
+        settings.board.lock.enable.toggle();
+      });
+
+      settings.board.lock.enable.listen(function(value) {
+        $('#lock-button i')
+          .toggleClass('fa-lock', !value)
+          .toggleClass('fa-unlock', value);
       });
 
       settings.ui.palette.numbers.enable.listen(function(value) {
