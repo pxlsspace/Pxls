@@ -38,11 +38,11 @@ module.exports.lookup = (function() {
           y: y,
           message: msg
         }, function() {
-          modal.showText(__('Sent report!'));
+          new SLIDEIN.Slidein(__('Sent report!'), 'info-circle').show().closeAfter(3000);
           self.elements.prompt.hide();
           self.elements.lookup.hide();
         }).fail(function() {
-          modal.showText(__('Error sending report.'));
+          new SLIDEIN.Slidein(__('Error sending report.'), 'info-circle').show().closeAfter(3000);
         });
       });
       modal.show(modal.buildDom(
