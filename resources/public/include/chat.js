@@ -1841,9 +1841,9 @@ const chat = (function() {
               report_message: textArea.value
             }, function() {
               chatReport.remove();
-              modal.showText(__('Sent report!'));
+              new SLIDEIN.Slidein(__('Sent report!'), 'info-circle').show().closeAfter(3000);
             }).fail(function() {
-              modal.showText(__('Error sending report.'));
+              new SLIDEIN.Slidein(__('Error sending report.'), 'info-circle').show().closeAfter(3000);
               reportButton.disabled = false;
             });
           };
