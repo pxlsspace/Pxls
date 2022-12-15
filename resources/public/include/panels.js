@@ -3,13 +3,13 @@ const { ls } = require('./storage');
 module.exports.panels = (function() {
   const self = {
     init: () => {
-      Array.from(document.querySelectorAll('.panel-trigger')).forEach(panelTrigger => {
+      Array.from(document.querySelectorAll('.panel-trigger[data-panel]')).forEach(panelTrigger => {
         panelTrigger.addEventListener('click', e => {
           if (!e.target) {
             return console.debug('[PANELS:TRIGGER] No target?');
           }
 
-          const closestTrigger = e.target.closest('.panel-trigger');
+          const closestTrigger = e.target.closest('.panel-trigger[data-panel]');
           if (closestTrigger) {
             const _panelDescriptor = closestTrigger.dataset.panel;
             if (_panelDescriptor && _panelDescriptor.trim()) {

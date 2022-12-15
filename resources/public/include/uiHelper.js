@@ -146,6 +146,14 @@ const uiHelper = (function() {
         ls.set('settings.collapse.states', states);
       });
 
+      const setLockIcon = () => $('#lock-button i').attr('class', settings.board.lock.enable.get() ? 'fas fa-unlock' : 'fas fa-lock');
+
+      setLockIcon();
+      $('#lock-button').on('click', () => {
+        settings.board.lock.enable.set(!settings.board.lock.enable.get());
+        setLockIcon();
+      });
+
       settings.ui.palette.numbers.enable.listen(function(value) {
         place.setNumberedPaletteEnabled(value);
       });

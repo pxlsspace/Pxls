@@ -1391,6 +1391,10 @@ aside.panel.horizontal.right {
     color: #333;
 }
 
+#lock-button:hover {
+    color: #000;
+}
+
 .panel-trigger:active {
     color: #555;
 }
