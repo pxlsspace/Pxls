@@ -39,7 +39,7 @@ module.exports.lookup = (function() {
           message: msg
         }, function() {
           new SLIDEIN.Slidein(__('Sent report!'), 'info-circle').show().closeAfter(3000);
-          self.elements.prompt.hide();
+          modal.closeTop(true);
           self.elements.lookup.hide();
         }).fail(function() {
           new SLIDEIN.Slidein(__('Error sending report.'), 'info-circle').show().closeAfter(3000);

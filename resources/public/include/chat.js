@@ -1840,7 +1840,7 @@ const chat = (function() {
               cmid: this.dataset.id,
               report_message: textArea.value
             }, function() {
-              chatReport.remove();
+              modal.closeTop(true);
               new SLIDEIN.Slidein(__('Sent report!'), 'info-circle').show().closeAfter(3000);
             }).fail(function() {
               new SLIDEIN.Slidein(__('Error sending report.'), 'info-circle').show().closeAfter(3000);
