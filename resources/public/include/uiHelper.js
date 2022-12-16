@@ -147,8 +147,8 @@ const uiHelper = (function() {
       });
 
       $('#lock-button i')
-        .toggleClass('fa-lock', !settings.board.lock.enable.get())
-        .toggleClass('fa-unlock', settings.board.lock.enable.get());
+        .toggleClass('fa-lock', settings.board.lock.enable.get())
+        .toggleClass('fa-unlock', !settings.board.lock.enable.get());
 
       $('#lock-button').on('click', () => {
         settings.board.lock.enable.toggle();
@@ -156,8 +156,8 @@ const uiHelper = (function() {
 
       settings.board.lock.enable.listen(function(value) {
         $('#lock-button i')
-          .toggleClass('fa-lock', !value)
-          .toggleClass('fa-unlock', value);
+          .toggleClass('fa-lock', value)
+          .toggleClass('fa-unlock', !value);
       });
 
       settings.ui.palette.numbers.enable.listen(function(value) {
