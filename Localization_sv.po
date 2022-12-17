@@ -460,7 +460,7 @@ msgstr "språk överskrida;text"
 
 #: resources/public/pebble_templates/index.html
 msgid "Language override:"
-msgstr "Språk lverskriddelse:"
+msgstr "Språk överskriddelse:"
 
 #: resources/public/pebble_templates/index.html
 msgid "Use Browser Language"
@@ -1670,7 +1670,7 @@ msgstr "Inte hittad"
 
 #: resources/public/pebble_templates/40x.html
 msgid "The content you requested could not be found at this URL. If you believe this is an error, please contact a developer."
-msgstr "Innehållet du försökte nå kunde inte bli hittad vid detta URL. Om du tror att detta är ett fel, snälla kontakta en utvecklare av hemsidan."
+msgstr "Innehållet du försökte nå kunde inte bli hittad vid denna URL. Om du tror att detta är ett fel, snälla kontakta en utvecklare av hemsidan."
 
 #. links to the homepage (the app itself)
 #: resources/public/pebble_templates/40x.html
