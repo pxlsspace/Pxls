@@ -229,7 +229,7 @@
                                         <i class="fas fa-eye mr-1 text-success" style="font-size: 0.75em;" title="{{i18n('Localization', 'This is your currently displayed faction.') | raw}}"></i>
                                         {% endif %}
                                         {# eg "Pixelers (members: 100, ID: 1)" #}
-                                        {{i18n('Localization', '{0} (members: {1}, ID: {2})', [faction.name, faction.fetchMembers|length, faction.id]) | raw}}
+                                        {{i18n('Localization', '{0} (members: {1}, ID: {2})', [faction.name|escape, faction.fetchMembers|length, faction.id]) | raw}}
                                     </h5>
                                     <div class="mb-1 mt-2">
                                         <span class="text-muted">{{i18n('Localization', 'Owner: {0}', faction.fetchOwner.name) | raw}}</span>
@@ -300,7 +300,7 @@
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">{{i18n('Localization', 'Members of {0} ([{1}])', [faction.name, faction.tag]) | raw}}</h5>
+                        <h5 class="modal-title">{{i18n('Localization', 'Members of {0} ([{1}])', [faction.name|escape, faction.tag]) | raw}}</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="{{i18n('Localization', 'Close') | raw}}">
                             <span aria-hidden="true">&times;</span>
                         </button>
