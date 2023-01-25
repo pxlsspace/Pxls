@@ -1227,7 +1227,7 @@ msgstr "Välkommen!"
 
 #: resources/public/pebble_templates/info.html
 msgid "Welcome to pxls.space! Pxls is a multiplayer online collaborative canvas that allows you to create anything you can imagine, one pixel at a time. Join hundreds of other players in the Pxls community and create amazing works of art together as a team, or solo."
-msgstr "Välkommen till pxls.space! Pxls är ett fler-spelare online samarbets kanvas som låter dig göra vad som hälst som du kan komma på, en pixel åt gången. Gå med hundratals av andra spelare i Pxls gemensamheten och gör fantastiska konstverk tillsammans som ett team, eller solo."
+msgstr "Välkommen till pxls.space! Pxls är ett fler-spelare online samarbets kanvas baserad på <a href=\"https://www.reddit.com/r/place\" target=\"_blank\">/r/place</a>, som låter dig göra vad som helst som du kan komma på, en pixel åt gången. Gå med hundratals av andra spelare i Pxls gemensamheten och gör fantastiska konstverk tillsammans som ett team, eller solo."
 
 #: resources/public/pebble_templates/info.html
 msgid "The best place to reach staff and fellow community is in the discord!"
