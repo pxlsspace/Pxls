@@ -311,9 +311,9 @@ public class App {
 			}
 			database.insertServerAdminLog(logMessage);
 			System.out.println(logMessage);
-					break;
-				case "addroles":
-				case "addrole":
+			break;
+		case "addroles":
+		case "addrole":
 			if (token.length < 2) {
 			    System.out.println("Usage: addroles <username> [role ID ...]");
 			    return;
@@ -334,9 +334,9 @@ public class App {
 			String message = "Added roles \"" + roles.stream().map(Role::getName).collect(Collectors.joining(", ")) + "\" to " + user.getName();
 			database.insertServerAdminLog(message);
 			System.out.println(message);
-					break;
-				case "removeroles":
-				case "removerole":
+			break;
+		case "removeroles":
+		case "removerole":
 			if (token.length < 2) {
 			    System.out.println("Usage: removeroles <username> [role ID ...]");
 			    return;
@@ -448,8 +448,8 @@ public class App {
 			int toY = Integer.parseInt(token[4]);
 			byte toColor = (byte) (token.length >= 6 ? Integer.parseInt(token[5]) : 0xFF);
 			nuke(fromX, fromY, toX, toY, (byte) 0xFF, toColor);
-					break;
-				case "replace":
+			break;
+		case "replace":
 			int fromX = Integer.parseInt(token[1]);
 			int fromY = Integer.parseInt(token[2]);
 			int toX = Integer.parseInt(token[3]);
@@ -745,8 +745,8 @@ public class App {
 			} catch (Exception e) {
 			    e.printStackTrace();
 			}
-					break;
-				case "sendUserData":
+			break;
+		case "sendUserData":
 			App.getServer().getPacketHandler().updateUserData();
 			break;
             	case "addnotification":
@@ -773,8 +773,8 @@ public class App {
 			int id = App.getDatabase().createNotification(-1, title, body, expiry);
 			App.getServer().broadcast(new ServerNotification(App.getDatabase().getNotification(id)));
 			System.out.println("Notification sent");
-					break;
-				case "bp":	
+			break;
+		case "bp":	
 			if (token.length == 1) {
 			    System.out.printf("%s raw_packet%n", token[0]);
 			    return;
