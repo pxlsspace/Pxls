@@ -155,7 +155,8 @@ public class App {
     private static void handleCommand(String line) {
         try {
             String[] token = line.split(" ");
-            if (token[0].equalsIgnoreCase("reload")) {
+            switch (token[0].equalsIgnoreCase()) {
+			case "reload":
                 try {
                     cachedWhoamiOrigin = null;
                     loadConfig();
@@ -172,7 +173,8 @@ public class App {
                 } catch (Exception x) {
                     x.printStackTrace();
                 }
-            } else if (token[0].equalsIgnoreCase("save")) {
+				break;
+			case "save":
                 try {
                     saveMapForce();
                     saveMapBackup();
@@ -180,7 +182,9 @@ public class App {
                 } catch (Exception x) {
                     x.printStackTrace();
                 }
-            } else if (token[0].equalsIgnoreCase("logins") || token[0].equalsIgnoreCase("login")) {
+				break;
+            case "logins":
+			case "login":
                 if (token.length < 2) {
                     System.out.println("Usage: logins <username> [{service ID}:{service user ID} ...]");
                     return;
@@ -225,7 +229,8 @@ public class App {
                 }
                 database.insertServerAdminLog(logMessage);
                 System.out.println(logMessage);
-            } else if (token[0].equalsIgnoreCase("addlogins") || token[0].equalsIgnoreCase("addlogin")) {
+            case "addlogins":
+			case "addlogin":
                 if (token.length < 3) {
                     System.out.println("Usage: addlogins <username> [{service ID}:{service user ID} ...]");
                     return;
@@ -251,7 +256,9 @@ public class App {
                 String message = "Added login methods \"" + prettyLogins + "\" to " + user.getName();
                 database.insertServerAdminLog(message);
                 System.out.println(message);
-            } else if (token[0].equalsIgnoreCase("removelogins") || token[0].equalsIgnoreCase("removelogin")) {
+				break;
+            case "removelogins":
+			case "removelogin":
                 if (token.length < 3) {
                     System.out.println("Usage: removelogins <username> [service ID ...]");
                     return;
@@ -266,7 +273,8 @@ public class App {
                 String message = "Removed login methods \"" + String.join(", ", rest) + "\" from " + user.getName();
                 database.insertServerAdminLog(message);
                 System.out.println(message);
-            } else if (token[0].equalsIgnoreCase("roles") || token[0].equalsIgnoreCase("role")) {
+            case "roles":
+			case "role":
                 if (token.length < 2) {
                     System.out.println("Usage: roles <username> [role ID ...]");
                     return;
@@ -301,7 +309,9 @@ public class App {
                 }
                 database.insertServerAdminLog(logMessage);
                 System.out.println(logMessage);
-            } else if (token[0].equalsIgnoreCase("addroles") || token[0].equalsIgnoreCase("addrole")) {
+				break;
+			case "addroles":
+			case "addrole":
                 if (token.length < 2) {
                     System.out.println("Usage: addroles <username> [role ID ...]");
                     return;
@@ -322,7 +332,9 @@ public class App {
                 String message = "Added roles \"" + roles.stream().map(Role::getName).collect(Collectors.joining(", ")) + "\" to " + user.getName();
                 database.insertServerAdminLog(message);
                 System.out.println(message);
-            } else if (token[0].equalsIgnoreCase("removeroles") || token[0].equalsIgnoreCase("removerole")) {
+				break;
+			case "removeroles":
+			case "removerole":
                 if (token.length < 2) {
                     System.out.println("Usage: removeroles <username> [role ID ...]");
                     return;
@@ -343,13 +355,15 @@ public class App {
                 String message = "Removed roles \"" + roles.stream().map(Role::getName).collect(Collectors.joining(", ")) + "\" from " + user.getName();
                 database.insertServerAdminLog(message);
                 System.out.println(message);
-            } else if (token[0].equalsIgnoreCase("alert")) {
+				break;
+            case "alert":
                 var rest = Arrays.copyOfRange(token, 1, token.length);
                 String message = String.join(" ", rest);
                 App.getDatabase().insertServerAdminLog(String.format("Sent a server-wide broadcast with the content: %s", message));
                 server.broadcast(new ServerAlert("console", message));
                 System.out.println("Alert sent");
-            } else if (token[0].equalsIgnoreCase("ban")) {
+				break;
+            case "ban":
                 if (token.length < 2) {
                     System.out.println("Usage: ban <username> [reason]");
                     return;
@@ -365,7 +379,8 @@ public class App {
                 } else {
                     System.out.println("Cannot find user " + token[1]);
                 }
-            } else if (token[0].equalsIgnoreCase("permaban")) {
+				break;
+            case "permaban":
                 if (token.length < 2) {
                     System.out.println("Usage: permaban <username> [reason]");
                     return;
@@ -381,7 +396,8 @@ public class App {
                 } else {
                     System.out.println("Cannot find user " + token[1]);
                 }
-            } else if (token[0].equalsIgnoreCase("shadowban")) {
+				break;
+            case "shadowban":
                 if (token.length < 2) {
                     System.out.println("Usage: shadowban <username> [reason]");
                     return;
@@ -397,7 +413,8 @@ public class App {
                 } else {
                     System.out.println("Cannot find user " + token[1]);
                 }
-            } else if (token[0].equalsIgnoreCase("unban")) {
+				break;
+            case "unban":
                 if (token.length < 2) {
                     System.out.println("Usage: unban <username> [true/false] [reason]");
                     return;
@@ -421,14 +438,16 @@ public class App {
                 } else {
                     System.out.println("Cannot find user " + token[1]);
                 }
-            } else if (token[0].equalsIgnoreCase("nuke")) {
+				break;
+            case "nuke":
                 int fromX = Integer.parseInt(token[1]);
                 int fromY = Integer.parseInt(token[2]);
                 int toX = Integer.parseInt(token[3]);
                 int toY = Integer.parseInt(token[4]);
                 byte toColor = (byte) (token.length >= 6 ? Integer.parseInt(token[5]) : 0xFF);
                 nuke(fromX, fromY, toX, toY, (byte) 0xFF, toColor);
-            } else if (token[0].equalsIgnoreCase("replace")) {
+				break;
+			case "replace":
                 int fromX = Integer.parseInt(token[1]);
                 int fromY = Integer.parseInt(token[2]);
                 int toX = Integer.parseInt(token[3]);
@@ -436,7 +455,8 @@ public class App {
                 byte fromColor = (byte) Integer.parseInt(token[5]);
                 byte toColor = (byte) (token.length >= 7 ? Integer.parseInt(token[6]) : 0xFF);
                 nuke(fromX, fromY, toX, toY, fromColor, toColor);
-            } else if (token[0].equalsIgnoreCase("cons")) {
+				break;
+            case "cons":
                 if (token.length > 1) {
                     if (token[1].equalsIgnoreCase("authed") || token[1].equalsIgnoreCase("authd")) {
                         System.out.println("Authenticated connections count: " + server.getAuthedUsers().size());
@@ -448,12 +468,14 @@ public class App {
                     System.out.println("All connections count: " + server.getPacketHandler().getNumAllCons());
                     System.out.println("Authenticated connections count: " + server.getAuthedUsers().size());
                 }
-            } else if (token[0].equalsIgnoreCase("users")) {
+				break;
+			case "users":
                 System.out.println("Number of authenticated users: " + server.getAuthedUsers().size());
                 for (User user : server.getAuthedUsers().values()) {
                     System.out.println(String.format("[%d] %s (%s) (num connections: %d)", user.getId(), user.getName(), user.getRoleIDsString(), user.getConnections().size()));
                 }
-            } else if (token[0].equalsIgnoreCase("stack")) {
+				break;
+            case "stack":
                 //stack USERNAME[ set AMOUNT]
                 if (token.length > 1) {
                     User user = userManager.getByName(token[1]);
@@ -475,7 +497,9 @@ public class App {
                         System.out.printf("Unknown user: %s%n", token[1]);
                     }
                 }
-            } else if (token[0].equalsIgnoreCase("placementOverride") || token[0].equalsIgnoreCase("placementOverrides")) {
+				break;
+            case "placementOverride":
+			case "placementOverrides":
                 //placementOverride list|USERNAME[ NAME STATE]
                 //NAME=placeanycolor|ignorecooldown|ignoreplacemap
                 //STATE=on|off
@@ -546,7 +570,8 @@ public class App {
                     System.out.println("NAME=placeAnyColor|ignoreCooldown|ignorePlacemap");
                     System.out.println("STATE=on|off");
                 }
-            } else if (token[0].equalsIgnoreCase("captchaOverride")) {
+				break;
+            case "captchaOverride":
                 //captchaOverride list|USERNAME[ STATE]
                 //STATE=on|off
                 if (!isCaptchaConfigured()) {
@@ -586,12 +611,14 @@ public class App {
                     System.out.println("captchaOverride list|USERNAME[ STATE]");
                     System.out.println("STATE=on|off");
                 }
-            } else if (token[0].equalsIgnoreCase("broadcast")) {
+				break;
+            case "broadcast":
                 //broadcast MESSAGE
                 if (token.length > 1) {
                     App.getServer().getPacketHandler().handleChatMessage(null, null, new ClientChatMessage(line.substring(token[0].length() + 1), 0, true));
                 }
-            } else if (token[0].equalsIgnoreCase("ChatBan")) {
+				break;
+            case "ChatBan":
                 if (token.length > 4) {
                     User user = getUserManager().getByName(token[1]);
                     if (user == null) System.out.printf("Unknown user: %s%n", token[1]);
@@ -609,7 +636,8 @@ public class App {
                 } else {
                     System.out.println("chatban USER BAN_LENGTH MESSAGE_REMOVAL REASON\n    USER: The name of the user\n    BAN_LENGTH: The length in seconds of the chatban. For permas, see 'PermaChatBan' command.\n    MESSAGE_REMOVAL: Boolean (1|0) of whether or not to purge the user from chat.\n    REASON: The reason for the chatban. Will be displayed to the user");
                 }
-            } else if (token[0].equalsIgnoreCase("PermaChatBan")) {
+				break;
+            case "PermaChatBan":
                 if (token.length > 3) {
                     User user = userManager.getByName(token[1]);
                     if (user == null) System.out.printf("Unknown user: %s%n", token[1]);
@@ -621,7 +649,8 @@ public class App {
                 } else {
                     System.out.println("PermaChatBan USER MESSAGE_REMOVAL REASON\n    USER: The name of the user\n    MESSAGE_REMOVAL: Boolean (1|0) of whether or not to purge the user from chat.\n    REASON: The reason for the chatban. Will be displayed to the user");
                 }
-            } else if (token[0].equalsIgnoreCase("UnChatBan")) {
+				break;
+            case "UnChatBan":
                 if (token.length > 2) {
                     User user = userManager.getByName(token[1]);
                     if (user == null) System.out.printf("Unknown user: %s%n", token[1]);
@@ -631,7 +660,8 @@ public class App {
                 } else {
                     System.out.println("UnChatBan USER REASON");
                 }
-            } else if (token[0].equalsIgnoreCase("ChatPurge")) {
+				break;
+            case "ChatPurge":
                 if (token.length > 2) {
                     User user = userManager.getByName(token[1]);
                     if (user == null) System.out.printf("Unknown user: %s%n", token[1]);
@@ -660,14 +690,17 @@ public class App {
                 } else {
                     System.out.println("ChatPurge USER [AMOUNT ]REASON");
                 }
-            } else if (token[0].equalsIgnoreCase("cf")) {
+				break;
+            case "cf":
                 String z = line.substring(token[0].length() + 1);
                 System.out.printf("running chat filter against '%s'%nResult: %s%n", z, TextFilter.getInstance().filter(z, true));
-            } else if (token[0].equalsIgnoreCase("reloadUsers")) {
+				break;
+            case "reloadUsers":
                 System.out.println("Working... (may cause some lag)");
                 userManager.reload();
                 System.out.println("Done.");
-            } else if (token[0].equalsIgnoreCase("flagRename")) {
+				break;
+            case "flagRename":
                 //flagRename USERNAME [1|0]
                 if (token.length >= 2) {
                     boolean flagState = token.length < 3 || (token[2].equalsIgnoreCase("1") || token[2].equalsIgnoreCase("true") || token[2].equalsIgnoreCase("yes") || token[2].equalsIgnoreCase("y"));
@@ -682,7 +715,9 @@ public class App {
                 } else {
                     System.out.println("flagRename USERNAME [1|0]");
                 }
-            } else if (token[0].equalsIgnoreCase("setName") || token[0].equalsIgnoreCase("updateUsername")) {
+				break;
+            case "setName":
+			case "updateUsername":
                 //setName USERNAME NEW_USERNAME
                 if (token.length >= 3) {
                     User toRename = userManager.getByName(token[1]);
@@ -701,15 +736,18 @@ public class App {
                 } else {
                     System.out.printf("%s USERNAME NEW_USERNAME%n", token[0]);
                 }
-            } else if (token[0].equalsIgnoreCase("idleCheck")) {
+				break;
+            case "idleCheck":
                 try {
                     checkUserTimeout();
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-            } else if (token[0].equalsIgnoreCase("sendUserData")) {
+				break;
+			case "sendUserData":
                 App.getServer().getPacketHandler().updateUserData();
-            } else if (token[0].equalsIgnoreCase("addnotification")) {
+				break;
+            case "addnotification":
                 if (token.length < 4) {
                     System.out.printf("%s TITLE EXPIRY BODY%n", token[0]);
                     return;
@@ -733,7 +771,8 @@ public class App {
                 int id = App.getDatabase().createNotification(-1, title, body, expiry);
                 App.getServer().broadcast(new ServerNotification(App.getDatabase().getNotification(id)));
                 System.out.println("Notification sent");
-            } else if (token[0].equalsIgnoreCase("bp")) {
+				break;
+			case "bp":	
                 if (token.length == 1) {
                     System.out.printf("%s raw_packet%n", token[0]);
                     return;
@@ -741,7 +780,8 @@ public class App {
                 String raw = line.substring(token[0].length() + 1);
                 App.getServer().broadcastRaw(raw);
                 System.out.println("Packet broadcast sent.");
-            } else if (token[0].equalsIgnoreCase("up")) {
+				break;
+            case "up":
                 if (token.length < 3) {
                     System.out.printf("%s username raw_packet%n", token[0]);
                     return;
@@ -754,7 +794,8 @@ public class App {
                 String raw = line.substring(token[0].length() + token[1].length() + 2);
                 App.getServer().sendRaw(user, raw);
                 System.out.println(String.format("Packet sent to %s (UID %d)'s connections (#%d).", user.getName(), user.getId(), user.getConnections().size()));
-            } else if (token[0].equalsIgnoreCase("f")) {
+				break;
+            case "f":
                 // f $FID [$ACTION[ $VALUE]]
                 String subcommand;
                 if (token.length == 1) {
@@ -830,7 +871,8 @@ public class App {
                 } else {
                     System.out.printf("The faction %s does not exist.%n", i);
                 }
-            }
+            break;
+			}
         } catch (RuntimeException e) {
             e.printStackTrace();
         }
