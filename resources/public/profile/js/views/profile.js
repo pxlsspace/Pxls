@@ -46,6 +46,14 @@ window.DEFAULT_SPECTRUM_OPTIONS = window.DEFAULT_SPECTRUM_OPTIONS || {
 
     $('input[type="color"]').spectrum(DEFAULT_SPECTRUM_OPTIONS);
   }
+
+  // convert all times to local
+  for (const time of document.querySelectorAll('time[datetime]')) {
+    const datetime = time.getAttribute('datetime');
+    if (datetime) {
+      time.innerText = (new Date(datetime)).toLocaleString();
+    }
+  }
 })();
 
 async function initFactionSearch() {
