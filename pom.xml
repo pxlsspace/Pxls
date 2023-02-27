@@ -182,7 +182,7 @@
         <dependency>
             <groupId>org.jdbi</groupId>
             <artifactId>jdbi3-sqlobject</artifactId>
-            <version>3.34.0</version>
+            <version>3.37.0</version>
         </dependency>
 
         <dependency>
