@@ -79,7 +79,11 @@
                                 <tbody>
                                     <tr>
                                         <th class="text-right pr-3">{{i18n('Localization', 'Registration Date') | raw}}</th>
-                                        <td class="text-left">{{profile_of.signupTime | date("LLL d, y, hh:mm:ss a (z)")}}</td>
+                                        <td class="text-left">
+                                            <time datetime={{profile_of.signupTime | date}}>
+                                                {{profile_of.signupTime | date("LLL d, y, hh:mm:ss a (z)")}}
+                                            </time>
+                                        </td>
                                     </tr>
                                     {% if not snip_mode %}
                                     <tr>
@@ -106,13 +110,29 @@
                                     {% if profile_of.isBanned() %}
                                     <tr>
                                         <th class="text-right pr-3">{{i18n('Localization', 'Canvas Ban Expiry') | raw}}</th>
-                                        <td class="text-left">{% if profile_of.isPermaBanned() %}{{i18n('Localization', 'Never') | raw}}{% else %}{{profile_of.getBanExpiryTime() | date("LLL d, y, hh:mm:ss a (z)")}}{% endif %}</td>
+                                        <td class="text-left">
+                                            {% if profile_of.isPermaBanned() %}
+                                                {{i18n('Localization', 'Never') | raw}}
+                                            {% else %}
+                                                <time datetime={{profile_of.getBanExpiryTime() | date}}>
+                                                    {{profile_of.getBanExpiryTime() | date("LLL d, y, hh:mm:ss a (z)")}}
+                                                </time>
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                     {% endif %}
                                     {% if profile_of.isChatbanned() %}
                                     <tr>
                                         <th class="text-right pr-3">{{i18n('Localization', 'Chat Ban Expiry') | raw}}</th>
-                                        <td class="text-left">{% if profile_of.isPermaChatbanned() %}{{i18n('Localization', 'Never') | raw}}{% else %}{{profile_of.getChatBanExpiryTime() | date("LLL d, y, hh:mm:ss a (z)")}}{% endif %}</td>
+                                        <td class="text-left">
+                                            {% if profile_of.isPermaChatbanned() %}
+                                                {{i18n('Localization', 'Never') | raw}}
+                                            {% else %}
+                                                <time datetime={{profile_of.getChatBanExpiryTime() | date}}>
+                                                    {{profile_of.getChatBanExpiryTime() | date("LLL d, y, hh:mm:ss a (z)")}}
+                                                </time>
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                     {% endif %}
                                 </tbody>
