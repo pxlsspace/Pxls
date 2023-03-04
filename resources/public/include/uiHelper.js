@@ -331,8 +331,8 @@ const uiHelper = (function() {
        */
       document.addEventListener('drop', async event => {
         event.preventDefault();
-        // self.elements.dragDropTarget.hide();
-        // self.elements.dragDrop.fadeOut(200);
+        self.elements.dragDropTarget.hide();
+        self.elements.dragDrop.fadeOut(200);
         const data = event.dataTransfer;
         let url;
         if (data.types.includes('Files')) {
