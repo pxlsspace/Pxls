@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-05-05T21:00:41.313Z\n"
+"POT-Creation-Date: 2023-03-03T22:26:34.830Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -85,6 +85,10 @@ msgid "Drag and drop template image"
 msgstr "Velciet un nometiet šablona bildi"
 
 #: resources/public/pebble_templates/index.html
+msgid "Exit"
+msgstr "Izeja"
+
+#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/profile.html
 msgid "Info"
 msgstr "Info"
@@ -94,6 +98,7 @@ msgid "Close Panel"
 msgstr "Aizvērt Paneli"
 
 #: resources/public/pebble_templates/index.html
+#: resources/public/include/chat.js
 msgid "Chat"
 msgstr "Čats"
 
@@ -110,7 +115,8 @@ msgid "Jump To Bottom"
 msgstr "Aizlekt Uz Leju"
 
 #: resources/public/pebble_templates/index.html
-msgid "Replying to"
+#: resources/public/include/chat.js
+msgid "On"
 msgstr ""
 
 #. Open emoji picker
@@ -1741,6 +1747,14 @@ msgid "You must be logged in to chat."
 msgstr "Jums ir nepieciešams pierakstīties lai izmantotu čatu."
 
 #: resources/public/include/chat.js
+msgid "No Results"
+msgstr ""
+
+#: resources/public/include/chat.js
+msgid "Reply"
+msgstr ""
+
+#: resources/public/include/chat.js
 msgid "none provided"
 msgstr "nav norādīts"
 
@@ -1826,12 +1840,12 @@ msgid "You are reporting a chat message from ${reportTarget} with the content:"
 msgstr ""
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
-msgid "Error sending report."
-msgstr "Radās kļuda sūtot sūdzību."
-
-#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Sent report!"
 msgstr ""
+
+#: resources/public/include/chat.js resources/public/include/lookup.js
+msgid "Error sending report."
+msgstr "Radās kļuda sūtot sūdzību."
 
 #: resources/public/include/chat.js
 msgid "Report User"
@@ -1925,11 +1939,11 @@ msgid "Additional information:"
 msgstr "Papildus informācija:"
 
 #: resources/public/include/chat.js
-msgid "Error occurred while chatbanning"
+msgid "Chatban initiated"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "Chatban initiated"
+msgid "Error occurred while chatbanning"
 msgstr ""
 
 #: resources/public/include/chat.js
@@ -1973,15 +1987,11 @@ msgid "Purge Reason"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "Error sending purge."
-msgstr ""
-
-#: resources/public/include/chat.js
 msgid "User purged"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "On"
+msgid "Error sending purge."
 msgstr ""
 
 #: resources/public/include/chat.js
@@ -1993,11 +2003,11 @@ msgid "Select one of the options below to set the current rename request state."
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "An unknown error occurred. Please contact a developer"
+msgid "Rename request updated"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "Rename request updated"
+msgid "An unknown error occurred. Please contact a developer"
 msgstr ""
 
 #: resources/public/include/chat.js
@@ -2057,11 +2067,11 @@ msgid "Other (specify below)"
 msgstr "Cits (paskaidrojiet zemāk)"
 
 #: resources/public/include/lookup.js
-msgid "Hide sensitive information"
+msgid "This pixel is background (was not placed by a user)."
 msgstr ""
 
 #: resources/public/include/lookup.js
-msgid "This pixel is background (was not placed by a user)."
+msgid "Hide sensitive information"
 msgstr ""
 
 #: resources/public/include/lookup.js
@@ -2213,16 +2223,16 @@ msgid "New Accounts Disabled"
 msgstr "Jauni Konti Atspējoti"
 
 #: resources/public/include/user.js
+msgid "online"
+msgstr ""
+
+#: resources/public/include/user.js
 msgid "Sign Out"
 msgstr "Iziet"
 
 #: resources/public/include/user.js
 msgid "Are you sure you want to sign out?"
 msgstr "Vai esat pārliecināti, ka vēlaties iziet?"
-
-#: resources/public/include/user.js
-msgid "online"
-msgstr ""
 
 #: resources/public/include/user.js
 msgid "You are permanently banned."

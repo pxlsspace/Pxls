@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-05-05T21:00:41.313Z\n"
+"POT-Creation-Date: 2023-03-03T22:26:34.830Z\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -84,6 +84,10 @@ msgid "Drag and drop template image"
 msgstr "Drag and drop template image"
 
 #: resources/public/pebble_templates/index.html
+msgid "Exit"
+msgstr "Exit"
+
+#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/profile.html
 msgid "Info"
 msgstr "Info"
@@ -93,6 +97,7 @@ msgid "Close Panel"
 msgstr "Close Panel"
 
 #: resources/public/pebble_templates/index.html
+#: resources/public/include/chat.js
 msgid "Chat"
 msgstr "Chat"
 
@@ -109,8 +114,9 @@ msgid "Jump To Bottom"
 msgstr "Jump To Bottom"
 
 #: resources/public/pebble_templates/index.html
-msgid "Replying to"
-msgstr "Replying to"
+#: resources/public/include/chat.js
+msgid "On"
+msgstr "On"
 
 #. Open emoji picker
 #: resources/public/pebble_templates/index.html
@@ -1730,6 +1736,14 @@ msgid "You must be logged in to chat."
 msgstr "You must be logged in to chat."
 
 #: resources/public/include/chat.js
+msgid "No Results"
+msgstr ""
+
+#: resources/public/include/chat.js
+msgid "Reply"
+msgstr ""
+
+#: resources/public/include/chat.js
 msgid "none provided"
 msgstr "none provided"
 
@@ -1815,12 +1829,12 @@ msgid "You are reporting a chat message from ${reportTarget} with the content:"
 msgstr "You are reporting a chat message from ${reportTarget} with the content:"
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
-msgid "Error sending report."
-msgstr "Error sending report."
-
-#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Sent report!"
 msgstr "Sent report!"
+
+#: resources/public/include/chat.js resources/public/include/lookup.js
+msgid "Error sending report."
+msgstr "Error sending report."
 
 #: resources/public/include/chat.js
 msgid "Report User"
@@ -1914,12 +1928,12 @@ msgid "Additional information:"
 msgstr "Additional information:"
 
 #: resources/public/include/chat.js
-msgid "Error occurred while chatbanning"
-msgstr "Error occurred while chatbanning"
-
-#: resources/public/include/chat.js
 msgid "Chatban initiated"
 msgstr "Chatban initiated"
+
+#: resources/public/include/chat.js
+msgid "Error occurred while chatbanning"
+msgstr "Error occurred while chatbanning"
 
 #: resources/public/include/chat.js
 msgid "Chatban"
@@ -1962,16 +1976,12 @@ msgid "Purge Reason"
 msgstr "Purge Reason"
 
 #: resources/public/include/chat.js
-msgid "Error sending purge."
-msgstr "Error sending purge."
-
-#: resources/public/include/chat.js
 msgid "User purged"
 msgstr "User purged"
 
 #: resources/public/include/chat.js
-msgid "On"
-msgstr "On"
+msgid "Error sending purge."
+msgstr "Error sending purge."
 
 #: resources/public/include/chat.js
 msgid "Toggle Rename Request"
@@ -1982,12 +1992,12 @@ msgid "Select one of the options below to set the current rename request state."
 msgstr "Select one of the options below to set the current rename request state."
 
 #: resources/public/include/chat.js
-msgid "An unknown error occurred. Please contact a developer"
-msgstr "An unknown error occurred. Please contact a developer"
-
-#: resources/public/include/chat.js
 msgid "Rename request updated"
 msgstr "Rename request updated"
+
+#: resources/public/include/chat.js
+msgid "An unknown error occurred. Please contact a developer"
+msgstr "An unknown error occurred. Please contact a developer"
 
 #: resources/public/include/chat.js
 msgid "New Name: "
@@ -2046,12 +2056,12 @@ msgid "Other (specify below)"
 msgstr "Other (specify below)"
 
 #: resources/public/include/lookup.js
-msgid "Hide sensitive information"
-msgstr "Hide sensitive information"
-
-#: resources/public/include/lookup.js
 msgid "This pixel is background (was not placed by a user)."
 msgstr "This pixel is background (was not placed by a user)."
+
+#: resources/public/include/lookup.js
+msgid "Hide sensitive information"
+msgstr "Hide sensitive information"
 
 #: resources/public/include/lookup.js
 msgid "Move Template Here"
@@ -2202,16 +2212,16 @@ msgid "New Accounts Disabled"
 msgstr "New Accounts Disabled"
 
 #: resources/public/include/user.js
+msgid "online"
+msgstr "online"
+
+#: resources/public/include/user.js
 msgid "Sign Out"
 msgstr "Sign Out"
 
 #: resources/public/include/user.js
 msgid "Are you sure you want to sign out?"
 msgstr "Are you sure you want to sign out?"
-
-#: resources/public/include/user.js
-msgid "online"
-msgstr "online"
 
 #: resources/public/include/user.js
 msgid "You are permanently banned."
@@ -2453,3 +2463,6 @@ msgstr "Mod Actions"
 #: resources/public/admin/admin.js
 msgid "More..."
 msgstr ""
+
+#~ msgid "Replying to"
+#~ msgstr "Replying to"

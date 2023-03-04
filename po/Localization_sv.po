@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-05-05T21:00:41.313Z\n"
+"POT-Creation-Date: 2023-03-03T22:26:34.830Z\n"
 "PO-Revision-Date: \n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -91,6 +91,10 @@ msgid "Drag and drop template image"
 msgstr "Dra och släpp mallbilden"
 
 #: resources/public/pebble_templates/index.html
+msgid "Exit"
+msgstr "Utgång"
+
+#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/profile.html
 msgid "Info"
 msgstr "Info"
@@ -100,6 +104,7 @@ msgid "Close Panel"
 msgstr "Stäng Panel"
 
 #: resources/public/pebble_templates/index.html
+#: resources/public/include/chat.js
 msgid "Chat"
 msgstr "Chatt"
 
@@ -116,8 +121,9 @@ msgid "Jump To Bottom"
 msgstr "Hoppa till botten"
 
 #: resources/public/pebble_templates/index.html
-msgid "Replying to"
-msgstr ""
+#: resources/public/include/chat.js
+msgid "On"
+msgstr "På"
 
 #. Open emoji picker
 #: resources/public/pebble_templates/index.html
@@ -1737,6 +1743,14 @@ msgid "You must be logged in to chat."
 msgstr "Du måste vara inloggad för att chatta."
 
 #: resources/public/include/chat.js
+msgid "No Results"
+msgstr ""
+
+#: resources/public/include/chat.js
+msgid "Reply"
+msgstr ""
+
+#: resources/public/include/chat.js
 msgid "none provided"
 msgstr "inga givna"
 
@@ -1822,12 +1836,12 @@ msgid "You are reporting a chat message from ${reportTarget} with the content:"
 msgstr ""
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
-msgid "Error sending report."
-msgstr "Ett fel uppstod med skickandet av reporten."
-
-#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Sent report!"
 msgstr ""
+
+#: resources/public/include/chat.js resources/public/include/lookup.js
+msgid "Error sending report."
+msgstr "Ett fel uppstod med skickandet av reporten."
 
 #: resources/public/include/chat.js
 msgid "Report User"
@@ -1921,12 +1935,12 @@ msgid "Additional information:"
 msgstr "Ytterligare information:"
 
 #: resources/public/include/chat.js
-msgid "Error occurred while chatbanning"
-msgstr "Ett fel uppstod under chatt bannlyssning"
-
-#: resources/public/include/chat.js
 msgid "Chatban initiated"
 msgstr ""
+
+#: resources/public/include/chat.js
+msgid "Error occurred while chatbanning"
+msgstr "Ett fel uppstod under chatt bannlyssning"
 
 #: resources/public/include/chat.js
 msgid "Chatban"
@@ -1969,16 +1983,12 @@ msgid "Purge Reason"
 msgstr "Rensnings Anledning"
 
 #: resources/public/include/chat.js
-msgid "Error sending purge."
-msgstr "Ett fel uppstod med utskickning av rensning"
-
-#: resources/public/include/chat.js
 msgid "User purged"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "On"
-msgstr "På"
+msgid "Error sending purge."
+msgstr "Ett fel uppstod med utskickning av rensning"
 
 #: resources/public/include/chat.js
 msgid "Toggle Rename Request"
@@ -1989,12 +1999,12 @@ msgid "Select one of the options below to set the current rename request state."
 msgstr "Välj någon av alternativen under för att ställa in nuvarande omdöpnings begärande status."
 
 #: resources/public/include/chat.js
-msgid "An unknown error occurred. Please contact a developer"
-msgstr "Ett okänt fel uppstod. Snälla kontakta en utvecklare"
-
-#: resources/public/include/chat.js
 msgid "Rename request updated"
 msgstr ""
+
+#: resources/public/include/chat.js
+msgid "An unknown error occurred. Please contact a developer"
+msgstr "Ett okänt fel uppstod. Snälla kontakta en utvecklare"
 
 #: resources/public/include/chat.js
 msgid "New Name: "
@@ -2053,12 +2063,12 @@ msgid "Other (specify below)"
 msgstr "Annat (specifiera under)"
 
 #: resources/public/include/lookup.js
-msgid "Hide sensitive information"
-msgstr "Göm sensitive information"
-
-#: resources/public/include/lookup.js
 msgid "This pixel is background (was not placed by a user)."
 msgstr ""
+
+#: resources/public/include/lookup.js
+msgid "Hide sensitive information"
+msgstr "Göm sensitive information"
 
 #: resources/public/include/lookup.js
 msgid "Move Template Here"
@@ -2209,16 +2219,16 @@ msgid "New Accounts Disabled"
 msgstr "Nytt Konto Avstängt"
 
 #: resources/public/include/user.js
+msgid "online"
+msgstr ""
+
+#: resources/public/include/user.js
 msgid "Sign Out"
 msgstr "Logga ut"
 
 #: resources/public/include/user.js
 msgid "Are you sure you want to sign out?"
 msgstr "Är du säker att du vill logga ut?"
-
-#: resources/public/include/user.js
-msgid "online"
-msgstr ""
 
 #: resources/public/include/user.js
 msgid "You are permanently banned."

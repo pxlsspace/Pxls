@@ -42,7 +42,8 @@ const uiHelper = (function() {
       txtDiscordName: $('#txtDiscordName'),
       bottomBanner: $('#bottom-banner'),
       dragDropTarget: $('#drag-drop-target'),
-      dragDrop: $('#drag-drop')
+      dragDrop: $('#drag-drop'),
+      dragDropExit: $('#drag-drop-exit')
     },
     themes: [
       {
@@ -330,8 +331,8 @@ const uiHelper = (function() {
        */
       document.addEventListener('drop', async event => {
         event.preventDefault();
-        self.elements.dragDropTarget.hide();
-        self.elements.dragDrop.fadeOut(200);
+        // self.elements.dragDropTarget.hide();
+        // self.elements.dragDrop.fadeOut(200);
         const data = event.dataTransfer;
         let url;
         if (data.types.includes('Files')) {
@@ -398,6 +399,11 @@ const uiHelper = (function() {
 
         self.handleFileUrl(url);
       }, false);
+
+      self.elements.dragDropExit.click(() => {
+        self.elements.dragDropTarget.hide();
+        self.elements.dragDrop.fadeOut(200);
+      });
     },
     prettifyRange: function (ranges) {
       ranges = $(ranges);
