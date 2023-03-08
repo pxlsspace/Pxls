@@ -1153,7 +1153,7 @@ msgstr "Hur gör jag en mall?"
 
 #: resources/public/pebble_templates/faq.html
 msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://discord.gg/5MVDCq53vC\" target=\"blank\">Clueless</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or Clueless."
-msgstr ""
+msgstr "En mall är en bild länk som är inlaggd i mall textrutan i inställningspanelen så du kan placera den över en kanvas. Du kan använda en normal bild länk till din pixelkonst, men många personer använder tredje parti verkyg som <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> eller <a href=\"https://discord.gg/5MVDCq53vC\" target=\"blank\">Clueless</a> för att konvertera pixel konst till en finare länk. Om du behöver göra pixel konsten själv, så kan du använda <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> för att göra konst som du kan sätta in i Charity eller Clueless."
 
 #: resources/public/pebble_templates/faq.html
 msgid "How do I move a template?"
