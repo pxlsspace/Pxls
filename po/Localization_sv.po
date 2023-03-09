@@ -84,11 +84,11 @@ msgstr "Användarnamn:"
 
 #: resources/public/pebble_templates/index.html
 msgid "Discord Tag (Optional):"
-msgstr ""
+msgstr "Discord Tag (Frivilligt):"
 
 #: resources/public/pebble_templates/index.html
 msgid "Drag and drop template image"
-msgstr "Dra och släpp mallbilden"
+msgstr "Dra och släpp templatebilden"
 
 #: resources/public/pebble_templates/index.html
 msgid "Exit"
@@ -104,7 +104,6 @@ msgid "Close Panel"
 msgstr "Stäng Panel"
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/include/chat.js
 msgid "Chat"
 msgstr "Chatt"
 
@@ -121,9 +120,8 @@ msgid "Jump To Bottom"
 msgstr "Hoppa till botten"
 
 #: resources/public/pebble_templates/index.html
-#: resources/public/include/chat.js
-msgid "On"
-msgstr "På"
+msgid "Replying to"
+msgstr "Svarar"
 
 #. Open emoji picker
 #: resources/public/pebble_templates/index.html
@@ -185,7 +183,7 @@ msgstr "<kbd>Skift</kbd> + Klicka/håll för att kolla upp pixeln"
 
 #: resources/public/pebble_templates/index.html
 msgid "overlays;alignment;grid hidden;grid shown;hide grid;show grid"
-msgstr "överlägg;inriktning,rutnät gömd;rutnät visad; göm rutnät; visa rutnät "
+msgstr "överlägg;inriktning,rutnät gömd;rutnät visad; göm rutnät; visa rutnät"
 
 #: resources/public/pebble_templates/index.html
 msgid "<kbd>G</kbd> to toggle grid"
@@ -193,7 +191,7 @@ msgstr "<kbd>G</kbd> för att växla rutnät"
 
 #: resources/public/pebble_templates/index.html
 msgid "close;information shown;information hidden;info shown;info hidden;hide information;show information"
-msgstr "stäng;information visad; information gömd; info visad; info gömd;göm information;visa information "
+msgstr "stäng;information visad; information gömd; info visad; info gömd;göm information;visa information"
 
 #: resources/public/pebble_templates/index.html
 msgid "<kbd>I</kbd> to open info"
@@ -241,15 +239,15 @@ msgstr "<kbd>H</kbd för att växla värmekartan"
 
 #: resources/public/pebble_templates/index.html
 msgid "overlays;user activity;pixels unplaced pixels;virginmap hidden;virginmap shown;hide virginmap;show virginmap"
-msgstr "överlägg;användarsaktivitet;pixlar oplacerade pixlar;orördsskarta gömd;orördsskarta visad;göm orördsskarta;visa orördsskarta"
+msgstr "överlägg;användarsaktivitet;pixlar oplacerade pixlar;oskuldskartan gömd;oskuldskartan visad;göm oskuldskartan;visa oskuldskartan"
 
 #: resources/public/pebble_templates/index.html
 msgid "<kbd>X</kbd> to toggle virginmap"
-msgstr "<kbd>X</kbd> för att växla orördsskartan"
+msgstr "<kbd>X</kbd> för att växla oskuldskartan"
 
 #: resources/public/pebble_templates/index.html
 msgid "overlays;user activity;pixels placed pixels;wipe;clean;"
-msgstr "överlägg;användarsaktivitet;pixler placerade pixlar;rensa;rent"
+msgstr "överlägg;användarsaktivitet;pixler placerade pixlar;rensa;rent;"
 
 #: resources/public/pebble_templates/index.html
 msgid "<kbd>O</kbd> to clear heatmap"
@@ -257,11 +255,11 @@ msgstr "<kbd>O</kbd för att rensa värmekartan"
 
 #: resources/public/pebble_templates/index.html
 msgid "overlays;user activity;pixels unplaced pixels;wipe;clean;"
-msgstr "överlägg;användarsaktivitet;pixlar oplacerade pixlar;rensa;rent"
+msgstr "överlägg;användarsaktivitet;pixlar oplacerade pixlar;rensa;rent;"
 
 #: resources/public/pebble_templates/index.html
 msgid "<kbd>U</kbd> to clear virginmap"
-msgstr "<kbd>U</kbd> för att rensa orördsskartan"
+msgstr "<kbd>U</kbd> för att rensa oskuldskartan"
 
 #: resources/public/pebble_templates/index.html
 msgid "next color;previous color"
@@ -289,19 +287,19 @@ msgstr "<kbd>ESC</kbd> för att avmarkera din aktuella pixel"
 
 #: resources/public/pebble_templates/index.html
 msgid "recenter;jump;center on template;guides;focus"
-msgstr "omcentrera;hopa;center av "
+msgstr "omcentrera;hopa;center av"
 
 #: resources/public/pebble_templates/index.html
 msgid "<kbd>R</kbd> to center the board on the current template"
-msgstr "<kbd>R</kbd> för att gå till mitten av nuvarande mallen"
+msgstr "<kbd>R</kbd> för att gå till mitten av nuvarande templaten"
 
 #: resources/public/pebble_templates/index.html
 msgid "templates;guides"
-msgstr "maller;guider"
+msgstr "template;guider"
 
 #: resources/public/pebble_templates/index.html
 msgid "Template"
-msgstr "Mall"
+msgstr "Template"
 
 #: resources/public/pebble_templates/index.html
 msgid "transparency"
@@ -329,27 +327,27 @@ msgstr "Notera: Dessa värden är baserade på QWERTY tangentbord. För andra la
 
 #: resources/public/pebble_templates/index.html
 msgid "templates;overlays;guides"
-msgstr "maller;överlägg;guider"
+msgstr "templater;överlägg;guider"
 
 #: resources/public/pebble_templates/index.html
 msgid "templates;overlays;image;pixel art"
-msgstr "maller;överlägg;bilder;pixelkonst"
+msgstr "templater;överlägg;bilder;pixelkonst"
 
 #: resources/public/pebble_templates/index.html
 msgid "template enabled;template disabled;show template;hide template;template shown;template hidden"
-msgstr "maller aktiverade;maller avstängda;visa mall;göm mall;mall visad;mall gömd"
+msgstr "template aktiverade;templater avstängda;visa template;göm template;template visad;template gömd"
 
 #: resources/public/pebble_templates/index.html
 msgid "Use template"
-msgstr "Använd mall"
+msgstr "Använd template"
 
 #: resources/public/pebble_templates/index.html
 msgid "Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the template around"
-msgstr "Håll ner <kbd>Ctrl</kbd> (eller <kbd>Option</kbd> på en mac) för att dra runt mallen"
+msgstr "Håll ner <kbd>Ctrl</kbd> (eller <kbd>Option</kbd> på en mac) för att dra runt templaten"
 
 #: resources/public/pebble_templates/index.html
 msgid "template title;template name;tab name;tab title;title="
-msgstr "mall titel;mall namn;flik namn;flik titel;title="
+msgstr "template titel;template namn;flik namn;flik titel;title="
 
 #: resources/public/pebble_templates/index.html
 msgid "Title:"
@@ -357,7 +355,7 @@ msgstr "Titel:"
 
 #: resources/public/pebble_templates/index.html
 msgid "template location source;template source URL;template URL;template="
-msgstr "mall"
+msgstr "template plats ursprung;template ursprungs URL;template URL;template="
 
 #: resources/public/pebble_templates/index.html
 msgid "URL:"
@@ -365,7 +363,7 @@ msgstr "URL:"
 
 #: resources/public/pebble_templates/index.html
 msgid "template position;template x;template y;template location; template vertical; template horizontal;ox=;oy="
-msgstr "mall position;mall x;mall y;mall position; mall vertikal; mall horisontell;ox=;oy="
+msgstr "template position;template x;template y;template position; template vertikal; template horisontell;ox=;oy="
 
 #: resources/public/pebble_templates/index.html
 msgid "Horizontal position:"
@@ -377,7 +375,7 @@ msgstr "Vertikal position:"
 
 #: resources/public/pebble_templates/index.html
 msgid "template width;tw="
-msgstr "mallbred:tw="
+msgstr "template bred:tw="
 
 #: resources/public/pebble_templates/index.html
 msgid "Width:"
@@ -389,7 +387,7 @@ msgstr "Nollställ"
 
 #: resources/public/pebble_templates/index.html
 msgid "template style;custom template"
-msgstr "mall stil;anpassad mall"
+msgstr "template stil;anpassad template"
 
 #: resources/public/pebble_templates/index.html
 msgid "Style:"
@@ -401,7 +399,7 @@ msgstr "Använd Ursprungs Färger"
 
 #: resources/public/pebble_templates/index.html
 msgid "1-to-1"
-msgstr "1-to-1"
+msgstr "1-till-1"
 
 #: resources/public/pebble_templates/index.html
 msgid "1-to-1 (keep incorrect colors)"
@@ -417,7 +415,7 @@ msgstr "Prickad (Stor, 2:2)"
 
 #: resources/public/pebble_templates/index.html
 msgid "Symbols"
-msgstr ""
+msgstr "Symboler"
 
 #: resources/public/pebble_templates/index.html
 msgid "Numbers"
@@ -425,11 +423,11 @@ msgstr "Nummer"
 
 #: resources/public/pebble_templates/index.html
 msgid "Custom…"
-msgstr "Anpassad..."
+msgstr "Anpassad…"
 
 #: resources/public/pebble_templates/index.html
 msgid "template style source;template style URL;custom style URL;custom template"
-msgstr "mall stil ursprung;mall stil URL;valfri stil URL;valfri mall"
+msgstr "template stil ursprung;template stil URL;valfri stil URL;valfri template"
 
 #: resources/public/pebble_templates/index.html
 msgid "Custom style URL:"
@@ -437,7 +435,7 @@ msgstr "Anpassad stil URL:"
 
 #: resources/public/pebble_templates/index.html
 msgid "template conversion;template palette conversion;convert to palette"
-msgstr "mall omvandla;mall palett omvandling;omvandla till palett"
+msgstr "template omvandla;template palett omvandling;omvandla till palett"
 
 #: resources/public/pebble_templates/index.html
 msgid "Color Conversion Mode:"
@@ -453,7 +451,7 @@ msgstr "Närmast Anpassning"
 
 #: resources/public/pebble_templates/index.html
 msgid "template transparency;template opacity;oo="
-msgstr "mall genomskinlighet;mall opacitet;oo="
+msgstr "template genomskinlighet;template opacitet;oo="
 
 #: resources/public/pebble_templates/index.html
 msgid "Opacity:"
@@ -461,7 +459,7 @@ msgstr "Opacitet:"
 
 #: resources/public/pebble_templates/index.html
 msgid "ui;interface"
-msgstr "UI;interfas"
+msgstr "uI;interfas"
 
 #: resources/public/pebble_templates/index.html
 msgid "UI Settings"
@@ -473,7 +471,7 @@ msgstr "språk överskrida;text"
 
 #: resources/public/pebble_templates/index.html
 msgid "Language override:"
-msgstr "Språk lverskriddelse:"
+msgstr "Språk överskriddelse:"
 
 #: resources/public/pebble_templates/index.html
 msgid "Use Browser Language"
@@ -537,7 +535,7 @@ msgstr "Aktivera färgljusstyrka"
 
 #: resources/public/pebble_templates/index.html
 msgid "Warning: Known to cause fuzziness in Chrome on some Mac/Linux installs"
-msgstr "Warning: Känd att orsaka luddighet i Chrome på vissa Max/Linux installeringar"
+msgstr "Warning: Känd att orsaka luddighet i Chrome på vissa Mac/Linux installeringar"
 
 #: resources/public/pebble_templates/index.html
 msgid "Color brightness:"
@@ -637,11 +635,11 @@ msgstr "användarnamn;färg;färg"
 
 #: resources/public/pebble_templates/index.html
 msgid "Username Color:"
-msgstr "Användarnamnsfärg"
+msgstr "Användarnamnsfärg:"
 
 #: resources/public/pebble_templates/index.html
 msgid "chat message;chat ui"
-msgstr "chatt medelande;chat ui"
+msgstr "chatt medellande;chat ui"
 
 #: resources/public/pebble_templates/index.html
 msgid "Interface"
@@ -681,11 +679,11 @@ msgstr "Visa grupp taggar"
 
 #: resources/public/pebble_templates/index.html
 msgid "template urls;template links;template name"
-msgstr "mall urls;mall länkar;mall namn"
+msgstr "template urls;template länkar;template namn"
 
 #: resources/public/pebble_templates/index.html
 msgid "Replace template titles with URLs in chat where applicable"
-msgstr "Byt ut malltitlar med URL'er i chatten när det är möjligt"
+msgstr "Byt ut template titlar med URL'er i chatten när det är möjligt"
 
 #: resources/public/pebble_templates/index.html
 msgid "chat orientation;chat position"
@@ -765,7 +763,7 @@ msgstr "Oginorera"
 
 #: resources/public/pebble_templates/index.html
 msgid "overlays;virginmap;heatmap;grid"
-msgstr "överlägg;orördsskarta;värmekarta;rutnät"
+msgstr "överlägg;oskuldskarta;värmekarta;rutnät"
 
 #: resources/public/pebble_templates/index.html
 msgid "Overlay Settings"
@@ -809,15 +807,15 @@ msgstr "Värmekartabackgrunds opacitet:"
 
 #: resources/public/pebble_templates/index.html
 msgid "virginmap;virginmap opacity;clear virginmap"
-msgstr "orördsskarta;orördsskartans opacitet;rensa orördsskartan"
+msgstr "oskuldskarta;oskuldskartan opacitet;rensa oskuldskartan"
 
 #: resources/public/pebble_templates/index.html
 msgid "Virginmap"
-msgstr "Orördskartan"
+msgstr "oskuldskartan"
 
 #: resources/public/pebble_templates/index.html
 msgid "Turn on virginmap"
-msgstr "Aktivera orördsskartan"
+msgstr "Aktivera oskuldskartan"
 
 #: resources/public/pebble_templates/index.html
 msgid "(toggle with <kbd>X</kbd>)"
@@ -829,7 +827,7 @@ msgstr "överlägg;användarsaktivitet;pixlar oplacerade pixlar;genomskinlighet"
 
 #: resources/public/pebble_templates/index.html
 msgid "Virginmap background opacity:"
-msgstr "Orördskartans backgrundsopacitet"
+msgstr "oskuldskartans backgrundsopacitet:"
 
 #: resources/public/pebble_templates/index.html
 msgid "overlays;activity;pixels unplaced pixels;wipe;clean"
@@ -837,7 +835,7 @@ msgstr "överlägg;aktivitet;pixlar oplacerade pixlar;rensa;rensa"
 
 #: resources/public/pebble_templates/index.html
 msgid "Clear virginmap"
-msgstr "Rensa orördsskartan"
+msgstr "Rensa oskuldskartan"
 
 #: resources/public/pebble_templates/index.html
 msgid "(hotkey: <kbd>U</kbd>)"
@@ -845,7 +843,7 @@ msgstr "(snabbtangent: <kbd>U</kbd>)"
 
 #: resources/public/pebble_templates/index.html
 msgid "Layer template underneath heatmap"
-msgstr "Lagra mallen under värmekartan"
+msgstr "Lagra templaten under värmekartan"
 
 #: resources/public/pebble_templates/index.html
 msgid "grid;toggle grid"
@@ -885,7 +883,7 @@ msgstr "skrollningskänslighet;zoomningkänslighet;mushjulets känslighet"
 
 #: resources/public/pebble_templates/index.html
 msgid "Zoom sensitivity:"
-msgstr "Zommkänsligheten"
+msgstr "Zommkänsligheten:"
 
 #: resources/public/pebble_templates/index.html
 msgid "zooming limit;scrolling limit;mousewheel;zooming minimum;zooming maximum"
@@ -969,7 +967,7 @@ msgstr "ta skärmbild;bild;nerladdningsformat;bild;kanvas;kanvas"
 
 #: resources/public/pebble_templates/index.html
 msgid "Snapshot image format:"
-msgstr "Skärmbildsformat"
+msgstr "Skärmbildsformat:"
 
 #: resources/public/pebble_templates/index.html
 msgid "PNG"
@@ -1021,7 +1019,7 @@ msgstr "larma källa;notifiera url;notifiera källa;notifications url;notificati
 
 #: resources/public/pebble_templates/index.html
 msgid "Alert URL:"
-msgstr "Varnings URL:"
+msgstr "Alert URL:"
 
 #: resources/public/pebble_templates/index.html
 msgid "Update"
@@ -1148,27 +1146,31 @@ msgstr "Det är designat så här. Det är bättre att placera en pixel så fort
 
 #: resources/public/pebble_templates/faq.html
 msgid "How do I appeal a ban?"
-msgstr "Hur kan jag vädja en banlyselse"
+msgstr "Hur kan jag vädja en banlyselse?"
 
 #: resources/public/pebble_templates/faq.html
 msgid "Contact us on <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord</a> or send an appeal to our <a href=\"https://pxls.space/appeal\" target=\"_blank\">Google form</a> after reading the rules in the site's info panel."
-msgstr "Kontakta oss på <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord</a> eller skicka in en vädjandesbegära till vår <a href=\"https://pxls.space/appeal\" target=\"_blank\">Google form</a> efter du har läst sidans regler i info panelen."
+msgstr "Kontakta oss på <a href=\"https://pxls.space/discord\" target=\"_blank\">Discord</a> eller skicka in en vädjandesbegära till vår <a \"href=\"https://pxls.space/appeal\" target=\"_blank\">Google form</a> efter du har läst sidans regler i info panelen."
 
 #: resources/public/pebble_templates/faq.html
 msgid "How do I make a template?"
-msgstr "Hur gör jag en mall?"
+msgstr "Hur gör jag ett template?"
 
 #: resources/public/pebble_templates/faq.html
 msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://discord.gg/5MVDCq53vC\" target=\"blank\">Clueless</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or Clueless."
+<<<<<<< HEAD
 msgstr ""
+=======
+msgstr "Ett template är en bildlänk som är inlagd i template textrutan i inställningspanelen så att du kan placera den över kanvasen. Du kan använda en normal bild länk till din pixelkonst, men många personer anväder tredje parti verktyg som <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> eller <a href=\"https://discord.gg/5MVDCq53vC\" target=\"blank\">Clueless</a> för att få det i en finare länk. Om du behöver göra pixelkonst själv så kan du använda <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> för att göra konst som du sedan kan lägga in på Charity eller PxlsFiddle."
+>>>>>>> 72f9ac4 (Clean up and compile Swedish localizations)
 
 #: resources/public/pebble_templates/faq.html
 msgid "How do I move a template?"
-msgstr "Hur flyttar jag en mall?"
+msgstr "Hur flyttar jag ett template?"
 
 #: resources/public/pebble_templates/faq.html
 msgid "Hold <kbd>CTRL</kbd> (or <kbd>OPTION</kbd> on macOS) and click and drag to move it around. On mobile, you can tap and hold where you want to move the template and click \"Move Template Here\" in the pop-up."
-msgstr "Håll ner <kbd>CTRL</kbd> (eller <kbd>OPTION</kbd> på macOS) och klicka och dra för att flytta runt på den. På telefon så kan du klicka på var du vill flytta mallen och clicka \"Flytta mall hit\" i popupen."
+msgstr "Håll ner <kbd>CTRL</kbd> (eller <kbd>OPTION</kbd> på macOS) och klicka och dra för att flytta runt på den. På telefon så kan du trycka var du vill flytta templaten och sedan klicka \"Flytta template\" i popupen."
 
 #: resources/public/pebble_templates/faq.html
 msgid "Does the canvas reset? When?"
@@ -1240,11 +1242,11 @@ msgstr "Välkommen!"
 
 #: resources/public/pebble_templates/info.html
 msgid "Welcome to pxls.space! Pxls is a multiplayer online collaborative canvas that allows you to create anything you can imagine, one pixel at a time. Join hundreds of other players in the Pxls community and create amazing works of art together as a team, or solo."
-msgstr "Välkommen till pxls.space! Pxls är ett fler-spelare online samarbets kanvas som låter dig göra vad som hälst som du kan komma på, en pixel åt gången. Gå med hundratals av andra spelare i Pxls sammanhållningen och gör fantastiska konstverk tillsammans som ett team, eller solo."
+msgstr "Välkommen till pxls.space! Pxls är ett fler-spelare online samarbets kanvas baserad på <a href=\"https://www.reddit.com/r/place\" target=\"_blank\">/r/place</a>, som låter dig göra vad som helst som du kan komma på, en pixel åt gången. Gå med hundratals av andra spelare i Pxls gemensamheten och gör fantastiska konstverk tillsammans som ett team, eller solo."
 
 #: resources/public/pebble_templates/info.html
 msgid "The best place to reach staff and fellow community is in the discord!"
-msgstr "Den bästa platsen att nå personal och vårt gemenskap i discord servern!"
+msgstr "Den bästa platsen att nå moderatörerna och vårt gemenskap i discord servern!"
 
 #: resources/public/pebble_templates/info.html
 msgid "Check out our social media pages, and please take the time to read the rules below. Have fun creating (or changing) art!"
@@ -1264,23 +1266,23 @@ msgstr "Inga hatfyllda bilder eller förkränkande språk. Detta inkluderar, men
 
 #: resources/public/pebble_templates/info.html
 msgid "No NSFW or NSFL content."
-msgstr "Inget NSFW (Inte Säkert För Arbte) eller NSFL (Inte Säkert för livet) innehåll."
+msgstr "Inget NSFW (Not Safe For Work) eller NSFL (Not Safe For Life) innehåll."
 
 #: resources/public/pebble_templates/info.html
 msgid "No nudity or otherwise sexually explicit content"
-msgstr "Ingen nakenhet eller annars sexuellt explicit innehåll."
+msgstr "Ingen nakenhet eller annars sexuellt explicit innehåll"
 
 #: resources/public/pebble_templates/info.html
 msgid "No female-presenting nipples/bare breasts, genitalia, sexual fluids"
-msgstr "Inga kvinno-presenterande nippel/bara bröst, genitalier eller sexuella vätskor."
+msgstr "Inga kvinno-presenterande nippel/bara bröst, genitalier eller sexuella vätskor"
 
 #: resources/public/pebble_templates/info.html
 msgid "No sexual imagery/erotica"
-msgstr "Inget sexuellt eller erotiska konstverk."
+msgstr "Inget sexuellt eller erotiska konstverk"
 
 #: resources/public/pebble_templates/info.html
 msgid "No excessive blood or otherwise obscene/shocking content"
-msgstr "Ingen överdrivet mängd med blod eller annars obscen/shockerande innehåll."
+msgstr "Ingen överdrivet mängd med blod eller annars obscen/shockerande innehåll"
 
 #: resources/public/pebble_templates/info.html
 msgid "No more than <b>one</b> account per user, no exceptions. Multiple account users will be banned from creating art on the canvas."
@@ -1300,7 +1302,7 @@ msgstr "Någon sorts automatiserad aggregering av data från användar-uppslagni
 
 #: resources/public/pebble_templates/info.html
 msgid "Staff have final say in any rule disputes"
-msgstr "Personal har sista ordet i alla regel konflikter."
+msgstr "Moderatörer har sista ordet i alla regel konflikter"
 
 #: resources/public/pebble_templates/info.html
 msgid "If you feel a moderator has acted inappropriately, please report it to an administrator."
@@ -1324,7 +1326,7 @@ msgstr "Inget hatspråk. Detta inkluderar emojis/symboler/ASCII konst."
 
 #: resources/public/pebble_templates/info.html
 msgid "Normal swearing/etc is allowed"
-msgstr "Normalt svärande är tillåtet."
+msgstr "Normalt svärande är tillåtet"
 
 #: resources/public/pebble_templates/info.html
 msgid "No spamming"
@@ -1386,22 +1388,22 @@ msgstr "Profil (användar info, gruber, etc.)"
 #. link to charity.pxls.space
 #: resources/public/pebble_templates/info.html
 msgid "Generator, progress checker, and monitor for Pxls templates"
-msgstr "Genererare, utvecklingskollare, och övervakare för Pxls maller."
+msgstr "Genererare, utvecklingskollare, och övervakare för Pxls template"
 
 #. link to charity.pxls.space
 #: resources/public/pebble_templates/info.html
 msgid "Charity (templates, monitors, etc.)"
-msgstr "Charity (mallar, övervakare, etc.)"
+msgstr "Charity (template, övervakare, etc.)"
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
 msgid "Archives"
-msgstr ""
+msgstr "Arkiv"
 
 #. link to pxlsfiddle.com
 #: resources/public/pebble_templates/info.html
 msgid "PxlsFiddle (archives)"
-msgstr ""
+msgstr "PxlsFiddle (arkiv)"
 
 #: resources/public/pebble_templates/info.html
 msgid "Donate"
@@ -1453,7 +1455,7 @@ msgstr "Registrerings Datum"
 #: resources/public/pebble_templates/profile.html
 #: resources/public/include/lookup.js
 msgid "Alltime Pixels"
-msgstr "All-tids Pixlar"
+msgstr "Heltids Pixlar"
 
 #: resources/public/pebble_templates/profile.html
 msgid "Current Canvas Pixels"
@@ -1542,7 +1544,7 @@ msgstr "Du är kanvas-bannlyst och kan inte göra nya grupper. Om du tror att de
 
 #: resources/public/pebble_templates/profile.html
 msgid "You must have at least {0} all-time pixels to create a faction."
-msgstr "Du måste ha minst {0} all-tids pixlar placerade för att kunna göra en grupp."
+msgstr "Du måste ha minst {0} heltid pixlar placerade för att kunna göra en grupp."
 
 #: resources/public/pebble_templates/profile.html
 msgid "Create"
@@ -1559,11 +1561,11 @@ msgstr "Det här är ditt nuvarande visad grupp."
 #. eg "Pixelers (members: 100, ID: 1)"
 #: resources/public/pebble_templates/profile.html
 msgid "{0} (members: {1}, ID: {2})"
-msgstr ""
+msgstr "{0} (medlemmar: {1}, ID: {2})"
 
 #: resources/public/pebble_templates/profile.html
 msgid "Owner: {0}"
-msgstr "Ägare: {0}\""
+msgstr "Ägare: {0}"
 
 #. makes the faction no longer the one displayed for the current user
 #: resources/public/pebble_templates/profile.html
@@ -1594,7 +1596,7 @@ msgstr "Lämna"
 
 #: resources/public/pebble_templates/profile.html
 msgid "You are not in any factions yet!"
-msgstr "Du är inte i någon grubb ännu!"
+msgstr "Du är inte i någon grupp ännu!"
 
 #: resources/public/pebble_templates/profile.html
 msgid "You must be logged in to view your data."
@@ -1639,7 +1641,7 @@ msgstr "Grupp Medlemmar"
 
 #: resources/public/pebble_templates/profile.html
 msgid "Transfer Ownership"
-msgstr "Överför Äganderätt"
+msgstr "Överför Ägande"
 
 #. bans a user from the faction
 #: resources/public/pebble_templates/profile.html
@@ -1653,7 +1655,7 @@ msgstr "Inget att se här!"
 
 #: resources/public/pebble_templates/profile.html
 msgid "Faction Bans"
-msgstr "Grubb Bannlysningar"
+msgstr "Grupp Bannlysningar"
 
 #: resources/public/pebble_templates/profile.html
 #: resources/public/include/chat.js resources/public/admin/admin.js
@@ -1662,7 +1664,7 @@ msgstr "Ta Bort Bannlysning"
 
 #: resources/public/pebble_templates/profile.html
 msgid "Find A Faction"
-msgstr "Hitta En Grubb"
+msgstr "Hitta En Grupp"
 
 #: resources/public/pebble_templates/profile.html
 msgid "Search:"
@@ -1683,7 +1685,7 @@ msgstr "Inte hittad"
 
 #: resources/public/pebble_templates/40x.html
 msgid "The content you requested could not be found at this URL. If you believe this is an error, please contact a developer."
-msgstr "Innehållet du försökte nå kunde inte bli hittad vid detta URL. Om du tror att detta är ett fel, snälla kontakta en utvecklare av hemsidan."
+msgstr "Innehållet du försökte nå kunde inte bli hittad vid denna URL. Om du tror att detta är ett fel, snälla kontakta en utvecklare av hemsidan."
 
 #. links to the homepage (the app itself)
 #: resources/public/pebble_templates/40x.html
@@ -1702,7 +1704,7 @@ msgstr "Du måste vara inloggad för att kunna nå denna data. Snälla gå tillb
 #. HTTP status code name
 #: resources/public/pebble_templates/40x.html
 msgid "Not Allowed"
-msgstr "Inte tillåten."
+msgstr "Inte tillåten"
 
 #: resources/public/pebble_templates/40x.html
 msgid "The action you attempted to perform is not allowed or resulted in an error. Please ensure you have access to the endpoint and try again later."
@@ -1712,10 +1714,14 @@ msgstr "Handlingen du försökte utföra är inte tillåten eller resulterade i 
 msgid "Alert"
 msgstr "Alert"
 
+#: resources/public/include/board.js
+msgid "The canvas is now locked. Press L to unlock."
+msgstr "Kanvasen är du låst. Tryck på L för att låsa upp den igen."
+
 #. Snapshot save name
 #: resources/public/include/board.js
 msgid "pxls canvas"
-msgstr "pxls canvas"
+msgstr "pxls kanvas"
 
 #. template link action
 #: resources/public/include/chat.js
@@ -1728,27 +1734,19 @@ msgstr "Öppna i ett nytt fönster"
 
 #: resources/public/include/chat.js
 msgid "Open in current tab (replacing template)"
-msgstr "Öppna i nuvarande fönster (byter ut nuvarande mall)."
+msgstr "Öppna i nuvarande fönster (byter ut nuvarande template)."
 
 #: resources/public/include/chat.js
 msgid "Jump to coordinates without replacing template"
-msgstr "Hoppa till koordinaterna utan att byta mall."
+msgstr "Hoppa till koordinaterna utan att byta template"
 
 #: resources/public/include/chat.js
 msgid "Please upload your template image to a third-party image host."
-msgstr ""
+msgstr "Snälla ladda up din template bild till ett tredje parti bildhemsida."
 
 #: resources/public/include/chat.js
 msgid "You must be logged in to chat."
 msgstr "Du måste vara inloggad för att chatta."
-
-#: resources/public/include/chat.js
-msgid "No Results"
-msgstr ""
-
-#: resources/public/include/chat.js
-msgid "Reply"
-msgstr ""
 
 #: resources/public/include/chat.js
 msgid "none provided"
@@ -1760,7 +1758,7 @@ msgstr "Utrensad av ${purge.initiator} med resonemangen: ${reason}"
 
 #: resources/public/include/chat.js
 msgid "template:"
-msgstr "mall:"
+msgstr "template:"
 
 #: resources/public/include/chat.js
 msgid "Open Failed"
@@ -1776,11 +1774,11 @@ msgstr "Tryck här för att öppna i ett nytt fönster istället"
 
 #: resources/public/include/chat.js
 msgid "Open Template"
-msgstr "Öppna Mall"
+msgstr "Öppna Template"
 
 #: resources/public/include/chat.js
 msgid "This link will overwrite your current template. What would you like to do?"
-msgstr "Denna länk kommer att överskriva din nuvarande mall. Vad skulle du vilja göra?"
+msgstr "Denna länk kommer att överskriva din nuvarande template. Vad skulle du vilja göra?"
 
 #: resources/public/include/chat.js
 msgid "Note: You can set a default action in the settings menu which bypasses this popup completely."
@@ -1793,7 +1791,7 @@ msgstr "Avbryt"
 
 #: resources/public/include/chat.js
 msgid "OK"
-msgstr ""
+msgstr "OK"
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Report"
@@ -1833,15 +1831,15 @@ msgstr "Skriv in en anledning till din report"
 
 #: resources/public/include/chat.js
 msgid "You are reporting a chat message from ${reportTarget} with the content:"
-msgstr ""
-
-#: resources/public/include/chat.js resources/public/include/lookup.js
-msgid "Sent report!"
-msgstr ""
+msgstr "Du raporterar ett chatt medellande från ${reportTarget} med innehållet:"
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Error sending report."
 msgstr "Ett fel uppstod med skickandet av reporten."
+
+#: resources/public/include/chat.js resources/public/include/lookup.js
+msgid "Sent report!"
+msgstr "Skickade raport!"
 
 #: resources/public/include/chat.js
 msgid "Report User"
@@ -1918,8 +1916,10 @@ msgid "No"
 msgstr "Nej"
 
 #: resources/public/include/chat.js
+#, fuzzy
+#| msgid "Show on unread message"
 msgid "Silent (no purge message)"
-msgstr ""
+msgstr "Tyst (ingent rensnings medelland)"
 
 #: resources/public/include/chat.js
 msgid "Custom reason"
@@ -1935,12 +1935,12 @@ msgid "Additional information:"
 msgstr "Ytterligare information:"
 
 #: resources/public/include/chat.js
-msgid "Chatban initiated"
-msgstr ""
-
-#: resources/public/include/chat.js
 msgid "Error occurred while chatbanning"
 msgstr "Ett fel uppstod under chatt bannlyssning"
+
+#: resources/public/include/chat.js
+msgid "Chatban initiated"
+msgstr "Chatt bannlysning påbörjad"
 
 #: resources/public/include/chat.js
 msgid "Chatban"
@@ -1983,12 +1983,16 @@ msgid "Purge Reason"
 msgstr "Rensnings Anledning"
 
 #: resources/public/include/chat.js
-msgid "User purged"
-msgstr ""
+msgid "Error sending purge."
+msgstr "Ett fel uppstod med genomförningen av rensandet."
 
 #: resources/public/include/chat.js
-msgid "Error sending purge."
-msgstr "Ett fel uppstod med utskickning av rensning"
+msgid "User purged"
+msgstr "Användare rensad"
+
+#: resources/public/include/chat.js
+msgid "On"
+msgstr "På"
 
 #: resources/public/include/chat.js
 msgid "Toggle Rename Request"
@@ -1999,12 +2003,12 @@ msgid "Select one of the options below to set the current rename request state."
 msgstr "Välj någon av alternativen under för att ställa in nuvarande omdöpnings begärande status."
 
 #: resources/public/include/chat.js
-msgid "Rename request updated"
-msgstr ""
-
-#: resources/public/include/chat.js
 msgid "An unknown error occurred. Please contact a developer"
 msgstr "Ett okänt fel uppstod. Snälla kontakta en utvecklare"
+
+#: resources/public/include/chat.js
+msgid "Rename request updated"
+msgstr "Namnbyte begäran updaterad"
 
 #: resources/public/include/chat.js
 msgid "New Name: "
@@ -2016,7 +2020,7 @@ msgstr "Skriv in det nya namnet för användaren nedan. Snälla notera att om du
 
 #: resources/public/include/chat.js
 msgid "User renamed"
-msgstr ""
+msgstr "Användarsnamn bytt"
 
 #: resources/public/include/chat.js
 msgid "Force Rename"
@@ -2036,7 +2040,7 @@ msgstr "Du måste specifiera detaljerna."
 
 #: resources/public/include/lookup.js
 msgid "additional information:"
-msgstr "ytterligare information"
+msgstr "ytterligare information:"
 
 #: resources/public/include/lookup.js
 msgid "Report Pixel"
@@ -2052,7 +2056,7 @@ msgstr "Regel #2: Nakenhet, genitalier eller icke-PG-13 innehåll"
 
 #: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Rule #3: Multi-account"
-msgstr "Regel #3: Fler-konto"
+msgstr "Regel #3: Flera konton"
 
 #: resources/public/include/lookup.js resources/public/admin/admin.js
 msgid "Rule #4: Botting"
@@ -2063,20 +2067,20 @@ msgid "Other (specify below)"
 msgstr "Annat (specifiera under)"
 
 #: resources/public/include/lookup.js
-msgid "This pixel is background (was not placed by a user)."
-msgstr ""
-
-#: resources/public/include/lookup.js
 msgid "Hide sensitive information"
 msgstr "Göm sensitive information"
 
 #: resources/public/include/lookup.js
+msgid "This pixel is background (was not placed by a user)."
+msgstr "Den här pixel är background (inte placerad av en användare)."
+
+#: resources/public/include/lookup.js
 msgid "Move Template Here"
-msgstr ""
+msgstr "Flytta Template"
 
 #: resources/public/include/lookup.js
 msgid "An error occurred, either you aren't logged in or you may be attempting to look up users too fast. Please try again in 60 seconds"
-msgstr "Ett fel uppstod, antingen är du inte inloggad eller så försöker du kolla upp användare för snabbt. Snälla försök igen om 60 sekunder."
+msgstr "Ett fel uppstod, antingen är du inte inloggad eller så försöker du kolla upp användare för snabbt. Snälla försök igen om 60 sekunder"
 
 #: resources/public/include/lookup.js
 msgid "Coords"
@@ -2100,7 +2104,7 @@ msgstr "Del av mass-bannlyssning"
 
 #: resources/public/include/lookup.js
 msgid "Placed by a staff member using placement overrides"
-msgstr "Placerad av pxls personal genom placering överskridande"
+msgstr "Placerad av pxls moderatörer genom placering överskridande"
 
 #: resources/public/include/lookup.js
 msgid "Time"
@@ -2184,19 +2188,19 @@ msgstr "Röd"
 
 #: resources/public/include/uiHelper.js
 msgid "A new ${type} report has been received."
-msgstr ""
+msgstr "En ny ${type} har blivit mottagen."
 
 #: resources/public/include/uiHelper.js
 msgid "Cannot fetch local files. Use the file selector in template settings."
-msgstr ""
+msgstr "Kan inte nå lokala filer. Använd fil väljaren i template inställningarna."
 
 #: resources/public/include/uiHelper.js
 msgid "Redirect Warning"
-msgstr ""
+msgstr "Förflyttnings varning"
 
 #: resources/public/include/uiHelper.js
 msgid "Are you sure you want to redirect to the following URL?"
-msgstr ""
+msgstr "Är du säker på att du vill följa länken?"
 
 #: resources/public/include/uiHelper.js
 msgid "Drag and dropped file must be a valid image."
@@ -2208,7 +2212,7 @@ msgstr "Discord namn uppdatering lyckades"
 
 #: resources/public/include/uiHelper.js
 msgid "Couldn\\'t change discord name: "
-msgstr "Kan inte ändra discord namn:"
+msgstr "Kan inte ändra discord namn: "
 
 #: resources/public/include/user.js
 msgid "Sign in with..."
@@ -2219,16 +2223,16 @@ msgid "New Accounts Disabled"
 msgstr "Nytt Konto Avstängt"
 
 #: resources/public/include/user.js
-msgid "online"
-msgstr ""
-
-#: resources/public/include/user.js
 msgid "Sign Out"
 msgstr "Logga ut"
 
 #: resources/public/include/user.js
 msgid "Are you sure you want to sign out?"
 msgstr "Är du säker att du vill logga ut?"
+
+#: resources/public/include/user.js
+msgid "online"
+msgstr "online"
 
 #: resources/public/include/user.js
 msgid "You are permanently banned."
@@ -2240,7 +2244,7 @@ msgstr "Du är temporärt bannlyst och du är inte tillåten att placera tills $
 
 #: resources/public/include/user.js
 msgid "You can contact us using one of the links in the info menu."
-msgstr ""
+msgstr "Du kan kontakta oss genom att använda en av länkarna i info menyn."
 
 #: resources/public/include/user.js
 msgid "If you think this was an error, please contact us using one of the links in the info tab."
@@ -2256,15 +2260,15 @@ msgstr "Bannlyst"
 
 #: resources/public/include/user.js
 msgid "An unknown error occurred. Please contact staff on discord"
-msgstr ""
+msgstr "Ett okänt fel uppstod. Snälla kontakta moderatörerna på discord"
 
 #: resources/public/include/user.js
 msgid "Staff have required you to change your username, this usually means your name breaks one of our rules."
-msgstr "Personal behöver att du ändrar ditt användarnamn, detta brukar betyda att ditt namn bryter mot någon av våra regler."
+msgstr "Moderatörerna kräver att du ändrar ditt användarnamn, detta brukar betyda att ditt namn bryter mot någon av våra regler."
 
 #: resources/public/include/user.js
 msgid "If you disagree, please contact us on Discord (link in the info panel)."
-msgstr "Om du inte håller med, snälla kontakta oss på Discord (länk finns i info panelen)"
+msgstr "Om du inte håller med, snälla kontakta oss på Discord (länk finns i info panelen)."
 
 #: resources/public/include/user.js
 msgid "New Username:"
@@ -2284,29 +2288,29 @@ msgstr "Namnbyte Begärd"
 
 #: resources/public/include/user.js
 msgid "You must change your username."
-msgstr ""
+msgstr "Du måste ändra ditt användarnamn."
 
 #: resources/public/include/user.js
 msgid "Click here to continue."
-msgstr ""
+msgstr "Klicka här för att fortsätta."
 
 #: resources/public/admin/admin.js
 msgid "Send alert..."
-msgstr ""
+msgstr "Skicka varning..."
 
 #. "Revert pixels of the last *n* hours", part before 'n'
 #: resources/public/admin/admin.js
 msgid "Revert pixels of the last "
-msgstr ""
+msgstr "Återställ pixlar för de senaste "
 
 #. "Revert pixels of the last *n* hours", part after 'n'
 #: resources/public/admin/admin.js
 msgid " hours"
-msgstr ""
+msgstr " timmar"
 
 #: resources/public/admin/admin.js
 msgid "Something went wrong! Perhaps insufficient permissions?"
-msgstr "Något gick fel! Kanske otillräckliga behörigheter?"
+msgstr "Något gick fel! Har du kanske otillräckliga behörigheter?"
 
 #: resources/public/admin/admin.js
 msgid "Shadowban user"
@@ -2334,7 +2338,7 @@ msgstr "Bannlyste användare"
 
 #: resources/public/admin/admin.js
 msgid "Unbanned user ${username}"
-msgstr "Ångrade bannlysning på ${username}"
+msgstr "Ångrade bannlysning hos ${username}"
 
 #. Context: ban type
 #: resources/public/admin/admin.js
@@ -2359,7 +2363,7 @@ msgstr "Inloggningar"
 
 #: resources/public/admin/admin.js
 msgid "All Time Pixels"
-msgstr "All-Tids Pixlar"
+msgstr "Heltids Pixlar"
 
 #: resources/public/admin/admin.js
 msgid "Discord Name"
@@ -2395,24 +2399,28 @@ msgstr "Chattban Går Ut"
 
 #: resources/public/admin/admin.js
 msgid "Ban (24h)"
-msgstr ""
+msgstr "Bannlyss (24h)"
 
 #: resources/public/admin/admin.js
+#, fuzzy
+#| msgid "Permaban user"
 msgid "Permaban"
-msgstr ""
+msgstr "Permabannlys användare"
 
 #: resources/public/admin/admin.js
+#, fuzzy
+#| msgid "Shadowban user"
 msgid "Shadowban"
-msgstr ""
+msgstr "Skugbannlys användare"
 
 #: resources/public/admin/admin.js
 msgid "Custom ban length: "
-msgstr ""
+msgstr "Frivilig bannlyssnings längd"
 
 #. Admin check. Example: type = 'username', arg = 'pxlsuser94'
 #: resources/public/admin/admin.js
 msgid "${type} ${arg} not found."
-msgstr "{type} ${arg} inte hittad"
+msgstr "{type} ${arg} inte hittad."
 
 #: resources/public/admin/admin.js
 msgid "Unban Reason:"
@@ -2425,31 +2433,37 @@ msgstr "Tar Bort Bannlysning på ${username}"
 #. Moderator panel label
 #: resources/public/admin/admin.js
 msgid "MOD"
-msgstr ""
+msgstr "MODERATOR"
 
 #: resources/public/admin/admin.js
 msgid "Ignore cooldown"
-msgstr ""
+msgstr "Ignorera väntetid"
 
 #: resources/public/admin/admin.js
+#, fuzzy
+#| msgid "Clear color"
 msgid "Place any color"
-msgstr ""
+msgstr "Rensa färg"
 
 #: resources/public/admin/admin.js
 msgid "Ignore placemap"
-msgstr ""
+msgstr "Ignorera placeringskarta"
 
 #: resources/public/admin/admin.js
+#, fuzzy
+#| msgid "Ban user"
 msgid "Ban user (24h)"
-msgstr ""
+msgstr "Bannlys användare"
 
 #: resources/public/admin/admin.js
+#, fuzzy
+#| msgid "Ban user"
 msgid "Unban user"
-msgstr ""
+msgstr "Bannlys användare"
 
 #: resources/public/admin/admin.js
 msgid "Check user"
-msgstr ""
+msgstr "Kolla användare"
 
 #: resources/public/admin/admin.js
 msgid "profile"
@@ -2469,16 +2483,7 @@ msgstr "Mod Aktioner"
 
 #: resources/public/admin/admin.js
 msgid "More..."
-msgstr ""
-
-#~ msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or PxlsFiddle."
-#~ msgstr "En mall är en bildlänk som är inlagd i malltextrutan i inställningspanelen så att du kan placera den över kanvasen. Du kan använda en normal bild länk till din pixelkonst, men många personer anväder tredje parti verktyg som <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> eller <a href=\"https://pxlsfiddle.com\" target=\"_blank\">PxlsFiddle</a> för att få det i en finare länk. Om du behöver göra pixelkonst själv så kan du använda <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> för att göra konst som du sedan kan lägga in på Charity eller PxlsFiddle."
+msgstr "Mer..."
 
 #~ msgid "Template generator, archives, timelapses, and other utilities"
-#~ msgstr "Mall generator, arkiv, timelapses, och andra roliga verktyg."
-
-#~ msgid "PxlsFiddle (templates, archives, etc.)"
-#~ msgstr "PxlsFiddle (mallar, arkiv, etc.)"
-
-#~ msgid "{0} (members: {1}, ID: {2}"
-#~ msgstr "{0} (medlemmar: {1}, ID: {2}"
+#~ msgstr "Template generator, arkiv, timelapses, och andra roliga verktyg"
