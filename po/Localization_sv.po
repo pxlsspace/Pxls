@@ -1158,11 +1158,7 @@ msgstr "Hur gör jag ett template?"
 
 #: resources/public/pebble_templates/faq.html
 msgid "A template is an image link that is posted in the template textbox in the settings panel so you can place over it on the canvas. You may use a regular image link to your pixel art, but many people use 3rd party tools like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> or <a href=\"https://discord.gg/5MVDCq53vC\" target=\"blank\">Clueless</a> to turn pixel art into a fancier link. If you need to make pixel art yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> to create art to put into Charity or Clueless."
-<<<<<<< HEAD
-msgstr ""
-=======
 msgstr "Ett template är en bildlänk som är inlagd i template textrutan i inställningspanelen så att du kan placera den över kanvasen. Du kan använda en normal bild länk till din pixelkonst, men många personer anväder tredje parti verktyg som <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> eller <a href=\"https://discord.gg/5MVDCq53vC\" target=\"blank\">Clueless</a> för att få det i en finare länk. Om du behöver göra pixelkonst själv så kan du använda <a href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">Piskel</a> för att göra konst som du sedan kan lägga in på Charity eller PxlsFiddle."
->>>>>>> 72f9ac4 (Clean up and compile Swedish localizations)
 
 #: resources/public/pebble_templates/faq.html
 msgid "How do I move a template?"
