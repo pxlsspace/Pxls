@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2023-03-03T22:26:34.830Z\n"
+"POT-Creation-Date: 2023-03-12T17:49:43.960Z\n"
 "Language: sv\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -97,6 +97,7 @@ msgid "Close Panel"
 msgstr "Stäng Panel"
 
 #: resources/public/pebble_templates/index.html
+#: resources/public/include/chat.js
 msgid "Chat"
 msgstr "Chatt"
 
@@ -113,8 +114,9 @@ msgid "Jump To Bottom"
 msgstr "Hoppa till botten"
 
 #: resources/public/pebble_templates/index.html
-msgid "Replying to"
-msgstr "Svarar"
+#: resources/public/include/chat.js
+msgid "On"
+msgstr "På"
 
 #. Open emoji picker
 #: resources/public/pebble_templates/index.html
@@ -1703,10 +1705,6 @@ msgstr "Handlingen du försökte utföra är inte tillåten eller resulterade i 
 msgid "Alert"
 msgstr "Alert"
 
-#: resources/public/include/board.js
-msgid "The canvas is now locked. Press L to unlock."
-msgstr "Kanvasen är du låst. Tryck på L för att låsa upp den igen."
-
 #. Snapshot save name
 #: resources/public/include/board.js
 msgid "pxls canvas"
@@ -1734,8 +1732,24 @@ msgid "Please upload your template image to a third-party image host."
 msgstr "Snälla ladda up din template bild till ett tredje parti bildhemsida."
 
 #: resources/public/include/chat.js
+msgid "You must have at least "
+msgstr "Du måste ha minst "
+
+#: resources/public/include/chat.js
+msgid " pixels to send links."
+msgstr " pixlar för att kunna skicka länkar."
+
+#: resources/public/include/chat.js
 msgid "You must be logged in to chat."
 msgstr "Du måste vara inloggad för att chatta."
+
+#: resources/public/include/chat.js
+msgid "No Results"
+msgstr ""
+
+#: resources/public/include/chat.js
+msgid "Reply"
+msgstr ""
 
 #: resources/public/include/chat.js
 msgid "none provided"
@@ -1823,12 +1837,12 @@ msgid "You are reporting a chat message from ${reportTarget} with the content:"
 msgstr "Du raporterar ett chatt medellande från ${reportTarget} med innehållet:"
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
-msgid "Error sending report."
-msgstr "Ett fel uppstod med skickandet av reporten."
-
-#: resources/public/include/chat.js resources/public/include/lookup.js
 msgid "Sent report!"
 msgstr "Skickade raport!"
+
+#: resources/public/include/chat.js resources/public/include/lookup.js
+msgid "Error sending report."
+msgstr "Ett fel uppstod med skickandet av reporten."
 
 #: resources/public/include/chat.js
 msgid "Report User"
@@ -1906,7 +1920,6 @@ msgstr "Nej"
 
 #: resources/public/include/chat.js
 #, fuzzy
-#| msgid "Show on unread message"
 msgid "Silent (no purge message)"
 msgstr "Tyst (ingent rensnings medelland)"
 
@@ -1924,12 +1937,12 @@ msgid "Additional information:"
 msgstr "Ytterligare information:"
 
 #: resources/public/include/chat.js
-msgid "Error occurred while chatbanning"
-msgstr "Ett fel uppstod under chatt bannlyssning"
-
-#: resources/public/include/chat.js
 msgid "Chatban initiated"
 msgstr "Chatt bannlysning påbörjad"
+
+#: resources/public/include/chat.js
+msgid "Error occurred while chatbanning"
+msgstr "Ett fel uppstod under chatt bannlyssning"
 
 #: resources/public/include/chat.js
 msgid "Chatban"
@@ -1972,16 +1985,12 @@ msgid "Purge Reason"
 msgstr "Rensnings Anledning"
 
 #: resources/public/include/chat.js
-msgid "Error sending purge."
-msgstr "Ett fel uppstod med genomförningen av rensandet."
-
-#: resources/public/include/chat.js
 msgid "User purged"
 msgstr "Användare rensad"
 
 #: resources/public/include/chat.js
-msgid "On"
-msgstr "På"
+msgid "Error sending purge."
+msgstr "Ett fel uppstod med genomförningen av rensandet."
 
 #: resources/public/include/chat.js
 msgid "Toggle Rename Request"
@@ -1992,12 +2001,12 @@ msgid "Select one of the options below to set the current rename request state."
 msgstr "Välj någon av alternativen under för att ställa in nuvarande omdöpnings begärande status."
 
 #: resources/public/include/chat.js
-msgid "An unknown error occurred. Please contact a developer"
-msgstr "Ett okänt fel uppstod. Snälla kontakta en utvecklare"
-
-#: resources/public/include/chat.js
 msgid "Rename request updated"
 msgstr "Namnbyte begäran updaterad"
+
+#: resources/public/include/chat.js
+msgid "An unknown error occurred. Please contact a developer"
+msgstr "Ett okänt fel uppstod. Snälla kontakta en utvecklare"
 
 #: resources/public/include/chat.js
 msgid "New Name: "
@@ -2056,12 +2065,12 @@ msgid "Other (specify below)"
 msgstr "Annat (specifiera under)"
 
 #: resources/public/include/lookup.js
-msgid "Hide sensitive information"
-msgstr "Göm sensitive information"
-
-#: resources/public/include/lookup.js
 msgid "This pixel is background (was not placed by a user)."
 msgstr "Den här pixel är background (inte placerad av en användare)."
+
+#: resources/public/include/lookup.js
+msgid "Hide sensitive information"
+msgstr "Göm sensitive information"
 
 #: resources/public/include/lookup.js
 msgid "Move Template Here"
@@ -2212,16 +2221,16 @@ msgid "New Accounts Disabled"
 msgstr "Nytt Konto Avstängt"
 
 #: resources/public/include/user.js
+msgid "online"
+msgstr "online"
+
+#: resources/public/include/user.js
 msgid "Sign Out"
 msgstr "Logga ut"
 
 #: resources/public/include/user.js
 msgid "Are you sure you want to sign out?"
 msgstr "Är du säker att du vill logga ut?"
-
-#: resources/public/include/user.js
-msgid "online"
-msgstr "online"
 
 #: resources/public/include/user.js
 msgid "You are permanently banned."
@@ -2392,13 +2401,11 @@ msgstr "Bannlyss (24h)"
 
 #: resources/public/admin/admin.js
 #, fuzzy
-#| msgid "Permaban user"
 msgid "Permaban"
 msgstr "Permabannlys användare"
 
 #: resources/public/admin/admin.js
 #, fuzzy
-#| msgid "Shadowban user"
 msgid "Shadowban"
 msgstr "Skugbannlys användare"
 
@@ -2430,7 +2437,6 @@ msgstr "Ignorera väntetid"
 
 #: resources/public/admin/admin.js
 #, fuzzy
-#| msgid "Clear color"
 msgid "Place any color"
 msgstr "Rensa färg"
 
@@ -2440,13 +2446,11 @@ msgstr "Ignorera placeringskarta"
 
 #: resources/public/admin/admin.js
 #, fuzzy
-#| msgid "Ban user"
 msgid "Ban user (24h)"
 msgstr "Bannlys användare"
 
 #: resources/public/admin/admin.js
 #, fuzzy
-#| msgid "Ban user"
 msgid "Unban user"
 msgstr "Bannlys användare"
 
@@ -2473,6 +2477,12 @@ msgstr "Mod Aktioner"
 #: resources/public/admin/admin.js
 msgid "More..."
 msgstr "Mer..."
+
+#~ msgid "Replying to"
+#~ msgstr "Svarar"
+
+#~ msgid "The canvas is now locked. Press L to unlock."
+#~ msgstr "Kanvasen är du låst. Tryck på L för att låsa upp den igen."
 
 #~ msgid "Template generator, archives, timelapses, and other utilities"
 #~ msgstr "Template generator, arkiv, timelapses, och andra roliga verktyg"

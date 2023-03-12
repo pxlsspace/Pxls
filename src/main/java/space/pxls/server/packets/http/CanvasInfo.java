@@ -27,8 +27,10 @@ public class CanvasInfo {
     public String corsBase;
     public String corsParam;
     public String chatRatelimitMessage;
+    public Integer chatLinkMinimumPixelCount;
+    public Boolean chatLinkSendToStaff;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, List<Object> customEmoji, String corsBase, String corsParam, String chatRatelimitMessage) {
+    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, List<Object> customEmoji, String corsBase, String corsParam, String chatRatelimitMessage, Integer chatLinkMinimumPixelCount, boolean chatLinkSendToStaff) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
@@ -48,6 +50,8 @@ public class CanvasInfo {
         this.corsBase = corsBase;
         this.corsParam = corsParam;
         this.chatRatelimitMessage = chatRatelimitMessage;
+        this.chatLinkMinimumPixelCount = chatLinkMinimumPixelCount;
+        this.chatLinkSendToStaff = chatLinkSendToStaff;
     }
 
     public String getCanvasCode() {
@@ -120,6 +124,14 @@ public class CanvasInfo {
 
     public String getChatRatelimitMessage() {
         return chatRatelimitMessage;
+    }
+
+    public Integer getChatLinkMinimumPixelCount() {
+        return chatLinkMinimumPixelCount;
+    }
+
+    public Boolean getChatLinkSendToStaff() {
+        return chatLinkSendToStaff;
     }
 
     public record CooldownInfo(String type, long staticCooldownSeconds, Map<String, Object> activityCooldown) {};

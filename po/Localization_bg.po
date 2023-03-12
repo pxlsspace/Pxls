@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2023-03-03T22:26:34.830Z\n"
+"POT-Creation-Date: 2023-03-12T17:49:43.960Z\n"
 "Language: bg\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -1730,6 +1730,14 @@ msgstr "Посети координатите без смяна на шабло�
 #: resources/public/include/chat.js
 msgid "Please upload your template image to a third-party image host."
 msgstr ""
+
+#: resources/public/include/chat.js
+msgid "You must have at least "
+msgstr "Трябва да имате поне "
+
+#: resources/public/include/chat.js
+msgid " pixels to send links."
+msgstr " пиксела, за да изпращате линкове."
 
 #: resources/public/include/chat.js
 msgid "You must be logged in to chat."

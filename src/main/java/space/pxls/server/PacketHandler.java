@@ -29,6 +29,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
@@ -489,6 +490,19 @@ public class PacketHandler {
                     userPacket = null;
                     // To staff, if enabled in the config, they will be the only ones to also get the message.
                     staffPacket = App.getConfig().getBoolean("chat.showShadowBannedMessagesToStaff") ? staffPacket : null;
+                }
+                var messageHasLinkPattern = Pattern.compile("((?!-))(xn--)?[a-z0-9 ][a-z0-9-_ ]{0,61}[a-z0-9 ]{0,1}\\.(xn--)?([a-z0-9\\- ]{1,61}|[a-z0-9- ]{1,30}\\.[a-z ]{2,})", Pattern.MULTILINE);
+                var messageHasLink = messageHasLinkPattern.matcher(message).find();
+                // If chat message contains a link and the user's pixel count is below linkMinimumPixelCount in the app configuration, return
+                if (user.getAllTimePixelCount() < App.getConfig().getInt("chat.linkMinimumPixelCount") && messageHasLink) {
+                    server.send(user, new ServerChatMessageBlocked("You must have at least " + App.getConfig().getInt("chat.linkMinimumPixelCount") + " pixels to send links."));
+                    if (App.getConfig().getBoolean("chat.linkSendToStaff")) {
+                        // Blocked link messages should appear as shadow-banned messages
+                        userPacket = null;
+                        var asShadowBanned = chatMessage;
+                        asShadowBanned.authorWasShadowBanned = true;
+                        staffPacket = new ServerChatMessage(asShadowBanned);
+                    }
                 }
                 if (userPacket != null || staffPacket != null) {
                     Predicate<PxlsWebSocketConnection> userCanReadChat = con -> con.getUser()
