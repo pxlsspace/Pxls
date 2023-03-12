@@ -1263,8 +1263,8 @@ msgid "We pride ourselves on trying to keep an open canvas for all free from out
 msgstr "Mēs lepojamies ar to, ka cenšamies visiem nodrošināt atvērtu kanvu brīvu no ārējās iejaukšanās un jo īpaši cenzūras. Tomēr kopienas labā un mūsu pašu pārliecības dēļ, lūdzu, atzīstiet un ievērojiet šādas vadlīnijas:"
 
 #: resources/public/pebble_templates/info.html
-msgid "No hateful imagery or derogatory speech. This includes but is not limited to words such as <i>faggot</i>, <i>nigger</i>, etc; as well as the Swastika, Hammer and Sickle, and any symbols of terrorism."
-msgstr "Nekādu naidīgu attēlu vai nievājošas runas. Tas ietver tādus vārdus kā, bet ne tikai, <i>faggot</i>, <i>nigger</i> utt., kā arī svastika un jebkādi terorisma simboli."
+msgid "No hateful imagery or derogatory speech. This includes but is not limited to words such as <i>f****t</i>, <i>n****r</i>, etc; as well as the Swastika, Hammer and Sickle, and any symbols of terrorism."
+msgstr "Nekādu naidīgu attēlu vai nievājošas runas. Tas ietver tādus vārdus kā, bet ne tikai, <i>f****t</i>, <i>n****r</i> utt., kā arī svastika un jebkādi terorisma simboli."
 
 #: resources/public/pebble_templates/info.html
 msgid "No NSFW or NSFL content."

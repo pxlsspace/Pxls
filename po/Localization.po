@@ -1252,8 +1252,8 @@ msgid "We pride ourselves on trying to keep an open canvas for all free from out
 msgstr "We pride ourselves on trying to keep an open canvas for all free from outside interference on our end, and especially censorship. However, for the good of the community and on accounts of our own beliefs, please acknowledge and obey the following guidelines:"
 
 #: resources/public/pebble_templates/info.html
-msgid "No hateful imagery or derogatory speech. This includes but is not limited to words such as <i>faggot</i>, <i>nigger</i>, etc; as well as the Swastika, Hammer and Sickle, and any symbols of terrorism."
-msgstr "No hateful imagery or derogatory speech. This includes but is not limited to words such as <i>faggot</i>, <i>nigger</i>, etc; as well as the Swastika, Hammer and Sickle, and any symbols of terrorism."
+msgid "No hateful imagery or derogatory speech. This includes but is not limited to words such as <i>f****t</i>, <i>n****r</i>, etc; as well as the Swastika, Hammer and Sickle, and any symbols of terrorism."
+msgstr "No hateful imagery or derogatory speech. This includes but is not limited to words such as <i>f****t</i>, <i>n****r</i>, etc; as well as the Swastika, Hammer and Sickle, and any symbols of terrorism."
 
 #: resources/public/pebble_templates/info.html
 msgid "No NSFW or NSFL content."
