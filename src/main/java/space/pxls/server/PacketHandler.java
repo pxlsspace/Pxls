@@ -477,7 +477,7 @@ public class PacketHandler {
                     toSend = result.filterHit ? result.filtered : result.original;
                     toFilter = toSend;
                 }
-                var messageHasLinkPattern = Pattern.compile("((?!-))(xn--)?[a-z0-9 ][a-z0-9-_ ]{0,61}[a-z0-9 ]{0,1}\\.(xn--)?([a-z0-9\\-]{1,61}|[a-z0-9- ]{1,30}\\.[a-z ]{2,})", Pattern.MULTILINE);
+                var messageHasLinkPattern = Pattern.compile("((?!-))(xn--)?[a-z0-9 ][a-z0-9_ -]{0,61}[a-z0-9 ]{0,1}\\.(xn--)?([a-z0-9-]{1,61}|[a-z0-9 -]{1,30}\\.[a-z ]{2,})", Pattern.MULTILINE);
                 var messageHasLink = messageHasLinkPattern.matcher(message).find();
                 // If chat message contains a link and the user's pixel count is below linkMinimumPixelCount in the app configuration, return
                 if (user.getAllTimePixelCount() < App.getConfig().getInt("chat.linkMinimumPixelCount") && messageHasLink) {
