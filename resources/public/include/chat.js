@@ -105,6 +105,10 @@ const chat = (function() {
       user = require('./user').user;
       place = require('./place').place;
       board = require('./board').board;
+      if (!settings.chat.enable.get()) {
+        self.elements.panel_trigger.hide();
+        return;
+      }
       // NOTE(netux): The processor is deriverately left unfrozen to allow for extending
       // it through third party extensions.
       self.markdownProcessor = uiHelper.makeMarkdownProcessor()

@@ -232,7 +232,9 @@ const board = (function() {
           case 'B':
           case 'KeyB':
           case 66: // b
-            panels.toggle('chat');
+            if (settings.chat.enable.get()) {
+              panels.toggle('chat');
+            }
             break;
         }
         self.pannedWithKeys = true;

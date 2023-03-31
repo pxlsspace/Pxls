@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2023-03-12T17:49:43.960Z\n"
+"POT-Creation-Date: 2023-03-31T00:00:15.391Z\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -639,6 +639,18 @@ msgstr "chat message;chat ui"
 #: resources/public/pebble_templates/index.html
 msgid "Interface"
 msgstr "Interface"
+
+#: resources/public/pebble_templates/index.html
+msgid "enable;disable"
+msgstr "enable;disable"
+
+#: resources/public/pebble_templates/index.html
+msgid "Enable chat"
+msgstr "Enable chat"
+
+#: resources/public/pebble_templates/index.html
+msgid "Page must be reloaded after changing"
+msgstr "Page must be reloaded after changing"
 
 #: resources/public/pebble_templates/index.html
 msgid "chat size;chat font"

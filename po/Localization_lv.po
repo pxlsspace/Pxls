@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2023-03-12T17:49:43.960Z\n"
+"POT-Creation-Date: 2023-03-31T00:00:15.391Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -647,6 +647,18 @@ msgstr "čata ziņa, čata ui; čata lietotāja saskarsne"
 #: resources/public/pebble_templates/index.html
 msgid "Interface"
 msgstr "Lietotāja Saskarsne"
+
+#: resources/public/pebble_templates/index.html
+msgid "enable;disable"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Enable chat"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Page must be reloaded after changing"
+msgstr ""
 
 #: resources/public/pebble_templates/index.html
 msgid "chat size;chat font"
