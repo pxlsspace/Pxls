@@ -6,7 +6,6 @@ module.exports.socket = (function() {
     ws: null,
     hooks: [],
     sendQueue: [],
-    WSConstructor: WebSocket,
     wps: WebSocket.prototype.send, // make sure we have backups of those....
     wpc: WebSocket.prototype.close,
     ws_open_state: WebSocket.OPEN,
@@ -29,7 +28,7 @@ module.exports.socket = (function() {
     connectSocket: function() {
       const l = window.location;
       const url = ((l.protocol === 'https:') ? 'wss://' : 'ws://') + l.host + l.pathname + 'ws';
-      self.ws = new self.WSConstructor(url);
+      self.ws = new WebSocket(url);
       self.ws.onopen = evt => {
         setTimeout(() => {
           while (self.sendQueue.length > 0) {
