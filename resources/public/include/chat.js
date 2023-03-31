@@ -378,6 +378,12 @@ const chat = (function() {
           return self._markMessagePurged(elem, e);
         }
 
+        if (e.type === 'chat_purge_specific') {
+          self.pingsList = self.pingsList.filter(packet => !e.IDs.includes(packet.id));
+        } else if (e.type === 'chat_purge') {
+          self.pingsList = self.pingsList.filter(packet => packet.author !== e.target && packet.message_raw !== elem.attributes['data-message-raw'].value);
+        }
+
         // Delete normal message lines
         if (!isReplyPreview) return elem.remove();
 
@@ -540,6 +546,9 @@ const chat = (function() {
             'Message was ignored'
           ));
         });
+        // Remove from pings list if ignored
+        // NOTE: Side effect - user must refresh to repopulate pings list
+        if (isIgnored) self.pings = self.pings.filter(packet => packet.author !== who);
       }
 
       $(window).on('pxls:chat:userIgnored', (e, who) => {
@@ -644,6 +653,7 @@ const chat = (function() {
         // const mainPanel = crel('div', { class: 'pane' });
 
         const pingsList = crel('ul', { class: 'pings-list' }, self.pingsList.map(packet => {
+          console.info(packet);
           const _processed = crel('span', self.processMessage(packet.message_raw));
           return crel('li', { title: _processed.textContent }, crel('i', {
             class: 'fas fa-external-link-alt fa-is-left',
@@ -1437,7 +1447,7 @@ const chat = (function() {
         self._markMessageShadowBanned(chatLine);
       }
 
-      if (hasPing) {
+      if (hasPing && !isIgnored && !packet.purge) {
         self.pingsList.push(packet);
         if (!((panels.isOpen('chat') && self.stickToBottom) || (packet.date < self.last_opened_panel))) {
           ++self.pings;
