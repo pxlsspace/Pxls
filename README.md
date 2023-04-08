@@ -30,7 +30,7 @@ Commands can be entered into the running instance through standard input.
 | `users` || Lists all authenticated usernames. |
 | `broadcast` | `(message)` | Sends the message in chat. |
 | `cf` | `(query)` | Runs the query through the chat filter. |
-| `relaodusers` || Reloads the user manager. **Laggy!** |
+| `reloadusers` || Reloads the user manager. **Laggy!** |
 | `idlecheck` || Runs the user timeout check. |
 | `senduserdata` || Broadcasts the non-idle user count in chat. |
 | `addnotification` | `(title) (expiry) (body)` | Adds a new notification to the notification panel with the body. `+123` for the expiry means 123 seconds from now. |
