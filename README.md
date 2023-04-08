@@ -11,7 +11,7 @@
 </div>
 
 # Notice
-It's not recommended to use this repo for production as this is designed to be used on STEMPlace infrastructure.
+It's not recommended to use this repo for production as this is designed to be used on STEMPlace infrastructure. Please refer to other projects to start another instance.
 
 # Console Commands
 
