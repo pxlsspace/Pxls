@@ -10,80 +10,8 @@
 
 </div>
 
-Pxls is a collaborative canvas where users can place one pixel from a limited palette at a time, inspired by Reddit's [r/Place][place] experiment.
-
-**Note:** A Docker image is available at [aneurinprice/docker-pxls.space][docker] and on [Docker Hub][dockerhub].
-
-# Installation
-
-Automatically built `pxls*.jar` files are available as artifacts on each push [here][actions].
-
-## Building
-
-The following are required on the **build** system:
-
-* [JDK 16][jdk16]
-* [Apache Maven][maven]
-
-The following are required on the **target** system:
-
-* [JRE 16][jdk16]
-* [Postgres][postgres]
-
-To build, run `mvn clean package` in the project root.
-
-The built `pxls*.jar` file is available in `target/`.
-
-## Running
-
-Copy the built `pxls*.jar` along with the following (renamed) to the instance directory:
-
-* `reference.conf` (`pxls.conf`)
-* `roles-reference.conf` (`roles.conf`)
-* `palette-reference.conf` (`palette.conf`)
-
-Edit configuration files as necessary. The following `pxls.conf` keys MUST be configured from default for an instance to run:
-
-* `database.user`
-* `database.pass`
-* `database.url`
-* `host`
-* `oauth` (necessary for any form of user authentication)
-    * [Reddit][redditapps], [Google][googleconsole], [Discord][discordapps], [VK][vkapps], and [Tumblr][tumblrapps] are current supported.
-
-Run with `java -jar pxls*.jar`
-
-# Notes
-
-* The server will start on port `4567` by default.
-* The instance has a [rudimentary console](#console-commands).
-* The configuration file uses [HOCON][hocon].
-* Unspecified configuration values will use built-in defaults from `resources/reference.conf`.
-* Automatic backups of `board.dat` are saved every five minutes to `backups/` in the configured storage directory, as well as before exiting (with `CTRL + C`).
-* The `Symbols` template style uses the reference palette configuration. See [here](developer.md#symbols-template-style) to modify or remove.
-
-## Configuring CAPTCHA
-
-CAPTCHAs are disabled by default and must be configured to work.
-A [CAPTCHA key and secret][captcha] is needed and the type must be "Invisible reCAPTCHA".
-
-The `host` configuration key must be an approved domain on the reCAPTCHA admin panel. For local testing, this will likely be `localhost` (no port).
-
-An example CAPTCHA section could look like this:
-
-```hocon
-host: "example.com"
-
-captcha {
-  enabled: false
-  // Captcha will show rougly 1/<threshold> times
-  threshold: 5
-  key: "6LcedG4UAAAAAKA6l9BbRPvZ2vt3lTrCQwz8rfPe"
-  secret: "6LcedG4UAAAAAIXZcNFhnLKvTQwG1E8BzQQt_-MR"
-  maxPixels: 0
-  allTime: true
-}
-```
+# Notice
+It's not recommended to use this repo for production as this is designed to be used on STEMPlace infrastructure.
 
 # Console Commands
 
