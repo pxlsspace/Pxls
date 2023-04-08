@@ -452,6 +452,7 @@ module.exports.settings = (function() {
       }
     },
     chat: {
+      enable: setting('chat.enable', SettingType.TOGGLE, true, $('#setting-chat-enable')),
       timestamps: {
         '24h': setting('chat.timestamps.24h', SettingType.TOGGLE, false, $('#setting-chat-timestamps-24h'))
       },

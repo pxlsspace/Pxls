@@ -106,8 +106,28 @@ module.exports.template = (function() {
         self.elements.imageErrorWarning.empty();
         self.elements.imageErrorWarning.hide();
 
-        self.elements.sourceImage.attr({
-          src: self.cors(self.options.url)
+        if (self.options.url === undefined) return;
+
+        fetch(self.cors(self.options.url), {
+          method: 'GET',
+          credentials: 'omit'
+        }).then(response => {
+          if (response.ok) {
+            return response.blob();
+          } else {
+            throw new Error(`HTTP ${response.status} ${response.statusText}`);
+          }
+        }).then(blob => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            self.elements.sourceImage.attr('src', reader.result);
+          };
+          reader.readAsDataURL(blob);
+        }).catch(error => {
+          self.elements.imageErrorWarning.text(`Error loading template image: ${error}`);
+          self.elements.imageErrorWarning.show();
+        }).finally(() => {
+          self.loading = false;
         });
       }
     },
@@ -231,8 +251,21 @@ module.exports.template = (function() {
       }
 
       if (self.elements.styleImage.prop('src') !== self.options.style) {
-        self.elements.styleImage.attr({
-          src: self.cors(self.options.style)
+        fetch(self.cors(self.options.style), {
+          method: 'GET',
+          credentials: 'omit'
+        }).then(response => {
+          if (response.ok) {
+            return response.blob();
+          } else {
+            throw new Error(`HTTP ${response.status} ${response.statusText}`);
+          }
+        }).then(blob => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            self.elements.styleImage.attr('src', reader.result);
+          };
+          reader.readAsDataURL(blob);
         });
       }
 

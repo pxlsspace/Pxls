@@ -19,14 +19,6 @@ module.exports.ban = (function() {
     init: function() {
       setInterval(self.update, 5000);
 
-      const _WebSocket = WebSocket;
-      // don't allow new websocket connections
-      // eslint-disable-next-line no-global-assign
-      WebSocket = function(a, b) {
-        self.shadow('new WebSocket instance');
-        return new _WebSocket(a, b);
-      };
-
       // don't even try to generate mouse events. I am being nice
       window.MouseEvent = function() {
         self.me('new MouseEvent instance');

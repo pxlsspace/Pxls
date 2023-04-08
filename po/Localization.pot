@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2022-05-05T21:00:41.313Z\n"
+"POT-Creation-Date: 2023-03-31T00:00:15.391Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -84,6 +84,10 @@ msgid "Drag and drop template image"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
+msgid "Exit"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
 #: resources/public/pebble_templates/profile.html
 msgid "Info"
 msgstr ""
@@ -93,6 +97,7 @@ msgid "Close Panel"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
+#: resources/public/include/chat.js
 msgid "Chat"
 msgstr ""
 
@@ -109,7 +114,8 @@ msgid "Jump To Bottom"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
-msgid "Replying to"
+#: resources/public/include/chat.js
+msgid "On"
 msgstr ""
 
 #. Open emoji picker
@@ -632,6 +638,18 @@ msgstr ""
 
 #: resources/public/pebble_templates/index.html
 msgid "Interface"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "enable;disable"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Enable chat"
+msgstr ""
+
+#: resources/public/pebble_templates/index.html
+msgid "Page must be reloaded after changing"
 msgstr ""
 
 #: resources/public/pebble_templates/index.html
@@ -1246,7 +1264,7 @@ msgid "We pride ourselves on trying to keep an open canvas for all free from out
 msgstr ""
 
 #: resources/public/pebble_templates/info.html
-msgid "No hateful imagery or derogatory speech. This includes but is not limited to words such as <i>faggot</i>, <i>nigger</i>, etc; as well as the Swastika, Hammer and Sickle, and any symbols of terrorism."
+msgid "No hateful imagery or derogatory speech. This includes but is not limited to words such as <i>f****t</i>, <i>n****r</i>, etc; as well as the Swastika, Hammer and Sickle, and any symbols of terrorism."
 msgstr ""
 
 #: resources/public/pebble_templates/info.html
@@ -1728,7 +1746,23 @@ msgid "Please upload your template image to a third-party image host."
 msgstr ""
 
 #: resources/public/include/chat.js
+msgid "You must have at least "
+msgstr ""
+
+#: resources/public/include/chat.js
+msgid " pixels to send links."
+msgstr ""
+
+#: resources/public/include/chat.js
 msgid "You must be logged in to chat."
+msgstr ""
+
+#: resources/public/include/chat.js
+msgid "No Results"
+msgstr ""
+
+#: resources/public/include/chat.js
+msgid "Reply"
 msgstr ""
 
 #: resources/public/include/chat.js
@@ -1818,11 +1852,11 @@ msgid "You are reporting a chat message from ${reportTarget} with the content:"
 msgstr ""
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
-msgid "Error sending report."
+msgid "Sent report!"
 msgstr ""
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
-msgid "Sent report!"
+msgid "Error sending report."
 msgstr ""
 
 #: resources/public/include/chat.js
@@ -1919,11 +1953,11 @@ msgid "Additional information:"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "Error occurred while chatbanning"
+msgid "Chatban initiated"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "Chatban initiated"
+msgid "Error occurred while chatbanning"
 msgstr ""
 
 #: resources/public/include/chat.js
@@ -1967,15 +2001,11 @@ msgid "Purge Reason"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "Error sending purge."
-msgstr ""
-
-#: resources/public/include/chat.js
 msgid "User purged"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "On"
+msgid "Error sending purge."
 msgstr ""
 
 #: resources/public/include/chat.js
@@ -1987,11 +2017,11 @@ msgid "Select one of the options below to set the current rename request state."
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "An unknown error occurred. Please contact a developer"
+msgid "Rename request updated"
 msgstr ""
 
 #: resources/public/include/chat.js
-msgid "Rename request updated"
+msgid "An unknown error occurred. Please contact a developer"
 msgstr ""
 
 #: resources/public/include/chat.js
@@ -2051,11 +2081,11 @@ msgid "Other (specify below)"
 msgstr ""
 
 #: resources/public/include/lookup.js
-msgid "Hide sensitive information"
+msgid "This pixel is background (was not placed by a user)."
 msgstr ""
 
 #: resources/public/include/lookup.js
-msgid "This pixel is background (was not placed by a user)."
+msgid "Hide sensitive information"
 msgstr ""
 
 #: resources/public/include/lookup.js
@@ -2207,15 +2237,15 @@ msgid "New Accounts Disabled"
 msgstr ""
 
 #: resources/public/include/user.js
+msgid "online"
+msgstr ""
+
+#: resources/public/include/user.js
 msgid "Sign Out"
 msgstr ""
 
 #: resources/public/include/user.js
 msgid "Are you sure you want to sign out?"
-msgstr ""
-
-#: resources/public/include/user.js
-msgid "online"
 msgstr ""
 
 #: resources/public/include/user.js

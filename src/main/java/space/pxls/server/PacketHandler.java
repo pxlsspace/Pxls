@@ -29,6 +29,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 import static org.apache.commons.text.StringEscapeUtils.escapeHtml4;
 
@@ -475,6 +476,19 @@ public class PacketHandler {
                     TextFilter.FilterResult result = TextFilter.getInstance().filter(toSend);
                     toSend = result.filterHit ? result.filtered : result.original;
                     toFilter = toSend;
+                }
+                var messageHasLinkPattern = Pattern.compile("((?!-))(xn--)?[a-z0-9 ][a-z0-9_ -]{0,61}[a-z0-9 ]{0,1}\\.(xn--)?([a-z0-9-]{1,61}|[a-z0-9 -]{1,30}\\.[a-z ]{2,})", Pattern.MULTILINE);
+                var messageHasLink = messageHasLinkPattern.matcher(message).find();
+                // If chat message contains a link and the user's pixel count is below linkMinimumPixelCount in the app configuration, return
+                if (user.getAllTimePixelCount() < App.getConfig().getInt("chat.linkMinimumPixelCount") && messageHasLink) {
+                    server.send(user, new ServerChatMessageBlocked("You must have at least " + App.getConfig().getInt("chat.linkMinimumPixelCount") + " pixels to send links."));
+                    if (App.getConfig().getBoolean("chat.linkSendToStaff")) {
+                        // Blocked link messages should appear as shadow-banned messages
+                        Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter, replyingToId, replyShouldMention, true);
+                        var chatMessage = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, replyingToId, replyShouldMention, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), true, usersFaction);
+                        server.broadcastToStaff(new ServerChatMessage(chatMessage));
+                        return;
+                    }
                 }
                 Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter, replyingToId, replyShouldMention, user.isShadowBanned());
                 var chatMessage = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, replyingToId, replyShouldMention, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), user.isShadowBanned(), usersFaction);

@@ -22,6 +22,8 @@ const chat = (function() {
     pingsList: [],
     pingAudio: new Audio('chatnotify.wav'),
     lastPingAudioTimestamp: 0,
+    linkMinimumPixelCount: 0,
+    sendLinkToStaff: false,
     last_opened_panel: ls.get('chat.last_opened_panel') >> 0,
     idLog: [],
     typeahead: {
@@ -103,6 +105,10 @@ const chat = (function() {
       user = require('./user').user;
       place = require('./place').place;
       board = require('./board').board;
+      if (!settings.chat.enable.get()) {
+        self.elements.panel_trigger.hide();
+        return;
+      }
       // NOTE(netux): The processor is deriverately left unfrozen to allow for extending
       // it through third party extensions.
       self.markdownProcessor = uiHelper.makeMarkdownProcessor()
@@ -231,6 +237,14 @@ const chat = (function() {
 
         self.timeout.timer = setInterval(showCooldown, 1000);
         showCooldown();
+      });
+      socket.on('chat_message_blocked', e => {
+        // If the message with the link is being sent to the server, we don't
+        // want to see the blocked message in chat as it's already being shown
+        // above the input box. That's give away that the link was sent.
+        if (!self.sendLinkToStaff) {
+          self.addServerAction(e.message);
+        }
       });
       socket.on('chat_lookup', e => {
         if (e.target && Array.isArray(e.history) && Array.isArray(e.chatbans)) {
@@ -364,6 +378,12 @@ const chat = (function() {
           return self._markMessagePurged(elem, e);
         }
 
+        if (e.type === 'chat_purge_specific') {
+          self.pingsList = self.pingsList.filter(packet => !e.IDs.includes(packet.id));
+        } else if (e.type === 'chat_purge') {
+          self.pingsList = self.pingsList.filter(packet => packet.author !== e.target && packet.message_raw !== elem.attributes['data-message-raw'].value);
+        }
+
         // Delete normal message lines
         if (!isReplyPreview) return elem.remove();
 
@@ -430,25 +450,18 @@ const chat = (function() {
 
       let allowSend = true;
 
-      self.elements.input.on('keydown keyup', e => {
+      const userCanPostLink = (message) => {
+        const links = message.match(/((?!-))(xn--)?[a-z0-9 ][a-z0-9_ -]{0,61}[a-z0-9 ]{0,1}\.(xn--)?([a-z0-9-]{1,61}|[a-z0-9 -]{1,30}\.[a-z ]{2,})/g);
+        return !(links && links.length && user.getPixelCountAllTime() < self.linkMinimumPixelCount);
+      };
+
+      self.elements.input.on('keydown', e => {
         e.stopPropagation();
         const toSend = self.elements.input[0].value;
         const trimmed = toSend.trim();
 
-        let decoded = trimmed;
-        try {
-          decoded = decodeURIComponent(trimmed);
-        } catch (err) {
-          // should not fail if malformed
-        }
-
-        if (decoded.includes('data:image')) {
-          allowSend = false;
-          self.showHint(__('Please upload your template image to a third-party image host.'), true);
-        } else {
-          allowSend = true;
-          self.hideHints();
-        }
+        const replyTargetId = self.elements.input[0].dataset.replyTarget;
+        const replyShouldMention = self.elements.toggle_mention_button[0].dataset.state === 'On';
 
         if ((e.originalEvent.key === 'Enter' || e.originalEvent.which === 13) && !e.shiftKey) {
           e.preventDefault();
@@ -466,16 +479,41 @@ const chat = (function() {
           }
 
           if (!self.typeahead.shouldInsert) {
-            const replyTargetId = self.elements.input[0].dataset.replyTarget;
-            const replyShouldMention = self.elements.toggle_mention_button[0].dataset.state === 'On';
-            self.cancelReply();
-            self.typeahead.lastLength = -1;
+            if (userCanPostLink(trimmed)) {
+              self.cancelReply();
+              self.typeahead.lastLength = -1;
+              self.elements.input.val('');
+            }
             self._send({ message: trimmed, replyingToId: replyTargetId !== undefined ? replyTargetId : 0, replyShouldMention });
-            self.elements.input.val('');
           }
         } else if (e.originalEvent.key === 'Tab' || e.originalEvent.which === 9) {
           e.stopPropagation();
           e.preventDefault();
+        }
+      }).on('keydown keyup', e => {
+        // Handle hints
+        e.stopPropagation();
+        const toSend = self.elements.input[0].value;
+        const trimmed = toSend.trim();
+
+        let decoded = trimmed;
+        try {
+          decoded = decodeURIComponent(trimmed);
+        } catch (err) {
+          // should not fail if malformed
+        }
+
+        if (decoded.includes('data:image')) {
+          allowSend = false;
+          self.showHint(__('Please upload your template image to a third-party image host.'), true);
+        } else if (!userCanPostLink(trimmed)) {
+          if (!self.sendLinkToStaff) {
+            allowSend = false;
+          }
+          self.showHint(__('You must have at least ') + self.linkMinimumPixelCount + __(' pixels to send links.'), true);
+        } else {
+          allowSend = true;
+          self.hideHints();
         }
       }).on('focus', e => {
         if (self.stickToBottom) {
@@ -508,6 +546,9 @@ const chat = (function() {
             'Message was ignored'
           ));
         });
+        // Remove from pings list if ignored
+        // NOTE: Side effect - user must refresh to repopulate pings list
+        if (isIgnored) self.pings = self.pings.filter(packet => packet.author !== who);
       }
 
       $(window).on('pxls:chat:userIgnored', (e, who) => {
@@ -612,6 +653,7 @@ const chat = (function() {
         // const mainPanel = crel('div', { class: 'pane' });
 
         const pingsList = crel('ul', { class: 'pings-list' }, self.pingsList.map(packet => {
+          console.info(packet);
           const _processed = crel('span', self.processMessage(packet.message_raw));
           return crel('li', { title: _processed.textContent }, crel('i', {
             class: 'fas fa-external-link-alt fa-is-left',
@@ -747,6 +789,8 @@ const chat = (function() {
     },
     webinit(data) {
       self.setCharLimit(data.chatCharacterLimit);
+      self.setLinkMinimumPixelCount(data.chatLinkMinimumPixelCount);
+      self.setLinkSendToStaff(data.chatLinkSendToStaff);
       self.ratelimitMessage = data.chatRatelimitMessage;
       self.canvasBanRespected = data.chatRespectsCanvasBan;
       self._populateUsernameColor();
@@ -1070,6 +1114,12 @@ const chat = (function() {
     },
     setCharLimit(num) {
       self.elements.input.prop('maxlength', num);
+    },
+    setLinkMinimumPixelCount(linkMinimumPixelCount) {
+      self.linkMinimumPixelCount = linkMinimumPixelCount;
+    },
+    setLinkSendToStaff(linkSendToStaff) {
+      self.sendLinkToStaff = linkSendToStaff;
     },
     isChatBanned: () => {
       return self.chatban.permanent || (self.chatban.banEnd - moment.now() > 0);
@@ -1397,7 +1447,7 @@ const chat = (function() {
         self._markMessageShadowBanned(chatLine);
       }
 
-      if (hasPing) {
+      if (hasPing && !isIgnored && !packet.purge) {
         self.pingsList.push(packet);
         if (!((panels.isOpen('chat') && self.stickToBottom) || (packet.date < self.last_opened_panel))) {
           ++self.pings;
