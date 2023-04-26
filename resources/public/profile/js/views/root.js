@@ -44,7 +44,7 @@ const ConfirmDialogStyles = Object.freeze({
     const successIndex = _search.findIndex(x => x[0].toLowerCase().trim() === 'success');
     if (Array.isArray(_search[successIndex]) && _search[successIndex][1] != null) {
       const wasSuccessful = _search[successIndex][1] === '1';
-      new SLIDEIN.Slidein(wasSuccessful ? `${_details === false ? 'Operation completed successfully.' : _details}` : `${_details === false ? 'Operation failed. No additional information was provided by the sever.' : _details}`, null, wasSuccessful ? SLIDEIN.SLIDEIN_TYPES.SUCCESS : SLIDEIN.SLIDEIN_TYPES.DANGER, true).show().closeAfter(5e3);
+      new SLIDEIN.Slidein(wasSuccessful ? `${_details === false ? 'Operation completed successfully.' : _details}` : `${_details === false ? 'Operation failed. No additional information was provided by the server.' : _details}`, null, wasSuccessful ? SLIDEIN.SLIDEIN_TYPES.SUCCESS : SLIDEIN.SLIDEIN_TYPES.DANGER, true).show().closeAfter(5e3);
 
       _search.splice(successIndex, 1);
     }
