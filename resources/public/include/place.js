@@ -296,18 +296,16 @@ module.exports.place = (function() {
         uiHelper.toggleCaptchaLoading(false);
       });
       socket.on('can_undo', function(data) {
-        if (settings.ui.undo.enable.get()) {
-          document.body.classList.add('undo-visible');
-          self.elements.undo.addClass('open');
-          self.can_undo = true;
-          if (self.undoTimeout !== false) clearTimeout(self.undoTimeout);
-          self.undoTimeout = setTimeout(function() {
-            document.body.classList.remove('undo-visible');
-            self.elements.undo.removeClass('open');
-            self.can_undo = false;
-            self.undoTimeout = false;
-          }, data.time * 1000);
-        }
+        document.body.classList.add('undo-visible');
+        self.elements.undo.addClass('open');
+        self.can_undo = true;
+        if (self.undoTimeout !== false) clearTimeout(self.undoTimeout);
+        self.undoTimeout = setTimeout(function() {
+          document.body.classList.remove('undo-visible');
+          self.elements.undo.removeClass('open');
+          self.can_undo = false;
+          self.undoTimeout = false;
+        }, data.time * 1000);
       });
       self.elements.undo.click(self.undo);
       window.recaptchaCallback = function(token) {
