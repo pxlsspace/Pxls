@@ -1208,6 +1208,7 @@ const chat = (function() {
         hasAllDonatorColors || hasPermForColor('donator.banana') ? crel('option', { value: -12, class: 'donator donator--banana' }, '*. Donator Banana') : null,
         hasAllDonatorColors || hasPermForColor('donator.teal') ? crel('option', { value: -13, class: 'donator donator--teal' }, '*. Donator Teal') : null,
         hasAllDonatorColors || hasPermForColor('donator.icy') ? crel('option', { value: -14, class: 'donator donator--icy' }, '*. Donator Icy') : null,
+        hasAllDonatorColors || hasPermForColor('donator.icy') ? crel('option', { value: -15, class: 'donator donator--blood' }, '*. Donator Blood') : null,
         place.palette.map(({ name, value: hex }, i) => crel('option', {
           value: i,
           'data-idx': i,

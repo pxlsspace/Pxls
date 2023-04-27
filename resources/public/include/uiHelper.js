@@ -100,7 +100,7 @@ const uiHelper = (function() {
         color: '#1d192c'
       }
     ],
-    specialChatColorClasses: ['rainbow', ['donator', 'donator--green'], ['donator', 'donator--gray'], ['donator', 'donator--synthwave'], ['donator', 'donator--ace'], ['donator', 'donator--trans'], ['donator', 'donator--bi'], ['donator', 'donator--pan'], ['donator', 'donator--nonbinary'], ['donator', 'donator--mines'], ['donator', 'donator--eggplant'], ['donator', 'donator--banana'], ['donator', 'donator--teal'], ['donator', 'donator--icy']],
+    specialChatColorClasses: ['rainbow', ['donator', 'donator--green'], ['donator', 'donator--gray'], ['donator', 'donator--synthwave'], ['donator', 'donator--ace'], ['donator', 'donator--trans'], ['donator', 'donator--bi'], ['donator', 'donator--pan'], ['donator', 'donator--nonbinary'], ['donator', 'donator--mines'], ['donator', 'donator--eggplant'], ['donator', 'donator--banana'], ['donator', 'donator--teal'], ['donator', 'donator--icy'], ['donator', 'donator--blood']],
     init: function() {
       timer = require('./timer').timer;
       place = require('./place').place;
