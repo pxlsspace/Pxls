@@ -337,6 +337,9 @@ module.exports.settings = (function() {
       cursor: {
         enable: setting('ui.cursor.enable', SettingType.TOGGLE, !possiblyMobile, $('#setting-ui-cursor-enable'))
       },
+      undo: {
+        enable: setting('ui.undo.enable', SettingType.TOGGLE, true, $('#setting-ui-undo-enable'))
+      },
       bubble: {
         position: setting('ui.bubble.position', SettingType.SELECT, 'bottom left', $('#setting-ui-bubble-position')),
         compact: setting('ui.bubble.compact', SettingType.TOGGLE, false)
