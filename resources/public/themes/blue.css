@@ -80,7 +80,8 @@ html {
     --chat-typeahead-item-background-active: #0012b0;
 
     --notification-expiry-color: #995050;
-    
+
+    accent-color: #0050ff;
 }
 
 hr {

@@ -77,6 +77,8 @@ html {
     --chat-typeahead-item-background-active: #038a3a;
 
     --notification-expiry-color: #995050;
+    
+    accent-color: #35c248;
 }
 
 hr {
