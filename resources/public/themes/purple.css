@@ -123,6 +123,8 @@ html {
     --emoji-picker-search-no-results-color: var(--text-muted-color);
     --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.7);
     --emoji-picker-variant-popup-background: var(--floating-panel-background);
+    
+    accent-color: #c458ff;
 }
 
 .button:disabled {

@@ -162,6 +162,8 @@ html {
     --emoji-picker-search-no-results-color: #666666;
     --emoji-picker-variant-overlay-background: rgba(0, 0, 0, 0.8);
     --emoji-picker-variant-popup-background: #FFFFFF;
+
+    accent-color: #4F81E5;
 }
 
 /*//////////////////////////*\
