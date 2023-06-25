@@ -354,27 +354,31 @@ public class WebHandler {
                                 sendBadRequest(exchange, "Invalid banState and/or user supplied");
                                 return;
                             }
-                            if (opUser.trim().isEmpty()) {
-                                sendBadRequest(exchange, "Invalid user supplied");
-                            } else {
-                                User userToModify = App.getUserManager().getByName(opUser);
-                                if (userToModify == null || userToModify.getId() == user.getId()) {
+                            if (user.getId() == faction.getOwner()) {
+                                if (opUser.trim().isEmpty()) {
                                     sendBadRequest(exchange, "Invalid user supplied");
                                 } else {
-                                    if (isBanned) { // we're attempting to ban a user. make sure they exist in the user list
-                                        if (faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
-                                            FactionManager.getInstance().banMemberFromFaction(faction.getId(), userToModify.getId());
-                                        } else {
-                                            sendBadRequest(exchange, "The requested user is not a member of this faction.");
-                                        }
+                                    User userToModify = App.getUserManager().getByName(opUser);
+                                    if (userToModify == null || userToModify.getId() == user.getId()) {
+                                        sendBadRequest(exchange, "Invalid user supplied");
                                     } else {
-                                        if (faction.fetchBans().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
-                                            FactionManager.getInstance().unbanMemberFromFaction(faction.getId(), userToModify.getId());
+                                        if (isBanned) { // we're attempting to ban a user. make sure they exist in the user list
+                                            if (faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
+                                                FactionManager.getInstance().banMemberFromFaction(faction.getId(), userToModify.getId());
+                                            } else {
+                                                sendBadRequest(exchange, "The requested user is not a member of this faction.");
+                                            }
                                         } else {
-                                            sendBadRequest(exchange, "The requested user is not banned from this faction.");
+                                            if (faction.fetchBans().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
+                                                FactionManager.getInstance().unbanMemberFromFaction(faction.getId(), userToModify.getId());
+                                            } else {
+                                                sendBadRequest(exchange, "The requested user is not banned from this faction.");
+                                            }
                                         }
                                     }
                                 }
+                            } else {
+                                send(StatusCodes.FORBIDDEN, exchange, "You do not own this resource.");
                             }
                         } else if (dataObj.has("newOwner")) {
                             String newOwner;
