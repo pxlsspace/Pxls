@@ -313,6 +313,11 @@ public class WebHandler {
                         sendBadRequest(exchange, "Missing data");
                     } else {
                         if (dataObj.has("displayed")) { // user is attempting to update displayed status
+                            if (!faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == user.getId())) {
+                                sendBadRequest(exchange, "You are not in the faction and cannot set it as displayed.");
+                                return;
+                            }
+
                             boolean displaying = false;
                             try {
                                 displaying = dataObj.get("displayed").getAsBoolean();
