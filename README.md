@@ -1,6 +1,6 @@
 <div align="center">
 
-![Pxls](https://i.imgur.com/K7j14LL.png)
+![Pxls](https://i.imgur.com/udeloqX.png)
 
 ![Java CI with Maven](https://img.shields.io/github/workflow/status/pxlsspace/Pxls/Java%20CI%20with%20Maven?style=flat-square)
 [![GitHub issues](https://img.shields.io/github/issues/pxlsspace/Pxls?style=flat-square)](https://github.com/pxlsspace/Pxls/issues)
