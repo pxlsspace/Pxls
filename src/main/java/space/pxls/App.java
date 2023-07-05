@@ -155,7 +155,72 @@ public class App {
     private static void handleCommand(String line) {
         try {
             String[] token = line.split(" ");
-            if (token[0].equalsIgnoreCase("reload")) {
+            if (token[0].equalsIgnoreCase("help") || token[0].equalsIgnoreCase("list")) {
+                try {
+                    if (token.length < 2) {
+                        System.out.println("Usage: help <general/canvas/user>");
+                        return;
+                    }
+                    if (token[1].equalsIgnoreCase("general")){
+                        System.out.println("General commands: ");
+                        System.out.println(
+                                " help - Displays this list. \r\n" + //
+                                " reload - Reloads pxls.conf and roles.conf, applying _most_ changes immediately. Also reloads the user and faction cache. \r\n" + //
+                                " save - Saves the board. \r\n" + //
+                                " alert [message] - Alerts every user with the given message (or blank if left empty). \r\n" + //
+                                " cons [|authed|] - Lists the total (or authenticated) connection count. \r\n" + //
+                                " users - Lists all authenticated usernames. \r\n" + //
+                                " broadcast (message) - Sends the message in chat. \r\n" + //
+                                " cf (query) - Runs the query through the chat filter. \r\n" + //
+                                " reloadusers - Reloads the user manager. Laggy! \r\n" + //
+                                " idlecheck - Runs the user timeout check. \r\n" + //
+                                " senduserdata - Broadcasts the non-idle user count in chat. \r\n" + //
+                                " addnotification (title) (expiry) (body) - Adds a new notification to the notification panel with the body. +123 for the expiry means 123 seconds from now. \r\n" + //
+                                " bp (packet) - Broadcasts a raw JSON packet to all connections. \r\n" + //
+                                " up (username) (packet) - Broadcasts a raw JSON packet to all active connections from the user. \r\n" + //
+                                " f (faction ID) [delete/tag [new tag]/name [new name]] - Prints information about the faction or changes the tag or name. \r\n"
+                                );
+                    }
+
+                    if (token[1].equalsIgnoreCase("canvas")){
+                        System.out.println("Canvas Management commands: ");
+                        System.out.println(
+                                " nuke (x1) (y1) (x2) (y2) (color) - Replaces all pixels from (x1, y1) to (x2, y2) with the specified color index. \r\n" + //
+                                " replace (x1) (y1) (x2) (y2) (from color) (to color) - Replaces all pixels from (x1, y1) to (x2, y2) matching the from color index with the to color index. \r\n"
+                                );
+                    }
+
+                    if (token[1].equalsIgnoreCase("user")){
+                        System.out.println("User Management commands: ");
+                        System.out.println(
+                                " logins (username) [{service ID}:{service user ID} ...] -> Gets or sets the user's login method(s). \r\n" + //
+                                " addlogins (username) ({service ID}:{service user ID} ...) -> Adds login method(s) to the user. \r\n" + //
+                                " removelogins (username) ({service ID}:{service user ID} ...) -> Removes login method(s) from the user. \r\n" + //
+                                " roles (username) [role ID ...] -> Gets or sets the user's roles. \r\n" + //
+                                " addroles (username) (role ID ...) -> Adds role(s) to the user. \r\n" + //
+                                " removeroles (username) (role ID ...) -> Removes role(s) from the user. \r\n" + //
+                                " ban (username) [reason] -> Bans the user for 24 hours with the given reason. \r\n" + //
+                                " permaban (username) [reason] -> Permanently bans the user with the given reason. \r\n" + //
+                                " shadowban (username) [reason] -> Shadowbans the user (making new pixels local) with the given reason. \r\n" + //
+                                " unban (username) [{revert} TRUE/false] [reason] -> Unbans the user, reverting their pixels and with the given reason. \r\n" + //
+                                " stack (user) [|set| (amount)] -> Gets or sets the user's stacked pixels. User must not be on cooldown before setting. \r\n" + //
+                                " placementOverride |list|/(user) [placeAnyColor/ignoreCooldown/ignorePlacemap] [on/off] -> Lists all placement overrides or turns a placement override on/off for the user. \r\n" + //
+                                " captchaOverride |list|/(user) [on/off] -> Lists all captcha overrides or turns it on/off for the user. \r\n" + //
+                                " chatban (username) (length) ({purge} true/false) (reason) -> Bans the user from chat for the length in seconds, optionally purging all of their messages, with the given reason. \r\n" + //
+                                " permachatban (username) ({purge} true/false) (reason) -> Permanently bans the user from chat optionally purging all of their messages, with the given reason. \r\n" + //
+                                " unchatban (username) -> Unbans the user from chat. \r\n" + //
+                                " chatpurge (username) [amount] [reason] -> Purges up to amount chat messages from the user for the given reason. \r\n" + //
+                                " flagrename (username) [{flag} TRUE/false] -> Flags or unflags the user for rename. \r\n" + //
+                                " setname|updateusername (username) (new username) -> Renames the user. "
+                                );
+                    } else {
+                        System.out.println("Usage: help <general/canvas/user>");
+                        return;
+                    };
+                } catch (Exception x) {
+                    x.printStackTrace();
+                }
+            } else if (token[0].equalsIgnoreCase("reload")) {
                 try {
                     cachedWhoamiOrigin = null;
                     loadConfig();
@@ -830,6 +895,8 @@ public class App {
                 } else {
                     System.out.printf("The faction %s does not exist.%n", i);
                 }
+            } else {
+                System.out.println("Unknown command. Type \"help\" for command list.");
             }
         } catch (RuntimeException e) {
             e.printStackTrace();
