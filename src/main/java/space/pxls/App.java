@@ -182,7 +182,7 @@ public class App {
                                 );
                     }
 
-                    if (token[1].equalsIgnoreCase("canvas")){
+                    else if (token[1].equalsIgnoreCase("canvas")){
                         System.out.println("Canvas Management commands: ");
                         System.out.println(
                                 " nuke (x1) (y1) (x2) (y2) (color) - Replaces all pixels from (x1, y1) to (x2, y2) with the specified color index. \r\n" + //
@@ -190,7 +190,7 @@ public class App {
                                 );
                     }
 
-                    if (token[1].equalsIgnoreCase("user")){
+                    else if (token[1].equalsIgnoreCase("user")){
                         System.out.println("User Management commands: ");
                         System.out.println(
                                 " logins (username) [{service ID}:{service user ID} ...] -> Gets or sets the user's login method(s). \r\n" + //
