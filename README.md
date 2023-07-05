@@ -95,6 +95,7 @@ Commands can be entered into the running instance through standard input.
 
 | Command | Arguments | Description |
 | --- | --- | --- |
+| `help` | `(general/canvas/user)`| Displays specified command list. |
 | `reload` || Reloads `pxls.conf` and `roles.conf`, applying _most_ changes immediately. Also reloads the user and faction cache. |
 | `save` || Saves the board. |
 | `alert` | `[message]` | Alerts every user with the given message (or blank if left empty). |
