@@ -164,7 +164,7 @@ public class App {
                     if (token[1].equalsIgnoreCase("general")){
                         System.out.println("General commands: ");
                         System.out.println(
-                                " help - Displays this list. \r\n" + //
+                                " help (general/canvas/user) - Displays specified command list. \r\n" + //
                                 " reload - Reloads pxls.conf and roles.conf, applying _most_ changes immediately. Also reloads the user and faction cache. \r\n" + //
                                 " save - Saves the board. \r\n" + //
                                 " alert [message] - Alerts every user with the given message (or blank if left empty). \r\n" + //
