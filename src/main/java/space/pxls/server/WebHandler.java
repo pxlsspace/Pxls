@@ -44,6 +44,7 @@ public class WebHandler {
         addServiceIfAvailable("discord", new DiscordAuthService("discord"));
         addServiceIfAvailable("vk", new VKAuthService("vk"));
         addServiceIfAvailable("tumblr", new TumblrAuthService("tumblr"));
+        addServiceIfAvailable("twitch", new TwitchAuthService("twitch"));
 
         engine = new PebbleEngine.Builder().build();
     }
