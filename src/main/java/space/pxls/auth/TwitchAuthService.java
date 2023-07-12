@@ -49,7 +49,7 @@ public class TwitchAuthService extends AuthService {
             return null;
         }
 
-        return httpResponse.getBody().getObject().getJSONArray("data").getJSONObject(0).getString("login");
+        return httpResponse.getBody().getObject().getJSONArray("data").getJSONObject(0).getString("id");
     }
 
     @Override
