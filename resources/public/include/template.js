@@ -24,7 +24,8 @@ module.exports.template = (function() {
       styleSelect: $('#template-style-mode'),
       styleOptionCustom: $('#template-style-mode-custom'),
       conversionModeSelect: $('#template-conversion-mode-select'),
-      opacityPercentage: $('#template-opacity-percentage')
+      opacityPercentage: $('#template-opacity-percentage'),
+      templateMoveButtons: $('#template-move-buttons')
     },
     gl: {
       context: null,
@@ -373,6 +374,64 @@ module.exports.template = (function() {
       self.elements.conversionModeSelect.on('change input', (e) => self._update({ convertMode: e.target.value }));
 
       self.updateSettings();
+
+      // template-move-buttons data-direction -- hook up the buttons to move the template around
+      self.elements.templateMoveButtons.on('mousedown', '[data-direction]', function(evt) {
+        evt.preventDefault();
+        const direction = $(this).data('direction');
+        const amount = 1;
+        const initialUpdateRate = 300; // Initial update rate in milliseconds
+        let updateRate = initialUpdateRate;
+        const updateTime = 700; // Time in milliseconds after which the update rate will be reduced
+
+        console.info('templateMoveButtons mousedown', direction, amount);
+
+        const update = () => {
+          const newPosition = {};
+          switch (direction) {
+            case 'up':
+              newPosition.y = self.options.y - amount;
+              break;
+            case 'down':
+              newPosition.y = self.options.y + amount;
+              break;
+            case 'left':
+              newPosition.x = self.options.x - amount;
+              break;
+            case 'right':
+              newPosition.x = self.options.x + amount;
+              break;
+          }
+          self._update(newPosition, true);
+        };
+
+        let timer;
+        const timerStart = Date.now();
+
+        const updateLoop = () => {
+          update();
+
+          // Calculate the new update rate based on elapsed time
+          const elapsedTime = Date.now() - timerStart;
+          updateRate = Math.max(initialUpdateRate / Math.pow(2, elapsedTime / updateTime), 20);
+
+          timer = setTimeout(updateLoop, updateRate);
+        };
+
+        updateLoop();
+
+        // Cancel the updating loop on mouseup
+        $(this).on('mouseup', function() {
+          clearTimeout(timer);
+          $(this).off('mouseup');
+        });
+
+        // Cancel the updating loop on mouseout
+        $(this).on('mouseout', function() {
+          clearTimeout(timer);
+          $(this).off('mouseout');
+        });
+      });
 
       $(window).keydown(function(evt) {
         if (['INPUT', 'TEXTAREA'].includes(evt.target.nodeName)) {

@@ -826,6 +826,38 @@ dt {
     background: var(--palette-background);
 }
 
+#template-move-buttons {
+    width: 150px;
+    height: 150px;
+    display: flex;
+    flex-direction: column;
+    pointer-events: none;
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translate(-50%, -20px);
+}
+
+#template-move-buttons > div {
+    flex-grow: 1;
+    display: flex;
+    width: 100%;
+    justify-content: center;
+}
+
+#template-move-buttons > div:nth-child(2) {
+    justify-content: space-between;
+}
+
+#template-move-buttons button {
+    aspect-ratio: 1/1;
+    border: 0;
+    background: rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    border-radius: 20px;
+    pointer-events: auto;
+}
+
 /* Scrollbar, Firefox only */
 .thin-scrollbar {
     scrollbar-width: thin;
