@@ -1339,9 +1339,15 @@ public class WebHandler {
             return;
         }
 
-        if (discordName != null && !discordName.matches("^.{2,32}#\\d{4}$")) {
-            sendBadRequest(exchange, "name isn't in the format '{name}#{discriminator}'");
-            return;
+        if (discordName != null) {
+            if (discordName.contains("#") && !discordName.matches("^.{2,32}#\\d{4}$")){
+                sendBadRequest(exchange, "name isn't in the format '{name}#{discriminator}'");
+                return;
+            }
+            if (!discordName.contains("#") && !discordName.matches("^[A-Za-z0-9._]{2,32}$")){
+                sendBadRequest(exchange, "name isn't in the discord tag format (only english letters, numbers, periods and underlines allowed)");
+                return;
+            }
         }
 
         if (discordName == null) { //user is deleting name, bypass ratelimit check
