@@ -642,15 +642,15 @@ msgstr "Interfas"
 
 #: resources/public/pebble_templates/index.html
 msgid "enable;disable"
-msgstr ""
+msgstr "aktivera;avaktivera"
 
 #: resources/public/pebble_templates/index.html
 msgid "Enable chat"
-msgstr ""
+msgstr "Aktivera chatten"
 
 #: resources/public/pebble_templates/index.html
 msgid "Page must be reloaded after changing"
-msgstr ""
+msgstr "Sidan måste laddas om efter ändringen"
 
 #: resources/public/pebble_templates/index.html
 msgid "chat size;chat font"
@@ -986,7 +986,7 @@ msgstr "JPEG"
 
 #: resources/public/pebble_templates/index.html
 msgid "WEBP (Chrome only)"
-msgstr "WEBP (bara på Chrome"
+msgstr "WEBP (bara på Chrome)"
 
 #: resources/public/pebble_templates/index.html
 msgid "sound;notification;alert;notify;ping"
@@ -1249,7 +1249,7 @@ msgstr "Välkommen till pxls.space! Pxls är ett fler-spelare online samarbets k
 
 #: resources/public/pebble_templates/info.html
 msgid "The best place to reach staff and fellow community is in the discord!"
-msgstr "Den bästa platsen att nå moderatörerna och vårt gemenskap i discord servern!"
+msgstr "Den bästa platsen att nå moderatorerna och vårt gemenskap i discord servern!"
 
 #: resources/public/pebble_templates/info.html
 msgid "Check out our social media pages, and please take the time to read the rules below. Have fun creating (or changing) art!"
@@ -1305,7 +1305,7 @@ msgstr "Någon sorts automatiserad aggregering av data från användar-uppslagni
 
 #: resources/public/pebble_templates/info.html
 msgid "Staff have final say in any rule disputes"
-msgstr "Moderatörer har sista ordet i alla regel konflikter"
+msgstr "Moderatorer har sista ordet i alla regel konflikter"
 
 #: resources/public/pebble_templates/info.html
 msgid "If you feel a moderator has acted inappropriately, please report it to an administrator."
@@ -1551,7 +1551,7 @@ msgstr "Du måste ha minst {0} heltid pixlar placerade för att kunna göra en g
 
 #: resources/public/pebble_templates/profile.html
 msgid "Create"
-msgstr "Skap"
+msgstr "Skapa"
 
 #: resources/public/pebble_templates/profile.html
 msgid "Join"
@@ -1578,7 +1578,7 @@ msgstr "Ta Bort Visad Grupp"
 #. makes the faction the one displayed for the current user
 #: resources/public/pebble_templates/profile.html
 msgid "Set Displayed"
-msgstr "Set Visad Grupp"
+msgstr "Sätt Visad Grupp"
 
 #: resources/public/pebble_templates/profile.html
 msgid "Members"
@@ -1607,11 +1607,11 @@ msgstr "Du måste vara inloggad för att kunna se din data."
 
 #: resources/public/pebble_templates/profile.html
 msgid "Log Keys"
-msgstr "Logg Knyclkar"
+msgstr "Logg Nycklar"
 
 #: resources/public/pebble_templates/profile.html
 msgid "Log keys can be used by those who have them to tell which pixels you placed on previous canvases."
-msgstr "Logg knyclar kan bli använda av dom som har dom för att se vilka pixlar du placerat på en föredetta kanvas."
+msgstr "Logg nycklar kan bli använda av dom som har dom för att se vilka pixlar du placerat på en föredetta kanvas."
 
 #: resources/public/pebble_templates/profile.html
 msgid "Canvas Code"
@@ -1619,15 +1619,15 @@ msgstr "Kanvas Kod"
 
 #: resources/public/pebble_templates/profile.html
 msgid "Log Key"
-msgstr "Logg Knyckel"
+msgstr "Logg Nyckel"
 
 #: resources/public/pebble_templates/profile.html
 msgid "You have no log keys yet!"
-msgstr "Du har inga log knycklar ännu!"
+msgstr "Du har inga log nycklar ännu!"
 
 #: resources/public/pebble_templates/profile.html
 msgid "Log keys should show up here after a canvas you have placed on ends."
-msgstr "Logg knycklar borde visas up här efter en kanvas du har placerat på tar slut."
+msgstr "Logg nycklar borde visas up här efter en kanvas du har placerat på tar slut."
 
 #: resources/public/pebble_templates/profile.html
 msgid "Members of {0} ([{1}])"
@@ -1757,11 +1757,11 @@ msgstr "Du måste vara inloggad för att chatta."
 
 #: resources/public/include/chat.js
 msgid "No Results"
-msgstr ""
+msgstr "Inga resultat"
 
 #: resources/public/include/chat.js
 msgid "Reply"
-msgstr ""
+msgstr "Svara"
 
 #: resources/public/include/chat.js
 msgid "none provided"
@@ -1797,7 +1797,7 @@ msgstr "Denna länk kommer att överskriva din nuvarande template. Vad skulle du
 
 #: resources/public/include/chat.js
 msgid "Note: You can set a default action in the settings menu which bypasses this popup completely."
-msgstr "Notera: Du kan ställa in en standard aktion i inställningsmenyn vilket förbifarter denna popup helt."
+msgstr "Notera: Du kan ställa in en standard aktion i inställningsmenyn vilket ignorerar denna popup helt."
 
 #: resources/public/include/chat.js resources/public/include/lookup.js
 #: resources/public/include/user.js resources/public/admin/admin.js
@@ -1834,7 +1834,7 @@ msgstr "Utrensa Användare"
 
 #: resources/public/include/chat.js
 msgid "Mod Lookup"
-msgstr "Mod Uppslagningar"
+msgstr "Moderator Uppslagningar"
 
 #: resources/public/include/chat.js
 msgid "Chat Lookup"
@@ -2114,7 +2114,7 @@ msgstr "Del av mass-bannlyssning"
 
 #: resources/public/include/lookup.js
 msgid "Placed by a staff member using placement overrides"
-msgstr "Placerad av pxls moderatörer genom placering överskridande"
+msgstr "Placerad av pxls moderatorer genom placering överskridande"
 
 #: resources/public/include/lookup.js
 msgid "Time"
@@ -2270,11 +2270,11 @@ msgstr "Bannlyst"
 
 #: resources/public/include/user.js
 msgid "An unknown error occurred. Please contact staff on discord"
-msgstr "Ett okänt fel uppstod. Snälla kontakta moderatörerna på discord"
+msgstr "Ett okänt fel uppstod. Snälla kontakta moderatorerna på discord"
 
 #: resources/public/include/user.js
 msgid "Staff have required you to change your username, this usually means your name breaks one of our rules."
-msgstr "Moderatörerna kräver att du ändrar ditt användarnamn, detta brukar betyda att ditt namn bryter mot någon av våra regler."
+msgstr "Moderatorerna kräver att du ändrar ditt användarnamn, detta brukar betyda att ditt namn bryter mot någon av våra regler."
 
 #: resources/public/include/user.js
 msgid "If you disagree, please contact us on Discord (link in the info panel)."
@@ -2494,7 +2494,7 @@ msgstr "Mer..."
 #~ msgstr "Svarar"
 
 #~ msgid "The canvas is now locked. Press L to unlock."
-#~ msgstr "Kanvasen är du låst. Tryck på L för att låsa upp den igen."
+#~ msgstr "Kanvasen är nu låst. Tryck på L för att låsa upp den igen."
 
 #~ msgid "Template generator, archives, timelapses, and other utilities"
 #~ msgstr "Template generator, arkiv, timelapses, och andra roliga verktyg"
