@@ -507,7 +507,7 @@ public class Database {
             handle.createUpdate("INSERT INTO PIXELS (x, y, color, who, secondary_id, rollback_action, most_recent) VALUES (:x, :y, :default_color, :who, :from, true, false)")
                     .bind("x", x)
                     .bind("y", y)
-                    .bind("default_color", App.getDefaultColor(x, y))
+                    .bind("default_color", App.getDefaultPixel(x, y))
                     .bind("who", who.getId())
                     .bind("from", from)
                     .execute();
