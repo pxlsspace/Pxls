@@ -593,6 +593,11 @@ public class User {
         }
     }
 
+    public void setPixelCounts(DBUserPixelCounts newCounts) {
+        this.pixelCount = newCounts.pixelCount;
+        this.pixelCountAllTime = newCounts.pixelCountAllTime;
+    }
+
     private void modifyPixelCounts(int amount) {
         boolean increaseCurrent = App.getConfig().getBoolean("pixelCounts.countTowardsCurrent");
         boolean increaseAllTime = App.getConfig().getBoolean("pixelCounts.countTowardsAlltime");
@@ -603,8 +608,7 @@ public class User {
         }
 
         DBUserPixelCounts newCounts = App.getDatabase().modifyPixelCounts(this.id, amount, increaseCurrent, increaseAllTime);
-        this.pixelCount = newCounts.pixelCount;
-        this.pixelCountAllTime = newCounts.pixelCountAllTime;
+        this.setPixelCounts(newCounts);
     }
 
     public void increasePixelCounts() {

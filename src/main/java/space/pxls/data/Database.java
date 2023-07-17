@@ -275,9 +275,11 @@ public class Database {
      * @param color The pixel's color.
      * @param who Who placed the pixel.
      * @param mod_action Whether or not the pixel is a mod action.
+     * @return An instance of {@Link DBUserPixelCounts}.
      */
-    public Integer placePixel(int x, int y, int color, User who, boolean mod_action) {
+    public DBUserPixelCounts placePixelAndUpdateCounts(int x, int y, int color, User who, boolean mod_action) {
         return jdbi.withHandle(handle -> {
+            handle.begin();
             Optional<Integer> second_id = handle.select("SELECT id FROM pixels AS pp WHERE pp.x = :x AND pp.y = :y AND pp.most_recent ORDER BY id DESC LIMIT 1")
                     .bind("x", x)
                     .bind("y", y)
@@ -296,7 +298,25 @@ public class Database {
                     .bind("second_id", second_id)
                     .bind("mod", mod_action)
                     .execute();
-            return rowID;
+
+            DBUserPixelCounts counts = null;
+            if (who != null && !mod_action) {
+                int increaseCurrent = App.getConfig().getBoolean("pixelCounts.countTowardsCurrent") ? 1 : 0;
+                int increaseAllTime = App.getConfig().getBoolean("pixelCounts.countTowardsAlltime") ? 1 : 0;
+
+                if (increaseCurrent + increaseAllTime > 0) {
+                    counts = handle.createQuery("UPDATE users SET pixel_count = pixel_count + :current_amount, pixel_count_alltime = pixel_count_alltime + :alltime_amount WHERE id = :who RETURNING pixel_count, pixel_count_alltime")
+                        .bind("who", whoID)
+                        .bind("current_amount", increaseCurrent)
+                        .bind("alltime_amount", increaseAllTime)
+                        .map(new DBUserPixelCounts.Mapper())
+                        .findFirst()
+                        .orElse(null);
+                }
+            }
+
+            handle.commit();
+            return counts;
         });
     }
 

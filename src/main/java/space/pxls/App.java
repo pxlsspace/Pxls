@@ -1056,9 +1056,9 @@ public class App {
         virginmap[x + y * width] = (byte) 0x00;
         pixelLogger.log(Level.INFO, String.format("%s\t%d\t%d\t%d\t%s", userName, x, y, color, action));
         if (updateDatabase) {
-            database.placePixel(x, y, color, user, mod_action);
-            if (!mod_action) {
-                user.increasePixelCounts();
+            var counts = database.placePixelAndUpdateCounts(x, y, color, user, mod_action);
+            if (counts != null) {
+                user.setPixelCounts(counts);
             }
         }
     }
