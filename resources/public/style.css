@@ -535,7 +535,9 @@ dt {
     bottom: 0;
 
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
+    flex-wrap: wrap;
+    gap: 0.5em;
     align-items: center;
     justify-content: center;
     pointer-events: none;
