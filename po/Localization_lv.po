@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2023-03-31T00:00:15.391Z\n"
+"POT-Creation-Date: 2023-07-27T07:47:15.452Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -1254,7 +1254,7 @@ msgid "Welcome!"
 msgstr "Laipni lūdzam!"
 
 #: resources/public/pebble_templates/info.html
-msgid "Welcome to pxls.space! Pxls is a multiplayer online collaborative canvas that allows you to create anything you can imagine, one pixel at a time. Join hundreds of other players in the Pxls community and create amazing works of art together as a team, or solo."
+msgid "Welcome to pxls.space! Pxls is a multiplayer online collaborative canvas based on Reddit's <a href=\"https://www.reddit.com/r/place\" target=\"_blank\">r/place</a> event from 2017 that allows you to create anything you can imagine, one pixel at a time. Join hundreds of other players in the Pxls community and create amazing works of art together as a team, or solo."
 msgstr "Esiet sveicināti uz pxls.space! Pxls ir tiešsaistes vairāku spēlētāju sadarbības kanva, kura ļauj jums izveidot jebko, ko varat iedomāties, pa vienam pikselim reizē. Pievienojieties simtiem citu spēlētāju Pxls kopienā un veidojiet apbrīnojamus mākslas darbus kopā kā komanda, vai viens pats."
 
 # project maintainers = staff, makes sense right?

@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2023-03-31T00:00:15.391Z\n"
+"POT-Creation-Date: 2023-07-27T07:47:15.452Z\n"
 "Language: ru\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -1244,7 +1244,7 @@ msgid "Welcome!"
 msgstr "Добро пожаловать!"
 
 #: resources/public/pebble_templates/info.html
-msgid "Welcome to pxls.space! Pxls is a multiplayer online collaborative canvas that allows you to create anything you can imagine, one pixel at a time. Join hundreds of other players in the Pxls community and create amazing works of art together as a team, or solo."
+msgid "Welcome to pxls.space! Pxls is a multiplayer online collaborative canvas based on Reddit's <a href=\"https://www.reddit.com/r/place\" target=\"_blank\">r/place</a> event from 2017 that allows you to create anything you can imagine, one pixel at a time. Join hundreds of other players in the Pxls community and create amazing works of art together as a team, or solo."
 msgstr "Добро пожаловать на pxls.space! Pxls - это многопользовательский онлайн-холст для совместной работы, который позволяет вам создавать все, что вы можете вообразить, по одному пикселю за раз. Присоединяйтесь к сотням других игроков в сообществе Pxls и создавайте потрясающие произведения искусства вместе в команде, или в одиночку."
 
 #: resources/public/pebble_templates/info.html
