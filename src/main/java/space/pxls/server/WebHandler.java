@@ -1660,9 +1660,15 @@ public class WebHandler {
         } else if (!name.matches("[a-zA-Z0-9_\\-]+")) {
             respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_username", "Username contains invalid characters"));
             return;
-        } else if (!discord.isEmpty() && !discord.matches("^.+?#\\d{4}")) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_discord", "Discord tag contains invalid characters"));
-            return;
+        } else if (!discord.isEmpty()) {
+            if (discordName.contains("#") && !discordName.matches("^.{2,32}#\\d{4}$")){
+                respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_discord", "Discord name isn't in the format '{name}#{discriminator}'"));
+                return;
+            }
+            if (!discordName.contains("#") && !discordName.matches("^[a-z0-9._]{2,32}$")){
+                respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_discord", "Discord name isn't in the discord tag format (only lowercase english letters, digits, periods and underlines allowed)"));
+                return;
+            }
         } else if (!App.getUserManager().isValidSignupToken(token)) {
             respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_token", "Invalid signup token"));
             return;
