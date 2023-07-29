@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Pxls.space Stats</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" type="text/css" media="screen" href="style/theme-purple.min.css">
+    <link rel="stylesheet" href="../../cdn.datatables.net/1.10.19/css/jquery.dataTables.min.css">
+    <link rel="stylesheet" href="../../cdn.datatables.net/1.10.19/css/dataTables.bootstrap4.min.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="style/overrides.css"/>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-md navbar-dark">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a href="../index.htm" class="nav-link">Pxls</a>
+        </li>
+        <li class="nav-item active">
+          <a class="nav-link" href="index.htm">Stats</a>
+        </li>
+      </ul>
+    </nav>
+    <main role="main" class="container px-0 py-3">
+      <div class="container card pb-0 mb-3">
+        <h2 class="mt-1 mb-0">General Stats</h2>
+        <small class="text-muted m-0 p-0" id="lastUpdated">Last updated: <em class="gscLoading">(still loading)</em></small>
+        <hr/>
+        <div class="card-body py-0">
+          <table id="tblGeneralStats" class="table-shrink">
+            <tbody>
+              <tr>
+                <td class="text-right pr-2">Total Users:</td>
+                <td id="tdGeneralTotalUsers"><em class="gscLoading">(LOADING)</em></td>
+              </tr>
+              <tr>
+                <td class="text-right pr-2">Pixels Placed:</td>
+                <td id="tdGeneralTotalPixelsPlaced"><em class="gscLoading">(LOADING)</em></td>
+              </tr>
+              <tr>
+                <td class="text-right pr-2">Canvas Users:</td>
+                <td id="tdGeneralUsersActiveCanvas"><em class="gscLoading">(LOADING)</em></td>
+              </tr>
+              <tr>
+                <td class="text-right pr-2">Total Factions:</td>
+                <td id="tdGeneralTotalFactions"><em class="gscLoading">(LOADING)</em></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <div class="container card mb-3">
+        <h2>Leaderboard (users)</h2>
+        <hr/>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="gscWrapper">
+              <h5 class="card-title">Current canvas (max 1k users) <em class="gscLoading">(LOADING)</em> <br/>
+                <button class="btn btn-link btn-sm btn-standing-jump" id="thisCanvasStanding" style="display: none;">Jump to me</button>
+              </h5>
+              <table id="tblToplistCurrent" class="table table-striped table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th>Place</th>
+                    <th>Username</th>
+                    <th>Pixels</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="gscWrapper">
+              <h5 class="card-title">Top 1000 all-time <em class="gscLoading">(LOADING)</em> <br/>
+                <button class="btn btn-link btn-sm btn-standing-jump" id="alltimeStanding" style="display: none;">Jump to me</button>
+              </h5>
+              <table id="tblToplistAlltime" class="table table-striped table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th>Place</th>
+                    <th>Username</th>
+                    <th>Pixels</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="container card mb-3">
+        <h2 class="mt-1 mb-0">Factions</h2>
+        <small class="gscLoading text-muted">(LOADING)</small>
+        <hr>
+        <div class="row">
+          <div class="col-md-12 overflow-auto">
+            <table id="tblFactions" class="table table-striped table-bordered table-hover" style="width:100%">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Canvas Count</th>
+                  <th>Alltime Count</th>
+                  <th>Members</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <div class="container card mb-3 breakdownContainer" id="breakdowns">
+        <h2 class="mt-1 mb-0">TimeSlice Breakdowns</h2>
+        <small class="text-muted">Note: These are rolling stats so 'last day' means literally 24 hours ago, not from midnight. In 15 minutes, the stats may be different.</small>
+        <hr/>
+      </div>
+    </main>
+    <script src="../../ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="../../cdnjs.cloudflare.com/ajax/libs/jquery-scrollTo/2.1.2/jquery.scrollTo.min.js"></script>
+    <script src="../../cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="../../cdn.datatables.net/1.10.19/js/jquery.dataTables.min.js"></script>
+    <script src="../../cdn.datatables.net/1.10.19/js/dataTables.bootstrap4.min.js"></script>
+    <script src="main.js"></script>
+  </body>
+</html>
