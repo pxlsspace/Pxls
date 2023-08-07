@@ -166,7 +166,17 @@ public class WebHandler {
                     List<DBChatReport> chatReports = new ArrayList<>();
                     List<DBCanvasReport> canvasReports = new ArrayList<>();
                     List<Faction> factions = App.getDatabase().getFactionsForUID(profileUser.getId()).stream().map(Faction::new).collect(Collectors.toList());
-                    Map<String, String> keys = new TreeMap<>(App.getDatabase().getUserKeys(profileUser.getId()));
+                    Map<String, String> keys = new TreeMap<>(
+                        Comparator.comparing((String key) -> {
+                            var numbersOnly = key.replaceAll("[^\\d.]", "");
+                            if (numbersOnly.isEmpty()) {
+                                return 0.0;
+                            } else {
+                                return Double.parseDouble(numbersOnly);
+                            }
+                        }).thenComparing(Comparator.naturalOrder())
+                    );
+                    keys.putAll(App.getDatabase().getUserKeys(profileUser.getId()));
 
                     m.put("snip_mode", App.getSnipMode());
                     m.put("requested_self", requested_self);
