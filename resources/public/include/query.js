@@ -130,7 +130,13 @@ module.exports.query = (function() {
     },
     update: function() {
       const s = self.getStr();
-      if (window.history.replaceState) {
+      if (location.replace) {
+        // NOTE ([  ]): this seems to not push to the back button or history UI,
+        // *but not on Firefox* at time of writing.
+        location.replace('#' + s);
+      } else if (window.history.replaceState) {
+        // NOTE ([  ]): this will not push the history to the browser back button,
+        // but will usually push state to the browser's history UI.
         window.history.replaceState(null, null, '#' + s);
       } else {
         window.location.hash = s;
