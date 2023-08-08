@@ -272,11 +272,23 @@ module.exports.place = (function() {
           self.switch(-1);
         }
       });
-      socket.on('captcha_required', function(data) {
+      let captchaScriptLoad = null;
+      socket.on('captcha_required', async function(data) {
+        if (captchaScriptLoad == null) {
+          captchaScriptLoad = new Promise((resolve, reject) => {
+            $.getScript('https://www.google.com/recaptcha/api.js')
+              .done(() => grecaptcha.ready(resolve))
+              .fail(reject);
+          });
+        }
+
         if (!self.isDoingCaptcha) {
+          self.isDoingCaptcha = true;
           uiHelper.toggleCaptchaLoading(true);
+          await captchaScriptLoad;
           grecaptcha.reset();
         }
+        await captchaScriptLoad;
         // always execute captcha in case the user closed a captcha popup
         // and couldn't bring it back up.
         grecaptcha.execute();

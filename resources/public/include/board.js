@@ -463,8 +463,6 @@ const board = (function() {
         chromeOffsetWorkaround.update();
         if (data.captchaKey) {
           $('.g-recaptcha').attr('data-sitekey', data.captchaKey);
-
-          $.getScript('https://www.google.com/recaptcha/api.js');
         }
         self.elements.board.attr({
           width: self.width,
