@@ -447,6 +447,10 @@ dt {
 .donator.donator--blood{
     background-image: linear-gradient(45deg, #5A0400, #990700, #D81515, #ff635e, #D81515, #990700, #5A0400);
 }
+.donator.donator--mikuddy{
+    background-image: linear-gradient(45deg, #226677, #17A8A3, #D81515, #FFD6BF, #FFB27F);
+}
+
 
 .error {
     color: var(--error-color);
