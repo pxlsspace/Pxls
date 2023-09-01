@@ -696,8 +696,9 @@ dt {
 }
 
 #ui .bubble {
+    display: flex;
+    flex-direction: column;
     position: absolute;
-    display: inline-block;
     padding: 0.5em 1em;
     background: var(--bubble-background);
     border-radius: 5px;
@@ -721,8 +722,9 @@ dt {
 }
 
 #main-bubble[position~="top"] {
+    flex-direction: column-reverse;
     top: 4rem;
-    padding-bottom: 1em;
+    padding-bottom: 0rem;
 }
 
 #main-bubble[position~="left"] {
@@ -730,8 +732,9 @@ dt {
 }
 
 #main-bubble[position~="bottom"] {
+    flex-direction: column;
     bottom: 1rem;
-    padding-top: 1em;
+    padding-top: 0rem;
 }
 
 #main-bubble[position~="right"] {
@@ -756,15 +759,18 @@ dt {
 }
 
 #main-bubble #setting-ui-bubble-compact {
-    position: absolute;
-    top: 0;
-    left: 0;
+    align-self: center;
     width: 100%;
+    font-size: 130%;
+    padding-block: 0.25rem;
+    margin-block: 0.5rem;
+    border-radius: 0.25rem;
+    /* transition: background-color 0.5s, width 0.5s; */
 }
 
-#main-bubble[position~="top"] #setting-ui-bubble-compact {
-    top: initial;
-    bottom: 0;
+#main-bubble #setting-ui-bubble-compact:hover {
+    /* width: 90%; */
+    background-color: rgba(255, 255, 255, 0.25);
 }
 
 #main-bubble[position~="top"] #setting-ui-bubble-compact .fas,
