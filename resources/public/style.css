@@ -767,7 +767,7 @@ dt {
     align-self: center;
     width: 100%;
     font-size: 130%;
-    padding-block: 0.25rem;
+    padding-block: 2px;
     margin-block: 0.5rem;
     border-radius: 0.25rem;
     /* transition: background-color 0.5s, width 0.5s; */
