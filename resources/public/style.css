@@ -777,6 +777,10 @@ dt {
     transform: rotate(0);
 }
 
+#pixel-counts, #user-info {
+    margin-block-end: 0.5rem;
+}
+
 #pixel-counts .fas {
     vertical-align: top;
 }
@@ -786,6 +790,14 @@ dt {
     padding: 0;
     list-style: none;
     display: inline-block;
+}
+
+#pixel-counts li span:first-child {
+    font-weight: bold;
+}
+
+#pixel-counts li:first-child {
+    margin-block-end: 2px;
 }
 
 #coords-info {

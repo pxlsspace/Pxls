@@ -8,6 +8,7 @@ module.exports.timer = (function() {
   const self = {
     elements: {
       palette: $('#palette'),
+      placement_info: $('#placement-info'),
       timer_container: $('#cooldown'),
       timer_countdown: $('#cooldown-timer'),
       timer_chat: $('#txtMobileChatCooldown')
@@ -27,6 +28,7 @@ module.exports.timer = (function() {
 
       if (self.runningTimer === false) {
         self.elements.timer_container.hide();
+        self.elements.placement_info.show();
       }
 
       if (self.status) {
@@ -52,6 +54,7 @@ module.exports.timer = (function() {
 
       if (delta > 0) {
         self.elements.timer_container.show();
+        self.elements.placement_info.hide();
         delta++; // real people don't count seconds zero-based (programming is more awesome)
         const secs = Math.floor(delta % 60);
         const secsStr = secs < 10 ? '0' + secs : secs;
@@ -78,6 +81,7 @@ module.exports.timer = (function() {
 
       document.title = uiHelper.getTitle();
       self.elements.timer_container.hide();
+      self.elements.placement_info.show();
       self.elements.timer_chat.text('');
 
       if (alertDelay > 0 && !self.hasFiredNotification) {
@@ -115,6 +119,7 @@ module.exports.timer = (function() {
     init: function() {
       self.title = document.title;
       self.elements.timer_container.hide();
+      self.elements.placement_info.show();
       self.elements.timer_chat.text('');
 
       setTimeout(function() {
