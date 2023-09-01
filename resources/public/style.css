@@ -723,6 +723,7 @@ dt {
 
 #main-bubble[position~="top"] {
     flex-direction: column-reverse;
+    padding-block-start: 1rem;
     top: 4rem;
     padding-bottom: 0rem;
 }
@@ -739,6 +740,10 @@ dt {
 
 #main-bubble[position~="right"] {
     right: 1rem;
+}
+
+#main-bubble[position~="hide"] {
+    visibility: hidden;
 }
 
 #main-bubble a {
@@ -770,7 +775,7 @@ dt {
 
 #main-bubble #setting-ui-bubble-compact:hover {
     /* width: 90%; */
-    background-color: rgba(255, 255, 255, 0.25);
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 #main-bubble[position~="top"] #setting-ui-bubble-compact .fas,
