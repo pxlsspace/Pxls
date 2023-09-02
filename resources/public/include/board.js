@@ -837,7 +837,7 @@ const board = (function() {
     },
     setAllowDrag: (allowDrag) => {
       self.allowDrag = allowDrag === true;
-      if (self.allowDrag) { coords.lockIcon.fadeOut(200); } else { coords.lockIcon.fadeIn(200); }
+      if (self.allowDrag) { coords.icon.removeClass('fa-lock').addClass('fa-compass'); } else { coords.icon.removeClass('fa-compass').addClass('fa-lock'); }
     },
     validateCoordinates: self.validateCoordinates,
     get webInfo() {

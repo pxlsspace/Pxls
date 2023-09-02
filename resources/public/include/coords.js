@@ -6,7 +6,7 @@ module.exports.coords = (function() {
   const self = {
     elements: {
       coords: $('#coords-info .coords'),
-      lockIcon: $('#canvas-lock-icon')
+      icon: $('#coords-ico')
     },
     mouseCoords: null,
     init: function() {
@@ -80,6 +80,6 @@ module.exports.coords = (function() {
     init: self.init,
     copyCoords: self.copyCoords,
     getLinkToCoords: self.getLinkToCoords,
-    lockIcon: self.elements.lockIcon
+    icon: self.elements.icon
   };
 })();

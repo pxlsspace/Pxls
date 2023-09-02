@@ -86,14 +86,14 @@
                     <div id="bubble-grid">
                         <i id="pixels-icon" class="fa fa-cubes"></i>
                         <div id="placement-info">
-                            <span  class="lable">{{i18n('Localization', 'Pixels') | raw}}: </span>
+                            <span  class="lable toggeable">{{i18n('Localization', 'Pixels') | raw}}: </span>
                             <span id="placeable-count">{{i18n('Localization', 'N/A') | raw}}</span>
                             <i class="fas fa-spinner fa-spin captcha-loading-icon"></i>
                         </div>
                         <div id="cooldown">
                             <span id="cooldown-timer"></span>
                         </div>
-                        <i class="fas fa-chart-line toggeable"></i>
+                        <i class="fas fa-chart-line toggeable" id="pixel-counts-ico"></i>
                         <div id="pixel-counts" class="toggeable">
                             <ul>
                                 {# Canvas pixel count #}
@@ -109,11 +109,10 @@
                                 <span id="online-count-value">{{i18n('Localization', 'Loading online user count&hellip;') | raw}}</span>
                             </span>                    
                         </div>
-                        <i class="fas fa-compass toggeable"></i>
+                        <i id="coords-ico" class="fas fa-compass toggeable"></i>
                         <div id="coords-info" class="toggeable">
                             <span class="lable">Coords: </span>
                             <a class="coords"></a>
-                            <i id="canvas-lock-icon" class="fas fa-lock"></i>
                         </div>
                     </div>
                 </div>

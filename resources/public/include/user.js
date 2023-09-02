@@ -17,6 +17,7 @@ const user = (function() {
       users: $('#online-count-value'),
       userInfo: $('#user-info'),
       pixelCounts: $('#pixel-counts'),
+      pixelCountsIcon: $('#pixel-counts-ico'),
       loginOverlay: $('#login-overlay'),
       userMessage: $('#user-message'),
       prompt: $('#prompt'),
@@ -138,6 +139,7 @@ const user = (function() {
       return fetch('/logout').then(() => {
         self.elements.userInfo.fadeOut(200);
         self.elements.pixelCounts.fadeOut(200);
+        self.elements.pixelCountsIcon.fadeOut(200);
         self.elements.userMessage.fadeOut(200);
         self.elements.loginOverlay.fadeIn(200);
         if (window.deInitAdmin) {
@@ -166,6 +168,7 @@ const user = (function() {
         self.elements.users.text(NaN).fadeIn(200);
       });
       self.elements.pixelCounts.hide();
+      self.elements.pixelCountsIcon.hide();
       self.elements.userInfo.hide();
       self.elements.userInfo.find('.logout').click(function(evt) {
         evt.preventDefault();
@@ -205,6 +208,7 @@ const user = (function() {
         self.pixelCountAllTime = data.pixelCountAllTime;
         self.updatePixelCountElements();
         self.elements.pixelCounts.fadeIn(200);
+        self.elements.pixelCountsIcon.fadeIn(200);
         self.placementOverrides = data.placementOverrides;
         place.togglePaletteSpecialColors(data.placementOverrides.canPlaceAnyColor);
         self.chatNameColor = data.chatNameColor;

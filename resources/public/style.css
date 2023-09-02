@@ -764,16 +764,20 @@ dt {
     justify-content: space-between;
 }
 
+#main-bubble.compact > div {
+    display: flex;
+    padding-block-start: 0.25em;
+    margin-inline-end: 0.5rem;
+    align-items: center;
+}
+
 #main-bubble.compact #bubble-grid {
-    row-gap: 0;
+    font-size: 150%;
+    font-weight: bold;
 }
 
 #main-bubble.compact .toggeable {
-    /* don't hide it completely to keep their width */
-    margin: 0em;
-    padding: 0;
-    overflow: hidden;
-    height: 0;
+    display: none !important /* Override jquery's show method when hiding toggeable records */;
 }
 
 #main-bubble[position~="top"] #setting-ui-bubble-compact {
@@ -788,10 +792,6 @@ dt {
     margin-block: 0;
     height: 2em;
     width: 2em;
-}
-
-#main-bubble.compact #user-info {
-    margin-block-start: 0.7em;
 }
 
 #main-bubble #setting-ui-bubble-compact {
