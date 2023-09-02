@@ -83,6 +83,16 @@
                         <span id="username"></span>
                         <a href="/logout" class="logout"><i title="{{i18n('Localization', 'Logout') | raw}}" class="fas fa-sign-out-alt" id="logout-icon"></i></a>
                     </div>
+                    <div id="placement-info">
+                        <i class="fa fa-cubes"></i>
+                        <span>{{i18n('Localization', 'Pixels') | raw}}: </span>
+                        <span id="placeable-count">{{i18n('Localization', 'N/A') | raw}}</span>
+                        <i class="fas fa-spinner fa-spin captcha-loading-icon"></i>
+                    </div>
+                    <div id="cooldown">
+                        <i class="far fa-clock"></i>
+                        <span id="cooldown-timer"></span>
+                    </div>
                     <div id="pixel-counts" class="toggeable">
                         <i class="fas fa-chart-line"></i>
                         <ul>
@@ -94,20 +104,14 @@
                     </div>
                     <div class="toggeable">
                         <i class="fas fa-users"></i>
-                        <span id="online-count">{{i18n('Localization', 'Loading online user count&hellip;') | raw}}</span>
+                        <span id="online-count">
+                            <span>Online: </span>
+                            <span id="online-count-value">{{i18n('Localization', 'Loading online user count&hellip;') | raw}}</span>
+                        </span>                    
                     </div>
                     <div id="coords-info" class="toggeable">
                         <a class="coords"></a>
                         <i id="canvas-lock-icon" class="fas fa-lock"></i>
-                    </div>
-                    <div id="placement-info">
-                        <span id="placeable-count">{{i18n('Localization', 'N/A') | raw}}</span>
-                        <span>{{i18n('Localization', 'Pixels') | raw}}</span>
-                        <i class="fas fa-spinner fa-spin captcha-loading-icon"></i>
-                    </div>
-                    <div id="cooldown">
-                        <i class="far fa-clock"></i>
-                        <span id="cooldown-timer"></span>
                     </div>
                 </div>
             </div>

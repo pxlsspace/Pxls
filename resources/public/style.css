@@ -723,9 +723,7 @@ dt {
 
 #main-bubble[position~="top"] {
     flex-direction: column-reverse;
-    padding-block-start: 1rem;
     top: 4rem;
-    padding-bottom: 0rem;
 }
 
 #main-bubble[position~="left"] {
@@ -735,7 +733,6 @@ dt {
 #main-bubble[position~="bottom"] {
     flex-direction: column;
     bottom: 1rem;
-    padding-top: 0rem;
 }
 
 #main-bubble[position~="right"] {
@@ -755,20 +752,45 @@ dt {
     text-align: center;
 }
 
+#main-bubble.compact {
+    flex-direction: row-reverse;
+    justify-content: space-between;
+}
+
+#main-bubble.compact div {
+    margin: 0;
+}
+
 #main-bubble.compact .toggeable {
     /* don't hide it completely to keep their width */
-    margin: 0;
+    margin: 0em;
     padding: 0;
     overflow: hidden;
     height: 0;
 }
 
+#main-bubble[position~="top"] #setting-ui-bubble-compact {
+    margin-block-start: 0.5rem;
+}
+
+#main-bubble[position~="bottom"] #setting-ui-bubble-compact {
+    margin-block-end: 0.5rem;
+}
+
+#main-bubble.compact #setting-ui-bubble-compact{
+    margin-block: 0;
+    height: 2em;
+    width: 2em;
+}
+
+#main-bubble.compact #user-info {
+    margin-block-start: 0.7em;
+}
+
 #main-bubble #setting-ui-bubble-compact {
-    align-self: center;
     width: 100%;
     font-size: 130%;
     padding-block: 2px;
-    margin-block: 0.5rem;
     border-radius: 0.25rem;
     /* transition: background-color 0.5s, width 0.5s; */
 }
@@ -788,8 +810,15 @@ dt {
     transform: rotate(0);
 }
 
-#pixel-counts, #user-info {
+.toggeable, #placement-info, #cooldown {
     margin-block-end: 0.5rem;
+}
+
+#user-info {
+    font-size: large;
+    margin-inline: auto;
+    width: fit-content;
+    margin-block-end: 1rem;
 }
 
 #pixel-counts .fas {
@@ -803,17 +832,12 @@ dt {
     display: inline-block;
 }
 
-#pixel-counts li span:first-child {
+#pixel-counts span:first-child, #online-count span:first-child, #cooldown-timer, #placement-info span:nth-child(2) {
     font-weight: bold;
 }
 
 #pixel-counts li:first-child {
     margin-block-end: 2px;
-}
-
-#coords-info {
-    margin-top: 16px;
-    margin-bottom: 8px;
 }
 
 #ui-bottom {
@@ -2323,4 +2347,3 @@ body .emoji-picker {
         max-height: initial;
     }
 }
-
