@@ -5,7 +5,6 @@ let board;
 module.exports.coords = (function() {
   const self = {
     elements: {
-      coordsWrapper: $('#coords-info'),
       coords: $('#coords-info .coords'),
       lockIcon: $('#canvas-lock-icon')
     },
@@ -13,7 +12,7 @@ module.exports.coords = (function() {
     init: function() {
       board = require('./board').board;
       query = require('./query').query;
-      self.elements.coordsWrapper.hide();
+      self.elements.coords.hide();
       const _board = board.getRenderBoard()[0];
       _board.addEventListener('pointermove', pointerHandler, { passive: false });
       _board.addEventListener('mousemove', pointerHandler, { passive: false });
@@ -28,7 +27,7 @@ module.exports.coords = (function() {
 
         self.mouseCoords = boardPos;
         self.elements.coords.text('(' + (boardPos.x) + ', ' + (boardPos.y) + ')');
-        if (!self.elements.coordsWrapper.is(':visible')) self.elements.coordsWrapper.fadeIn(200);
+        if (!self.elements.coords.is(':visible')) self.elements.coords.fadeIn(200);
       }
 
       function touchHandler(evt) {
@@ -36,7 +35,7 @@ module.exports.coords = (function() {
 
         self.mouseCoords = boardPos;
         self.elements.coords.text('(' + (boardPos.x) + ', ' + (boardPos.y) + ')');
-        if (!self.elements.coordsWrapper.is(':visible')) self.elements.coordsWrapper.fadeIn(200);
+        if (!self.elements.coords.is(':visible')) self.elements.coords.fadeIn(200);
       }
 
       $(window).keydown((event) => {
@@ -58,9 +57,9 @@ module.exports.coords = (function() {
       const y = useHash ? query.get('y') : self.mouseCoords.y;
       const scale = useHash ? query.get('scale') : 20;
       navigator.clipboard.writeText(self.getLinkToCoords(x, y, scale));
-      self.elements.coordsWrapper.addClass('copyPulse');
+      self.elements.coords.addClass('copyPulse');
       setTimeout(() => {
-        self.elements.coordsWrapper.removeClass('copyPulse');
+        self.elements.coords.removeClass('copyPulse');
       }, 200);
     },
     /**
