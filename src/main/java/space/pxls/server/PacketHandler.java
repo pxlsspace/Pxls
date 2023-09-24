@@ -168,9 +168,11 @@ public class PacketHandler {
     }
 
     private void handleBanMe(WebSocketChannel channel, User user, ClientBanMe obj) {
-        String app = obj.getReason();
-        App.getDatabase().insertAdminLog(user.getId(), String.format("permaban %s with reason: auto-ban via script; %s", user.getName(), app));
-        user.ban(0, String.format("auto-ban via script; %s", app), 0, user);
+        if (!user.isBanned() && !user.isShadowBanned()) {
+            String app = obj.getReason();
+            App.getDatabase().insertAdminLog(user.getId(), String.format("permaban %s with reason: auto-ban via script; %s", user.getName(), app));
+            user.ban(0, String.format("auto-ban via script; %s", app), 0, user);
+        }
     }
 
     private void handlePlacementOverrides(WebSocketChannel channel, User user, ClientAdminPlacementOverrides obj) {
