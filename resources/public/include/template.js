@@ -82,24 +82,48 @@ module.exports.template = (function() {
 
       self.loadImage();
     },
-    cors: function(location) {
+    cors: async function(location) {
+      var url;
       try {
-        const url = new URL(location);
-        if (url.protocol === 'data:' || self.corsProxy.safeHosts.some(h => url.hostname.endsWith(h))) {
-          return url.href;
-        } else {
-          if (self.corsProxy.param) {
-            return `${self.corsProxy.base}?${self.corsProxy.param}=${encodeURIComponent(url.href)}`;
-          } else {
-            return `${self.corsProxy.base}/${url.href}`;
-          }
-        }
+        url = new URL(location);
       } catch (e) {
         // invalid URLs fail silently.
         return location;
       }
+
+      if (url.protocol === 'data:' || self.corsProxy.safeHosts.some(h => url.hostname.endsWith(h))) {
+        // this url definitely doesn't need proxying
+        return url.href;
+      } else {
+        // this url might need proxying, let's check if it does
+        try {
+          const response = await fetch(url.href, {
+            method: 'HEAD'
+          });
+
+          if (response.ok) {
+            // we can access the template, return without CORS proxy
+            return url.href;
+          }
+        } catch (error) {}
+
+        // if we're here (response.ok was false or we caught an error)
+        // we can't access the template from the browser -- so let's proxy it!
+
+        // as far as i can tell, we don't have a way to tell if it's *specifically* a cors error
+        // (at first i thought there was a way, but it turns out it didn't work like i thought it did;
+        //   see this thread https://discord.com/channels/298948748317294592/1162469729924034660)
+
+        // this might mean some false positives get through to the proxy (i.e. a webserver that doesn't support HEAD requests)
+        // but that's okay! it's still better than the old behavior of proxying *everything* that isn't on the safe hosts list
+        if (self.corsProxy.param) {
+          return `${self.corsProxy.base}?${self.corsProxy.param}=${encodeURIComponent(url.href)}`;
+        } else {
+          return `${self.corsProxy.base}/${url.href}`;
+        }
+      }
     },
-    loadImage: function() {
+    loadImage: async function() {
       if (self.corsProxy.base !== undefined) {
         self.loading = true;
 
@@ -108,7 +132,7 @@ module.exports.template = (function() {
 
         if (self.options.url === undefined) return;
 
-        fetch(self.cors(self.options.url), {
+        fetch(await self.cors(self.options.url), {
           method: 'GET',
           credentials: 'omit'
         }).then(response => {
@@ -251,21 +275,23 @@ module.exports.template = (function() {
       }
 
       if (self.elements.styleImage.prop('src') !== self.options.style) {
-        fetch(self.cors(self.options.style), {
-          method: 'GET',
-          credentials: 'omit'
-        }).then(response => {
-          if (response.ok) {
-            return response.blob();
-          } else {
-            throw new Error(`HTTP ${response.status} ${response.statusText}`);
-          }
-        }).then(blob => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            self.elements.styleImage.attr('src', reader.result);
-          };
-          reader.readAsDataURL(blob);
+        self.cors(self.options.style).then(url => {
+          fetch(url, {
+            method: 'GET',
+            credentials: 'omit'
+          }).then(response => {
+            if (response.ok) {
+              return response.blob();
+            } else {
+              throw new Error(`HTTP ${response.status} ${response.statusText}`);
+            }
+          }).then(blob => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              self.elements.styleImage.attr('src', reader.result);
+            };
+            reader.readAsDataURL(blob);
+          });
         });
       }
 
