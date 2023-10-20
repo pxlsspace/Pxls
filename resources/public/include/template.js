@@ -275,21 +275,23 @@ module.exports.template = (function() {
       }
 
       if (self.elements.styleImage.prop('src') !== self.options.style) {
-        fetch(self.cors(self.options.style), {
-          method: 'GET',
-          credentials: 'omit'
-        }).then(response => {
-          if (response.ok) {
-            return response.blob();
-          } else {
-            throw new Error(`HTTP ${response.status} ${response.statusText}`);
-          }
-        }).then(blob => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            self.elements.styleImage.attr('src', reader.result);
-          };
-          reader.readAsDataURL(blob);
+        self.cors(self.options.style).then(url => {
+          fetch(url, {
+            method: 'GET',
+            credentials: 'omit'
+          }).then(response => {
+            if (response.ok) {
+              return response.blob();
+            } else {
+              throw new Error(`HTTP ${response.status} ${response.statusText}`);
+            }
+          }).then(blob => {
+            const reader = new FileReader();
+            reader.onload = () => {
+              self.elements.styleImage.attr('src', reader.result);
+            };
+            reader.readAsDataURL(blob);
+          });
         });
       }
 
