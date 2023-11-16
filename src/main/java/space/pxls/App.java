@@ -152,7 +152,7 @@ public class App {
         saveMap();
     }
 
-    private static void handleCommand(String line) {
+    public static void handleCommand(String line) {
         try {
             String[] token = line.split(" ");
             if (token[0].equalsIgnoreCase("reload")) {
