@@ -1,4 +1,4 @@
-<div align="center">
+<div style="text-align: center">
 
 ![Pxls](https://i.imgur.com/udeloqX.png)
 
