@@ -2,7 +2,7 @@
 
 ![Pxls](https://i.imgur.com/udeloqX.png)
 
-![Java CI with Maven](https://img.shields.io/github/workflow/status/pxlsspace/Pxls/Java%20CI%20with%20Maven?style=flat-square)
+![Java CI with Maven](https://img.shields.io/github/actions/workflow/status/pxlsspace/Pxls/maven.yml?style=flat-square)
 [![GitHub issues](https://img.shields.io/github/issues/pxlsspace/Pxls?style=flat-square)](https://github.com/pxlsspace/Pxls/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/pxlsspace/Pxls?style=flat-square)](https://github.com/pxlsspace/Pxls/pulls)
 [![GitHub contributors](https://img.shields.io/github/contributors/pxlsspace/Pxls?style=flat-square)](https://github.com/pxlsspace/Pxls/graphs/contributors)
