@@ -1,1 +1,0 @@
-web: java -jar target/pxls-1.0-SNAPSHOT.jar
