@@ -37,12 +37,6 @@ public class Util {
         }
     }
 
-    private static ResourceBundle localization = ResourceBundle.getBundle("Localization");
-
-    public static String i18n(String s) {
-        return localization.getString(s);
-    }
-
     public static Locale negotiateLocale(HttpServerExchange exchange) {
         final Cookie cookie = exchange.getRequestCookie("pxls-accept-language-override");
         String cookieValue;
