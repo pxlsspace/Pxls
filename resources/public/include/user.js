@@ -75,6 +75,14 @@ const user = (function() {
           self.elements.prompt.fadeOut(200);
         });
 
+        let legalElem;
+        if (data.legal.termsUrl !== '') {
+          legalElem = document.createElement('p');
+          legalElem.innerHTML = __('By logging in or registering, you agree to the <a href="{0}" target="_blank">terms of use</a> and <a href="{1}" target="_blank">privacy policy</a>.')
+            .replace('{0}', data.legal.termsUrl)
+            .replace('{1}', data.legal.privacyUrl);
+        }
+
         self.elements.prompt[0].innerHTML = '';
         crel(self.elements.prompt[0],
           crel('div', { class: 'content' },
@@ -95,7 +103,8 @@ const user = (function() {
                 }
                 return toRet;
               })
-            )
+            ),
+            data.legal.termsUrl !== '' ? legalElem : null
           ),
           cancelButton
         );

@@ -26,11 +26,12 @@ public class CanvasInfo {
     public List<Object> customEmoji;
     public String corsBase;
     public String corsParam;
+    public LegalInfo legal;
     public String chatRatelimitMessage;
     public Integer chatLinkMinimumPixelCount;
     public Boolean chatLinkSendToStaff;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, List<Object> customEmoji, String corsBase, String corsParam, String chatRatelimitMessage, Integer chatLinkMinimumPixelCount, boolean chatLinkSendToStaff) {
+    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, List<Object> customEmoji, String corsBase, String corsParam, LegalInfo legal, String chatRatelimitMessage, Integer chatLinkMinimumPixelCount, boolean chatLinkSendToStaff) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
@@ -49,6 +50,7 @@ public class CanvasInfo {
         this.customEmoji = customEmoji;
         this.corsBase = corsBase;
         this.corsParam = corsParam;
+        this.legal = legal;
         this.chatRatelimitMessage = chatRatelimitMessage;
         this.chatLinkMinimumPixelCount = chatLinkMinimumPixelCount;
         this.chatLinkSendToStaff = chatLinkSendToStaff;
@@ -134,5 +136,7 @@ public class CanvasInfo {
         return chatLinkSendToStaff;
     }
 
-    public record CooldownInfo(String type, long staticCooldownSeconds, Map<String, Object> activityCooldown) {};
+    public record LegalInfo(String termsUrl, String privacyUrl) {}
+
+    public record CooldownInfo(String type, long staticCooldownSeconds, Map<String, Object> activityCooldown) {}
 }

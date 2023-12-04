@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2023-07-27T07:47:15.452Z\n"
+"POT-Creation-Date: 2023-12-04T18:38:58.576Z\n"
 "Language: en\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -2222,6 +2222,10 @@ msgstr "Discord name updated successfully"
 #: resources/public/include/uiHelper.js
 msgid "Couldn\\'t change discord name: "
 msgstr "Couldn\\'t change discord name: "
+
+#: resources/public/include/user.js
+msgid "By logging in or registering, you agree to the <a href=\"{0}\" target=\"_blank\">terms of use</a> and <a href=\"{1}\" target=\"_blank\">privacy policy</a>."
+msgstr ""
 
 #: resources/public/include/user.js
 msgid "Sign in with..."

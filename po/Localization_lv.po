@@ -1,7 +1,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Pxls\n"
-"POT-Creation-Date: 2023-07-27T07:47:15.452Z\n"
+"POT-Creation-Date: 2023-12-04T18:38:58.576Z\n"
 "Language: \n"
 "Content-Type: text/plain; charset=UTF-8\n"
 
@@ -2233,6 +2233,10 @@ msgstr "Discord vārds atjaunināts sekmīgi"
 #: resources/public/include/uiHelper.js
 msgid "Couldn\\'t change discord name: "
 msgstr "Neizdevās nomainīt discord vārdu"
+
+#: resources/public/include/user.js
+msgid "By logging in or registering, you agree to the <a href=\"{0}\" target=\"_blank\">terms of use</a> and <a href=\"{1}\" target=\"_blank\">privacy policy</a>."
+msgstr "Ieietot sistēmā vai reģistrējoties, Jūs piekrītat <a href=\"{0}\" target=\"_blank\">lietošanas noteikumiem</a> un <a href=\"{1}\" target=\"_blank\">privātuma politikai</a>."
 
 #: resources/public/include/user.js
 msgid "Sign in with..."
