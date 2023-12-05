@@ -1588,7 +1588,7 @@ public class WebHandler {
                 String error = exchange.getQueryParameters().get("error").element();
                 if (error.equals("access_denied")) error = "Authentication denied by user";
                 if (redirect) {
-                    redirect(exchange, "/auth_done.html?nologin=1");
+                    redirect(exchange, "http://localhost:3000/auth_done.html?nologin=1");
                 } else {
                     respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("oauth_error", error));
                 }
@@ -1604,7 +1604,7 @@ public class WebHandler {
             String code = extractOAuthCode(exchange);
             if (code == null) {
                 if (redirect) {
-                    redirect(exchange, "/auth_done.html?nologin=1");
+                    redirect(exchange, "http://localhost:3000/auth_done.html?nologin=1");
                 } else {
                     respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_code", "No OAuth code specified"));
                 }
@@ -1634,7 +1634,7 @@ public class WebHandler {
                     if (service.isRegistrationEnabled()) {
                         String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin(id, identifier));
                         if (redirect) {
-                            redirect(exchange, String.format("/auth_done.html?token=%s&signup=true", encodedURIComponent(signUpToken)));
+                            redirect(exchange, String.format("http://localhost:3000/auth_done.html?token=%s&signup=true", encodedURIComponent(signUpToken)));
                         } else {
                             respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
                         }
@@ -1647,7 +1647,7 @@ public class WebHandler {
                     String loginToken = App.getUserManager().logIn(user, ip);
                     setAuthCookie(exchange, loginToken, 24);
                     if (redirect) {
-                        redirect(exchange, String.format("/auth_done.html?token=%s&signup=false", encodedURIComponent(loginToken)));
+                        redirect(exchange, String.format("http://localhost:3000/auth_done.html?token=%s&signup=false", encodedURIComponent(loginToken)));
                     } else {
                         respond(exchange, StatusCodes.OK, new AuthResponse(loginToken, false));
                     }
@@ -1920,6 +1920,29 @@ public class WebHandler {
         } else {
             exchange.getResponseSender().send(App.getGson().toJson(new WhoAmI("unauthed", -1)));
         }
+    }
+
+    public void profile(HttpServerExchange exchange) {
+        exchange.getResponseHeaders()
+                .put(Headers.CONTENT_TYPE, "application/json");
+
+        User user = exchange.getAttachment(AuthReader.USER);
+
+        // get user query param
+        Deque<String> usernameQ = exchange.getQueryParameters().get("username");
+        String username;
+        if (usernameQ != null && !usernameQ.isEmpty()) {
+            username = usernameQ.element();
+            user = App.getUserManager().getByName(username);
+        }
+
+        if (user == null) {
+            sendBadRequest(exchange, "USER_NOT_FOUND");
+            return;
+        }
+
+        // return their name
+        exchange.getResponseSender().send(App.getGson().toJson(user.toProfileResponse()));
     }
 
     private User parseUserFromForm(HttpServerExchange exchange) {

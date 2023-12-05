@@ -2,10 +2,12 @@ package space.pxls.user;
 
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
+import space.pxls.data.DBFaction;
 import space.pxls.data.DBUser;
 import space.pxls.data.DBUserPixelCounts;
 import space.pxls.server.packets.chat.Badge;
 import space.pxls.server.packets.chat.ServerChatUserUpdateBuilder;
+import space.pxls.server.packets.http.ProfileResponse;
 import space.pxls.server.packets.socket.ClientUndo;
 import space.pxls.server.packets.chat.ServerChatBan;
 import space.pxls.server.packets.socket.ServerRename;
@@ -394,7 +396,7 @@ public class User {
     }
 
     public boolean isPermaBanned() {
-        return banExpiryTime == 0;
+        return banExpiryTime != null && banExpiryTime == 0;
     }
 
     private void setBanExpiryTime(Integer timeFromNowSeconds) {
@@ -863,5 +865,42 @@ public class User {
     public static User fromDBUser(DBUser user) {
         List<Role> roles = App.getDatabase().getUserRoles(user.id);
         return new User(user.id, user.stacked, user.username, user.signup_time, user.cooldownExpiry, roles, user.loginWithIP, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.shadowBanned, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked);
+    }
+
+    public ProfileResponse toProfileResponse() {
+        List<DBFaction> factions = App.getDatabase().getFactionsForUID(getId());
+        List<ProfileFaction> profileFactions = new ArrayList<>();
+        for (DBFaction faction : factions) {
+            String ownerName = App.getDatabase().getUserByID(faction.owner).get().username;
+            int memberCount = FactionManager.getInstance().getCachedFactions().get(faction.id).fetchMembers().size();
+            profileFactions.add(new ProfileFaction(
+                    faction.id,
+                    faction.name,
+                    faction.tag,
+                    faction.color,
+                    ownerName,
+                    faction.canvasCode,
+                    faction.created.getTime(),
+                    memberCount
+            ));
+        }
+        return new ProfileResponse(
+                id,
+                name,
+                signup_time.getTime(),
+                pixelCount,
+                pixelCountAllTime,
+                roles.stream().map(Role::getName).collect(Collectors.joining(", ")),
+                displayedFaction,
+                profileFactions,
+                isBanned(),
+                isPermaBanned(),
+                banExpiryTime,
+                isChatbanned(),
+                isPermaChatbanned,
+                chatbanExpiryTime,
+                factionBlocked,
+                discordName
+        );
     }
 }

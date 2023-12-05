@@ -4,6 +4,7 @@ import com.google.gson.JsonObject;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.handlers.AllowedMethodsHandler;
+import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.form.EagerFormParsingHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.server.handlers.resource.FileResourceManager;
@@ -90,6 +91,7 @@ public class UndertowServer {
                 .addPermGatedPrefixPath("/sendNotificationToDiscord", "notification.discord", webHandler::sendNotificationToDiscord)
                 .addPermGatedPrefixPath("/setNotificationExpired", "notification.expired", webHandler::setNotificationExpired)
                 .addPermGatedPrefixPath("/notifications", "notification.list", webHandler::notificationsList)
+                .addPermGatedPrefixPath("/api/v1/profile", "user.profile", new AllowedMethodsHandler(webHandler::profile, Methods.GET))
                 .addExactPath("/factions", new AllowedMethodsHandler(webHandler::getRequestingUserFactions, Methods.GET));
         if (new File(App.getStorageDir().resolve("emoji").toString()).exists()) {
             pathHandler.addPrefixPath("/emoji", Handlers.resource(new FileResourceManager(new File(App.getStorageDir().resolve("emoji").toString()))).setCacheTime(604800));
