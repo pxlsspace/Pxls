@@ -1,5 +1,9 @@
 package space.pxls.user;
 
+import space.pxls.server.packets.http.UserProfileMinimal;
+
+import java.util.List;
+
 public record ProfileFaction(
         int id,
         String name,
@@ -9,5 +13,5 @@ public record ProfileFaction(
         String ownerName,
         String canvasCode,
         long created,
-        int memberCount
+        List<UserProfileMinimal> members
 ) {}

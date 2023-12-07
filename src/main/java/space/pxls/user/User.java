@@ -8,6 +8,7 @@ import space.pxls.data.DBUserPixelCounts;
 import space.pxls.server.packets.chat.Badge;
 import space.pxls.server.packets.chat.ServerChatUserUpdateBuilder;
 import space.pxls.server.packets.http.UserProfile;
+import space.pxls.server.packets.http.UserProfileMinimal;
 import space.pxls.server.packets.socket.ClientUndo;
 import space.pxls.server.packets.chat.ServerChatBan;
 import space.pxls.server.packets.socket.ServerRename;
@@ -870,19 +871,23 @@ public class User {
     public UserProfile toProfile() {
         List<DBFaction> factions = App.getDatabase().getFactionsForUID(getId());
         List<ProfileFaction> profileFactions = new ArrayList<>();
-        for (DBFaction faction : factions) {
-            String ownerName = App.getDatabase().getUserByID(faction.owner).get().username;
-            int memberCount = FactionManager.getInstance().getCachedFactions().get(faction.id).fetchMembers().size();
+        for (DBFaction dbFaction : factions) {
+            String ownerName = App.getDatabase().getUserByID(dbFaction.owner).get().username;
+            var optionalFaction = FactionManager.getInstance().getByID(dbFaction.id);
+            if (optionalFaction.isEmpty()) {
+                continue;
+            }
+            var members = optionalFaction.get().fetchMembersMinimal();
             profileFactions.add(new ProfileFaction(
-                    faction.id,
-                    faction.name,
-                    faction.tag,
-                    faction.color,
-                    faction.owner,
+                    dbFaction.id,
+                    dbFaction.name,
+                    dbFaction.tag,
+                    dbFaction.color,
+                    dbFaction.owner,
                     ownerName,
-                    faction.canvasCode,
-                    faction.created.getTime(),
-                    memberCount
+                    dbFaction.canvasCode,
+                    dbFaction.created.getTime(),
+                    members
             ));
         }
         return new UserProfile(
@@ -891,7 +896,7 @@ public class User {
                 signup_time.getTime(),
                 pixelCount,
                 pixelCountAllTime,
-                roles.stream().map(Role::getName).collect(Collectors.joining(", ")),
+                roles,
                 displayedFaction,
                 profileFactions,
                 isBanned(),
@@ -902,6 +907,14 @@ public class User {
                 chatbanExpiryTime,
                 factionBlocked,
                 discordName
+        );
+    }
+
+    public UserProfileMinimal toProfileMinimal() {
+        return new UserProfileMinimal(
+                id,
+                name,
+                pixelCountAllTime
         );
     }
 }

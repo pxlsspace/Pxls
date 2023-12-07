@@ -1944,8 +1944,9 @@ public class WebHandler {
         }
 
         var userProfile = user.toProfile();
-        var selfProfile = self.toProfile();
+        var selfProfileMinimal = self.toProfileMinimal();
         var palette = App.getPalette().getColors().stream().map(Color::getValue).collect(Collectors.joining(","));
+        var newFactionMinPixels = App.getConfig().getInt("factions.minPixelsToCreate");
         var maxFactionTagLength = App.getConfig().getInt("factions.maxTagLength");
         var maxFactionNameLength = App.getConfig().getInt("factions.maxNameLength");
         var canvasReports = App.getDatabase().getCanvasReportsFromUser(user.getId()).stream().map(DBCanvasReport::toProfileReport).toList();
@@ -1953,7 +1954,7 @@ public class WebHandler {
         var snipMode = App.getSnipMode();
         var userKeys = App.getDatabase().getUserKeys(user.getId());
 
-        var profileResponse = new ProfileResponse(userProfile, selfProfile, palette, maxFactionTagLength, maxFactionNameLength, canvasReports, chatReports, snipMode, userKeys);
+        var profileResponse = new ProfileResponse(userProfile, selfProfileMinimal, palette, newFactionMinPixels, maxFactionTagLength, maxFactionNameLength, canvasReports, chatReports, snipMode, userKeys);
 
         exchange.getResponseSender().send(App.getGson().toJson(profileResponse));
     }
