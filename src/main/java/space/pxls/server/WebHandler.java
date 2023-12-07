@@ -1724,6 +1724,10 @@ public class WebHandler {
             App.getConfig().getList("chat.customEmoji").unwrapped(),
             App.getConfig().getString("cors.proxyBase"),
             App.getConfig().getString("cors.proxyParam"),
+            new CanvasInfo.LegalInfo(
+                App.getConfig().getString("legal.termsUrl"),
+                App.getConfig().getString("legal.privacyUrl")
+            ),
             App.getConfig().getString("chat.ratelimitMessage"),
             App.getConfig().getInt("chat.linkMinimumPixelCount"),
             App.getConfig().getBoolean("chat.linkSendToStaff")
