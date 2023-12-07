@@ -60,7 +60,7 @@ Run with `java -jar pxls*.jar`
 * The configuration file uses [HOCON][hocon].
 * Unspecified configuration values will use built-in defaults from `resources/reference.conf`.
 * Automatic backups of `board.dat` are saved every five minutes to `backups/` in the configured storage directory, as well as before exiting (with `CTRL + C`).
-* The `Symbols` template style uses the reference palette configuration. See [here](developer.md#symbols-template-style) to modify or remove.
+* The `Symbols` template style uses the reference palette configuration. See [here](docs/developer.md#symbols-template-style) to modify or remove.
 
 ## Configuring CAPTCHA
 
