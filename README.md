@@ -12,6 +12,8 @@
 
 Pxls is a collaborative canvas where users can place one pixel from a limited palette at a time, inspired by Reddit's [r/Place][place] experiment.
 
+This repository holds the front end web client. The back end can be found [here][frontend].
+
 **Note:** A Docker image is available at [aneurinprice/docker-pxls.space][docker] and on [Docker Hub][dockerhub].
 
 # Installation
@@ -147,6 +149,7 @@ Commands can be entered into the running instance through standard input.
 
 
 [place]: https://reddit.com/r/place/
+[frontend]: https://github.com/pxlsspace/pxls-web/
 [docker]: https://github.com/aneurinprice/docker-pxls.space
 [dockerhub]: https://hub.docker.com/r/m08y/docker-pxls.space
 [actions]: https://github.com/pxlsspace/Pxls/actions/workflows/maven.yml
