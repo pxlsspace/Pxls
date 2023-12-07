@@ -5,7 +5,8 @@ public record ProfileFaction(
         String name,
         String tag,
         int color,
-        String owner,
+        int ownerId,
+        String ownerName,
         String canvasCode,
         long created,
         int memberCount

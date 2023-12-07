@@ -1,25 +1,28 @@
 package space.pxls.server.packets.http;
 
-import space.pxls.user.ProfileFaction;
-
 import java.util.List;
+import java.util.Map;
 
-public record ProfileResponse (
-        int id,
-        String username,
-        long signupTime,
-        int pixelCount,
-        int pixelCountAllTime,
-        String roleNames,
-        Integer displayedFactionId,
-        List<ProfileFaction> factions,
-        boolean isBanned,
-        boolean isPermaBanned,
-        Long banExpiry,
-        boolean isChatBanned,
-        boolean isPermaChatBanned,
-        long chatBanExpiry,
-        boolean isFactionRestricted,
-        String discordName
-) {}
+public class ProfileResponse {
+    UserProfile user;
+    UserProfile self;
+    String palette;
+    int maxFactionTagLength;
+    int maxFactionNameLength;
+    List<ProfileReport> canvasReports;
+    List<ProfileReport> chatReports;
+    boolean snipMode;
+    Map<String, String> keys;
 
+    public ProfileResponse(UserProfile user, UserProfile self, String palette, int maxFactionTagLength, int maxFactionNameLength, List<ProfileReport> canvasReports, List<ProfileReport> chatReports, boolean snipMode, Map<String, String> keys) {
+        this.user = user;
+        this.self = self;
+        this.palette = palette;
+        this.maxFactionTagLength = maxFactionTagLength;
+        this.maxFactionNameLength = maxFactionNameLength;
+        this.canvasReports = canvasReports;
+        this.chatReports = chatReports;
+        this.snipMode = snipMode;
+        this.keys = keys;
+    }
+}

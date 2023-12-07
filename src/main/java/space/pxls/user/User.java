@@ -7,7 +7,7 @@ import space.pxls.data.DBUser;
 import space.pxls.data.DBUserPixelCounts;
 import space.pxls.server.packets.chat.Badge;
 import space.pxls.server.packets.chat.ServerChatUserUpdateBuilder;
-import space.pxls.server.packets.http.ProfileResponse;
+import space.pxls.server.packets.http.UserProfile;
 import space.pxls.server.packets.socket.ClientUndo;
 import space.pxls.server.packets.chat.ServerChatBan;
 import space.pxls.server.packets.socket.ServerRename;
@@ -867,7 +867,7 @@ public class User {
         return new User(user.id, user.stacked, user.username, user.signup_time, user.cooldownExpiry, roles, user.loginWithIP, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.shadowBanned, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked);
     }
 
-    public ProfileResponse toProfileResponse() {
+    public UserProfile toProfile() {
         List<DBFaction> factions = App.getDatabase().getFactionsForUID(getId());
         List<ProfileFaction> profileFactions = new ArrayList<>();
         for (DBFaction faction : factions) {
@@ -878,13 +878,14 @@ public class User {
                     faction.name,
                     faction.tag,
                     faction.color,
+                    faction.owner,
                     ownerName,
                     faction.canvasCode,
                     faction.created.getTime(),
                     memberCount
             ));
         }
-        return new ProfileResponse(
+        return new UserProfile(
                 id,
                 name,
                 signup_time.getTime(),

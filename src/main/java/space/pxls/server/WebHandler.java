@@ -14,6 +14,7 @@ import io.undertow.util.*;
 import space.pxls.App;
 import space.pxls.auth.*;
 import space.pxls.data.*;
+import space.pxls.palette.Color;
 import space.pxls.server.packets.http.Error;
 import space.pxls.server.packets.http.*;
 import space.pxls.server.packets.socket.*;
@@ -1926,7 +1927,8 @@ public class WebHandler {
         exchange.getResponseHeaders()
                 .put(Headers.CONTENT_TYPE, "application/json");
 
-        User user = exchange.getAttachment(AuthReader.USER);
+        User self = exchange.getAttachment(AuthReader.USER);
+        User user = self;
 
         // get user query param
         Deque<String> usernameQ = exchange.getQueryParameters().get("username");
@@ -1941,8 +1943,19 @@ public class WebHandler {
             return;
         }
 
-        // return their name
-        exchange.getResponseSender().send(App.getGson().toJson(user.toProfileResponse()));
+        var userProfile = user.toProfile();
+        var selfProfile = self.toProfile();
+        var palette = App.getPalette().getColors().stream().map(Color::getValue).collect(Collectors.joining(","));
+        var maxFactionTagLength = App.getConfig().getInt("factions.maxTagLength");
+        var maxFactionNameLength = App.getConfig().getInt("factions.maxNameLength");
+        var canvasReports = App.getDatabase().getCanvasReportsFromUser(user.getId()).stream().map(DBCanvasReport::toProfileReport).toList();
+        var chatReports = App.getDatabase().getChatReportsFromUser(user.getId()).stream().map(DBChatReport::toProfileReport).toList();
+        var snipMode = App.getSnipMode();
+        var userKeys = App.getDatabase().getUserKeys(user.getId());
+
+        var profileResponse = new ProfileResponse(userProfile, selfProfile, palette, maxFactionTagLength, maxFactionNameLength, canvasReports, chatReports, snipMode, userKeys);
+
+        exchange.getResponseSender().send(App.getGson().toJson(profileResponse));
     }
 
     private User parseUserFromForm(HttpServerExchange exchange) {
