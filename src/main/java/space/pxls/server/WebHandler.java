@@ -1577,6 +1577,10 @@ public class WebHandler {
                     .setExpires(pastCalendar.getTime())
             );
 
+            String host = App.getConfig().getString("host");
+            int frontEndPort = App.getConfig().getInt("frontEndPort");
+            String doneBase = String.format("http://%s:%d/auth_done.html", host, frontEndPort);
+
             if (!redirect && exchange.getQueryParameters().get("json") == null) {
                 exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
                 exchange.getResponseSender().send("<!DOCTYPE html><html><head><title>Pxls Login</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0\"/></head><body><a style=\"font-size:2em;font-weight:bold;\" href=\"" + exchange.getRequestURI() + "?" + exchange.getQueryString() + "\">Finish Login</a><br>Hold down long on that link and select to open with pxls app.</body>");
@@ -1589,7 +1593,7 @@ public class WebHandler {
                 String error = exchange.getQueryParameters().get("error").element();
                 if (error.equals("access_denied")) error = "Authentication denied by user";
                 if (redirect) {
-                    redirect(exchange, "http://localhost:3000/auth_done.html?nologin=1");
+                    redirect(exchange, doneBase + "?nologin=1");
                 } else {
                     respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("oauth_error", error));
                 }
@@ -1605,7 +1609,7 @@ public class WebHandler {
             String code = extractOAuthCode(exchange);
             if (code == null) {
                 if (redirect) {
-                    redirect(exchange, "http://localhost:3000/auth_done.html?nologin=1");
+                    redirect(exchange, doneBase + "?nologin=1");
                 } else {
                     respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_code", "No OAuth code specified"));
                 }
@@ -1635,7 +1639,7 @@ public class WebHandler {
                     if (service.isRegistrationEnabled()) {
                         String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin(id, identifier));
                         if (redirect) {
-                            redirect(exchange, String.format("http://localhost:3000/auth_done.html?token=%s&signup=true", encodedURIComponent(signUpToken)));
+                            redirect(exchange, String.format(doneBase + "?token=%s&signup=true", encodedURIComponent(signUpToken)));
                         } else {
                             respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
                         }
@@ -1648,7 +1652,7 @@ public class WebHandler {
                     String loginToken = App.getUserManager().logIn(user, ip);
                     setAuthCookie(exchange, loginToken, 24);
                     if (redirect) {
-                        redirect(exchange, String.format("http://localhost:3000/auth_done.html?token=%s&signup=false", encodedURIComponent(loginToken)));
+                        redirect(exchange, String.format(doneBase + "?token=%s&signup=false", encodedURIComponent(loginToken)));
                     } else {
                         respond(exchange, StatusCodes.OK, new AuthResponse(loginToken, false));
                     }
