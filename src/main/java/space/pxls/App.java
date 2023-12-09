@@ -133,6 +133,7 @@ public class App {
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
+                getServer().broadcast(new ServerPing());
                 getServer().getPacketHandler().updateUserData();
             }
         }, 0, 60 * 1000); // 1 minute
