@@ -4,7 +4,7 @@ import space.pxls.server.packets.http.UserProfileMinimal;
 
 import java.util.List;
 
-public record ProfileFaction(
+public record ProfileFactionOther(
         int id,
         String name,
         String tag,
@@ -12,7 +12,5 @@ public record ProfileFaction(
         int ownerId,
         String ownerName,
         String canvasCode,
-        long created,
-        List<UserProfileMinimal> members,
-        List<UserProfileMinimal> bans
+        long created
 ) {}

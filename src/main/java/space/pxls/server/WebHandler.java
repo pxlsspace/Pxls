@@ -1951,20 +1951,29 @@ public class WebHandler {
             return;
         }
 
-        var userProfile = user.toProfile();
         var selfProfileMinimal = self.toProfileMinimal();
         var palette = App.getPalette().getColors().stream().map(Color::getValue).collect(Collectors.joining(","));
-        var newFactionMinPixels = App.getConfig().getInt("factions.minPixelsToCreate");
-        var maxFactionTagLength = App.getConfig().getInt("factions.maxTagLength");
-        var maxFactionNameLength = App.getConfig().getInt("factions.maxNameLength");
-        var canvasReports = App.getDatabase().getCanvasReportsFromUser(user.getId()).stream().map(DBCanvasReport::toProfileReport).toList();
-        var chatReports = App.getDatabase().getChatReportsFromUser(user.getId()).stream().map(DBChatReport::toProfileReport).toList();
         var snipMode = App.getSnipMode();
-        var userKeys = App.getDatabase().getUserKeys(user.getId());
 
-        var profileResponse = new ProfileResponse(userProfile, selfProfileMinimal, palette, newFactionMinPixels, maxFactionTagLength, maxFactionNameLength, canvasReports, chatReports, snipMode, userKeys);
+        if (user == self) {
+            var userProfile = user.toProfile();
+            var newFactionMinPixels = App.getConfig().getInt("factions.minPixelsToCreate");
+            var maxFactionTagLength = App.getConfig().getInt("factions.maxTagLength");
+            var maxFactionNameLength = App.getConfig().getInt("factions.maxNameLength");
+            var canvasReports = App.getDatabase().getCanvasReportsFromUser(user.getId()).stream().map(DBCanvasReport::toProfileReport).toList();
+            var chatReports = App.getDatabase().getChatReportsFromUser(user.getId()).stream().map(DBChatReport::toProfileReport).toList();
+            var userKeys = App.getDatabase().getUserKeys(user.getId());
 
-        exchange.getResponseSender().send(App.getGson().toJson(profileResponse));
+            var profileResponse = new ProfileResponse(userProfile, selfProfileMinimal, palette, newFactionMinPixels, maxFactionTagLength, maxFactionNameLength, canvasReports, chatReports, snipMode, userKeys);
+
+            exchange.getResponseSender().send(App.getGson().toJson(profileResponse));
+        } else {
+            var userProfileOther = user.toProfileOther();
+
+            var profileResponseOther = new ProfileResponseOther(userProfileOther, selfProfileMinimal, palette, snipMode);
+
+            exchange.getResponseSender().send(App.getGson().toJson(profileResponseOther));
+        }
     }
 
     private User parseUserFromForm(HttpServerExchange exchange) {

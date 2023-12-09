@@ -9,6 +9,7 @@ import space.pxls.server.packets.chat.Badge;
 import space.pxls.server.packets.chat.ServerChatUserUpdateBuilder;
 import space.pxls.server.packets.http.UserProfile;
 import space.pxls.server.packets.http.UserProfileMinimal;
+import space.pxls.server.packets.http.UserProfileOther;
 import space.pxls.server.packets.socket.ClientUndo;
 import space.pxls.server.packets.chat.ServerChatBan;
 import space.pxls.server.packets.socket.ServerRename;
@@ -878,6 +879,7 @@ public class User {
                 continue;
             }
             var members = optionalFaction.get().fetchMembersMinimal();
+            var bans = optionalFaction.get().fetchBansMinimal();
             profileFactions.add(new ProfileFaction(
                     dbFaction.id,
                     dbFaction.name,
@@ -887,7 +889,8 @@ public class User {
                     ownerName,
                     dbFaction.canvasCode,
                     dbFaction.created.getTime(),
-                    members
+                    members,
+                    bans
             ));
         }
         return new UserProfile(
@@ -915,6 +918,46 @@ public class User {
                 id,
                 name,
                 pixelCountAllTime
+        );
+    }
+
+    public UserProfileOther toProfileOther() {
+        List<DBFaction> factions = App.getDatabase().getFactionsForUID(getId()).stream().filter(dbFaction -> dbFaction.id != displayedFaction).toList();
+        List<ProfileFactionOther> profileFactions = new ArrayList<>();
+        for (DBFaction dbFaction : factions) {
+            String ownerName = App.getDatabase().getUserByID(dbFaction.owner).get().username;
+            var optionalFaction = FactionManager.getInstance().getByID(dbFaction.id);
+            if (optionalFaction.isEmpty()) {
+                continue;
+            }
+            profileFactions.add(new ProfileFactionOther(
+                    dbFaction.id,
+                    dbFaction.name,
+                    dbFaction.tag,
+                    dbFaction.color,
+                    dbFaction.owner,
+                    ownerName,
+                    dbFaction.canvasCode,
+                    dbFaction.created.getTime()
+            ));
+        }
+        return new UserProfileOther(
+                id,
+                name,
+                signup_time.getTime(),
+                pixelCount,
+                pixelCountAllTime,
+                roles,
+                displayedFaction,
+                profileFactions,
+                isBanned(),
+                isPermaBanned(),
+                banExpiryTime,
+                isChatbanned(),
+                isPermaChatbanned,
+                chatbanExpiryTime,
+                factionBlocked,
+                discordName
         );
     }
 }

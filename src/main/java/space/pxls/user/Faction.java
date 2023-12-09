@@ -119,11 +119,7 @@ public class Faction {
     }
 
     public List<UserProfileMinimal> fetchMembersMinimal() {
-        if (_cachedMembers == null) {
-            _cachedMembers = App.getDatabase().getUsersForFID(this.id).stream().map(User::fromDBUser).collect(Collectors.toList());
-        }
-
-        return _cachedMembers.stream().map(User::toProfileMinimal).collect(Collectors.toList());
+        return fetchMembers().stream().map(User::toProfileMinimal).collect(Collectors.toList());
     }
 
     public List<User> fetchBans() {
@@ -132,6 +128,10 @@ public class Faction {
         }
 
         return _cachedBans;
+    }
+
+    public List<UserProfileMinimal> fetchBansMinimal() {
+        return fetchBans().stream().map(User::toProfileMinimal).collect(Collectors.toList());
     }
 
     public void invalidateMembers() {
