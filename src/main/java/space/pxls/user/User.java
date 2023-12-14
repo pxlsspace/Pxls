@@ -922,7 +922,7 @@ public class User {
     }
 
     public UserProfileOther toProfileOther() {
-        List<DBFaction> factions = App.getDatabase().getFactionsForUID(getId()).stream().filter(dbFaction -> dbFaction.id != displayedFaction).toList();
+        List<DBFaction> factions = App.getDatabase().getFactionsForUID(getId()).stream().filter(dbFaction -> dbFaction.id == displayedFaction).toList();
         List<ProfileFactionOther> profileFactions = new ArrayList<>();
         for (DBFaction dbFaction : factions) {
             String ownerName = App.getDatabase().getUserByID(dbFaction.owner).get().username;
