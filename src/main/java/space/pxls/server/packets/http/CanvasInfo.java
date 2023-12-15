@@ -30,8 +30,9 @@ public class CanvasInfo {
     public String chatRatelimitMessage;
     public Integer chatLinkMinimumPixelCount;
     public Boolean chatLinkSendToStaff;
+    public Boolean chatDefaultExternalLinkPopup;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, List<Object> customEmoji, String corsBase, String corsParam, LegalInfo legal, String chatRatelimitMessage, Integer chatLinkMinimumPixelCount, boolean chatLinkSendToStaff) {
+    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, List<Object> customEmoji, String corsBase, String corsParam, LegalInfo legal, String chatRatelimitMessage, Integer chatLinkMinimumPixelCount, boolean chatLinkSendToStaff, boolean chatDefaultExternalLinkPopup) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
@@ -54,6 +55,7 @@ public class CanvasInfo {
         this.chatRatelimitMessage = chatRatelimitMessage;
         this.chatLinkMinimumPixelCount = chatLinkMinimumPixelCount;
         this.chatLinkSendToStaff = chatLinkSendToStaff;
+        this.chatDefaultExternalLinkPopup = chatDefaultExternalLinkPopup;
     }
 
     public String getCanvasCode() {

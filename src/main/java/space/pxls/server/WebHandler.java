@@ -1734,7 +1734,8 @@ public class WebHandler {
             ),
             App.getConfig().getString("chat.ratelimitMessage"),
             App.getConfig().getInt("chat.linkMinimumPixelCount"),
-            App.getConfig().getBoolean("chat.linkSendToStaff")
+            App.getConfig().getBoolean("chat.linkSendToStaff"),
+            App.getConfig().getBoolean("chat.defaultExternalLinkPopup")
         )));
     }
 
