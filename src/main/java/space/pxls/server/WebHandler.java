@@ -1577,9 +1577,10 @@ public class WebHandler {
                     .setExpires(pastCalendar.getTime())
             );
 
+            String protocol = App.getConfig().getBoolean("https") ? "https" : "http";
             String host = App.getConfig().getString("host");
             int frontEndPort = App.getConfig().getInt("frontEndPort");
-            String doneBase = String.format("http://%s:%d/auth_done.html", host, frontEndPort);
+            String doneBase = String.format("%s://%s:%d/auth_done.html", protocol, host, frontEndPort);
 
             if (!redirect && exchange.getQueryParameters().get("json") == null) {
                 exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
