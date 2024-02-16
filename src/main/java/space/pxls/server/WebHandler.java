@@ -1360,6 +1360,14 @@ public class WebHandler {
         exchange.endExchange();
     }
 
+    private void sendNotFound(HttpServerExchange exchange) {
+        sendNotFound(exchange, "");
+    }
+
+    private void sendNotFound(HttpServerExchange exchange, String details) {
+        send(StatusCodes.NOT_FOUND, exchange, details);
+    }
+
     private void sendBadRequest(HttpServerExchange exchange) {
         sendBadRequest(exchange, "");
     }
@@ -1949,7 +1957,7 @@ public class WebHandler {
         }
 
         if (user == null) {
-            sendBadRequest(exchange, "USER_NOT_FOUND");
+            sendNotFound(exchange, "USER_NOT_FOUND");
             return;
         }
 
