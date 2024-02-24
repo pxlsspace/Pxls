@@ -14,9 +14,10 @@ const user = (function() {
   const self = {
     instaban: false,
     elements: {
-      users: $('#online-count'),
+      users: $('#online-count-value'),
       userInfo: $('#user-info'),
       pixelCounts: $('#pixel-counts'),
+      pixelCountsIcon: $('#pixel-counts-ico'),
       loginOverlay: $('#login-overlay'),
       userMessage: $('#user-message'),
       prompt: $('#prompt'),
@@ -147,6 +148,7 @@ const user = (function() {
       return fetch('/logout').then(() => {
         self.elements.userInfo.fadeOut(200);
         self.elements.pixelCounts.fadeOut(200);
+        self.elements.pixelCountsIcon.fadeOut(200);
         self.elements.userMessage.fadeOut(200);
         self.elements.loginOverlay.fadeIn(200);
         if (window.deInitAdmin) {
@@ -169,12 +171,13 @@ const user = (function() {
       });
       self.elements.signup.find('#signup-button').click(self.doSignup);
       $.get('/users', data => {
-        self.elements.users.text(data.count + ' ' + __('online')).fadeIn(200);
+        self.elements.users.text(data.count).fadeIn(200);
       }).fail(function(e) {
         console.error('Error fetching /users: ', e);
-        self.elements.users.hide();
+        self.elements.users.text(NaN).fadeIn(200);
       });
       self.elements.pixelCounts.hide();
+      self.elements.pixelCountsIcon.hide();
       self.elements.userInfo.hide();
       self.elements.userInfo.find('.logout').click(function(evt) {
         evt.preventDefault();
@@ -203,7 +206,7 @@ const user = (function() {
         }
       });
       socket.on('users', function(data) {
-        self.elements.users.text(data.count + ' ' + __('online'));
+        self.elements.users.text(data.count);
       });
       socket.on('userinfo', function(data) {
         let isBanned = false;
@@ -214,6 +217,7 @@ const user = (function() {
         self.pixelCountAllTime = data.pixelCountAllTime;
         self.updatePixelCountElements();
         self.elements.pixelCounts.fadeIn(200);
+        self.elements.pixelCountsIcon.fadeIn(200);
         self.placementOverrides = data.placementOverrides;
         place.togglePaletteSpecialColors(data.placementOverrides.canPlaceAnyColor);
         self.chatNameColor = data.chatNameColor;

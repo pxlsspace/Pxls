@@ -76,37 +76,45 @@
             </div>
             <div id="main-bubble" class="bubble">
                 <button id="setting-ui-bubble-compact"><i class="fas fa-angle-down"></i></button>
-                <div id="user-info" class="toggeable">
-                    <i class="fas fa-user"></i>
-                    <!-- TODO: link to position on stats page -->
-                    <span id="username"></span>
-                    <a href="/logout" class="logout"><i title="{{i18n('Localization', 'Logout') | raw}}" class="fas fa-sign-out-alt" id="logout-icon"></i></a>
-                </div>
-                <div id="pixel-counts" class="toggeable">
-                    <i class="fas fa-chart-line"></i>
-                    <ul>
-                        {# Canvas pixel count #}
-                        <li><span>{{i18n('Localization', 'Canvas:') | raw}} </span><span id="current-pixel-count">{{i18n('Localization', 'N/A') | raw}}</span></li>
-                        {# All time pixel count #}
-                        <li><span>{{i18n('Localization', 'All Time:') | raw}} </span><span id="alltime-pixel-count">{{i18n('Localization', 'N/A') | raw}}</span></li>
-                    </ul>
-                </div>
-                <div class="toggeable">
-                    <i class="fas fa-users"></i>
-                    <span id="online-count">{{i18n('Localization', 'Loading online user count&hellip;') | raw}}</span>
-                </div>
-                <div id="coords-info" class="toggeable">
-                    <a class="coords"></a>
-                    <i id="canvas-lock-icon" class="fas fa-lock"></i>
-                </div>
-                <div id="placement-info">
-                    <span id="placeable-count">{{i18n('Localization', 'N/A') | raw}}</span>
-                    <span>{{i18n('Localization', 'Pixels') | raw}}</span>
-                    <i class="fas fa-spinner fa-spin captcha-loading-icon"></i>
-                </div>
-                <div id="cooldown">
-                    <i class="far fa-clock"></i>
-                    <span id="cooldown-timer"></span>
+                <div>
+                    <div id="user-info" class="toggeable">
+                        <i class="fas fa-user"></i>
+                        <!-- TODO: link to position on stats page -->
+                        <span id="username"></span>
+                        <a href="/logout" class="logout"><i title="{{i18n('Localization', 'Logout') | raw}}" class="fas fa-sign-out-alt" id="logout-icon"></i></a>
+                    </div>
+                    <div id="bubble-grid">
+                        <i id="pixels-icon" class="fa fa-cubes"></i>
+                        <div id="placement-info">
+                            <span  class="lable toggeable">{{i18n('Localization', 'Pixels') | raw}}: </span>
+                            <span id="placeable-count">{{i18n('Localization', 'N/A') | raw}}</span>
+                            <i class="fas fa-spinner fa-spin captcha-loading-icon"></i>
+                        </div>
+                        <div id="cooldown">
+                            <span id="cooldown-timer"></span>
+                        </div>
+                        <i class="fas fa-chart-line toggeable" id="pixel-counts-ico"></i>
+                        <div id="pixel-counts" class="toggeable">
+                            <ul>
+                                {# Canvas pixel count #}
+                                <li><span  class="lable">{{i18n('Localization', 'Canvas:') | raw}} </span><span id="current-pixel-count">{{i18n('Localization', 'N/A') | raw}}</span></li>
+                                {# All time pixel count #}
+                                <li><span  class="lable">{{i18n('Localization', 'All Time:') | raw}} </span><span id="alltime-pixel-count">{{i18n('Localization', 'N/A') | raw}}</span></li>
+                            </ul>
+                        </div>
+                        <i class="fas fa-users toggeable"></i>
+                        <div class="toggeable">
+                            <span id="online-count">
+                                <span class="lable">Online: </span>
+                                <span id="online-count-value">{{i18n('Localization', 'Loading online user count&hellip;') | raw}}</span>
+                            </span>                    
+                        </div>
+                        <i id="coords-ico" class="fas fa-compass toggeable"></i>
+                        <div id="coords-info" class="toggeable">
+                            <span class="lable">Coords: </span>
+                            <a class="coords"></a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -473,6 +481,7 @@
                                 <option value="top right">{{i18n('Localization', 'Top right') | raw}}</option>
                                 <option value="bottom left" selected>{{i18n('Localization', 'Bottom left') | raw}}</option>
                                 <option value="bottom right">{{i18n('Localization', 'Bottom right') | raw}}</option>
+                                <option value="hide">Hide</option>
                             </select>
                         </label>
                     </div>
