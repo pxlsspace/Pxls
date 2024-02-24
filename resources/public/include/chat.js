@@ -1769,10 +1769,8 @@ const chat = (function() {
 
         const actions = [
           { label: __('Report'), action: 'report', class: 'dangerous-button' },
-          { label: __('Mention'), action: 'mention' },
-          { label: __('Reply'), action: 'reply' },
-          { label: __('Ignore'), action: 'ignore' },
           (!board.snipMode || App.user.hasPermission('user.receivestaffbroadcasts')) && { label: __('Profile'), action: 'profile' },
+          !board.snipMode && { label: __('Ignore'), action: 'ignore' },
           { label: __('Chat (un)ban'), action: 'chatban', staffaction: true },
           // TODO(netux): Fix infraestructure and allow to purge during snip mode
           !board.snipMode && { label: __('Purge User'), action: 'purge', staffaction: true },
@@ -1781,8 +1779,8 @@ const chat = (function() {
           { label: __('Chat Lookup'), action: 'lookup-chat', staffaction: true }
         ];
 
-        crel(leftPanel, crel('p', { class: 'popup-timestamp-header text-muted' }, moment.unix(closest.dataset.date >> 0).format(`MMM Do YYYY, ${(settings.chat.timestamps['24h'].get() === true ? 'HH:mm:ss' : 'hh:mm:ss A')}`)));
-        crel(leftPanel, crel('p', { class: 'content', style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, closest.querySelector(':not(.reply-preview) > span > .content').textContent));
+        crel(leftPanel, crel('p', { class: 'popup-timestamp-header text-muted' }, closest.querySelector(':not(.reply-preview) > span > .faction-tag').title));
+        crel(leftPanel, crel('p', { class: 'content', style: 'margin-top: 3px; margin-left: 3px; text-align: left;' }, 'Alltime: NaN\nCanvas: NaN\nDiscord: NaN'));
 
         crel(actionsList, actions
           .filter((action) => action && (user.isStaff() || !action.staffaction))
@@ -1902,25 +1900,6 @@ const chat = (function() {
             crel('h2', { class: 'modal-title' }, __('Report User')),
             chatReport
           ));
-          break;
-        }
-        case 'mention': {
-          if (reportingTarget) {
-            self.elements.input.val(self.elements.input.val() + `@${reportingTarget} `);
-          } else console.warn('no reportingTarget');
-          break;
-        }
-        case 'reply': {
-          if (!mode) {
-            console.warn('reply called in with false mode');
-            return;
-          }
-          const userDisplay = chatLine.querySelector(':not(.reply-preview) > span > .userDisplay');
-          if (!userDisplay) {
-            console.warn('reply couldn\'t find userDisplay');
-            return;
-          }
-          self._addReplyToChatbox(e, this.dataset.id, userDisplay);
           break;
         }
         case 'ignore': {
