@@ -90,12 +90,11 @@ public class UserManager {
     }
 
     public User signUp(String name, String token, String ip) {
-        UserLogin login = userSignupTokens.get(token);
+        UserLogin login = userSignupTokens.remove(token);
         if (login == null) return null;
 
         if (!App.getDatabase().getUserByName(name).isPresent()) {
             DBUser user = App.getDatabase().createUser(name, login, ip);
-            userSignupTokens.remove(token);
             return getByDB(Optional.of(user));
         }
         return null;
