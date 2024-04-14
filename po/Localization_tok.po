@@ -1,0 +1,2712 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Pxls\n"
+"POT-Creation-Date: 2023-12-15T14:09:43.864Z\n"
+"PO-Revision-Date: 2024-04-14 10:06-0400\n"
+"Last-Translator: Mikarific <mikerific2@gmail.com>\n"
+"Language-Team: Toki Pona "
+"<https://weblate.pxls.space/projects/pxls-space/pxls-web/tok/>\n"
+"Language: tok\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: PO File Editor https://pofile.net/free-po-editor\n"
+
+#: /views/error.handlebars /views/profile.handlebars /public/include/user.js
+msgid "My Profile"
+msgstr "lipu mi"
+
+#: /views/error.handlebars /views/profile.handlebars
+msgid "My Factions"
+msgstr "kulupu mi"
+
+#: /views/error.handlebars
+#. HTTP status code name
+msgid "Not Found"
+msgstr ""
+
+#: /views/error.handlebars
+msgid ""
+"The content you requested could not be found at this URL. If you believe "
+"this is an error, please contact a developer."
+msgstr ""
+"lipu ni li jo e ijo ala. ni li powe la, sina ken toki tawa jan pali pi musi "
+"Pxls."
+
+#: /views/error.handlebars
+#. links to the homepage (the app itself)
+msgid "Back to Pxls"
+msgstr "o tawa musi Pxls"
+
+#: /views/error.handlebars
+#. HTTP status code name
+msgid "Not Authenticated"
+msgstr ""
+
+#: /views/error.handlebars
+msgid ""
+"You must be logged in to access this data. Please go back to pxls and go "
+"through the authentication process."
+msgstr ""
+
+#: /views/error.handlebars
+#. HTTP status code name
+msgid "Not Allowed"
+msgstr ""
+
+#: /views/error.handlebars
+msgid ""
+"The action you attempted to perform is not allowed or resulted in an error. "
+"Please ensure you have access to the endpoint and try again later."
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Place pixels with people to create art"
+msgstr "o pana e leko li pali e sitelen lon poka jan ante"
+
+#: /views/index.handlebars
+msgid "Lost connection to server, reconnecting..."
+msgstr "mi ken ala toki tawa ilo la, mi toki sin..."
+
+#: /views/index.handlebars
+msgid "Loading Heatmap (press <kbd>H</kbd> to cancel)"
+msgstr "sitelen seli li kama lon (sina wile ala la, o kepeken e nena <kbd>H</kbd>)"
+
+#: /views/index.handlebars
+msgid "Loading Virginmap (press <kbd>X</kbd> to cancel)"
+msgstr ""
+"sitelen pi leko ala li kama lon (sina wile ala la, o kepeken e nena "
+"<kbd>X</kbd>)"
+
+#: /views/index.handlebars
+msgid "Logout"
+msgstr "o tawa"
+
+#: /views/index.handlebars
+msgid "Canvas:"
+msgstr "sitelen ni:"
+
+#: /views/index.handlebars
+msgid "N/A"
+msgstr "ala"
+
+#: /views/index.handlebars
+msgid "All Time:"
+msgstr "sitelen ale:"
+
+#: /views/index.handlebars
+msgid "Loading online user count&hellip;"
+msgstr "nanpa jan li kama lon&hellip;"
+
+#: /views/index.handlebars /public/admin/admin.js /public/include/lookup.js
+msgid "Pixels"
+msgstr "leko"
+
+#: /views/index.handlebars
+msgid "Undo"
+msgstr "o weka e leko sina"
+
+#: /views/index.handlebars
+msgid "You are not signed in."
+msgstr "sina weka."
+
+#: /views/index.handlebars /public/include/user.js
+msgid "Sign in with..."
+msgstr "kama la kepeken seme?"
+
+#: /views/index.handlebars
+msgid "Loading..."
+msgstr "mi kama lon..."
+
+#: /views/index.handlebars
+msgid "Sign up"
+msgstr "o jo e lipu jan"
+
+#: /views/index.handlebars
+msgid "Pick a username"
+msgstr "o pana e nimi sina tawa mi"
+
+#: /views/index.handlebars
+msgid "Username:"
+msgstr "nimi sina:"
+
+#: /views/index.handlebars
+msgid "Discord Tag (Optional):"
+msgstr "sina wile la, nimi sina pi ilo Siko:"
+
+#: /views/index.handlebars
+msgid "Drag and drop template image"
+msgstr "o pana e ilo sitelen tawa mi"
+
+#: /views/index.handlebars
+msgid "Exit"
+msgstr ""
+
+#: /views/index.handlebars /views/profile.handlebars
+msgid "Info"
+msgstr "sona suli"
+
+#: /views/index.handlebars
+msgid "Close Panel"
+msgstr "o weka e lipu ni"
+
+#: /views/index.handlebars /public/include/chat.js
+msgid "Chat"
+msgstr "poki toki"
+
+#: /views/index.handlebars
+msgid "Pings"
+msgstr "mu tawa sina"
+
+#: /views/index.handlebars
+msgid "Settings"
+msgstr "ante"
+
+#: /views/index.handlebars
+msgid "Jump To Bottom"
+msgstr "o lon anpa"
+
+#: /views/index.handlebars
+msgid "Replying to"
+msgstr "o toki tawa jan"
+
+#: /views/index.handlebars /public/include/chat.js
+msgid "On"
+msgstr "mu"
+
+#: /views/index.handlebars
+msgid "Emoji"
+msgstr "sitelen Emosi"
+
+#: /views/index.handlebars
+msgid "Search"
+msgstr "o alasa"
+
+#: /views/index.handlebars
+msgid "keybinds;keys;keyboard;hotkeys"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Keybinds"
+msgstr "ilo nena"
+
+#: /views/index.handlebars
+msgid "general"
+msgstr "ijo"
+
+#: /views/index.handlebars
+msgid "General"
+msgstr "ijo"
+
+#: /views/index.handlebars
+msgid "move;moving;panning;drag"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Mouse/arrows/wasd to pan"
+msgstr "sina wile tawa supa la, sina ken kepeken e ilo misa e ilo ←→↑↓ e ilo WASD."
+
+#: /views/index.handlebars
+msgid "mousewheel;zooming"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Scroll/pinch to zoom"
+msgstr "sina wile tawa suli la, sina ken tawa sike e nena lon ilo misa."
+
+#: /views/index.handlebars
+msgid "scroll;zooming"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "<kbd>+</kbd>/<kbd>-</kbd> or <kbd>Q</kbd>/<kbd>E</kbd> to zoom"
+msgstr ""
+"nena <kbd>+</kbd>/nena <kbd>-</kbd> en nena <kbd>Q</kbd>/nena <kbd>E</kbd> "
+"li ken tawa suli."
+
+#: /views/index.handlebars
+msgid "lookups"
+msgstr "alasa"
+
+#: /views/index.handlebars
+msgid "<kbd>Shift</kbd> + Click/Hold touch to lookup pixel"
+msgstr ""
+"sina kepeken e nena <kbd>Shift</kbd> e ilo misa la, sina ken alasa e jan pi "
+"pali leko."
+
+#: /views/index.handlebars
+msgid "overlays;alignment;grid hidden;grid shown;hide grid;show grid"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "<kbd>G</kbd> to toggle grid"
+msgstr "nena <kbd>G</kbd> la, ilo palisa li kama lon."
+
+#: /views/index.handlebars
+msgid ""
+"close;information shown;information hidden;info shown;info hidden;hide "
+"information;show information"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "<kbd>I</kbd> to open info"
+msgstr "nena <kbd>I</kbd> la, lipu sona li kama lon."
+
+#: /views/index.handlebars
+msgid "close;settings hidden;settings shown;hide settings;show settings"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "<kbd>T</kbd> to open settings"
+msgstr "nena <kbd>T</kbd> la, lipu ante li kama lon."
+
+#: /views/index.handlebars
+msgid "close;chat hidden;chat shown;hide chat;show chat"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "<kbd>B</kbd> to open chat"
+msgstr "nena <kbd>B</kbd> la, poki toki li kama lon."
+
+#: /views/index.handlebars
+msgid "canvas locked;move;moving;zoom;zooming"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "<kbd>L</kbd> to toggle locking panning of the canvas"
+msgstr "nena <kbd>L</kbd> la, sitelen li ken ala tawa."
+
+#: /views/index.handlebars
+msgid "take screenshot;image;download;picture;canvas"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "<kbd>P</kbd> to take a snapshot"
+msgstr "nena <kbd>P</kbd> la, sina lanpan e sitelen."
+
+#: /views/index.handlebars
+msgid ""
+"overlays;user activity;pixels placed pixels;heatmap hidden;heatmap "
+"shown;hide heatmap;show heatmap"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "<kbd>H</kbd> to toggle heatmap"
+msgstr "nena <kbd>H</kbd> la, sina lon e sitelen seli."
+
+#: /views/index.handlebars
+msgid ""
+"overlays;user activity;pixels unplaced pixels;virginmap hidden;virginmap "
+"shown;hide virginmap;show virginmap"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "<kbd>X</kbd> to toggle virginmap"
+msgstr "nena <kbd>X</kbd> la, sina lon e sitelen pi leko ala."
+
+#: /views/index.handlebars
+msgid "overlays;user activity;pixels placed pixels;wipe;clean;"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "<kbd>O</kbd> to clear heatmap"
+msgstr "nena <kbd>O</kbd> la, sina weka e sona pi sitelen seli."
+
+#: /views/index.handlebars
+msgid "overlays;user activity;pixels unplaced pixels;wipe;clean;"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "<kbd>U</kbd> to clear virginmap"
+msgstr "nena <kbd>U</kbd> la, sina weka e sona pi sitelen pi leko ala."
+
+#: /views/index.handlebars
+msgid "next color;previous color"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "<kbd>J</kbd>/<kbd>K</kbd> to cycle through palette colors"
+msgstr "nena <kbd>J</kbd>/<kbd>K</kbd> la, sina ante e kule leko."
+
+#: /views/index.handlebars
+msgid "current coordinates;coords"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "<kbd>C</kbd> to copy link of moused-over coordinates"
+msgstr "nena <kbd>C</kbd> la, sina lanpan e ilo linluwi pi lon sina."
+
+#: /views/index.handlebars
+msgid "cancel selection"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "<kbd>ESC</kbd> to deselect current pixel"
+msgstr "nena <kbd>ESC</kbd> la, sina jo ala e kule leko."
+
+#: /views/index.handlebars
+msgid "recenter;jump;center on template;guides;focus"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "<kbd>R</kbd> to center the board on the current template"
+msgstr "nena <kbd>R</kbd> la, sina lukin e ilo sitelen sina."
+
+#: /views/index.handlebars
+msgid "templates;guides"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Template"
+msgstr "ilo sitelen"
+
+#: /views/index.handlebars
+msgid "transparency"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "<kbd>Page Up</kbd> to increase opacity"
+msgstr "nena <kbd>Page Up</kbd> la, sina suli e lon pi ilo sitelen sina."
+
+#: /views/index.handlebars
+msgid "<kbd>Page Down</kbd> to decrease opacity"
+msgstr "nena <kbd>Page Down</kbd> la, sina lili e lon pi ilo sitelen sina."
+
+#: /views/index.handlebars
+msgid "hidden;shown;hide;show"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "<kbd>V</kbd> to toggle visibility"
+msgstr ""
+"nena <kbd>V</kbd> la, sina weka e ilo sitelen sina anu lon e ilo sitelen "
+"sina."
+
+#: /views/index.handlebars
+msgid ""
+"Note: These values are based on QWERTY keyboards. For other layouts, use "
+"the keys corresponding to the same position on a QWERTY keyboard."
+msgstr ""
+"IJO SULI: nasin ni li nasin pi ilo pi nena mute pi nasin QWERTY. sina jo e "
+"ilo ante pi nena mute la, ijo li lon sama pi nasin QWERTY."
+
+#: /views/index.handlebars
+msgid "templates;overlays;guides"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "templates;overlays;image;pixel art"
+msgstr ""
+
+#: /views/index.handlebars
+msgid ""
+"template enabled;template disabled;show template;hide template;template "
+"shown;template hidden"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Use template"
+msgstr "o kepeken e ilo sitelen"
+
+#: /views/index.handlebars
+msgid ""
+"Hold down <kbd>Ctrl</kbd> (or <kbd>Option</kbd> on mac) to drag the "
+"template around"
+msgstr ""
+"sina wile tawa supa e ilo sitelen la, o awen kepeken e nena <kbd>Ctrl</kbd> "
+"(sina kepeken e ilo MacOS la, o kepeken e nena <kbd>Option</kbd>)"
+
+#: /views/index.handlebars
+msgid "template title;template name;tab name;tab title;title="
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Title:"
+msgstr "nimi pi ilo sitelen:"
+
+#: /views/index.handlebars
+msgid "template location source;template source URL;template URL;template="
+msgstr ""
+
+#: /views/index.handlebars
+msgid "URL:"
+msgstr "tan pi ilo sitelen (ilo linluwi):"
+
+#: /views/index.handlebars
+msgid ""
+"template position;template x;template y;template location; template "
+"vertical; template horizontal;ox=;oy="
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Horizontal position:"
+msgstr "nanpa X pi ilo sitelen:"
+
+#: /views/index.handlebars
+msgid "Vertical position:"
+msgstr "nanpa Y pi ilo sitelen:"
+
+#: /views/index.handlebars
+msgid "template width;tw="
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Width:"
+msgstr "nanpa suli pi ilo sitelen:"
+
+#: /views/index.handlebars
+msgid "Reset"
+msgstr "o sin"
+
+#: /views/index.handlebars
+msgid "template style;custom template"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Style:"
+msgstr "nasin pi ilo sitelen:"
+
+#: /views/index.handlebars
+msgid "Use Source Style"
+msgstr "nasin ala"
+
+#: /views/index.handlebars
+msgid "1-to-1"
+msgstr "nasin pi nanpa wan"
+
+#: /views/index.handlebars
+msgid "1-to-1 (keep incorrect colors)"
+msgstr "nasin pi nanpa wan (o awen e kule powe)"
+
+#: /views/index.handlebars
+msgid "Dotted (Small, 1:2)"
+msgstr "nasin sike (lili, 1:2)"
+
+#: /views/index.handlebars
+msgid "Dotted (Big, 2:2)"
+msgstr "nasin sike (suli, 2:2)"
+
+#: /views/index.handlebars
+msgid "Symbols"
+msgstr "nasin pi sitelen musi"
+
+#: /views/index.handlebars
+msgid "Numbers"
+msgstr "nasin nanpa"
+
+#: /views/index.handlebars
+msgid "Custom…"
+msgstr "nasin sina…"
+
+#: /views/index.handlebars
+msgid "template style source;template style URL;custom style URL;custom template"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Custom style URL:"
+msgstr "tan pi nasin pi ilo sitelen (ilo linluwi):"
+
+#: /views/index.handlebars
+msgid "template conversion;template palette conversion;convert to palette"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Color Conversion Mode:"
+msgstr "nasin pi ante kule:"
+
+#: /views/index.handlebars
+msgid "Unconverted"
+msgstr "o ante ala e kule"
+
+#: /views/index.handlebars
+msgid "Nearest Custom"
+msgstr "o ante e kule"
+
+#: /views/index.handlebars
+msgid "template transparency;template opacity;oo="
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Opacity:"
+msgstr "lon pi ilo sitelen:"
+
+#: /views/index.handlebars
+msgid "ui;interface"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "UI Settings"
+msgstr "ante lukin"
+
+#: /views/index.handlebars
+msgid "language override;text"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Language override:"
+msgstr "o kepeken e toki ni:"
+
+#: /views/index.handlebars
+msgid "Use Browser Language"
+msgstr "toki pi ilo sina"
+
+#: /views/index.handlebars
+msgid "English"
+msgstr "toki Inli"
+
+#: /views/index.handlebars
+msgid "Bulgarian"
+msgstr "toki Pokasi"
+
+#: /views/index.handlebars
+msgid "French"
+msgstr "toki Kanse"
+
+#: /views/index.handlebars
+msgid "German"
+msgstr "toki Tosi"
+
+#: /views/index.handlebars
+msgid "Russian"
+msgstr "toki Losi"
+
+#: /views/index.handlebars
+msgid "Swedish"
+msgstr "toki Sensa"
+
+#: /views/index.handlebars
+msgid "Toki Pona"
+msgstr "toki pona"
+
+#: /views/index.handlebars
+msgid "themes;look;stylesheets;visuals"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Theme:"
+msgstr "lukin lipu:"
+
+#: /views/index.handlebars
+msgid "Default"
+msgstr "walo"
+
+#: /views/index.handlebars
+msgid ""
+"hide reticule;hide reticle;reticule shown reticle shown;reticule "
+"hidden;reticle hidden"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Show reticule"
+msgstr "o lon e lukin pi leko kama lon"
+
+#: /views/index.handlebars
+msgid "hide cursor;cursor shown;cursor hidden"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Show cursor"
+msgstr "o lon e lukin pi kule sina"
+
+#: /views/index.handlebars
+msgid "darkness filter"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Enable color brightness"
+msgstr "ken pi ante pimeja"
+
+#: /views/index.handlebars
+msgid "Warning: Known to cause fuzziness in Chrome on some Mac/Linux installs"
+msgstr "IJO SULI: sina kepeken e ilo MacOS anu ilo Linux la, ni li ken nasa."
+
+#: /views/index.handlebars
+msgid "Color brightness:"
+msgstr "pimeja kule:"
+
+#: /views/index.handlebars
+msgid "keep current selected;keep curent color;place"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Deselect color after placing"
+msgstr "sina pana e leko la, o jo ala e kule"
+
+#: /views/index.handlebars
+msgid "mousewheel;palette scrolling"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Enable scrolling on the palette to switch colors"
+msgstr "sina ken tawa e kule kepeken ilo misa"
+
+#: /views/index.handlebars
+msgid ""
+"reverse scrolling;mousewheel;palette scrolling;enable scrolling on the "
+"palette to switch colors"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Invert scroll direction"
+msgstr "o ante e tawa poka kule"
+
+#: /views/index.handlebars
+msgid "indexed colors;palette indicies"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Add numbers to palette entries"
+msgstr "o pana e nanpa tawa kule"
+
+#: /views/index.handlebars
+msgid "scrollbar;palette scrolling"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Enable thin scrollbar"
+msgstr "o lili e palisa tawa"
+
+#: /views/index.handlebars
+msgid "scrollbar;palette scrolling;palette stack"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Enable palette stacking"
+msgstr "o kulupu mute e kule"
+
+#: /views/index.handlebars
+msgid "floating bubble location"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Bubble position:"
+msgstr "lon pi toki suli:"
+
+#: /views/index.handlebars
+msgid "Top left"
+msgstr "sewi nanpa wan"
+
+#: /views/index.handlebars
+msgid "Top right"
+msgstr "sewi nanpa tu"
+
+#: /views/index.handlebars
+msgid "Bottom left"
+msgstr "anpa nanpa wan"
+
+#: /views/index.handlebars
+msgid "Bottom right"
+msgstr "anpa nanpa tu"
+
+#: /views/index.handlebars
+msgid "broken;offset workaround"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Attempt to fix canvas displacement bug in Chrome 78+"
+msgstr "o pona e nasa pi ilo Chrome pi nanpa 78+"
+
+#: /views/index.handlebars
+msgid "chat;message;ping sound"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Chat Settings"
+msgstr "poki toki"
+
+#: /views/index.handlebars
+msgid "username;color;colour"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Username Color:"
+msgstr "kule pi nimi sina:"
+
+#: /views/index.handlebars
+msgid "chat message;chat ui"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Interface"
+msgstr "lukin pi poki toki"
+
+#: /views/index.handlebars
+msgid "enable;disable"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Enable chat"
+msgstr "o lon e poki toki"
+
+#: /views/index.handlebars
+msgid "Page must be reloaded after changing"
+msgstr "sina ante e ni la, sina wile kama lon sin e lipu Pxls."
+
+#: /views/index.handlebars
+msgid "chat size;chat font"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Font Size:"
+msgstr "nanpa pi suli toki:"
+
+#: /views/index.handlebars
+msgid "time;timestamps"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "24 Hour Timestamps"
+msgstr "o kepeken e nasin tenpo 24"
+
+#: /views/index.handlebars
+msgid "badges;pixel count;pixels placed"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Show pixel-placed badges"
+msgstr "o lon e nanpa pi pana leko"
+
+#: /views/index.handlebars
+msgid "badges;factions"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Show faction tags"
+msgstr "o lon e nimi pi kulupu jan"
+
+#: /views/index.handlebars
+msgid "template urls;template links;template name"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Replace template titles with URLs in chat where applicable"
+msgstr "ilo linluwi pi ilo sitelen li lon la, o kepeken ala e nimi ona"
+
+#: /views/index.handlebars
+msgid "chat orientation;chat position"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Enable horizontal chat"
+msgstr "o supa e poki toki"
+
+#: /views/index.handlebars
+msgid "banner;animation"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Enable the rotating banner under chat"
+msgstr "o lon e toki suli lon anpa pi poki toki"
+
+#: /views/index.handlebars
+msgid "max;messages;truncate"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Maximum amount of chat messages:"
+msgstr "nanpa pi toki lon poki toki:"
+
+#: /views/index.handlebars
+msgid "link;url;behaviour"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Default internal link action click:"
+msgstr "ilo sitelen lon poki toki la, mi pali e seme?:"
+
+#: /views/index.handlebars
+msgid "link;url;behaviour;external;bypass;skip"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Skip external link popup"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Note: Has no effect if external link popups are disabled by the server."
+msgstr ""
+
+#: /views/index.handlebars
+msgid "chat icon;chat notifications;chat ping"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Chat icon badge mode:"
+msgstr "nasin pi sike lon sitelen pi poki toki:"
+
+#: /views/index.handlebars
+msgid "Show on unread ping"
+msgstr "jan li mu tawa sina, o lon"
+
+#: /views/index.handlebars
+msgid "Show on unread message"
+msgstr "jan li toki, o lon"
+
+#: /views/index.handlebars
+msgid "Never show"
+msgstr "o lon ala"
+
+#: /views/index.handlebars
+msgid "chat icon;chat notifications;chat message"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Chat icon highlight mode:"
+msgstr "nasin pi kule lon sitelen pi poki toki:"
+
+#: /views/index.handlebars
+msgid "ignored;ignores;unignore;blocked;blocking;unblock"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Ignores"
+msgstr "jan weka"
+
+#: /views/index.handlebars
+msgid "unignore;unblock"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Unignore"
+msgstr "o weka ala"
+
+#: /views/index.handlebars
+msgid "overlays;virginmap;heatmap;grid"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Overlay Settings"
+msgstr "sitelen sinpin"
+
+#: /views/index.handlebars
+msgid "heatmap;heatmap opacity;clear heatmap"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Heatmap"
+msgstr "sitelen seli"
+
+#: /views/index.handlebars
+msgid "Turn on heatmap"
+msgstr "o lon e sitelen seli"
+
+#: /views/index.handlebars
+msgid "(toggle with <kbd>H</kbd>)"
+msgstr "(o kepeken e nena <kbd>H</kbd>)"
+
+#: /views/index.handlebars
+msgid "overlays;activity;pixels placed pixels;wipe;clean"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Clear heatmap"
+msgstr "o weka e sona pi sitelen seli"
+
+#: /views/index.handlebars
+msgid "(hotkey: <kbd>O</kbd>)"
+msgstr "(sina ken kepeken e nena <kbd>O</kbd>)"
+
+#: /views/index.handlebars
+msgid "overlays;user activity;pixels placed pixels;transparency"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Heatmap background opacity:"
+msgstr "sitelen seli la, suli lukin:"
+
+#: /views/index.handlebars
+msgid "virginmap;virginmap opacity;clear virginmap"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Virginmap"
+msgstr "sitelen pi leko ala"
+
+#: /views/index.handlebars
+msgid "Turn on virginmap"
+msgstr "o lon e sitelen pi leko ala"
+
+#: /views/index.handlebars
+msgid "(toggle with <kbd>X</kbd>)"
+msgstr "(o kepeken e nena <kbd>X</kbd>)"
+
+#: /views/index.handlebars
+msgid "overlays;user activity;pixels unplaced pixels;transparency"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Virginmap background opacity:"
+msgstr "sitelen pi leko ala la, suli lukin:"
+
+#: /views/index.handlebars
+msgid "overlays;activity;pixels unplaced pixels;wipe;clean"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Clear virginmap"
+msgstr "sitelen pi leko ala la, o weka e sona"
+
+#: /views/index.handlebars
+msgid "(hotkey: <kbd>U</kbd>)"
+msgstr "(sina ken kepeken e nena <kbd>U</kbd>)"
+
+#: /views/index.handlebars
+msgid "Layer template underneath heatmap"
+msgstr "o monsi e ilo sitelen lon monsi pi sitelen seli"
+
+#: /views/index.handlebars
+msgid "grid;toggle grid"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Grid"
+msgstr "ilo palisa"
+
+#: /views/index.handlebars
+msgid "Turn on grid"
+msgstr "o lon e ilo palisa"
+
+#: /views/index.handlebars
+msgid "(toggle with <kbd>G</kbd>)"
+msgstr "(o kepeken e nena <kbd>G</kbd>)"
+
+#: /views/index.handlebars
+msgid "controls;zooming;panning;movement"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Control Settings"
+msgstr "nasin tawa"
+
+#: /views/index.handlebars
+msgid "zooming;scrolling;scale;scaling"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Zooming"
+msgstr "tawa suli"
+
+#: /views/index.handlebars
+msgid "scrolling sensitivity;zooming sensitivity;mousewheel sensitivity"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Zoom sensitivity:"
+msgstr "tawa pi tawa suli:"
+
+#: /views/index.handlebars
+msgid "zooming limit;scrolling limit;mousewheel;zooming minimum;zooming maximum"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Minimum scale:"
+msgstr "nanpa li ni, sitelen ken ala lili:"
+
+#: /views/index.handlebars
+msgid "Maximum scale:"
+msgstr "nanpa li ni, sitelen ken ala suli:"
+
+#: /views/index.handlebars
+msgid "rounding;zooming;scrolling;mousewheel;integer;decimal"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Round zoom values to nearest whole number"
+msgstr "o ante e nanpa pi suli sitelen tawa nanpa suli"
+
+#: /views/index.handlebars
+msgid "controls;miscellaneous"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Lock the canvas (disallow canvas drag/zoom with mouse/fingers)"
+msgstr "o weka e ken pi tawa sitelen"
+
+#: /views/index.handlebars
+msgid "MMB picker;mouse picker;selection;palette picker"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Enable middle mouse button selecting color from board"
+msgstr "nena lon sike pi ilo misa li ken lanpan e kule"
+
+#: /views/index.handlebars
+msgid "right click action"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Right-click action:"
+msgstr "nasin pi ilo tu lon ilo misa:"
+
+#: /views/index.handlebars
+msgid "Nothing"
+msgstr "o ala"
+
+#: /views/index.handlebars
+msgid "Clear color"
+msgstr "o weka e kule"
+
+#: /views/index.handlebars
+msgid "Copy color"
+msgstr "o lanpan e kule"
+
+#: /views/index.handlebars
+msgid "Lookup"
+msgstr "o alasa e jan pi pali leko"
+
+#: /views/index.handlebars
+msgid "Clear color + Lookup"
+msgstr "o weka e kule li alasa e jan pi pali leko"
+
+#: /views/index.handlebars
+msgid "snapshots;screenshot;download;picture;canvas"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Snapshot Settings"
+msgstr "nasin pi lanpan sitelen"
+
+#: /views/index.handlebars
+msgid "screenshot;snapshot;download;board;canvas"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "take screenshot;image;download format;picture;canvas;board"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Snapshot image format:"
+msgstr "nasin pi sitelen lanpan:"
+
+#: /views/index.handlebars
+msgid "PNG"
+msgstr "PNG"
+
+#: /views/index.handlebars
+msgid "JPEG"
+msgstr "JPEG"
+
+#: /views/index.handlebars
+msgid "WEBP (Chrome only)"
+msgstr "WEBP (ilo Chrome taso)"
+
+#: /views/index.handlebars
+msgid "sound;notification;alert;notify;ping"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Sound and Notification Settings"
+msgstr "nasin kalama en nasin mu"
+
+#: /views/index.handlebars
+msgid "audio;mute;noise;volume"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Enable sound"
+msgstr "kalama li lon"
+
+#: /views/index.handlebars
+msgid "notifs;notify;pixel notification"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Enable pixel available notification"
+msgstr "sina jo e leko la, mi mu tawa sina"
+
+#: /views/index.handlebars
+msgid "notification;pixel ready;alert"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Pixel Ready Notification"
+msgstr "mu pi jo leko"
+
+#: /views/index.handlebars
+msgid "alert source;notify url;notify source;notification url;notification source"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Alert URL:"
+msgstr "ilo linluwi pi kalama mu:"
+
+#: /views/index.handlebars
+msgid "Update"
+msgstr "o ante"
+
+#: /views/index.handlebars
+msgid "Test"
+msgstr "o kute"
+
+#: /views/index.handlebars
+msgid "sound level;audio level;mute audio;mute sound"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Volume:"
+msgstr "suli kalama:"
+
+#: /views/index.handlebars
+msgid "alert forewarning;alert delay; notification delay; notification forewarning"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Delay (seconds):"
+msgstr "nanpa awen:"
+
+#: /views/index.handlebars
+msgid "chat mentions;chat pings;chat sound"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Chat Pings"
+msgstr "mu pi poki toki"
+
+#: /views/index.handlebars
+msgid "Enable pings"
+msgstr "o lon e mu pi poki toki"
+
+#: /views/index.handlebars
+msgid "mention sound"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Play sound on ping:"
+msgstr "mu pi poki toki li lon la, nasin kalama li ni:"
+
+#: /views/index.handlebars /public/include/chat.js
+#, fuzzy
+msgid "Off"
+msgstr "mu ala"
+
+#: /views/index.handlebars
+msgid "Only when necessary"
+msgstr "ona li suli la, mi kalama"
+
+#: /views/index.handlebars
+msgid "Always"
+msgstr "tenpo ale la, mi kalama"
+
+#: /views/index.handlebars
+msgid "mention sound volume"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Ping sound volume:"
+msgstr "suli pi kalama mu:"
+
+#: /views/index.handlebars
+msgid "personal account"
+msgstr ""
+
+#: /views/index.handlebars
+msgid "Account Settings"
+msgstr "ante pi lipu sina"
+
+#: /views/index.handlebars
+msgid "Public Discord name:"
+msgstr "nimi sina pi ilo Siko:"
+
+#: /views/index.handlebars /public/include/chat.js
+msgid "Set"
+msgstr "o ante"
+
+#: /views/index.handlebars
+msgid "Remove"
+msgstr "o weka"
+
+#: /views/index.handlebars
+msgid "Help"
+msgstr "sona nasin"
+
+#: /views/index.handlebars
+msgid "Notifications"
+msgstr "sona sin"
+
+#: /views/partials/faq.handlebars
+msgid "FAQ"
+msgstr "wile sona pi jan mute"
+
+#: /views/partials/faq.handlebars
+msgid "Why is the cooldown as long as it is?"
+msgstr "mi pana e leko la, mi awen tan seme?"
+
+#: /views/partials/faq.handlebars
+msgid ""
+"The time it takes to get a pixel is dynamic, and changes based on how many "
+"people are online. The cooldown time is longer when more users are online."
+msgstr ""
+"sina pana e leko la, sina awen. tenpo awen li ante. jan mute li lon la, "
+"tenpo awen li suli. jan lili li lon la, tenpo awen li lili."
+
+#: /views/partials/faq.handlebars
+msgid "Why does it say 0/6 pixels?"
+msgstr "ona li toki e nimi \"0/6\" tan seme?"
+
+#: /views/partials/faq.handlebars
+msgid ""
+"This means that you are waiting for your next pixel. When you place a "
+"pixel, there is a cooldown for when you can place the next one. Over time, "
+"you can gain up to 6 \"stacked\" pixels to place at once."
+msgstr ""
+"ona li toki e nimi 0/6 la, sina awen. sina pana e leko la, sina ken pana e "
+"leko sin lon tenpo kama lili. taso, sina awen awen la, sina kama jo e leko "
+"mute. sina jo e leko mute la, sina ken pana e leko mute."
+
+#: /views/partials/faq.handlebars
+msgid "Why does it take so long to \"stack\" pixels?"
+msgstr ""
+"mi kama jo e leko wan la, mi awen kepeken tenpo lili. taso, mi kama jo e "
+"leko mute la, mi awen kepeken tenpo mute. ni li tan seme?"
+
+#: /views/partials/faq.handlebars
+msgid ""
+"This is by design. It is better to place a pixel as soon as you get one. "
+"Pixel \"stacking\" is meant to give you a bump if you go AFK for a bit. It "
+"takes around 40 minutes to get a full 6/6 pixels, but it only takes around "
+"3 minutes to place 6 pixels if you place them as soon as possible."
+msgstr ""
+"ni li nasin pi musi Pxls. sina jo e leko la, o awen ala o pana e leko. sina "
+"jo e leko li awen la, awen pi leko sin li kepeken tenpo suli. taso, sina jo "
+"e leko li pana e leko la, awen pi leko sin li kepeken tenpo lili."
+
+#: /views/partials/faq.handlebars
+msgid "How do I appeal a ban?"
+msgstr "jan pali li weka e mi. mi wile kama lon sin la, mi seme?"
+
+#: /views/partials/faq.handlebars
+msgid ""
+"Contact us on <a href=\"https://pxls.space/discord\" "
+"target=\"_blank\">Discord</a> or send an appeal to our <a "
+"href=\"https://pxls.space/appeal\" target=\"_blank\">Google form</a> after "
+"reading the rules in the site's info panel."
+msgstr ""
+"sina lukin e sona kulupu la, sina ken toki tawa jan pali lon <a "
+"href=\"https://pxls.space/discord\" target=\"_blank\">ilo Siko</a> li ken "
+"toki tawa jan pali lon <a href=\"https://pxls.space/appeal\" "
+"target=\"_blank\">lipu pi kama lon sin</a>."
+
+#: /views/partials/faq.handlebars
+msgid "How do I make a template?"
+msgstr "mi pali e ilo sitelen kepeken seme?"
+
+#: /views/partials/faq.handlebars
+msgid ""
+"A template is an image link that is posted in the template textbox in the "
+"settings panel so you can place over it on the canvas. You may use a "
+"regular image link to your pixel art, but many people use 3rd party tools "
+"like <a href=\"https://charity.pxls.space\" target=\"_blank\">Charity</a> "
+"or <a href=\"https://discord.gg/5MVDCq53vC\" target=\"blank\">Clueless</a> "
+"to turn pixel art into a fancier link. If you need to make pixel art "
+"yourself, you can use <a href=\"https://www.piskelapp.com/p/create\" "
+"target=\"_blank\">Piskel</a> to create art to put into Charity or Clueless."
+msgstr ""
+"ilo sitelen li ilo linluwi sitelen. sina pana e ilo linluwi tawa lipu ante "
+"la, ona li kama lon sinpin sitelen. sina ken kepeken e sitelen pi namako "
+"ala... taso, jan mute li kepeken e <a href=\"https://charity.pxls.space\" "
+"target=\"_blank\">ilo Sawisi</a> anu kepeken e <a "
+"href=\"https://discord.gg/5MVDCq53vC\" target=\"blank\">ilo Clueless</a>. "
+"ilo ni li namako e sitelen sina li pali e ilo linluwi namako. sina wile "
+"pali e sitelen leko la, sina ken kepeken e <a "
+"href=\"https://www.piskelapp.com/p/create\" target=\"_blank\">ilo "
+"Piskel</a>."
+
+#: /views/partials/faq.handlebars
+msgid "How do I move a template?"
+msgstr "mi tawa e ilo sitelen kepeken seme?"
+
+#: /views/partials/faq.handlebars
+msgid ""
+"Hold <kbd>CTRL</kbd> (or <kbd>OPTION</kbd> on macOS) and click and drag to "
+"move it around. On mobile, you can tap and hold where you want to move the "
+"template and click \"Move Template Here\" in the pop-up."
+msgstr ""
+"sina wile tawa supa e ilo sitelen la, o awen kepeken e nena <kbd>Ctrl</kbd> "
+"(sina kepeken e ilo MacOS la, o kepeken e nena <kbd>Option</kbd>). sina "
+"kepeken e ilo nanpa lili la, sina ken awen luka lon lon li luka e \"o tawa "
+"e ilo sitelen\"."
+
+#: /views/partials/faq.handlebars
+msgid "Does the canvas reset? When?"
+msgstr "sitelen li kama sin anu seme? ona li kama sin lon tenpo seme?"
+
+#: /views/partials/faq.handlebars
+msgid ""
+"Yes. The canvas resets when it is completely full. A reset date is not "
+"usually decided until the canvas is full, but the average canvas life-span "
+"is around 1 month. Updates are posted in our <a "
+"href=\"https://pxls.space/discord\" target=\"_blank\">Discord server</a> "
+"when a reset date is set."
+msgstr ""
+"sitelen li jo e sitelen lili mute la, ona li kama sin. tenpo pi sitelen sin "
+"li kama la, jan pali li pana e tenpo tawa sina lon <a "
+"href=\"https://pxls.space/discord\" target=\"_blank\">ilo Siko</a>."
+
+#: /views/partials/faq.handlebars
+msgid "Where can I see the past canvases?"
+msgstr "mi lukin e sitelen pini lon seme?"
+
+#: /views/partials/faq.handlebars
+msgid ""
+"The past canvases are featured on our <a "
+"href=\"https://pxls.space/discord\" target=\"_blank\">Discord server</a>, "
+"or the 3rd party website <a href=\"https://pxlsfiddle.com\" "
+"target=\"_blank\">PxlsFiddle</a>, which records timelapses and a lot of "
+"useful information on each canvas."
+msgstr ""
+"jan pali li pana e sitelen pini lon <a href=\"https://pxls.space/discord\" "
+"target=\"_blank\">ilo Siko</a>. kin la, <a href=\"https://pxlsfiddle.com\" "
+"target=\"_blank\">ilo PxlsFiddle</a> li pana e sitelen pini."
+
+#: /views/partials/faq.handlebars
+msgid "How do I see who placed a pixel?"
+msgstr "mi wile alasa e jan pi pali leko la, mi seme?"
+
+#: /views/partials/faq.handlebars
+msgid ""
+"By shift-clicking (or tap and hold on mobile) a pixel, you can see who "
+"placed a pixel, how many pixels they have placed, and when they placed it."
+msgstr ""
+"sina kepeken e nena <kbd>Shift</kbd> li luka e ilo misa la, sina ken alasa "
+"e jan pi pali leko. sina kepeken e ilo nanpa lili la, sina ken awen luka."
+
+#: /views/partials/faq.handlebars
+msgid "How do I report someone?"
+msgstr "jan li ike la, mi toki e ni tawa jan pali kepeken seme?"
+
+#: /views/partials/faq.handlebars
+msgid ""
+"Shift-click (or tap and hold on mobile) on a pixel, and click the Report "
+"button."
+msgstr ""
+"sina o kepeken e nena <kbd>Shift</kbd> li luka e ilo misa o alasa e jan pi "
+"pali leko. lipu ni la, sina ken kepeken e nena \"jan ni li ike\"."
+
+#: /views/partials/faq.handlebars
+msgid "How do I change the color of my name in the chat?"
+msgstr "mi wile kule e nimi mi la, mi seme?"
+
+#: /views/partials/faq.handlebars
+msgid "There is a \"Username Color\" option near the bottom of the settings panel."
+msgstr "sina ken kule e nimi sina lon lipu ante."
+
+#: /views/partials/faq.handlebars
+msgid "What is a \"virginmap\"?"
+msgstr "sitelen pi leko ala li seme?"
+
+#: /views/partials/faq.handlebars
+msgid ""
+"The virginmap shows which pixels have not yet been placed on (or “virgin” "
+"pixels)."
+msgstr ""
+"sitelen pi leko ala li sitelen pi pali jan. jan ala li pana e leko la, leko "
+"li laso. jan li pana e leko la, leko li pimeja."
+
+#: /views/partials/faq.handlebars
+msgid "How do I report bugs?"
+msgstr "ilo Pxls li nasa la, mi toki tawa seme?"
+
+#: /views/partials/faq.handlebars
+msgid ""
+"Submit bugs to the #dev-and-bugs channel in the <a "
+"href=\"https://pxls.space/discord\" target=\"_blank\">Discord server</a>. "
+"If you have found an exploit, please message one of the staff members "
+"privately (through DMs)."
+msgstr ""
+"sina ken toki tawa poki \"#dev-and-bugs\" lon <a "
+"href=\"https://pxls.space/discord\" target=\"_blank\">ilo Siko</a>. sina jo "
+"e nasa suli la, o toki tawa jan pali."
+
+#: /views/partials/faq.handlebars
+msgid "How do I get more info or contact staff?"
+msgstr "mi wile kama sona anu wile toki tawa jan pali la, mi seme?"
+
+#: /views/partials/faq.handlebars
+msgid ""
+"Check the info panel (the icon on the top left) for more details and links, "
+"or join our <a href=\"https://pxls.space/discord\" "
+"target=\"_blank\">Discord server</a>, where a staff member will gladly "
+"respond."
+msgstr ""
+"sina wile sona la, o lukin e lipu sona. sina wile toki tawa jan pali la o "
+"kama lon <a href=\"https://pxls.space/discord\" target=\"_blank\">ilo "
+"Siko</a>. sina kama lon ilo Siko la, jan pali li ken toki tawa sina."
+
+#: /views/partials/info.handlebars
+msgid "Welcome!"
+msgstr "toki a!"
+
+#: /views/partials/info.handlebars
+msgid ""
+"Welcome to pxls.space! Pxls is a multiplayer online collaborative canvas "
+"based on Reddit's <a href=\"https://www.reddit.com/r/place\" "
+"target=\"_blank\">r/place</a> event from 2017 that allows you to create "
+"anything you can imagine, one pixel at a time. Join hundreds of other "
+"players in the Pxls community and create amazing works of art together as a "
+"team, or solo."
+msgstr ""
+"toki a! ni li musi Pxls. musi Pxls li sama musi <a "
+"href=\"https://www.reddit.com/r/place\" target=\"_blank\">r/place</a>. sina "
+"pana e leko tawa ona. sina awen la, sina ken pana e leko sin tawa musi "
+"Pxls. jan mute li pana la, sina mute li ken pali e sitelen suli."
+
+#: /views/partials/info.handlebars
+msgid "The best place to reach staff and fellow community is in the discord!"
+msgstr ""
+"sina wile toki tawa jan ante anu jan pali lon kulupu la, o kama lon ilo "
+"Siko!"
+
+#: /views/partials/info.handlebars
+msgid ""
+"Check out our social media pages, and please take the time to read the "
+"rules below. Have fun creating (or changing) art!"
+msgstr "o lukin e lipu ante Pxls. o lukin e nasin lawa lon anpa. o musi!"
+
+#: /views/partials/info.handlebars
+msgid "Canvas Rules"
+msgstr "nasin lawa sitelen"
+
+#: /views/partials/info.handlebars
+msgid ""
+"We pride ourselves on trying to keep an open canvas for all free from "
+"outside interference on our end, and especially censorship. However, for "
+"the good of the community and on accounts of our own beliefs, please "
+"acknowledge and obey the following guidelines:"
+msgstr ""
+"kulupu Pxls li wile jo e sitelen pi jan ale li wile jo e kulupu pona. tan "
+"ni la, sina wile awen lon kulupu ni la o sona e ni:"
+
+#: /views/partials/info.handlebars
+msgid ""
+"No hateful imagery or derogatory speech. This includes but is not limited "
+"to words such as <i>f****t</i>, <i>n****r</i>, etc; as well as the "
+"Swastika, Hammer and Sickle, and any symbols of terrorism."
+msgstr ""
+"o toki pona tawa jan ale. o toki ala e nimi ike. o pali ala e sitelen ike "
+"tawa jan ante e sitelen \"Swastika\" e sitelen \"Hammer and Sickle\"."
+
+#: /views/partials/info.handlebars
+msgid "No NSFW or NSFL content."
+msgstr "o pana ala e ijo unpa."
+
+#: /views/partials/info.handlebars
+msgid "No nudity or otherwise sexually explicit content"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "No female-presenting nipples/bare breasts, genitalia, sexual fluids"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "No sexual imagery/erotica"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "No excessive blood or otherwise obscene/shocking content"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid ""
+"No more than <b>one</b> account per user, no exceptions. Multiple account "
+"users will be banned from creating art on the canvas."
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "No auto-placement tools of any kind, you must place the pixels manually."
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid ""
+"Do not abuse site functionality, such as reports or lookups. (e.g. "
+"automated reporting/lookups, etc.)"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid ""
+"Any automated aggregation of data from user lookups is not allowed, and "
+"will result in a ban."
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "Staff have final say in any rule disputes"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid ""
+"If you feel a moderator has acted inappropriately, please report it to an "
+"administrator."
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid ""
+"If you believe you have been falsely banned you may contact a moderator or "
+"administrator."
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "Chat Rules"
+msgstr "nasin lawa pi poki toki"
+
+#: /views/partials/info.handlebars
+msgid "Keep chat civil. No harassment or homophobic/transphobic/disablist language."
+msgstr "o toki pona tawa jan ale. "
+
+#: /views/partials/info.handlebars
+msgid "No hate speech. This includes emoji/symbols/ASCII art."
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "Normal swearing/etc is allowed"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "No spamming"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "This includes excessive ASCII art/emojis/symbols/whitespace"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "No \"copy pasta\"s"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid ""
+"No links to sites that actively break the canvas or chat rules (e.g. porn "
+"sites)"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "No symbology which break the canvas or chat rules (e.g. NSFW ASCII art)"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "No personal information"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "Links"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "Discord (main hub)"
+msgstr "ilo Siko"
+
+#: /views/partials/info.handlebars
+msgid "Subreddit"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "Twitter"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "GitHub"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "Single-player mode"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "Statistics"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "Profile (user info, factions, etc.)"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "Generator, progress checker, and monitor for Pxls templates"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "Charity (templates, monitors, etc.)"
+msgstr "ilo Sawisi (pali e ilo sitelen)"
+
+#: /views/partials/info.handlebars
+msgid "Archives"
+msgstr "sitelen pini awen"
+
+#: /views/partials/info.handlebars
+msgid "PxlsFiddle (archives)"
+msgstr ""
+
+#: /views/partials/info.handlebars
+msgid "Donate"
+msgstr "pana mani"
+
+#: /views/partials/info.handlebars
+msgid ""
+"Donations are not accepted at this time, but this panel will be updated "
+"when they're open again!"
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "{0}'s Profile"
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "My Data"
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Reports"
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Factions"
+msgstr "kulupu"
+
+#: /views/profile.handlebars
+msgid "Data"
+msgstr "sona awen"
+
+#: /views/profile.handlebars
+msgid "You must be logged in to view your profile."
+msgstr "lukin e lipu sina la sina wile kama lon"
+
+#: /views/profile.handlebars
+msgid "Registration Date"
+msgstr "jan li kama la tenpo ni:"
+
+#: /views/profile.handlebars /public/include/lookup.js
+msgid "Alltime Pixels"
+msgstr "sitelen ale"
+
+#: /views/profile.handlebars
+msgid "Current Canvas Pixels"
+msgstr "sitelen ni"
+
+#: /views/profile.handlebars
+msgid "Discord Tag"
+msgstr "nimi pi ilo Siko"
+
+#: /views/profile.handlebars /public/include/lookup.js
+msgid "Faction"
+msgstr "kulupu"
+
+#: /views/profile.handlebars
+msgid "None"
+msgstr ""
+
+#: /views/profile.handlebars /public/admin/admin.js
+msgid "Roles"
+msgstr "nimi pali"
+
+#: /views/profile.handlebars
+msgid "Canvas Ban Expiry"
+msgstr "weka sitelen li pini la"
+
+#: /views/profile.handlebars
+msgid "Never"
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Chat Ban Expiry"
+msgstr "weka toki li pini la"
+
+#: /views/profile.handlebars
+msgid "View rankings and other stats <a href=\"/stats\">here</a>."
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "You must be logged in to view your reports."
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Canvas Reports ({0}/{1} open)"
+msgstr ""
+
+#: /views/profile.handlebars
+#. eg "Report on Bob (closed)
+msgid "Report on {0} (closed)"
+msgstr ""
+
+#: /views/profile.handlebars
+#. eg "Report on Bob (open)
+msgid "Report on {0} (open)"
+msgstr ""
+
+#: /views/profile.handlebars
+#. eg "Reported Bob on Jan 1, 1970, 00:00:00 AM (UTC)
+msgid "Reported {0} on {1}"
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "There are no canvas reports to show."
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Chat Reports ({0}/{1} open)"
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "There are no chat reports to show."
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "You must be logged in to manage your factions."
+msgstr ""
+
+#: /views/profile.handlebars
+msgid ""
+"You are faction restricted and cannot create new factions. If you believe "
+"this is an error, please contact a moderator."
+msgstr ""
+
+#: /views/profile.handlebars
+msgid ""
+"You are canvas banned and cannot create new factions. If you believe this "
+"is an error, please contact a moderator."
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "You must have at least {0} all-time pixels to create a faction."
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Create"
+msgstr "o pali"
+
+#: /views/profile.handlebars
+msgid "Join"
+msgstr "o wan"
+
+#: /views/profile.handlebars
+msgid "This is your currently displayed faction."
+msgstr ""
+
+#: /views/profile.handlebars
+#. eg "Pixelers (members: 100, ID: 1)"
+msgid "{0} (members: {1}, ID: {2})"
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Owner: {0}"
+msgstr ""
+
+#: /views/profile.handlebars
+#. makes the faction no longer the one displayed for the current user
+msgid "Remove Displayed"
+msgstr ""
+
+#: /views/profile.handlebars
+#. makes the faction the one displayed for the current user
+msgid "Set Displayed"
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Members"
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Edit"
+msgstr "o ante"
+
+#: /views/profile.handlebars /public/include/chat.js
+msgid "Delete"
+msgstr "o ala e kulupu ni"
+
+#: /views/profile.handlebars
+msgid "Leave"
+msgstr "o tawa"
+
+#: /views/profile.handlebars
+msgid "You are not in any factions yet!"
+msgstr "sina lon kulupu ala!"
+
+#: /views/profile.handlebars
+msgid "You must be logged in to view your data."
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Log Keys"
+msgstr ""
+
+#: /views/profile.handlebars
+msgid ""
+"Log keys can be used by those who have them to tell which pixels you placed "
+"on previous canvases."
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Canvas Code"
+msgstr "nanpa len"
+
+#: /views/profile.handlebars
+msgid "Log Key"
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "You have no log keys yet!"
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Log keys should show up here after a canvas you have placed on ends."
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Members of {0} ([{1}])"
+msgstr ""
+
+#: /views/profile.handlebars /public/admin/admin.js /public/include/lookup.js
+msgid "Close"
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Faction Members"
+msgstr ""
+
+#: /views/profile.handlebars
+#. This loop only fires when on our own profile. We can't leave a faction we own, we can only transfer ownership, so no point in showing ourselves in the member list.
+#. since we can't leave the faction until we transfer, if there's only one member in the list it's assumed to be the owner. we don't want to show ourself in the list
+msgid "Transfer Ownership"
+msgstr ""
+
+#: /views/profile.handlebars /public/include/chat.js
+#. bans a user from the faction
+msgid "Ban"
+msgstr "o weka e jan lon"
+
+#: /views/profile.handlebars
+msgid "Nothing to see here!"
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Faction Bans"
+msgstr ""
+
+#: /views/profile.handlebars /public/admin/admin.js /public/include/chat.js
+msgid "Unban"
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Find A Faction"
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Search:"
+msgstr "alasa:"
+
+#: /views/profile.handlebars
+msgid "Enter a search term to get started."
+msgstr ""
+
+#: /views/profile.handlebars
+msgid "Load More"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Send alert..."
+msgstr ""
+
+#: /public/admin/admin.js /public/include/lookup.js
+msgid "Rule #1: Hateful/derogatory speech or symbols"
+msgstr ""
+
+#: /public/admin/admin.js /public/include/lookup.js
+msgid "Rule #2: Nudity, genitalia, or non-PG-13 content"
+msgstr ""
+
+#: /public/admin/admin.js /public/include/lookup.js
+msgid "Rule #3: Multi-account"
+msgstr ""
+
+#: /public/admin/admin.js /public/include/lookup.js
+msgid "Rule #4: Botting"
+msgstr ""
+
+#: /public/admin/admin.js /public/include/lookup.js
+msgid "Other (specify below)"
+msgstr ""
+
+#: /public/admin/admin.js /public/include/chat.js /public/include/lookup.js
+msgid "Additional information (if applicable)"
+msgstr ""
+
+#: /public/admin/admin.js
+#. "Revert pixels of the last *n* hours", part before 'n'
+msgid "Revert pixels of the last "
+msgstr ""
+
+#: /public/admin/admin.js
+#. "Revert pixels of the last *n* hours", part after 'n'
+msgid " hours"
+msgstr ""
+
+#: /public/admin/admin.js /public/include/lookup.js
+msgid "You must specify the details."
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Something went wrong! Perhaps insufficient permissions?"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Shadowban user"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Shadowbanned user"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Permaban user"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Permabanned user"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Ban user"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Banned user"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Unbanned user ${username}"
+msgstr ""
+
+#: /public/admin/admin.js
+#. Context: ban type
+msgid "shadow"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "never"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "permanent"
+msgstr ""
+
+#: /public/admin/admin.js /public/include/chat.js /public/include/uiHelper.js
+#: /public/include/user.js
+msgid "Yes"
+msgstr ""
+
+#: /public/admin/admin.js /public/include/chat.js /public/include/uiHelper.js
+#: /public/include/user.js
+msgid "No"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Yes (permanent)"
+msgstr ""
+
+#: /public/admin/admin.js /public/include/lookup.js
+msgid "Username"
+msgstr ""
+
+#: /public/admin/admin.js /public/include/chat.js
+msgid "Profile"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Logins"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "All Time Pixels"
+msgstr ""
+
+#: /public/admin/admin.js /public/include/user.js
+msgid "Rename Requested"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Discord Name"
+msgstr ""
+
+#: /public/admin/admin.js /public/include/user.js
+msgid "Banned"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Chatbanned"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Ban Reason"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Ban Expiracy"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Chatban Reason"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "(canvas ban)"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "when canvas ban ends"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Chatban Expires"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Ban (24h)"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Permaban"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Shadowban"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Custom ban length: "
+msgstr ""
+
+#: /public/admin/admin.js
+#. Admin check. Example: type = 'username', arg = 'pxlsuser94'
+msgid "${type} ${arg} not found."
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Unban Reason:"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Unbanning ${username}"
+msgstr ""
+
+#: /public/admin/admin.js /public/include/chat.js /public/include/lookup.js
+#: /public/include/user.js
+msgid "Cancel"
+msgstr ""
+
+#: /public/admin/admin.js
+#. Moderator panel label
+msgid "MOD"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Ignore cooldown"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Place any color"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Ignore placemap"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Ban user (24h)"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Unban user"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Check user"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "profile"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "User Agent"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Send Alert"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "Mod Actions"
+msgstr ""
+
+#: /public/admin/admin.js
+msgid "More..."
+msgstr ""
+
+#: /public/include/board.js
+#. Snapshot save name
+msgid "pxls canvas"
+msgstr ""
+
+#: /public/include/chat.js
+#. template link action
+msgid "Ask"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Open in a new tab"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Open in current tab (replacing template)"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Jump to coordinates without replacing template"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Please upload your template image to a third-party image host."
+msgstr ""
+
+#: /public/include/chat.js
+msgid "You must have at least "
+msgstr ""
+
+#: /public/include/chat.js
+msgid " pixels to send links."
+msgstr ""
+
+#: /public/include/chat.js
+msgid "You must be logged in to chat."
+msgstr ""
+
+#: /public/include/chat.js
+msgid "No Results"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Reply"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "none provided"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Purged by ${purge.initiator} with reason: ${reason}"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "External Link"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "This link is taking you to the following website:"
+msgstr ""
+
+#: /public/include/chat.js
+msgid ""
+"The operators of this website have no responsibility or control over the "
+"contents hosted at {0}. Are you sure you want to go there?"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Note: You can disable this popup in settings."
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Visit Site"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "template:"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Open Failed"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Failed to automatically open in a new tab"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Click here to open in a new tab instead"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Open Template"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "This link will overwrite your current template. What would you like to do?"
+msgstr ""
+
+#: /public/include/chat.js
+msgid ""
+"Note: You can set a default action in the settings menu which bypasses this "
+"popup completely."
+msgstr ""
+
+#: /public/include/chat.js
+msgid "OK"
+msgstr ""
+
+#: /public/include/chat.js /public/include/lookup.js
+msgid "Report"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Mention"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Ignore"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Chat (un)ban"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Purge User"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Mod Lookup"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Chat Lookup"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Enter a reason for your report"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "You are reporting a chat message from ${reportTarget} with the content:"
+msgstr ""
+
+#: /public/include/chat.js /public/include/lookup.js
+msgid "Sent report!"
+msgstr ""
+
+#: /public/include/chat.js /public/include/lookup.js
+msgid "Error sending report."
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Report User"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "User ignored. You can unignore from chat settings."
+msgstr ""
+
+#: /public/include/chat.js
+msgid ""
+"Failed to ignore user. Either they\\'re already ignored, or an error "
+"occurred. If the problem persists, contact a developer."
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Permanent"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Temporary"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Rule 3: Spam"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Rule 1: Chat civility"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Rule 2: Hate Speech"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Rule 5: NSFW"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Custom"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Banning:"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Message:"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Ban Length"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Reason"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Purge Messages"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Purging all messages is disabled during snip mode"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Silent (no purge message)"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Custom reason"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Additional information:"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Chatban initiated"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Error occurred while chatbanning"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Chatban"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Failed to delete"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "ID: "
+msgstr ""
+
+#: /public/include/chat.js
+msgid "User: "
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Message: "
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Reason: "
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Delete Message"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Purge"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Selected Message"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Purge Reason"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "User purged"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Error sending purge."
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Toggle Rename Request"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Select one of the options below to set the current rename request state."
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Rename request updated"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "An unknown error occurred. Please contact a developer"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "New Name: "
+msgstr ""
+
+#: /public/include/chat.js
+msgid ""
+"Enter the new name for the user below. Please note that if you\\'re trying "
+"to change the caps, you\\'ll have to rename to something else first."
+msgstr ""
+
+#: /public/include/chat.js
+msgid "User renamed"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "Force Rename"
+msgstr ""
+
+#: /public/include/chat.js
+msgid "You cannot use chat while canvas banned."
+msgstr ""
+
+#: /public/include/lookup.js
+msgid "Sending..."
+msgstr ""
+
+#: /public/include/lookup.js
+msgid "additional information:"
+msgstr ""
+
+#: /public/include/lookup.js
+msgid "Report Pixel"
+msgstr ""
+
+#: /public/include/lookup.js
+msgid "This pixel is background (was not placed by a user)."
+msgstr ""
+
+#: /public/include/lookup.js
+msgid "Hide sensitive information"
+msgstr ""
+
+#: /public/include/lookup.js
+msgid "Move Template Here"
+msgstr "o tawa e ilo sitelen"
+
+#: /public/include/lookup.js
+msgid ""
+"An error occurred, either you aren't logged in or you may be attempting to "
+"look up users too fast. Please try again in 60 seconds"
+msgstr ""
+
+#: /public/include/lookup.js
+msgid "Coords"
+msgstr ""
+
+#: /public/include/lookup.js
+msgid "View Profile"
+msgstr ""
+
+#: /public/include/lookup.js
+msgid "Origin"
+msgstr ""
+
+#: /public/include/lookup.js
+msgid "Part of a nuke"
+msgstr ""
+
+#: /public/include/lookup.js
+msgid "Placed by a staff member using placement overrides"
+msgstr ""
+
+#: /public/include/lookup.js
+msgid "Time"
+msgstr ""
+
+#: /public/include/lookup.js
+msgid "just now"
+msgstr ""
+
+#: /public/include/lookup.js
+msgid "${hoursStr}:${minuteStr}:${secsStr} ago"
+msgstr ""
+
+#: /public/include/lookup.js
+msgid "Discord"
+msgstr ""
+
+#: /public/include/notifications.js
+msgid "Posted by ${notification.who}"
+msgstr ""
+
+#: /public/include/notifications.js
+msgid "Expires ${expiry}"
+msgstr ""
+
+#: /public/include/template.js
+msgid "There was an error getting the image"
+msgstr ""
+
+#: /public/include/timer.js
+msgid "Your next pixel will be available in ${delay} seconds!"
+msgstr ""
+
+#: /public/include/timer.js
+msgid "Your next pixel has been available for ${alertDelay} seconds!"
+msgstr ""
+
+#: /public/include/timer.js
+msgid "Your next pixel is available!"
+msgstr ""
+
+#: /public/include/uiHelper.js
+#. theme name
+msgid "Dark"
+msgstr "pimeja"
+
+#: /public/include/uiHelper.js
+#. theme name
+msgid "Darker"
+msgstr "pimeja mute"
+
+#: /public/include/uiHelper.js
+#. theme name
+msgid "Blue"
+msgstr "laso telo"
+
+#: /public/include/uiHelper.js
+#. theme name
+msgid "Purple"
+msgstr "laso loje"
+
+#: /public/include/uiHelper.js
+#. theme name
+msgid "Green"
+msgstr "laso kasi"
+
+#: /public/include/uiHelper.js
+#. theme name
+msgid "Matte"
+msgstr ""
+
+#: /public/include/uiHelper.js
+#. theme name
+msgid "Terminal"
+msgstr "pimeja en laso"
+
+#: /public/include/uiHelper.js
+#. theme name
+msgid "Red"
+msgstr "loje"
+
+#: /public/include/uiHelper.js
+msgid "A new ${type} report has been received."
+msgstr ""
+
+#: /public/include/uiHelper.js
+msgid "Cannot fetch local files. Use the file selector in template settings."
+msgstr ""
+
+#: /public/include/uiHelper.js
+msgid "Redirect Warning"
+msgstr ""
+
+#: /public/include/uiHelper.js
+msgid "Are you sure you want to redirect to the following URL?"
+msgstr ""
+
+#: /public/include/uiHelper.js
+msgid "Drag and dropped file must be a valid image."
+msgstr ""
+
+#: /public/include/uiHelper.js
+msgid "Discord name updated successfully"
+msgstr "nimi sina pi ilo Siko li ante"
+
+#: /public/include/uiHelper.js
+msgid "Couldn\\'t change discord name: "
+msgstr ""
+
+#: /public/include/user.js
+msgid ""
+"By logging in or registering, you agree to the <a href=\"{0}\" "
+"target=\"_blank\">terms of use</a> and <a href=\"{1}\" "
+"target=\"_blank\">privacy policy</a>."
+msgstr ""
+
+#: /public/include/user.js
+msgid "Sign in with {0}"
+msgstr "o kama kepeken seme?"
+
+#: /public/include/user.js
+msgid "New Accounts Disabled"
+msgstr ""
+
+#: /public/include/user.js
+msgid "online"
+msgstr "jan lon"
+
+#: /public/include/user.js
+msgid "Sign Out"
+msgstr "o tawa"
+
+#: /public/include/user.js
+msgid "Are you sure you want to sign out?"
+msgstr "sina wile ala wile tawa?"
+
+#: /public/include/user.js
+msgid "You are permanently banned."
+msgstr "sina weka la tenpo ale."
+
+#: /public/include/user.js
+msgid ""
+"You are temporarily banned and will not be allowed to place until "
+"${timestamp}"
+msgstr "sina weka la tenpo ni: ${timestamp}"
+
+#: /public/include/user.js
+msgid "You can contact us using one of the links in the info menu."
+msgstr ""
+
+#: /public/include/user.js
+msgid ""
+"If you think this was an error, please contact us using one of the links in "
+"the info tab."
+msgstr ""
+
+#: /public/include/user.js
+msgid "Ban reason:"
+msgstr "sina weka tan ni:"
+
+#: /public/include/user.js
+msgid "An unknown error occurred. Please contact staff on discord"
+msgstr ""
+
+#: /public/include/user.js
+msgid ""
+"Staff have required you to change your username, this usually means your "
+"name breaks one of our rules."
+msgstr ""
+
+#: /public/include/user.js
+msgid "If you disagree, please contact us on Discord (link in the info panel)."
+msgstr ""
+
+#: /public/include/user.js
+msgid "New Username:"
+msgstr "nimi sin:"
+
+#: /public/include/user.js
+msgid "Not now"
+msgstr ""
+
+#: /public/include/user.js
+msgid "Change"
+msgstr ""
+
+#: /public/include/user.js
+msgid "You must change your username."
+msgstr "sina o ante e nimi sina."
+
+#: /public/include/user.js
+msgid "Click here to continue."
+msgstr ""
+
+#: /public/pxls.js
+msgid "Alert"
+msgstr ""
