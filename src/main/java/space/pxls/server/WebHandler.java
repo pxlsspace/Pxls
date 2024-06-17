@@ -1472,6 +1472,37 @@ public class WebHandler {
         }
     }
 
+//    public void twitchSignUp(HttpServerExchange exchange, String name) {
+//        String ip = exchange.getAttachment(IPReader.IP);
+//        User user = App.getUserManager().signUp(name, token, ip);
+//
+//        if (user == null) {
+//            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_username", "Username taken, try another?"));
+//            return;
+//        }
+//
+//        // Do additional checks below:
+//        List<String> reports = new ArrayList<>();
+//
+//        // NOTE: Dupe IP checks are done on auth, not just signup.
+//
+//        // check username for filter hits
+//        if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(name)) {
+//            reports.add(String.format("Username filter hit on \"%s\"", name));
+//        }
+//
+//        for (String reportMessage : reports) {
+//            Integer rid = App.getDatabase().insertServerReport(user.getId(), reportMessage);
+//            if (rid != null) {
+//                App.getServer().broadcastToStaff(new ServerReceivedReport(rid, ServerReceivedReport.REPORT_TYPE_CANVAS));
+//            }
+//        }
+//
+//        String loginToken = App.getUserManager().logIn(user, ip);
+//        setAuthCookie(exchange, loginToken, 24);
+//        respond(exchange, StatusCodes.OK, new SignUpResponse(loginToken));
+//    }
+
     public void signUp(HttpServerExchange exchange) {
         if (!App.getRegistrationEnabled()) {
             respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("registration_disabled", "Registration has been disabled"));
@@ -1640,17 +1671,61 @@ public class WebHandler {
                 respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("invalid_account", e.getMessage()));
                 return;
             }
-
             if (identifier != null) {
                 User user = App.getUserManager().getByLogin(id, identifier);
                 // If there is no user with that identifier, we make a signup token and tell the client to sign up with that token
                 if (user == null) {
                     if (service.isRegistrationEnabled()) {
-                        String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin(id, identifier));
-                        if (redirect) {
-                            redirect(exchange, String.format(doneBase + "?token=%s&signup=true", encodedURIComponent(signUpToken)));
+                        if (service instanceof TwitchAuthService) {
+                            try {
+                                TwitchAuthService.TwitchUserData userData = ((TwitchAuthService) service).getUserData(token);
+                                // sign up
+                                String name = userData.login();
+                                String ip = exchange.getAttachment(IPReader.IP);
+                                String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin(id, identifier));
+                                user = App.getUserManager().signUp(userData.login(), signUpToken, ip);
+
+                                if (user == null) {
+                                    System.err.println("user is null on twitch sign-up; login = " + user);
+                                    respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("unknown", "Unknown error, please contact a developer."));
+                                    return;
+                                }
+
+                                // Do additional checks below:
+                                List<String> reports = new ArrayList<>();
+
+                                // NOTE: Dupe IP checks are done on auth, not just signup.
+
+                                // check username for filter hits
+                                if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(name)) {
+                                    reports.add(String.format("Username filter hit on \"%s\"", name));
+                                }
+
+                                for (String reportMessage : reports) {
+                                    Integer rid = App.getDatabase().insertServerReport(user.getId(), reportMessage);
+                                    if (rid != null) {
+                                        App.getServer().broadcastToStaff(new ServerReceivedReport(rid, ServerReceivedReport.REPORT_TYPE_CANVAS));
+                                    }
+                                }
+
+                                String loginToken = App.getUserManager().logIn(user, ip);
+                                setAuthCookie(exchange, loginToken, 24);
+                                // Because we're silently signing up, pretend this is just a regular no sign-up auth.
+                                if (redirect) {
+                                    redirect(exchange, String.format(doneBase + "?token=%s&signup=false", encodedURIComponent(loginToken)));
+                                } else {
+                                    respond(exchange, StatusCodes.OK, new AuthResponse(loginToken, false));
+                                }
+                            } catch (AuthService.InvalidAccountException ex) {
+                                ex.printStackTrace();
+                            }
                         } else {
-                            respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
+                            String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin(id, identifier));
+                            if (redirect) {
+                                redirect(exchange, String.format(doneBase + "?token=%s&signup=true", encodedURIComponent(signUpToken)));
+                            } else {
+                                respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
+                            }
                         }
                     } else {
                         respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("invalid_service_operation", "Registration is currently disabled for this service. Please try one of the other ones."));

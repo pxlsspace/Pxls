@@ -1,5 +1,7 @@
 package space.pxls.auth;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
@@ -39,17 +41,8 @@ public class TwitchAuthService extends AuthService {
 
     @Override
     public String getIdentifier(String token) throws UnirestException, InvalidAccountException {
-        HttpResponse<JsonNode> httpResponse = Unirest.get("https://api.twitch.tv/helix/users")
-                .header("User-Agent", "pxls.space")
-                .header("Authorization", "Bearer " + token)
-                .header("Client-Id", App.getConfig().getString("oauth.twitch.key"))
-                .asJson();
-
-        if (!httpResponse.isSuccess()) {
-            return null;
-        }
-
-        return httpResponse.getBody().getObject().getJSONArray("data").getJSONObject(0).getString("id");
+        TwitchUserData userData = getUserData(token);
+        return userData.id;
     }
 
     @Override
@@ -63,4 +56,21 @@ public class TwitchAuthService extends AuthService {
         this.registrationEnabled = App.getConfig().getBoolean("oauth.twitch.registrationEnabled");
     }
 
+    public TwitchUserData getUserData(String token) throws UnirestException, InvalidAccountException {
+        HttpResponse<String> httpResponse = Unirest.get("https://api.twitch.tv/helix/users")
+                .header("User-Agent", "pxls.space")
+                .header("Authorization", "Bearer " + token)
+                .header("Client-Id", App.getConfig().getString("oauth.twitch.key"))
+                .asString();
+
+        if (!httpResponse.isSuccess()) {
+            return null;
+        }
+
+        Gson gson = new Gson();
+        return gson.fromJson(httpResponse.getBody(), TwitchUserDataResponse.class).data[0];
+    }
+
+    private record TwitchUserDataResponse(TwitchUserData[] data) { }
+    public record TwitchUserData(String id, String login, String display_name, String created_at) { }
 }
