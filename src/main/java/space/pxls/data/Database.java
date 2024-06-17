@@ -701,8 +701,7 @@ public class Database {
      * @return The user.
      */
     public DBUser createUser(String name, UserLogin login, String ip) {
-        // TODO(netux): use jdbi.inTransaction
-        return jdbi.withHandle(handle -> {
+        return jdbi.inTransaction(handle -> {
             DBUser user = handle.createQuery("INSERT INTO users (username, login_with_ip, signup_ip, last_ip, chat_name_color) VALUES (:username, :login_with_ip, :ip::INET, :ip::INET, :chat_name_color) RETURNING *")
                 .bind("username", name)
                 .bind("ip", ip)
