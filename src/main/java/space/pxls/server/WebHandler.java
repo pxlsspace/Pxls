@@ -15,6 +15,8 @@ import space.pxls.App;
 import space.pxls.auth.*;
 import space.pxls.data.*;
 import space.pxls.palette.Color;
+import space.pxls.server.packets.chat.Badge;
+import space.pxls.server.packets.chat.ChatMessage;
 import space.pxls.server.packets.http.Error;
 import space.pxls.server.packets.http.*;
 import space.pxls.server.packets.socket.*;
@@ -934,6 +936,74 @@ public class WebHandler {
         exchange.endExchange();
     }
 
+    public void chatHistory(HttpServerExchange exchange) {
+//        App.getUserManager().getByName("filipus098").ban(0, "polish <3", null);
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+
+        if (!App.isChatEnabled()) {
+            sendForbidden(exchange, "Chatting and chat actions are disabled");
+            return;
+        }
+
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        boolean includePurged = user.hasPermission("chat.history.purged");
+        var messages = App.getDatabase().getLastXMessages(100, includePurged).stream()
+                .map(dbChatMessage -> {
+                    List<Badge> badges = new ArrayList<>();
+                    String authorName = "CONSOLE";
+                    int nameColor = 0;
+                    Faction faction = null;
+                    List<String> nameClass = null;
+                    if (dbChatMessage.author_uid > 0) {
+                        authorName = "$Unknown";
+                        User author = App.getUserManager().getByID(dbChatMessage.author_uid);
+                        if (author != null) {
+                            authorName = author.getName();
+                            badges = author.getChatBadges();
+                            nameColor = author.getChatNameColor();
+                            nameClass = author.getChatNameClasses();
+                            faction = author.fetchDisplayedFaction();
+                        }
+                    }
+                    var message = new ChatMessage(
+                            dbChatMessage.id,
+                            authorName,
+                            dbChatMessage.sent,
+                            App.getConfig().getBoolean("textFilter.enabled") && dbChatMessage.filtered_content.length() > 0
+                                    ? dbChatMessage.filtered_content
+                                    : dbChatMessage.content,
+                            dbChatMessage.replying_to_id,
+                            dbChatMessage.reply_should_mention,
+                            dbChatMessage.purged
+                                    ? new ChatMessage.Purge(dbChatMessage.purged_by_uid, dbChatMessage.purge_reason)
+                                    : null,
+                            badges,
+                            nameClass,
+                            nameColor,
+                            dbChatMessage.author_was_shadow_banned,
+                            faction
+                    );
+                    if (user.isShadowBanned() && dbChatMessage.author_uid == user.getId()) {
+                        message = message.asShadowBanned();
+                    }
+                    if (!includePurged && App.getSnipMode()) {
+                        message = message.asSnipRedacted();
+                    }
+                    return message;
+                })
+                .filter(message -> !message.getAuthorWasShadowBanned() || user.hasPermission("chat.history.shadowbanned"))
+                .collect(Collectors.toList());
+
+        exchange.setStatusCode(200);
+        exchange.getResponseSender().send(App.getGson().toJson(messages));
+        exchange.endExchange();
+    }
+
     public void chatColorChange(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
 
@@ -1734,6 +1804,7 @@ public class WebHandler {
             App.getConfig().getBoolean("chat.canvasBanRespected"),
             App.getConfig().getStringList("chat.bannerText"),
             App.getSnipMode(),
+            App.getConfig().getString("chat.emoteSet7TV"),
             App.getConfig().getList("chat.customEmoji").unwrapped(),
             App.getConfig().getString("cors.proxyBase"),
             App.getConfig().getString("cors.proxyParam"),
