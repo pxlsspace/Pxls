@@ -118,7 +118,6 @@ public class PacketHandler {
         if (obj instanceof ClientShadowBanMe) handleShadowBanMe(channel, user, ((ClientShadowBanMe) obj));
         if (obj instanceof ClientBanMe) handleBanMe(channel, user, ((ClientBanMe) obj));
         if (App.isChatEnabled()) {
-            if (obj instanceof ClientChatHistory && user.hasPermission("chat.history") && !user.isBanned()) handleChatHistory(channel, user, ((ClientChatHistory) obj));
             if (obj instanceof ClientChatbanState) handleChatbanState(channel, user, ((ClientChatbanState) obj));
             if (obj instanceof ClientChatMessage && user.hasPermission("chat.send")) handleChatMessage(channel, user, ((ClientChatMessage) obj));
             if (obj instanceof ClientChatLookup && user.hasPermission("chat.lookup")) handleChatLookup(channel, user, ((ClientChatLookup) obj));
@@ -388,57 +387,6 @@ public class PacketHandler {
 
     public void handleChatbanState(WebSocketChannel channel, User user, ClientChatbanState clientChatbanState) {
         server.send(channel, new ServerChatbanState(user.isPermaChatbanned(), user.getChatbanReason(), user.getChatbanExpiryTime()));
-    }
-
-    public void handleChatHistory(WebSocketChannel channel, User user, ClientChatHistory clientChatHistory) {
-        boolean includePurged = user.hasPermission("chat.history.purged");
-        var messages = App.getDatabase().getLastXMessages(100, includePurged).stream()
-                .map(dbChatMessage -> {
-                    List<Badge> badges = new ArrayList<>();
-                    String authorName = "CONSOLE";
-                    int nameColor = 0;
-                    Faction faction = null;
-                    List<String> nameClass = null;
-                    if (dbChatMessage.author_uid > 0) {
-                        authorName = "$Unknown";
-                        User author = App.getUserManager().getByID(dbChatMessage.author_uid);
-                        if (author != null) {
-                            authorName = author.getName();
-                            badges = author.getChatBadges();
-                            nameColor = author.getChatNameColor();
-                            nameClass = author.getChatNameClasses();
-                            faction = author.fetchDisplayedFaction();
-                        }
-                    }
-                    var message = new ChatMessage(
-                        dbChatMessage.id,
-                        authorName,
-                        dbChatMessage.sent,
-                        App.getConfig().getBoolean("textFilter.enabled") && dbChatMessage.filtered_content.length() > 0
-                            ? dbChatMessage.filtered_content
-                            : dbChatMessage.content,
-                        dbChatMessage.replying_to_id,
-                        dbChatMessage.reply_should_mention,
-                        dbChatMessage.purged
-                            ? new ChatMessage.Purge(dbChatMessage.purged_by_uid, dbChatMessage.purge_reason)
-                            : null,
-                        badges,
-                        nameClass,
-                        nameColor,
-                        dbChatMessage.author_was_shadow_banned,
-                        faction
-                    );
-                    if (user.isShadowBanned() && dbChatMessage.author_uid == user.getId()) {
-                        message = message.asShadowBanned();
-                    }
-                    if (!includePurged && App.getSnipMode()) {
-                        message = message.asSnipRedacted();
-                    }
-                    return message;
-                })
-                .filter(message -> !message.getAuthorWasShadowBanned() || user.hasPermission("chat.history.shadowbanned"))
-                .collect(Collectors.toList());
-        server.send(channel, new ServerChatHistory(messages));
     }
 
     public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
