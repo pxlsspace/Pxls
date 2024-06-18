@@ -23,6 +23,7 @@ public class CanvasInfo {
     public Integer chatCharacterLimit;
     public List<String> chatBannerText;
     public Boolean snipMode;
+    public String emoteSet7TV;
     public List<Object> customEmoji;
     public String corsBase;
     public String corsParam;
@@ -32,7 +33,7 @@ public class CanvasInfo {
     public Boolean chatLinkSendToStaff;
     public Boolean chatDefaultExternalLinkPopup;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, List<Object> customEmoji, String corsBase, String corsParam, LegalInfo legal, String chatRatelimitMessage, Integer chatLinkMinimumPixelCount, boolean chatLinkSendToStaff, boolean chatDefaultExternalLinkPopup) {
+    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, String emoteSet7TV, List<Object> customEmoji, String corsBase, String corsParam, LegalInfo legal, String chatRatelimitMessage, Integer chatLinkMinimumPixelCount, boolean chatLinkSendToStaff, boolean chatDefaultExternalLinkPopup) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
@@ -48,6 +49,7 @@ public class CanvasInfo {
         this.chatRespectsCanvasBan = chatRespectsCanvasBan;
         this.chatBannerText = chatBannerText;
         this.snipMode = snipMode;
+        this.emoteSet7TV = emoteSet7TV;
         this.customEmoji = customEmoji;
         this.corsBase = corsBase;
         this.corsParam = corsParam;
@@ -112,6 +114,10 @@ public class CanvasInfo {
 
     public Boolean getSnipMode() {
         return snipMode;
+    }
+
+    public String getEmoteSet7TV() {
+        return emoteSet7TV;
     }
 
     public List<Object> getCustomEmoji() {

@@ -1734,6 +1734,7 @@ public class WebHandler {
             App.getConfig().getBoolean("chat.canvasBanRespected"),
             App.getConfig().getStringList("chat.bannerText"),
             App.getSnipMode(),
+            App.getConfig().getString("chat.emoteSet7TV"),
             App.getConfig().getList("chat.customEmoji").unwrapped(),
             App.getConfig().getString("cors.proxyBase"),
             App.getConfig().getString("cors.proxyParam"),
