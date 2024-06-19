@@ -10,9 +10,7 @@ import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 import kong.unirest.json.JSONObject;
 
 import space.pxls.App;
-import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBPixelPlacementFull;
-import space.pxls.server.packets.chat.*;
 import space.pxls.server.packets.socket.*;
 import space.pxls.user.Faction;
 import space.pxls.user.User;
@@ -77,13 +75,8 @@ public class PacketHandler {
                     user.getBanReason(),
                     user.loginsWithIP() ? "ip" : "service",
                     user.getPlaceOverrides(),
-                    user.isChatbanned(),
-                    App.getDatabase().getChatBanReason(user.getId()),
-                    user.isPermaChatbanned(),
-                    user.getChatbanExpiryTime(),
                     user.isRenameRequested(true),
-                    user.getDiscordName(),
-                    user.getChatNameColor()
+                    user.getDiscordName()
             ));
             sendAvailablePixels(channel, user, "auth");
         }
@@ -117,11 +110,6 @@ public class PacketHandler {
         if (obj instanceof ClientCaptcha) handleCaptcha(channel, user, ((ClientCaptcha) obj));
         if (obj instanceof ClientShadowBanMe) handleShadowBanMe(channel, user, ((ClientShadowBanMe) obj));
         if (obj instanceof ClientBanMe) handleBanMe(channel, user, ((ClientBanMe) obj));
-        if (App.isChatEnabled()) {
-            if (obj instanceof ClientChatbanState) handleChatbanState(channel, user, ((ClientChatbanState) obj));
-            if (obj instanceof ClientChatMessage && user.hasPermission("chat.send")) handleChatMessage(channel, user, ((ClientChatMessage) obj));
-            if (obj instanceof ClientChatLookup && user.hasPermission("chat.lookup")) handleChatLookup(channel, user, ((ClientChatLookup) obj));
-        }
         if (obj instanceof ClientAdminPlacementOverrides && user.hasPermission("user.admin")) handlePlacementOverrides(channel, user, ((ClientAdminPlacementOverrides) obj));
         if (obj instanceof ClientAdminMessage && user.hasPermission("user.alert")) handleAdminMessage(channel, user, ((ClientAdminMessage) obj));
     }
@@ -135,28 +123,6 @@ public class PacketHandler {
                 server.send(ch, msg);
             }
         }
-    }
-
-    private void handleChatLookup(WebSocketChannel channel, User user, ClientChatLookup obj) {
-        ServerChatLookup scl;
-        String username = obj.getArg();
-        if (obj.getMode().equalsIgnoreCase("cmid")) {
-            Integer i = null;
-            try {
-                i = Integer.parseInt(obj.getArg());
-            } catch (NumberFormatException nfe) {
-                server.send(channel, new ServerError("Invalid message ID supplied"));
-            }
-            if (i != null) {
-                DBChatMessage chatMessage = App.getDatabase().getChatMessageByID(i);
-                if (chatMessage != null) {
-                    User fromChatMessage = App.getUserManager().getByID(chatMessage.author_uid);
-                    username = fromChatMessage != null ? fromChatMessage.getName() : null;
-                }
-            }
-        }
-        scl = username != null ? App.getDatabase().runChatLookupForUsername(username, App.getConfig().getInt("chat.chatLookupScrollbackAmount")) : null;
-        server.send(channel, scl == null ? new ServerError("User doesn't exist") : scl);
     }
 
     private void handleShadowBanMe(WebSocketChannel channel, User user, ClientShadowBanMe obj) {
@@ -383,198 +349,6 @@ public class PacketHandler {
 
                     }
                 });
-    }
-
-    public void handleChatbanState(WebSocketChannel channel, User user, ClientChatbanState clientChatbanState) {
-        server.send(channel, new ServerChatbanState(user.isPermaChatbanned(), user.getChatbanReason(), user.getChatbanExpiryTime()));
-    }
-
-    public void handleChatMessage(WebSocketChannel channel, User user, ClientChatMessage clientChatMessage) {
-        int charLimit = Math.min(App.getConfig().getInt("chat.characterLimit"), 2048);
-        if (charLimit <= 0) {
-            charLimit = 2048;
-        }
-        Long nowMS = System.currentTimeMillis();
-        String message = clientChatMessage.getMessage();
-        int replyingToId = clientChatMessage.getReplyingToId();
-        if (replyingToId == -1) { // Old clients may send -1 when they mean 0
-            replyingToId = 0;
-        }
-        boolean replyShouldMention = clientChatMessage.getReplyShouldMention();
-        if (message.contains("\r")) message = message.replaceAll("\r", "");
-        if (message.endsWith("\n")) message = message.replaceFirst("\n$", "");
-        if (message.length() > charLimit) message = message.substring(0, charLimit);
-        if (user == null) { //console
-            Integer cmid = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "", replyingToId, replyShouldMention, false);
-            server.broadcast(new ServerChatMessage(new ChatMessage(cmid, "CONSOLE", nowMS / 1000L, message, replyingToId, replyShouldMention, null, null, null, 0, false, null)));
-        } else {
-            if (!user.canChat()) return;
-            if (message.trim().length() == 0) return;
-            if (user.isRenameRequested(false)) return;
-            int remaining = RateLimitFactory.getTimeRemaining(DBChatMessage.class, String.valueOf(user.getId()));
-            if (!user.hasPermission("chat.cooldown.ignore") && remaining > 0) {
-                server.send(user, new ServerChatCooldown(remaining, message));
-                return;
-            }
-            try {
-                String toSend = message;
-                if (App.getConfig().getBoolean("chat.trimInput"))
-                    toSend = toSend.trim();
-                Faction usersFaction = user.fetchDisplayedFaction();
-                String toFilter = "";
-                if (App.getConfig().getBoolean("textFilter.enabled")) {
-                    TextFilter.FilterResult result = TextFilter.getInstance().filter(toSend);
-                    toSend = result.filterHit ? result.filtered : result.original;
-                    toFilter = toSend;
-                }
-                var messageHasLinkPattern = Pattern.compile("((?!-))(xn--)?[a-z0-9 ][a-z0-9_ -]{0,61}[a-z0-9 ]{0,1}\\.(xn--)?([a-z0-9-]{1,61}|[a-z0-9 -]{1,30}\\.[a-z ]{2,})", Pattern.MULTILINE);
-                var messageHasLink = messageHasLinkPattern.matcher(message).find();
-                // If chat message contains a link and the user's pixel count is below linkMinimumPixelCount in the app configuration, return
-                if (user.getAllTimePixelCount() < App.getConfig().getInt("chat.linkMinimumPixelCount") && messageHasLink) {
-                    server.send(user, new ServerChatMessageBlocked("You must have at least " + App.getConfig().getInt("chat.linkMinimumPixelCount") + " pixels to send links."));
-                    if (App.getConfig().getBoolean("chat.linkSendToStaff")) {
-                        // Blocked link messages should appear as shadow-banned messages
-                        Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter, replyingToId, replyShouldMention, true);
-                        var chatMessage = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, replyingToId, replyShouldMention, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), true, usersFaction);
-                        server.broadcastToStaff(new ServerChatMessage(chatMessage));
-                        return;
-                    }
-                }
-                Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter, replyingToId, replyShouldMention, user.isShadowBanned());
-                var chatMessage = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, replyingToId, replyShouldMention, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), user.isShadowBanned(), usersFaction);
-
-                var barePacket = new ServerChatMessage(chatMessage);
-                var userPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
-                var staffPacket = barePacket;
-                if (user.isShadowBanned()) {
-                    // To the user, it looks like their message was sent successfully.
-                    server.send(user, userPacket.asShadowBanned());
-                    // To other users, nothing was sent.
-                    userPacket = null;
-                    // To staff, if enabled in the config, they will be the only ones to also get the message.
-                    staffPacket = App.getConfig().getBoolean("chat.showShadowBannedMessagesToStaff") ? staffPacket : null;
-                }
-                if (userPacket != null || staffPacket != null) {
-                    Predicate<PxlsWebSocketConnection> userCanReadChat = con -> con.getUser()
-                        .map(predicateUser -> predicateUser.hasPermission("chat.read"))
-                        .orElse(false);
-                    server.broadcastPredicateSeparateForStaff(userPacket, staffPacket, userCanReadChat);
-                    if(userPacket != null) {
-                        relayChatMessageToWebhooks(userPacket.getMessage(), App.getConfig().getStringList("chat.publicWebhooks"));
-                    }
-
-                    if(staffPacket != null) {
-                        relayChatMessageToWebhooks(staffPacket.getMessage(), App.getConfig().getStringList("chat.staffWebhooks"));
-                    }
-                }
-            } catch (UnableToExecuteStatementException utese) {
-                utese.printStackTrace();
-                System.err.println("Failed to execute the ChatMessage insert statement.");
-            }
-        }
-    }
-
-    private void relayChatMessageToWebhooks(ChatMessage message, List<String> webhooks) {
-        // NOTE ([  ]): these are very much discord embeds at the moment.
-        // see https://discord.com/developers/docs/resources/channel#embed-object
-        var embed = new JSONObject();
-
-        var description = message.getMessage_raw()
-                // NOTE (Flying): This suffices for breaking markdown links.
-                .replaceAll("\\[", "\\\\[");
-
-        embed.put("description", description);
-        embed.put("timestamp", Instant.ofEpochSecond(message.getDate()).toString());
-        if (message.getAuthorNameColor().intValue() >= 0) {
-            embed.put("color", Long.decode("0x" + App.getPalette().getColors().get(message.getAuthorNameColor().intValue()).getValue()));
-        }
-
-        var author = new JSONObject();
-        // NOTE ([  ]): There's no clean way to determining if we're on http or https
-        // so I gave up — you should be using https anyway.
-        try {
-            var authorProfile = new URL("https://" + App.getConfig().getString("host") + "/profile/" + message.getAuthor() + "/");
-
-            // NOTE (Flying): The pixel count badge seems to always come last.
-            var pixelCount = "?k+ ";
-            if (message.getBadges().size() > 0) {
-                pixelCount = message.getBadges().get(message.getBadges().size() - 1).getDisplayName() + " ";
-            }
-            var factionTag = message.getStrippedFaction() != null ? "[" + message.getStrippedFaction().getTag() + "] " : "";
-            author.put("name", pixelCount + factionTag + message.getAuthor());
-            author.put("url", authorProfile);
-
-            embed.put("author", author);
-        } catch(MalformedURLException e) {
-            e.printStackTrace();
-        }
-
-        var footer = new JSONObject();
-
-        var footerText = String.valueOf(message.getId());
-
-        if (message.getReplyingToId() != 0) {
-            footerText += " • Replying to " + message.getReplyingToId();
-        }
-
-        footer.put("text", footerText);
-
-        embed.put("footer", footer);
-
-        var postDataBuilder = new JSONObject();
-
-        postDataBuilder.put("embeds", new JSONObject[] { embed });
-
-        var postData = postDataBuilder.toString();
-
-        for(var hook : webhooks) {
-            try {
-                var connection = (HttpURLConnection) new URL(hook).openConnection();
-                connection.setRequestMethod("POST");
-                connection.setRequestProperty("Content-Type", "application/json");
-                connection.setDoOutput(true);
-
-                OutputStreamWriter postDataStream = new OutputStreamWriter(connection.getOutputStream(), StandardCharsets.UTF_8);
-                postDataStream.write(postData);
-                postDataStream.flush();
-                postDataStream.close();
-
-                // NOTE ([  ]): this error code might be a bit cryptic when printed,
-                // but I don't want to clean it up and it's better than failing silently.
-                if(connection.getResponseCode() >= 400) {
-                    var response = new BufferedReader(new InputStreamReader(connection.getErrorStream()));
-
-                    System.err.println("Error(s) relaying chat message to webhooks:");
-                    for(var line: response.lines().collect(Collectors.toList())) {
-                        System.err.println(line);
-                    }
-
-                    response.close();
-                }
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void sendChatban(User user, ServerChatBan chatban) {
-        server.send(user, chatban);
-    }
-
-    public void sendChatPurge(User target, User initiator, int amount, String reason, boolean announce) {
-        var barePacket = new ServerChatPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), amount, reason, announce);
-        var redactedPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
-        server.broadcastSeparateForStaff(redactedPacket, barePacket);
-    }
-
-    public void sendSpecificPurge(User target, User initiator, Integer cmid, String reason, boolean announce) {
-        sendSpecificPurge(target, initiator, Collections.singletonList(cmid), reason, announce);
-    }
-
-    public void sendSpecificPurge(User target, User initiator, List<Integer> cmids, String reason, boolean announce) {
-        var barePacket = new ServerChatSpecificPurge(target.getName(), initiator == null ? "CONSOLE" : initiator.getName(), cmids, reason, announce);
-        var redactedPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
-        server.broadcastSeparateForStaff(redactedPacket, barePacket);
     }
 
     public void updateUserData() {

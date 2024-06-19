@@ -11,7 +11,6 @@ public record ProfileResponse(
     int maxFactionTagLength,
     int maxFactionNameLength,
     List<ProfileReport> canvasReports,
-    List<ProfileReport> chatReports,
     boolean snipMode,
     Map<String, String> keys
 ) {}

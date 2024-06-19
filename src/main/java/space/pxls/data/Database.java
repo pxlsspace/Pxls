@@ -8,9 +8,6 @@ import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 
 import space.pxls.App;
-import space.pxls.server.packets.chat.ChatMessage;
-import space.pxls.server.packets.chat.ServerChatLookup;
-import space.pxls.user.Chatban;
 import space.pxls.user.Faction;
 import space.pxls.user.Role;
 import space.pxls.user.User;
@@ -32,7 +29,7 @@ import static java.lang.Math.toIntExact;
 
 public class Database {
     private final Jdbi jdbi;
-    private static final String SQL_USER_BY_NAME = "SELECT id, stacked, username, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color, displayed_faction, faction_restricted FROM users WHERE username = :username";
+    private static final String SQL_USER_BY_NAME = "SELECT id, stacked, username, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, displayed_faction, faction_restricted FROM users WHERE username = :username";
 
     public Database() {
         try {
@@ -50,7 +47,6 @@ public class Database {
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
         config.addDataSourceProperty("allowMultiQueries", "true");
         config.setMaximumPoolSize(200); // this is plenty, the websocket uses 32
-        //config.setConnectionInitSql("SET NAMES UTF-8"); //needed for emoji's in chat
 
         jdbi = Jdbi.create(new HikariDataSource(config));
 
@@ -84,9 +80,6 @@ public class Database {
                     "last_ip INET," +
                     "last_ip_alert BOOL NOT NULL DEFAULT false," +
                     "login_with_ip BOOL NOT NULL DEFAULT false," +
-                    "perma_chat_banned BOOL DEFAULT false," +
-                    "chat_ban_expiry TIMESTAMP DEFAULT NOW()," +
-                    "chat_ban_reason TEXT," +
                     "ban_reason VARCHAR(512) NOT NULL DEFAULT ''," +
                     "pixel_count INT NOT NULL DEFAULT 0," +
                     "pixel_count_alltime INT NOT NULL DEFAULT 0," +
@@ -94,7 +87,6 @@ public class Database {
                     "stacked INT DEFAULT 0," +
                     "is_rename_requested BOOL NOT NULL DEFAULT false," +
                     "discord_name VARCHAR(37)," +
-                    "chat_name_color INT NOT NULL," +
                     "displayed_faction INT," +
                     "faction_restricted BOOLEAN NOT NULL DEFAULT false)")
                     .execute();
@@ -182,31 +174,6 @@ public class Database {
                     "action VARCHAR(256) NOT NULL," +
                     "ban_reason VARCHAR(512) NOT NULL)")
                     .execute();
-            // chat_messages
-            handle.createUpdate("CREATE TABLE IF NOT EXISTS chat_messages (" +
-                    "id BIGSERIAL PRIMARY KEY," +
-                    "author INT," +
-                    "sent BIGINT NOT NULL," +
-                    "content VARCHAR(2048) NOT NULL," +
-                    "filtered VARCHAR(2048) NOT NULL DEFAULT ''," +
-                    "replying_to_id BIGINT NOT NULL DEFAULT 0," +
-                    "reply_should_mention BOOL NOT NULL DEFAULT true," +
-                    "purged BOOL NOT NULL DEFAULT false," +
-                    "purged_by INT," +
-                    "purge_reason TEXT," +
-                    "shadow_banned BOOL NOT NULL DEFAULT false)")
-                    .execute();
-            // chat_reports
-            handle.createUpdate("CREATE TABLE IF NOT EXISTS chat_reports (" +
-                    "id SERIAL NOT NULL PRIMARY KEY," +
-                    "time INT DEFAULT NULL," +
-                    "cmid BIGINT NOT NULL," +
-                    "report_message TEXT NOT NULL," +
-                    "target INT NOT NULL," +
-                    "initiator INT NOT NULL," +
-                    "claimed_by INT NOT NULL default 0," +
-                    "closed BOOL NOT NULL default false)")
-                    .execute();
             // ip_log
             handle.createUpdate("CREATE TABLE IF NOT EXISTS ip_log (" +
                     "id SERIAL NOT NULL PRIMARY KEY," +
@@ -223,17 +190,6 @@ public class Database {
                     "title TEXT NOT NULL," +
                     "content TEXT NOT NULL," +
                     "who INT NOT NULL)")
-                    .execute();
-            // chatbans
-            handle.createUpdate("CREATE TABLE IF NOT EXISTS chatbans (" +
-                    "id SERIAL NOT NULL PRIMARY KEY," +
-                    "target INT NOT NULL," +
-                    "initiator INT NOT NULL," +
-                    "\"when\" INT NOT NULL," +
-                    "type VARCHAR(256) NOT NULL," +
-                    "expiry INT," +
-                    "reason TEXT NOT NULL," +
-                    "purged BOOL NOT NULL);")
                     .execute();
             // factions
             handle.createUpdate("CREATE TABLE IF NOT EXISTS faction (" +
@@ -575,7 +531,7 @@ public class Database {
      * @return The latest undo pixel.
      */
     public DBPixelPlacementFull getUserUndoPixel(User who) {
-        return jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.rollback_action, p.undone, p.undo_action, p.most_recent, u.id as u_id, u.stacked, u.username, u.signup_time, u.cooldown_expiry, u.ban_expiry, u.is_shadow_banned, u.login_with_ip, u.signup_ip, u.last_ip, u.last_ip_alert, u.perma_chat_banned, u.chat_ban_expiry, u.chat_ban_reason, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.discord_name, u.chat_name_color FROM pixels p LEFT JOIN users u ON p.who = u.id WHERE p.who = :who AND NOT p.rollback_action ORDER BY p.id DESC LIMIT 1")
+        return jdbi.withHandle(handle -> handle.select("SELECT p.id as p_id, p.x, p.y, p.color, p.who, p.secondary_id, p.time, p.mod_action, p.rollback_action, p.undone, p.undo_action, p.most_recent, u.id as u_id, u.stacked, u.username, u.signup_time, u.cooldown_expiry, u.ban_expiry, u.is_shadow_banned, u.login_with_ip, u.signup_ip, u.last_ip, u.last_ip_alert, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.discord_name FROM pixels p LEFT JOIN users u ON p.who = u.id WHERE p.who = :who AND NOT p.rollback_action ORDER BY p.id DESC LIMIT 1")
                 .bind("who", who.getId())
                 .map(new DBPixelPlacementFull.Mapper())
                 .first());
@@ -675,7 +631,7 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> getUserByID(int who) {
-        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, chat_name_color, displayed_faction, faction_restricted FROM users WHERE id = :who")
+        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, displayed_faction, faction_restricted FROM users WHERE id = :who")
                 .bind("who", who)
                 .map(new DBUser.Mapper())
                 .findFirst());
@@ -687,7 +643,7 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> getUserByToken(String token) {
-        return jdbi.withHandle(handle -> handle.select("SELECT u.id, u.stacked, u.username, u.signup_time, u.cooldown_expiry, u.ban_expiry, u.is_shadow_banned, u.login_with_ip, u.signup_ip, u.last_ip, u.last_ip_alert, u.perma_chat_banned, u.chat_ban_expiry, u.chat_ban_reason, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.discord_name, u.chat_name_color, u.displayed_faction, u.faction_restricted FROM users u INNER JOIN sessions s ON u.id = s.who WHERE s.token = :token")
+        return jdbi.withHandle(handle -> handle.select("SELECT u.id, u.stacked, u.username, u.signup_time, u.cooldown_expiry, u.ban_expiry, u.is_shadow_banned, u.login_with_ip, u.signup_ip, u.last_ip, u.last_ip_alert, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.discord_name, u.displayed_faction, u.faction_restricted FROM users u INNER JOIN sessions s ON u.id = s.who WHERE s.token = :token")
                 .bind("token", token)
                 .map(new DBUser.Mapper())
                 .findFirst());
@@ -702,11 +658,10 @@ public class Database {
      */
     public DBUser createUser(String name, UserLogin login, String ip) {
         return jdbi.inTransaction(handle -> {
-            DBUser user = handle.createQuery("INSERT INTO users (username, login_with_ip, signup_ip, last_ip, chat_name_color) VALUES (:username, :login_with_ip, :ip::INET, :ip::INET, :chat_name_color) RETURNING *")
+            DBUser user = handle.createQuery("INSERT INTO users (username, login_with_ip, signup_ip, last_ip) VALUES (:username, :login_with_ip, :ip::INET, :ip::INET) RETURNING *")
                 .bind("username", name)
                 .bind("ip", ip)
                 .bind("login_with_ip", App.getConfig().getBoolean("oauth.useIp"))
-                .bind("chat_name_color", App.getConfig().getInt("chat.defaultColorIndex"))
                 .map(new DBUser.Mapper())
                 .findFirst()
                 .orElse(null);
@@ -1212,15 +1167,6 @@ public class Database {
                 .first());
     }
 
-    public List<DBChatReport> getChatReportsFromUser(int uid) {
-        return jdbi.withHandle(handle ->
-            handle.createQuery("SELECT * FROM chat_reports WHERE initiator = :uid ORDER BY time DESC")
-                .bind("uid", uid)
-                .map(new DBChatReport.Mapper())
-                .list()
-        );
-    }
-
     public List<DBCanvasReport> getCanvasReportsFromUser(int uid) {
         return jdbi.withHandle(handle ->
             handle.createQuery("SELECT * FROM reports WHERE who = :uid ORDER BY time DESC")
@@ -1300,18 +1246,6 @@ public class Database {
     }
 
     /**
-     * Sets the chat name color for the specified {@link User}.
-     * @param who The {@link User}'s ID.
-     * @param color The palette color.
-     */
-    public void setChatNameColor(int who, int color) {
-        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET chat_name_color = :color WHERE id = :who")
-                .bind("who", who)
-                .bind("color", color)
-                .execute());
-    }
-
-    /**
      * @param initiatorID The initiator's {@link User} ID.
      * @param bannedID The banned {@link User}'s ID.
      * @param when The ban creation date.
@@ -1335,273 +1269,6 @@ public class Database {
                 .bind("reason", reason)
                 .execute());
     }
-
-    /* CHAT */
-
-    /**
-     * @param authorID The author's {@link User} ID.
-     * @param sent The chat message's creation epoch.
-     * @param content The chat contents.
-     * @param filtered The filtered chat contents.
-     * @param shadowBanned Whether or not the user sending the message is shadow-banned.
-     * @return The new chat message's ID.
-     */
-    public Integer createChatMessage(int authorID, long sent, String content, String filtered, int replyingToId, boolean replyShouldMention, boolean shadowBanned) {
-        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO chat_messages (author, sent, content, filtered, replying_to_id, reply_should_mention, shadow_banned) VALUES (:author, :sent, :content, :filtered, :replying_to_id, :reply_should_mention, :shadow_banned)")
-                .bind("author", authorID)
-                .bind("sent", sent)
-                .bind("content", content)
-                .bind("filtered", filtered)
-                .bind("replying_to_id", replyingToId)
-                .bind("reply_should_mention", replyShouldMention)
-                .bind("shadow_banned", shadowBanned)
-                .executeAndReturnGeneratedKeys("id")
-                    .mapTo(Integer.TYPE)
-                    .first());
-    }
-
-    /**
-     * @param author The author {@link User}.
-     * @param sent The chat message's creation epoch.
-     * @param content The chat contents.
-     * @param filtered The filtered chat contents.
-     * @return The new chat message's ID.
-     */
-    public Integer createChatMessage(User author, long sent, String content, String filtered, int replyingToId, boolean replyShouldMention) {
-        return createChatMessage(author == null ? -1 : author.getId(), sent / 1000L, content, filtered, replyingToId, replyShouldMention, author != null && author.isShadowBanned());
-    }
-
-    /**
-     * Retrieves the {@link DBChatMessage} associated with the given <pre>id</pre>.
-     * @param id The {@link DBChatMessage} id to fetch with.
-     * @return The retrieved {@link DBChatMessage}.
-     */
-    public DBChatMessage getChatMessageByID(int id) {
-        return jdbi.withHandle(handle -> handle.select("SELECT * FROM chat_messages WHERE id = :id LIMIT 1")
-                .bind("id", id)
-                .map(new DBChatMessage.Mapper())
-                .first());
-    }
-
-    /**
-     * Retrieves all {@link DBChatMessage}s by the specified author, sorted by date sent descending.
-     * @param authorID The author's {@link User} ID.
-     * @return The retrieved {@link DBChatMessage}s.
-     */
-    public List<DBChatMessage> getChatMessagesByAuthor(int authorID) {
-        return jdbi.withHandle(handle -> handle.select("SELECT * FROM chat_messages WHERE author = :author ORDER BY sent ASC")
-                .bind("author", authorID)
-                .map(new DBChatMessage.Mapper())
-                .list());
-    }
-
-    public List<DBChatMessage> getLastXMessagesFromUID(int authorID, int limit) {
-        return jdbi.withHandle(handle -> handle.select("SELECT * FROM chat_messages WHERE author = :uid ORDER BY sent DESC LIMIT :limit")
-            .bind("uid", authorID)
-            .bind("limit", limit)
-            .map(new DBChatMessage.Mapper())
-            .list());
-    }
-
-    /**
-     * Retrieves the last <pre>x</pre> amount of {@link DBChatMessage}s.
-     * @param x The amount of chat messages to retrieve.
-     * @param includePurged Whether or not to include purged messages.
-     * @return The retrieved {@link DBChatMessage}s. The length is determined by the {@link ResultSet} size.
-     */
-    public List<DBChatMessage> getLastXMessages(int x, boolean includePurged) {
-        return jdbi.withHandle(handle -> handle.select("SELECT * FROM chat_messages cm WHERE CASE WHEN :includePurged THEN true ELSE purged = false END ORDER BY sent DESC LIMIT :limit")
-                .bind("includePurged", includePurged)
-                .bind("limit", x)
-                .map(new DBChatMessage.Mapper())
-                .list());
-    }
-
-    /**
-     * Updates the permanent chat ban status for the specified {@link User} by their ID.
-     * @param toUpdateID The {@link User}'s ID.
-     * @param isPermaChatBanned Whether or not the {@link User} is permanently chat banned.
-     */
-    public void updateChatBanPerma(int toUpdateID, boolean isPermaChatBanned) {
-        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET perma_chat_banned = :banned WHERE id = :id")
-                .bind("banned", isPermaChatBanned)
-                .bind("id", toUpdateID)
-                .execute());
-    }
-
-    /**
-     * Updates the permanent chat ban status for the specified {@link User}.
-     * @param toUpdate The {@link User}.
-     * @param isPermaChatBanned Whether or not the {@link User} is permanently chat banned.
-     */
-    public void updateChatBanPerma(User toUpdate, boolean isPermaChatBanned) {
-        if (toUpdate == null) throw new IllegalArgumentException("Cannot update a non-existent user's chat ban");
-        updateChatBanPerma(toUpdate.getId(), isPermaChatBanned);
-    }
-
-    /**
-     * Updates the chat ban expiry for the specified {@link User} by their ID.
-     * @param targetID The {@link User}'s ID.
-     * @param expiry The new chat ban expiry epoch.
-     */
-    public void updateChatBanExpiry(int targetID, long expiry) {
-        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET chat_ban_expiry = :expiry WHERE id = :id")
-                .bind("expiry", new Timestamp(expiry))
-                .bind("id", targetID)
-                .execute());
-    }
-
-    /**
-     * Updates the chat ban expiry for the specified {@link User}.
-     * @param target The target {@link User}.
-     * @param expiry The new chat ban expiry epoch.
-     */
-    public void updateChatBanExpiry(User target, long expiry) {
-        updateChatBanExpiry(target.getId(), expiry);
-    }
-
-    /**
-     * @param cmid The {@link ChatMessage}'s id.
-     * @param targetID The reported {@link User}'s ID.
-     * @param initiatorID The initiating {@link User}'s ID.
-     * @param reportMessage The body of the report.
-     * @return The inserted row ID.
-     */
-    public Integer insertChatReport(int cmid, int targetID, int initiatorID, String reportMessage) {
-        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO chat_reports (cmid, target, initiator, report_message, time) VALUES (:cmid, :target, :initiator, :report_message, (SELECT EXTRACT(EPOCH FROM NOW())))")
-                .bind("cmid", cmid)
-                .bind("target", targetID)
-                .bind("initiator", initiatorID)
-                .bind("report_message", reportMessage)
-                .executeAndReturnGeneratedKeys("id")
-                    .mapTo(Integer.TYPE)
-                    .first());
-    }
-
-    /**
-     * @param cmid The {@link ChatMessage}'s id.
-     * @param target The reported {@link User}.
-     * @param initiator The initiating {@link User}.
-     * @param reportMessage The body of the report.
-     * @return The inserted row ID.
-     */
-    public Integer insertChatReport(int cmid, User target, User initiator, String reportMessage) {
-        return insertChatReport(cmid, target.getId(), initiator == null ? 0 : initiator.getId(), reportMessage);
-    }
-
-    /**
-     * Purges an amount of chat messages sent by the specified {@link User}, for the specified reason.
-     * @param target The {@link User} to purge messages from.
-     * @param initiator The {@link User} who purged chat messages.
-     * @param amount The amount of chat messages to purge.
-     * @param reason The reason for the purge.
-     * @param broadcast Whether or not to broadcast a purge message.
-     */
-    public void purgeChat(User target, User initiator, int amount, String reason, boolean broadcast, boolean announce) {
-        jdbi.useHandle(handle -> handle.createUpdate("UPDATE chat_messages SET purged = true, purged_by = :initiator, purge_reason = :reason WHERE author = :who")
-                .bind("initiator", initiator == null ? 0 : initiator.getId())
-                .bind("who", target.getId())
-                .bind("reason", reason)
-                .execute());
-        String initiatorName = initiator == null ? "CONSOLE" : initiator.getName();
-        int initiatorID = initiator == null ? 0 : initiator.getId();
-        String logReason = reason != null && reason.length() > 0 ? " with reason: " + reason : "";
-        String logMessage = String.format("<%s, %s> purged %s messages from <%s, %s>%s.", initiatorName, initiatorID, amount, target.getName(), target.getId(), logReason);
-        if (initiator == null) {
-            insertServerAdminLog(logMessage);
-        } else {
-            insertAdminLog(initiatorID, logMessage);
-        }
-        if (broadcast) {
-            App.getServer().getPacketHandler().sendChatPurge(target, initiator, amount, reason, announce);
-        }
-    }
-
-    /**
-     * Purges an specific chat message, for the specified reason.
-     * @param target The {@link User} to purge messages from, for logging purposes.
-     * @param initiator The {@link User} who purged chat messages.
-     * @param id The id of the chat message to purge.
-     * @param reason The reason for the purge.
-     * @param broadcast Whether or not to broadcast a purge message.
-     */
-    public void purgeChatID(User target, User initiator, Integer id, String reason, boolean broadcast, boolean announce) {
-        jdbi.useHandle(handle -> handle.createUpdate("UPDATE chat_messages SET purged = true, purged_by = :initiator, purge_reason = :reason WHERE id = :id")
-                .bind("initiator", initiator.getId())
-                .bind("id", id)
-                .bind("reason", reason)
-                .execute());
-        String initiatorName = initiator == null ? "CONSOLE" : initiator.getName();
-        int initiatorID = initiator == null ? 0 : initiator.getId();
-        String logReason = reason != null && reason.length() > 0 ? " with reason: " + reason : "";
-        String logMessage = String.format("<%s, %s> purged message with id %d from <%s, %s>%s.", initiatorName, initiatorID, id, target.getName(), target.getId(), logReason);
-        if (initiator == null) {
-            insertServerAdminLog(logMessage);
-        } else {
-            insertAdminLog(initiatorID, logMessage);
-        }
-        if (broadcast) {
-            App.getServer().getPacketHandler().sendSpecificPurge(target, initiator, id, reason, announce);
-        }
-    }
-
-    /**
-     * Gets the {@link User}'s chat ban reason.
-     * @param id The {@link User}'s ID.
-     * @return The chat ban reason.
-     */
-    public String getChatBanReason(int id) {
-        return jdbi.withHandle(handle -> handle.select("SELECT chat_ban_reason FROM users WHERE id = :id")
-                .bind("id", id)
-                .mapTo(String.class)
-                .first());
-    }
-
-    /**
-     * Updates the {@link User}'s chat ban reason.
-     * @param id The {@link User}'s ID.
-     * @param reason The new chat ban reason.
-     */
-    public void updateChatBanReason(int id, String reason) {
-        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET chat_ban_reason = :reason WHERE id = :id")
-                .bind("reason", reason)
-                .bind("id", id)
-                .execute());
-    }
-
-    /**
-     * Returns the requested user's last 100 messages and chatbans.
-     *
-     * @param username The {@link User}'s name to look up.
-     * @param history_limit The maximum number of chat message history to fetch.
-     * @return The requested user's last 100 messages and chatbans.
-     */
-    public ServerChatLookup runChatLookupForUsername(String username, int history_limit) {
-        // we want to run all these queries with their own handle so we don't hit the pool x times.
-        return jdbi.withHandle(handle -> {
-            Optional<DBUser> dbu = handle.createQuery(SQL_USER_BY_NAME)
-                    .bind("username", username)
-                    .map(new DBUser.Mapper())
-                    .findFirst();
-            if (!dbu.isPresent()) return null;
-            DBUser dbUser = dbu.get();
-
-            List<DBExtendedChatban> chatbans = handle.createQuery("SELECT cb.*,u.username AS target_name,u1.username AS initiator_name FROM chatbans cb INNER JOIN users u ON u.id = cb.target INNER JOIN users u1 ON u1.id = cb.initiator WHERE cb.target = :uid ORDER BY \"when\" DESC;")
-                    .bind("uid", dbUser.id)
-                    .map(new DBExtendedChatban.Mapper())
-                    .list();
-
-            List<DBChatMessage> messages = handle.createQuery("SELECT * FROM chat_messages WHERE author = :uid ORDER BY sent DESC LIMIT :lim")
-                    .bind("uid", dbUser.id)
-                    .bind("lim", history_limit)
-                    .map(new DBChatMessage.Mapper())
-                    .list();
-
-            return new ServerChatLookup(dbUser, messages, chatbans);
-        });
-    }
-
-    /* END CHAT */
 
     /* NOTIFICATIONS */
 
@@ -1660,49 +1327,6 @@ public class Database {
     }
 
     /* END NOTIFICATIONS */
-
-    /* CHATBAN LOGS */
-
-    /**
-     * Initiates a new chat ban.
-     * @param targetID The chat ban {@link User} ID.
-     * @param initiatorID The chat ban initiator's {@link User} ID.
-     * @param when When the chat ban was initiated.
-     * @param type The chat ban type.
-     * @param expiry The chat ban expiry epoch.
-     * @param reason The chat ban reason.
-     * @param purge Whether to purge all messages.
-     * @return The inserted row ID.
-     */
-    public Integer initiateChatBan(int targetID, int initiatorID, long when, String type, long expiry, String reason, boolean purge) {
-        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO chatbans (target, initiator, \"when\", type, expiry, reason, purged) VALUES (:target, :initiator, :when, :type, :expiry, :reason, :purge)")
-                .bind("target", targetID)
-                .bind("initiator", initiatorID)
-                .bind("when", when)
-                .bind("type", type)
-                .bind("expiry", expiry)
-                .bind("reason", reason)
-                .bind("purge", purge)
-                .execute());
-    }
-
-    /**
-     * Inserts a new chat ban by {@link Chatban} instance.
-     * @param chatBan The {@link Chatban} instance.
-     * @return The inserted row ID.
-     */
-    public Integer initiateChatBan(Chatban chatBan) {
-        int targetID = chatBan.target != null ? chatBan.target.getId() : 0;
-        int initiatorID = chatBan.initiator != null ? chatBan.initiator.getId() : 0;
-        long when = chatBan.instantiatedMS / 1000L;
-        String type = chatBan.type.toString();
-        long expiry = chatBan.expiryTimeMS / 1000L;
-        String reason = chatBan.reason;
-        boolean purge = chatBan.purge;
-        return initiateChatBan(targetID, initiatorID, when, type, expiry, reason, purge);
-    }
-
-    /* END CHATBAN LOGS */
 
     /**
      * Inserts the IP log pair. If the pair exists, <pre>last_used</pre> will be updated instead.

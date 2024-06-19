@@ -16,7 +16,6 @@ import io.undertow.websockets.core.WebSocketChannel;
 import io.undertow.websockets.core.WebSockets;
 import io.undertow.websockets.spi.WebSocketHttpExchange;
 import space.pxls.App;
-import space.pxls.server.packets.chat.*;
 import space.pxls.server.packets.socket.*;
 import space.pxls.tasks.UserAuthedTask;
 import space.pxls.user.User;
@@ -67,21 +66,15 @@ public class UndertowServer {
                 .addPermGatedPrefixPath("/logout", "user.auth", webHandler::logout)
                 .addPermGatedPrefixPath("/lookup", "board.lookup", new RateLimitingHandler(webHandler::lookup, "http:lookup", (int) App.getConfig().getDuration("server.limits.lookup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.lookup.count")))
                 .addPermGatedPrefixPath("/report", "board.report", webHandler::report)
-                .addPermGatedPrefixPath("/reportChat", "chat.report", webHandler::chatReport)
                 .addPermGatedPrefixPath("/whoami", "user.auth", webHandler::whoami)
                 .addPermGatedPrefixPath("/users", "user.online", webHandler::users)
-                .addPermGatedPrefixPath("/chat/history", "chat.history", new RateLimitingHandler(webHandler::chatHistory, "http:chatHistory", (int) App.getConfig().getDuration("server.limits.chatHistory.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.chatHistory.count")))
-                .addPermGatedPrefixPath("/chat/setColor", "user.chatColorChange", new RateLimitingHandler(webHandler::chatColorChange, "http:chatColorChange", (int) App.getConfig().getDuration("server.limits.chatColorChange.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.chatColorChange.count")))
                 .addPermGatedPrefixPath("/setDiscordName", "user.discordNameChange", new RateLimitingHandler(webHandler::discordNameChange, "http:discordName", (int) App.getConfig().getDuration("server.limits.discordNameChange.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.discordNameChange.count")))
                 .addPermGatedPrefixPath("/admin", "user.admin", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/")).setCacheTime(10))
                 .addPermGatedPrefixPath("/admin/ban", "user.ban", webHandler::ban)
                 .addPermGatedPrefixPath("/admin/unban", "user.unban", webHandler::unban)
                 .addPermGatedPrefixPath("/admin/permaban", "user.permaban", webHandler::permaban)
                 .addPermGatedPrefixPath("/admin/shadowban", "user.shadowban", webHandler::shadowban)
-                .addPermGatedPrefixPath("/admin/chatban", "chat.ban", webHandler::chatban)
                 .addPermGatedPrefixPath("/admin/check", "board.check", webHandler::check)
-                .addPermGatedPrefixPath("/admin/delete", "chat.delete", webHandler::deleteChatMessage)
-                .addPermGatedPrefixPath("/admin/chatPurge", "chat.purge", webHandler::chatPurge)
                 .addPermGatedPrefixPath("/execNameChange", "user.namechange", webHandler::execNameChange)
                 .addPermGatedPrefixPath("/admin/flagNameChange", "user.namechange.flag", webHandler::flagNameChange)
                 .addPermGatedPrefixPath("/admin/forceNameChange", "user.namechange.force", webHandler::forceNameChange)
@@ -156,10 +149,6 @@ public class UndertowServer {
                 if (type.equals("admin_message")) obj = App.getGson().fromJson(jsonObj, ClientAdminMessage.class);
                 if (type.equals("shadowbanme")) obj = App.getGson().fromJson(jsonObj, ClientShadowBanMe.class);
                 if (type.equals("banme")) obj = App.getGson().fromJson(jsonObj, ClientBanMe.class);
-                if (type.equalsIgnoreCase("ChatHistory")) obj = App.getGson().fromJson(jsonObj, ClientChatHistory.class);
-                if (type.equalsIgnoreCase("ChatbanState")) obj = App.getGson().fromJson(jsonObj, ClientChatbanState.class);
-                if (type.equalsIgnoreCase("ChatMessage")) obj = App.getGson().fromJson(jsonObj, ClientChatMessage.class);
-                if (type.equalsIgnoreCase("ChatLookup")) obj = App.getGson().fromJson(jsonObj, ClientChatLookup.class);
 
                 // old thing, will auto-shadowban
                 if (type.equals("place")) obj = App.getGson().fromJson(jsonObj, ClientPlace.class);

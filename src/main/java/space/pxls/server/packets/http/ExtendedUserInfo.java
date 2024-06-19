@@ -12,10 +12,9 @@ public class ExtendedUserInfo extends UserInfo {
 
     public ExtendedUserInfo(String username, List<Role> roles, List<UserLogin> logins, int pixelCount,
                             int pixelCountAllTime, Boolean banned, Long banExpiry, String banReason,
-                            String method, PlacementOverrides placementOverrides, Boolean chatBanned,
-                            String chatbanReason, Boolean chatbanIsPerma, Long chatbanExpiry, Boolean renameRequested,
-                            String discordName, Number chatNameColor) {
-        super(username, roles, pixelCount, pixelCountAllTime, banned, banExpiry, banReason, method, placementOverrides, chatBanned, chatbanReason, chatbanIsPerma, chatbanExpiry, renameRequested, discordName, chatNameColor);
+                            String method, PlacementOverrides placementOverrides, Boolean renameRequested,
+                            String discordName) {
+        super(username, roles, pixelCount, pixelCountAllTime, banned, banExpiry, banReason, method, placementOverrides, renameRequested, discordName);
 
         this.logins = logins;
     }

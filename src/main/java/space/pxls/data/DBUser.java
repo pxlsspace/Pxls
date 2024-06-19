@@ -10,7 +10,6 @@ import java.sql.Timestamp;
 public class DBUser {
     public int id;
     public int stacked;
-    public int chatNameColor;
     public Timestamp signup_time;
     public String username;
     public long cooldownExpiry;
@@ -19,16 +18,13 @@ public class DBUser {
     public int pixelCount;
     public int pixelCountAllTime;
     public Long banExpiry;
-    public boolean isPermaChatbanned;
     public boolean shadowBanned;
-    public long chatbanExpiry;
     public boolean isRenameRequested;
     public String discordName;
-    public String chatbanReason;
     public Integer displayedFaction;
     public Boolean factionBlocked;
 
-    public DBUser(int id, int stacked, String username, Timestamp signup, long cooldownExpiry, boolean loginWithIP, String signupIP, int pixelCount, int pixelCountAllTime, Long banExpiry, boolean shadowBanned, boolean isPermaChatbanned, long chatbanExpiry, boolean isRenameRequested, String discordName, String chatbanReason, int chatNameColor, Integer displayedFaction, Boolean factionBlocked) {
+    public DBUser(int id, int stacked, String username, Timestamp signup, long cooldownExpiry, boolean loginWithIP, String signupIP, int pixelCount, int pixelCountAllTime, Long banExpiry, boolean shadowBanned, boolean isRenameRequested, String discordName, Integer displayedFaction, Boolean factionBlocked) {
         this.id = id;
         this.stacked = stacked;
         this.username = username;
@@ -40,12 +36,8 @@ public class DBUser {
         this.pixelCountAllTime = pixelCountAllTime;
         this.banExpiry = banExpiry;
         this.shadowBanned = shadowBanned;
-        this.isPermaChatbanned = isPermaChatbanned;
-        this.chatbanExpiry = chatbanExpiry;
         this.isRenameRequested = isRenameRequested;
         this.discordName = discordName;
-        this.chatbanReason = chatbanReason;
-        this.chatNameColor = chatNameColor;
         this.displayedFaction = displayedFaction;
         this.factionBlocked = factionBlocked;
     }
@@ -55,7 +47,6 @@ public class DBUser {
         public DBUser map(ResultSet r, StatementContext ctx) throws SQLException {
             Timestamp stamp = r.getTimestamp("cooldown_expiry");
             Timestamp ban = r.getTimestamp("ban_expiry");
-            Timestamp chatban = r.getTimestamp("chat_ban_expiry");
             Integer df = null;
             try {
                 df = r.getInt("displayed_faction");
@@ -72,12 +63,8 @@ public class DBUser {
                     r.getInt("pixel_count_alltime"),
                     ban == null ? null : ban.getTime(),
                     r.getBoolean("is_shadow_banned"),
-                    r.getBoolean("perma_chat_banned"),
-                    chatban == null ? 0 : chatban.getTime(),
                     r.getBoolean("is_rename_requested"),
                     r.getString("discord_name"),
-                    r.getString("chat_ban_reason"),
-                    r.getInt("chat_name_color"),
                     df,
                     r.getBoolean("faction_restricted")
             );

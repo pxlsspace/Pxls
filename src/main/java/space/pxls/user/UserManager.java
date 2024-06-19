@@ -68,7 +68,7 @@ public class UserManager {
         if (!optionalUser.isPresent()) return null;
         DBUser user = optionalUser.get();
         List<Role> roles = App.getDatabase().getUserRoles(user.id);
-        return userCache.computeIfAbsent(user.id, (k) -> new User(user.id, user.stacked, user.username, user.signup_time, user.cooldownExpiry, roles, user.loginWithIP, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.shadowBanned, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked));
+        return userCache.computeIfAbsent(user.id, (k) -> new User(user.id, user.stacked, user.username, user.signup_time, user.cooldownExpiry, roles, user.loginWithIP, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.shadowBanned, user.displayedFaction, user.discordName, user.factionBlocked));
     }
 
     public String logIn(User user, String ip) {

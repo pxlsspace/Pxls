@@ -4,8 +4,6 @@ import org.apache.commons.jcs3.JCS;
 import org.apache.commons.jcs3.access.CacheAccess;
 import space.pxls.App;
 import space.pxls.data.DBFaction;
-import space.pxls.server.packets.chat.ServerFactionClear;
-import space.pxls.server.packets.chat.ServerFactionUpdate;
 import space.pxls.server.packets.http.UserFaction;
 
 import java.util.Optional;
@@ -79,7 +77,6 @@ public class FactionManager {
     public void deleteByID(int fid) {
         invalidate(fid);
         App.getDatabase().deleteFactionByFID(fid);
-        App.getServer().broadcast(new ServerFactionClear(fid));
     }
 
     /**
@@ -112,8 +109,7 @@ public class FactionManager {
      *                     mutated already and values from getters are the most
      *                     up-to-date.
      * @param handleExtras Whether or not to call
-     *                     {@link space.pxls.data.Database#updateFaction(Faction)}
-     *                     and broadcast a {@link ServerFactionUpdate}.
+     *                     {@link space.pxls.data.Database#updateFaction(Faction)}.
      */
     public void update(Faction faction, boolean handleExtras) {
         cachedFactions.put(faction.getId(), faction);
@@ -122,7 +118,6 @@ public class FactionManager {
                 App.getDatabase().updateFaction(faction);
                 faction.setDirty(false);
             }
-            App.getServer().broadcast(new ServerFactionUpdate(new UserFaction(faction)));
         }
     }
 
@@ -141,7 +136,7 @@ public class FactionManager {
             update(f, false);
 
             if (wasDisplayed)
-                u.setDisplayedFaction(null, true, true);
+                u.setDisplayedFaction(null, true);
         }
     }
 
