@@ -780,6 +780,11 @@ public class WebHandler {
                 sendBadRequest(exchange, "Name isn't in the discord tag format (only lowercase english letters, digits, periods and underlines allowed)");
                 return;
             }
+
+            if (TextFilter.getInstance().filter(discordName, true).filterHit) {
+                sendBadRequest(exchange, "Discord name contains disallowed text");
+                return;
+            }
         }
 
         if (discordName == null) { //user is deleting name, bypass ratelimit check
