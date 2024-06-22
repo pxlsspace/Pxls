@@ -937,7 +937,6 @@ public class WebHandler {
     }
 
     public void chatHistory(HttpServerExchange exchange) {
-//        App.getUserManager().getByName("filipus098").ban(0, "polish <3", null);
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
 
         if (!App.isChatEnabled()) {
