@@ -5,6 +5,7 @@ import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.handlers.AllowedMethodsHandler;
 import io.undertow.server.handlers.Cookie;
+import io.undertow.server.handlers.DisableCacheHandler;
 import io.undertow.server.handlers.form.EagerFormParsingHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.server.handlers.resource.FileResourceManager;
@@ -55,11 +56,11 @@ public class UndertowServer {
         var pathHandler = new PxlsPathHandler()
                 .addPermGatedExactPath("/ws", "board.socket", Handlers.websocket(this::webSocketHandler))
                 .addPermGatedPrefixPath("/ws", "board.socket", Handlers.websocket(this::webSocketHandler))
-                .addPermGatedPrefixPath("/info", "board.info", webHandler::info)
-                .addPermGatedPrefixPath("/boarddata", "board.data", webHandler::data)
-                .addPermGatedPrefixPath("/heatmap", "board.data", webHandler::heatmap)
-                .addPermGatedPrefixPath("/virginmap", "board.data", webHandler::virginmap)
-                .addPermGatedPrefixPath("/placemap", "board.data", webHandler::placemap)
+                .addPermGatedPrefixPath("/info", "board.info", new DisableCacheHandler(webHandler::info))
+                .addPermGatedPrefixPath("/boarddata", "board.data", new DisableCacheHandler(webHandler::data))
+                .addPermGatedPrefixPath("/heatmap", "board.data", new DisableCacheHandler(webHandler::heatmap))
+                .addPermGatedPrefixPath("/virginmap", "board.data", new DisableCacheHandler(webHandler::virginmap))
+                .addPermGatedPrefixPath("/placemap", "board.data", new DisableCacheHandler(webHandler::placemap))
                 .addPermGatedPrefixPath("/initialboarddata", "board.data", webHandler::initialdata)
                 .addPermGatedPrefixPath("/auth", "user.auth", new RateLimitingHandler(webHandler::auth, "http:auth", (int) App.getConfig().getDuration("server.limits.auth.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.auth.count")))
                 .addPermGatedPrefixPath("/signin", "user.auth", webHandler::signIn)
@@ -70,7 +71,7 @@ public class UndertowServer {
                 .addPermGatedPrefixPath("/reportChat", "chat.report", webHandler::chatReport)
                 .addPermGatedPrefixPath("/whoami", "user.auth", webHandler::whoami)
                 .addPermGatedPrefixPath("/users", "user.online", webHandler::users)
-                .addPermGatedPrefixPath("/chat/history", "chat.history", new RateLimitingHandler(webHandler::chatHistory, "http:chatHistory", (int) App.getConfig().getDuration("server.limits.chatHistory.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.chatHistory.count")))
+                .addPermGatedPrefixPath("/chat/history", "chat.history", new RateLimitingHandler(new DisableCacheHandler(webHandler::chatHistory), "http:chatHistory", (int) App.getConfig().getDuration("server.limits.chatHistory.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.chatHistory.count")))
                 .addPermGatedPrefixPath("/chat/setColor", "user.chatColorChange", new RateLimitingHandler(webHandler::chatColorChange, "http:chatColorChange", (int) App.getConfig().getDuration("server.limits.chatColorChange.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.chatColorChange.count")))
                 .addPermGatedPrefixPath("/setDiscordName", "user.discordNameChange", new RateLimitingHandler(webHandler::discordNameChange, "http:discordName", (int) App.getConfig().getDuration("server.limits.discordNameChange.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.discordNameChange.count")))
                 .addPermGatedPrefixPath("/admin", "user.admin", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/")).setCacheTime(10))
