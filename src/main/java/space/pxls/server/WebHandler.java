@@ -1412,7 +1412,7 @@ public class WebHandler {
             setAuthCookie(exchange, tokenCookie.getValue(), 24);
         }
 
-        exchange.getResponseSender().send(ByteBuffer.wrap(App.getBoardData()));
+        exchange.getResponseSender().send(App.getBoardData());
     }
 
     public void initialdata(HttpServerExchange exchange) {
@@ -1420,28 +1420,28 @@ public class WebHandler {
                 .put(Headers.CONTENT_TYPE, "application/binary")
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
 
-        exchange.getResponseSender().send(ByteBuffer.wrap(App.getDefaultBoardData()));
+        exchange.getResponseSender().send(App.getDefaultBoardData());
     }
 
     public void heatmap(HttpServerExchange exchange) {
         exchange.getResponseHeaders()
                 .put(Headers.CONTENT_TYPE, "application/binary")
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
-        exchange.getResponseSender().send(ByteBuffer.wrap(App.getHeatmapData()));
+        exchange.getResponseSender().send(App.getHeatmapData());
     }
 
     public void virginmap(HttpServerExchange exchange) {
         exchange.getResponseHeaders()
                 .put(Headers.CONTENT_TYPE, "application/binary")
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
-        exchange.getResponseSender().send(ByteBuffer.wrap(App.getVirginmapData()));
+        exchange.getResponseSender().send(App.getVirginmapData());
     }
 
     public void placemap(HttpServerExchange exchange) {
         exchange.getResponseHeaders()
                 .put(Headers.CONTENT_TYPE, "application/binary")
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
-        exchange.getResponseSender().send(ByteBuffer.wrap(App.getPlacemapData()));
+        exchange.getResponseSender().send(App.getPlacemapData());
     }
 
     public void logout(HttpServerExchange exchange) {
