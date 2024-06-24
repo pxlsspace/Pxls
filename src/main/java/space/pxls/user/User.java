@@ -738,6 +738,9 @@ public class User {
         } else if (this.hasDonatorChatNameColor("blood", 15)) {
             toReturn.add("donator");
             toReturn.add("donator--blood");
+        } else if (this.hasDonatorChatNameColor("forest", 16)) {
+            toReturn.add("donator");
+            toReturn.add("donator--forest");
         }
         return toReturn.size() != 0 ? toReturn : null;
     }
