@@ -1241,7 +1241,7 @@ public class App {
 
         try(var file = new RandomAccessFile(path.toString(), "rw")) {
             if (file.length() != width * height) {
-            getLogger().error("board.dat dimensions don't match the ones on pxls.conf");
+                getLogger().error("board.dat dimensions don't match the ones on pxls.conf");
                 return false;
             }
 
@@ -1273,7 +1273,7 @@ public class App {
 
         try(var file = new RandomAccessFile(path.toString(), "rw")) {
             if (file.length() != width * height) {
-            getLogger().error("heatmap.dat dimensions don't match the ones on pxls.conf");
+                getLogger().error("heatmap.dat dimensions don't match the ones on pxls.conf");
                 return false;
             }
 
@@ -1349,7 +1349,7 @@ public class App {
 
         try(var file = new RandomAccessFile(path.toString(), "rw")) {
             if (file.length() != width * height) {
-            getLogger().error("virginmap.dat dimensions don't match the ones on pxls.conf");
+                getLogger().error("virginmap.dat dimensions don't match the ones on pxls.conf");
                 return false;
             }
 
