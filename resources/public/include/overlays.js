@@ -148,7 +148,7 @@ module.exports.overlays = (function() {
 
         const intView = new Uint32Array(imageData.data.buffer);
         for (let i = 0; i < width * height; i++) {
-          if (placemapData[i] === 1 || placemapData[i] === 0xFF) {
+          if (placemapData[i] === 255) {
             intView[i] = 0x00000000;
           } else {
             // this assignment uses the data as the alpha channel for the color
