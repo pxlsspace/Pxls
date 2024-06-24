@@ -20,10 +20,14 @@ import space.pxls.util.*;
 import space.pxls.palette.*;
 
 import java.io.File;
+import java.io.RandomAccessFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.ByteBuffer;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.*;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -42,12 +46,11 @@ public class App {
 
     private static int width;
     private static int height;
-    private static byte[] board;
-    private static byte[] heatmap;
-    private static byte[] placemap;
-    private static byte[] virginmap;
-    private static byte[] defaultBoard;
-    private static boolean havePlacemap;
+    private static MappedByteBuffer board;
+    private static MappedByteBuffer heatmap;
+    private static MappedByteBuffer placemap;
+    private static MappedByteBuffer virginmap;
+    private static MappedByteBuffer defaultBoard;
     private static Palette palette;
 
     private static PxlsTimer mapSaveTimer;
@@ -79,17 +82,12 @@ public class App {
 
         width = config.getInt("board.width");
         height = config.getInt("board.height");
-        board = new byte[width * height];
-        heatmap = new byte[width * height];
-        placemap = new byte[width * height];
-        virginmap = new byte[width * height];
-        defaultBoard = null;
 
         initStorage();
         loadDefaultMap();
         loadMap();
         loadHeatmap();
-        havePlacemap = loadPlacemap();
+        loadPlacemap();
         loadVirginmap();
 
         database = new Database();
@@ -115,9 +113,10 @@ public class App {
         new Timer().schedule(new HeatmapTimer(), 0, heatmap_timer_cd * 1000 / 256);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("Saving map before shutdown...");
+            System.out.println("Saving map+backup, and flushing logs before shutdown...");
+            board.force();
             saveMapBackup();
-            saveMapForce();
+            LogManager.shutdown();
         }));
 
         server = new UndertowServer(config.getInt("server.port"));
@@ -150,7 +149,6 @@ public class App {
         } catch (Exception e) {
             getLogger().error(new Error("Failed to create backup directories", e));
         }
-        saveMap();
     }
 
     private static void handleCommand(String line) {
@@ -175,7 +173,7 @@ public class App {
                 }
             } else if (token[0].equalsIgnoreCase("save")) {
                 try {
-                    saveMapForce();
+                    board.force();
                     saveMapBackup();
                     System.out.println("Success!");
                 } catch (Exception x) {
@@ -980,28 +978,29 @@ public class App {
         return height;
     }
 
-    public static byte[] getHeatmapData() {
+    public static ByteBuffer getHeatmapData() {
+        heatmap.rewind();
         return heatmap;
     }
 
-    public static byte[] getVirginmapData() {
+    public static ByteBuffer getVirginmapData() {
+        virginmap.rewind();
         return virginmap;
     }
 
-    public static byte[] getPlacemapData() {
+    public static ByteBuffer getPlacemapData() {
+        placemap.rewind();
         return placemap;
     }
 
-    public static byte[] getBoardData() {
+    public static ByteBuffer getBoardData() {
+        board.rewind();
         return board;
     }
 
-    public static byte[] getDefaultBoardData() {
+    public static ByteBuffer getDefaultBoardData() {
+        defaultBoard.rewind();
         return defaultBoard;
-    }
-
-    public static boolean getHavePlacemap() {
-        return havePlacemap;
     }
 
     public static Path getStorageDir() {
@@ -1020,16 +1019,50 @@ public class App {
         return config.getStringList("whoamiAllowedOrigins");
     }
 
-    public static int getPixel(int x, int y) {
-        return board[x + y * width];
+    public static byte getPixel(int x, int y) {
+        return board.get(x + y * width);
     }
 
-    public static int getPlacemap(int x, int y) {
-        return placemap[x + y * width];
+    public static byte getPlacemap(int x, int y) {
+        return placemap.get(x + y * width);
     }
 
-    public static int getVirginmap(int x, int y) {
-        return virginmap[x + y * width];
+    public static byte getVirginmap(int x, int y) {
+        return virginmap.get(x + y * width);
+    }
+
+    public static byte getDefaultPixel(int x, int y) {
+        return defaultBoard.get(x + y * width);
+    }
+
+    public static boolean getCanPlace(int x, int y) {
+        switch (getPlacemap(x, y)) {
+            case 0:
+                // Allow normal placement
+                return true;
+            case 1:
+            case (byte) 0xFF:
+                // Forbid placement
+                return false;
+            case 2:
+                // Allow tendril placement
+                int top = getPixel(x, y + 1);
+                int left = getPixel(x - 1, y);
+                int right = getPixel(x + 1, y);
+                int bottom = getPixel(x, y - 1);
+
+                int defaultTop = getDefaultPixel(x, y + 1);
+                int defaultLeft = getDefaultPixel(x - 1, y);
+                int defaultRight = getDefaultPixel(x + 1, y);
+                int defaultBottom = getDefaultPixel(x, y - 1);
+
+                return top != defaultTop ||
+                    left != defaultLeft ||
+                    right != defaultRight ||
+                    bottom != defaultBottom;
+            default:
+                return false;
+        }
     }
 
     public static boolean getSnipMode() {
@@ -1052,9 +1085,9 @@ public class App {
             action = mod_action ? "mod overwrite" : "user place";
         }
 
-        board[x + y * width] = (byte) color;
-        heatmap[x + y * width] = (byte) 0xFF;
-        virginmap[x + y * width] = (byte) 0x00;
+        board.put(x + y * width, (byte) color);
+        heatmap.put(x + y * width, (byte) 0xFF);
+        virginmap.put(x + y * width, (byte) 0x00);
         pixelLogger.log(Level.INFO, String.format("%s\t%d\t%d\t%d\t%s", userName, x, y, color, action));
         if (updateDatabase) {
             database.placePixel(x, y, color, user, mod_action);
@@ -1091,7 +1124,7 @@ public class App {
                 database.putRollbackPixel(who, rbPixel.fromId, rbPixel.toPixel.id);
             } else { //else rollback to blank canvas
                 DBPixelPlacementFull fromPixel = database.getPixelByID(null, rbPixel.fromId);
-                byte rollbackDefault = getDefaultColor(fromPixel.x, fromPixel.y);
+                byte rollbackDefault = getDefaultPixel(fromPixel.x, fromPixel.y);
                 putPixel(fromPixel.x, fromPixel.y, rollbackDefault, who, false, "", false, "rollback");
                 forBroadcast.add(new ServerPlace.Pixel(fromPixel.x, fromPixel.y, (int) rollbackDefault));
                 database.putRollbackPixelNoPrevious(fromPixel.x, fromPixel.y, who, fromPixel.id);
@@ -1129,7 +1162,7 @@ public class App {
             for (int y = Math.min(fromY, toY); y <= Math.max(fromY, toY); y++) {
                 byte c = toColor;
                 if (toColor == 0xFF || toColor == -1) {
-                    c = getDefaultColor(x, y);
+                    c = getDefaultPixel(x, y);
                 }
                 int pixelColor = getPixel(x, y);
                 // fromColor is 0xFF or -1 if we're nuking
@@ -1151,91 +1184,160 @@ public class App {
         return new File(getStorageDir().toString()).mkdirs();
     }
 
+    private static void initDefaultMap() {
+        Path path = getStorageDir().resolve("default_board.dat");
+        byte[] data = new byte[width * height];
+        Arrays.fill(data, (byte) palette.getDefaultColorIndex());
+        
+        try {
+            Files.write(path, data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static boolean loadDefaultMap() {
         Path path = getStorageDir().resolve("default_board.dat").toAbsolutePath();
         if (!Files.exists(path)) {
+            getLogger().warn("Cannot find default_board.dat, using blank board");
+            initDefaultMap();
+        }
+
+        try(var file = new RandomAccessFile(path.toString(), "r")) {
+            if (file.length() != width * height) {
+                getLogger().error("default_board.dat dimensions don't match the ones on pxls.conf");
+                defaultBoard = null;
+                return false;
+            }
+
+            defaultBoard = file.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
             defaultBoard = null;
             return false;
         }
+    }
+
+    private static void initMap() {
+        Path path = getStorageDir().resolve("board.dat");
+        Path defaultPath = getStorageDir().resolve("default_board.dat");
 
         try {
-            byte[] bytes = Files.readAllBytes(path);
-            defaultBoard = new byte[width * height];
-            System.arraycopy(bytes, 0, defaultBoard, 0, width * height);
-            return true;
-        } catch (ArrayIndexOutOfBoundsException e) {
-            getLogger().error("board.dat dimensions don't match the ones on pxls.conf");
-            return false;
+            // Force the defaultBoard to save to disk first
+            defaultBoard.force();
+            // We can just save the default board as the file
+            Files.copy(defaultPath, path);
         } catch (IOException e) {
             e.printStackTrace();
-            return false;
         }
     }
 
     private static boolean loadMap() {
         Path path = getStorageDir().resolve("board.dat");
         if (!Files.exists(path)) {
-            getLogger().warn("Cannot find board.dat in working directory, using blank board");
-            for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
-                    board[x + width * y] = getDefaultColor(x, y);
-                }
-            }
-            saveMapToDir(path);
-            return true;
+            getLogger().warn("Cannot find board.dat, using blank board");
+            initMap();
         }
 
-        try {
-            byte[] bytes = Files.readAllBytes(path);
-            System.arraycopy(bytes, 0, board, 0, width * height);
+        try(var file = new RandomAccessFile(path.toString(), "rw")) {
+            if (file.length() != width * height) {
+                getLogger().error("board.dat dimensions don't match the ones on pxls.conf");
+                return false;
+            }
+
+            board = file.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, file.length());
             return true;
-        } catch (ArrayIndexOutOfBoundsException e) {
-            getLogger().error("board.dat dimensions don't match the ones on pxls.conf");
-            return false;
         } catch (IOException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    private static void initHeatmap() {
+        Path path = getStorageDir().resolve("heatmap.dat");
+        byte[] data = new byte[width * height];
+        
+        try {
+            Files.write(path, data);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
     private static boolean loadHeatmap() {
         Path path = getStorageDir().resolve("heatmap.dat");
         if (!Files.exists(path)) {
-            getLogger().warn("Cannot find heatmap.dat in working directory, using heatmap");
-            saveHeatmapToDir(path);
-            return true;
+            getLogger().warn("Cannot find heatmap.dat, using blank heatmap");
+            initHeatmap();
         }
 
-        try {
-            byte[] bytes = Files.readAllBytes(path);
-            System.arraycopy(bytes, 0, heatmap, 0, width * height);
+        try(var file = new RandomAccessFile(path.toString(), "rw")) {
+            if (file.length() != width * height) {
+                getLogger().error("heatmap.dat dimensions don't match the ones on pxls.conf");
+                return false;
+            }
+
+            heatmap = file.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, file.length());
             return true;
-        } catch (ArrayIndexOutOfBoundsException e) {
-            getLogger().error("heatmap.dat dimensions don't match the ones on pxls.conf");
-            return false;
         } catch (IOException e) {
             e.printStackTrace();
             return false;
         }
     }
 
+    private static void initPlacemap() {
+        Path path = getStorageDir().resolve("placemap.dat");
+        byte[] data = new byte[width * height];
+        for (int x = 0; x < width; x++) {
+            for (int y = 0; y < height; y++) {
+                int position = x + width * y;
+                byte color = board.get(position);
+
+                if (color == 0xFF || color == -1) {
+                    // make transparent pixels unplaceable
+                    data[position] = (byte) 0xFF;
+                }
+            }
+        }
+        
+        try {
+            Files.write(path, data);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private static boolean loadPlacemap() {
         Path path = getStorageDir().resolve("placemap.dat");
         if (!Files.exists(path)) {
-            getLogger().warn("Cannot find placemap.dat in working directory, assuming transparent pixels are unplaceable");
-            return false;
+            getLogger().warn("Cannot find placemap.dat, assuming transparent pixels are unplaceable");
+            initPlacemap();
         }
 
-        try {
-            byte[] bytes = Files.readAllBytes(path);
-            System.arraycopy(bytes, 0, placemap, 0, width * height);
+        try(var file = new RandomAccessFile(path.toString(), "r")) {
+            if (file.length() != width * height) {
+                getLogger().error("placemap.dat dimensions don't match the ones on pxls.conf");
+                return false;
+            }
+
+            placemap = file.getChannel().map(FileChannel.MapMode.READ_ONLY, 0, file.length());
             return true;
-        } catch (ArrayIndexOutOfBoundsException e) {
-            getLogger().error("placemap.dat dimensions don't match the ones on pxls.conf");
-            return false;
         } catch (IOException e) {
             e.printStackTrace();
             return false;
+        }
+    }
+
+    private static void initVirginmap() {
+        Path path = getStorageDir().resolve("virginmap.dat");
+        byte[] data = new byte[width * height];
+        Arrays.fill(data, (byte) 0xFF);
+        
+        try {
+            Files.write(path, data);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
@@ -1243,23 +1345,17 @@ public class App {
         Path path = getStorageDir().resolve("virginmap.dat");
         if (!Files.exists(path)) {
             getLogger().warn("Cannot find virginmap.dat in working directory, using blank virginmap");
-
-            for (int x = 0; x < width; x++) {
-                for (int y = 0; y < height; y++) {
-                    virginmap[x + width * y] = (byte) 0xFF;
-                }
-            }
-            saveVirginmapToDir(path);
-            return true;
+            initVirginmap();
         }
 
-        try {
-            byte[] bytes = Files.readAllBytes(path);
-            System.arraycopy(bytes, 0, virginmap, 0, width * height);
+        try(var file = new RandomAccessFile(path.toString(), "rw")) {
+            if (file.length() != width * height) {
+                getLogger().error("virginmap.dat dimensions don't match the ones on pxls.conf");
+                return false;
+            }
+
+            virginmap = file.getChannel().map(FileChannel.MapMode.READ_WRITE, 0, file.length());
             return true;
-        } catch (ArrayIndexOutOfBoundsException e) {
-            getLogger().error("virginmap.dat dimensions don't match the ones on pxls.conf");
-            return false;
         } catch (IOException e) {
             e.printStackTrace();
             return false;
@@ -1268,8 +1364,9 @@ public class App {
 
     public static void updateHeatmap() {
         for (int i = 0; i < width * height; i++) {
-            if (heatmap[i] != 0) {
-                heatmap[i]--;
+            byte value = heatmap.get(i);
+            if (value != 0) {
+                heatmap.put(i, (byte) (value - 1));
             }
         }
     }
@@ -1300,41 +1397,12 @@ public class App {
         }
     }
 
-    public static void saveMap() {
-        mapSaveTimer.run(App::saveMapForce);
-        mapBackupTimer.run(App::saveMapBackup);
-    }
-
-    private static void saveMapForce() {
-        saveMapToDir(getStorageDir().resolve("board.dat"));
-        saveHeatmapToDir(getStorageDir().resolve("heatmap.dat"));
-        saveVirginmapToDir(getStorageDir().resolve("virginmap.dat"));
-    }
-
     private static void saveMapBackup() {
-        saveMapToDir(getStorageDir().resolve("backups/board." + System.currentTimeMillis() + ".dat"));
-    }
-
-    private static void saveMapToDir(Path path) {
+        Path board = getStorageDir().resolve("board.dat");
+        Path backup = getStorageDir().resolve("backups/board." + System.currentTimeMillis() + ".dat");
         try {
-            Files.write(path, board);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void saveHeatmapToDir(Path path) {
-        try {
-            Files.write(path, heatmap);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void saveVirginmapToDir(Path path) {
-        try {
-            Files.write(path, virginmap);
-        } catch (IOException e) {
+            Files.copy(board, backup);
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -1349,12 +1417,6 @@ public class App {
 
     public static UserManager getUserManager() {
         return userManager;
-    }
-
-    public static byte getDefaultColor(int x, int y) {
-        return App.defaultBoard != null
-            ? App.defaultBoard[x + y * App.width]
-            : palette.getDefaultColorIndex();
     }
 
     public static Database getDatabase() {
