@@ -67,7 +67,7 @@ public class User {
         this.discordName = discordName;
         this.factionBlocked = factionBlocked;
 
-        this.placementOverrides = new PlacementOverrides(false, false, false);
+        this.placementOverrides = new PlacementOverrides(false, false, false, false);
     }
 
     public void reloadFromDatabase() {
@@ -185,6 +185,14 @@ public class User {
 
     public boolean hasIgnorePlacemap() {
         return placementOverrides.hasIgnorePlacemap();
+    }
+
+    public void maybeSetIgnoreEndOfCanvas(boolean endOfCanvas) {
+        placementOverrides.setIgnoreEndOfCanvas(endOfCanvas && hasPermission("board.endOfCanvas.ignore"));
+    }
+
+    public boolean hasIgnoreEndOfCanvas() {
+        return placementOverrides.hasIgnoreEndOfCanvas();
     }
 
     public List<Role> getRoles() {

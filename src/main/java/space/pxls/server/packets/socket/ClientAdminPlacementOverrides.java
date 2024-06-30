@@ -6,11 +6,13 @@ public class ClientAdminPlacementOverrides {
     private Boolean ignoreCooldown;
     private Boolean canPlaceAnyColor;
     private Boolean ignorePlacemap;
+    private Boolean ignoreEndOfCanvas;
 
-    public ClientAdminPlacementOverrides(Boolean ignoreCooldown, Boolean canPlaceAnyColor, Boolean ignorePlacemap) {
+    public ClientAdminPlacementOverrides(Boolean ignoreCooldown, Boolean canPlaceAnyColor, Boolean ignorePlacemap, Boolean ignoreEndOfCanvas) {
         this.ignoreCooldown = ignoreCooldown;
         this.canPlaceAnyColor = canPlaceAnyColor;
         this.ignorePlacemap = ignorePlacemap;
+        this.ignoreEndOfCanvas = ignoreEndOfCanvas;
     }
 
     public Boolean hasIgnoreCooldown() {
@@ -23,5 +25,9 @@ public class ClientAdminPlacementOverrides {
 
     public Boolean hasIgnorePlacemap() {
         return ignorePlacemap;
+    }
+
+    public Boolean hasIgnoreEndOfCanvas() {
+        return ignoreEndOfCanvas;
     }
 }

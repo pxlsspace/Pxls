@@ -12,6 +12,7 @@ public class CanvasInfo {
     public Integer width;
     public Integer height;
     public List<Color> palette;
+    public Boolean endOfCanvas;
     public CooldownInfo cooldownInfo;
     public String captchaKey;
     public Integer heatmapCooldown;
@@ -23,11 +24,12 @@ public class CanvasInfo {
     public String corsParam;
     public LegalInfo legal;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, boolean snipMode, String corsBase, String corsParam, LegalInfo legal) {
+    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, Boolean endOfCanvas, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, boolean snipMode, String corsBase, String corsParam, LegalInfo legal) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
         this.palette = palette;
+        this.endOfCanvas = endOfCanvas;
         this.cooldownInfo = cooldownInfo;
         this.captchaKey = captchaKey;
         this.heatmapCooldown = heatmapCooldown;
@@ -54,6 +56,10 @@ public class CanvasInfo {
 
     public List<Color> getPalette() {
         return palette;
+    }
+
+    public Boolean getEndOfCanvas() {
+        return endOfCanvas;
     }
 
     public String getCaptchaKey() {

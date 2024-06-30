@@ -1383,6 +1383,7 @@ public class WebHandler {
             App.getWidth(),
             App.getHeight(),
             App.getPalette().getColors(),
+            App.getConfig().getBoolean("endOfCanvas"),
             new CanvasInfo.CooldownInfo(App.getConfig().getString("cooldownType"),
                     App.getConfig().getDuration("staticCooldown.time", TimeUnit.SECONDS),
                     App.getConfig().getObject("activityCooldown").unwrapped()),

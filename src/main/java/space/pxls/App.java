@@ -165,6 +165,9 @@ public class App {
                     System.out.println("Invalidated all factions");
                     userManager.reload();
                     System.out.println("Reloaded user manager");
+                    boolean endOfCanvas = config.getBoolean("endOfCanvas");
+                    App.getServer().broadcastRaw("{\"type\":\"endOfCanvas\",\"state\":" + endOfCanvas + "}");
+                    System.out.println("Sent end of canvas state (" + endOfCanvas + ")");
                     System.out.println("Success!");
                 } catch (Exception x) {
                     x.printStackTrace();
@@ -1107,7 +1110,7 @@ public class App {
         Path path = getStorageDir().resolve("default_board.dat");
         byte[] data = new byte[width * height];
         Arrays.fill(data, (byte) palette.getDefaultColorIndex());
-        
+
         try {
             Files.write(path, data);
         } catch (IOException e) {
@@ -1176,7 +1179,7 @@ public class App {
     private static void initHeatmap() {
         Path path = getStorageDir().resolve("heatmap.dat");
         byte[] data = new byte[width * height];
-        
+
         try {
             Files.write(path, data);
         } catch (IOException e) {
@@ -1219,7 +1222,7 @@ public class App {
                 }
             }
         }
-        
+
         try {
             Files.write(path, data);
         } catch (IOException e) {
@@ -1252,7 +1255,7 @@ public class App {
         Path path = getStorageDir().resolve("virginmap.dat");
         byte[] data = new byte[width * height];
         Arrays.fill(data, (byte) 0xFF);
-        
+
         try {
             Files.write(path, data);
         } catch (IOException e) {

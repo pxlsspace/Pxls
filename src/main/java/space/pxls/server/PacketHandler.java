@@ -150,6 +150,9 @@ public class PacketHandler {
         if (obj.hasIgnorePlacemap() != null) {
             user.maybeSetIgnorePlacemap(obj.hasIgnorePlacemap());
         }
+        if (obj.hasIgnoreEndOfCanvas() != null) {
+            user.maybeSetIgnoreEndOfCanvas(obj.hasIgnoreEndOfCanvas());
+        }
 
         for (WebSocketChannel ch : user.getConnections()) {
             sendPlacementOverrides(ch, user);
@@ -158,6 +161,9 @@ public class PacketHandler {
     }
 
     private void handleUndo(WebSocketChannel channel, User user, ClientUndo cu, String ip){
+        if (App.getConfig().getBoolean("endOfCanvas") && !user.hasIgnoreEndOfCanvas()) {
+            return;
+        }
         boolean _canUndo = user.canUndo(true);
         if (!_canUndo || user.undoWindowPassed()) {
             return;
@@ -205,6 +211,9 @@ public class PacketHandler {
     }
 
     private void handlePlace(WebSocketChannel channel, User user, ClientPlace cp, String ip) {
+        if (App.getConfig().getBoolean("endOfCanvas") && !user.hasIgnoreEndOfCanvas()) {
+            return;
+        }
         if (!cp.getType().equals("pixel")) {
             handlePlaceMaybe(channel, user, cp, ip);
         }
