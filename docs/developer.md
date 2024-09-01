@@ -253,11 +253,11 @@ for f in po/*.po; do msgmerge -N -U --no-wrap $f po/Localization.pot; done
 
 ## Symbols Template Style
 
-The `Symbols` template style (located in `resources/public/pebble_templates/index.html` and localization files between `Dotted (Big, 2:2)` and `"Numbers"`)
+The `Symbols` template style (located in `views/index.handlebars` and localization files between `Dotted (Big, 2:2)` and `"Numbers"`)
 uses the reference palette configuration. Any changes to the palette will break this style. To modify it, decode the base64 string for the symbols into a `.png`
 and open it in an image editor. 
 
-<img src="https://i.imgur.com/efz5tk7.png" alt="Symbols template style sample">
+<img src="https://i.imgur.com/fQNYgy4.png" alt="Symbols template style sample">
 
 Each symbol is in a 7x7 block going from left to right, top to bottom. The color of the symbols do not matter as they will be re-mapped to the palette when applied.
 The symbols can be resized so long as they remain proportional to the image size so that there are two rows of 16 blocks each, or however many colors are in the palette.
