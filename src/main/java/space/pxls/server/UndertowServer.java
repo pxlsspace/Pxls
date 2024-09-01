@@ -90,7 +90,6 @@ public class UndertowServer {
                 .addPermGatedPrefixPath("/sendNotificationToDiscord", "notification.discord", webHandler::sendNotificationToDiscord)
                 .addPermGatedPrefixPath("/setNotificationExpired", "notification.expired", webHandler::setNotificationExpired)
                 .addPermGatedPrefixPath("/notifications", "notification.list", webHandler::notificationsList)
-                .addPermGatedPrefixPath("/console", "management.console", new AllowedMethodsHandler(webHandler::webConsole, Methods.POST))
                 .addExactPath("/", webHandler::index)
                 .addExactPath("/index.html", webHandler::index)
                 .addExactPath("/factions", new AllowedMethodsHandler(webHandler::getRequestingUserFactions, Methods.GET))

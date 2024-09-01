@@ -2107,17 +2107,6 @@ public class WebHandler {
         }
     }
 
-    public void webConsole(HttpServerExchange exchange) {
-        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-
-        try {
-            App.handleCommand(data.getFirst("command").getValue());
-            exchange.setStatusCode(StatusCodes.OK);
-        } catch (NullPointerException ex) {
-            exchange.setStatusCode(StatusCodes.BAD_REQUEST);
-        }
-    }
-
     private User parseUserFromForm(HttpServerExchange exchange) {
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         if (data != null) {
