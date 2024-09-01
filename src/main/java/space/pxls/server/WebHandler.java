@@ -2014,6 +2014,17 @@ public class WebHandler {
         }
     }
 
+    public void webConsole(HttpServerExchange exchange) {
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+
+        try {
+            App.handleCommand(data.getFirst("command").getValue());
+            exchange.setStatusCode(StatusCodes.OK);
+        } catch (NullPointerException ex) {
+            exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+        }
+    }
+
     public void profile(HttpServerExchange exchange) {
         exchange.getResponseHeaders()
                 .put(Headers.CONTENT_TYPE, "application/json");
