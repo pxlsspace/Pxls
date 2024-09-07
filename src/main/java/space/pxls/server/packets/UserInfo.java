@@ -15,19 +15,12 @@ public class UserInfo {
     public String banReason;
     public String method;
     public PlacementOverrides placementOverrides;
-    public Boolean chatBanned;
-    public String chatbanReason;
-    public Boolean chatbanIsPerma;
-    public Long chatbanExpiry;
     public Boolean renameRequested;
     public String discordName;
-    public Number chatNameColor;
 
     public UserInfo(String username, List<Role> roles, int pixelCount, int pixelCountAllTime,
                     Boolean banned, Long banExpiry, String banReason, String method,
-                    PlacementOverrides placementOverrides, Boolean chatBanned, String chatbanReason,
-                    Boolean chatbanIsPerma, Long chatbanExpiry, Boolean renameRequested, String discordName,
-                    Number chatNameColor) {
+                    PlacementOverrides placementOverrides, Boolean renameRequested, String discordName) {
         this.username = username;
         this.roles = roles;
         this.pixelCount = pixelCount;
@@ -37,13 +30,8 @@ public class UserInfo {
         this.banReason = banReason;
         this.method = method;
         this.placementOverrides = placementOverrides;
-        this.chatBanned = chatBanned;
-        this.chatbanReason = chatbanReason;
-        this.chatbanIsPerma = chatbanIsPerma;
-        this.chatbanExpiry = chatbanExpiry;
         this.renameRequested = renameRequested;
         this.discordName = discordName;
-        this.chatNameColor = chatNameColor;
     }
 
     public String getUsername() {
@@ -74,31 +62,11 @@ public class UserInfo {
         return placementOverrides;
     }
 
-    public Boolean getChatBanned() {
-        return chatBanned;
-    }
-
-    public String getChatbanReason() {
-        return chatbanReason;
-    }
-
-    public Boolean getChatbanIsPerma() {
-        return chatbanIsPerma;
-    }
-
-    public Long getChatbanExpiry() {
-        return chatbanExpiry;
-    }
-
     public Boolean getRenameRequested() {
         return renameRequested;
     }
 
     public String getDiscordName() {
         return discordName;
-    }
-
-    public Number getChatNameColor() {
-        return chatNameColor;
     }
 }

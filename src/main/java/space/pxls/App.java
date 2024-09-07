@@ -7,13 +7,11 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.xnio.XnioWorker;
-import space.pxls.data.DBChatMessage;
 import space.pxls.data.DBPixelPlacementFull;
 import space.pxls.data.DBRollbackPixel;
 import space.pxls.data.Database;
 import space.pxls.server.UndertowServer;
 import space.pxls.server.packets.chat.Badge;
-import space.pxls.server.packets.chat.ClientChatMessage;
 import space.pxls.server.packets.socket.*;
 import space.pxls.user.*;
 import space.pxls.util.*;
@@ -167,6 +165,9 @@ public class App {
                     System.out.println("Invalidated all factions");
                     userManager.reload();
                     System.out.println("Reloaded user manager");
+                    boolean endOfCanvas = config.getBoolean("endOfCanvas");
+                    App.getServer().broadcastRaw("{\"type\":\"endOfCanvas\",\"state\":" + endOfCanvas + "}");
+                    System.out.println("Sent end of canvas state (" + endOfCanvas + ")");
                     System.out.println("Success!");
                 } catch (Exception x) {
                     x.printStackTrace();
@@ -585,80 +586,6 @@ public class App {
                     System.out.println("captchaOverride list|USERNAME[ STATE]");
                     System.out.println("STATE=on|off");
                 }
-            } else if (token[0].equalsIgnoreCase("broadcast")) {
-                //broadcast MESSAGE
-                if (token.length > 1) {
-                    App.getServer().getPacketHandler().handleChatMessage(null, null, new ClientChatMessage(line.substring(token[0].length() + 1), 0, true));
-                }
-            } else if (token[0].equalsIgnoreCase("ChatBan")) {
-                if (token.length > 4) {
-                    User user = getUserManager().getByName(token[1]);
-                    if (user == null) System.out.printf("Unknown user: %s%n", token[1]);
-                    else {
-                        Integer banLength = 600;
-                        try {
-                            banLength = Integer.valueOf(token[2]);
-                        } catch (Exception e) {
-                            System.out.printf("Failed to parse BAN_LENGTH '%s'. Defaulting to 600", token[2]);
-                        }
-                        Boolean messageRemoval = token[3].equals("1") || token[3].equalsIgnoreCase("yes") || token[3].equalsIgnoreCase("true");
-                        String reason = line.substring(token[0].length() + token[1].length() + token[2].length() + token[3].length() + 4);
-                        Chatban.TEMP(user, null, System.currentTimeMillis() + banLength * 1000L, reason, messageRemoval, Integer.MAX_VALUE, true).commit();
-                    }
-                } else {
-                    System.out.println("chatban USER BAN_LENGTH MESSAGE_REMOVAL REASON\n    USER: The name of the user\n    BAN_LENGTH: The length in seconds of the chatban. For permas, see 'PermaChatBan' command.\n    MESSAGE_REMOVAL: Boolean (1|0) of whether or not to purge the user from chat.\n    REASON: The reason for the chatban. Will be displayed to the user");
-                }
-            } else if (token[0].equalsIgnoreCase("PermaChatBan")) {
-                if (token.length > 3) {
-                    User user = userManager.getByName(token[1]);
-                    if (user == null) System.out.printf("Unknown user: %s%n", token[1]);
-                    else {
-                        Boolean messageRemoval = token[2].equals("1") || token[2].equalsIgnoreCase("yes") || token[2].equalsIgnoreCase("true");
-                        String reason = line.substring(token[0].length() + token[1].length() + token[2].length() + 3);
-                        Chatban.PERMA(user, null, reason, messageRemoval, Integer.MAX_VALUE, true).commit();
-                    }
-                } else {
-                    System.out.println("PermaChatBan USER MESSAGE_REMOVAL REASON\n    USER: The name of the user\n    MESSAGE_REMOVAL: Boolean (1|0) of whether or not to purge the user from chat.\n    REASON: The reason for the chatban. Will be displayed to the user");
-                }
-            } else if (token[0].equalsIgnoreCase("UnChatBan")) {
-                if (token.length > 2) {
-                    User user = userManager.getByName(token[1]);
-                    if (user == null) System.out.printf("Unknown user: %s%n", token[1]);
-                    else {
-                        Chatban.UNBAN(user, null, line.substring(token[0].length() + token[1].length() + 2)).commit();
-                    }
-                } else {
-                    System.out.println("UnChatBan USER REASON");
-                }
-            } else if (token[0].equalsIgnoreCase("ChatPurge")) {
-                if (token.length > 2) {
-                    User user = userManager.getByName(token[1]);
-                    if (user == null) System.out.printf("Unknown user: %s%n", token[1]);
-                    else {
-                        Integer toPurge = Integer.MAX_VALUE;
-                        String reason = "";
-                        try {
-                            toPurge = Integer.valueOf(token[2]);
-                        } catch (Exception e) {
-                            System.out.printf("Failed to parse '%s' as a number, defaulting to %s%n", token[2], toPurge);
-                        }
-
-                        if (token.length >= 4) {
-                            reason = line.substring(token[0].length() + token[1].length() + token[2].length() + 3);
-                        } else {
-                            reason = "";
-                        }
-
-                        if (toPurge > 0) {
-                            App.getDatabase().purgeChat(user, null, toPurge, reason, true, true);
-                        } else {
-                            System.out.printf("Invalid toPurge. Should be >0, got %s%n", toPurge);
-                        }
-
-                    }
-                } else {
-                    System.out.println("ChatPurge USER [AMOUNT ]REASON");
-                }
             } else if (token[0].equalsIgnoreCase("cf")) {
                 String z = line.substring(token[0].length() + 1);
                 System.out.printf("running chat filter against '%s'%nResult: %s%n", z, TextFilter.getInstance().filter(z, true));
@@ -840,7 +767,6 @@ public class App {
         config.checkValid(ConfigFactory.load());
 
         RateLimitFactory.registerBucketHolder(ClientUndo.class, new RateLimitFactory.BucketConfig(((int) App.getConfig().getDuration("server.limits.undo.time", TimeUnit.SECONDS)), App.getConfig().getInt("server.limits.undo.count")));
-        RateLimitFactory.registerBucketHolder(DBChatMessage.class, new RateLimitFactory.BucketConfig(((int) App.getConfig().getDuration("server.limits.chat.time", TimeUnit.SECONDS)), App.getConfig().getInt("server.limits.chat.count")));
         RateLimitFactory.registerBucketHolder("http:discordName", new RateLimitFactory.BucketConfig((int) App.getConfig().getDuration("server.limits.discordNameChange.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.discordNameChange.count")));
 
         mapSaveTimer = new PxlsTimer(config.getDuration("board.saveInterval", TimeUnit.SECONDS));
@@ -1073,10 +999,6 @@ public class App {
         return getConfig().getBoolean("oauth.enableRegistration");
     }
 
-    public static boolean isChatEnabled() {
-        return getConfig().getBoolean("chat.enabled");
-    }
-
     public static void putPixel(int x, int y, int color, User user, boolean mod_action, String ip, boolean updateDatabase, String action) {
         if (x < 0 || x >= width || y < 0 || y >= height || (color >= getPalette().getColors().size() && !(color == 0xFF || color == -1))) return;
         String userName = user != null ? user.getName() : "<server>";
@@ -1188,7 +1110,7 @@ public class App {
         Path path = getStorageDir().resolve("default_board.dat");
         byte[] data = new byte[width * height];
         Arrays.fill(data, (byte) palette.getDefaultColorIndex());
-        
+
         try {
             Files.write(path, data);
         } catch (IOException e) {
@@ -1242,7 +1164,7 @@ public class App {
 
         try(var file = new RandomAccessFile(path.toString(), "rw")) {
             if (file.length() != width * height) {
-                getLogger().error("board.dat dimensions don't match the ones on pxls.conf");
+            getLogger().error("board.dat dimensions don't match the ones on pxls.conf");
                 return false;
             }
 
@@ -1257,7 +1179,7 @@ public class App {
     private static void initHeatmap() {
         Path path = getStorageDir().resolve("heatmap.dat");
         byte[] data = new byte[width * height];
-        
+
         try {
             Files.write(path, data);
         } catch (IOException e) {
@@ -1274,7 +1196,7 @@ public class App {
 
         try(var file = new RandomAccessFile(path.toString(), "rw")) {
             if (file.length() != width * height) {
-                getLogger().error("heatmap.dat dimensions don't match the ones on pxls.conf");
+            getLogger().error("heatmap.dat dimensions don't match the ones on pxls.conf");
                 return false;
             }
 
@@ -1300,7 +1222,7 @@ public class App {
                 }
             }
         }
-        
+
         try {
             Files.write(path, data);
         } catch (IOException e) {
@@ -1333,7 +1255,7 @@ public class App {
         Path path = getStorageDir().resolve("virginmap.dat");
         byte[] data = new byte[width * height];
         Arrays.fill(data, (byte) 0xFF);
-        
+
         try {
             Files.write(path, data);
         } catch (IOException e) {
@@ -1350,7 +1272,7 @@ public class App {
 
         try(var file = new RandomAccessFile(path.toString(), "rw")) {
             if (file.length() != width * height) {
-                getLogger().error("virginmap.dat dimensions don't match the ones on pxls.conf");
+            getLogger().error("virginmap.dat dimensions don't match the ones on pxls.conf");
                 return false;
             }
 

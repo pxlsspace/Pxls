@@ -5,13 +5,10 @@ import space.pxls.App;
 import space.pxls.data.DBFaction;
 import space.pxls.data.DBUser;
 import space.pxls.data.DBUserPixelCounts;
-import space.pxls.server.packets.chat.Badge;
-import space.pxls.server.packets.chat.ServerChatUserUpdateBuilder;
 import space.pxls.server.packets.http.UserProfile;
 import space.pxls.server.packets.http.UserProfileMinimal;
 import space.pxls.server.packets.http.UserProfileOther;
 import space.pxls.server.packets.socket.ClientUndo;
-import space.pxls.server.packets.chat.ServerChatBan;
 import space.pxls.server.packets.socket.ServerRename;
 import space.pxls.util.RateLimitFactory;
 
@@ -25,7 +22,6 @@ import java.util.stream.Stream;
 public class User {
     private int id;
     private int stacked;
-    private int chatNameColor;
     private String name;
     private String useragent;
     private List<Role> roles;
@@ -39,11 +35,9 @@ public class User {
     private boolean lastPlaceWasStack = false;
     private AtomicBoolean placingLock = new AtomicBoolean(false);
     private AtomicBoolean undoLock = new AtomicBoolean(false);
-    private boolean isPermaChatbanned = false;
     private boolean isRenameRequested = false;
     private boolean isIdled = false;
     private String discordName;
-    private String chatbanReason;
     private long cooldownExpiry;
     private long lastPixelTime = 0;
     private long initialAuthTime = 0L;
@@ -54,11 +48,10 @@ public class User {
     private boolean shadowBanned;
     // 0 = not banned
     private Long banExpiryTime;
-    private long chatbanExpiryTime;
 
     private Set<WebSocketChannel> connections = new HashSet<>();
 
-    public User(int id, int stacked, String name, Timestamp signup, long cooldownExpiry, List<Role> roles, boolean loginWithIP, int pixelCount, int pixelCountAllTime, Long banExpiryTime, boolean shadowBanned, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor, Integer displayedFaction, String discordName, Boolean factionBlocked) {
+    public User(int id, int stacked, String name, Timestamp signup, long cooldownExpiry, List<Role> roles, boolean loginWithIP, int pixelCount, int pixelCountAllTime, Long banExpiryTime, boolean shadowBanned, Integer displayedFaction, String discordName, Boolean factionBlocked) {
         this.id = id;
         this.stacked = stacked;
         this.name = name;
@@ -70,15 +63,11 @@ public class User {
         this.loginWithIP = loginWithIP;
         this.banExpiryTime = banExpiryTime;
         this.shadowBanned = shadowBanned;
-        this.isPermaChatbanned = isPermaChatbanned;
-        this.chatbanExpiryTime = chatbanExpiryTime;
-        this.chatbanReason = chatbanReason;
-        this.chatNameColor = chatNameColor;
         this.displayedFaction = displayedFaction;
         this.discordName = discordName;
         this.factionBlocked = factionBlocked;
 
-        this.placementOverrides = new PlacementOverrides(false, false, false);
+        this.placementOverrides = new PlacementOverrides(false, false, false, false);
     }
 
     public void reloadFromDatabase() {
@@ -92,12 +81,8 @@ public class User {
             this.cooldownExpiry = user.cooldownExpiry;
             this.roles = roles;
             this.banExpiryTime = user.banExpiry;
-            this.isPermaChatbanned = user.isPermaChatbanned;
-            this.chatbanExpiryTime = user.chatbanExpiry;
             this.isRenameRequested = user.isRenameRequested;
             this.discordName = user.discordName;
-            this.chatbanReason = user.chatbanReason;
-            this.chatNameColor = user.chatNameColor;
             this.displayedFaction = user.displayedFaction;
             this.factionBlocked = user.factionBlocked;
         }
@@ -200,6 +185,14 @@ public class User {
 
     public boolean hasIgnorePlacemap() {
         return placementOverrides.hasIgnorePlacemap();
+    }
+
+    public void maybeSetIgnoreEndOfCanvas(boolean endOfCanvas) {
+        placementOverrides.setIgnoreEndOfCanvas(endOfCanvas && hasPermission("board.endOfCanvas.ignore"));
+    }
+
+    public boolean hasIgnoreEndOfCanvas() {
+        return placementOverrides.hasIgnoreEndOfCanvas();
     }
 
     public List<Role> getRoles() {
@@ -333,58 +326,6 @@ public class User {
         return null;
     }
 
-    public List<Badge> getChatBadges() {
-        List<Badge> toReturn = new ArrayList<>();
-
-        getRoles().forEach(role -> toReturn.addAll(role.getBadges()));
-
-        if (!App.getSnipMode()) {
-            if (this.pixelCountAllTime >= 2000000) {
-                toReturn.add(new Badge("2M+", "2M+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 1750000) {
-                toReturn.add(new Badge("1.75M+", "1.75M+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 1500000) {
-                toReturn.add(new Badge("1.5M+", "1.5M+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 1250000) {
-                toReturn.add(new Badge("1.25M+", "1.25M+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 1000000) {
-                toReturn.add(new Badge("1M+", "1M+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 900000) {
-                toReturn.add(new Badge("900k+", "900k+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 800000) {
-                toReturn.add(new Badge("800k+", "800k+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 700000) {
-                toReturn.add(new Badge("700k+", "700k+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 600000) {
-                toReturn.add(new Badge("600k+", "600k+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 500000) {
-                toReturn.add(new Badge("500k+", "500k+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 400000) {
-                toReturn.add(new Badge("400k+", "400k+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 300000) {
-                toReturn.add(new Badge("300k+", "300k+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 200000) {
-                toReturn.add(new Badge("200k+", "200k+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 100000) {
-                toReturn.add(new Badge("100k+", "100k+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 50000) {
-                toReturn.add(new Badge("50k+", "50k+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 25000) {
-                toReturn.add(new Badge("25k+", "25k+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 10000) {
-                toReturn.add(new Badge("10k+", "10k+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 5000) {
-                toReturn.add(new Badge("5k+", "5k+ Pixels Placed", "text", null));
-            } else if (this.pixelCountAllTime >= 1000) {
-                toReturn.add(new Badge("1k+", "1k+ Pixels Placed", "text", null));
-            } else {
-                toReturn.add(new Badge("<1k", "<1k Pixels Placed", "text", null));
-            }
-        }
-
-        return toReturn;
-    }
-
     public boolean isBanned() {
         return banExpiryTime != null && (banExpiryTime == 0 || banExpiryTime > System.currentTimeMillis());
     }
@@ -419,64 +360,6 @@ public class User {
         }
         App.getDatabase().updateBan(this, timeFromNowSeconds);
         if (!skipSendUserData) sendUserData();
-    }
-
-    public boolean canChat() {
-        if (App.getConfig().getBoolean("chat.canvasBanRespected") && isBanned()) {
-            return false;
-        }
-        return !isChatbanned();
-    }
-
-    public boolean isChatbanned() {
-        return this.isPermaChatbanned || this.chatbanExpiryTime > System.currentTimeMillis();
-    }
-
-    public void chatban(Chatban chatban, boolean doLog) {
-        switch (chatban.type) {
-            case TEMP: {
-                this.isPermaChatbanned = false;
-                this.chatbanExpiryTime = chatban.expiryTimeMS;
-                this.chatbanReason = chatban.reason;
-                App.getServer().getPacketHandler().sendChatban(this, new ServerChatBan(false, chatban.reason, chatban.expiryTimeMS));
-                App.getDatabase().updateChatBanReason(getId(), chatban.reason);
-                break;
-            }
-            case PERMA: {
-                this.isPermaChatbanned = true;
-                this.chatbanReason = chatban.reason;
-                App.getServer().getPacketHandler().sendChatban(this, new ServerChatBan(true, chatban.reason, null));
-                App.getDatabase().updateChatBanReason(getId(), chatban.reason);
-                break;
-            }
-            case UNBAN: {
-                this.isPermaChatbanned = false;
-                this.chatbanExpiryTime = chatban.expiryTimeMS;
-                this.chatbanReason = chatban.reason;
-                App.getServer().getPacketHandler().sendChatban(this, new ServerChatBan(false, chatban.reason, 0L));
-                break;
-            }
-        }
-
-        App.getDatabase().updateChatBanPerma(getId(), isPermaChatbanned);
-        App.getDatabase().updateChatBanExpiry(getId(), chatbanExpiryTime);
-
-        if (chatban.purge && chatban.purgeAmount > 0) {
-            App.getDatabase().purgeChat(chatban.target, chatban.initiator, chatban.purgeAmount, "Chatban purge: " + chatban.reason, true, chatban.announce);
-        }
-
-        if (doLog) {
-            if (chatban.initiator == null) {
-                App.getDatabase().insertServerAdminLog(chatban.toString());
-            } else {
-                App.getDatabase().insertAdminLog(chatban.initiator.getId(), chatban.toString());
-            }
-            App.getDatabase().initiateChatBan(chatban);
-        }
-    }
-
-    public void chatban(Chatban chatban) {
-        chatban(chatban, true);
     }
 
     public Set<WebSocketChannel> getConnections() {
@@ -672,92 +555,6 @@ public class User {
         App.getDatabase().setDiscordName(id, discordName);
     }
 
-    public boolean canUseDonatorCharNameColors() {
-        return hasPermission("chat.usercolor.donator") || hasPermission("chat.usercolor.donator.*");
-    }
-
-    public boolean hasRainbowChatNameColor() {
-        return hasPermission("chat.usercolor.rainbow")
-                && this.chatNameColor == -1;
-
-    }
-
-    public boolean hasDonatorChatNameColor(String name, Integer idx) {
-        return (canUseDonatorCharNameColors() || hasPermission("chat.usercolor.donator." + name))
-                && this.chatNameColor == -idx;
-
-    }
-
-    public int getChatNameColor() {
-        return this.chatNameColor;
-    }
-
-    public List<String> getChatNameClasses() {
-        List<String> toReturn = new ArrayList<>();
-        if (this.hasRainbowChatNameColor()) {
-            toReturn.add("rainbow");
-        } else if (this.hasDonatorChatNameColor("green", 2)) {
-            toReturn.add("donator");
-            toReturn.add("donator--green");
-        } else if (this.hasDonatorChatNameColor("gray", 3)) {
-            toReturn.add("donator");
-            toReturn.add("donator--gray");
-        } else if (this.hasDonatorChatNameColor("synthwave", 4)) {
-            toReturn.add("donator");
-            toReturn.add("donator--synthwave");
-        } else if (this.hasDonatorChatNameColor("ace", 5)) {
-            toReturn.add("donator");
-            toReturn.add("donator--ace");
-        } else if (this.hasDonatorChatNameColor("trans", 6)) {
-            toReturn.add("donator");
-            toReturn.add("donator--trans");
-        } else if (this.hasDonatorChatNameColor("bi", 7)) {
-            toReturn.add("donator");
-            toReturn.add("donator--bi");
-        } else if (this.hasDonatorChatNameColor("pan", 8)) {
-            toReturn.add("donator");
-            toReturn.add("donator--pan");
-        } else if (this.hasDonatorChatNameColor("nonbinary", 9)) {
-            toReturn.add("donator");
-            toReturn.add("donator--nonbinary");
-        } else if (this.hasDonatorChatNameColor("mines", 10)) {
-            toReturn.add("donator");
-            toReturn.add("donator--mines");
-        } else if (this.hasDonatorChatNameColor("eggplant", 11)) {
-            toReturn.add("donator");
-            toReturn.add("donator--eggplant");
-        } else if (this.hasDonatorChatNameColor("banana", 12)) {
-            toReturn.add("donator");
-            toReturn.add("donator--banana");
-        } else if (this.hasDonatorChatNameColor("teal", 13)) {
-            toReturn.add("donator");
-            toReturn.add("donator--teal");
-        } else if (this.hasDonatorChatNameColor("icy", 14)) {
-            toReturn.add("donator");
-            toReturn.add("donator--icy");
-        } else if (this.hasDonatorChatNameColor("blood", 15)) {
-            toReturn.add("donator");
-            toReturn.add("donator--blood");
-        } else if (this.hasDonatorChatNameColor("forest", 16)) {
-            toReturn.add("donator");
-            toReturn.add("donator--forest");
-        }
-        return toReturn.size() != 0 ? toReturn : null;
-    }
-
-    public void setChatNameColor(int colorIndex, boolean callDB, boolean broadcast) {
-        this.chatNameColor = colorIndex;
-        if (callDB) {
-            App.getDatabase().setChatNameColor(id, colorIndex);
-        }
-        if (broadcast) {
-            App.getServer().broadcast(new ServerChatUserUpdateBuilder(getName())
-                .set("NameColor", colorIndex)
-                .build()
-            );
-        }
-    }
-
     /**
      * Attempts to get placing lock. Weak implementation of a mutex lock.
      * When placingLocked, we're in the process of placing a pixel and database tables pertaining to placements shouldn't be updated until lock is released.
@@ -802,18 +599,6 @@ public class User {
         undoLock.set(false);
     }
 
-    public boolean isPermaChatbanned() {
-        return isPermaChatbanned;
-    }
-
-    public long getChatbanExpiryTime() {
-        return chatbanExpiryTime;
-    }
-
-    public String getChatbanReason() {
-        return chatbanReason;
-    }
-
     public boolean isIdled() {
         return isIdled;
     }
@@ -832,23 +617,17 @@ public class User {
 
     public void setDisplayedFactionMaybe(Integer displayedFaction) {
         if (App.getDatabase().getFactionsForUID(getId()).size() == 1) {
-            setDisplayedFaction(displayedFaction, true, true);
+            setDisplayedFaction(displayedFaction, true);
         }
     }
 
     public void setDisplayedFaction(Integer displayedFaction) {
-        setDisplayedFaction(displayedFaction, true, true);
+        setDisplayedFaction(displayedFaction, true);
     }
-    public void setDisplayedFaction(Integer displayedFaction, boolean hitDB, boolean broadcast) {
+    public void setDisplayedFaction(Integer displayedFaction, boolean hitDB) {
         this.displayedFaction = displayedFaction;
         if (hitDB) {
             App.getDatabase().setDisplayedFactionForUID(id, displayedFaction);
-        }
-        if (broadcast) {
-            App.getServer().broadcast(new ServerChatUserUpdateBuilder(getName())
-                .set("DisplayedFaction", (displayedFaction == null || displayedFaction == 0) ? "" : fetchDisplayedFaction())
-                .build()
-            );
         }
     }
 
@@ -869,7 +648,7 @@ public class User {
 
     public static User fromDBUser(DBUser user) {
         List<Role> roles = App.getDatabase().getUserRoles(user.id);
-        return new User(user.id, user.stacked, user.username, user.signup_time, user.cooldownExpiry, roles, user.loginWithIP, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.shadowBanned, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked);
+        return new User(user.id, user.stacked, user.username, user.signup_time, user.cooldownExpiry, roles, user.loginWithIP, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.shadowBanned, user.displayedFaction, user.discordName, user.factionBlocked);
     }
 
     public UserProfile toProfile() {
@@ -908,9 +687,6 @@ public class User {
                 isBanned(),
                 isPermaBanned(),
                 banExpiryTime,
-                isChatbanned(),
-                isPermaChatbanned,
-                chatbanExpiryTime,
                 factionBlocked,
                 discordName
         );
@@ -956,9 +732,6 @@ public class User {
                 isBanned(),
                 isPermaBanned(),
                 banExpiryTime,
-                isChatbanned(),
-                isPermaChatbanned,
-                chatbanExpiryTime,
                 factionBlocked,
                 discordName
         );

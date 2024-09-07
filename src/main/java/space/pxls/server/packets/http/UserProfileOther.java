@@ -18,9 +18,6 @@ public record UserProfileOther(
         boolean isBanned,
         boolean isPermaBanned,
         Long banExpiry,
-        boolean isChatBanned,
-        boolean isPermaChatBanned,
-        long chatBanExpiry,
         boolean isFactionRestricted,
         String discordName
 ) {}

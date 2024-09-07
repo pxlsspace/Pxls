@@ -12,52 +12,34 @@ public class CanvasInfo {
     public Integer width;
     public Integer height;
     public List<Color> palette;
+    public Boolean endOfCanvas;
     public CooldownInfo cooldownInfo;
     public String captchaKey;
     public Integer heatmapCooldown;
     public Integer maxStacked;
     public Map<String, AuthService> authServices;
     public Boolean registrationEnabled;
-    public Boolean chatEnabled;
-    public Boolean chatRespectsCanvasBan;
-    public Integer chatCharacterLimit;
-    public List<String> chatBannerText;
     public Boolean snipMode;
-    public String emoteSet7TV;
-    public List<Object> customEmoji;
     public String corsBase;
     public String corsParam;
     public LegalInfo legal;
-    public String chatRatelimitMessage;
-    public Integer chatLinkMinimumPixelCount;
-    public Boolean chatLinkSendToStaff;
-    public Boolean chatDefaultExternalLinkPopup;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, String emoteSet7TV, List<Object> customEmoji, String corsBase, String corsParam, LegalInfo legal, String chatRatelimitMessage, Integer chatLinkMinimumPixelCount, boolean chatLinkSendToStaff, boolean chatDefaultExternalLinkPopup) {
+    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, Boolean endOfCanvas, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, boolean snipMode, String corsBase, String corsParam, LegalInfo legal) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
         this.palette = palette;
+        this.endOfCanvas = endOfCanvas;
         this.cooldownInfo = cooldownInfo;
         this.captchaKey = captchaKey;
         this.heatmapCooldown = heatmapCooldown;
         this.maxStacked = maxStacked;
         this.authServices = authServices;
         this.registrationEnabled = registrationEnabled;
-        this.chatEnabled = chatEnabled;
-        this.chatCharacterLimit = chatCharacterLimit;
-        this.chatRespectsCanvasBan = chatRespectsCanvasBan;
-        this.chatBannerText = chatBannerText;
         this.snipMode = snipMode;
-        this.emoteSet7TV = emoteSet7TV;
-        this.customEmoji = customEmoji;
         this.corsBase = corsBase;
         this.corsParam = corsParam;
         this.legal = legal;
-        this.chatRatelimitMessage = chatRatelimitMessage;
-        this.chatLinkMinimumPixelCount = chatLinkMinimumPixelCount;
-        this.chatLinkSendToStaff = chatLinkSendToStaff;
-        this.chatDefaultExternalLinkPopup = chatDefaultExternalLinkPopup;
     }
 
     public String getCanvasCode() {
@@ -74,6 +56,10 @@ public class CanvasInfo {
 
     public List<Color> getPalette() {
         return palette;
+    }
+
+    public Boolean getEndOfCanvas() {
+        return endOfCanvas;
     }
 
     public String getCaptchaKey() {
@@ -96,32 +82,8 @@ public class CanvasInfo {
         return registrationEnabled;
     }
 
-    public Boolean getChatEnabled() {
-        return chatEnabled;
-    }
-
-    public Integer getChatCharacterLimit() {
-        return chatCharacterLimit;
-    }
-
-    public Boolean getChatRespectsCanvasBan() {
-        return chatRespectsCanvasBan;
-    }
-
-    public List<String> getChatBannerText() {
-        return chatBannerText;
-    }
-
     public Boolean getSnipMode() {
         return snipMode;
-    }
-
-    public String getEmoteSet7TV() {
-        return emoteSet7TV;
-    }
-
-    public List<Object> getCustomEmoji() {
-        return customEmoji;
     }
 
     public String getCorsBase() {
@@ -130,18 +92,6 @@ public class CanvasInfo {
 
     public String getCorsParam() {
         return corsParam;
-    }
-
-    public String getChatRatelimitMessage() {
-        return chatRatelimitMessage;
-    }
-
-    public Integer getChatLinkMinimumPixelCount() {
-        return chatLinkMinimumPixelCount;
-    }
-
-    public Boolean getChatLinkSendToStaff() {
-        return chatLinkSendToStaff;
     }
 
     public record LegalInfo(String termsUrl, String privacyUrl) {}

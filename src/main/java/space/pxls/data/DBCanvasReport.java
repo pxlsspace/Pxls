@@ -68,7 +68,6 @@ public class DBCanvasReport {
         return new ProfileReport(
             x,
             y,
-            null,
             getReportedName(),
             time,
             message,

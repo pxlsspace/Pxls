@@ -15,8 +15,6 @@ import space.pxls.App;
 import space.pxls.auth.*;
 import space.pxls.data.*;
 import space.pxls.palette.Color;
-import space.pxls.server.packets.chat.Badge;
-import space.pxls.server.packets.chat.ChatMessage;
 import space.pxls.server.packets.http.Error;
 import space.pxls.server.packets.http.*;
 import space.pxls.server.packets.socket.*;
@@ -178,7 +176,7 @@ public class WebHandler {
                                 } else {
                                     FactionManager.getInstance().leaveFaction(fid, user.getId());
                                     if (user.getDisplayedFaction() != null && user.getDisplayedFaction() == fid) {
-                                        user.setDisplayedFaction(null, false, true); // displayed_faction is updated by #leaveFaction() already. we just need to invalidate the memcache.
+                                        user.setDisplayedFaction(null, false); // displayed_faction is updated by #leaveFaction() already. we just need to invalidate the memcache.
                                     }
                                 }
                             }
@@ -626,474 +624,6 @@ public class WebHandler {
         }
     }
 
-    public void chatReport(HttpServerExchange exchange) {
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-
-        if (!App.isChatEnabled()) {
-            sendForbidden(exchange, "Chatting and chat actions are disabled");
-            return;
-        }
-
-        User user = exchange.getAttachment(AuthReader.USER);
-        if (user == null) {
-            sendUnauthorized(exchange, "User must be logged in to report chat messages");
-            return;
-        }
-
-        if (user.isBanned()) {
-            sendForbidden(exchange, "Banned users cannot report chat messages");
-            return;
-        }
-
-        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-        FormData.FormValue messageId;
-        FormData.FormValue reportMessage;
-
-        try {
-            messageId = data.getFirst("cmid");
-            reportMessage = data.getFirst("report_message");
-        } catch (NullPointerException npe) {
-            sendBadRequest(exchange, "Missing params");
-            return;
-        }
-
-        if (messageId == null) {
-            sendBadRequest(exchange, "Missing cmid");
-            return;
-        }
-
-        int cmid;
-        try {
-            cmid = Integer.parseInt(messageId.getValue());
-        } catch (NumberFormatException nfe) {
-            sendBadRequest(exchange, "Invalid cmid");
-            return;
-        }
-
-        DBChatMessage chatMessage = App.getDatabase().getChatMessageByID(cmid);
-        if (chatMessage == null || reportMessage == null) {
-            sendBadRequest(exchange, "Missing params");
-            return;
-        }
-
-        String _reportMessage = reportMessage.getValue().trim();
-        if (_reportMessage.length() > 2048) _reportMessage = _reportMessage.substring(0, 2048);
-        Integer rid = App.getDatabase().insertChatReport(chatMessage.id, chatMessage.author_uid, user.getId(), _reportMessage);
-        if (rid != null)
-            App.getServer().broadcastToStaff(new ServerReceivedReport(rid, ServerReceivedReport.REPORT_TYPE_CHAT));
-
-        send(200, exchange, null);
-    }
-
-    public void chatban(HttpServerExchange exchange) {
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-
-        if (!App.isChatEnabled()) {
-            sendForbidden(exchange, "Chatting and chat actions are disabled");
-            return;
-        }
-
-        User user = exchange.getAttachment(AuthReader.USER);
-        if (user == null) {
-            sendBadRequest(exchange);
-            return;
-        }
-        if (user.isBanned()) {
-            sendBadRequest(exchange);
-            return;
-        }
-        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-
-        FormData.FormValue cmidData;
-        FormData.FormValue whoData;
-        FormData.FormValue typeData;
-        FormData.FormValue reasonData;
-        FormData.FormValue removalData;
-        FormData.FormValue banlengthData;
-        FormData.FormValue announceData;
-
-        String who;
-        String type;
-        String reason;
-        Integer cmid;
-        Integer removal;
-        Integer banLength;
-        boolean announce;
-
-        boolean isPerma = false,
-                isUnban = false;
-
-        try {
-            cmidData = data.getFirst("cmid");
-            whoData = data.getFirst("who");
-            typeData = data.getFirst("type");
-            reasonData = data.getFirst("reason");
-            removalData = data.getFirst("removalAmount");
-            banlengthData = data.getFirst("banLength");
-            announceData = data.getFirst("announce");
-        } catch (NullPointerException npe) {
-            sendBadRequest(exchange);
-            return;
-        }
-
-        if (cmidData == null && whoData == null) {
-            sendBadRequest(exchange);
-            return;
-        }
-
-        if (typeData == null || reasonData == null || removalData == null || banlengthData == null) {
-            sendBadRequest(exchange);
-            return;
-        }
-
-        try {
-            who = whoData == null ? null : whoData.getValue();
-            type = typeData.getValue();
-            reason = reasonData.getValue();
-            cmid = cmidData == null ? null : Integer.parseInt(cmidData.getValue());
-            removal = Integer.parseInt(removalData.getValue());
-            banLength = Integer.parseInt(banlengthData.getValue());
-            announce = Boolean.parseBoolean(announceData.getValue());
-        } catch (Exception e) {
-            sendBadRequest(exchange);
-            return;
-        }
-
-        isPerma = type.trim().equalsIgnoreCase("perma");
-        isUnban = type.trim().equalsIgnoreCase("unban");
-        User target = null;
-
-        if (cmid != null) {
-            DBChatMessage chatMessage = App.getDatabase().getChatMessageByID(cmid);
-            if (chatMessage == null) {
-                sendBadRequest(exchange);
-                return;
-            }
-
-            target = App.getUserManager().getByID(chatMessage.author_uid);
-        } else if (who != null) {
-            target = App.getUserManager().getByName(who);
-        }
-
-        if (target == null) {
-            sendBadRequest(exchange);
-            return;
-        }
-
-        boolean _removal = removal == -1 || removal > 0;
-
-        // TODO(netux): Fix infraestructure and allow to purge during snip mode
-        if (_removal && App.getSnipMode()) {
-            sendForbidden(exchange, "Cannot purge during snip mode");
-            return;
-        }
-
-        Chatban chatban;
-        if (isUnban) {
-            chatban = Chatban.UNBAN(target, user, reason);
-        } else {
-            chatban = isPerma ?
-                    Chatban.PERMA(target, user, reason, _removal, removal == -1 ? Integer.MAX_VALUE : removal, announce) :
-                    Chatban.TEMP(target, user, System.currentTimeMillis() + (banLength * 1000L), reason, _removal, removal == -1 ? Integer.MAX_VALUE : removal, announce);
-        }
-
-        chatban.commit();
-
-        exchange.setStatusCode(200);
-        exchange.getResponseSender().send("{}");
-        exchange.endExchange();
-    }
-
-    public void deleteChatMessage(HttpServerExchange exchange) {
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-
-        if (!App.isChatEnabled()) {
-            sendForbidden(exchange, "Chatting and chat actions are disabled");
-            return;
-        }
-
-        User user = exchange.getAttachment(AuthReader.USER);
-        if (user == null) {
-            send(StatusCodes.FORBIDDEN, exchange, "");
-            return;
-        }
-
-        if (user.isBanned()) {
-            send(StatusCodes.FORBIDDEN, exchange, "");
-            return;
-        }
-
-        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-        FormData.FormValue chatId = null;
-        String reason = null;
-        Boolean silent = null;
-
-        try {
-            chatId = data.getFirst("cmid");
-        } catch (NullPointerException npe) {
-            sendBadRequest(exchange, "Message cmid invalid/missing");
-            return;
-        }
-
-        if (chatId == null) {
-            sendBadRequest(exchange, "Message cmid missing");
-            return;
-        }
-
-        int cmid;
-        try {
-            cmid = Integer.parseInt(chatId.getValue());
-        } catch (NumberFormatException nfe) {
-            sendBadRequest(exchange, "Bad CMID");
-            return;
-        }
-
-        DBChatMessage chatMessage = App.getDatabase().getChatMessageByID(cmid);
-        if (chatMessage == null) {
-            sendBadRequest(exchange, "Message didn't exist");
-            return;
-        }
-
-        User author = App.getUserManager().getByID(chatMessage.author_uid);
-        if (author == null) {
-            sendBadRequest(exchange, "Author was null");
-            return;
-        }
-
-        try {
-            FormData.FormValue formReason = data.getFirst("reason");
-            reason = formReason.getValue();
-        } catch (NullPointerException npe) {
-            reason = "";
-        }
-
-        try {
-            FormData.FormValue formSilent = data.getFirst("silent");
-            silent = Boolean.parseBoolean(formSilent.getValue());
-        } catch (NullPointerException npe) {
-            silent = false;
-        }
-
-        App.getDatabase().purgeChatID(author, user, chatMessage.id, reason, true, !silent);
-
-        send(StatusCodes.OK, exchange, "");
-    }
-
-    public void chatPurge(HttpServerExchange exchange) {
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-
-        if (!App.isChatEnabled()) {
-            sendForbidden(exchange, "Chatting and chat actions are disabled");
-            return;
-        }
-
-        // TODO(netux): Fix infraestructure and allow to purge during snip mode
-        if (App.getSnipMode()) {
-            sendForbidden(exchange, "Cannot purge chat during snip mode");
-            return;
-        }
-
-        User user = exchange.getAttachment(AuthReader.USER);
-        if (user == null) {
-            sendBadRequest(exchange);
-            return;
-        }
-
-        if (user.isBanned()) {
-            sendBadRequest(exchange);
-            return;
-        }
-
-        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-        FormData.FormValue targetData = null;
-        FormData.FormValue reasonData = null;
-        FormData.FormValue silentData = null;
-
-        try {
-            targetData = data.getFirst("who");
-            reasonData = data.getFirst("reason");
-            silentData = data.getFirst("silent");
-        } catch (NullPointerException npe) {
-            sendBadRequest(exchange);
-            return;
-        }
-
-        if (targetData == null) {
-            sendBadRequest(exchange);
-            return;
-        }
-
-        User target = App.getUserManager().getByName(targetData.getValue());
-        if (target == null) {
-            sendBadRequest(exchange);
-            return;
-        }
-
-        App.getDatabase().purgeChat(target, user, Integer.MAX_VALUE, reasonData.getValue(), true, !Boolean.parseBoolean(silentData.getValue()));
-
-        exchange.setStatusCode(200);
-        exchange.getResponseSender().send("{}");
-        exchange.endExchange();
-    }
-
-    public void chatHistory(HttpServerExchange exchange) {
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-
-        if (!App.isChatEnabled()) {
-            sendForbidden(exchange, "Chatting and chat actions are disabled");
-            return;
-        }
-
-        User user = exchange.getAttachment(AuthReader.USER);
-        if (user == null) {
-            sendBadRequest(exchange);
-            return;
-        }
-
-        boolean includePurged = user.hasPermission("chat.history.purged");
-        var messages = App.getDatabase().getLastXMessages(100, includePurged).stream()
-                .map(dbChatMessage -> {
-                    List<Badge> badges = new ArrayList<>();
-                    String authorName = "CONSOLE";
-                    int nameColor = 0;
-                    Faction faction = null;
-                    List<String> nameClass = null;
-                    if (dbChatMessage.author_uid > 0) {
-                        authorName = "$Unknown";
-                        User author = App.getUserManager().getByID(dbChatMessage.author_uid);
-                        if (author != null) {
-                            authorName = author.getName();
-                            badges = author.getChatBadges();
-                            nameColor = author.getChatNameColor();
-                            nameClass = author.getChatNameClasses();
-                            faction = author.fetchDisplayedFaction();
-                        }
-                    }
-                    var message = new ChatMessage(
-                            dbChatMessage.id,
-                            authorName,
-                            dbChatMessage.sent,
-                            App.getConfig().getBoolean("textFilter.enabled") && dbChatMessage.filtered_content.length() > 0
-                                    ? dbChatMessage.filtered_content
-                                    : dbChatMessage.content,
-                            dbChatMessage.replying_to_id,
-                            dbChatMessage.reply_should_mention,
-                            dbChatMessage.purged
-                                    ? new ChatMessage.Purge(dbChatMessage.purged_by_uid, dbChatMessage.purge_reason)
-                                    : null,
-                            badges,
-                            nameClass,
-                            nameColor,
-                            dbChatMessage.author_was_shadow_banned,
-                            faction
-                    );
-                    if (user.isShadowBanned() && dbChatMessage.author_uid == user.getId()) {
-                        message = message.asShadowBanned();
-                    }
-                    if (!includePurged && App.getSnipMode()) {
-                        message = message.asSnipRedacted();
-                    }
-                    return message;
-                })
-                .filter(message -> !message.getAuthorWasShadowBanned() || user.hasPermission("chat.history.shadowbanned"))
-                .collect(Collectors.toList());
-
-        exchange.setStatusCode(200);
-        exchange.getResponseSender().send(App.getGson().toJson(messages));
-        exchange.endExchange();
-    }
-
-    public void chatColorChange(HttpServerExchange exchange) {
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-
-        if (!App.isChatEnabled()) {
-            sendForbidden(exchange, "Chatting and chat actions are disabled");
-            return;
-        }
-
-        User user = exchange.getAttachment(AuthReader.USER);
-        if (user == null) {
-            sendBadRequest(exchange);
-            return;
-        }
-
-        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-
-        FormData.FormValue nameColor = data.getFirst("color");
-        if (nameColor == null || nameColor.getValue().trim().isEmpty()) {
-            sendBadRequest(exchange);
-            return;
-        }
-
-        try {
-            int t = Integer.parseInt(nameColor.getValue());
-            if (t >= -16 && t < App.getPalette().getColors().size()) {
-                var hasAllDonatorColors = user.hasPermission("chat.usercolor.donator") || user.hasPermission("chat.usercolor.donator.*");
-                if (t == -1 && !user.hasPermission("chat.usercolor.rainbow")) {
-                    sendBadRequest(exchange, "Color reserved for staff members");
-                    return;
-                } else if (t == -2 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.green"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -3 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.gray"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -4 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.synthwave"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -5 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.ace"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -6 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.trans"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -7 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.bi"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -8 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.pan"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -9 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.nonbinary"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -10 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.mines"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -11 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.eggplant"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -12 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.banana"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -13 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.teal"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -14 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.icy"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -15 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.blood"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -16 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.forest"))) {
-                    sendBadRequest(exchange, "Color reversed for donators");
-                    return;
-                }
-
-                user.setChatNameColor(t, true, !App.getSnipMode());
-
-                exchange.setStatusCode(200);
-                exchange.getResponseSender().send("{}");
-                exchange.endExchange();
-            } else {
-                sendBadRequest(exchange, "Color index out of bounds");
-                return;
-            }
-        } catch (NumberFormatException nfe) {
-            sendBadRequest(exchange, "Invalid color index");
-            return;
-        }
-    }
-
     public void forceNameChange(HttpServerExchange exchange) { //this is the admin endpoint which targets another user.
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
         User user = exchange.getAttachment(AuthReader.USER);
@@ -1248,6 +778,11 @@ public class WebHandler {
             }
             if (!discordName.contains("#") && !discordName.matches("^[a-z0-9._]{2,32}$")){
                 sendBadRequest(exchange, "Name isn't in the discord tag format (only lowercase english letters, digits, periods and underlines allowed)");
+                return;
+            }
+
+            if (TextFilter.getInstance().filter(discordName, true).filterHit) {
+                sendBadRequest(exchange, "Discord name contains disallowed text");
                 return;
             }
         }
@@ -1499,21 +1034,6 @@ public class WebHandler {
             User user = null;
             if (data.contains("username")) {
                 user = App.getUserManager().getByName(data.getFirst("username").getValue());
-            } else if (data.contains("cmid")) {
-                Integer i = null;
-                try {
-                    i = Integer.parseInt(data.getFirst("cmid").getValue());
-                } catch (NullPointerException npe) {
-                    sendBadRequest(exchange, "Missing CMID");
-                } catch (NumberFormatException nfe) {
-                    sendBadRequest(exchange, "Bad CMID");
-                }
-                if (i != null) {
-                    DBChatMessage chatMessage = App.getDatabase().getChatMessageByID(i);
-                    if (chatMessage != null) {
-                        user = App.getUserManager().getByID(chatMessage.author_uid);
-                    }
-                }
             }
 
             if (user != null) {
@@ -1530,19 +1050,45 @@ public class WebHandler {
                         user.getBanReason(),
                         user.loginsWithIP() ? "ip" : "service",
                         user.getPlaceOverrides(),
-                        !user.canChat(),
-                        App.getDatabase().getChatBanReason(user.getId()),
-                        user.isPermaChatbanned(),
-                        user.getChatbanExpiryTime(),
                         user.isRenameRequested(true),
-                        user.getDiscordName(),
-                        user.getChatNameColor()
+                        user.getDiscordName()
                     )));
             } else {
                 exchange.setStatusCode(400);
             }
         }
     }
+
+//    public void twitchSignUp(HttpServerExchange exchange, String name) {
+//        String ip = exchange.getAttachment(IPReader.IP);
+//        User user = App.getUserManager().signUp(name, token, ip);
+//
+//        if (user == null) {
+//            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_username", "Username taken, try another?"));
+//            return;
+//        }
+//
+//        // Do additional checks below:
+//        List<String> reports = new ArrayList<>();
+//
+//        // NOTE: Dupe IP checks are done on auth, not just signup.
+//
+//        // check username for filter hits
+//        if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(name)) {
+//            reports.add(String.format("Username filter hit on \"%s\"", name));
+//        }
+//
+//        for (String reportMessage : reports) {
+//            Integer rid = App.getDatabase().insertServerReport(user.getId(), reportMessage);
+//            if (rid != null) {
+//                App.getServer().broadcastToStaff(new ServerReceivedReport(rid, ServerReceivedReport.REPORT_TYPE_CANVAS));
+//            }
+//        }
+//
+//        String loginToken = App.getUserManager().logIn(user, ip);
+//        setAuthCookie(exchange, loginToken, 24);
+//        respond(exchange, StatusCodes.OK, new SignUpResponse(loginToken));
+//    }
 
     public void signUp(HttpServerExchange exchange) {
         if (!App.getRegistrationEnabled()) {
@@ -1712,17 +1258,61 @@ public class WebHandler {
                 respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("invalid_account", e.getMessage()));
                 return;
             }
-
             if (identifier != null) {
                 User user = App.getUserManager().getByLogin(id, identifier);
                 // If there is no user with that identifier, we make a signup token and tell the client to sign up with that token
                 if (user == null) {
                     if (service.isRegistrationEnabled()) {
-                        String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin(id, identifier));
-                        if (redirect) {
-                            redirect(exchange, String.format(doneBase + "?token=%s&signup=true", encodedURIComponent(signUpToken)));
+                        if (service instanceof TwitchAuthService) {
+                            try {
+                                TwitchAuthService.TwitchUserData userData = ((TwitchAuthService) service).getUserData(token);
+                                // sign up
+                                String name = userData.login();
+                                String ip = exchange.getAttachment(IPReader.IP);
+                                String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin(id, identifier));
+                                user = App.getUserManager().signUp(userData.login(), signUpToken, ip);
+
+                                if (user == null) {
+                                    System.err.println("user is null on twitch sign-up; login = " + user);
+                                    respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("unknown", "Unknown error, please contact a developer."));
+                                    return;
+                                }
+
+                                // Do additional checks below:
+                                List<String> reports = new ArrayList<>();
+
+                                // NOTE: Dupe IP checks are done on auth, not just signup.
+
+                                // check username for filter hits
+                                if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(name)) {
+                                    reports.add(String.format("Username filter hit on \"%s\"", name));
+                                }
+
+                                for (String reportMessage : reports) {
+                                    Integer rid = App.getDatabase().insertServerReport(user.getId(), reportMessage);
+                                    if (rid != null) {
+                                        App.getServer().broadcastToStaff(new ServerReceivedReport(rid, ServerReceivedReport.REPORT_TYPE_CANVAS));
+                                    }
+                                }
+
+                                String loginToken = App.getUserManager().logIn(user, ip);
+                                setAuthCookie(exchange, loginToken, 24);
+                                // Because we're silently signing up, pretend this is just a regular no sign-up auth.
+                                if (redirect) {
+                                    redirect(exchange, String.format(doneBase + "?token=%s&signup=false", encodedURIComponent(loginToken)));
+                                } else {
+                                    respond(exchange, StatusCodes.OK, new AuthResponse(loginToken, false));
+                                }
+                            } catch (AuthService.InvalidAccountException ex) {
+                                ex.printStackTrace();
+                            }
                         } else {
-                            respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
+                            String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin(id, identifier));
+                            if (redirect) {
+                                redirect(exchange, String.format(doneBase + "?token=%s&signup=true", encodedURIComponent(signUpToken)));
+                            } else {
+                                respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
+                            }
                         }
                     } else {
                         respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("invalid_service_operation", "Registration is currently disabled for this service. Please try one of the other ones."));
@@ -1793,6 +1383,7 @@ public class WebHandler {
             App.getWidth(),
             App.getHeight(),
             App.getPalette().getColors(),
+            App.getConfig().getBoolean("endOfCanvas"),
             new CanvasInfo.CooldownInfo(App.getConfig().getString("cooldownType"),
                     App.getConfig().getDuration("staticCooldown.time", TimeUnit.SECONDS),
                     App.getConfig().getObject("activityCooldown").unwrapped()),
@@ -1801,23 +1392,13 @@ public class WebHandler {
             (int) App.getConfig().getInt("stacking.maxStacked"),
             services,
             App.getRegistrationEnabled(),
-            App.isChatEnabled(),
-            Math.min(App.getConfig().getInt("chat.characterLimit"), 2048),
-            App.getConfig().getBoolean("chat.canvasBanRespected"),
-            App.getConfig().getStringList("chat.bannerText"),
             App.getSnipMode(),
-            App.getConfig().getString("chat.emoteSet7TV"),
-            App.getConfig().getList("chat.customEmoji").unwrapped(),
             App.getConfig().getString("cors.proxyBase"),
             App.getConfig().getString("cors.proxyParam"),
             new CanvasInfo.LegalInfo(
                 App.getConfig().getString("legal.termsUrl"),
                 App.getConfig().getString("legal.privacyUrl")
-            ),
-            App.getConfig().getString("chat.ratelimitMessage"),
-            App.getConfig().getInt("chat.linkMinimumPixelCount"),
-            App.getConfig().getBoolean("chat.linkSendToStaff"),
-            App.getConfig().getBoolean("chat.defaultExternalLinkPopup")
+            )
         )));
     }
 
@@ -2055,10 +1636,9 @@ public class WebHandler {
             var maxFactionTagLength = App.getConfig().getInt("factions.maxTagLength");
             var maxFactionNameLength = App.getConfig().getInt("factions.maxNameLength");
             var canvasReports = App.getDatabase().getCanvasReportsFromUser(user.getId()).stream().map(DBCanvasReport::toProfileReport).toList();
-            var chatReports = App.getDatabase().getChatReportsFromUser(user.getId()).stream().map(DBChatReport::toProfileReport).toList();
             var userKeys = App.getDatabase().getUserKeys(user.getId());
 
-            var profileResponse = new ProfileResponse(userProfile, selfProfileMinimal, palette, newFactionMinPixels, maxFactionTagLength, maxFactionNameLength, canvasReports, chatReports, snipMode, userKeys);
+            var profileResponse = new ProfileResponse(userProfile, selfProfileMinimal, palette, newFactionMinPixels, maxFactionTagLength, maxFactionNameLength, canvasReports, snipMode, userKeys);
 
             exchange.getResponseSender().send(App.getGson().toJson(profileResponse));
         } else {
