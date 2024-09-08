@@ -11,6 +11,7 @@ import io.undertow.server.handlers.CookieSameSiteMode;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
 import io.undertow.util.*;
+import kong.unirest.json.JSONObject;
 import space.pxls.App;
 import space.pxls.auth.*;
 import space.pxls.data.*;
@@ -1608,8 +1609,15 @@ public class WebHandler {
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
 
         try {
-            App.handleCommand(data.getFirst("command").getValue());
-            exchange.setStatusCode(StatusCodes.OK);
+            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            PrintStream printStream = new PrintStream(baos);
+            App.handleCommand(data.getFirst("command").getValue(), printStream);
+            JSONObject json = new JSONObject();
+            json.put("output", baos.toString());
+
+            exchange.getResponseSender().send(json.toString(4));
         } catch (NullPointerException ex) {
             exchange.setStatusCode(StatusCodes.BAD_REQUEST);
         }
