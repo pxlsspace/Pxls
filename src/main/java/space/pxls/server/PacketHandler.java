@@ -182,7 +182,8 @@ public class PacketHandler {
                 if (thisPixel.id != recentPixel.get().id) return;
 
                 if (user.lastPlaceWasStack()) {
-                    user.setStacked(Math.min(user.getStacked() + 1, App.getConfig().getInt("stacking.maxStacked")));
+                    // user.setStacked(Math.min(user.getStacked() + 1, App.getConfig().getInt("stacking.maxStacked")));
+                    user.setStacked(user.getStacked() + 1);
                     sendAvailablePixels(user, "undo");
                 }
                 user.setCooldown(0);
@@ -239,6 +240,9 @@ public class PacketHandler {
                         int c = App.getPixel(cp.getX(), cp.getY());
                         boolean isInsidePlacemap = App.getCanPlace(cp.getX(), cp.getY());
                         boolean isColorDifferent = c != cp.getColor();
+
+                        System.out.println(isInsidePlacemap);
+                        System.out.println(isColorDifferent);
                         
                         int c_old = c;
                         if (user.hasIgnorePlacemap() || (isInsidePlacemap && isColorDifferent)) {
