@@ -240,9 +240,6 @@ public class PacketHandler {
                         int c = App.getPixel(cp.getX(), cp.getY());
                         boolean isInsidePlacemap = App.getCanPlace(cp.getX(), cp.getY());
                         boolean isColorDifferent = c != cp.getColor();
-
-                        System.out.println(isInsidePlacemap);
-                        System.out.println(isColorDifferent);
                         
                         int c_old = c;
                         if (user.hasIgnorePlacemap() || (isInsidePlacemap && isColorDifferent)) {
