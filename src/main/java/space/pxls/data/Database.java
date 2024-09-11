@@ -29,7 +29,7 @@ import static java.lang.Math.toIntExact;
 
 public class Database {
     private final Jdbi jdbi;
-    private static final String SQL_USER_BY_NAME = "SELECT id, stacked, username, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, displayed_faction, faction_restricted FROM users WHERE username = :username";
+    private static final String SQL_USER_BY_NAME = "SELECT id, stacked, username, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, displayed_faction, faction_restricted, twitch_subbed FROM users WHERE username = :username";
 
     public Database() {
         try {
@@ -88,7 +88,8 @@ public class Database {
                     "is_rename_requested BOOL NOT NULL DEFAULT false," +
                     "discord_name VARCHAR(37)," +
                     "displayed_faction INT," +
-                    "faction_restricted BOOLEAN NOT NULL DEFAULT false)")
+                    "faction_restricted BOOLEAN NOT NULL DEFAULT false," +
+                    "twitch_subbed BOOLEAN DEFAULT false)")
                     .execute();
             // roles
             handle.createUpdate("CREATE TABLE IF NOT EXISTS roles (" +
@@ -631,7 +632,7 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> getUserByID(int who) {
-        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, displayed_faction, faction_restricted FROM users WHERE id = :who")
+        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, discord_name, displayed_faction, faction_restricted, twitch_subbed FROM users WHERE id = :who")
                 .bind("who", who)
                 .map(new DBUser.Mapper())
                 .findFirst());
@@ -643,7 +644,7 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> getUserByToken(String token) {
-        return jdbi.withHandle(handle -> handle.select("SELECT u.id, u.stacked, u.username, u.signup_time, u.cooldown_expiry, u.ban_expiry, u.is_shadow_banned, u.login_with_ip, u.signup_ip, u.last_ip, u.last_ip_alert, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.discord_name, u.displayed_faction, u.faction_restricted FROM users u INNER JOIN sessions s ON u.id = s.who WHERE s.token = :token")
+        return jdbi.withHandle(handle -> handle.select("SELECT u.id, u.stacked, u.username, u.signup_time, u.cooldown_expiry, u.ban_expiry, u.is_shadow_banned, u.login_with_ip, u.signup_ip, u.last_ip, u.last_ip_alert, u.ban_reason, u.user_agent, u.pixel_count, u.pixel_count_alltime, u.is_rename_requested, u.discord_name, u.displayed_faction, u.faction_restricted, u.twitch_subbed FROM users u INNER JOIN sessions s ON u.id = s.who WHERE s.token = :token")
                 .bind("token", token)
                 .map(new DBUser.Mapper())
                 .findFirst());
@@ -1678,6 +1679,32 @@ public class Database {
                 .map(new DBUserPixelCounts.Mapper())
                 .findFirst()
                 .orElse(null)
+        );
+    }
+
+    /**
+     * Gets whether a user is subscribed on Twitch.
+     * @param who The user's ID
+     * @return Whether the user is subscribed, if the status is known.
+     */
+    public Optional<Boolean> isTwitchSubbed(int who) {
+        return jdbi.withHandle(handle -> handle.select("SELECT twitch_subbed FROM users WHERE id = :who")
+                .bind("who", who)
+                .mapTo(Boolean.class)
+                .findFirst());
+    }
+
+    /**
+     * Sets whether a user is subscribed on Twitch.
+     * @param who The user's ID
+     * @param isTwitchSubbed The user's Twitch subscription status
+     */
+    public void setTwitchSubbed(int who, boolean isTwitchSubbed) {
+        jdbi.useHandle(handle ->
+            handle.createUpdate("UPDATE users SET twitch_subbed = :twitch_subbed WHERE id = :who")
+                .bind("who", who)
+                .bind("twitch_subbed", isTwitchSubbed)
+                .execute()
         );
     }
 }

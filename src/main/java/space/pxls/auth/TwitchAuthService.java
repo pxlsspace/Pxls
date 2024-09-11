@@ -17,7 +17,7 @@ public class TwitchAuthService extends AuthService {
 
     @Override
     public String getRedirectUrl(String state) {
-        return "https://id.twitch.tv/oauth2/authorize?client_id=" + App.getConfig().getString("oauth.twitch.key") + "&redirect_uri=" + getCallbackUrl() + "&response_type=code&state=" + state;
+        return "https://id.twitch.tv/oauth2/authorize?client_id=" + App.getConfig().getString("oauth.twitch.key") + "&redirect_uri=" + getCallbackUrl() + "&response_type=code&state=" + state + "&scope=user:read:subscriptions";
     }
 
     @Override
@@ -71,6 +71,25 @@ public class TwitchAuthService extends AuthService {
         return gson.fromJson(httpResponse.getBody(), TwitchUserDataResponse.class).data[0];
     }
 
+    public TwitchUserSubscriptionData getUserSubscription(String token, String broadcasterId, String userId) {
+        String url = String.format("https://api.twitch.tv/helix/subscriptions/user?broadcaster_id=%s&user_id=%s", broadcasterId, userId);
+        HttpResponse<String> httpResponse = Unirest.get(url)
+                .header("User-Agent", "pxls.space")
+                .header("Authorization", "Bearer " + token)
+                .header("Client-Id", App.getConfig().getString("oauth.twitch.key"))
+                .asString();
+
+        if (!httpResponse.isSuccess()) {
+            return null;
+        }
+
+        Gson gson = new Gson();
+        return gson.fromJson(httpResponse.getBody(), TwitchUserSubscriptionDataResponse.class).data[0];
+    }
+
     private record TwitchUserDataResponse(TwitchUserData[] data) { }
     public record TwitchUserData(String id, String login, String display_name, String created_at) { }
+
+    private record TwitchUserSubscriptionDataResponse(TwitchUserSubscriptionData[] data) { }
+    public record TwitchUserSubscriptionData(String broadcaster_id, String broadcaster_name, String broadcaster_login, Boolean is_gift, String tier) { }
 }

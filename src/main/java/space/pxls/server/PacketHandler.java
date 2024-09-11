@@ -76,7 +76,8 @@ public class PacketHandler {
                     user.loginsWithIP() ? "ip" : "service",
                     user.getPlaceOverrides(),
                     user.isRenameRequested(true),
-                    user.getDiscordName()
+                    user.getDiscordName(),
+                    user.isTwitchSubbed()
             ));
             sendAvailablePixels(channel, user, "auth");
         }
@@ -277,6 +278,15 @@ public class PacketHandler {
                                 } else {
                                     user.setLastPlaceWasStack(false);
                                     user.setCooldown(seconds);
+                                    if (user.isTwitchSubbed()) {
+                                        // bad idea?
+                                        new Timer().schedule(new TimerTask() {
+                                            @Override
+                                            public void run() {
+                                                user.setStacked(App.getStackTwitchBonus() - 1);
+                                            }
+                                        }, seconds * 1000L);
+                                    }
                                     App.getDatabase().updateUserTime(user.getId(), seconds);
                                     sendAvailablePixels(user, "consume");
                                 }

@@ -44,6 +44,7 @@ public class User {
     private Timestamp signup_time;
     private Integer displayedFaction;
     private Boolean factionBlocked;
+    private Boolean twitchSubbed;
 
     private boolean shadowBanned;
     // 0 = not banned
@@ -51,7 +52,7 @@ public class User {
 
     private Set<WebSocketChannel> connections = new HashSet<>();
 
-    public User(int id, int stacked, String name, Timestamp signup, long cooldownExpiry, List<Role> roles, boolean loginWithIP, int pixelCount, int pixelCountAllTime, Long banExpiryTime, boolean shadowBanned, Integer displayedFaction, String discordName, Boolean factionBlocked) {
+    public User(int id, int stacked, String name, Timestamp signup, long cooldownExpiry, List<Role> roles, boolean loginWithIP, int pixelCount, int pixelCountAllTime, Long banExpiryTime, boolean shadowBanned, Integer displayedFaction, String discordName, Boolean factionBlocked, Boolean twitchSubbed) {
         this.id = id;
         this.stacked = stacked;
         this.name = name;
@@ -66,6 +67,7 @@ public class User {
         this.displayedFaction = displayedFaction;
         this.discordName = discordName;
         this.factionBlocked = factionBlocked;
+        this.twitchSubbed = twitchSubbed;
 
         this.placementOverrides = new PlacementOverrides(false, false, false, false);
     }
@@ -455,6 +457,7 @@ public class User {
     public void tickStack(boolean sendRes) {
         int multiplier = App.getStackMultiplier();
         int maxStacked = App.getStackMaxStacked();
+        int twitchBonus = App.getStackTwitchBonus();
 
         int curCD = App.getServer().getPacketHandler().getCooldown();
 
@@ -470,7 +473,11 @@ public class User {
             //App.getLogger().debug(" : ");
             //App.getLogger().debug(target);
             if (delta >= target && getStacked() < maxStacked) {
-                setStacked(getStacked() + 1);
+                if (twitchSubbed) {
+                    setStacked(Math.min(getStacked() + twitchBonus, maxStacked));
+                } else {
+                    setStacked(getStacked() + 1);
+                }
                 if (sendRes) {
                     App.getServer().getPacketHandler().sendAvailablePixels(this, "stackGain");
                 }
@@ -646,9 +653,17 @@ public class User {
         return factionBlocked;
     }
 
+    public Boolean isTwitchSubbed() {
+        return twitchSubbed;
+    }
+
+    public void setTwitchSubbed(boolean isTwitchSubbed) {
+        App.getDatabase().setTwitchSubbed(id, isTwitchSubbed);
+    }
+
     public static User fromDBUser(DBUser user) {
         List<Role> roles = App.getDatabase().getUserRoles(user.id);
-        return new User(user.id, user.stacked, user.username, user.signup_time, user.cooldownExpiry, roles, user.loginWithIP, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.shadowBanned, user.displayedFaction, user.discordName, user.factionBlocked);
+        return new User(user.id, user.stacked, user.username, user.signup_time, user.cooldownExpiry, roles, user.loginWithIP, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.shadowBanned, user.displayedFaction, user.discordName, user.factionBlocked, user.twitchSubbed);
     }
 
     public UserProfile toProfile() {

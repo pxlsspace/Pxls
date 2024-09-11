@@ -11,8 +11,8 @@ public class ServerUserInfo extends UserInfo {
 
 	public ServerUserInfo(String username, List<Role> roles, int pixelCount, int pixelCountAllTime, Boolean banned,
                         Long banExpiry, String banReason, String method, PlacementOverrides placementOverrides,
-                        Boolean renameRequested, String discordName) {
-        super(username, roles, pixelCount, pixelCountAllTime, banned, banExpiry, banReason, method, placementOverrides, renameRequested, discordName);
+                        Boolean renameRequested, String discordName, Boolean twitchSubbed) {
+        super(username, roles, pixelCount, pixelCountAllTime, banned, banExpiry, banReason, method, placementOverrides, renameRequested, discordName, twitchSubbed);
 	}
 
 	public String getType() {

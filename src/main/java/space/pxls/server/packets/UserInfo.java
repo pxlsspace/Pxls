@@ -17,10 +17,11 @@ public class UserInfo {
     public PlacementOverrides placementOverrides;
     public Boolean renameRequested;
     public String discordName;
+    public Boolean twitchSubbed;
 
     public UserInfo(String username, List<Role> roles, int pixelCount, int pixelCountAllTime,
                     Boolean banned, Long banExpiry, String banReason, String method,
-                    PlacementOverrides placementOverrides, Boolean renameRequested, String discordName) {
+                    PlacementOverrides placementOverrides, Boolean renameRequested, String discordName, Boolean twitchSubbed) {
         this.username = username;
         this.roles = roles;
         this.pixelCount = pixelCount;
@@ -32,6 +33,7 @@ public class UserInfo {
         this.placementOverrides = placementOverrides;
         this.renameRequested = renameRequested;
         this.discordName = discordName;
+        this.twitchSubbed = twitchSubbed;
     }
 
     public String getUsername() {
@@ -68,5 +70,9 @@ public class UserInfo {
 
     public String getDiscordName() {
         return discordName;
+    }
+
+    public Boolean isTwitchSubbed() {
+        return twitchSubbed;
     }
 }

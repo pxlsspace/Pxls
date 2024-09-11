@@ -17,6 +17,7 @@ public class CanvasInfo {
     public String captchaKey;
     public Integer heatmapCooldown;
     public Integer maxStacked;
+    public Integer twitchBonus;
     public Map<String, AuthService> authServices;
     public Boolean registrationEnabled;
     public Boolean snipMode;
@@ -24,7 +25,7 @@ public class CanvasInfo {
     public String corsParam;
     public LegalInfo legal;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, Boolean endOfCanvas, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, boolean snipMode, String corsBase, String corsParam, LegalInfo legal) {
+    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, Boolean endOfCanvas, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Integer twitchBonus, Map<String, AuthService> authServices, Boolean registrationEnabled, boolean snipMode, String corsBase, String corsParam, LegalInfo legal) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
@@ -34,6 +35,7 @@ public class CanvasInfo {
         this.captchaKey = captchaKey;
         this.heatmapCooldown = heatmapCooldown;
         this.maxStacked = maxStacked;
+        this.twitchBonus = twitchBonus;
         this.authServices = authServices;
         this.registrationEnabled = registrationEnabled;
         this.snipMode = snipMode;
@@ -72,6 +74,10 @@ public class CanvasInfo {
 
     public Integer getMaxStacked() {
         return maxStacked;
+    }
+
+    public Integer getTwitchBonus() {
+        return twitchBonus;
     }
 
     public Map<String, AuthService> getAuthServices() {

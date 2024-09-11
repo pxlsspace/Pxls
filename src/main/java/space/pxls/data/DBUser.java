@@ -23,8 +23,9 @@ public class DBUser {
     public String discordName;
     public Integer displayedFaction;
     public Boolean factionBlocked;
+    public Boolean twitchSubbed;
 
-    public DBUser(int id, int stacked, String username, Timestamp signup, long cooldownExpiry, boolean loginWithIP, String signupIP, int pixelCount, int pixelCountAllTime, Long banExpiry, boolean shadowBanned, boolean isRenameRequested, String discordName, Integer displayedFaction, Boolean factionBlocked) {
+    public DBUser(int id, int stacked, String username, Timestamp signup, long cooldownExpiry, boolean loginWithIP, String signupIP, int pixelCount, int pixelCountAllTime, Long banExpiry, boolean shadowBanned, boolean isRenameRequested, String discordName, Integer displayedFaction, Boolean factionBlocked, Boolean twitchSubbed) {
         this.id = id;
         this.stacked = stacked;
         this.username = username;
@@ -40,6 +41,7 @@ public class DBUser {
         this.discordName = discordName;
         this.displayedFaction = displayedFaction;
         this.factionBlocked = factionBlocked;
+        this.twitchSubbed = twitchSubbed;
     }
 
     public static class Mapper implements RowMapper<DBUser> {
@@ -66,7 +68,8 @@ public class DBUser {
                     r.getBoolean("is_rename_requested"),
                     r.getString("discord_name"),
                     df,
-                    r.getBoolean("faction_restricted")
+                    r.getBoolean("faction_restricted"),
+                    r.getBoolean("twitch_subbed")
             );
         }
     }

@@ -1061,7 +1061,8 @@ public class WebHandler {
                         user.loginsWithIP() ? "ip" : "service",
                         user.getPlaceOverrides(),
                         user.isRenameRequested(true),
-                        user.getDiscordName()
+                        user.getDiscordName(),
+                        user.isTwitchSubbed()
                     )));
             } else {
                 exchange.setStatusCode(400);
@@ -1176,7 +1177,7 @@ public class WebHandler {
         respond(exchange, StatusCodes.OK, new SignUpResponse(loginToken));
     }
 
-    public void auth(HttpServerExchange exchange) throws UnirestException {
+    public void auth(HttpServerExchange exchange) throws UnirestException, AuthService.InvalidAccountException {
         if (exchange.isInIoThread()) {
             exchange.dispatch(this::auth);
             return;
@@ -1260,6 +1261,10 @@ public class WebHandler {
                 return;
             }
 
+            String broadcasterId = App.getConfig().getString("oauth.twitch.subBonusBroadcasterId");
+            TwitchAuthService.TwitchUserData userData = ((TwitchAuthService) service).getUserData(token);
+            TwitchAuthService.TwitchUserSubscriptionData userSubscriptionData = ((TwitchAuthService) service).getUserSubscription(token, broadcasterId, userData.id());
+
             // And get an account identifier from that
             String identifier;
             try {
@@ -1273,62 +1278,51 @@ public class WebHandler {
                 // If there is no user with that identifier, we make a signup token and tell the client to sign up with that token
                 if (user == null) {
                     if (service.isRegistrationEnabled()) {
-                        if (service instanceof TwitchAuthService) {
-                            try {
-                                TwitchAuthService.TwitchUserData userData = ((TwitchAuthService) service).getUserData(token);
-                                // sign up
-                                String name = userData.login();
-                                String ip = exchange.getAttachment(IPReader.IP);
-                                String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin(id, identifier));
-                                user = App.getUserManager().signUp(userData.login(), signUpToken, ip);
+                        // sign up
+                        String name = userData.login();
+                        String ip = exchange.getAttachment(IPReader.IP);
+                        String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin(id, identifier));
+                        user = App.getUserManager().signUp(userData.login(), signUpToken, ip);
 
-                                if (user == null) {
-                                    System.err.println("user is null on twitch sign-up; login = " + user);
-                                    respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("unknown", "Unknown error, please contact a developer."));
-                                    return;
-                                }
+                        if (user == null) {
+                            System.err.println("user is null on twitch sign-up; login = " + user);
+                            respond(exchange, StatusCodes.BAD_REQUEST, new Error("unknown", "Unknown error, please contact a developer."));
+                            return;
+                        }
 
-                                // Do additional checks below:
-                                List<String> reports = new ArrayList<>();
+                        user.setTwitchSubbed(userSubscriptionData != null);
 
-                                // NOTE: Dupe IP checks are done on auth, not just signup.
+                        // Do additional checks below:
+                        List<String> reports = new ArrayList<>();
 
-                                // check username for filter hits
-                                if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(name)) {
-                                    reports.add(String.format("Username filter hit on \"%s\"", name));
-                                }
+                        // NOTE: Dupe IP checks are done on auth, not just signup.
 
-                                for (String reportMessage : reports) {
-                                    Integer rid = App.getDatabase().insertServerReport(user.getId(), reportMessage);
-                                    if (rid != null) {
-                                        App.getServer().broadcastToStaff(new ServerReceivedReport(rid, ServerReceivedReport.REPORT_TYPE_CANVAS));
-                                    }
-                                }
+                        // check username for filter hits
+                        if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(name)) {
+                            reports.add(String.format("Username filter hit on \"%s\"", name));
+                        }
 
-                                String loginToken = App.getUserManager().logIn(user, ip);
-                                setAuthCookie(exchange, loginToken, 24);
-                                // Because we're silently signing up, pretend this is just a regular no sign-up auth.
-                                if (redirect) {
-                                    redirect(exchange, String.format(doneBase + "?token=%s&signup=false", encodedURIComponent(loginToken)));
-                                } else {
-                                    respond(exchange, StatusCodes.OK, new AuthResponse(loginToken, false));
-                                }
-                            } catch (AuthService.InvalidAccountException ex) {
-                                ex.printStackTrace();
+                        for (String reportMessage : reports) {
+                            Integer rid = App.getDatabase().insertServerReport(user.getId(), reportMessage);
+                            if (rid != null) {
+                                App.getServer().broadcastToStaff(new ServerReceivedReport(rid, ServerReceivedReport.REPORT_TYPE_CANVAS));
                             }
+                        }
+
+                        String loginToken = App.getUserManager().logIn(user, ip);
+                        setAuthCookie(exchange, loginToken, 24);
+                        // Because we're silently signing up, pretend this is just a regular no sign-up auth.
+                        if (redirect) {
+                            redirect(exchange, String.format(doneBase + "?token=%s&signup=false", encodedURIComponent(loginToken)));
                         } else {
-                            String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin(id, identifier));
-                            if (redirect) {
-                                redirect(exchange, String.format(doneBase + "?token=%s&signup=true", encodedURIComponent(signUpToken)));
-                            } else {
-                                respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
-                            }
+                            respond(exchange, StatusCodes.OK, new AuthResponse(loginToken, false));
                         }
                     } else {
                         respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("invalid_service_operation", "Registration is currently disabled for this service. Please try one of the other ones."));
                     }
                 } else {
                     // We need the IP for logging/db purposes
+                    user.setTwitchSubbed(userSubscriptionData != null);
                     String ip = exchange.getAttachment(IPReader.IP);
                     String loginToken = App.getUserManager().logIn(user, ip);
                     setAuthCookie(exchange, loginToken, 24);
@@ -1400,6 +1394,7 @@ public class WebHandler {
             App.getConfig().getString("captcha.key"),
             (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS),
             (int) App.getConfig().getInt("stacking.maxStacked"),
+            App.getConfig().getInt("stacking.twitchBonus"),
             services,
             App.getRegistrationEnabled(),
             App.getSnipMode(),

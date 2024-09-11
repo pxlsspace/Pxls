@@ -59,6 +59,7 @@ public class App {
     private static String cachedWhoamiOrigin = null;
     private static int stackMultiplier;
     private static int stackMaxStacked;
+    private static int stackTwitchBonus;
     private static long userIdleTimeout;
 
     public static void main(String[] args) {
@@ -774,6 +775,7 @@ public class App {
         mapBackupTimer = new PxlsTimer(config.getDuration("board.backupInterval", TimeUnit.SECONDS));
         stackMultiplier = App.getConfig().getInt("stacking.cooldownMultiplier");
         stackMaxStacked = App.getConfig().getInt("stacking.maxStacked");
+        stackTwitchBonus = App.getConfig().getInt("stacking.twitchBonus");
         userIdleTimeout = App.getConfig().getDuration("userIdleTimeout", TimeUnit.MILLISECONDS);
 
         TextFilter.getInstance().reload();
@@ -884,6 +886,9 @@ public class App {
         return stackMaxStacked;
     }
 
+    public static int getStackTwitchBonus() {
+        return stackTwitchBonus;
+    }
 
     public static Gson getGson() {
         return gson;

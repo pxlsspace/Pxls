@@ -13,8 +13,8 @@ public class ExtendedUserInfo extends UserInfo {
     public ExtendedUserInfo(String username, List<Role> roles, List<UserLogin> logins, int pixelCount,
                             int pixelCountAllTime, Boolean banned, Long banExpiry, String banReason,
                             String method, PlacementOverrides placementOverrides, Boolean renameRequested,
-                            String discordName) {
-        super(username, roles, pixelCount, pixelCountAllTime, banned, banExpiry, banReason, method, placementOverrides, renameRequested, discordName);
+                            String discordName, Boolean twitchSubbed) {
+        super(username, roles, pixelCount, pixelCountAllTime, banned, banExpiry, banReason, method, placementOverrides, renameRequested, discordName, twitchSubbed);
 
         this.logins = logins;
     }
