@@ -307,13 +307,13 @@ if __name__ == '__main__':
 		for i, line in enumerate(logs_file):
 			line = line.rstrip('\n')
 			split = line.split('\t')
-			if len(split) == 7:
+			if len(split) == 8:
 				del split[-2] # delete IPs
-			elif len(split) != 6:
+			elif len(split) != 7:
 				print_err(f'line {i + 1} of {logs_file} is invalid')
 				sys.exit(1)
 
-			(timestamp, username, x, y, color_idx, action) = split
+			(timestamp, uid, username, x, y, color_idx, action) = split
 			timestamp = parse_logs_time(timestamp)
 			x = int(x)
 			if x < region_left or x >= region_right:
