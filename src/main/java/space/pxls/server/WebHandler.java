@@ -43,6 +43,7 @@ public class WebHandler {
         addServiceIfAvailable("vk", new VKAuthService("vk"));
         addServiceIfAvailable("tumblr", new TumblrAuthService("tumblr"));
         addServiceIfAvailable("twitch", new TwitchAuthService("twitch"));
+        addServiceIfAvailable("cas", new CasAuthService("cas"));
     }
 
     public void getRequestingUserFactions(HttpServerExchange exchange) throws Exception {
@@ -1687,7 +1688,12 @@ public class WebHandler {
             }
 
             // Get the one-time authorization code from the request
-            String code = extractOAuthCode(exchange);
+            String code;
+            if ("cas".equals(id)) {
+                code = exchange.getQueryParameters().get("ticket").element();
+            } else {
+                code = extractOAuthCode(exchange);
+            }
             if (code == null) {
                 if (redirect) {
                     redirect(exchange, doneBase + "?nologin=1");
