@@ -381,6 +381,63 @@ public class WebHandler {
         send(200, exchange, "OK");
     }
 
+    public void adminJoinFaction(HttpServerExchange exchange) {
+        User admin_user = exchange.getAttachment(AuthReader.USER);
+        if (admin_user == null) {
+            sendBadRequest(exchange, "No authenticated users found");
+            return;
+        }
+
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+        String fid_str;
+        String username;
+        try {
+            fid_str = data.getFirst("fid").getValue();
+            username = data.getFirst("user").getValue();
+        } catch (NullPointerException npe) {
+            sendBadRequest(exchange, "Missing fid/user");
+            return;
+        }
+
+        int fid;
+        try {
+            fid = Integer.parseInt(fid_str);
+        } catch (NumberFormatException ex) {
+            sendBadRequest(exchange, "Faction ID is not a number");
+            return;
+        }
+
+        Optional<Faction> _faction = FactionManager.getInstance().getByID(fid);
+        if (!_faction.isPresent()) {
+            sendBadRequest(exchange, "Faction with that ID doesn't exist");
+            return;
+        }
+        Faction faction = _faction.get();
+
+        User user = App.getUserManager().getByName(username);
+        if (user == null) {
+            sendBadRequest(exchange, "Invalid user provided");
+            return;
+        }
+
+        if (faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == user.getId())) {
+            sendBadRequest(exchange, "User is already a member of this faction");
+            return;
+        }
+
+        if (faction.fetchBans().stream().anyMatch(fUser -> fUser.getId() == user.getId())) {
+            sendBadRequest(exchange, "User is banned from this faction");
+            return;
+        }
+
+        FactionManager.getInstance().joinFaction(fid, user.getId());
+        user.setDisplayedFactionMaybe(fid);
+
+        App.getDatabase().insertAdminLog(admin_user.getId(), String.format("Made %s join faction %d", user.getName(), fid));
+
+        send(200, exchange, "OK");
+    }
+
     public void adminEditFaction(HttpServerExchange exchange) {
         if (!exchange.getRequestMethod().equals(Methods.POST)) {
             send(StatusCodes.METHOD_NOT_ALLOWED, exchange, StatusCodes.METHOD_NOT_ALLOWED_STRING);
