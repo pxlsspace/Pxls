@@ -87,6 +87,7 @@ public class UndertowServer {
                 .addPermGatedPrefixPath("/admin/forceNameChange", "user.namechange.force", webHandler::forceNameChange)
                 .addPermGatedPrefixPath("/admin/faction/edit", "faction.edit.other", new JsonReader(webHandler::adminEditFaction))
                 .addPermGatedPrefixPath("/admin/faction/delete", "faction.delete.other", new JsonReader(webHandler::adminDeleteFaction))
+                .addPermGatedPrefixPath("/admin/faction/join", "faction.join.other", new JsonReader(webHandler::adminJoinFaction))
                 .addPermGatedPrefixPath("/admin/setFactionBlocked", "faction.setblocked", new AllowedMethodsHandler(webHandler::setFactionBlocked, Methods.POST))
                 .addPermGatedPrefixPath("/createNotification", "notification.create", webHandler::createNotification)
                 .addPermGatedPrefixPath("/sendNotificationToDiscord", "notification.discord", webHandler::sendNotificationToDiscord)

@@ -104,7 +104,8 @@ roleID {
 | `faction.create` | `/factions` | Create faction | user |
 | `faction.data` | `/factions/{fid}` | Access faction data | user |
 | `faction.delete` | `/factions/{fid}` | Delete own faction | user |
-| `faction.delete.other` | `/admin/faction/delete` | Delete other factions | staff |
+| `faction.delete.other` | `/admin/faction/delete` | Delete other factions | administrator |
+| `faction.join.other` | `/admin/faction/join` | Make other user join a faction | administrator |
 | `faction.edit` | `/factions/{fid}` | Edit own faction | user |
 | `faction.edit.other` | `/admin/faction/edit` | Edit other factions | staff |
 | `faction.setblocked` | `/admin/setFactionBlocked` | Set block status on factions | staff |
