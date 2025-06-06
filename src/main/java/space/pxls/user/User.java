@@ -339,7 +339,31 @@ public class User {
         getRoles().forEach(role -> toReturn.addAll(role.getBadges()));
 
         if (!App.getSnipMode()) {
-            if (this.pixelCountAllTime >= 2000000) {
+            if (this.pixelCountAllTime >= 5000000) {
+                toReturn.add(new Badge("5M+", "5M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 4750000) {
+                toReturn.add(new Badge("4.75M+", "4.75M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 4500000) {
+                toReturn.add(new Badge("4.5M+", "4.5M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 4250000) {
+                toReturn.add(new Badge("4.25M+", "4.25M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 4000000) {
+                toReturn.add(new Badge("4M+", "4M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 3750000) {
+                toReturn.add(new Badge("3.75M+", "3.75M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 3500000) {
+                toReturn.add(new Badge("3.5M+", "3.5M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 3250000) {
+                toReturn.add(new Badge("3.25M+", "3.25M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 3000000) {
+                toReturn.add(new Badge("3M+", "3M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 2750000) {
+                toReturn.add(new Badge("2.75M+", "2.75M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 2500000) {
+                toReturn.add(new Badge("2.5M+", "2.5M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 2250000) {
+                toReturn.add(new Badge("2.25M+", "2.25M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 2000000) {
                 toReturn.add(new Badge("2M+", "2M+ Pixels Placed", "text", null));
             } else if (this.pixelCountAllTime >= 1750000) {
                 toReturn.add(new Badge("1.75M+", "1.75M+ Pixels Placed", "text", null));
