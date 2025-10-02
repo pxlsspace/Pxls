@@ -768,7 +768,7 @@ public class User {
         } else if (this.hasDonatorChatNameColor("purple", 17)) {
             toReturn.add("donator");
             toReturn.add("donator--purple");
-        } else if (this.hasDonatorChatNameColor("gay", 19)) {
+        } else if (this.hasDonatorChatNameColor("gay", 18)) {
             toReturn.add("donator");
             toReturn.add("donator--gay");
         } else if (this.hasDonatorChatNameColor("lesbian", 19)) {
