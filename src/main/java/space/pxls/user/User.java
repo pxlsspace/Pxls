@@ -765,6 +765,15 @@ public class User {
         } else if (this.hasDonatorChatNameColor("forest", 16)) {
             toReturn.add("donator");
             toReturn.add("donator--forest");
+        } else if (this.hasDonatorChatNameColor("purple", 17)) {
+            toReturn.add("donator");
+            toReturn.add("donator--purple");
+        } else if (this.hasDonatorChatNameColor("gay", 19)) {
+            toReturn.add("donator");
+            toReturn.add("donator--gay");
+        } else if (this.hasDonatorChatNameColor("lesbian", 19)) {
+            toReturn.add("donator");
+            toReturn.add("donator--lesbian");
         }
         return toReturn.size() != 0 ? toReturn : null;
     }
