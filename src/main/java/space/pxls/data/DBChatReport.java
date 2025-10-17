@@ -3,6 +3,7 @@ package space.pxls.data;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 import space.pxls.App;
+import space.pxls.server.packets.http.ProfileReport;
 import space.pxls.user.User;
 
 import java.sql.ResultSet;
@@ -55,5 +56,17 @@ public class DBChatReport {
                 rs.getBoolean("closed")
             );
         }
+    }
+
+    public ProfileReport toProfileReport() {
+        return new ProfileReport(
+            null,
+            null,
+            cmid,
+            getReportedName(),
+            time,
+            report_message,
+            closed
+        );
     }
 }

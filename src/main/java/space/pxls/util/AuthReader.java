@@ -72,12 +72,11 @@ public class AuthReader implements HttpHandler {
             if (account instanceof Pac4jAccount) {
                 for(CommonProfile profile : ((Pac4jAccount) account).getProfiles()) {
                     User user = null;
+                    
+                    System.out.println(profile);
 
                     if (profile instanceof OidcProfile) {
-                        // NOTE ([  ]): getSubject and getId work for indirect
-                        // clients, but not for the Header direct client for some
-                        // reason. May be a bug in pac4j.
-                        final String subject = (String) profile.getAttribute("sub");
+                        final String subject = (String) profile.getId();
                         user = App.getUserManager().getByLogin(subject);
                         if (user == null) {
                             user = App.getUserManager().signUp(

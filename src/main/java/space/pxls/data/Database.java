@@ -123,7 +123,8 @@ public class Database {
                     "id SERIAL NOT NULL PRIMARY KEY," +
                     "who INT," +
                     "time TIMESTAMP DEFAULT CURRENT_TIMESTAMP," +
-                    "ip INET)")
+                    "ip INET," +
+                    "pixel INT REFERENCES pixels(id))")
                     .execute();
             // admin_log
             handle.createUpdate("CREATE TABLE IF NOT EXISTS admin_log (" +
@@ -570,7 +571,7 @@ public class Database {
             handle.createUpdate("INSERT INTO PIXELS (x, y, color, who, secondary_id, rollback_action, most_recent) VALUES (:x, :y, :default_color, :who, :from, true, false)")
                     .bind("x", x)
                     .bind("y", y)
-                    .bind("default_color", App.getDefaultColor(x, y))
+                    .bind("default_color", App.getDefaultPixel(x, y))
                     .bind("who", who.getId())
                     .bind("from", from)
                     .execute();
@@ -750,7 +751,6 @@ public class Database {
      * @return The user.
      */
     public DBUser createUser(String name, String login, String ip) {
-        // TODO(netux): use jdbi.inTransaction
         return jdbi.withHandle(handle -> {
             DBUser user = handle.createQuery("INSERT INTO users (username, sub, login_with_ip, signup_ip, last_ip, chat_name_color) VALUES (:username, :subject, :login_with_ip, :ip::INET, :ip::INET, :chat_name_color) RETURNING *")
                 .bind("username", name)
@@ -765,25 +765,25 @@ public class Database {
         });
     }
 
-    /**
-     * @param userID The user's ID.
-     */
-    public Map<String, String> getUserKeys(int userID) {
-        return jdbi.withHandle(handle ->
-                        handle.select("SELECT key, canvas_code FROM user_keys WHERE uid = :uid ORDER BY canvas_code ASC")
-                                .bind("uid", userID)
-                                .map(new UserkeyMapper())
-                                .list()
-                )
-                .stream()
-                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-    }
-
     static class UserkeyMapper implements RowMapper<Map.Entry<String, String>> {
         @Override
         public Map.Entry<String, String> map(ResultSet rs, StatementContext ctx) throws SQLException {
             return new SimpleEntry<String, String>(rs.getString("canvas_code"), rs.getString("key"));
         }
+    }
+        
+    /**
+     * @param userID The user's ID.
+     */
+    public Map<String, String> getUserKeys(int userID) {
+        return jdbi.withHandle(handle ->
+            handle.select("SELECT key, canvas_code FROM user_keys WHERE uid = :uid")
+                .bind("uid", userID)
+                .map(new UserkeyMapper())
+                .list()
+        )
+        .stream()
+        .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
     }
 
     /**
@@ -1177,12 +1177,14 @@ public class Database {
     /**
      * @param who The {@link User}'s ID.
      * @param ip The {@link User}'s IP.
+     * @param pixel The {@link DBPixelPlacement} given to the user by the lookup.
      * @return The inserted row ID.
      */
-    public Integer insertLookup(Integer who, String ip) {
-        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO lookups (who, ip) VALUES (:who, :ip::INET)")
+    public Integer insertLookup(Integer who, String ip, Integer pixel) {
+        return jdbi.withHandle(handle -> handle.createUpdate("INSERT INTO lookups (who, ip, pixel) VALUES (:who, :ip::INET, :pixel)")
                 .bind("who", who)
                 .bind("ip", ip)
+                .bind("pixel", pixel)
                 .execute());
     }
 

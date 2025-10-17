@@ -21,10 +21,15 @@ public class CanvasInfo {
     public Integer chatCharacterLimit;
     public List<String> chatBannerText;
     public Boolean snipMode;
+    public String emoteSet7TV;
     public List<Object> customEmoji;
     public String corsBase;
     public String corsParam;
+    public LegalInfo legal;
     public String chatRatelimitMessage;
+    public Integer chatLinkMinimumPixelCount;
+    public Boolean chatLinkSendToStaff;
+    public Boolean chatDefaultExternalLinkPopup;
 
     public CanvasInfo(
         String canvasCode,
@@ -40,10 +45,15 @@ public class CanvasInfo {
         boolean chatRespectsCanvasBan,
         List<String> chatBannerText,
         boolean snipMode,
+        String emoteSet7TV,
         List<Object> customEmoji,
         String corsBase,
         String corsParam,
-        String chatRatelimitMessage
+        LegalInfo legal,
+        String chatRatelimitMessage,
+        Integer chatLinkMinimumPixelCount,
+        boolean chatLinkSendToStaff,
+        boolean chatDefaultExternalLinkPopup
     ) {
         this.canvasCode = canvasCode;
         this.width = width;
@@ -58,10 +68,15 @@ public class CanvasInfo {
         this.chatRespectsCanvasBan = chatRespectsCanvasBan;
         this.chatBannerText = chatBannerText;
         this.snipMode = snipMode;
+        this.emoteSet7TV = emoteSet7TV;
         this.customEmoji = customEmoji;
         this.corsBase = corsBase;
         this.corsParam = corsParam;
+        this.legal = legal;
         this.chatRatelimitMessage = chatRatelimitMessage;
+        this.chatLinkMinimumPixelCount = chatLinkMinimumPixelCount;
+        this.chatLinkSendToStaff = chatLinkSendToStaff;
+        this.chatDefaultExternalLinkPopup = chatDefaultExternalLinkPopup;
     }
 
     public String getCanvasCode() {
@@ -112,6 +127,10 @@ public class CanvasInfo {
         return snipMode;
     }
 
+    public String getEmoteSet7TV() {
+        return emoteSet7TV;
+    }
+
     public List<Object> getCustomEmoji() {
         return customEmoji;
     }
@@ -128,5 +147,15 @@ public class CanvasInfo {
         return chatRatelimitMessage;
     }
 
-    public record CooldownInfo(String type, long staticCooldownSeconds, Map<String, Object> activityCooldown) {};
+    public Integer getChatLinkMinimumPixelCount() {
+        return chatLinkMinimumPixelCount;
+    }
+
+    public Boolean getChatLinkSendToStaff() {
+        return chatLinkSendToStaff;
+    }
+
+    public record LegalInfo(String termsUrl, String privacyUrl) {}
+
+    public record CooldownInfo(String type, long staticCooldownSeconds, Map<String, Object> activityCooldown) {}
 }

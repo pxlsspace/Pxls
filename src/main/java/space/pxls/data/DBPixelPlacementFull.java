@@ -31,8 +31,8 @@ public class DBPixelPlacementFull extends DBPixelPlacement {
         int userId,
         String username,
         List<Provider> logins,
-        long ban_expiry, int
-        pixelCount,
+        long ban_expiry,
+        int pixelCount,
         int pixelCountAlltime,
         String ban_reason,
         boolean banned,

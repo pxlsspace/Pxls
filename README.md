@@ -1,8 +1,8 @@
 <div align="center">
 
-![Pxls](https://i.imgur.com/K7j14LL.png)
+![Pxls](https://i.imgur.com/udeloqX.png)
 
-![Java CI with Maven](https://img.shields.io/github/workflow/status/pxlsspace/Pxls/Java%20CI%20with%20Maven?style=flat-square)
+![Java CI with Maven](https://img.shields.io/github/actions/workflow/status/pxlsspace/Pxls/maven.yml?style=flat-square)
 [![GitHub issues](https://img.shields.io/github/issues/pxlsspace/Pxls?style=flat-square)](https://github.com/pxlsspace/Pxls/issues)
 [![GitHub pull requests](https://img.shields.io/github/issues-pr/pxlsspace/Pxls?style=flat-square)](https://github.com/pxlsspace/Pxls/pulls)
 [![GitHub contributors](https://img.shields.io/github/contributors/pxlsspace/Pxls?style=flat-square)](https://github.com/pxlsspace/Pxls/graphs/contributors)
@@ -11,6 +11,8 @@
 </div>
 
 Pxls is a collaborative canvas where users can place one pixel from a limited palette at a time, inspired by Reddit's [r/Place][place] experiment.
+
+This repository holds the back end server. The front end can be found [here][frontend].
 
 **Note:** A Docker image is available at [aneurinprice/docker-pxls.space][docker] and on [Docker Hub][dockerhub].
 
@@ -60,7 +62,7 @@ Run with `java -jar pxls*.jar`
 * The configuration file uses [HOCON][hocon].
 * Unspecified configuration values will use built-in defaults from `resources/reference.conf`.
 * Automatic backups of `board.dat` are saved every five minutes to `backups/` in the configured storage directory, as well as before exiting (with `CTRL + C`).
-* The `Symbols` template style uses the reference palette configuration. See [here](developer.md#symbols-template-style) to modify or remove.
+* The `Symbols` template style uses the reference palette configuration. See [here](docs/developer.md#symbols-template-style) to modify or remove.
 
 ## Configuring User Login
 
@@ -135,7 +137,7 @@ Commands can be entered into the running instance through standard input.
 | `users` || Lists all authenticated usernames. |
 | `broadcast` | `(message)` | Sends the message in chat. |
 | `cf` | `(query)` | Runs the query through the chat filter. |
-| `relaodusers` || Reloads the user manager. **Laggy!** |
+| `reloadusers` || Reloads the user manager. **Laggy!** |
 | `idlecheck` || Runs the user timeout check. |
 | `senduserdata` || Broadcasts the non-idle user count in chat. |
 | `addnotification` | `(title) (expiry) (body)` | Adds a new notification to the notification panel with the body. `+123` for the expiry means 123 seconds from now. |
@@ -180,6 +182,7 @@ Commands can be entered into the running instance through standard input.
 
 
 [place]: https://reddit.com/r/place/
+[frontend]: https://github.com/pxlsspace/pxls-web/
 [docker]: https://github.com/aneurinprice/docker-pxls.space
 [dockerhub]: https://hub.docker.com/r/m08y/docker-pxls.space
 [actions]: https://github.com/pxlsspace/Pxls/actions/workflows/maven.yml

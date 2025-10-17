@@ -6,6 +6,7 @@ import com.typesafe.config.ConfigValueType;
 import space.pxls.App;
 import space.pxls.data.DBFaction;
 import space.pxls.data.DBFactionSearch;
+import space.pxls.server.packets.http.UserProfileMinimal;
 import space.pxls.util.TextFilter;
 
 import java.sql.Timestamp;
@@ -117,12 +118,20 @@ public class Faction {
         return _cachedMembers;
     }
 
+    public List<UserProfileMinimal> fetchMembersMinimal() {
+        return fetchMembers().stream().map(User::toProfileMinimal).collect(Collectors.toList());
+    }
+
     public List<User> fetchBans() {
         if (_cachedBans == null) {
             _cachedBans = App.getDatabase().getBansForFID(this.id).stream().map(User::fromDBUser).collect(Collectors.toList());
         }
 
         return _cachedBans;
+    }
+
+    public List<UserProfileMinimal> fetchBansMinimal() {
+        return fetchBans().stream().map(User::toProfileMinimal).collect(Collectors.toList());
     }
 
     public void invalidateMembers() {

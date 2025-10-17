@@ -3,10 +3,14 @@ package space.pxls.user;
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
 import space.pxls.auth.Provider;
+import space.pxls.data.DBFaction;
 import space.pxls.data.DBUser;
 import space.pxls.data.DBUserPixelCounts;
 import space.pxls.server.packets.chat.Badge;
 import space.pxls.server.packets.chat.ServerChatUserUpdateBuilder;
+import space.pxls.server.packets.http.UserProfile;
+import space.pxls.server.packets.http.UserProfileMinimal;
+import space.pxls.server.packets.http.UserProfileOther;
 import space.pxls.server.packets.socket.ClientUndo;
 import space.pxls.server.packets.chat.ServerChatBan;
 import space.pxls.util.RateLimitFactory;
@@ -350,7 +354,31 @@ public class User {
         getRoles().forEach(role -> toReturn.addAll(role.getBadges()));
 
         if (!App.getSnipMode()) {
-            if (this.pixelCountAllTime >= 2000000) {
+            if (this.pixelCountAllTime >= 5000000) {
+                toReturn.add(new Badge("5M+", "5M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 4750000) {
+                toReturn.add(new Badge("4.75M+", "4.75M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 4500000) {
+                toReturn.add(new Badge("4.5M+", "4.5M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 4250000) {
+                toReturn.add(new Badge("4.25M+", "4.25M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 4000000) {
+                toReturn.add(new Badge("4M+", "4M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 3750000) {
+                toReturn.add(new Badge("3.75M+", "3.75M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 3500000) {
+                toReturn.add(new Badge("3.5M+", "3.5M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 3250000) {
+                toReturn.add(new Badge("3.25M+", "3.25M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 3000000) {
+                toReturn.add(new Badge("3M+", "3M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 2750000) {
+                toReturn.add(new Badge("2.75M+", "2.75M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 2500000) {
+                toReturn.add(new Badge("2.5M+", "2.5M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 2250000) {
+                toReturn.add(new Badge("2.25M+", "2.25M+ Pixels Placed", "text", null));
+            } else if (this.pixelCountAllTime >= 2000000) {
                 toReturn.add(new Badge("2M+", "2M+ Pixels Placed", "text", null));
             } else if (this.pixelCountAllTime >= 1750000) {
                 toReturn.add(new Badge("1.75M+", "1.75M+ Pixels Placed", "text", null));
@@ -409,7 +437,7 @@ public class User {
     }
 
     public boolean isPermaBanned() {
-        return banExpiryTime == 0;
+        return banExpiryTime != null && banExpiryTime == 0;
     }
 
     private void setBanExpiryTime(Integer timeFromNowSeconds) {
@@ -426,7 +454,7 @@ public class User {
         } else if (timeFromNowSeconds == 0) {
             this.banExpiryTime = 0L;
         } else {
-            this.banExpiryTime = (timeFromNowSeconds*1000) + System.currentTimeMillis();
+            this.banExpiryTime = (timeFromNowSeconds*1000L) + System.currentTimeMillis();
         }
         App.getDatabase().updateBan(this, timeFromNowSeconds);
         if (!skipSendUserData) sendUserData();
@@ -728,6 +756,24 @@ public class User {
         } else if (this.hasDonatorChatNameColor("teal", 13)) {
             toReturn.add("donator");
             toReturn.add("donator--teal");
+        } else if (this.hasDonatorChatNameColor("icy", 14)) {
+            toReturn.add("donator");
+            toReturn.add("donator--icy");
+        } else if (this.hasDonatorChatNameColor("blood", 15)) {
+            toReturn.add("donator");
+            toReturn.add("donator--blood");
+        } else if (this.hasDonatorChatNameColor("forest", 16)) {
+            toReturn.add("donator");
+            toReturn.add("donator--forest");
+        } else if (this.hasDonatorChatNameColor("purple", 17)) {
+            toReturn.add("donator");
+            toReturn.add("donator--purple");
+        } else if (this.hasDonatorChatNameColor("gay", 18)) {
+            toReturn.add("donator");
+            toReturn.add("donator--gay");
+        } else if (this.hasDonatorChatNameColor("lesbian", 19)) {
+            toReturn.add("donator");
+            toReturn.add("donator--lesbian");
         }
         return toReturn.size() != 0 ? toReturn : null;
     }
@@ -874,6 +920,96 @@ public class User {
             user.chatNameColor,
             user.displayedFaction,
             user.factionBlocked
+        );
+    }
+
+    public UserProfile toProfile() {
+        List<DBFaction> factions = App.getDatabase().getFactionsForUID(getId());
+        List<ProfileFaction> profileFactions = new ArrayList<>();
+        for (DBFaction dbFaction : factions) {
+            String ownerName = App.getDatabase().getUserByID(dbFaction.owner).get().username;
+            var optionalFaction = FactionManager.getInstance().getByID(dbFaction.id);
+            if (optionalFaction.isEmpty()) {
+                continue;
+            }
+            var members = optionalFaction.get().fetchMembersMinimal();
+            var bans = optionalFaction.get().fetchBansMinimal();
+            profileFactions.add(new ProfileFaction(
+                    dbFaction.id,
+                    dbFaction.name,
+                    dbFaction.tag,
+                    dbFaction.color,
+                    dbFaction.owner,
+                    ownerName,
+                    dbFaction.canvasCode,
+                    dbFaction.created.getTime(),
+                    members,
+                    bans
+            ));
+        }
+        return new UserProfile(
+                id,
+                name,
+                signup_time.getTime(),
+                pixelCount,
+                pixelCountAllTime,
+                roles,
+                displayedFaction,
+                profileFactions,
+                isBanned(),
+                isPermaBanned(),
+                banExpiryTime,
+                isChatbanned(),
+                isPermaChatbanned,
+                chatbanExpiryTime,
+                factionBlocked
+        );
+    }
+
+    public UserProfileMinimal toProfileMinimal() {
+        return new UserProfileMinimal(
+                id,
+                name,
+                pixelCountAllTime
+        );
+    }
+
+    public UserProfileOther toProfileOther() {
+        List<DBFaction> factions = App.getDatabase().getFactionsForUID(getId()).stream().filter(dbFaction -> dbFaction.id == this.displayedFaction).toList();
+        List<ProfileFactionOther> profileFactions = new ArrayList<>();
+        for (DBFaction dbFaction : factions) {
+            String ownerName = App.getDatabase().getUserByID(dbFaction.owner).get().username;
+            var optionalFaction = FactionManager.getInstance().getByID(dbFaction.id);
+            if (optionalFaction.isEmpty()) {
+                continue;
+            }
+            profileFactions.add(new ProfileFactionOther(
+                    dbFaction.id,
+                    dbFaction.name,
+                    dbFaction.tag,
+                    dbFaction.color,
+                    dbFaction.owner,
+                    ownerName,
+                    dbFaction.canvasCode,
+                    dbFaction.created.getTime()
+            ));
+        }
+        return new UserProfileOther(
+                id,
+                name,
+                signup_time.getTime(),
+                pixelCount,
+                pixelCountAllTime,
+                roles,
+                displayedFaction,
+                profileFactions,
+                isBanned(),
+                isPermaBanned(),
+                banExpiryTime,
+                isChatbanned(),
+                isPermaChatbanned,
+                chatbanExpiryTime,
+                factionBlocked
         );
     }
 }

@@ -32,3 +32,5 @@ node_modules/
 *~
 .vscode/
 venv
+.DS_Store
+*.swp

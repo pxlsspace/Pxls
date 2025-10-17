@@ -3,11 +3,9 @@ package space.pxls.server;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.mitchellbosecke.pebble.PebbleEngine;
 
-import io.undertow.server.HttpHandler;
 import kong.unirest.UnirestException;
-import com.mitchellbosecke.pebble.PebbleEngine;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
@@ -21,6 +19,10 @@ import org.pac4j.undertow.http.UndertowHttpActionAdapter;
 
 import space.pxls.App;
 import space.pxls.data.*;
+import space.pxls.palette.Color;
+import space.pxls.server.packets.chat.Badge;
+import space.pxls.server.packets.chat.ChatMessage;
+import space.pxls.server.packets.http.Error;
 import space.pxls.server.packets.http.*;
 import space.pxls.server.packets.socket.*;
 import space.pxls.user.*;
@@ -36,179 +38,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class WebHandler {
-    private PebbleEngine engine;
-    public static final String TEMPLATE_PROFILE = "public/pebble_templates/profile.html";
-    public static final String TEMPLATE_40X = "public/pebble_templates/40x.html";
-    public static final String TEMPLATE_INDEX = "public/pebble_templates/index.html";
-
-    public WebHandler() {
-        engine = new PebbleEngine.Builder().build();
-    }
-
-    private String fileToString(File f) {
-        try {
-            BufferedReader br = new BufferedReader(new FileReader(f));
-            String s = "";
-            String line;
-            while ((line = br.readLine()) != null) {
-                s += line + "\n";
-            }
-            br.close();
-            return s;
-        } catch (IOException e) {
-            return "";
-        }
-    }
-
-    private String fileToString(String s) {
-        return fileToString(new File(s));
-    }
-
-    private String resourceToString(String r) {
-        try {
-            InputStream in = getClass().getResourceAsStream(r);
-            BufferedReader br = new BufferedReader(new InputStreamReader(in));
-            String s = "";
-            String line;
-            while ((line = br.readLine()) != null) {
-                s += line + "\n";
-            }
-            return s;
-        } catch (IOException e) {
-            return "";
-        }
-    }
-
-    public void index(HttpServerExchange exchange) {
-        Locale locale = Util.negotiateLocale(exchange);
-        String languageTag = locale.toLanguageTag();
-
-        File index_cache = new File(App.getStorageDir().resolve("index_" + languageTag + "_cache.html").toString());
-        if (index_cache.exists()) {
-            exchange.getResponseHeaders().put(Headers.CONTENT_LANGUAGE, languageTag);
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
-            exchange.getResponseSender().send(fileToString(index_cache));
-            return;
-        }
-        
-        Map<String,Object> variables = new HashMap<>();
-
-        String[] keys = {"title", "head", "info", "faq"};
-        for (String p : keys) {
-            String r = App.getConfig().getString("html." + p);
-            if (r == null) {
-                r = "";
-            }
-            variables.put(p, r);
-        }
-        try {
-            FileWriter fw = new FileWriter(index_cache);
-            engine.getTemplate(TEMPLATE_INDEX).evaluate(fw, variables, locale);
-            fw.flush();
-            fw.close();
-            index(exchange); // we created the file, now output it!
-        } catch (IOException e) {
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
-            exchange.getResponseSender().send("error");
-            return;
-        }
-    }
-
-    public void view40x(HttpServerExchange exchange, int x, User user) {
-        if (x < 100) x = x + 400;
-        Map<String,Object> m = new HashMap<>();
-        m.put("err", x);
-        if (user != null) {
-            m.put("requesting_user", x);
-        }
-        String toRet = String.format("<p style=\"text-align: center;\">Socc broke the %d page! Let someone know please :) <a href=\"/\">Back to Root</a></p>", x);
-        try {
-            Writer writer = new StringWriter();
-            
-            Locale locale = Util.negotiateLocale(exchange);
-            String languageTag = locale.toLanguageTag();
-
-            engine.getTemplate(TEMPLATE_40X).evaluate(writer, m, locale);
-            toRet = writer.toString();
-
-            exchange.getResponseHeaders().put(Headers.CONTENT_LANGUAGE, languageTag);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        exchange.setStatusCode(x);
-        exchange.getResponseSender().send(toRet);
-    }
-
-    public void profileView(HttpServerExchange exchange) {
-        final User user = exchange.getAttachment(AuthReader.USER);
-        if (user == null) {
-            view40x(exchange, 403, null);
-        } else {
-            PathTemplateMatch match = exchange.getAttachment(PathTemplateMatch.ATTACHMENT_KEY);
-            String requested = match.getParameters().compute("who", (k, s) -> (s == null || s.isEmpty()) ? user.getName() : s);
-            boolean requested_self = user.getName().equals(requested); // usernames are case-sensitive, we can use #equals relatively safely.
-            User profileUser = requested_self ? user : App.getUserManager().getByName(requested);
-
-            exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
-
-            HashMap<String,Object> m = new HashMap<>();
-            m.put("requesting_user", user);
-
-            if (profileUser == null) {
-                view40x(exchange, 404, user);
-            } else {
-                String toRet = "<p style=\"text-align: center;\">Socc probably broke something... let someone know please.</p>";
-                try {
-                    List<DBChatReport> chatReports = new ArrayList<>();
-                    List<DBCanvasReport> canvasReports = new ArrayList<>();
-                    List<Faction> factions = App.getDatabase().getFactionsForUID(profileUser.getId()).stream().map(Faction::new).collect(Collectors.toList());
-                    Map<String, String> keys = new TreeMap<>(App.getDatabase().getUserKeys(profileUser.getId()));
-
-                    m.put("snip_mode", App.getSnipMode());
-                    m.put("requested_self", requested_self);
-                    m.put("profile_of", profileUser);
-                    m.put("factions", factions);
-                    m.put("palette", App.getPalette().getColors().stream().map(color -> color.getValue()).collect(Collectors.toList()));
-                    m.put("route_root", requested_self ? "/profile" : String.format("/profile/%s", requested));
-                    m.put("keys", keys);
-
-                    if (requested_self) {
-                        try {
-                            chatReports = App.getDatabase().getChatReportsFromUser(profileUser.getId());
-                            canvasReports = App.getDatabase().getCanvasReportsFromUser(profileUser.getId());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                        m.put("requesting_user_canvas_pixels", user.getPixelCount());
-                        m.put("requesting_user_alltime_pixels", user.getAllTimePixelCount());
-                        m.put("new_fac_min_pixels", App.getConfig().getInt("factions.minPixelsToCreate"));
-                        m.put("max_faction_tag_length", App.getConfig().getInt("factions.maxTagLength"));
-                        m.put("max_faction_name_length", App.getConfig().getInt("factions.maxNameLength"));
-                        m.put("chat_reports", chatReports);
-                        m.put("chat_reports_open_count", chatReports.stream().filter(dbChatReport -> !dbChatReport.closed).count());
-                        m.put("canvas_reports", canvasReports);
-                        m.put("canvas_reports_open_count", canvasReports.stream().filter(dbCanvasReport -> !dbCanvasReport.closed).count());
-                    }
-
-                    Locale locale = Util.negotiateLocale(exchange);
-                    String languageTag = locale.toLanguageTag();
-
-                    Writer writer = new StringWriter();
-                    engine.getTemplate(TEMPLATE_PROFILE).evaluate(writer, m, locale);
-                    toRet = writer.toString();
-
-                    exchange.getResponseHeaders().put(Headers.CONTENT_LANGUAGE, languageTag);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-
-                exchange.setStatusCode(200);
-                exchange.getResponseSender().send(toRet);
-            }
-
-        }
-    }
-
     public void getRequestingUserFactions(HttpServerExchange exchange) throws Exception {
         User user = exchange.getAttachment(AuthReader.USER);
         if (user == null) {
@@ -310,6 +139,11 @@ public class WebHandler {
                         sendBadRequest(exchange, "Missing data");
                     } else {
                         if (dataObj.has("displayed")) { // user is attempting to update displayed status
+                            if (!faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == user.getId())) {
+                                sendBadRequest(exchange, "You are not in the faction and cannot set it as displayed.");
+                                return;
+                            }
+
                             boolean displaying = false;
                             try {
                                 displaying = dataObj.get("displayed").getAsBoolean();
@@ -351,27 +185,31 @@ public class WebHandler {
                                 sendBadRequest(exchange, "Invalid banState and/or user supplied");
                                 return;
                             }
-                            if (opUser.trim().isEmpty()) {
-                                sendBadRequest(exchange, "Invalid user supplied");
-                            } else {
-                                User userToModify = App.getUserManager().getByName(opUser);
-                                if (userToModify == null || userToModify.getId() == user.getId()) {
+                            if (user.getId() == faction.getOwner()) {
+                                if (opUser.trim().isEmpty()) {
                                     sendBadRequest(exchange, "Invalid user supplied");
                                 } else {
-                                    if (isBanned) { // we're attempting to ban a user. make sure they exist in the user list
-                                        if (faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
-                                            FactionManager.getInstance().banMemberFromFaction(faction.getId(), userToModify.getId());
-                                        } else {
-                                            sendBadRequest(exchange, "The requested user is not a member of this faction.");
-                                        }
+                                    User userToModify = App.getUserManager().getByName(opUser);
+                                    if (userToModify == null || userToModify.getId() == user.getId()) {
+                                        sendBadRequest(exchange, "Invalid user supplied");
                                     } else {
-                                        if (faction.fetchBans().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
-                                            FactionManager.getInstance().unbanMemberFromFaction(faction.getId(), userToModify.getId());
+                                        if (isBanned) { // we're attempting to ban a user. make sure they exist in the user list
+                                            if (faction.fetchMembers().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
+                                                FactionManager.getInstance().banMemberFromFaction(faction.getId(), userToModify.getId());
+                                            } else {
+                                                sendBadRequest(exchange, "The requested user is not a member of this faction.");
+                                            }
                                         } else {
-                                            sendBadRequest(exchange, "The requested user is not banned from this faction.");
+                                            if (faction.fetchBans().stream().anyMatch(fUser -> fUser.getId() == userToModify.getId())) {
+                                                FactionManager.getInstance().unbanMemberFromFaction(faction.getId(), userToModify.getId());
+                                            } else {
+                                                sendBadRequest(exchange, "The requested user is not banned from this faction.");
+                                            }
                                         }
                                     }
                                 }
+                            } else {
+                                send(StatusCodes.FORBIDDEN, exchange, "You do not own this resource.");
                             }
                         } else if (dataObj.has("newOwner")) {
                             String newOwner;
@@ -1049,6 +887,73 @@ public class WebHandler {
         exchange.endExchange();
     }
 
+    public void chatHistory(HttpServerExchange exchange) {
+        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
+
+        if (!App.isChatEnabled()) {
+            sendForbidden(exchange, "Chatting and chat actions are disabled");
+            return;
+        }
+
+        User user = exchange.getAttachment(AuthReader.USER);
+        if (user == null) {
+            sendBadRequest(exchange);
+            return;
+        }
+
+        boolean includePurged = user.hasPermission("chat.history.purged");
+        var messages = App.getDatabase().getLastXMessages(100, includePurged).stream()
+                .map(dbChatMessage -> {
+                    List<Badge> badges = new ArrayList<>();
+                    String authorName = "CONSOLE";
+                    int nameColor = 0;
+                    Faction faction = null;
+                    List<String> nameClass = null;
+                    if (dbChatMessage.author_uid > 0) {
+                        authorName = "$Unknown";
+                        User author = App.getUserManager().getByID(dbChatMessage.author_uid);
+                        if (author != null) {
+                            authorName = author.getName();
+                            badges = author.getChatBadges();
+                            nameColor = author.getChatNameColor();
+                            nameClass = author.getChatNameClasses();
+                            faction = author.fetchDisplayedFaction();
+                        }
+                    }
+                    var message = new ChatMessage(
+                            dbChatMessage.id,
+                            authorName,
+                            dbChatMessage.sent,
+                            App.getConfig().getBoolean("textFilter.enabled") && dbChatMessage.filtered_content.length() > 0
+                                    ? dbChatMessage.filtered_content
+                                    : dbChatMessage.content,
+                            dbChatMessage.replying_to_id,
+                            dbChatMessage.reply_should_mention,
+                            dbChatMessage.purged
+                                    ? new ChatMessage.Purge(dbChatMessage.purged_by_uid, dbChatMessage.purge_reason)
+                                    : null,
+                            badges,
+                            nameClass,
+                            nameColor,
+                            dbChatMessage.author_was_shadow_banned,
+                            faction
+                    );
+                    if (user.isShadowBanned() && dbChatMessage.author_uid == user.getId()) {
+                        message = message.asShadowBanned();
+                    }
+                    if (!includePurged && App.getSnipMode()) {
+                        message = message.asSnipRedacted();
+                    }
+                    return message;
+                })
+                .filter(message -> !message.getAuthorWasShadowBanned() || user.hasPermission("chat.history.shadowbanned"))
+                .collect(Collectors.toList());
+
+        exchange.setStatusCode(200);
+        exchange.getResponseSender().send(App.getGson().toJson(messages));
+        exchange.endExchange();
+    }
+
     public void chatColorChange(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
 
@@ -1073,7 +978,7 @@ public class WebHandler {
 
         try {
             int t = Integer.parseInt(nameColor.getValue());
-            if (t >= -13 && t < App.getPalette().getColors().size()) {
+            if (t >= -19 && t < App.getPalette().getColors().size()) {
                 var hasAllDonatorColors = user.hasPermission("chat.usercolor.donator") || user.hasPermission("chat.usercolor.donator.*");
                 if (t == -1 && !user.hasPermission("chat.usercolor.rainbow")) {
                     sendBadRequest(exchange, "Color reserved for staff members");
@@ -1113,6 +1018,24 @@ public class WebHandler {
                     return;
                 } else if (t == -13 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.teal"))) {
                     sendBadRequest(exchange, "Color reserved for donators");
+                    return;
+                } else if (t == -14 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.icy"))) {
+                    sendBadRequest(exchange, "Color reserved for donators");
+                    return;
+                } else if (t == -15 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.blood"))) {
+                    sendBadRequest(exchange, "Color reserved for donators");
+                    return;
+                } else if (t == -16 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.forest"))) {
+                    sendBadRequest(exchange, "Color reversed for donators");
+                    return;
+                } else if (t == -17 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.purple"))) {
+                    sendBadRequest(exchange, "Color reversed for donators");
+                    return;
+                } else if (t == -18 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.gay"))) {
+                    sendBadRequest(exchange, "Color reversed for donators");
+                    return;
+                } else if (t == -19 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.lesbian"))) {
+                    sendBadRequest(exchange, "Color reversed for donators");
                     return;
                 }
 
@@ -1297,6 +1220,14 @@ public class WebHandler {
         exchange.endExchange();
     }
 
+    private void sendNotFound(HttpServerExchange exchange) {
+        sendNotFound(exchange, "");
+    }
+
+    private void sendNotFound(HttpServerExchange exchange, String details) {
+        send(StatusCodes.NOT_FOUND, exchange, details);
+    }
+
     private void sendBadRequest(HttpServerExchange exchange) {
         sendBadRequest(exchange, "");
     }
@@ -1436,10 +1367,18 @@ public class WebHandler {
             App.getConfig().getBoolean("chat.canvasBanRespected"),
             App.getConfig().getStringList("chat.bannerText"),
             App.getSnipMode(),
+            App.getConfig().getString("chat.emoteSet7TV"),
             App.getConfig().getList("chat.customEmoji").unwrapped(),
             App.getConfig().getString("cors.proxyBase"),
             App.getConfig().getString("cors.proxyParam"),
-            App.getConfig().getString("chat.ratelimitMessage")
+            new CanvasInfo.LegalInfo(
+                App.getConfig().getString("legal.termsUrl"),
+                App.getConfig().getString("legal.privacyUrl")
+            ),
+            App.getConfig().getString("chat.ratelimitMessage"),
+            App.getConfig().getInt("chat.linkMinimumPixelCount"),
+            App.getConfig().getBoolean("chat.linkSendToStaff"),
+            App.getConfig().getBoolean("chat.defaultExternalLinkPopup")
         )));
     }
 
@@ -1448,7 +1387,7 @@ public class WebHandler {
                 .put(Headers.CONTENT_TYPE, "application/binary")
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
 
-        exchange.getResponseSender().send(ByteBuffer.wrap(App.getBoardData()));
+        exchange.getResponseSender().send(App.getBoardData());
     }
 
     public void initialdata(HttpServerExchange exchange) {
@@ -1456,34 +1395,34 @@ public class WebHandler {
                 .put(Headers.CONTENT_TYPE, "application/binary")
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
 
-        exchange.getResponseSender().send(ByteBuffer.wrap(App.getDefaultBoardData()));
+        exchange.getResponseSender().send(App.getDefaultBoardData());
     }
 
     public void heatmap(HttpServerExchange exchange) {
         exchange.getResponseHeaders()
                 .put(Headers.CONTENT_TYPE, "application/binary")
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
-        exchange.getResponseSender().send(ByteBuffer.wrap(App.getHeatmapData()));
+        exchange.getResponseSender().send(App.getHeatmapData());
     }
 
     public void virginmap(HttpServerExchange exchange) {
         exchange.getResponseHeaders()
                 .put(Headers.CONTENT_TYPE, "application/binary")
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
-        exchange.getResponseSender().send(ByteBuffer.wrap(App.getVirginmapData()));
+        exchange.getResponseSender().send(App.getVirginmapData());
     }
 
     public void placemap(HttpServerExchange exchange) {
         exchange.getResponseHeaders()
                 .put(Headers.CONTENT_TYPE, "application/binary")
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
-        exchange.getResponseSender().send(ByteBuffer.wrap(App.getPlacemapData()));
+        exchange.getResponseSender().send(App.getPlacemapData());
     }
 
     public void lookup(HttpServerExchange exchange) {
         User user = exchange.getAttachment(AuthReader.USER);
 
-        if (user.isBanned()) {
+        if (user != null && user.isBanned()) {
             send(StatusCodes.FORBIDDEN, exchange, "");
             return;
         }
@@ -1508,11 +1447,6 @@ public class WebHandler {
         exchange.getResponseHeaders()
                 .put(Headers.CONTENT_TYPE, "application/json")
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
-        if (user == null) {
-            App.getDatabase().insertLookup(null, exchange.getAttachment(IPReader.IP));
-        } else {
-            App.getDatabase().insertLookup(user.getId(), exchange.getAttachment(IPReader.IP));
-        }
 
         Lookup lookup;
         if (user != null && user.hasPermission("board.check")) {
@@ -1523,6 +1457,20 @@ public class WebHandler {
                 lookup = lookup.asSnipRedacted();
             }
         }
+        
+        Integer id;
+        if (lookup == null) {
+            id = null;
+        } else {
+            id = lookup.id;
+        }
+
+        if (user == null) {
+            App.getDatabase().insertLookup(null, exchange.getAttachment(IPReader.IP), id);
+        } else {
+            App.getDatabase().insertLookup(user.getId(), exchange.getAttachment(IPReader.IP), id);
+        }
+
         exchange.getResponseSender().send(App.getGson().toJson(lookup));
     }
 
@@ -1607,6 +1555,62 @@ public class WebHandler {
             exchange.getResponseSender().send(App.getGson().toJson(new WhoAmI(user.getName(), user.getId())));
         } else {
             exchange.getResponseSender().send(App.getGson().toJson(new WhoAmI("unauthed", -1)));
+        }
+    }
+
+    public void webConsole(HttpServerExchange exchange) {
+        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
+
+        try {
+            App.handleCommand(data.getFirst("command").getValue());
+            exchange.setStatusCode(StatusCodes.OK);
+        } catch (NullPointerException ex) {
+            exchange.setStatusCode(StatusCodes.BAD_REQUEST);
+        }
+    }
+
+    public void profile(HttpServerExchange exchange) {
+        exchange.getResponseHeaders()
+                .put(Headers.CONTENT_TYPE, "application/json");
+
+        User self = exchange.getAttachment(AuthReader.USER);
+        User user = self;
+
+        // get user query param
+        Deque<String> usernameQ = exchange.getQueryParameters().get("username");
+        String username;
+        if (usernameQ != null && !usernameQ.isEmpty()) {
+            username = usernameQ.element();
+            user = App.getUserManager().getByName(username);
+        }
+
+        if (user == null) {
+            sendNotFound(exchange, "USER_NOT_FOUND");
+            return;
+        }
+
+        var selfProfileMinimal = self.toProfileMinimal();
+        var palette = App.getPalette().getColors().stream().map(Color::getValue).collect(Collectors.joining(","));
+        var snipMode = App.getSnipMode();
+
+        if (user == self) {
+            var userProfile = user.toProfile();
+            var newFactionMinPixels = App.getConfig().getInt("factions.minPixelsToCreate");
+            var maxFactionTagLength = App.getConfig().getInt("factions.maxTagLength");
+            var maxFactionNameLength = App.getConfig().getInt("factions.maxNameLength");
+            var canvasReports = App.getDatabase().getCanvasReportsFromUser(user.getId()).stream().map(DBCanvasReport::toProfileReport).toList();
+            var chatReports = App.getDatabase().getChatReportsFromUser(user.getId()).stream().map(DBChatReport::toProfileReport).toList();
+            var userKeys = App.getDatabase().getUserKeys(user.getId());
+
+            var profileResponse = new ProfileResponse(userProfile, selfProfileMinimal, palette, newFactionMinPixels, maxFactionTagLength, maxFactionNameLength, canvasReports, chatReports, snipMode, userKeys);
+
+            exchange.getResponseSender().send(App.getGson().toJson(profileResponse));
+        } else {
+            var userProfileOther = user.toProfileOther();
+
+            var profileResponseOther = new ProfileResponseOther(userProfileOther, selfProfileMinimal, palette, snipMode);
+
+            exchange.getResponseSender().send(App.getGson().toJson(profileResponseOther));
         }
     }
 

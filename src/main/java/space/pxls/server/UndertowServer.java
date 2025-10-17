@@ -5,6 +5,7 @@ import io.undertow.Handlers;
 import io.undertow.Undertow;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.AllowedMethodsHandler;
+import io.undertow.server.handlers.DisableCacheHandler;
 import io.undertow.server.handlers.form.EagerFormParsingHandler;
 import io.undertow.server.handlers.resource.ClassPathResourceManager;
 import io.undertow.server.handlers.resource.FileResourceManager;
@@ -22,6 +23,7 @@ import org.pac4j.undertow.handler.LogoutHandler;
 import org.pac4j.undertow.handler.SecurityHandler;
 import org.pac4j.core.authorization.authorizer.DefaultAuthorizers;
 import org.pac4j.core.config.Config;
+import org.pac4j.oidc.client.OidcClient;
 
 import space.pxls.App;
 import space.pxls.auth.OpenIDConfig;
@@ -62,15 +64,15 @@ public class UndertowServer {
 
     public void start() {
         final Config config = new OpenIDConfig().build();
-
+        
         var pathHandler = new PxlsPathHandler()
                 .addPermGatedExactPath("/ws", "board.socket", Handlers.websocket(this::webSocketHandler))
                 .addPermGatedPrefixPath("/ws", "board.socket", Handlers.websocket(this::webSocketHandler))
-                .addPermGatedPrefixPath("/info", "board.info", webHandler::info)
-                .addPermGatedPrefixPath("/boarddata", "board.data", webHandler::data)
-                .addPermGatedPrefixPath("/heatmap", "board.data", webHandler::heatmap)
-                .addPermGatedPrefixPath("/virginmap", "board.data", webHandler::virginmap)
-                .addPermGatedPrefixPath("/placemap", "board.data", webHandler::placemap)
+                .addPermGatedPrefixPath("/info", "board.info", new DisableCacheHandler(webHandler::info))
+                .addPermGatedPrefixPath("/boarddata", "board.data", new DisableCacheHandler(webHandler::data))
+                .addPermGatedPrefixPath("/heatmap", "board.data", new DisableCacheHandler(webHandler::heatmap))
+                .addPermGatedPrefixPath("/virginmap", "board.data", new DisableCacheHandler(webHandler::virginmap))
+                .addPermGatedPrefixPath("/placemap", "board.data", new DisableCacheHandler(webHandler::placemap))
                 .addPermGatedPrefixPath("/initialboarddata", "board.data", webHandler::initialdata)
                 // NOTE ([  ]): This endpoint was /auth which was a perfectly fine
                 // endpoint in my eyes. Apparently, The gods think differently.
@@ -91,6 +93,7 @@ public class UndertowServer {
                 .addPermGatedPrefixPath("/reportChat", "chat.report", webHandler::chatReport)
                 .addPermGatedPrefixPath("/whoami", "user.auth", webHandler::whoami)
                 .addPermGatedPrefixPath("/users", "user.online", webHandler::users)
+                .addPermGatedPrefixPath("/chat/history", "chat.history", new RateLimitingHandler(new DisableCacheHandler(webHandler::chatHistory), "http:chatHistory", (int) App.getConfig().getDuration("server.limits.chatHistory.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.chatHistory.count")))
                 .addPermGatedPrefixPath("/chat/setColor", "user.chatColorChange", new RateLimitingHandler(webHandler::chatColorChange, "http:chatColorChange", (int) App.getConfig().getDuration("server.limits.chatColorChange.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.chatColorChange.count")))
                 .addPermGatedPrefixPath("/admin", "user.admin", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/")).setCacheTime(10))
                 .addPermGatedPrefixPath("/admin/ban", "user.ban", webHandler::ban)
@@ -100,6 +103,7 @@ public class UndertowServer {
                 .addPermGatedPrefixPath("/admin/chatban", "chat.ban", webHandler::chatban)
                 .addPermGatedPrefixPath("/admin/check", "board.check", webHandler::check)
                 .addPermGatedPrefixPath("/admin/delete", "chat.delete", webHandler::deleteChatMessage)
+                .addPermGatedPrefixPath("/admin/chatPurge", "chat.purge", webHandler::chatPurge)
                 .addPermGatedPrefixPath("/admin/faction/edit", "faction.edit.other", new JsonReader(webHandler::adminEditFaction))
                 .addPermGatedPrefixPath("/admin/faction/delete", "faction.delete.other", new JsonReader(webHandler::adminDeleteFaction))
                 .addPermGatedPrefixPath("/admin/setFactionBlocked", "faction.setblocked", new AllowedMethodsHandler(webHandler::setFactionBlocked, Methods.POST))
@@ -107,16 +111,13 @@ public class UndertowServer {
                 .addPermGatedPrefixPath("/sendNotificationToDiscord", "notification.discord", webHandler::sendNotificationToDiscord)
                 .addPermGatedPrefixPath("/setNotificationExpired", "notification.expired", webHandler::setNotificationExpired)
                 .addPermGatedPrefixPath("/notifications", "notification.list", webHandler::notificationsList)
-                .addExactPath("/", webHandler::index)
-                .addExactPath("/index.html", webHandler::index)
-                .addExactPath("/factions", new AllowedMethodsHandler(webHandler::getRequestingUserFactions, Methods.GET))
-                .addPrefixPath("/", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/")).setCacheTime(10));
+                .addPermGatedPrefixPath("/console", "management.console", new AllowedMethodsHandler(webHandler::webConsole, Methods.POST))
+                .addPermGatedPrefixPath("/api/v1/profile", "user.profile", new AllowedMethodsHandler(webHandler::profile, Methods.GET))
+                .addExactPath("/factions", new AllowedMethodsHandler(webHandler::getRequestingUserFactions, Methods.GET));
         if (new File(App.getStorageDir().resolve("emoji").toString()).exists()) {
             pathHandler.addPrefixPath("/emoji", Handlers.resource(new FileResourceManager(new File(App.getStorageDir().resolve("emoji").toString()))).setCacheTime(604800));
         }
         PxlsRoutingHandler routingHandler = PxlsHandlers.routing()
-            .getPermGated("/profile", "user.profile", webHandler::profileView)
-            .getPermGated("/profile/{who}", "user.profile.other", webHandler::profileView)
             .getPermGated("/factions/{fid}", "faction.data", new JsonReader(new RateLimitingHandler(webHandler::manageFactions, "http:manageFactions", (int) App.getConfig().getDuration("server.limits.manageFactions.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.manageFactions.count"), App.getConfig().getBoolean("server.limits.manageFactions.global"))))
             .postPermGated("/factions", "faction.create", new JsonReader(new RateLimitingHandler(webHandler::manageFactions, "http:manageFactions", (int) App.getConfig().getDuration("server.limits.manageFactions.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.manageFactions.count"), App.getConfig().getBoolean("server.limits.manageFactions.global"))))
             .putPermGated("/factions/{fid}", "faction.edit", new JsonReader(new RateLimitingHandler(webHandler::manageFactions, "http:manageFactions", (int) App.getConfig().getDuration("server.limits.manageFactions.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.manageFactions.count"), App.getConfig().getBoolean("server.limits.manageFactions.global"))))
@@ -136,9 +137,8 @@ public class UndertowServer {
             // that pxls just doesn't have.
             DefaultAuthorizers.NONE
         );
-            
-        HttpHandler callbackHandler = new IPReader(new EagerFormParsingHandler().setNext(routingHandler));
 
+        HttpHandler callbackHandler = new IPReader(new EagerFormParsingHandler().setNext(routingHandler));
 
         server = Undertow.builder()
                 .addHttpListener(port, "0.0.0.0")
@@ -287,11 +287,19 @@ public class UndertowServer {
     }
 
     public void broadcastSeparateForStaff(Object nonStaffObj, Object staffObj) {
+        broadcastPredicateSeparateForStaff(nonStaffObj, staffObj, con -> true);
+    }
+
+    public void broadcastPredicateSeparateForStaff(Object nonStaffObj, Object staffObj, Predicate<PxlsWebSocketConnection> predicate) {
         String nonStaffJSON = nonStaffObj != null ? App.getGson().toJson(nonStaffObj) : null;
         String staffJSON = staffObj != null ? App.getGson().toJson(staffObj) : null;
         broadcastMapped(con -> {
-            boolean sendStaffObject = con.getUser().isPresent() && userCanReceiveStaffBroadcasts.test(con.getUser().get());
-            return sendStaffObject ? staffJSON : nonStaffJSON;
+            if (predicate.test(con)) {
+                boolean sendStaffObject = con.getUser().isPresent() && userCanReceiveStaffBroadcasts.test(con.getUser().get());
+                return sendStaffObject ? staffJSON : nonStaffJSON;
+            } else {
+                return null;
+            }
         });
     }
 
