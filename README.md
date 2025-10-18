@@ -64,6 +64,39 @@ Run with `java -jar pxls*.jar`
 * Automatic backups of `board.dat` are saved every five minutes to `backups/` in the configured storage directory, as well as before exiting (with `CTRL + C`).
 * The `Symbols` template style uses the reference palette configuration. See [here](docs/developer.md#symbols-template-style) to modify or remove.
 
+## Configuring User Login
+
+Pxls authenticates users with an identity server.
+You have several choices available for this, such as:
+- [Keycloak](https://www.keycloak.org/)
+- [auth0](https://auth0.com/)
+- [okta](https://www.okta.com/)
+
+Once you have such an identity server configured and running as desired, you can configure Pxls to use this in the `auth` section of the config.
+
+The config node `auth.callback` must be set to your app's URL (including protocol and port), followed by `/callback` (for example, `http://pxls.space/callback`).
+
+The `auth.issuer` node should be a url pointing to your identity server.
+You can check if you are using the correct url by adding `/.well-known/openid-configuration` to the path.
+For example, for an issuer of `https://pxls.space/auth/realms/pxls` you would expect `https://pxls.space/auth/realms/pxls/.well-known/openid-configuration` to return a JSON document with various configuration details.
+
+OAuth client information is specified by the `auth.client` and `auth.secret` config nodes.
+You will have to generate this information in your identity server.
+You may choose to use a public client without a secret.
+In this case, the secret node can be left blank.
+
+An example auth section could look like this:
+
+    auth {
+        useIp: false
+        snipMode: false
+
+        callback: "https://pxls.space/callback"
+        issuer: "https://pxls.space/auth/realms/pxls"
+        client: "pxls"
+        secret: "533ba06e-66e8-4a17-b60c-37481f83beee"
+    }
+
 ## Configuring CAPTCHA
 
 CAPTCHAs are disabled by default and must be configured to work.

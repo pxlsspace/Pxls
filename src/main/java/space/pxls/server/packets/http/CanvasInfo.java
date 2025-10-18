@@ -1,7 +1,5 @@
 package space.pxls.server.packets.http;
 
-import com.typesafe.config.ConfigObject;
-import space.pxls.auth.AuthService;
 import space.pxls.palette.Color;
 
 import java.util.List;
@@ -16,8 +14,6 @@ public class CanvasInfo {
     public String captchaKey;
     public Integer heatmapCooldown;
     public Integer maxStacked;
-    public Map<String, AuthService> authServices;
-    public Boolean registrationEnabled;
     public Boolean chatEnabled;
     public Boolean chatRespectsCanvasBan;
     public Integer chatCharacterLimit;
@@ -33,7 +29,30 @@ public class CanvasInfo {
     public Boolean chatLinkSendToStaff;
     public Boolean chatDefaultExternalLinkPopup;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, String emoteSet7TV, List<Object> customEmoji, String corsBase, String corsParam, LegalInfo legal, String chatRatelimitMessage, Integer chatLinkMinimumPixelCount, boolean chatLinkSendToStaff, boolean chatDefaultExternalLinkPopup) {
+    public CanvasInfo(
+        String canvasCode,
+        Integer width,
+        Integer height,
+        List<Color> palette,
+        CooldownInfo cooldownInfo,
+        String captchaKey,
+        Integer heatmapCooldown,
+        Integer maxStacked,
+        Boolean chatEnabled,
+        Integer chatCharacterLimit,
+        boolean chatRespectsCanvasBan,
+        List<String> chatBannerText,
+        boolean snipMode,
+        String emoteSet7TV,
+        List<Object> customEmoji,
+        String corsBase,
+        String corsParam,
+        LegalInfo legal,
+        String chatRatelimitMessage,
+        Integer chatLinkMinimumPixelCount,
+        boolean chatLinkSendToStaff,
+        boolean chatDefaultExternalLinkPopup
+    ) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
@@ -42,8 +61,6 @@ public class CanvasInfo {
         this.captchaKey = captchaKey;
         this.heatmapCooldown = heatmapCooldown;
         this.maxStacked = maxStacked;
-        this.authServices = authServices;
-        this.registrationEnabled = registrationEnabled;
         this.chatEnabled = chatEnabled;
         this.chatCharacterLimit = chatCharacterLimit;
         this.chatRespectsCanvasBan = chatRespectsCanvasBan;
@@ -86,14 +103,6 @@ public class CanvasInfo {
 
     public Integer getMaxStacked() {
         return maxStacked;
-    }
-
-    public Map<String, AuthService> getAuthServices() {
-        return authServices;
-    }
-
-    public Boolean getRegistrationEnabled() {
-        return registrationEnabled;
     }
 
     public Boolean getChatEnabled() {

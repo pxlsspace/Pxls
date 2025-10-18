@@ -3,16 +3,22 @@ package space.pxls.server;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import kong.unirest.UnirestException;
+
+import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.server.handlers.Cookie;
-import io.undertow.server.handlers.CookieImpl;
-import io.undertow.server.handlers.CookieSameSiteMode;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
 import io.undertow.util.*;
+
+import org.pac4j.core.client.Client;
+import org.pac4j.core.config.Config;
+import org.pac4j.core.context.CallContext;
+import org.pac4j.core.exception.http.HttpAction;
+import org.pac4j.undertow.context.UndertowSessionStore;
+import org.pac4j.undertow.context.UndertowWebContext;
+import org.pac4j.undertow.http.UndertowHttpActionAdapter;
+
 import space.pxls.App;
-import space.pxls.auth.*;
 import space.pxls.data.*;
 import space.pxls.palette.Color;
 import space.pxls.server.packets.chat.Badge;
@@ -28,23 +34,11 @@ import java.net.URLEncoder;
 import java.nio.ByteBuffer;
 import java.time.Instant;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class WebHandler {
-    private Map<String, AuthService> services = new ConcurrentHashMap<>();
-
-    public WebHandler() {
-        addServiceIfAvailable("reddit", new RedditAuthService("reddit"));
-        addServiceIfAvailable("google", new GoogleAuthService("google"));
-        addServiceIfAvailable("discord", new DiscordAuthService("discord"));
-        addServiceIfAvailable("vk", new VKAuthService("vk"));
-        addServiceIfAvailable("tumblr", new TumblrAuthService("tumblr"));
-        addServiceIfAvailable("twitch", new TwitchAuthService("twitch"));
-    }
-
     public void getRequestingUserFactions(HttpServerExchange exchange) throws Exception {
         User user = exchange.getAttachment(AuthReader.USER);
         if (user == null) {
@@ -485,16 +479,6 @@ public class WebHandler {
         sendObj(responseChanged.size() > 0 ? StatusCodes.OK : StatusCodes.BAD_REQUEST, exchange, response);
     }
 
-    private void addServiceIfAvailable(String key, AuthService service) {
-        if (service.use()) {
-            services.put(key, service);
-        }
-    }
-
-    public AuthService getAuthServiceByID(String id) {
-        return services.get(id);
-    }
-
     private String getBanReason(HttpServerExchange exchange) {
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         FormData.FormValue reason = data.getFirst("reason");
@@ -518,38 +502,6 @@ public class WebHandler {
     private boolean doLog(HttpServerExchange exchange) {
         FormData.FormValue nolog = exchange.getAttachment(FormDataParser.FORM_DATA).getFirst("nolog");
         return nolog == null;
-    }
-
-    private void setAuthCookie(HttpServerExchange exchange, String loginToken, int days) {
-        Calendar pastCalendar = Calendar.getInstance();
-        pastCalendar.add(Calendar.DATE, -1);
-        exchange.setResponseCookie(
-            new CookieImpl("pxls-token", "")
-                .setPath("/")
-                .setExpires(pastCalendar.getTime())
-        );
-
-        Calendar futureCalendar = Calendar.getInstance();
-        futureCalendar.add(Calendar.DATE, days);
-        String hostname = App.getConfig().getString("host");
-        exchange.setResponseCookie(
-            new CookieImpl("pxls-token", loginToken)
-                .setHttpOnly(true)
-                .setSameSiteMode((exchange.isSecure() ? CookieSameSiteMode.NONE : CookieSameSiteMode.LAX).toString())
-                .setSecure(exchange.isSecure())
-                .setPath("/")
-                .setDomain("." + hostname)
-                .setExpires(futureCalendar.getTime())
-        );
-        exchange.setResponseCookie(
-            new CookieImpl("pxls-token", loginToken)
-                .setHttpOnly(true)
-                .setSameSiteMode((exchange.isSecure() ? CookieSameSiteMode.NONE : CookieSameSiteMode.LAX).toString())
-                .setSecure(exchange.isSecure())
-                .setPath("/")
-                .setDomain(hostname)
-                .setExpires(futureCalendar.getTime())
-        );
     }
 
     public void ban(HttpServerExchange exchange) {
@@ -1103,178 +1055,6 @@ public class WebHandler {
         }
     }
 
-    public void forceNameChange(HttpServerExchange exchange) { //this is the admin endpoint which targets another user.
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-        User user = exchange.getAttachment(AuthReader.USER);
-        if (user == null) {
-            sendBadRequest(exchange, "No authenticated users found");
-            return;
-        }
-
-        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-        String userName = null;
-        String newName = null;
-        try {
-            userName = data.getFirst("user").getValue();
-            newName = data.getFirst("newName").getValue();
-        } catch (Exception npe) {
-            sendBadRequest(exchange, "Missing either 'user' or 'newName' fields");
-            return;
-        }
-
-        if (!validateUsername(userName)) {
-            sendBadRequest(exchange, "Username failed validation");
-            return;
-        }
-
-        User toUpdate = App.getUserManager().getByName(userName);
-        if (toUpdate == null) {
-            sendBadRequest(exchange, "Invalid user provided");
-            return;
-        }
-
-        String oldName = toUpdate.getName();
-        if (toUpdate.updateUsername(newName, true)) {
-            App.getDatabase().insertAdminLog(user.getId(), String.format("Changed %s's name to %s (uid: %d)", oldName, newName, toUpdate.getId()));
-            toUpdate.setRenameRequested(false);
-            App.getServer().send(toUpdate, new ServerRenameSuccess(toUpdate.getName()));
-            exchange.setStatusCode(200);
-            exchange.getResponseSender().send("{}");
-            exchange.endExchange();
-        } else {
-            sendBadRequest(exchange, "Failed to update username. Possible reasons for this include the new username is already taken, the user being updated was not flagged for rename, or an internal error occurred.");
-        }
-    }
-
-    public void execNameChange(HttpServerExchange exchange) { //this is the endpoint for normal users
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-        User user = exchange.getAttachment(AuthReader.USER);
-        if (user == null) {
-            sendBadRequest(exchange, "No authenticated users found");
-            return;
-        }
-        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-        String newName = null;
-        try {
-            newName = data.getFirst("newName").getValue();
-        } catch (Exception npe) {
-            sendBadRequest(exchange, "Missing either 'user' or 'newName' fields");
-            return;
-        }
-
-        if (!validateUsername(newName)) {
-            sendBadRequest(exchange, "Username failed validation");
-            return;
-        }
-
-        String oldName = user.getName();
-        if (user.updateUsername(newName)) {
-            App.getDatabase().insertServerReport(user.getId(), String.format("User %s just changed their name to %s.", oldName, user.getName()));
-            user.setRenameRequested(false);
-            App.getServer().send(user, new ServerRenameSuccess(user.getName()));
-            exchange.setStatusCode(200);
-            exchange.getResponseSender().send("{}");
-            exchange.endExchange();
-        } else {
-            sendBadRequest(exchange, "Failed to update username. Possible reasons for this include the new username is already taken, the user being updated was not flagged for rename, or an internal error occurred.");
-        }
-    }
-
-    public void flagNameChange(HttpServerExchange exchange) {
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-        User user = exchange.getAttachment(AuthReader.USER);
-        if (user == null) {
-            sendBadRequest(exchange, "No authenticated user could be found");
-            return;
-        }
-
-        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-        String userName = null;
-        boolean isRequested = true;
-        try {
-            userName = data.getFirst("user").getValue();
-        } catch (Exception npe) {
-            npe.printStackTrace();
-            sendBadRequest(exchange, "Missing 'user' field");
-            return;
-        }
-        try {
-            isRequested = data.getFirst("flagState").getValue().equalsIgnoreCase("true");
-        } catch (Exception e) {
-            //ignored
-        }
-
-        User toFlag = App.getUserManager().getByName(userName);
-        if (toFlag == null) {
-            sendBadRequest(exchange, "Invalid user provided");
-            return;
-        }
-
-        toFlag.setRenameRequested(isRequested);
-        App.getDatabase().insertAdminLog(user.getId(), String.format("%s %s (%d) for name change", isRequested ? "Flagged" : "Unflagged", toFlag.getName(), toFlag.getId()));
-
-        exchange.setStatusCode(200);
-        exchange.getResponseSender().send("{}");
-        exchange.endExchange();
-    }
-
-    public void discordNameChange(HttpServerExchange exchange) {
-        exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
-        User user = exchange.getAttachment(AuthReader.USER);
-        if (user == null) {
-            sendBadRequest(exchange, "No authenticated user could be found");
-            return;
-        }
-
-        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-        String discordName = null;
-        try {
-            discordName = data.getFirst("discordName").getValue();
-            if (discordName.equalsIgnoreCase("")) {
-                discordName = null;
-            }
-        } catch (Exception npe) {
-            npe.printStackTrace();
-            sendBadRequest(exchange, "Missing 'discordName' field");
-            return;
-        }
-        boolean isDeleteRequest = discordName == null;
-
-        if (isDeleteRequest && user.getDiscordName() == null) {
-            send(StatusCodes.CONFLICT, exchange, "Discord name is already unset.");
-            return;
-        }
-
-        if (!isDeleteRequest && user.getDiscordName() != null && user.getDiscordName().equals(discordName)) {
-            send(StatusCodes.CONFLICT, exchange, "Discord name is already set to the requested name.");
-            return;
-        }
-
-        if (discordName != null) {
-            if (discordName.contains("#") && !discordName.matches("^.{2,32}#\\d{4}$")){
-                sendBadRequest(exchange, "Name isn't in the format '{name}#{discriminator}'");
-                return;
-            }
-            if (!discordName.contains("#") && !discordName.matches("^[a-z0-9._]{2,32}$")){
-                sendBadRequest(exchange, "Name isn't in the discord tag format (only lowercase english letters, digits, periods and underlines allowed)");
-                return;
-            }
-        }
-
-        if (discordName == null) { //user is deleting name, bypass ratelimit check
-            user.setDiscordName(null);
-            send(StatusCodes.OK, exchange, "Name removed");
-        } else {
-            int remaining = RateLimitFactory.getTimeRemaining("http:discordName", exchange.getAttachment(IPReader.IP));
-            if (remaining == 0) {
-                user.setDiscordName(discordName);
-                send(StatusCodes.OK, exchange, "Name updated");
-            } else {
-                send(StatusCodes.TOO_MANY_REQUESTS, exchange, "Hit max attempts. Try again in " + remaining + "s");
-            }
-        }
-    }
-
     public void setFactionBlocked(HttpServerExchange exchange) {
         exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "application/json");
         User user = exchange.getAttachment(AuthReader.USER);
@@ -1543,7 +1323,6 @@ public class WebHandler {
                         App.getDatabase().getChatBanReason(user.getId()),
                         user.isPermaChatbanned(),
                         user.getChatbanExpiryTime(),
-                        user.isRenameRequested(true),
                         user.getDiscordName(),
                         user.getChatNameColor()
                     )));
@@ -1553,247 +1332,29 @@ public class WebHandler {
         }
     }
 
-    public void signUp(HttpServerExchange exchange) {
-        if (!App.getRegistrationEnabled()) {
-            respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("registration_disabled", "Registration has been disabled"));
-            return;
-        }
-        FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
-        FormData.FormValue nameVal = data.getFirst("username");
-        FormData.FormValue discordVal = data.getFirst("discord");
-        FormData.FormValue tokenVal = data.getFirst("token");
-        if (nameVal == null || tokenVal == null) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_params", "Missing parameters"));
-            return;
-        }
+    public HttpHandler signInHandler(Config config) {
+        return exchange -> {
+            final Client client = config.getClients()
+                .findClient("OidcClient")
+                .get();
 
-        String name = nameVal.getValue();
-        String discord = discordVal == null ? "" : discordVal.getValue();
-        String token = tokenVal.getValue();
-        if (token.isEmpty()) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_token", "Missing signup token"));
-            return;
-        } else if (name.isEmpty()) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_username", "Username may not be empty"));
-            return;
-        } else if (!name.matches("[a-zA-Z0-9_\\-]+")) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_username", "Username contains invalid characters"));
-            return;
-        } else  if (!App.getUserManager().isValidSignupToken(token)) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_token", "Invalid signup token"));
-            return;
-        }
+            var webContext = new UndertowWebContext(exchange);
+            var sessionStore = new UndertowSessionStore(exchange);
+            var profileManager = config.getProfileManagerFactory();
+            var context = new CallContext(webContext, sessionStore, profileManager);
 
-        if (!discord.isEmpty()) {
-            if (discord.contains("#") && !discord.matches("^.{2,32}#\\d{4}$")){
-                respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_discord", "Discord name isn't in the format '{name}#{discriminator}'"));
-                return;
-            }
-            if (!discord.contains("#") && !discord.matches("^[a-z0-9._]{2,32}$")){
-                respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_discord", "Discord name isn't in the discord tag format (only lowercase english letters, digits, periods and underlines allowed)"));
-                return;
-            }
-        }
-
-        String ip = exchange.getAttachment(IPReader.IP);
-        User user = App.getUserManager().signUp(name, token, ip);
-
-        if (user == null) {
-            respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_username", "Username taken, try another?"));
-            return;
-        }
-
-        if (!discord.isEmpty()) {
-            user.setDiscordName(discord);
-        }
-
-        // Do additional checks below:
-        List<String> reports = new ArrayList<String>();
-
-        // NOTE: Dupe IP checks are done on auth, not just signup.
-
-        // check username for filter hits
-        if (App.getConfig().getBoolean("textFilter.enabled") && TextFilter.getInstance().filterHit(name)) {
-            reports.add(String.format("Username filter hit on \"%s\"", name));
-        }
-
-        for (String reportMessage : reports) {
-            Integer rid = App.getDatabase().insertServerReport(user.getId(), reportMessage);
-            if (rid != null) {
-                App.getServer().broadcastToStaff(new ServerReceivedReport(rid, ServerReceivedReport.REPORT_TYPE_CANVAS));
-            }
-        }
-
-        String loginToken = App.getUserManager().logIn(user, ip);
-        setAuthCookie(exchange, loginToken, 24);
-        respond(exchange, StatusCodes.OK, new SignUpResponse(loginToken));
-    }
-
-    public void auth(HttpServerExchange exchange) throws UnirestException {
-        if (exchange.isInIoThread()) {
-            exchange.dispatch(this::auth);
-            return;
-        }
-
-        String id = exchange.getRelativePath().substring(1);
-
-        AuthService service = services.get(id);
-        if (service != null && service.use()) {
-
-            // Verify the given OAuth state, to make sure people don't double-send requests
-            Deque<String> stateQ = exchange.getQueryParameters().get("state");
-
-            String state_ = "";
-            if (stateQ != null) {
-                state_ = stateQ.element();
-            }
-            String[] stateArray = state_.split("\\|");
-            String state = stateArray[0];
-            boolean redirect = false;
-            if (stateArray.length > 1) {
-                redirect = stateArray[1].equals("redirect");
-            } else {
-                // check for cookie...
-                Cookie redirectCookie = exchange.getRequestCookie("pxls-auth-redirect");
-                redirect = redirectCookie != null;
-            }
-            // let's just delete the redirect cookie
-            Calendar pastCalendar = Calendar.getInstance();
-            pastCalendar.add(Calendar.DATE, -1);
-            exchange.setResponseCookie(
-                new CookieImpl("pxls-auth-redirect", "")
-                    .setPath("/")
-                    .setExpires(pastCalendar.getTime())
-            );
-
-            String protocol = App.getConfig().getBoolean("https") ? "https" : "http";
-            String host = App.getConfig().getString("host");
-            int frontEndPort = App.getConfig().getInt("frontEndPort");
-            String doneBase = String.format("%s://%s:%d/auth_done.html", protocol, host, frontEndPort);
-
-            if (!redirect && exchange.getQueryParameters().get("json") == null) {
-                exchange.getResponseHeaders().put(Headers.CONTENT_TYPE, "text/html");
-                exchange.getResponseSender().send("<!DOCTYPE html><html><head><title>Pxls Login</title><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0\"/></head><body><a style=\"font-size:2em;font-weight:bold;\" href=\"" + exchange.getRequestURI() + "?" + exchange.getQueryString() + "\">Finish Login</a><br>Hold down long on that link and select to open with pxls app.</body>");
-
-                return;
-            }
-
-            // Check for errors reported by server
-            if (exchange.getQueryParameters().containsKey("error")) {
-                String error = exchange.getQueryParameters().get("error").element();
-                if (error.equals("access_denied")) error = "Authentication denied by user";
-                if (redirect) {
-                    redirect(exchange, doneBase + "?nologin=1");
-                } else {
-                    respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("oauth_error", error));
-                }
-                return;
-            }
-
-            if (!service.verifyState(state)) {
-                respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_state", "Invalid state token"));
-                return;
-            }
-
-            // Get the one-time authorization code from the request
-            String code = extractOAuthCode(exchange);
-            if (code == null) {
-                if (redirect) {
-                    redirect(exchange, doneBase + "?nologin=1");
-                } else {
-                    respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_code", "No OAuth code specified"));
-                }
-                return;
-            }
-
-            // Get a more persistent user token
-            String token = service.getToken(code);
-            if (token == null) {
-                respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("bad_code", "OAuth code invalid"));
-                return;
-            }
-
-            // And get an account identifier from that
-            String identifier;
+            HttpAction action;
             try {
-                identifier = service.getIdentifier(token);
-            } catch (AuthService.InvalidAccountException e) {
-                respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("invalid_account", e.getMessage()));
-                return;
+                action = client.getRedirectionAction(context).get();
+            } catch (final HttpAction e) {
+                action = e;
             }
 
-            if (identifier != null) {
-                User user = App.getUserManager().getByLogin(id, identifier);
-                // If there is no user with that identifier, we make a signup token and tell the client to sign up with that token
-                if (user == null) {
-                    if (service.isRegistrationEnabled()) {
-                        String signUpToken = App.getUserManager().generateUserCreationToken(new UserLogin(id, identifier));
-                        if (redirect) {
-                            redirect(exchange, String.format(doneBase + "?token=%s&signup=true", encodedURIComponent(signUpToken)));
-                        } else {
-                            respond(exchange, StatusCodes.OK, new AuthResponse(signUpToken, true));
-                        }
-                    } else {
-                        respond(exchange, StatusCodes.UNAUTHORIZED, new space.pxls.server.packets.http.Error("invalid_service_operation", "Registration is currently disabled for this service. Please try one of the other ones."));
-                    }
-                } else {
-                    // We need the IP for logging/db purposes
-                    String ip = exchange.getAttachment(IPReader.IP);
-                    String loginToken = App.getUserManager().logIn(user, ip);
-                    setAuthCookie(exchange, loginToken, 24);
-                    if (redirect) {
-                        redirect(exchange, String.format(doneBase + "?token=%s&signup=false", encodedURIComponent(loginToken)));
-                    } else {
-                        respond(exchange, StatusCodes.OK, new AuthResponse(loginToken, false));
-                    }
-                }
-            } else {
-                respond(exchange, StatusCodes.BAD_REQUEST, new space.pxls.server.packets.http.Error("bad_service", "No auth service named " + id));
-            }
-        } else {
-            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_service", "No auth service named " + id));
-        }
-    }
-
-    private String extractOAuthCode(HttpServerExchange exchange) {
-        // Most implementations just add a "code" parameter
-        Deque<String> code = exchange.getQueryParameters().get("code");
-        if (code != null && !code.isEmpty()) return code.element();
-
-        // OAuth 1 still uses these parameters
-        Deque<String> oauthToken = exchange.getQueryParameters().get("oauth_token");
-        Deque<String> oauthVerifier = exchange.getQueryParameters().get("oauth_verifier");
-
-        if (oauthToken == null || oauthVerifier == null || oauthToken.isEmpty() || oauthVerifier.isEmpty()) return null;
-        return oauthToken.element() + "|" + oauthVerifier.element();
-    }
-
-    public void signIn(HttpServerExchange exchange) {
-        String id = exchange.getRelativePath().substring(1);
-        boolean redirect = exchange.getQueryParameters().get("redirect") != null;
-
-        AuthService service = services.get(id);
-        if (service != null) {
-            String state = service.generateState();
-            if (redirect) {
-                exchange.setResponseCookie(
-                    new CookieImpl("pxls-auth-redirect", "1")
-                        .setSameSiteMode((exchange.isSecure() ? CookieSameSiteMode.NONE : CookieSameSiteMode.LAX).toString())
-                        .setSecure(exchange.isSecure())
-                        .setPath("/")
-                );
-                redirect(exchange, service.getRedirectUrl(state + "|redirect"));
-            } else {
-                respond(exchange, StatusCodes.OK, new SignInResponse(service.getRedirectUrl(state + "|json")));
-            }
-        } else {
-            respond(exchange, StatusCodes.BAD_REQUEST, new Error("bad_service", "No auth method named " + id));
-        }
+            UndertowHttpActionAdapter.INSTANCE.adapt(action, webContext);
+        };
     }
 
     public void info(HttpServerExchange exchange) {
-        User user = exchange.getAttachment(AuthReader.USER);
-
         exchange.getResponseHeaders()
                 .add(HttpString.tryFromString("Content-Type"), "application/json")
                 .add(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
@@ -1808,8 +1369,6 @@ public class WebHandler {
             App.getConfig().getString("captcha.key"),
             (int) App.getConfig().getDuration("board.heatmapCooldown", TimeUnit.SECONDS),
             (int) App.getConfig().getInt("stacking.maxStacked"),
-            services,
-            App.getRegistrationEnabled(),
             App.isChatEnabled(),
             Math.min(App.getConfig().getInt("chat.characterLimit"), 2048),
             App.getConfig().getBoolean("chat.canvasBanRespected"),
@@ -1834,12 +1393,6 @@ public class WebHandler {
         exchange.getResponseHeaders()
                 .put(Headers.CONTENT_TYPE, "application/binary")
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
-
-        // let's also update the cookie, if present. This place will get called frequent enough
-        Cookie tokenCookie = exchange.getRequestCookie("pxls-token");
-        if (tokenCookie != null) {
-            setAuthCookie(exchange, tokenCookie.getValue(), 24);
-        }
 
         exchange.getResponseSender().send(App.getBoardData());
     }
@@ -1871,17 +1424,6 @@ public class WebHandler {
                 .put(Headers.CONTENT_TYPE, "application/binary")
                 .put(HttpString.tryFromString("Access-Control-Allow-Origin"), "*");
         exchange.getResponseSender().send(App.getPlacemapData());
-    }
-
-    public void logout(HttpServerExchange exchange) {
-        Cookie tokenCookie = exchange.getRequestCookie("pxls-token");
-
-        if (tokenCookie != null) {
-            App.getUserManager().logOut(tokenCookie.getValue());
-        }
-
-        setAuthCookie(exchange, "", -1);
-        respond(exchange, StatusCodes.OK, new EmptyResponse());
     }
 
     public void lookup(HttpServerExchange exchange) {
@@ -1985,7 +1527,7 @@ public class WebHandler {
             exchange.endExchange();
             return;
         }
-        DBPixelPlacementFull pxl = App.getDatabase().getPixelByID(null, id);
+        DBPixelPlacementFull pxl = App.getDatabase().getPixelByID(id);
         if (pxl.x != x || pxl.y != y) {
             exchange.setStatusCode(StatusCodes.BAD_REQUEST);
             exchange.endExchange();
@@ -2103,7 +1645,7 @@ public class WebHandler {
         exchange.getResponseSender().send("");
     }
 
-    private String encodedURIComponent(String toEncode) {
+    public static String encodedURIComponent(String toEncode) {
         //https://stackoverflow.com/a/611117
         String result = "";
         try {
@@ -2124,9 +1666,7 @@ public class WebHandler {
         return !username.isEmpty() && username.matches("[a-zA-Z0-9_\\-]+");
     }
 
-    public void reloadServicesEnabledState() {
-        for (Map.Entry<String, AuthService> entry : services.entrySet()) {
-            entry.getValue().reloadEnabledState();
-        }
+    public void reloadLoginService() {
+        // TODO ([  ]): reload the handler's config info
     }
 }

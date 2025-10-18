@@ -81,7 +81,6 @@ public class PacketHandler {
                     App.getDatabase().getChatBanReason(user.getId()),
                     user.isPermaChatbanned(),
                     user.getChatbanExpiryTime(),
-                    user.isRenameRequested(true),
                     user.getDiscordName(),
                     user.getChatNameColor()
             ));
@@ -214,7 +213,7 @@ public class PacketHandler {
                     sendAvailablePixels(user, "undo");
                 }
                 user.setCooldown(0);
-                DBPixelPlacementFull lastPixel = App.getDatabase().getPixelByID(null, thisPixel.secondaryId);
+                DBPixelPlacementFull lastPixel = App.getDatabase().getPixelByID(thisPixel.secondaryId);
                 if (lastPixel != null) {
                     App.getDatabase().putUserUndoPixel(lastPixel, user, thisPixel.id);
                     App.putPixel(lastPixel.x, lastPixel.y, lastPixel.color, user, false, ip, false, "user undo");
@@ -337,7 +336,7 @@ public class PacketHandler {
                     public void completed(HttpResponse<JsonNode> response) {
                         JsonNode body = response.getBody();
 
-                        String hostname = App.getConfig().getString("host");
+                        String hostname = App.getHost().getHost();
 
                         boolean success = body.getObject().getBoolean("success") && body.getObject().getString("hostname").equals(hostname);
                         if (success) {
@@ -384,7 +383,6 @@ public class PacketHandler {
         } else {
             if (!user.canChat()) return;
             if (message.trim().length() == 0) return;
-            if (user.isRenameRequested(false)) return;
             int remaining = RateLimitFactory.getTimeRemaining(DBChatMessage.class, String.valueOf(user.getId()));
             if (!user.hasPermission("chat.cooldown.ignore") && remaining > 0) {
                 server.send(user, new ServerChatCooldown(remaining, message));
@@ -464,24 +462,20 @@ public class PacketHandler {
         }
 
         var author = new JSONObject();
-        // NOTE ([  ]): There's no clean way to determining if we're on http or https
-        // so I gave up — you should be using https anyway.
-        try {
-            var authorProfile = new URL("https://" + App.getConfig().getString("host") + "/profile/" + message.getAuthor() + "/");
+        var authorProfile = App.getHost()
+            .resolve("profile/")
+            .resolve(message.getAuthor() + "/");
 
-            // NOTE (Flying): The pixel count badge seems to always come last.
-            var pixelCount = "?k+ ";
-            if (message.getBadges().size() > 0) {
-                pixelCount = message.getBadges().get(message.getBadges().size() - 1).getDisplayName() + " ";
-            }
-            var factionTag = message.getStrippedFaction() != null ? "[" + message.getStrippedFaction().getTag() + "] " : "";
-            author.put("name", pixelCount + factionTag + message.getAuthor());
-            author.put("url", authorProfile);
-
-            embed.put("author", author);
-        } catch(MalformedURLException e) {
-            e.printStackTrace();
+        // NOTE (Flying): The pixel count badge seems to always come last.
+        var pixelCount = "?k+ ";
+        if (message.getBadges().size() > 0) {
+            pixelCount = message.getBadges().get(message.getBadges().size() - 1).getDisplayName() + " ";
         }
+        var factionTag = message.getStrippedFaction() != null ? "[" + message.getStrippedFaction().getTag() + "] " : "";
+        author.put("name", pixelCount + factionTag + message.getAuthor());
+        author.put("url", authorProfile);
+
+        embed.put("author", author);
 
         var footer = new JSONObject();
 
