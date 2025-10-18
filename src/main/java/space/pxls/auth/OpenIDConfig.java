@@ -34,12 +34,12 @@ public class OpenIDConfig implements ConfigFactory {
 
             final URI callbackUri = new URI(App.getConfig().getString("auth.callback"));
 
-			final OidcConfiguration oidcConfiguration = new OidcConfiguration();
-			oidcConfiguration.setClientId(App.getConfig().getString("auth.client"));
-			oidcConfiguration.setSecret(App.getConfig().getString("auth.secret"));
-			oidcConfiguration.setDiscoveryURI(discoveryUri.toString());
-			oidcConfiguration.setScope("openid profile connected_accounts");
-			oidcConfiguration.setExpireSessionWithToken(true);
+            final OidcConfiguration oidcConfiguration = new OidcConfiguration();
+            oidcConfiguration.setClientId(App.getConfig().getString("auth.client"));
+            oidcConfiguration.setSecret(App.getConfig().getString("auth.secret"));
+            oidcConfiguration.setDiscoveryURI(discoveryUri.toString());
+            oidcConfiguration.setScope("openid profile connected_accounts");
+            oidcConfiguration.setExpireSessionWithToken(true);
 
             boolean devmode;
             try {
@@ -104,26 +104,26 @@ public class OpenIDConfig implements ConfigFactory {
 
             final List<Client> clients = new ArrayList<>();
 
-			if (App.getConfig().getBoolean("auth.useIp")) {
-				clients.add(ipClient);
-			} else {
-				clients.add(bearerClient);
-				clients.add(oidcClient);
-			}
+            if (App.getConfig().getBoolean("auth.useIp")) {
+                clients.add(ipClient);
+            } else {
+                clients.add(bearerClient);
+                clients.add(oidcClient);
+            }
 
-			clients.add(anonymousClient);
+            clients.add(anonymousClient);
 
-			final Config config = new Config(new Clients(
-				callbackUri.toString(),
-				clients.toArray(new Client[clients.size()])
-			));
+            final Config config = new Config(new Clients(
+                callbackUri.toString(),
+                clients.toArray(new Client[clients.size()])
+            ));
 
-			return config;
-		} catch(Exception e) {
-			System.err.println("Invalid auth config:");
-			e.printStackTrace();
-			System.exit(1);
-			return null;
-		}
+            return config;
+        } catch(Exception e) {
+            System.err.println("Invalid auth config:");
+            e.printStackTrace();
+            System.exit(1);
+            return null;
+        }
     }
 }
