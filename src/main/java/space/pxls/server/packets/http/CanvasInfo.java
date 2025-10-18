@@ -1,7 +1,5 @@
 package space.pxls.server.packets.http;
 
-import com.typesafe.config.ConfigObject;
-import space.pxls.auth.AuthService;
 import space.pxls.palette.Color;
 
 import java.util.List;
