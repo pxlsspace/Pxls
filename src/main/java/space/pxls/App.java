@@ -21,6 +21,8 @@ import space.pxls.palette.*;
 
 import java.io.File;
 import java.io.RandomAccessFile;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -841,6 +843,16 @@ public class App {
 
     public static Config getConfig() {
         return config;
+    }
+    
+    public static URI getHost() {
+        try {
+            return new URI(config.getString("host"));
+        } catch(URISyntaxException e) {
+            System.err.println("Invalid host config: " + e.getMessage());
+            System.err.println("!! AUTHENTICATION WILL NOT WORK");
+            return null;
+        }
     }
 
     public static String getCanvasCode() {

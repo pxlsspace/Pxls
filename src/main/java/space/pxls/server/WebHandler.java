@@ -4,16 +4,17 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
-import kong.unirest.UnirestException;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
 import io.undertow.util.*;
 
+import org.pac4j.core.client.Client;
 import org.pac4j.core.config.Config;
+import org.pac4j.core.context.CallContext;
 import org.pac4j.core.exception.http.HttpAction;
-import org.pac4j.oidc.client.OidcClient;
+import org.pac4j.undertow.context.UndertowSessionStore;
 import org.pac4j.undertow.context.UndertowWebContext;
 import org.pac4j.undertow.http.UndertowHttpActionAdapter;
 
@@ -1333,17 +1334,23 @@ public class WebHandler {
 
     public HttpHandler signInHandler(Config config) {
         return exchange -> {
-            final UndertowWebContext context = new UndertowWebContext(exchange, config.getSessionStore());
-            final OidcClient<?> client = config.getClients()
-                    .findClient(OidcClient.class)
-                    .get();
+            final Client client = config.getClients()
+                .findClient("OidcClient")
+                .get();
+
+            var webContext = new UndertowWebContext(exchange);
+            var sessionStore = new UndertowSessionStore(exchange);
+            var profileManager = config.getProfileManagerFactory();
+            var context = new CallContext(webContext, sessionStore, profileManager);
+
             HttpAction action;
             try {
-                action = (HttpAction) client.getRedirectionAction(context).get();
+                action = client.getRedirectionAction(context).get();
             } catch (final HttpAction e) {
                 action = e;
             }
-            UndertowHttpActionAdapter.INSTANCE.adapt(action, context);
+
+            UndertowHttpActionAdapter.INSTANCE.adapt(action, webContext);
         };
     }
 

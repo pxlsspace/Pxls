@@ -336,7 +336,7 @@ public class PacketHandler {
                     public void completed(HttpResponse<JsonNode> response) {
                         JsonNode body = response.getBody();
 
-                        String hostname = App.getConfig().getString("host");
+                        String hostname = App.getHost().getHost();
 
                         boolean success = body.getObject().getBoolean("success") && body.getObject().getString("hostname").equals(hostname);
                         if (success) {
@@ -462,24 +462,20 @@ public class PacketHandler {
         }
 
         var author = new JSONObject();
-        // NOTE ([  ]): There's no clean way to determining if we're on http or https
-        // so I gave up — you should be using https anyway.
-        try {
-            var authorProfile = new URL("https://" + App.getConfig().getString("host") + "/profile/" + message.getAuthor() + "/");
+        var authorProfile = App.getHost()
+            .resolve("profile/")
+            .resolve(message.getAuthor() + "/");
 
-            // NOTE (Flying): The pixel count badge seems to always come last.
-            var pixelCount = "?k+ ";
-            if (message.getBadges().size() > 0) {
-                pixelCount = message.getBadges().get(message.getBadges().size() - 1).getDisplayName() + " ";
-            }
-            var factionTag = message.getStrippedFaction() != null ? "[" + message.getStrippedFaction().getTag() + "] " : "";
-            author.put("name", pixelCount + factionTag + message.getAuthor());
-            author.put("url", authorProfile);
-
-            embed.put("author", author);
-        } catch(MalformedURLException e) {
-            e.printStackTrace();
+        // NOTE (Flying): The pixel count badge seems to always come last.
+        var pixelCount = "?k+ ";
+        if (message.getBadges().size() > 0) {
+            pixelCount = message.getBadges().get(message.getBadges().size() - 1).getDisplayName() + " ";
         }
+        var factionTag = message.getStrippedFaction() != null ? "[" + message.getStrippedFaction().getTag() + "] " : "";
+        author.put("name", pixelCount + factionTag + message.getAuthor());
+        author.put("url", authorProfile);
+
+        embed.put("author", author);
 
         var footer = new JSONObject();
 

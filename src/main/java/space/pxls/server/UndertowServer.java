@@ -24,6 +24,7 @@ import org.pac4j.undertow.handler.SecurityHandler;
 import org.pac4j.core.authorization.authorizer.DefaultAuthorizers;
 import org.pac4j.core.config.Config;
 import org.pac4j.oidc.client.OidcClient;
+import org.pac4j.oidc.redirect.OidcRedirectionActionBuilder;
 
 import space.pxls.App;
 import space.pxls.auth.OpenIDConfig;

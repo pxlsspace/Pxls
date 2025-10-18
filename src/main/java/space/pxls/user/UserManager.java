@@ -68,8 +68,8 @@ public class UserManager {
     }
 
     public User signUp(OidcProfile profile, String ip) {
-        final String username = (String) profile.getAttribute("preferred_username");
-        final String subject = (String) profile.getAttribute("sub");
+        final String username = (String) profile.getUsername();
+        final String subject = (String) profile.getId();
         DBUser user = App.getDatabase().createUser(username, subject, ip);
         return getByDB(Optional.of(user));
     }

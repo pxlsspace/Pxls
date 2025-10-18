@@ -21,7 +21,7 @@ import java.util.Optional;
 import java.util.Timer;
 import java.util.stream.Collectors;
 
-import org.pac4j.core.profile.CommonProfile;
+import org.pac4j.core.profile.UserProfile;
 import org.pac4j.http.profile.IpProfile;
 import org.pac4j.oidc.profile.OidcProfile;
 import org.pac4j.undertow.account.Pac4jAccount;
@@ -70,19 +70,29 @@ public class AuthReader implements HttpHandler {
         if (securityContext != null) {
             Account account = securityContext.getAuthenticatedAccount();
             if (account instanceof Pac4jAccount) {
-                for(CommonProfile profile : ((Pac4jAccount) account).getProfiles()) {
+                for(UserProfile profile : ((Pac4jAccount) account).getProfiles()) {
                     User user = null;
-                    
-                    System.out.println(profile);
-
                     if (profile instanceof OidcProfile) {
                         final String subject = (String) profile.getId();
-                        user = App.getUserManager().getByLogin(subject);
-                        if (user == null) {
-                            user = App.getUserManager().signUp(
-                                (OidcProfile) profile,
-                                exchange.getAttachment(IPReader.IP)
-                            );
+                        if (subject != null) {
+                            user = App.getUserManager().getByLogin(subject);
+                            if (user == null) {
+                                user = App.getUserManager().signUp(
+                                    (OidcProfile) profile,
+                                    exchange.getAttachment(IPReader.IP)
+                                );
+                            }
+                        } else {
+                            boolean devmode;
+                            try {
+                                devmode = App.getConfig().getBoolean("auth.devmode");
+                            } catch(Exception e) {
+                                devmode = false;
+                            }
+                            
+                            if (devmode) {
+                                System.err.println("Invalid authentication profile: " + profile);
+                            }
                         }
 
                         final Session session = sessions.getOrDefault(subject, new Session());
