@@ -380,7 +380,7 @@ public class PacketHandler {
         if (message.length() > charLimit) message = message.substring(0, charLimit);
         if (user == null) { //console
             Integer cmid = App.getDatabase().createChatMessage(0, nowMS / 1000L, message, "", replyingToId, replyShouldMention, false);
-            server.broadcast(new ServerChatMessage(new ChatMessage(cmid, "CONSOLE", nowMS / 1000L, message, replyingToId, replyShouldMention, null, null, null, 0, false, null)));
+            server.broadcast(new ServerChatMessage(new ChatMessage(cmid, "CONSOLE", nowMS / 1000L, message, replyingToId, replyShouldMention, null, null, 0, false, null)));
         } else {
             if (!user.canChat()) return;
             if (message.trim().length() == 0) return;
@@ -409,13 +409,13 @@ public class PacketHandler {
                     if (App.getConfig().getBoolean("chat.linkSendToStaff")) {
                         // Blocked link messages should appear as shadow-banned messages
                         Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter, replyingToId, replyShouldMention, true);
-                        var chatMessage = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, replyingToId, replyShouldMention, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), true, usersFaction);
+                        var chatMessage = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, replyingToId, replyShouldMention, null, user.getChatBadges(), user.getChatNameColor(), true, usersFaction);
                         server.broadcastToStaff(new ServerChatMessage(chatMessage));
                         return;
                     }
                 }
                 Integer cmid = App.getDatabase().createChatMessage(user.getId(), nowMS / 1000L, message, toFilter, replyingToId, replyShouldMention, user.isShadowBanned());
-                var chatMessage = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, replyingToId, replyShouldMention, null, user.getChatBadges(), user.getChatNameClasses(), user.getChatNameColor(), user.isShadowBanned(), usersFaction);
+                var chatMessage = new ChatMessage(cmid, user.getName(), nowMS / 1000L, toSend, replyingToId, replyShouldMention, null, user.getChatBadges(), user.getChatNameColor(), user.isShadowBanned(), usersFaction);
 
                 var barePacket = new ServerChatMessage(chatMessage);
                 var userPacket = App.getSnipMode() ? barePacket.asSnipRedacted() : barePacket;
