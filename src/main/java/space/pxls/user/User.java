@@ -696,12 +696,12 @@ public class User {
         App.getDatabase().setDiscordName(id, discordName);
     }
 
-    public boolean canUseDonatorCharNameColors() {
-        return hasPermission("chat.usercolor.donator") || hasPermission("chat.usercolor.donator.*");
+    public boolean canUseGradientChatNameColors() {
+        return hasPermission("chat.usercolor.gradient") || hasPermission("chat.usercolor.gradient.*");
     }
 
-    public boolean hasDonatorChatNameColor(String name, Integer idx) {
-        return (canUseDonatorCharNameColors() || hasPermission("chat.usercolor.donator." + name))
+    public boolean hasGradientChatNameColor(String name, Integer idx) {
+        return (canUseGradientChatNameColors() || hasPermission("chat.usercolor.gradient." + name))
                 && this.chatNameColor == -idx;
 
     }

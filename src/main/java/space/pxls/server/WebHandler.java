@@ -1024,12 +1024,20 @@ public class WebHandler {
 
         try {
             int t = Integer.parseInt(nameColor.getValue());
-            List<Object> gradients = App.getConfig().getList("chat.gradientColors").unwrapped();
+            List<Map<String,String>> gradients = App.getConfig().getConfigList("chat.gradientColors")
+                .stream()
+                .map(c -> c.entrySet().stream()
+                    .collect(Collectors.toMap(
+                        e -> e.getKey(),
+                        e -> c.getString(e.getKey())
+                    ))
+                ).collect(Collectors.toList());
+                
             if (t >= -gradients.size() && t < App.getPalette().getColors().size()) {
-                if (t < 0 && !user.canUseDonatorCharNameColors()) {
-                    var gradient = (Map<String, String>) gradients.get(-t - 1);
+                if (t < 0 && !user.canUseGradientChatNameColors()) {
+                    var gradient = gradients.get(-t - 1);
                     var gradientName = gradient.get("name").toLowerCase();
-                    if (!user.hasPermission("chat.usercolor.donator." + gradientName)) {
+                    if (!user.hasPermission("chat.usercolor.gradient." + gradientName)) {
                         sendBadRequest(exchange, "You do not have the permission to use this color");
                         return;
                     }
