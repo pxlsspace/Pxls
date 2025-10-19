@@ -1,37 +1,82 @@
 package space.pxls.server;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.time.Instant;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import kong.unirest.UnirestException;
+
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.server.handlers.CookieImpl;
 import io.undertow.server.handlers.CookieSameSiteMode;
 import io.undertow.server.handlers.form.FormData;
 import io.undertow.server.handlers.form.FormDataParser;
-import io.undertow.util.*;
+import io.undertow.util.Headers;
+import io.undertow.util.HttpString;
+import io.undertow.util.Methods;
+import io.undertow.util.StatusCodes;
+import kong.unirest.UnirestException;
 import space.pxls.App;
-import space.pxls.auth.*;
-import space.pxls.data.*;
+import space.pxls.auth.AuthService;
+import space.pxls.auth.DiscordAuthService;
+import space.pxls.auth.GoogleAuthService;
+import space.pxls.auth.RedditAuthService;
+import space.pxls.auth.TumblrAuthService;
+import space.pxls.auth.TwitchAuthService;
+import space.pxls.auth.VKAuthService;
+import space.pxls.data.DBCanvasReport;
+import space.pxls.data.DBChatMessage;
+import space.pxls.data.DBChatReport;
+import space.pxls.data.DBNotification;
+import space.pxls.data.DBPixelPlacementFull;
 import space.pxls.palette.Color;
 import space.pxls.server.packets.chat.Badge;
 import space.pxls.server.packets.chat.ChatMessage;
+import space.pxls.server.packets.http.AuthResponse;
+import space.pxls.server.packets.http.CanvasInfo;
+import space.pxls.server.packets.http.EmptyResponse;
 import space.pxls.server.packets.http.Error;
-import space.pxls.server.packets.http.*;
-import space.pxls.server.packets.socket.*;
-import space.pxls.user.*;
-import space.pxls.util.*;
-
-import java.io.*;
-import java.net.URLEncoder;
-import java.nio.ByteBuffer;
-import java.time.Instant;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
+import space.pxls.server.packets.http.ExtendedLookup;
+import space.pxls.server.packets.http.ExtendedUserFaction;
+import space.pxls.server.packets.http.ExtendedUserInfo;
+import space.pxls.server.packets.http.Lookup;
+import space.pxls.server.packets.http.ProfileResponse;
+import space.pxls.server.packets.http.ProfileResponseOther;
+import space.pxls.server.packets.http.SignInResponse;
+import space.pxls.server.packets.http.SignUpResponse;
+import space.pxls.server.packets.http.UserFaction;
+import space.pxls.server.packets.http.WhoAmI;
+import space.pxls.server.packets.socket.ServerNotification;
+import space.pxls.server.packets.socket.ServerReceivedReport;
+import space.pxls.server.packets.socket.ServerRenameSuccess;
+import space.pxls.server.packets.socket.ServerUsers;
+import space.pxls.user.Chatban;
+import space.pxls.user.Faction;
+import space.pxls.user.FactionManager;
+import space.pxls.user.User;
+import space.pxls.user.UserLogin;
+import space.pxls.util.AuthReader;
+import space.pxls.util.IPReader;
+import space.pxls.util.JsonReader;
+import space.pxls.util.RateLimitFactory;
+import space.pxls.util.SimpleDiscordWebhook;
+import space.pxls.util.TextFilter;
 
 public class WebHandler {
     private Map<String, AuthService> services = new ConcurrentHashMap<>();
@@ -1027,9 +1072,8 @@ public class WebHandler {
             List<Object> gradients = App.getConfig().getList("chat.gradientColors").unwrapped();
             if (t >= -gradients.size() && t < App.getPalette().getColors().size()) {
                 if (t < 0 && !user.canUseDonatorCharNameColors()) {
-                    var gradient = (Map<String, String>) gradients.get(t + gradients.size());
+                    var gradient = (Map<String, String>) gradients.get(-t - 1);
                     var gradientName = gradient.get("name").toLowerCase();
-                    System.out.println(gradientName);
                     if (!user.hasPermission("chat.usercolor.donator." + gradientName)) {
                         sendBadRequest(exchange, "You do not have the permission to use this color");
                         return;
