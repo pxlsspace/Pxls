@@ -78,7 +78,7 @@ public class Database {
             handle.createUpdate("CREATE TABLE IF NOT EXISTS users (" +
                     "id SERIAL NOT NULL PRIMARY KEY," +
                     "sub VARCHAR(256) UNIQUE NOT NULL," +
-                    "username VARCHAR(32) UNIQUE NOT NULL," +
+                    "username VARCHAR(32) NOT NULL," +
                     "signup_time TIMESTAMP NOT NULL DEFAULT NOW()," +
                     "cooldown_expiry TIMESTAMP," +
                     "ban_expiry TIMESTAMP," +
@@ -753,23 +753,30 @@ public class Database {
     }
 
     /**
-     * Creates a new user entry.
+     * Creates a new user entry (or gets the existing user for the login value).
      * @param name The username.
      * @param login The login method.
      * @param ip The IP address.
      * @return The user.
      */
     public DBUser createUser(String name, String login, String ip) {
-        return jdbi.withHandle(handle -> {
-            DBUser user = handle.createQuery("INSERT INTO users (username, sub, login_with_ip, signup_ip, last_ip, chat_name_color) VALUES (:username, :subject, :login_with_ip, :ip::INET, :ip::INET, :chat_name_color) RETURNING *")
+        return jdbi.inTransaction(handle -> {
+            handle.createUpdate(
+                    "INSERT INTO users (username, sub, login_with_ip, signup_ip, last_ip, chat_name_color) " +
+                    "VALUES (:username, :subject, :login_with_ip, :ip::INET, :ip::INET, :chat_name_color) " +
+                    "ON CONFLICT (sub) DO NOTHING"
+                )
                 .bind("username", name)
                 .bind("subject", login)
                 .bind("ip", ip)
                 .bind("login_with_ip", App.getConfig().getBoolean("auth.useIp"))
                 .bind("chat_name_color", App.getConfig().getInt("chat.defaultColorIndex"))
+                .execute();
+            DBUser user = handle.select("SELECT * FROM users WHERE sub = :subject")
+                .bind("subject", login)
                 .map(new DBUser.Mapper())
                 .findFirst()
-                .orElse(null);
+                .get();
             return user;
         });
     }
