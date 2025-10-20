@@ -12,6 +12,7 @@ import space.pxls.server.packets.http.UserProfile;
 import space.pxls.server.packets.http.UserProfileMinimal;
 import space.pxls.server.packets.http.UserProfileOther;
 import space.pxls.server.packets.socket.ClientUndo;
+import space.pxls.server.packets.socket.ServerRename;
 import space.pxls.server.packets.chat.ServerChatBan;
 import space.pxls.util.RateLimitFactory;
 
@@ -41,6 +42,7 @@ public class User {
     private AtomicBoolean placingLock = new AtomicBoolean(false);
     private AtomicBoolean undoLock = new AtomicBoolean(false);
     private boolean isPermaChatbanned = false;
+    private boolean isRenameRequested;
     private boolean isIdled = false;
     private String chatbanReason;
     private long cooldownExpiry;
@@ -72,6 +74,7 @@ public class User {
         boolean shadowBanned,
         boolean isPermaChatbanned,
         long chatbanExpiryTime,
+        boolean isRenameRequested,
         String chatbanReason,
         int chatNameColor,
         Integer displayedFaction,
@@ -91,6 +94,7 @@ public class User {
         this.shadowBanned = shadowBanned;
         this.isPermaChatbanned = isPermaChatbanned;
         this.chatbanExpiryTime = chatbanExpiryTime;
+        this.isRenameRequested = isRenameRequested;
         this.chatbanReason = chatbanReason;
         this.chatNameColor = chatNameColor;
         this.displayedFaction = displayedFaction;
@@ -113,6 +117,7 @@ public class User {
             this.banExpiryTime = user.banExpiry;
             this.isPermaChatbanned = user.isPermaChatbanned;
             this.chatbanExpiryTime = user.chatbanExpiry;
+            this.isRenameRequested = user.isRenameRequested;
             this.chatbanReason = user.chatbanReason;
             this.chatNameColor = user.chatNameColor;
             this.displayedFaction = user.displayedFaction;
@@ -129,6 +134,8 @@ public class User {
     }
 
     public boolean canPlace() {
+        if (isRenameRequested) return false;
+    
         if (!hasPermission("board.place")) return false;
         if (placementOverrides.hasIgnoreCooldown()) return true;
         return cooldownExpiry < System.currentTimeMillis();
@@ -673,9 +680,19 @@ public class User {
         return (canPlace ? 1 : 0) + this.stacked;
     }
 
+    public void setRenameRequested(boolean isRequested) {
+        this.isRenameRequested = isRequested;
+        App.getDatabase().setRenameRequested(id, isRequested);
+        App.getServer().send(this, new ServerRename(isRequested));
+    }
+
+    public boolean isRenameRequested(boolean reloadFromDatabase) {
+        if (reloadFromDatabase) this.isRenameRequested = App.getDatabase().isRenameRequested(id);
+        return isRenameRequested;
+    }
+
     public void updateUsername(String newName) {
         App.getDatabase().updateUsername(id, newName);
-        App.getDatabase().insertAdminLog(id, String.format("User %s (%d) has just changed their name to %s", name, id, newName));
         this.name = newName;
     }
 
@@ -916,6 +933,7 @@ public class User {
             user.shadowBanned,
             user.isPermaChatbanned,
             user.chatbanExpiry,
+            user.isRenameRequested,
             user.chatbanReason,
             user.chatNameColor,
             user.displayedFaction,

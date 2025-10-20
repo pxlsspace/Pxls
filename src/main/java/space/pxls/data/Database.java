@@ -34,7 +34,7 @@ import static java.lang.Math.toIntExact;
 
 public class Database {
     private final Jdbi jdbi;
-    private static final String SQL_USER_BY_NAME = "SELECT id, stacked, username, sub, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, chat_name_color, displayed_faction, faction_restricted FROM users WHERE username = :username";
+    private static final String SQL_USER_BY_NAME = "SELECT id, stacked, username, sub, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, chat_name_color, displayed_faction, faction_restricted FROM users WHERE username = :username";
 
     public Database() {
         try {
@@ -95,6 +95,7 @@ public class Database {
                     "pixel_count_alltime INT NOT NULL DEFAULT 0," +
                     "user_agent VARCHAR(512) NOT NULL DEFAULT ''," +
                     "stacked INT DEFAULT 0," +
+                    "is_rename_requested BOOL NOT NULL DEFAULT false," +
                     "chat_name_color INT NOT NULL," +
                     "displayed_faction INT," +
                     "faction_restricted BOOLEAN NOT NULL DEFAULT false)")
@@ -746,7 +747,7 @@ public class Database {
      * @return The user.
      */
     public Optional<DBUser> getUserByID(int who) {
-        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, sub, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, chat_name_color, displayed_faction, faction_restricted FROM users WHERE id = :who")
+        return jdbi.withHandle(handle -> handle.select("SELECT id, stacked, username, sub, signup_time, cooldown_expiry, ban_expiry, is_shadow_banned, login_with_ip, signup_ip, last_ip, last_ip_alert, perma_chat_banned, chat_ban_expiry, chat_ban_reason, ban_reason, user_agent, pixel_count, pixel_count_alltime, is_rename_requested, chat_name_color, displayed_faction, faction_restricted FROM users WHERE id = :who")
                 .bind("who", who)
                 .map(new DBUser.Mapper())
                 .findFirst());
@@ -916,9 +917,33 @@ public class Database {
                 .bind("stacked", stacked)
                 .execute());
     }
+    
+    /**
+     * Gets whether or not the {@link User} has been requested to change their username.
+     * @param who The {@link User}'s ID.
+     * @return Whether or not the user has been requested to change their username.
+     */
+    public boolean isRenameRequested(int who) {
+        return jdbi.withHandle(handle -> handle.select("SELECT is_rename_requested FROM users WHERE id = :who")
+                .bind("who", who)
+                .mapTo(Boolean.class)
+                .first());
+    }
 
     /**
-     * Updates the requested {@link User}'s username. <strong>Does not do any collision checks</strong>.
+     * Sets whether or not the {@link User} has been requested to change their username.
+     * @param who The ID of the user to update.
+     * @param isRequested Whether or not the user has been requested to change their username.
+     */
+    public void setRenameRequested(int who, boolean isRequested) {
+        jdbi.useHandle(handle -> handle.createUpdate("UPDATE users SET is_rename_requested = :is_requested WHERE id = :who")
+                .bind("who", who)
+                .bind("is_requested", isRequested)
+                .execute());
+    }
+
+    /**
+     * Updates the requested {@link User}'s username.
      * @param who The {@link User}'s ID.
      * @param username The new username.
      */

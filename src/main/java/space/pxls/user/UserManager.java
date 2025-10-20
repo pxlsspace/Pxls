@@ -60,6 +60,7 @@ public class UserManager {
             user.shadowBanned,
             user.isPermaChatbanned,
             user.chatbanExpiry,
+            user.isRenameRequested,
             user.chatbanReason,
             user.chatNameColor,
             user.displayedFaction,
