@@ -122,13 +122,16 @@ public class App {
         server = new UndertowServer(config.getInt("server.port"));
         server.start();
 
+        // Stack pixels, track idle users
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
                 tickStackedPixels();
                 checkUserTimeout();
             }
-        }, 0, 5 * 1000);
+        }, 0, 5 * 1000); // 5 seconds
+        
+        // Ping, update user count
         new Timer().schedule(new TimerTask() {
             @Override
             public void run() {
@@ -136,6 +139,15 @@ public class App {
                 getServer().getPacketHandler().updateUserData();
             }
         }, 0, 60 * 1000); // 1 minute
+        
+        // Cleanup database sessions
+        new Timer().schedule(new TimerTask() {
+            @Override
+            public void run() {
+                System.out.println("cleaning sessions");
+                App.getDatabase().clearExpiredSessions();
+            }
+        }, 0, 60 * 60 * 1000); // 1 hour
 
         try {
             Path backupsDir = getStorageDir().resolve("backups/");

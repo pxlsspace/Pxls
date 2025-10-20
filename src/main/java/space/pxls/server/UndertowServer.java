@@ -23,10 +23,9 @@ import org.pac4j.undertow.handler.LogoutHandler;
 import org.pac4j.undertow.handler.SecurityHandler;
 import org.pac4j.core.authorization.authorizer.DefaultAuthorizers;
 import org.pac4j.core.config.Config;
-import org.pac4j.oidc.client.OidcClient;
-import org.pac4j.oidc.redirect.OidcRedirectionActionBuilder;
 
 import space.pxls.App;
+import space.pxls.auth.DatabaseSessionManager;
 import space.pxls.auth.OpenIDConfig;
 import space.pxls.server.packets.chat.*;
 import space.pxls.server.packets.socket.*;
@@ -161,7 +160,7 @@ public class UndertowServer {
                             defaultHandler.handleRequest(exchange);
                         }
                     },
-                    new InMemorySessionManager("pxls"),
+                    new DatabaseSessionManager(),
                     new SessionCookieConfig()
                 ))
                 .build();

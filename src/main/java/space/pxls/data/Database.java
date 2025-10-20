@@ -9,6 +9,7 @@ import org.jdbi.v3.core.statement.StatementContext;
 
 import space.pxls.App;
 import space.pxls.auth.Provider;
+import space.pxls.auth.SessionData;
 import space.pxls.server.packets.chat.ChatMessage;
 import space.pxls.server.packets.chat.ServerChatLookup;
 import space.pxls.user.Chatban;
@@ -20,10 +21,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
-import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import java.util.AbstractMap.SimpleEntry;
@@ -75,7 +77,7 @@ public class Database {
             // users
             handle.createUpdate("CREATE TABLE IF NOT EXISTS users (" +
                     "id SERIAL NOT NULL PRIMARY KEY," +
-                    "sub VARCHAR(64) UNIQUE NOT NULL," +
+                    "sub VARCHAR(256) UNIQUE NOT NULL," +
                     "username VARCHAR(32) UNIQUE NOT NULL," +
                     "signup_time TIMESTAMP NOT NULL DEFAULT NOW()," +
                     "cooldown_expiry TIMESTAMP," +
@@ -117,6 +119,13 @@ public class Database {
                     "key CHAR(512) NOT NULL," +
                     "canvas_code VARCHAR(64) NOT NULL);" +
                     "CREATE UNIQUE INDEX IF NOT EXISTS _user_keys_uid_canvas_code_pair ON user_keys(uid, canvas_code);")
+                    .execute();
+            // sessions
+            handle.createUpdate("CREATE TABLE IF NOT EXISTS sessions (" +
+                    "token CHAR(32) NOT NULL PRIMARY KEY," +
+                    "uid INT NOT NULL REFERENCES users(id)," +
+                    "refresh VARCHAR(64)," +
+                    "expiry TIMESTAMP NOT NULL);")
                     .execute();
             // lookups
             handle.createUpdate("CREATE TABLE IF NOT EXISTS lookups (" +
@@ -1943,6 +1952,96 @@ public class Database {
                 .map(new DBUserPixelCounts.Mapper())
                 .findFirst()
                 .orElse(null)
+        );
+    }
+
+    /**
+     * Gets a session.
+     * @param token The session token.
+     * @return The database session.
+     */
+    public Optional<SessionData> getSession(String token) {
+        return jdbi.withHandle(handle -> 
+            handle.select(
+                    "SELECT sub, refresh, expiry FROM sessions " +
+                    "JOIN users ON users.id = sessions.uid " + 
+                    "WHERE token = :token"
+                )
+                .bind("token", token)
+                .map(new SessionData.Mapper())
+                .findFirst()
+        );
+    }
+
+    /**
+     * Gets the set of all session tokens.
+     * @param token The session token.
+     * @return The set of all session tokens.
+     */
+    public Set<String> getAllSessions() {
+        return jdbi.withHandle(handle -> 
+            handle.select("SELECT token FROM sessions")
+                .map(r -> r.getColumn(0, String.class))
+                .collect(Collectors.toSet())
+        );
+    }
+    
+    /**
+     * Save the session data, creating a new session if necessary.
+     * @param token The session token.
+     * @param data The session data.
+     */
+     public void saveSession(String token, int uid, Optional<String> refresh, Date expiry) {
+        jdbi.withHandle(handle -> 
+            handle.createUpdate(
+                    "INSERT INTO sessions " +
+                    "VALUES(:token, :uid, :refresh, :expiry) " +
+                    "ON CONFLICT (token) " +
+                    "DO UPDATE SET uid = :uid, refresh = :refresh, expiry = :expiry"
+                )
+                .bind("token", token)
+                .bind("uid", uid)
+                .bind("refresh", refresh)
+                .bind("expiry", expiry)
+                .execute()
+        );
+    }
+    
+    /**
+     * Delete the session with the given ID if it exists
+     * @param token The session token.
+     */
+     public void deleteSession(String token) {
+        jdbi.withHandle(handle -> 
+            handle.createUpdate("DELETE FROM sessions WHERE token = :token")
+                .bind("token", token)
+                .execute()
+        );
+    }
+
+    /**
+     * Change the token of a session, keeping the data intanct.
+     * @param oldToken The current session token.
+     * @param newToken The new session token.
+     */
+    public void changeSessionToken(String oldToken, String newToken) {
+        jdbi.withHandle(handle -> 
+            handle.createUpdate("UPDATE sessions SET token = :new WHERE token = :old")
+                .bind("old", oldToken)
+                .bind("new", newToken)
+                .execute()
+        );
+    }
+
+    /**
+     * Delete all expired sessions from the database.
+     */
+    public void clearExpiredSessions() {
+        var now = Instant.now();
+        jdbi.withHandle(handle -> 
+            handle.createUpdate("DELETE FROM sessions WHERE expiry < :now")
+                .bind("now", now)
+                .execute()
         );
     }
 }

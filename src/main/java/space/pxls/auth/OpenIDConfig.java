@@ -98,6 +98,7 @@ public class OpenIDConfig implements ConfigFactory {
                     }
                 }
             });
+            bearerClient.init();
 
             final AnonymousClient anonymousClient = new AnonymousClient();
             final IpClient ipClient = new IpClient(new IpRegexpAuthenticator(".*"));
