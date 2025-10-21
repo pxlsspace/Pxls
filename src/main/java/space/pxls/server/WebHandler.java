@@ -26,6 +26,7 @@ import space.pxls.server.packets.chat.ChatMessage;
 import space.pxls.server.packets.http.Error;
 import space.pxls.server.packets.http.*;
 import space.pxls.server.packets.socket.*;
+import space.pxls.auth.OpenIDConfig;
 import space.pxls.user.*;
 import space.pxls.util.*;
 
@@ -1785,9 +1786,5 @@ public class WebHandler {
 
     private boolean validateUsername(String username) {
         return !username.isEmpty() && username.matches("[a-zA-Z0-9_\\-]+");
-    }
-
-    public void reloadLoginService() {
-        // TODO ([  ]): reload the handler's config info
     }
 }

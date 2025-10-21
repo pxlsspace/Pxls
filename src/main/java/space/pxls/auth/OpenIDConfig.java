@@ -32,7 +32,7 @@ public class OpenIDConfig implements ConfigFactory {
             final URI discoveryUri = new URI(App.getConfig().getString("auth.issuer") + "/")
                 .resolve(".well-known/openid-configuration");
 
-            final URI callbackUri = App.getHost().resolve("callback");
+            final URI callbackUri = App.getHost().resolve("auth");
 
             final OidcConfiguration oidcConfiguration = new OidcConfiguration();
             oidcConfiguration.setClientId(App.getConfig().getString("auth.client"));

@@ -783,7 +783,7 @@ public class App {
         TextFilter.getInstance().reload();
 
         if (server != null) {
-            server.getWebHandler().reloadLoginService();
+            server.reloadLoginService();
         }
 
         for (Locale locale : Util.SUPPORTED_LOCALES) {
