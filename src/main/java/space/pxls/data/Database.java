@@ -77,7 +77,7 @@ public class Database {
             // users
             handle.createUpdate("CREATE TABLE IF NOT EXISTS users (" +
                     "id SERIAL NOT NULL PRIMARY KEY," +
-                    "sub VARCHAR(256) UNIQUE NOT NULL," +
+                    "sub VARCHAR(255) UNIQUE NOT NULL," +
                     "username VARCHAR(32) NOT NULL," +
                     "signup_time TIMESTAMP NOT NULL DEFAULT NOW()," +
                     "cooldown_expiry TIMESTAMP," +
