@@ -69,9 +69,8 @@ roleID {
 | `chat.purge` | `/admin/chatPurge` | Purge (multiple) chat messages | staff |
 | `chat.report` | `/reportChat` | Report chat messages | user |
 | `chat.send` | | Send chat messages | user |
-| `chat.usercolor.gradient`, `chat.usercolor.gradient.*` | | Ability to use all gradient user colors | staff |
-| `chat.usercolor.gradient.green` | | Ability to use green gradient user color | donator |
-| `chat.usercolor.gradient.gray` | | Ability to use gray gradient user color | donator |
+| `chat.usercolor.gradient.<name>` | | Ability to use the gradient specified by `<name>` | staff, donator |
+| `chat.usercolor.gradient`, `chat.usercolor.gradient.*` | | Ability to use all gradient user colors | developer |
 
 ### User
 
