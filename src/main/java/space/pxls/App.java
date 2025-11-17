@@ -979,28 +979,33 @@ public class App {
     }
 
     public static ByteBuffer getHeatmapData() {
-        heatmap.rewind();
-        return heatmap;
+        ByteBuffer copy = heatmap.asReadOnlyBuffer();
+        copy.rewind();
+        return copy;
     }
 
     public static ByteBuffer getVirginmapData() {
-        virginmap.rewind();
-        return virginmap;
+        ByteBuffer copy = virginmap.asReadOnlyBuffer();
+        copy.rewind();
+        return copy;
     }
 
     public static ByteBuffer getPlacemapData() {
-        placemap.rewind();
-        return placemap;
+        ByteBuffer copy = placemap.asReadOnlyBuffer();
+        copy.rewind();
+        return copy;
     }
 
     public static ByteBuffer getBoardData() {
-        board.rewind();
-        return board;
+        ByteBuffer copy = board.asReadOnlyBuffer();
+        copy.rewind();
+        return copy;
     }
 
     public static ByteBuffer getDefaultBoardData() {
-        defaultBoard.rewind();
-        return defaultBoard;
+        ByteBuffer copy = defaultBoard.asReadOnlyBuffer();
+        copy.rewind();
+        return copy;
     }
 
     public static Path getStorageDir() {
