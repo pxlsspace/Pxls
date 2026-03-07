@@ -1027,7 +1027,7 @@ public class WebHandler {
 
         try {
             int t = Integer.parseInt(nameColor.getValue());
-            if (t >= -19 && t < App.getPalette().getColors().size()) {
+            if (t >= -20 && t < App.getPalette().getColors().size()) {
                 var hasAllDonatorColors = user.hasPermission("chat.usercolor.donator") || user.hasPermission("chat.usercolor.donator.*");
                 if (t == -1 && !user.hasPermission("chat.usercolor.rainbow")) {
                     sendBadRequest(exchange, "Color reserved for staff members");
@@ -1084,6 +1084,9 @@ public class WebHandler {
                     sendBadRequest(exchange, "Color reversed for donators");
                     return;
                 } else if (t == -19 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.lesbian"))) {
+                    sendBadRequest(exchange, "Color reversed for donators");
+                    return;
+                } else if (t == -20 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.neuro"))) {
                     sendBadRequest(exchange, "Color reversed for donators");
                     return;
                 }
