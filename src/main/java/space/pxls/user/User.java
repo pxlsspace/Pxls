@@ -774,6 +774,9 @@ public class User {
         } else if (this.hasDonatorChatNameColor("lesbian", 19)) {
             toReturn.add("donator");
             toReturn.add("donator--lesbian");
+        } else if (this.hasDonatorChatNameColor("neuro", 20)) {
+            toReturn.add("donator");
+            toReturn.add("donator--neuro");
         }
         return toReturn.size() != 0 ? toReturn : null;
     }
