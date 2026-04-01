@@ -31,6 +31,7 @@ public class DBChatReport {
     }
 
     public String getReportedName() {
+        if (App.getSnipMode()) return "-snip-";
         User u = App.getUserManager().getByID(target);
         return u == null ? "" : u.getName();
     }
