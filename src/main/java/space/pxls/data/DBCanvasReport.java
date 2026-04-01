@@ -35,6 +35,7 @@ public class DBCanvasReport {
     }
 
     public String getReportedName() {
+    	if (App.getSnipMode()) return "-snip-";
         User u = App.getUserManager().getByID(reported);
         return u == null ? "" : u.getName();
     }
