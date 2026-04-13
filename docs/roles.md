@@ -85,7 +85,6 @@ roleID {
 | `user.auth` | `/whoami` | List own username and ID | guest |
 | `user.ban` | `/admin/ban` | Time-ban users | staff |
 | `user.chatColorChange` | `/chat/setColor` | Change color in chat | user |
-| `user.discordNameChange` | `/setDiscordName` | Change Discord tag | user |
 | `user.namechange` | `/execNameChange` | Execute staff-initiated name changes | staff |
 | `user.namechange.flag` | `/admin/flagNameChange` | Flag users to change their name | staff |
 | `user.namechange.force` | `/admin/forceNameChange` | Force prompt for users to change their name | staff |

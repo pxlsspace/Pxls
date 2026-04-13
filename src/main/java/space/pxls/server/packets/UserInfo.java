@@ -23,11 +23,24 @@ public class UserInfo {
     public String discordName;
     public Number chatNameColor;
 
-    public UserInfo(String username, List<Role> roles, int pixelCount, int pixelCountAllTime,
-                    Boolean banned, Long banExpiry, String banReason, String method,
-                    PlacementOverrides placementOverrides, Boolean chatBanned, String chatbanReason,
-                    Boolean chatbanIsPerma, Long chatbanExpiry, Boolean renameRequested, String discordName,
-                    Number chatNameColor) {
+    public UserInfo(
+        String username, 
+        List<Role> roles, 
+        int pixelCount, 
+        int pixelCountAllTime,
+        Boolean banned, 
+        Long banExpiry, 
+        String banReason, 
+        String method,
+        PlacementOverrides placementOverrides, 
+        Boolean chatBanned, 
+        String chatbanReason,
+        Boolean chatbanIsPerma, 
+        Long chatbanExpiry, 
+        Boolean renameRequested, 
+        String discordName,
+        Number chatNameColor
+    ) {
         this.username = username;
         this.roles = roles;
         this.pixelCount = pixelCount;

@@ -20,6 +20,5 @@ public record UserProfile(
         boolean isChatBanned,
         boolean isPermaChatBanned,
         long chatBanExpiry,
-        boolean isFactionRestricted,
-        String discordName
+        boolean isFactionRestricted
 ) {}

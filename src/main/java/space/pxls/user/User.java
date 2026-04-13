@@ -2,6 +2,7 @@ package space.pxls.user;
 
 import io.undertow.websockets.core.WebSocketChannel;
 import space.pxls.App;
+import space.pxls.auth.Provider;
 import space.pxls.data.DBFaction;
 import space.pxls.data.DBUser;
 import space.pxls.data.DBUserPixelCounts;
@@ -11,8 +12,8 @@ import space.pxls.server.packets.http.UserProfile;
 import space.pxls.server.packets.http.UserProfileMinimal;
 import space.pxls.server.packets.http.UserProfileOther;
 import space.pxls.server.packets.socket.ClientUndo;
-import space.pxls.server.packets.chat.ServerChatBan;
 import space.pxls.server.packets.socket.ServerRename;
+import space.pxls.server.packets.chat.ServerChatBan;
 import space.pxls.util.RateLimitFactory;
 
 import java.sql.Timestamp;
@@ -27,6 +28,7 @@ public class User {
     private int stacked;
     private int chatNameColor;
     private String name;
+    private String login;
     private String useragent;
     private List<Role> roles;
     private int pixelCount;
@@ -40,9 +42,8 @@ public class User {
     private AtomicBoolean placingLock = new AtomicBoolean(false);
     private AtomicBoolean undoLock = new AtomicBoolean(false);
     private boolean isPermaChatbanned = false;
-    private boolean isRenameRequested = false;
+    private boolean isRenameRequested;
     private boolean isIdled = false;
-    private String discordName;
     private String chatbanReason;
     private long cooldownExpiry;
     private long lastPixelTime = 0;
@@ -58,10 +59,31 @@ public class User {
 
     private Set<WebSocketChannel> connections = new HashSet<>();
 
-    public User(int id, int stacked, String name, Timestamp signup, long cooldownExpiry, List<Role> roles, boolean loginWithIP, int pixelCount, int pixelCountAllTime, Long banExpiryTime, boolean shadowBanned, boolean isPermaChatbanned, long chatbanExpiryTime, String chatbanReason, int chatNameColor, Integer displayedFaction, String discordName, Boolean factionBlocked) {
+    public User(
+        int id,
+        int stacked,
+        String name,
+        String login,
+        Timestamp signup,
+        long cooldownExpiry,
+        List<Role> roles,
+        boolean loginWithIP,
+        int pixelCount,
+        int pixelCountAllTime,
+        Long banExpiryTime,
+        boolean shadowBanned,
+        boolean isPermaChatbanned,
+        long chatbanExpiryTime,
+        boolean isRenameRequested,
+        String chatbanReason,
+        int chatNameColor,
+        Integer displayedFaction,
+        Boolean factionBlocked
+    ) {
         this.id = id;
         this.stacked = stacked;
         this.name = name;
+        this.login = login;
         this.signup_time = signup;
         this.cooldownExpiry = cooldownExpiry;
         this.roles = roles;
@@ -72,10 +94,10 @@ public class User {
         this.shadowBanned = shadowBanned;
         this.isPermaChatbanned = isPermaChatbanned;
         this.chatbanExpiryTime = chatbanExpiryTime;
+        this.isRenameRequested = isRenameRequested;
         this.chatbanReason = chatbanReason;
         this.chatNameColor = chatNameColor;
         this.displayedFaction = displayedFaction;
-        this.discordName = discordName;
         this.factionBlocked = factionBlocked;
 
         this.placementOverrides = new PlacementOverrides(false, false, false);
@@ -88,6 +110,7 @@ public class User {
             this.id = user.id;
             this.stacked = user.stacked;
             this.name = user.username;
+            this.login = user.login;
             this.signup_time = user.signup_time;
             this.cooldownExpiry = user.cooldownExpiry;
             this.roles = roles;
@@ -95,7 +118,6 @@ public class User {
             this.isPermaChatbanned = user.isPermaChatbanned;
             this.chatbanExpiryTime = user.chatbanExpiry;
             this.isRenameRequested = user.isRenameRequested;
-            this.discordName = user.discordName;
             this.chatbanReason = user.chatbanReason;
             this.chatNameColor = user.chatNameColor;
             this.displayedFaction = user.displayedFaction;
@@ -113,7 +135,7 @@ public class User {
 
     public boolean canPlace() {
         if (isRenameRequested) return false;
-
+    
         if (!hasPermission("board.place")) return false;
         if (placementOverrides.hasIgnoreCooldown()) return true;
         return cooldownExpiry < System.currentTimeMillis();
@@ -232,10 +254,10 @@ public class User {
                 .anyMatch(role -> role.hasPermission(node));
     }
 
-    public List<UserLogin> getLogins() {
-        return App.getDatabase().getUserLogins(id).stream()
-            .map((dbLogin) -> UserLogin.fromDB(dbLogin))
-            .collect(Collectors.toList());
+    public List<Provider> getLogins() {
+        List<Provider> logins = getLinks();
+        logins.add(new Provider(name, login, "pxls"));
+        return logins;
     }
 
     public boolean loginsWithIP() {
@@ -669,31 +691,26 @@ public class User {
         return isRenameRequested;
     }
 
-    public boolean updateUsername(String newName) {
-        return updateUsername(newName, false);
-    }
-
-    public boolean updateUsername(String newName, boolean ignoreRequestedStatus) {
-        if (!ignoreRequestedStatus && !isRenameRequested) return false;
-        if (App.getDatabase().getUserByName(newName).isPresent()) return false;
-        try {
-            App.getDatabase().updateUsername(id, newName);
-            App.getDatabase().insertAdminLog(id, String.format("User %s (%d) has just changed their name to %s", name, id, newName));
-            App.getUserManager().reload();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
-        return true;
+    public void updateUsername(String newName) {
+        App.getDatabase().updateUsername(id, newName);
+        this.name = newName;
     }
 
     public String getDiscordName() {
-        return discordName;
+        return getLinks()
+            .stream()
+            .filter(p -> p.identityProvider.equalsIgnoreCase("discord"))
+            .findAny()
+            .map(p -> p.userName)
+            .orElse(null);
     }
 
-    public void setDiscordName(String discordName) {
-        this.discordName = discordName;
-        App.getDatabase().setDiscordName(id, discordName);
+    public List<Provider> getLinks() {
+        return App.getDatabase().getUserLinks(id);
+    }
+
+    public void setLinks(List<Provider> links) {
+        App.getDatabase().setUserLinks(id, links);
     }
 
     public boolean canUseDonatorCharNameColors() {
@@ -902,7 +919,26 @@ public class User {
 
     public static User fromDBUser(DBUser user) {
         List<Role> roles = App.getDatabase().getUserRoles(user.id);
-        return new User(user.id, user.stacked, user.username, user.signup_time, user.cooldownExpiry, roles, user.loginWithIP, user.pixelCount, user.pixelCountAllTime, user.banExpiry, user.shadowBanned, user.isPermaChatbanned, user.chatbanExpiry, user.chatbanReason, user.chatNameColor, user.displayedFaction, user.discordName, user.factionBlocked);
+        return new User(
+            user.id,
+            user.stacked,
+            user.username,
+            user.login,
+            user.signup_time,
+            user.cooldownExpiry, roles,
+            user.loginWithIP,
+            user.pixelCount,
+            user.pixelCountAllTime,
+            user.banExpiry,
+            user.shadowBanned,
+            user.isPermaChatbanned,
+            user.chatbanExpiry,
+            user.isRenameRequested,
+            user.chatbanReason,
+            user.chatNameColor,
+            user.displayedFaction,
+            user.factionBlocked
+        );
     }
 
     public UserProfile toProfile() {
@@ -944,8 +980,7 @@ public class User {
                 isChatbanned(),
                 isPermaChatbanned,
                 chatbanExpiryTime,
-                factionBlocked,
-                discordName
+                factionBlocked
         );
     }
 
@@ -992,8 +1027,7 @@ public class User {
                 isChatbanned(),
                 isPermaChatbanned,
                 chatbanExpiryTime,
-                factionBlocked,
-                discordName
+                factionBlocked
         );
     }
 }

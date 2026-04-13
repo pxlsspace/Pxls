@@ -18,7 +18,18 @@ public class Lookup {
     public String discordName = null;
     public String faction;
 
-    public Lookup(int id, int x, int y, String origin, Integer pixelCount, Integer pixelCountAlltime, long time, String username, String discordName, String faction) {
+    public Lookup(
+        int id,
+        int x,
+        int y,
+        String origin,
+        Integer pixelCount,
+        Integer pixelCountAlltime,
+        long time,
+        String username,
+        String discordName,
+        String faction
+    ) {
         this.id = id;
         this.x = x;
         this.y = y;

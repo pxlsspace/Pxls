@@ -3,6 +3,7 @@ package space.pxls.server;
 import com.google.gson.JsonObject;
 import io.undertow.Handlers;
 import io.undertow.Undertow;
+import io.undertow.server.HttpHandler;
 import io.undertow.server.handlers.AllowedMethodsHandler;
 import io.undertow.server.handlers.DisableCacheHandler;
 import io.undertow.server.handlers.form.EagerFormParsingHandler;
@@ -15,7 +16,16 @@ import io.undertow.websockets.core.BufferedTextMessage;
 import io.undertow.websockets.core.WebSocketChannel;
 import io.undertow.websockets.core.WebSockets;
 import io.undertow.websockets.spi.WebSocketHttpExchange;
+import io.undertow.server.session.*;
+
+import org.pac4j.undertow.handler.CallbackHandler;
+import org.pac4j.undertow.handler.LogoutHandler;
+import org.pac4j.undertow.handler.SecurityHandler;
+import org.pac4j.core.config.Config;
+
 import space.pxls.App;
+import space.pxls.auth.DatabaseSessionManager;
+import space.pxls.auth.OpenIDConfig;
 import space.pxls.server.packets.chat.*;
 import space.pxls.server.packets.socket.*;
 import space.pxls.tasks.UserAuthedTask;
@@ -37,6 +47,7 @@ public class UndertowServer {
     private PacketHandler socketHandler;
     private WebHandler webHandler;
     private ConcurrentHashMap<Integer, User> authedUsers = new ConcurrentHashMap<Integer, User>();
+    private final Config authConfig;
 
     private Set<PxlsWebSocketConnection> connections;
     private Undertow server;
@@ -49,10 +60,11 @@ public class UndertowServer {
         webHandler = new WebHandler();
         socketHandler = new PacketHandler(this);
         connections = ConcurrentHashMap.newKeySet();
+        authConfig = new OpenIDConfig().build();
     }
 
     public void start() {
-        var pathHandler = new PxlsPathHandler()
+        PxlsPathHandler pathHandler = new PxlsPathHandler()
                 .addPermGatedExactPath("/ws", "board.socket", Handlers.websocket(this::webSocketHandler))
                 .addPermGatedPrefixPath("/ws", "board.socket", Handlers.websocket(this::webSocketHandler))
                 .addPermGatedPrefixPath("/info", "board.info", new DisableCacheHandler(webHandler::info))
@@ -61,10 +73,9 @@ public class UndertowServer {
                 .addPermGatedPrefixPath("/virginmap", "board.data", new DisableCacheHandler(webHandler::virginmap))
                 .addPermGatedPrefixPath("/placemap", "board.data", new DisableCacheHandler(webHandler::placemap))
                 .addPermGatedPrefixPath("/initialboarddata", "board.data", webHandler::initialdata)
-                .addPermGatedPrefixPath("/auth", "user.auth", new RateLimitingHandler(webHandler::auth, "http:auth", (int) App.getConfig().getDuration("server.limits.auth.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.auth.count")))
-                .addPermGatedPrefixPath("/signin", "user.auth", webHandler::signIn)
-                .addPermGatedPrefixPath("/signup", "user.auth", new RateLimitingHandler(webHandler::signUp, "http:signUp", (int) App.getConfig().getDuration("server.limits.signup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.signup.count")))
-                .addPermGatedPrefixPath("/logout", "user.auth", webHandler::logout)
+                .addPermGatedPrefixPath("/auth", "user.auth", new RateLimitingHandler(CallbackHandler.build(authConfig), "http:auth", (int) App.getConfig().getDuration("server.limits.auth.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.auth.count")))
+                .addPermGatedPrefixPath("/signin", "user.auth", webHandler.signInHandler(authConfig))
+                .addPermGatedPrefixPath("/logout", "user.auth", new LogoutHandler(authConfig))
                 .addPermGatedPrefixPath("/lookup", "board.lookup", new RateLimitingHandler(webHandler::lookup, "http:lookup", (int) App.getConfig().getDuration("server.limits.lookup.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.lookup.count")))
                 .addPermGatedPrefixPath("/report", "board.report", webHandler::report)
                 .addPermGatedPrefixPath("/reportChat", "chat.report", webHandler::chatReport)
@@ -72,7 +83,6 @@ public class UndertowServer {
                 .addPermGatedPrefixPath("/users", "user.online", webHandler::users)
                 .addPermGatedPrefixPath("/chat/history", "chat.history", new RateLimitingHandler(new DisableCacheHandler(webHandler::chatHistory), "http:chatHistory", (int) App.getConfig().getDuration("server.limits.chatHistory.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.chatHistory.count")))
                 .addPermGatedPrefixPath("/chat/setColor", "user.chatColorChange", new RateLimitingHandler(webHandler::chatColorChange, "http:chatColorChange", (int) App.getConfig().getDuration("server.limits.chatColorChange.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.chatColorChange.count")))
-                .addPermGatedPrefixPath("/setDiscordName", "user.discordNameChange", new RateLimitingHandler(webHandler::discordNameChange, "http:discordName", (int) App.getConfig().getDuration("server.limits.discordNameChange.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.discordNameChange.count")))
                 .addPermGatedPrefixPath("/admin", "user.admin", Handlers.resource(new ClassPathResourceManager(App.class.getClassLoader(), "public/admin/")).setCacheTime(10))
                 .addPermGatedPrefixPath("/admin/ban", "user.ban", webHandler::ban)
                 .addPermGatedPrefixPath("/admin/unban", "user.unban", webHandler::unban)
@@ -105,11 +115,24 @@ public class UndertowServer {
             .deletePermGated("/factions/{fid}", "faction.delete", new JsonReader(new RateLimitingHandler(webHandler::manageFactions, "http:manageFactions", (int) App.getConfig().getDuration("server.limits.manageFactions.time", TimeUnit.SECONDS), App.getConfig().getInt("server.limits.manageFactions.count"), App.getConfig().getBoolean("server.limits.manageFactions.global"))))
             .setFallbackHandler(pathHandler);
         //EncodingHandler encoder = new EncodingHandler(mainHandler, new ContentEncodingRepository().addEncodingHandler("gzip", new GzipEncodingProvider(), 50, Predicates.parse("max-content-size(1024)")));
+
+        var handler = new SessionAttachmentHandler(
+            SecurityHandler.build(
+                new IPReader(new AuthReader(new EagerFormParsingHandler().setNext(routingHandler))),
+                authConfig,
+                "HeaderClient,OidcClient,IpClient,AnonymousClient",
+                null
+            ),
+            new DatabaseSessionManager(),
+            new SessionCookieConfig()
+        );
+
         server = Undertow.builder()
                 .addHttpListener(port, "0.0.0.0")
                 .setIoThreads(32)
                 .setWorkerThreads(128)
-                .setHandler(new IPReader(new AuthReader(new EagerFormParsingHandler().setNext(routingHandler)))).build();
+                .setHandler(handler)
+                .build();
         server.start();
     }
 
@@ -311,5 +334,10 @@ public class UndertowServer {
 
     public WebHandler getWebHandler() {
         return webHandler;
+    }
+
+    public void reloadLoginService() {
+        var newConfig = new OpenIDConfig().build();
+        this.authConfig.setClients(newConfig.getClients());
     }
 }

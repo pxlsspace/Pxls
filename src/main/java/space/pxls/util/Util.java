@@ -2,6 +2,7 @@ package space.pxls.util;
 
 import com.typesafe.config.ConfigException;
 
+import java.security.SecureRandom;
 import java.util.*;
 import java.util.function.Supplier;
 
@@ -12,9 +13,9 @@ import io.undertow.util.*;
 public class Util {
     public static String generateRandomToken() {
         String charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-        Random rand = new Random();
+        Random rand = new SecureRandom();
         StringBuilder res = new StringBuilder();
-        for (int i = 0; i <= 32; i++) {
+        for (int i = 0; i < 32; i++) {
             int randIndex = rand.nextInt(charset.length());
             res.append(charset.charAt(randIndex));
         }
