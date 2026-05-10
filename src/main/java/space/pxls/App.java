@@ -979,28 +979,49 @@ public class App {
     }
 
     public static ByteBuffer getHeatmapData() {
-        heatmap.rewind();
-        return heatmap;
+        ByteBuffer copy;
+        synchronized (heatmap) {
+            copy = heatmap.asReadOnlyBuffer();
+        }
+        copy.rewind();
+        return copy;
     }
 
     public static ByteBuffer getVirginmapData() {
-        virginmap.rewind();
-        return virginmap;
+        ByteBuffer copy;
+        synchronized (virginmap) {
+            copy = virginmap.asReadOnlyBuffer();
+        }
+        copy.rewind();
+        copy.rewind();
+        return copy;
     }
 
     public static ByteBuffer getPlacemapData() {
-        placemap.rewind();
-        return placemap;
+        ByteBuffer copy;
+        synchronized (placemap) {
+            copy = placemap.asReadOnlyBuffer();
+        }
+        copy.rewind();
+        return copy;
     }
 
     public static ByteBuffer getBoardData() {
-        board.rewind();
-        return board;
+        ByteBuffer copy;
+        synchronized (board) {
+            copy = board.asReadOnlyBuffer();
+        }
+        copy.rewind();
+        return copy;
     }
 
     public static ByteBuffer getDefaultBoardData() {
-        defaultBoard.rewind();
-        return defaultBoard;
+        ByteBuffer copy;
+        synchronized (defaultBoard) {
+            copy = defaultBoard.asReadOnlyBuffer();
+        }
+        copy.rewind();
+        return copy;
     }
 
     public static Path getStorageDir() {
@@ -1020,19 +1041,27 @@ public class App {
     }
 
     public static byte getPixel(int x, int y) {
-        return board.get(x + y * width);
+        synchronized (board) {
+            return board.get(x + y * width);
+        }
     }
 
     public static byte getPlacemap(int x, int y) {
-        return placemap.get(x + y * width);
+        synchronized (placemap) {
+            return placemap.get(x + y * width);
+        }
     }
 
     public static byte getVirginmap(int x, int y) {
-        return virginmap.get(x + y * width);
+        synchronized (virginmap) {
+            return virginmap.get(x + y * width);
+        }
     }
 
     public static byte getDefaultPixel(int x, int y) {
-        return defaultBoard.get(x + y * width);
+        synchronized (defaultBoard) {
+            return defaultBoard.get(x + y * width);
+        }
     }
 
     public static boolean getCanPlace(int x, int y) {
@@ -1085,9 +1114,15 @@ public class App {
             action = mod_action ? "mod overwrite" : "user place";
         }
 
-        board.put(x + y * width, (byte) color);
-        heatmap.put(x + y * width, (byte) 0xFF);
-        virginmap.put(x + y * width, (byte) 0x00);
+        synchronized (board) {
+            board.put(x + y * width, (byte) color);
+        }
+        synchronized (heatmap) {
+            heatmap.put(x + y * width, (byte) 0xFF);
+        }
+        synchronized (virginmap) {
+            virginmap.put(x + y * width, (byte) 0x00);
+        }
         pixelLogger.log(Level.INFO, String.format("%s\t%d\t%d\t%d\t%s", userName, x, y, color, action));
         if (updateDatabase) {
             database.placePixel(x, y, color, user, mod_action);
@@ -1363,10 +1398,12 @@ public class App {
     }
 
     public static void updateHeatmap() {
-        for (int i = 0; i < width * height; i++) {
-            byte value = heatmap.get(i);
-            if (value != 0) {
-                heatmap.put(i, (byte) (value - 1));
+        synchronized (heatmap) {
+            for (int i = 0; i < width * height; i++) {
+                byte value = heatmap.get(i);
+                if (value != 0) {
+                    heatmap.put(i, (byte) (value - 1));
+                }
             }
         }
     }
