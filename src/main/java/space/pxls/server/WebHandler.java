@@ -957,7 +957,6 @@ public class WebHandler {
                     String authorName = "CONSOLE";
                     int nameColor = 0;
                     Faction faction = null;
-                    List<String> nameClass = null;
                     if (dbChatMessage.author_uid > 0) {
                         authorName = "$Unknown";
                         User author = App.getUserManager().getByID(dbChatMessage.author_uid);
@@ -965,7 +964,6 @@ public class WebHandler {
                             authorName = author.getName();
                             badges = author.getChatBadges();
                             nameColor = author.getChatNameColor();
-                            nameClass = author.getChatNameClasses();
                             faction = author.fetchDisplayedFaction();
                         }
                     }
@@ -982,7 +980,6 @@ public class WebHandler {
                                     ? new ChatMessage.Purge(dbChatMessage.purged_by_uid, dbChatMessage.purge_reason)
                                     : null,
                             badges,
-                            nameClass,
                             nameColor,
                             dbChatMessage.author_was_shadow_banned,
                             faction
@@ -1027,65 +1024,23 @@ public class WebHandler {
 
         try {
             int t = Integer.parseInt(nameColor.getValue());
-            if (t >= -19 && t < App.getPalette().getColors().size()) {
-                var hasAllDonatorColors = user.hasPermission("chat.usercolor.donator") || user.hasPermission("chat.usercolor.donator.*");
-                if (t == -1 && !user.hasPermission("chat.usercolor.rainbow")) {
-                    sendBadRequest(exchange, "Color reserved for staff members");
-                    return;
-                } else if (t == -2 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.green"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -3 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.gray"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -4 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.synthwave"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -5 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.ace"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -6 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.trans"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -7 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.bi"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -8 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.pan"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -9 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.nonbinary"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -10 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.mines"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -11 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.eggplant"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -12 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.banana"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -13 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.teal"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -14 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.icy"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -15 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.blood"))) {
-                    sendBadRequest(exchange, "Color reserved for donators");
-                    return;
-                } else if (t == -16 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.forest"))) {
-                    sendBadRequest(exchange, "Color reversed for donators");
-                    return;
-                } else if (t == -17 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.purple"))) {
-                    sendBadRequest(exchange, "Color reversed for donators");
-                    return;
-                } else if (t == -18 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.gay"))) {
-                    sendBadRequest(exchange, "Color reversed for donators");
-                    return;
-                } else if (t == -19 && !(hasAllDonatorColors || user.hasPermission("chat.usercolor.donator.lesbian"))) {
-                    sendBadRequest(exchange, "Color reversed for donators");
-                    return;
+            List<Map<String,String>> gradients = App.getConfig().getConfigList("chat.gradientColors")
+                .stream()
+                .map(c -> c.entrySet().stream()
+                    .collect(Collectors.toMap(
+                        e -> e.getKey(),
+                        e -> c.getString(e.getKey())
+                    ))
+                ).collect(Collectors.toList());
+                
+            if (t >= -gradients.size() && t < App.getPalette().getColors().size()) {
+                if (t < 0 && !user.canUseGradientChatNameColors()) {
+                    var gradient = gradients.get(-t - 1);
+                    var gradientName = gradient.get("name").toLowerCase();
+                    if (!user.hasPermission("chat.usercolor.gradient." + gradientName)) {
+                        sendBadRequest(exchange, "You do not have the permission to use this color");
+                        return;
+                    }
                 }
 
                 user.setChatNameColor(t, true, !App.getSnipMode());
@@ -1814,6 +1769,7 @@ public class WebHandler {
             Math.min(App.getConfig().getInt("chat.characterLimit"), 2048),
             App.getConfig().getBoolean("chat.canvasBanRespected"),
             App.getConfig().getStringList("chat.bannerText"),
+            App.getConfig().getList("chat.gradientColors").unwrapped(),
             App.getSnipMode(),
             App.getConfig().getString("chat.emoteSet7TV"),
             App.getConfig().getList("chat.customEmoji").unwrapped(),

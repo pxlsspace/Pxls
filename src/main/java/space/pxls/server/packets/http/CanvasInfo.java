@@ -22,6 +22,7 @@ public class CanvasInfo {
     public Boolean chatRespectsCanvasBan;
     public Integer chatCharacterLimit;
     public List<String> chatBannerText;
+    public List<Object> chatGradients;
     public Boolean snipMode;
     public String emoteSet7TV;
     public List<Object> customEmoji;
@@ -33,7 +34,7 @@ public class CanvasInfo {
     public Boolean chatLinkSendToStaff;
     public Boolean chatDefaultExternalLinkPopup;
 
-    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, boolean snipMode, String emoteSet7TV, List<Object> customEmoji, String corsBase, String corsParam, LegalInfo legal, String chatRatelimitMessage, Integer chatLinkMinimumPixelCount, boolean chatLinkSendToStaff, boolean chatDefaultExternalLinkPopup) {
+    public CanvasInfo(String canvasCode, Integer width, Integer height, List<Color> palette, CooldownInfo cooldownInfo, String captchaKey, Integer heatmapCooldown, Integer maxStacked, Map<String, AuthService> authServices, Boolean registrationEnabled, Boolean chatEnabled, Integer chatCharacterLimit, boolean chatRespectsCanvasBan, List<String> chatBannerText, List<Object> chatGradients, boolean snipMode, String emoteSet7TV, List<Object> customEmoji, String corsBase, String corsParam, LegalInfo legal, String chatRatelimitMessage, Integer chatLinkMinimumPixelCount, boolean chatLinkSendToStaff, boolean chatDefaultExternalLinkPopup) {
         this.canvasCode = canvasCode;
         this.width = width;
         this.height = height;
@@ -48,6 +49,7 @@ public class CanvasInfo {
         this.chatCharacterLimit = chatCharacterLimit;
         this.chatRespectsCanvasBan = chatRespectsCanvasBan;
         this.chatBannerText = chatBannerText;
+        this.chatGradients = chatGradients;
         this.snipMode = snipMode;
         this.emoteSet7TV = emoteSet7TV;
         this.customEmoji = customEmoji;
@@ -110,6 +112,10 @@ public class CanvasInfo {
 
     public List<String> getChatBannerText() {
         return chatBannerText;
+    }
+
+    public List<Object> getChatGradients() {
+        return chatGradients;
     }
 
     public Boolean getSnipMode() {
