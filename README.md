@@ -51,7 +51,7 @@ Edit configuration files as necessary. The following `pxls.conf` keys MUST be co
 * `database.url`
 * `host`
 * `oauth` (necessary for any form of user authentication)
-    * [Reddit][redditapps], [Google][googleconsole], [Discord][discordapps], [VK][vkapps], and [Tumblr][tumblrapps] are current supported.
+    * [Reddit][redditapps], [Google][googleconsole], [Discord][discordapps], [VK][vkapps], [Tumblr][tumblrapps], and [CAS applications](https://apereo.github.io/cas/7.0.x/index.html) are current supported.
 
 Run with `java -jar pxls*.jar`
 
