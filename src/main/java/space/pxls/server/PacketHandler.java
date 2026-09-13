@@ -96,7 +96,6 @@ public class PacketHandler {
             user.flagForCaptcha();
             server.addAuthedUser(user);
 
-            user.setInitialAuthTime(System.currentTimeMillis());
             user.tickStack(false); // pop the whole pixel stack
             sendAvailablePixels(channel, user, "connect");
         }

@@ -46,7 +46,6 @@ public class User {
     private String chatbanReason;
     private long cooldownExpiry;
     private long lastPixelTime = 0;
-    private long initialAuthTime = 0L;
     private Timestamp signup_time;
     private Integer displayedFaction;
     private Boolean factionBlocked;
@@ -565,14 +564,6 @@ public class User {
         App.getDatabase().updateUserStacked(this, stacked);
     }
 
-    public long getInitialAuthTime() {
-        return initialAuthTime;
-    }
-
-    public void setInitialAuthTime(long initialAuthTime) {
-        this.initialAuthTime = initialAuthTime;
-    }
-
     public boolean lastPlaceWasStack() {
         return lastPlaceWasStack;
     }
@@ -599,17 +590,16 @@ public class User {
 
         int curCD = App.getServer().getPacketHandler().getCooldown();
 
-        long lastPixelTime = getLastPixelTime() == 0 ? (this.cooldownExpiry == 0 ? getInitialAuthTime() : (this.cooldownExpiry - (curCD*1000))) : getLastPixelTime();
-        if (lastPixelTime == 0) {
-            return;
+        long lastPixelTime;
+        if (getLastPixelTime() != 0) {
+            lastPixelTime = getLastPixelTime();
+        } else {
+            lastPixelTime = this.cooldownExpiry - (curCD*1000);
         }
+
         long delta = (System.currentTimeMillis()-lastPixelTime) / 1000;
-        //App.getLogger().debug("=======");
         while(true) {
             int target = (curCD * multiplier) * (2 + getStacked() + addToN(getStacked()));
-            //App.getLogger().debug(delta);
-            //App.getLogger().debug(" : ");
-            //App.getLogger().debug(target);
             if (delta >= target && getStacked() < maxStacked) {
                 setStacked(getStacked() + 1);
                 if (sendRes) {

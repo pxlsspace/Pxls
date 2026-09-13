@@ -1420,9 +1420,8 @@ public class App {
         for (User user : server.getAuthedUsers().values()) {
             if (user.isIdled()) continue;
 
-            Long toUse = user.getLastPixelTime() == 0L ? user.getInitialAuthTime() : user.getLastPixelTime();
-            Long delta = loopStart - toUse;
-            boolean isIdled = userIdleTimeout - delta <= 0;
+            Long delta = loopStart - user.getLastPixelTime();
+            boolean isIdled = delta > userIdleTimeout;
 
             if (isIdled) {
                 anyIdled = true;
