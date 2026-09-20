@@ -39,6 +39,16 @@ If the script is placed in any other directory than `Pxls/extras`, make sure to 
 The output `board.png` will appear in the directory.
 
 
+## convert/logs2img.py
+
+`convert/logs2img.py` converts input data files `pixels.log` to `board.png`.
+
+### Running
+
+1. Inside `convert/`, execute the script with `pipenv run python logs2img.py /path/to/pixels.log /path/to/config.conf /path/to/output.png [--user-filter user1 user2] [--scale SCALE_FACTOR]`.
+	- add `--user-filter` to only include pixels from the specified users.
+	- add `--scale` to scale the output image by the specified factor.
+
 ## reset/reset.py
 
 `reset/reset.py` aids to automate the process of resetting a canvas by reading the pxls.conf file and, among other things:

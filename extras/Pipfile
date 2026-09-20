@@ -9,6 +9,3 @@ verify_ssl = true
 pillow = ">=6.2.2"
 pyhocon = "*"
 psycopg2 = "*"
-
-[requires]
-python_version = "3.7"
