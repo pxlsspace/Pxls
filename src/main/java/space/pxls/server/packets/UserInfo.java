@@ -1,5 +1,6 @@
 package space.pxls.server.packets;
 
+import space.pxls.auth.Provider.VisibleProvider;
 import space.pxls.user.PlacementOverrides;
 import space.pxls.user.Role;
 
@@ -20,14 +21,27 @@ public class UserInfo {
     public Boolean chatbanIsPerma;
     public Long chatbanExpiry;
     public Boolean renameRequested;
-    public String discordName;
+    public List<VisibleProvider> logins;
     public Number chatNameColor;
 
-    public UserInfo(String username, List<Role> roles, int pixelCount, int pixelCountAllTime,
-                    Boolean banned, Long banExpiry, String banReason, String method,
-                    PlacementOverrides placementOverrides, Boolean chatBanned, String chatbanReason,
-                    Boolean chatbanIsPerma, Long chatbanExpiry, Boolean renameRequested, String discordName,
-                    Number chatNameColor) {
+    public UserInfo(
+        String username, 
+        List<Role> roles, 
+        int pixelCount, 
+        int pixelCountAllTime,
+        Boolean banned, 
+        Long banExpiry, 
+        String banReason, 
+        String method,
+        PlacementOverrides placementOverrides, 
+        Boolean chatBanned, 
+        String chatbanReason,
+        Boolean chatbanIsPerma, 
+        Long chatbanExpiry, 
+        Boolean renameRequested, 
+        List<VisibleProvider> logins,
+        Number chatNameColor
+    ) {
         this.username = username;
         this.roles = roles;
         this.pixelCount = pixelCount;
@@ -42,7 +56,7 @@ public class UserInfo {
         this.chatbanIsPerma = chatbanIsPerma;
         this.chatbanExpiry = chatbanExpiry;
         this.renameRequested = renameRequested;
-        this.discordName = discordName;
+        this.logins = logins;
         this.chatNameColor = chatNameColor;
     }
 
@@ -94,8 +108,8 @@ public class UserInfo {
         return renameRequested;
     }
 
-    public String getDiscordName() {
-        return discordName;
+    public List<VisibleProvider> getLogins() {
+        return logins;
     }
 
     public Number getChatNameColor() {

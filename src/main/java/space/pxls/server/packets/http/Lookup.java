@@ -1,7 +1,11 @@
 package space.pxls.server.packets.http;
 
+import java.util.List;
+
 import space.pxls.App;
+import space.pxls.auth.Provider.VisibleProvider;
 import space.pxls.data.DBPixelPlacement;
+import space.pxls.user.User;
 
 public class Lookup {
     public static final String ORIGIN_NUKE = "nuke";
@@ -15,10 +19,21 @@ public class Lookup {
     public Integer pixelCountAlltime;
     public long time;
     public String username;
-    public String discordName = null;
+    public List<VisibleProvider> logins;
     public String faction;
 
-    public Lookup(int id, int x, int y, String origin, Integer pixelCount, Integer pixelCountAlltime, long time, String username, String discordName, String faction) {
+    public Lookup(
+        int id,
+        int x,
+        int y,
+        String origin,
+        Integer pixelCount,
+        Integer pixelCountAlltime,
+        long time,
+        String username,
+        List<VisibleProvider> logins,
+        String faction
+    ) {
         this.id = id;
         this.x = x;
         this.y = y;
@@ -27,7 +42,7 @@ public class Lookup {
         this.pixelCountAlltime = username != null ? pixelCountAlltime : null;
         this.time = time;
         this.username = username;
-        this.discordName = discordName;
+        this.logins = logins;
         this.faction = faction;
     }
 
@@ -36,7 +51,7 @@ public class Lookup {
     }
 
     public static String originFromPixel(DBPixelPlacement pixelPlacement) {
-        if (pixelPlacement.username == null) {
+        if (pixelPlacement.getUser() == null) {
             return ORIGIN_NUKE;
         } else if(pixelPlacement.modAction) {
             return ORIGIN_MODACTION;
@@ -51,17 +66,18 @@ public class Lookup {
 
     public static Lookup fromDB(DBPixelPlacement pixelPlacement) {
         if (pixelPlacement == null) return null;
+        User user = pixelPlacement.getUser();
         return new Lookup(
             pixelPlacement.id,
             pixelPlacement.x,
             pixelPlacement.y,
             originFromPixel(pixelPlacement),
-            pixelPlacement.pixelCount,
-            pixelPlacement.pixelCountAlltime,
+            user.getPixelCount(),
+            user.getAllTimePixelCount(),
             pixelPlacement.time,
-            pixelPlacement.username,
-            pixelPlacement.discordName,
-            pixelPlacement.faction
+            user.getName(),
+            user.getVisibleLogins(),
+            user.getDisplayedFaction().map(f -> f.getName()).orElse(null)
         );
     }
 }

@@ -23,12 +23,32 @@ public class DBUser {
     public boolean shadowBanned;
     public long chatbanExpiry;
     public boolean isRenameRequested;
-    public String discordName;
     public String chatbanReason;
     public Integer displayedFaction;
     public Boolean factionBlocked;
+    public String login;
 
-    public DBUser(int id, int stacked, String username, Timestamp signup, long cooldownExpiry, boolean loginWithIP, String signupIP, int pixelCount, int pixelCountAllTime, Long banExpiry, boolean shadowBanned, boolean isPermaChatbanned, long chatbanExpiry, boolean isRenameRequested, String discordName, String chatbanReason, int chatNameColor, Integer displayedFaction, Boolean factionBlocked) {
+    public DBUser(
+        int id,
+        int stacked,
+        String username,
+        String login,
+        Timestamp signup,
+        long cooldownExpiry,
+        boolean loginWithIP,
+        String signupIP,
+        int pixelCount,
+        int pixelCountAllTime,
+        Long banExpiry,
+        boolean shadowBanned,
+        boolean isPermaChatbanned,
+        long chatbanExpiry,
+        boolean isRenameRequested,
+        String chatbanReason,
+        int chatNameColor,
+        Integer displayedFaction,
+        Boolean factionBlocked
+    ) {
         this.id = id;
         this.stacked = stacked;
         this.username = username;
@@ -43,11 +63,11 @@ public class DBUser {
         this.isPermaChatbanned = isPermaChatbanned;
         this.chatbanExpiry = chatbanExpiry;
         this.isRenameRequested = isRenameRequested;
-        this.discordName = discordName;
         this.chatbanReason = chatbanReason;
         this.chatNameColor = chatNameColor;
         this.displayedFaction = displayedFaction;
         this.factionBlocked = factionBlocked;
+        this.login = login;
     }
 
     public static class Mapper implements RowMapper<DBUser> {
@@ -61,25 +81,25 @@ public class DBUser {
                 df = r.getInt("displayed_faction");
             } catch (Exception ignored) {}
             return new DBUser(
-                    r.getInt("id"),
-                    r.getInt("stacked"),
-                    r.getString("username"),
-                    r.getTimestamp("signup_time"),
-                    stamp == null ? 0 : stamp.getTime(),
-                    r.getBoolean("login_with_ip"),
-                    r.getString("signup_ip"),
-                    r.getInt("pixel_count"),
-                    r.getInt("pixel_count_alltime"),
-                    ban == null ? null : ban.getTime(),
-                    r.getBoolean("is_shadow_banned"),
-                    r.getBoolean("perma_chat_banned"),
-                    chatban == null ? 0 : chatban.getTime(),
-                    r.getBoolean("is_rename_requested"),
-                    r.getString("discord_name"),
-                    r.getString("chat_ban_reason"),
-                    r.getInt("chat_name_color"),
-                    df,
-                    r.getBoolean("faction_restricted")
+                r.getInt("id"),
+                r.getInt("stacked"),
+                r.getString("username"),
+                r.getString("sub"),
+                r.getTimestamp("signup_time"),
+                stamp == null ? 0 : stamp.getTime(),
+                r.getBoolean("login_with_ip"),
+                r.getString("signup_ip"),
+                r.getInt("pixel_count"),
+                r.getInt("pixel_count_alltime"),
+                ban == null ? null : ban.getTime(),
+                r.getBoolean("is_shadow_banned"),
+                r.getBoolean("perma_chat_banned"),
+                chatban == null ? 0 : chatban.getTime(),
+                r.getBoolean("is_rename_requested"),
+                r.getString("chat_ban_reason"),
+                r.getInt("chat_name_color"),
+                df,
+                r.getBoolean("faction_restricted")
             );
         }
     }

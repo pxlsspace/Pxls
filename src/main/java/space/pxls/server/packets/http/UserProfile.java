@@ -1,5 +1,6 @@
 package space.pxls.server.packets.http;
 
+import space.pxls.auth.Provider;
 import space.pxls.user.ProfileFaction;
 import space.pxls.user.Role;
 
@@ -21,5 +22,5 @@ public record UserProfile(
         boolean isPermaChatBanned,
         long chatBanExpiry,
         boolean isFactionRestricted,
-        String discordName
+        List<Provider> logins
 ) {}

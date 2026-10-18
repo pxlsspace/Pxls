@@ -1,45 +1,65 @@
 package space.pxls.server.packets.http;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
-import space.pxls.data.DBPixelPlacementFull;
-import space.pxls.data.DBUserLogin;
-import space.pxls.user.UserLogin;
 import space.pxls.App;
+import space.pxls.auth.Provider;
+import space.pxls.auth.Provider.VisibleProvider;
+import space.pxls.user.User;
 
 public class ExtendedLookup extends Lookup {
-    public final List<UserLogin> logins;
+    public final List<Provider> allLogins;
     public final String userAgent;
 
-    public ExtendedLookup(int id, int x, int y, String origin, int pixelCount, int pixelCountAllTime, long time, String username, String discordName, String faction, List<UserLogin> logins, String userAgent) {
-        super(id, x, y, origin, pixelCount, pixelCountAllTime, time, username, discordName, faction);
-        this.logins = logins;
+    public ExtendedLookup(
+        int id,
+        int x,
+        int y,
+        String origin,
+        int pixelCount,
+        int pixelCountAllTime,
+        long time,
+        String username,
+        String faction,
+        List<VisibleProvider> logins,
+        List<Provider> allLogins,
+        String userAgent
+    ) {
+        super(
+            id, 
+            x, 
+            y, 
+            origin, 
+            pixelCount, 
+            pixelCountAllTime, 
+            time, 
+            username, 
+            logins, 
+            faction
+        );
+        this.allLogins = allLogins;
         this.userAgent = userAgent;
     }
 
     public static ExtendedLookup fromDB(int x, int y) {
-        var pixelPlacement = App.getDatabase().getFullPixelAt(x, y).orElse(null);
-        if (pixelPlacement == null) return null;
-        var logins = App.getDatabase().getUserLogins(pixelPlacement.userId);
-        return ExtendedLookup.fromDB(pixelPlacement, logins);
-    }
-
-    public static ExtendedLookup fromDB(DBPixelPlacementFull pixelPlacement, List<DBUserLogin> logins) {
-        if (pixelPlacement == null) return null;
-        return new ExtendedLookup(
-            pixelPlacement.id,
-            pixelPlacement.x,
-            pixelPlacement.y,
-            originFromPixel(pixelPlacement),
-            pixelPlacement.pixelCount,
-            pixelPlacement.pixelCountAlltime,
-            pixelPlacement.time,
-            pixelPlacement.username,
-            pixelPlacement.discordName,
-            pixelPlacement.faction,
-            logins.stream().map((login) -> UserLogin.fromDB(login)).collect(Collectors.toList()),
-            pixelPlacement.userAgent
-        );
+        return App.getDatabase().getFullPixelAt(x, y)
+            .map(placement -> {
+                User user = placement.getUser();
+                return new ExtendedLookup(
+                    placement.id,
+                    placement.x,
+                    placement.y,
+                    originFromPixel(placement),
+                    user.getPixelCount(),
+                    user.getAllTimePixelCount(),
+                    placement.time,
+                    user.getName(),
+                    user.getDisplayedFaction().map(f -> f.getName()).orElse(null),
+                    user.getVisibleLogins(),
+                    user.getAllLogins(),
+                    user.getUserAgent()
+                );
+            })
+            .orElse(null);
     }
 }

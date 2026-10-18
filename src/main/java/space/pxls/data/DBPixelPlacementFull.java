@@ -5,60 +5,48 @@ import org.jdbi.v3.core.statement.StatementContext;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 
 public class DBPixelPlacementFull extends DBPixelPlacement {
     public final int secondaryId;
-    public final int userId;
-    //public final List<Role> roles;
-    public final long ban_expiry;
-    public final String ban_reason;
-    public final boolean banned;
     public final boolean undoAction;
-    public final String userAgent;
 
-    public DBPixelPlacementFull(int id, int x, int y, int color, int secondaryId, long time, int userId, String username, /* List<Role> roles, */ long ban_expiry, int pixelCount, int pixelCountAlltime, String ban_reason, boolean banned, boolean modAction, boolean undoAction, String userAgent, String discordName, String faction) {
-        super(id, x, y, color, time, username, modAction, pixelCount, pixelCountAlltime, discordName, faction);
+    public DBPixelPlacementFull(
+        int id,
+        int x,
+        int y,
+        int color,
+        long time,
+        boolean modAction,
+        int userId,
+        int secondaryId,
+        boolean undoAction
+    ) {
+        super(
+            id,
+            x,
+            y,
+            color,
+            time,
+            modAction,
+            userId
+        );
         this.secondaryId = secondaryId;
-        this.userId = userId;
-        //this.roles = roles;
-        this.ban_expiry = ban_expiry;
-        this.ban_reason = ban_reason;
-        this.banned = banned;
         this.undoAction = undoAction;
-        this.userAgent = userAgent;
     }
 
     public static class Mapper implements RowMapper<DBPixelPlacementFull> {
         @Override
         public DBPixelPlacementFull map(ResultSet r, StatementContext ctx) throws SQLException {
-            Timestamp time = r.getTimestamp("time");
-            Timestamp ban_expiry = r.getTimestamp("ban_expiry");
-            String faction = null;
-            try {
-                faction = r.getString("faction");
-            } catch (Exception ignored) {}
-
             return new DBPixelPlacementFull(
-                    r.getInt("p_id"),
+                    r.getInt("id"),
                     r.getInt("x"),
                     r.getInt("y"),
                     r.getInt("color"),
-                    r.getInt("secondary_id"),
-                    time == null ? 0 : time.getTime(),
-                    r.getInt("u_id"),
-                    r.getString("username"),
-                    //App.getDatabase().getUserRoles(r.getInt("u_id")),
-                    ban_expiry == null ? 0 : ban_expiry.getTime(),
-                    r.getInt("pixel_count"),
-                    r.getInt("pixel_count_alltime"),
-                    r.getString("ban_reason"),
-                    ban_expiry != null,
+                    r.getTimestamp("time").getTime(),
                     r.getBoolean("mod_action"),
-                    r.getBoolean("undo_action"),
-                    r.getString("user_agent"),
-                    r.getString("discord_name"),
-                    faction
+                    r.getInt("who"),
+                    r.getInt("secondary_id"),
+                    r.getBoolean("undo_action")
             );
         }
     }

@@ -132,7 +132,7 @@ public class FactionManager {
 
         if (f != null && u != null) {
             boolean wasDisplayed = false;
-            if (u.getDisplayedFaction() != null && u.getDisplayedFaction() == fid) {
+            if (u.getDisplayedFaction().map(df -> df.getId() == fid).orElse(false)) {
                 wasDisplayed = true;
             }
 
