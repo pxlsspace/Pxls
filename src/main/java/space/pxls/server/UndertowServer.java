@@ -126,6 +126,10 @@ public class UndertowServer {
             ),
             new DatabaseSessionManager(),
             new SessionCookieConfig()
+                .setHttpOnly(true)
+                .setSecure(true)
+                // 8640000 = 100 days in seconds
+                .setMaxAge(8640000)
         );
 
         server = Undertow.builder()
