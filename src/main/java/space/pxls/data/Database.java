@@ -51,7 +51,6 @@ public class Database {
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
         config.addDataSourceProperty("allowMultiQueries", "true");
-        config.setMaximumPoolSize(200); // this is plenty, the websocket uses 32
         //config.setConnectionInitSql("SET NAMES UTF-8"); //needed for emoji's in chat
 
         jdbi = Jdbi.create(new HikariDataSource(config));
