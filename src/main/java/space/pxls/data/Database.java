@@ -3,12 +3,8 @@ package space.pxls.data;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
-import org.jdbi.v3.core.argument.Argument;
-import org.jdbi.v3.core.argument.ArgumentFactory;
-import org.jdbi.v3.core.config.ConfigRegistry;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 
@@ -753,6 +749,23 @@ public class Database {
                 .findFirst()
                 .get();
             return user;
+        });
+    }
+    
+    /**
+     * Gets all username beginning with prefix
+     * @param prefix The username prefix.
+     * @return The usernames.
+     */
+    public List<String> getUsernamesByPrefix(String prefix) {
+        return jdbi.withHandle(handle -> {
+            return handle
+                .createQuery("SELECT username FROM users WHERE starts_with(username, :prefix)")
+                .bind("prefix", prefix)
+                .mapToMap()
+                .map(entry -> (String) entry.get("username"))
+                .stream()
+                .collect(Collectors.toList());
         });
     }
 

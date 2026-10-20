@@ -3,13 +3,13 @@ package space.pxls.user;
 import space.pxls.App;
 import space.pxls.data.DBUser;
 import space.pxls.util.MD5;
-import space.pxls.util.Util;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jdbi.v3.core.JdbiException;
 import org.pac4j.oidc.profile.OidcProfile;
 
 public class UserManager {
@@ -68,11 +68,35 @@ public class UserManager {
         ));
     }
 
-    public User signUp(OidcProfile profile, String ip) {
+    private String findNewUsername(String username) {
+        List<String> usedUsernames = App.getDatabase().getUsernamesByPrefix(username);
+
+        for (int i = 0; i < usedUsernames.size(); i++) {
+            String newUsername = username + (i + 2);
+            if (!usedUsernames.contains(newUsername)) {
+                return newUsername;
+            }
+        }
+
+        return username + (usedUsernames.size() + 2);
+    }
+
+    // synchronized so generated usernames cannot become invalid after checking
+    // the database.
+    public synchronized User signUp(OidcProfile profile, String ip) {
         final String username = (String) profile.getUsername();
         final String subject = (String) profile.getId();
-        DBUser user = App.getDatabase().createUser(username, subject, ip);
-        return getByDB(Optional.of(user));
+        try {
+            DBUser user = App.getDatabase().createUser(username, subject, ip);
+            return getByDB(Optional.of(user));
+        } catch(JdbiException e) {
+            // assume e is caused by a username conflict
+            String newUsername = findNewUsername(username);
+            DBUser dbUser = App.getDatabase().createUser(newUsername, subject, ip);
+            User user = getByDB(Optional.of(dbUser));
+            user.setRenameRequested(true); // TODO: use appropriate message
+            return user;
+        }
     }
 
     public User signUpByIp(String ip) {
