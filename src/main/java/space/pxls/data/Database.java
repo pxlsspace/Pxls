@@ -2,8 +2,13 @@ package space.pxls.data;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+
+import org.apache.commons.lang3.tuple.Pair;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.core.argument.Argument;
+import org.jdbi.v3.core.argument.ArgumentFactory;
+import org.jdbi.v3.core.config.ConfigRegistry;
 import org.jdbi.v3.core.mapper.RowMapper;
 import org.jdbi.v3.core.statement.StatementContext;
 
@@ -31,6 +36,8 @@ import java.util.stream.Collectors;
 import java.util.AbstractMap.SimpleEntry;
 
 import static java.lang.Math.toIntExact;
+
+import java.lang.reflect.Type;
 
 public class Database {
     private final Jdbi jdbi;
@@ -934,6 +941,7 @@ public class Database {
         );
     }
 
+    public record Identifier(String id, String provider) {}
     /**
      * Sets the linked accounts for the {@link User}.
      * @param who The {@link User}'s ID.
@@ -942,8 +950,17 @@ public class Database {
      */
     public void setUserLinks(int who, List<Provider> links) {
         jdbi.useTransaction(handle -> {
-            handle.createUpdate("DELETE FROM user_links WHERE uid = :who")
+            List<Identifier> identities = links.stream()
+                .map(l -> new Identifier(l.userId, l.identityProvider))
+                .toList();
+        
+            handle.createUpdate(
+                    "DELETE FROM user_links " +
+                    "WHERE uid = :who " +
+                    "AND (user_id, identity_provider) NOT IN (<identities>)"
+                )
                 .bind("who", who)
+                .bindMethodsList("identities", identities, List.of("id", "provider"))
                 .execute();
 
             for (Provider link : links) {
