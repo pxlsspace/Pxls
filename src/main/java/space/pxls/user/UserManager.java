@@ -84,19 +84,27 @@ public class UserManager {
     // synchronized so generated usernames cannot become invalid after checking
     // the database.
     public synchronized User signUp(OidcProfile profile, String ip) {
-        final String username = (String) profile.getUsername();
-        final String subject = (String) profile.getId();
+        final String username = profile.getUsername()
+            .replaceAll("\s", "_")
+            .replaceAll("[^a-zA-Z0-9-_]", "_");
+        final String subject = profile.getId();
+
+        DBUser dbUser;
         try {
-            DBUser user = App.getDatabase().createUser(username, subject, ip);
-            return getByDB(Optional.of(user));
+            dbUser = App.getDatabase().createUser(username, subject, ip);
         } catch(JdbiException e) {
             // assume e is caused by a username conflict
             String newUsername = findNewUsername(username);
-            DBUser dbUser = App.getDatabase().createUser(newUsername, subject, ip);
-            User user = getByDB(Optional.of(dbUser));
-            user.setRenameRequested(true); // TODO: use appropriate message
-            return user;
+            dbUser = App.getDatabase().createUser(newUsername, subject, ip);
         }
+
+        User user = getByDB(Optional.of(dbUser));
+        if (user.getName() != profile.getUsername()) {
+            // give users who didn't get their desired username the chance to 
+            // choose another.
+            user.setRenameRequested(true);
+        }
+        return user;
     }
 
     public User signUpByIp(String ip) {
