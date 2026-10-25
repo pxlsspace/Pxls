@@ -962,6 +962,13 @@ public class Database {
      * @throws Exception
      */
     public void setUserLinks(int who, List<Provider> links) {
+        if (links.isEmpty()) {
+            jdbi.useHandle(handle -> handle.createUpdate(
+                "DELETE FROM user_links WHERE uid = :who"
+            ).bind("who", who).execute());
+            return;
+        }
+
         jdbi.useTransaction(handle -> {
             List<Identifier> identities = links.stream()
                 .map(l -> new Identifier(l.userId, l.identityProvider))
