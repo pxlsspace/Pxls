@@ -51,7 +51,7 @@ public class TextFilter {
         if (staticNeedle.size() == 0 && regexNeedle.size() == 0) return false;
 
         for (String s : staticNeedle) {
-            if (s.toLowerCase().contains(haystack.toLowerCase())) return true;
+            if (haystack.toLowerCase().contains(s.toLowerCase())) return true;
         }
         for (Pattern p : regexNeedle) {
             if (p.matcher(haystack).find()) return true;
