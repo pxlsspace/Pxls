@@ -1097,7 +1097,7 @@ public class WebHandler {
             return;
         }
         
-        user.updateUsername(newName);
+        toUpdate.updateUsername(newName);
         App.getDatabase().insertAdminLog(user.getId(), String.format("Changed %s's name to %s (uid: %d)", oldName, newName, toUpdate.getId()));
         toUpdate.setRenameRequested(false);
         App.getServer().send(toUpdate, new ServerRenameSuccess(toUpdate.getName()));
