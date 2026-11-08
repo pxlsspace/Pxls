@@ -99,7 +99,7 @@ public class UserManager {
         }
 
         User user = getByDB(Optional.of(dbUser));
-        if (user.getName() != profile.getUsername()) {
+        if (user.getName().equals(profile.getUsername())) {
             // give users who didn't get their desired username the chance to 
             // choose another.
             user.setRenameRequested(true);
