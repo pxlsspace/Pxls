@@ -1113,6 +1113,10 @@ public class WebHandler {
             sendBadRequest(exchange, "No authenticated users found");
             return;
         }
+        if (!user.isRenameRequested(true)) {
+            sendForbidden(exchange, "Not flagged for rename");
+            return;
+        }
         FormData data = exchange.getAttachment(FormDataParser.FORM_DATA);
         String newName = null;
         try {
