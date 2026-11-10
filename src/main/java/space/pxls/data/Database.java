@@ -80,7 +80,7 @@ public class Database {
             handle.createUpdate("CREATE TABLE IF NOT EXISTS users (" +
                     "id SERIAL NOT NULL PRIMARY KEY," +
                     "sub VARCHAR(255) UNIQUE NOT NULL," +
-                    "username VARCHAR(32) NOT NULL," +
+                    "username VARCHAR(32) UNIQUE NOT NULL," +
                     "signup_time TIMESTAMP NOT NULL DEFAULT NOW()," +
                     "cooldown_expiry TIMESTAMP," +
                     "ban_expiry TIMESTAMP," +
